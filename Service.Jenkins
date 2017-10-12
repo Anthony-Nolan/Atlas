@@ -1,0 +1,80 @@
+node('windows') {
+    def projectName = "Nova.TemplateService"
+    def solutionName = "Nova.Template"
+    def projectFile = ".\\${projectName}\\${projectName}.csproj"
+    def solutionFile = "${solutionName}.sln"
+
+    def msBuildPath;
+    def msBuild;
+    def nunitRunner;
+
+    stage('Checkout') {
+        checkout scm
+    }
+    stage('Prepare Nuget') {
+        withCredentials([usernamePassword(credentialsId: env.NUGET_CREDENTIALS_ID, passwordVariable: 'password', usernameVariable: 'username')]) {
+            bat "init.cmd"
+            bat ".tools\\nuget.exe sources update -ConfigFile nuget.config -name Nova -source \"${env.NUGET_SOURCE_URL}\" -username ${username} -password ${password}"
+        }
+    }
+    stage('Resolve dependencies') {
+        msBuildPath = tool('MSBuild');
+        msBuild = "\"${msBuildPath}\\MSBuild.exe\""
+        bat ".tools\\nuget restore ${solutionFile} -MSBuildPath \"${msBuildPath}\" -ConfigFile nuget.config"
+    }
+    stage('Verify tools') {
+        nunitRunner = findNunitRunner()
+    }
+    stage('Clean') {
+        bat "if exist build del build /Q"
+        bat "${msBuild} ${solutionFile} /t:Clean /v:minimal"
+    }
+    stage('Build for tests and migrations') {
+        bat "${msBuild} ${solutionFile} /p:Configuration=Debug /v:minimal"
+    }
+    stage('Run Tests') {
+        def testOutput = 'TestResult.xml'
+
+        // Get a list of all of the test assembly paths
+        def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.dll')
+
+        //Run the tests
+        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
+
+        // Generate reports
+        nunit testResultsPattern: testOutput
+    }
+    stage('Package') {
+        bat "${msBuild} ${projectFile} /v:minimal /p:DeployOnBuild=true /p:PublishProfile=\"${env.PUBLISH_PROFILE}\" /p:PackageLocation=\"${env.WORKSPACE}/build/${projectName}.zip\""
+    }
+    stage('Publish') {
+        withCredentials([usernamePassword(credentialsId: env.DEPLOY_CREDENTIALS_ID, passwordVariable: 'password', usernameVariable: 'username')]) {
+            // TODO: Move this to a powershell script
+            // TODO: Extract the site name from .SetParameters.xml
+            def siteName = env.SITE_NAME
+            def msDeployPath = 'C:\\Program Files\\IIS\\Microsoft Web Deploy V3\\msdeploy.exe'
+            def server = "https://${siteName}.scm.azurewebsites.net:443/MSDeploy.axd?site=${siteName}"
+            bat "\"${msDeployPath}\" -source:package='build/${projectName}.zip' -dest:auto,computerName=\"${server}\",userName=\"${username}\",password=\"${password}\",authType=\"Basic\",includeAcls=\"False\" -allowUntrusted -verb:sync"
+        }
+    }
+}
+
+def findNunitRunner() {
+    // Version-agnostic way of finding the nunit runner
+    return findSingleFile('packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe')
+}
+
+def findSingleFile(String glob) {
+    def files = findFilePaths(glob)
+    if (files.empty) {
+        error("Cannot find file for pattern ${glob}")
+    }
+    if (files.size() > 1) {
+        error("Found multiple files: ${files.join(', ')}")
+    }
+    return files[0]
+}
+
+def findFilePaths(String glob) {
+    return findFiles(glob: glob).collect { "\"${env.WORKSPACE}/$it.path\"" }
+}
