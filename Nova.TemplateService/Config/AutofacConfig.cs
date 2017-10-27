@@ -16,8 +16,8 @@ namespace Nova.TemplateService.Config
             {
                 var builder = new ContainerBuilder();
 
-                var reportAssemblies = Assembly.GetExecutingAssembly().LoadNovaAssemblies().ToArray();
-                builder.RegisterAssemblyModules(reportAssemblies);
+                var assemblies = Assembly.GetExecutingAssembly().LoadNovaAssemblies().ToArray();
+                builder.RegisterAssemblyModules(assemblies);
 
                 container = builder.Build();
             }
