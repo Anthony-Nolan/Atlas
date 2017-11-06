@@ -20,6 +20,8 @@ namespace Nova.TemplateService.Config.Modules
                 .AsImplementedInterfaces();
 
             builder.RegisterType<Services.TemplateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.ServiceStatusService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             builder.RegisterType<Repositories.TemplateSolarRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();

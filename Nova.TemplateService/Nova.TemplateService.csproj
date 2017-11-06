@@ -184,9 +184,12 @@
     <Compile Include="Config\AutofacConfig.cs" />
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
+    <Compile Include="Controllers\ServiceStatusController.cs" />
     <Compile Include="Controllers\TemplateController.cs" />
+    <Compile Include="Models\ServiceStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\TemplateSolarRepository.cs" />
+    <Compile Include="Services\ServiceStatusService.cs" />
     <Compile Include="Services\TemplateService.cs" />
     <Compile Include="Solar\Connection\SolarConnectionFactory.cs" />
     <Compile Include="Solar\Connection\SolarConnectionSettings.cs" />
