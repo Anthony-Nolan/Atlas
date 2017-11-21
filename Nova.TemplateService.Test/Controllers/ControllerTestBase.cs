@@ -16,7 +16,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Owin;
 
-namespace Nova.TemplateService.Tests.Controllers
+namespace Nova.TemplateService.Test.Controllers
 {
     public abstract class ControllerTestBase<TController> where TController : ApiController
     {

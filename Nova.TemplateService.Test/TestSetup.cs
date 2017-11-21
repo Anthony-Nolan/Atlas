@@ -2,7 +2,7 @@
 using Nova.TemplateService.Config;
 using NUnit.Framework;
 
-namespace Nova.TemplateService.Tests
+namespace Nova.TemplateService.Test
 {
     [SetUpFixture]
     public class TestSetup
