@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5979876-0294-475D-8970-A384B2DDEB8C}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Client.Jenkins = Client.Jenkins
+		nuget.config = nuget.config
+		README.md = README.md
+		Service.Jenkins = Service.Jenkins
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithmService", "Nova.SearchAlgorithmService\Nova.SearchAlgorithmService.csproj", "{B5CB5431-D854-4F2B-8ECA-06055376EE02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithmService.Test", "Nova.SearchAlgorithmService.Test\Nova.SearchAlgorithmService.Test.csproj", "{9CC4E912-0886-4713-99F8-19A4980031CA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{4A86A10C-666D-41A0-B5CB-9B080736923B}"
+	ProjectSection(SolutionItems) = preProject
+		jenkins_unittests.bat = jenkins_unittests.bat
+		UnitTests.nunit = UnitTests.nunit
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithmService.Client", "Nova.SearchAlgorithmService.Client\Nova.SearchAlgorithmService.Client.csproj", "{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B5CB5431-D854-4F2B-8ECA-06055376EE02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5CB5431-D854-4F2B-8ECA-06055376EE02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5CB5431-D854-4F2B-8ECA-06055376EE02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5CB5431-D854-4F2B-8ECA-06055376EE02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC4E912-0886-4713-99F8-19A4980031CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC4E912-0886-4713-99F8-19A4980031CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC4E912-0886-4713-99F8-19A4980031CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC4E912-0886-4713-99F8-19A4980031CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4A86A10C-666D-41A0-B5CB-9B080736923B} = {E5979876-0294-475D-8970-A384B2DDEB8C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
+	EndGlobalSection
+EndGlobal
