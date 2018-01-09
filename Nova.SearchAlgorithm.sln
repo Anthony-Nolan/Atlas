@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Service.Jenkins = Service.Jenkins
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithmService", "Nova.SearchAlgorithmService\Nova.SearchAlgorithmService.csproj", "{B5CB5431-D854-4F2B-8ECA-06055376EE02}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm", "Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj", "{B5CB5431-D854-4F2B-8ECA-06055376EE02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithmService.Test", "Nova.SearchAlgorithmService.Test\Nova.SearchAlgorithmService.Test.csproj", "{9CC4E912-0886-4713-99F8-19A4980031CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test", "Nova.SearchAlgorithm.Test\Nova.SearchAlgorithm.Test.csproj", "{9CC4E912-0886-4713-99F8-19A4980031CA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{4A86A10C-666D-41A0-B5CB-9B080736923B}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,7 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 		UnitTests.nunit = UnitTests.nunit
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithmService.Client", "Nova.SearchAlgorithmService.Client\Nova.SearchAlgorithmService.Client.csproj", "{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client", "Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj", "{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
