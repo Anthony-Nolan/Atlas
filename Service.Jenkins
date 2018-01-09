@@ -1,6 +1,6 @@
 node('windows') {
-    def projectName = "Nova.TemplateService"
-    def solutionName = "Nova.Template"
+    def projectName = "Nova.SearchAlgorithm"
+    def solutionName = "Nova.SearchAlgorithm"
     def projectFile = ".\\${projectName}\\${projectName}.csproj"
     def solutionFile = "${solutionName}.sln"
 

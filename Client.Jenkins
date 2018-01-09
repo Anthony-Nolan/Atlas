@@ -1,6 +1,6 @@
 node('windows') {
-    def projectNames = ['Nova.TemplateService.Client']
-    def solutionName = "Nova.Template"
+    def projectNames = ['Nova.SearchAlgorithm.Client']
+    def solutionName = "Nova.SearchAlgorithm"
     def solutionFile = "${solutionName}.sln"
 
     def msBuildPath;

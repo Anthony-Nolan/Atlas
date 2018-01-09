@@ -1,9 +1,9 @@
 ﻿<NUnitProject>
   <Settings activeconfig="Release" processModel="Default" domainUsage="Default" />
   <Config name="Debug">
-    <assembly path="Nova.TemplateService.Test\bin\Debug\Nova.TemplateService.Tests.dll" />
+    <assembly path="Nova.SearchAlgorithm.Test\bin\Debug\Nova.SearchAlgorithm.Test.dll" />
   </Config>
   <Config name="Release">
-    <assembly path="Nova.TemplateService.Test\bin\Release\Nova.TemplateService.Tests.dll" />
+    <assembly path="Nova.SearchAlgorithm.Test\bin\Release\Nova.SearchAlgorithm.Test.dll" />
   </Config>
 </NUnitProject>
