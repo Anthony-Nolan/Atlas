@@ -113,13 +113,11 @@
       <HintPath>..\packages\NLog.Owin.Logging.1.1.0\lib\net45\NLog.Owin.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nova.Utils, Version=2.12.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.2.12.0\lib\net461\Nova.Utils.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Nova.Utils, Version=2.15.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.2.15.2\lib\net462\Nova.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils.WebApi, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.WebApi.2.9.0\lib\net461\Nova.Utils.WebApi.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Nova.Utils.WebApi, Version=2.15.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.WebApi.2.15.2\lib\net462\Nova.Utils.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>..\packages\Oracle.ManagedDataAccess.12.1.24160719\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
