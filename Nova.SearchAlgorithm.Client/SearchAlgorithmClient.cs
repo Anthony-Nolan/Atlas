@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Client
                 return apiKey;
 
             // TODO NOVA-367 - This is really hacky.
-            var configApiKey = ConfigurationManager.AppSettings["ReportServiceApiKey"];
+            var configApiKey = ConfigurationManager.AppSettings["SearchAlgorithmApiKey"];
             if (configApiKey != null)
                 return configApiKey;
 
