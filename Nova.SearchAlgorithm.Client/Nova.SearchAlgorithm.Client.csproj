@@ -82,6 +82,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Filters\TemplateFilterModel.cs" />
+    <Compile Include="Models\MismatchCriteria.cs" />
+    <Compile Include="Models\SearchRequest.cs" />
     <Compile Include="Models\TemplateResponseModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="TemplateServiceClient.cs" />
