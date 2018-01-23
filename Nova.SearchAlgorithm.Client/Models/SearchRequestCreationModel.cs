@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         Nima
     }
 
-    public class SearchRequest
+    public class SearchRequestCreationModel
     {
         public SearchType SearchType { get; set; }
         public MismatchCriteria MismatchCriteria { get; set; }
