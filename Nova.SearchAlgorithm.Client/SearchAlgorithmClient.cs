@@ -1,37 +1,40 @@
-﻿using System.Configuration;
-using System.Net;
-using Castle.Core.Internal;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.Utils.Http.Exceptions;
 using Nova.Utils.WebApi.Filters;
 using RestSharp;
+using System.Configuration;
+using System.Net;
 
 namespace Nova.SearchAlgorithm.Client
 {
-    public class TemplateServiceClient
+    public interface ISearchAlgorithmClient
+    {
+        IRestResponse CreateSearchRequest(SearchRequest searchRequest);
+    }
+
+    public class SearchAlgorithmClient: ISearchAlgorithmClient
     {
         private readonly string baseUrl;
         private readonly string apiKey;
 
-        public TemplateServiceClient(string baseUrl, string apiKey = null)
+        public SearchAlgorithmClient(string baseUrl, string apiKey = null)
         {
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
         }
 
-        public TemplateResponseModel Get(string id)
+        public IRestResponse CreateSearchRequest(SearchRequest searchRequest)
         {
-            var client = GetClient();
-            var request = new RestRequest("api/templates/{id}");
-            request.AddParameter("id", id);
-            request.RootElement = "Template";
-            var response = client.Execute<TemplateResponseModel>(request);
+            var client = GetSearchAlgorithmClient();
+            var request = new RestRequest("create-search-request", Method.POST) { RequestFormat = DataFormat.Json };
+            request.AddBody(searchRequest);
+            var response = client.Execute(request);
 
             AssertResponseOk(response);
-            return response.Data;
+            return response;
         }
 
-        private RestClient GetClient()
+        private RestClient GetSearchAlgorithmClient()
         {
             var client = new RestClient(baseUrl);
             client.AddDefaultHeader(ApiKeyRequiredAttribute.HEADER_KEY, GetApiKey());
