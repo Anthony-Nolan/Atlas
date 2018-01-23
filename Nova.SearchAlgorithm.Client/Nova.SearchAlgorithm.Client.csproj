@@ -82,11 +82,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Filters\TemplateFilterModel.cs" />
     <Compile Include="Models\MismatchCriteria.cs" />
     <Compile Include="Models\SearchRequestCreationModel.cs" />
-    <Compile Include="Models\TemplateResponseModel.cs" />
-    <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -95,6 +92,9 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Filters\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

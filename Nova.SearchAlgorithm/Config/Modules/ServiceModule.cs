@@ -19,10 +19,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            builder.RegisterType<Services.TemplateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.ServiceStatusService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
-            builder.RegisterType<Repositories.TemplateSolarRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
