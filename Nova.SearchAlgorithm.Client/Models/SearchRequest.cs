@@ -13,6 +13,6 @@ namespace Nova.SearchAlgorithm.Client.Models
     {
         public SearchType SearchType { get; set; }
         public MismatchCriteria MismatchCriteria { get; set; }
-        public IEnumerable<string> Registries { get; set; }
+        public IEnumerable<string> RegistriesToSearch { get; set; }
     }
 }
