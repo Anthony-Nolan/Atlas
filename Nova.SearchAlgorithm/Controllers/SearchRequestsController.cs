@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Controllers
         public IHttpActionResult CreateSearchRequest([FromBody] SearchRequestCreationModel searchRequestCreationModel)
         {
             var id = searchRequestService.CreateSearchRequest(searchRequestCreationModel);
-            return Ok(id.Result);
+            return Ok(id);
         }
     }
 }

@@ -1,18 +1,26 @@
 ﻿using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Repositories.SearchRequests;
 
 namespace Nova.SearchAlgorithm.Services
 {
     public interface ISearchRequestService
     {
-        Task<int?> CreateSearchRequest(SearchRequestCreationModel searchRequest);
+        int? CreateSearchRequest(SearchRequestCreationModel searchRequest);
     }
     public class SearchRequestService : ISearchRequestService
     {
-        public async Task<int?> CreateSearchRequest(SearchRequestCreationModel searchRequest)
+        private readonly ISearchRequestRepository repository;
+
+        public SearchRequestService(ISearchRequestRepository searchRequestRepository)
         {
-            //todo: NOVA-749: add code to return a new search request id, once the repository has been setup 
-            return await Task.FromResult((int?)0);
+            repository = searchRequestRepository;
+        }
+
+        public int? CreateSearchRequest(SearchRequestCreationModel searchRequest)
+        {
+            var searchRequestId = repository.CreateSearchRequest(searchRequest);
+            return searchRequestId;
         }
     }
 }
