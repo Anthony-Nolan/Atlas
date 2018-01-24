@@ -2,6 +2,7 @@
 using System.Reflection;
 using Autofac;
 using Autofac.Integration.WebApi;
+using Nova.SearchAlgorithm.Repositories.SearchRequests.AzureStorage;
 using Nova.SearchAlgorithm.Solar.Connection;
 using Nova.Utils.Auth;
 using Nova.Utils.WebApi.Filters;
@@ -19,12 +20,15 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
+            builder.RegisterType<Repositories.SearchRequests.SearchRequestRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.ServiceStatusService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
+            builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
             var solarSettings = new SolarConnectionSettings
