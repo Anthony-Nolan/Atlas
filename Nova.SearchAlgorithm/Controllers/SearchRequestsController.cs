@@ -6,18 +6,17 @@ using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
-    public class SearchRequestController : ApiController
+    public class SearchRequestsController : ApiController
     {
         private readonly ISearchRequestService searchRequestService;
 
-        public SearchRequestController(ISearchRequestService creationService)
+        public SearchRequestsController(ISearchRequestService creationService)
         {
             searchRequestService = creationService;
         }
 
-
         [HttpPost]
-        [Route("search-request/create-search-request")]
+        [Route("search-requests")]
         public IHttpActionResult CreateSearchRequest([FromBody] SearchRequestCreationModel searchRequestCreationModel)
         {
             var id = searchRequestService.CreateSearchRequest(searchRequestCreationModel);

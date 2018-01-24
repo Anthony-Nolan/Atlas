@@ -182,7 +182,7 @@
     <Compile Include="Config\AutofacConfig.cs" />
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
-    <Compile Include="Controllers\SearchRequestController.cs" />
+    <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Controllers\ServiceStatusController.cs" />
     <Compile Include="Models\ServiceStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

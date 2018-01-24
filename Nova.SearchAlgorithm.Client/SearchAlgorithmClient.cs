@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Client
 
         public async Task<int?> CreateSearchRequest(SearchRequestCreationModel searchRequestCreationModel)
         {
-            var request = GetRequest(HttpMethod.Post, "search-request/create-search-request", body: searchRequestCreationModel);
+            var request = GetRequest(HttpMethod.Post, "search-requests", body: searchRequestCreationModel);
             return await MakeRequestAsync<int?>(request);
         }
     }
