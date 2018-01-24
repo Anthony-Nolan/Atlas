@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Client.Models
     public class SearchRequestCreationModel
     {
         public SearchType SearchType { get; set; }
-        public MismatchCriteria MismatchCriteria { get; set; }
+        public MatchCriteria MatchCriteria { get; set; }
         public IEnumerable<string> RegistriesToSearch { get; set; }
     }
 
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         public SearchRequestCreationModelValidator()
         {
             RuleFor(x => x.SearchType).NotEmpty();
-            RuleFor(x => x.MismatchCriteria).NotEmpty();
+            RuleFor(x => x.MatchCriteria).NotEmpty();
             RuleFor(x => x.RegistriesToSearch).NotEmpty();
         }
     }

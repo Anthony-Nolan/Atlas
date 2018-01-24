@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    public class MismatchCriteria
+    public class MatchCriteria
     {
     }
 }

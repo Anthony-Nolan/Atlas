@@ -86,7 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\MismatchCriteria.cs" />
+    <Compile Include="Models\MatchCriteria.cs" />
     <Compile Include="Models\SearchRequestCreationModel.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
