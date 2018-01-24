@@ -27,6 +27,4 @@ namespace Nova.SearchAlgorithm.Client.Models
             RuleFor(x => x.RegistriesToSearch).NotEmpty();
         }
     }
-
-
 }
