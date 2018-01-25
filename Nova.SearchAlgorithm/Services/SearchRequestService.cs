@@ -19,6 +19,7 @@ namespace Nova.SearchAlgorithm.Services
 
         public int? CreateSearchRequest(SearchRequestCreationModel searchRequest)
         {
+            //todo: NOVA-761 - decide what kind of object to return
             var searchRequestId = repository.CreateSearchRequest(searchRequest);
             return searchRequestId;
         }

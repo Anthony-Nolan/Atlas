@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Repositories.SearchRequests
             var operation = TableOperation.Insert(searchRequest.ToTableEntity(mapper));
             selectedSearchRequestTable.Execute(operation);
 
-            //todo: return an actual search request id!
+            //todo: NOVA-761 - decide what kind of object to return
             return 0;
         }
     }

@@ -4,7 +4,7 @@ namespace Nova.SearchAlgorithm.Repositories.SearchRequests.AzureStorage
 {
     public class SearchRequestTableEntity : TableEntity
     {
-        //todo: define properties
+        //todo: NOVA-762 - define properties
         public string SerialisedSearchRequest { get; set; }
         
         public SearchRequestTableEntity() { }

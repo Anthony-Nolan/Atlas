@@ -19,6 +19,7 @@ namespace Nova.SearchAlgorithm.Controllers
         [Route("search-requests")]
         public IHttpActionResult CreateSearchRequest([FromBody] SearchRequestCreationModel searchRequestCreationModel)
         {
+            //todo: NOVA-761 - decide what kind of object to return
             var id = searchRequestService.CreateSearchRequest(searchRequestCreationModel);
             return Ok(id);
         }
