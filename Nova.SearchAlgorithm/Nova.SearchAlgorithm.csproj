@@ -219,6 +219,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\DEV-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LIVE-NOVA-APP-PATIENT-SERVICE - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UAT-NOVA-APP-PATIENT-SERVICE - Web Deploy.pubxml" />
     <None Include="Settings\SecureSettings.config" />
