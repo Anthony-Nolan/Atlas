@@ -114,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Controllers
 
         private TestServer CreateServerInstance()
         {
-            Action<IAppBuilder> testConfig = app =>
+            void TestConfig(IAppBuilder app)
             {
                 app.ConfigureAutofac(container);
                 app.HandleAllExceptions(JsonConfig.GlobalSettings);
@@ -127,8 +127,8 @@ namespace Nova.SearchAlgorithm.Test.Controllers
                 var apiConfig = WebApiConfig.CreateConfig(container);
                 app.UseWebApi(apiConfig);
                 app.UseAutofacWebApi(apiConfig);
-            };
-            return TestServer.Create(testConfig);
+            }
+            return TestServer.Create(TestConfig);
         }
     }
 }
