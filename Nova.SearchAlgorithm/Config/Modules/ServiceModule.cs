@@ -23,7 +23,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<Repositories.SearchRequests.SearchRequestRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.ServiceStatusService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();

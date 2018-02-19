@@ -6,6 +6,7 @@ using Autofac;
 using Autofac.Integration.WebApi;
 using Nova.Utils.Filters;
 using Nova.Utils.Pagination;
+using Nova.Utils.WebApi.Controllers;
 using Nova.Utils.WebApi.ExceptionHandling;
 using Nova.Utils.WebApi.Filters;
 using Nova.Utils.WebApi.ModelBinders;
@@ -19,7 +20,6 @@ namespace Nova.SearchAlgorithm.Config
         public static IAppBuilder ConfigureWebApi(this IAppBuilder app, IContainer container)
         {
             var config = CreateConfig(container);
-            config.ConfigureSwagger();
             app.UseAutofacWebApi(config);
             app.UseWebApi(config);
             return app;
@@ -42,10 +42,20 @@ namespace Nova.SearchAlgorithm.Config
             config.ParameterBindingRules.BindFromUriOrEmpty<PaginationData>();
             config.ParameterBindingRules.BindFromUriOrEmpty<FilterBase>();
 
-            config.MapHttpAttributeRoutes();
+            config.ConfigureRouting();
 
             config.EnsureInitialized();
             return config;
+        }
+
+        public static void ConfigureRouting(this HttpConfiguration config)
+        {
+            config.MapHttpAttributeRoutes();
+            config.ConfigureSwagger();
+            config.AddNovaServiceStatusController();
+
+            // This must be done last as it will capture all requests that are not routed by this point.
+            config.AddNovaDefaultController();
         }
     }
 }

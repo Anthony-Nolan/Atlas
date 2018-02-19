@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Client
     public class SearchAlgorithmClient : ClientBase, ISearchAlgorithmClient
     {
         public SearchAlgorithmClient(string baseUrl, string apiKey, JsonSerializerSettings settings)
-            : base(baseUrl, apiKey, "search_algorithm_client", settings)
+            : base(new ClientSettings { ApiKey = apiKey, BaseUrl = baseUrl, ClientName = "search_algorithm_client", JsonSettings = settings})
         {
         }
 
