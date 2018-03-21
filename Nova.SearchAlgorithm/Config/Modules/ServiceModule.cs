@@ -2,9 +2,12 @@
 using System.Reflection;
 using Autofac;
 using Autofac.Integration.WebApi;
+using Microsoft.ApplicationInsights;
 using Nova.SearchAlgorithm.Repositories.SearchRequests.AzureStorage;
-using Nova.SearchAlgorithm.Solar.Connection;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Auth;
+using Nova.Utils.Solar;
+using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.Utils.WebApi.Filters;
 using Module = Autofac.Module;
 
@@ -35,6 +38,10 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 ConnectionString = ConfigurationManager.ConnectionStrings["SolarConnectionString"].ConnectionString
             };
             builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();
+
+            var logger = new RequestAwareLogger(new TelemetryClient(),
+                ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+            builder.RegisterInstance(logger).AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

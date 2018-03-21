@@ -1,7 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Owin;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.WebApi.Owin.Middleware;
 using Owin;
 
@@ -13,8 +15,10 @@ namespace Nova.SearchAlgorithm
     {
         public void Configuration(IAppBuilder app)
         {
+            app.SetUpInstrumentation(ConfigurationManager.AppSettings["insights.instrumentationKey"]);
             var container = app.ConfigureAutofac();
-            app.HandleAllExceptions(JsonConfig.GlobalSettings);
+            var logLevel = ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel();
+            app.ConfigureNovaMiddleware("search_algorithm", JsonConfig.GlobalSettings, logLevel);
             app.ConfigureLogging();
             app.ConfigureWebApi(container);
         }

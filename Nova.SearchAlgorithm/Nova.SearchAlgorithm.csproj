@@ -223,6 +223,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\AutomapperConfig.cs" />
+    <Compile Include="Config\InstrumentationConfig.cs" />
     <Compile Include="Config\Modules\ServiceModule.cs" />
     <Compile Include="Config\SwaggerConfig.cs" />
     <Compile Include="Config\ValidatorConfig.cs" />
@@ -237,8 +238,6 @@
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
     <Compile Include="Repositories\SearchRequests\SearchRequestRepository.cs" />
     <Compile Include="Services\SearchRequestService.cs" />
-    <Compile Include="Solar\Connection\SolarConnectionFactory.cs" />
-    <Compile Include="Solar\Connection\SolarConnectionSettings.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
