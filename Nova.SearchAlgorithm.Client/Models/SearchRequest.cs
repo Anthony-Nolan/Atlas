@@ -10,17 +10,17 @@ namespace Nova.SearchAlgorithm.Client.Models
         Nima = 3
     }
 
-    [FluentValidation.Attributes.Validator(typeof(SearchRequestCreationModelValidator))]
-    public class SearchRequestCreationModel
+    [FluentValidation.Attributes.Validator(typeof(SearchRequestValidator))]
+    public class SearchRequest
     {
         public SearchType SearchType { get; set; }
         public MatchCriteria MatchCriteria { get; set; }
         public IEnumerable<string> RegistriesToSearch { get; set; }
     }
 
-    public class SearchRequestCreationModelValidator : AbstractValidator<SearchRequestCreationModel>
+    public class SearchRequestValidator : AbstractValidator<SearchRequest>
     {
-        public SearchRequestCreationModelValidator()
+        public SearchRequestValidator()
         {
             RuleFor(x => x.SearchType).NotEmpty();
             RuleFor(x => x.MatchCriteria).NotEmpty();

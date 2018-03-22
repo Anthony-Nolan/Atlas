@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         [Test]
         public async Task CreateSearchRequest_Returns200_WhenSearchRequestIsSuccessfullyCreated()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequestCreationModel>()).Returns(1);
+            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
 
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/searchrequestcreationmodel.json")).PostAsync();
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         [Test]
         public async Task CreateSearchRequest_Returns400_WhenModelFailsValidation()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequestCreationModel>()).Returns(1);
+            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
 
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/invalidsearchrequestcreationmodel.json")).PostAsync();

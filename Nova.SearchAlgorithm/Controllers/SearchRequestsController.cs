@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -10,22 +10,29 @@ namespace Nova.SearchAlgorithm.Controllers
     public class SearchRequestsController : ApiController
     {
         private readonly ISearchRequestService searchRequestService;
+        private readonly ISearchService searchService;
 
-        public SearchRequestsController(ISearchRequestService creationService)
+        public SearchRequestsController(ISearchRequestService creationService, ISearchService search)
         {
             searchRequestService = creationService;
+            searchService = search;
         }
 
         [HttpPost]
         [Route("search")]
-        public IHttpActionResult Search([FromBody] SearchRequestCreationModel searchRequestCreationModel)
+        public IHttpActionResult Search([FromBody] SearchRequest searchRequest)
         {
-            var id = searchRequestService.CreateSearchRequest(searchRequestCreationModel);
+            var id = searchRequestService.CreateSearchRequest(searchRequest);
+
+            var results = searchService.Search(searchRequest);
 
             var result = new SearchResultSet
             {
-                SearchRequestId = id,
-                SearchResults = new List<SearchResult>()
+                SearchResults = results.Select(match => new SearchResult
+                {
+                    SearchRequestId = id,
+                    DonorMatch = match
+                })
             };
 
             return Ok(result);

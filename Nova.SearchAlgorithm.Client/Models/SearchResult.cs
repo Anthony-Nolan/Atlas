@@ -2,23 +2,10 @@
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    public enum MatchGrades
-    {
-        Unknown,
-        ExactMatch,
-        PotentialMatch,
-        Mismatch,
-        MinorMismatch
-    }
-
+    // TODO:NOVA-924 define what a search result needs to include
     public class SearchResult
     {
         public int SearchRequestId { get; set; }
-        public MatchGrades MatchGrade { get; set; }
-        public string MatchType { get; set; }
-        public DateTime? SearchRunDate { get; set; }
-        public int OrderNumber { get; set; }
-        public int TotalScore { get; set; }
-        public Donor Donor { get; set; } = new Donor();
+        public DonorMatch DonorMatch { get; set; }
     }
 }

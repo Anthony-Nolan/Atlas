@@ -236,7 +236,10 @@
     <Compile Include="Repositories\SearchRequests\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestExtensions.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
+    <Compile Include="Repositories\SearchRequests\HlaRepository.cs" />
+    <Compile Include="Repositories\SearchRequests\DonorRepository.cs" />
     <Compile Include="Repositories\SearchRequests\SearchRequestRepository.cs" />
+    <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\SearchRequestService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

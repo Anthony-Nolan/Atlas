@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Client
 {
     public interface ISearchAlgorithmClient
     {
-        Task<SearchResultSet> Search(SearchRequestCreationModel searchRequestCreationModel);
+        Task<SearchResultSet> Search(SearchRequest searchRequestCreationModel);
     }
 
     public class SearchAlgorithmClient : ClientBase, ISearchAlgorithmClient
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Client
         {
         }
 
-        public async Task<SearchResultSet> Search(SearchRequestCreationModel searchRequestCreationModel)
+        public async Task<SearchResultSet> Search(SearchRequest searchRequestCreationModel)
         {
             //todo: NOVA-761 - decide what kind of object to return
             var request = GetRequest(HttpMethod.Post, "search", body: searchRequestCreationModel);
