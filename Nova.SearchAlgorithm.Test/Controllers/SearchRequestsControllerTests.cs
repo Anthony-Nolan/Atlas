@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         {
             GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequestCreationModel>()).Returns(1);
 
-            var response = await Server.CreateRequest("search-requests")
+            var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/searchrequestcreationmodel.json")).PostAsync();
 
             response.Should().HaveStatusCode(HttpStatusCode.OK);
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         {
             GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequestCreationModel>()).Returns(1);
 
-            var response = await Server.CreateRequest("search-requests")
+            var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/invalidsearchrequestcreationmodel.json")).PostAsync();
 
             response.Should().HaveStatusCode(HttpStatusCode.BadRequest);

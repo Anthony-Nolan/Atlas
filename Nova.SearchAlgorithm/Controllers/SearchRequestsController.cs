@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Nova.SearchAlgorithm.Client.Models;
@@ -16,12 +17,18 @@ namespace Nova.SearchAlgorithm.Controllers
         }
 
         [HttpPost]
-        [Route("search-requests")]
-        public IHttpActionResult CreateSearchRequest([FromBody] SearchRequestCreationModel searchRequestCreationModel)
+        [Route("search")]
+        public IHttpActionResult Search([FromBody] SearchRequestCreationModel searchRequestCreationModel)
         {
-            //todo: NOVA-761 - decide what kind of object to return
             var id = searchRequestService.CreateSearchRequest(searchRequestCreationModel);
-            return Ok(id);
+
+            var result = new SearchResultSet
+            {
+                SearchRequestId = id,
+                SearchResults = new List<SearchResult>()
+            };
+
+            return Ok(result);
         }
     }
 }

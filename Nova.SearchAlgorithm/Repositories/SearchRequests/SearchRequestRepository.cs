@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Repositories.SearchRequests
 {
     public interface ISearchRequestRepository
     {
-        int? CreateSearchRequest(SearchRequestCreationModel searchRequest);
+        int CreateSearchRequest(SearchRequestCreationModel searchRequest);
     }
 
     public class SearchRequestRepository : ISearchRequestRepository
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Repositories.SearchRequests
             this.mapper = mapper;
         }
 
-        public int? CreateSearchRequest(SearchRequestCreationModel searchRequest)
+        public int CreateSearchRequest(SearchRequestCreationModel searchRequest)
         {
             var operation = TableOperation.Insert(searchRequest.ToTableEntity(mapper));
             selectedSearchRequestTable.Execute(operation);

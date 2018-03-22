@@ -140,8 +140,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Donor.cs" />
     <Compile Include="Models\MatchCriteria.cs" />
     <Compile Include="Models\SearchRequestCreationModel.cs" />
+    <Compile Include="Models\SearchResult.cs" />
+    <Compile Include="Models\SearchResultSet.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

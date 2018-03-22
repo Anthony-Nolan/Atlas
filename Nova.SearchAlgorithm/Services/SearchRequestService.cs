@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.Services
 {
     public interface ISearchRequestService
     {
-        int? CreateSearchRequest(SearchRequestCreationModel searchRequest);
+        int CreateSearchRequest(SearchRequestCreationModel searchRequest);
     }
     public class SearchRequestService : ISearchRequestService
     {
@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Services
             repository = searchRequestRepository;
         }
 
-        public int? CreateSearchRequest(SearchRequestCreationModel searchRequest)
+        public int CreateSearchRequest(SearchRequestCreationModel searchRequest)
         {
             //todo: NOVA-761 - decide what kind of object to return
             var searchRequestId = repository.CreateSearchRequest(searchRequest);
