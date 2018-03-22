@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             var logger = new RequestAwareLogger(new TelemetryClient(),
                 ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
-            builder.RegisterInstance(logger).AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
         }
     }
 }
