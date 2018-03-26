@@ -3,7 +3,6 @@ using System.Reflection;
 using Autofac;
 using Autofac.Integration.WebApi;
 using Microsoft.ApplicationInsights;
-using Nova.SearchAlgorithm.Repositories.SearchRequests.AzureStorage;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Auth;
 using Nova.Utils.Solar;
@@ -24,13 +23,19 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .AsImplementedInterfaces();
 
             builder.RegisterType<Repositories.SearchRequests.SearchRequestRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Repositories.Donors.DonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Repositories.Hlas.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
-            builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            // TODO:NOVA-919 we only need one cloud table factory, these can be consolidated.
+            builder.RegisterType<Repositories.SearchRequests.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<Repositories.Hlas.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<Repositories.Donors.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
             var solarSettings = new SolarConnectionSettings
