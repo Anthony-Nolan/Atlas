@@ -232,12 +232,20 @@
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
+    <Compile Include="Models\MatchingHla.cs" />
+    <Compile Include="Models\Serology.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\SearchableDonor.cs" />
+    <Compile Include="Repositories\Hla\AzureStorage\CloudTableFactory.cs" />
+    <Compile Include="Repositories\Hla\AzureStorage\HlaTableEntity.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\CloudTableFactory.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
+    <Compile Include="Repositories\Donors\DonorRepository.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestExtensions.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
-    <Compile Include="Repositories\SearchRequests\HlaRepository.cs" />
-    <Compile Include="Repositories\SearchRequests\DonorRepository.cs" />
+    <Compile Include="Repositories\Hla\HlaRepository.cs" />
     <Compile Include="Repositories\SearchRequests\SearchRequestRepository.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\SearchRequestService.cs" />
@@ -259,9 +267,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
       <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>

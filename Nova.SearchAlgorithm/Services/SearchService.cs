@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories.SearchRequests;
+using Nova.SearchAlgorithm.Repositories.Donors;
+using Nova.SearchAlgorithm.Repositories.Hlas;
+
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -25,11 +27,11 @@ namespace Nova.SearchAlgorithm.Services
         public IEnumerable<DonorMatch> Search(SearchRequest searchRequest)
         {
             // TODO:NOVA-931 implement some basic matching logic
-            hlaRepository.RetrieveHlaMatches();
+            var hlaMatches = hlaRepository.RetrieveHlaMatches();
             var matchingDonors = donorRepository.MatchDonors(searchRequest.MatchCriteria);
             return matchingDonors.Select(d => new DonorMatch
             {
-                Donor = d,
+                Donor = d.ToApiDonor(),
                 MatchDescription = MatchDescription.A & MatchDescription.B & MatchDescription.C & MatchDescription.DQB1 & MatchDescription.DRB1
             });
         }
