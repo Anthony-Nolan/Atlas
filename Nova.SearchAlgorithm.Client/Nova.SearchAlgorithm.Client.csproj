@@ -141,6 +141,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\Donor.cs" />
+    <Compile Include="Models\LocusMismatchCriteria.cs" />
+    <Compile Include="Models\DonorMismatchCriteria.cs" />
     <Compile Include="Models\MatchCriteria.cs" />
     <Compile Include="Models\DonorMatch.cs" />
     <Compile Include="Models\SearchRequest.cs" />

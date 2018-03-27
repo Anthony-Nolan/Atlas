@@ -1,0 +1,38 @@
+﻿{
+  "SearchType": "Adult",
+  "MatchCriteria": {
+    "donorMismatchTier1": {
+      "totalMismatch": 0,
+      "antigenMismatch": 0
+    },
+    "donorMismatchTier2": {
+      "totalMismatch": 0,
+      "antigenMismatch": 0
+    },
+    "locusMismatchA": {
+      "searchHLA1": "01:FH",
+      "searchHLA2": "210",
+      "locus": "A",
+      "isAntigenLevel": false,
+      "totalMismatch": 0,
+      "antigenMismatch": 0
+    },
+    "locusMismatchB": {
+      "searchHLA1": "12",
+      "searchHLA2": "12",
+      "locus": "B",
+      "isAntigenLevel": false,
+      "totalMismatch": 0,
+      "antigenMismatch": 0
+    },
+    "locusMismatchDRB1": {
+      "searchHLA1": "01:KBVF",
+      "searchHLA2": "04:94:01N",
+      "locus": "DRB1",
+      "isAntigenLevel": false,
+      "totalMismatch": 0,
+      "antigenMismatch": 0
+    }
+  },
+  "registriesToSearch": [ "ANBMT", "NHSBT", "WBS", "DKMS" ]
+}

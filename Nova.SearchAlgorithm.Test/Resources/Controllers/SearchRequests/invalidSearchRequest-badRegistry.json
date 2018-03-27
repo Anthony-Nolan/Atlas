@@ -1,0 +1,6 @@
+﻿{
+  "SearchType": "Dischord",
+  "MatchCriteria": {
+  },
+  "RegistriesToSearch": [ "ANBMT", "NHSBT", "WBS", "DKMS" ]
+}
