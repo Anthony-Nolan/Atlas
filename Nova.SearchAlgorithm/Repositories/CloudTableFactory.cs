@@ -3,7 +3,7 @@ using System.Configuration;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
+namespace Nova.SearchAlgorithm.Repositories
 {
     public interface ICloudTableFactory
     {

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Repositories.Hlas.AzureStorage;
 using System.Collections.Generic;
 
 

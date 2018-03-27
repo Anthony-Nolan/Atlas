@@ -9,8 +9,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
     {
         internal static DonorTableEntity ToTableEntity(this SearchableDonor donor, IMapper mapper)
         {
-            // TODO: decide the partition and row key values - in the interm, using the search type and Random number, respectively
-            return new DonorTableEntity(donor.DonorId, new Random().Next().ToString())
+            return new DonorTableEntity(donor.RegistryCode, donor.DonorId)
             {
                 SerialisedDonor = JsonConvert.SerializeObject(mapper.Map<SearchableDonor>(donor)),
             };

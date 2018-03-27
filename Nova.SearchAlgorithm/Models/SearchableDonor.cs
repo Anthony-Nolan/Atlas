@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Models
     {
         public string DonorId { get; set; }
         public string DonorType { get; set; }
-        public string Registry { get; set; }
+        public string RegistryCode { get; set; }
 
 
         // TODO: NOVA-930 add fields for sorting such as birth date, gender, TNC final count.
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Models
             {
                 DonorId = DonorId,
                 DonorType = DonorType,
-                Registry = Registry
+                Registry = RegistryCode
             };
         }
     }

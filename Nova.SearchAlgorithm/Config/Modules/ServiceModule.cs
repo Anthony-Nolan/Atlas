@@ -32,10 +32,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
-            // TODO:NOVA-919 we only need one cloud table factory, these can be consolidated.
-            builder.RegisterType<Repositories.SearchRequests.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<Repositories.Hlas.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<Repositories.Donors.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<Repositories.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
             var solarSettings = new SolarConnectionSettings

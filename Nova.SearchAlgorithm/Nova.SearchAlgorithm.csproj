@@ -236,13 +236,11 @@
     <Compile Include="Models\Serology.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\SearchableDonor.cs" />
-    <Compile Include="Repositories\Hla\AzureStorage\CloudTableFactory.cs" />
+    <Compile Include="Repositories\CloudTableFactory.cs" />
     <Compile Include="Repositories\Hla\AzureStorage\HlaTableEntity.cs" />
-    <Compile Include="Repositories\Donors\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
     <Compile Include="Repositories\Donors\DonorRepository.cs" />
-    <Compile Include="Repositories\SearchRequests\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestExtensions.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
     <Compile Include="Repositories\Hla\HlaRepository.cs" />

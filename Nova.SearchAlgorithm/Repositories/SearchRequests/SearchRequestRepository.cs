@@ -2,7 +2,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.SearchRequests.AzureStorage;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Repositories.SearchRequests
 {

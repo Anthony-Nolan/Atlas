@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public string DonorId { get; set; }
         public string DonorType { get; set; }
-        public string Registry { get; set; }
+        public string RegistryCode { get; set; }
         // TODO:NOVA-919 Rename
         // TODO:NOVA-919 expand into concrete type with Locus, Value
         //
