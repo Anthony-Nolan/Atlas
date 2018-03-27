@@ -1,5 +1,5 @@
 ﻿{
   "SearchType": "Adult",
   "MatchCriteria": {},
-  "RegistriesToSearch":  ["some"] 
+  "RegistriesToSearch": [ "ANBMT", "NHSBT", "WBS" ]
 }
