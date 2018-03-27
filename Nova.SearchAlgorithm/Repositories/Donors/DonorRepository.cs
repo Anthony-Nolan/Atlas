@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public interface IDonorRepository
     {
-        IEnumerable<SearchableDonor> MatchDonors(MatchCriteria criteria);
+        IEnumerable<SearchableDonor> MatchDonors(SearchCriteria criteria);
     }
 
     public class DonorRepository : IDonorRepository
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             this.mapper = mapper;
         }
 
-        public IEnumerable<SearchableDonor> MatchDonors(MatchCriteria criteria)
+        public IEnumerable<SearchableDonor> MatchDonors(SearchCriteria criteria)
         {
             // TODO:NOVA-919 query database of donor data to get donors
             // TODO:NOVA-931 implement matching

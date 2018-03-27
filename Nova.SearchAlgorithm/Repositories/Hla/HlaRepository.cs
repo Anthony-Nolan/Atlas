@@ -8,8 +8,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hlas
 {
     public interface IHlaRepository
     {
-        // TODO:NOVA-931 input the allele or other HLA search data to match
-        IEnumerable<MatchingHla> RetrieveHlaMatches();
+        MatchingHla RetrieveHlaMatches(string locus, string name);
     }
 
     public class HlaRepository : IHlaRepository
@@ -24,12 +23,12 @@ namespace Nova.SearchAlgorithm.Repositories.Hlas
             this.mapper = mapper;
         }
 
-        public IEnumerable<MatchingHla> RetrieveHlaMatches()
+        public MatchingHla RetrieveHlaMatches(string locus, string name)
         {
             // TODO:NOVA-918 get data by querying an HLA matching database
-            yield return new MatchingHla {
-                Locus = "A",
-                Name = "01:01:01:01",
+            return new MatchingHla {
+                Locus = locus,
+                Name = name,
                 Type = "Allele",
                 IsDeleted = false,
                 MatchingProteinGroups = new List<string> { "01:01P" },
