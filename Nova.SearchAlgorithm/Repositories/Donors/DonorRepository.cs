@@ -12,6 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     public interface IDonorRepository
     {
         IEnumerable<SearchableDonor> MatchDonors(SearchCriteria criteria);
+        void InsertDonor(ImportDonor donor);
     }
 
     public class DonorRepository : IDonorRepository
@@ -34,6 +35,14 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             var query = new TableQuery<DonorTableEntity>();
 
             return donorTable.ExecuteQuery(query).Select(dte => dte.ToSearchableDonor(mapper));
+        }
+
+        public void InsertDonor(ImportDonor donor)
+        {
+            var operation = TableOperation.Insert(donor.ToTableEntity(mapper));
+            donorTable.Execute(operation);
+
+            // TODO:NOVA-929 if this method stays, sort out a return value
         }
     }
 }
