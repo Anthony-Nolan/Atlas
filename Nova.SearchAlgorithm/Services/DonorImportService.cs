@@ -33,23 +33,14 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = RegistryCode.ANBMT,
                 DonorType = "Adult",
                 DonorId = "1",
-                LocusA1 = new MatchingHla
+                LocusA = new MatchingHla
                 {
                     Locus = "A",
                     Name = "01:01:01:01",
                     Type = "Allele",
                     IsDeleted = false,
                     MatchingProteinGroups = new List<string> { "01:01P" },
-                    MatchingSerologies = new List<Serology> { new Serology { Name = "1", SubType = 0 } }
-                },
-                LocusA2 = new MatchingHla
-                {
-                    Locus = "A",
-                    Name = "01:01:01:01",
-                    Type = "Allele",
-                    IsDeleted = false,
-                    MatchingProteinGroups = new List<string> { "01:01P" },
-                    MatchingSerologies = new List<Serology> { new Serology { Name = "1", SubType = 0 } }
+                    MatchingSerologyNames = new List<string> { "1" }
                 }
             });
         }

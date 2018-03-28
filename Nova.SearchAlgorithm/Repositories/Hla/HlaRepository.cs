@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hlas
                 Type = "Allele",
                 IsDeleted = false,
                 MatchingProteinGroups = new List<string> { "01:01P" },
-                MatchingSerologies = new List<Serology> { new Serology { Name = "1", SubType = 0} }
+                MatchingSerologyNames = new List<string> { "1" }
             };
         }
     }

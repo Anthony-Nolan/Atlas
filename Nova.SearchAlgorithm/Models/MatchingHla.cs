@@ -12,6 +12,6 @@ namespace Nova.SearchAlgorithm.Models
         public string Type { get; set; }
         public bool IsDeleted { get; set; }
         public IEnumerable<string> MatchingProteinGroups { get; set; }
-        public IEnumerable<Serology> MatchingSerologies { get; set; }
+        public IEnumerable<string> MatchingSerologyNames { get; set; }
     }
 }

@@ -10,7 +10,6 @@ namespace Nova.SearchAlgorithm.Client.Models
         Nima = 3
     }
 
-    // TODO:NOVA-756 use the correct and full list of valid registry codes
     public enum RegistryCode
     {
         ANBMT = 1, // Anthony Nolan
