@@ -44,7 +44,6 @@ namespace Nova.SearchAlgorithm.Services
                 LocusA = new MatchingHla
                 {
                     Locus = "A",
-                    Name = "01:01:01:01",
                     Type = "Allele",
                     IsDeleted = false,
                     MatchingProteinGroups = new List<string> { "01:01P" },
@@ -69,8 +68,7 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = code,
                 DonorType = "Adult",
                 DonorId = donor.DonorId,
-                LocusA1 = hlaRepository.RetrieveHlaMatches("A", donor.A_1),
-                LocusA2 = hlaRepository.RetrieveHlaMatches("A", donor.A_2),
+                LocusA = hlaRepository.RetrieveHlaMatches("A", donor.A_1, donor.A_2)
             });
         }
 

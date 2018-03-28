@@ -27,13 +27,14 @@ namespace Nova.SearchAlgorithm.Services
 
         public IEnumerable<DonorMatch> Search(SearchRequest searchRequest)
         {
-            var hlaA1Matches = hlaRepository.RetrieveHlaMatches("A", searchRequest.MatchCriteria.LocusMismatchA.SearchHla1);
-            var hlaA2Matches = hlaRepository.RetrieveHlaMatches("A", searchRequest.MatchCriteria.LocusMismatchA.SearchHla2);
+            var hlaAMatches = hlaRepository.RetrieveHlaMatches(
+                "A",
+                searchRequest.MatchCriteria.LocusMismatchA.SearchHla1,
+                searchRequest.MatchCriteria.LocusMismatchA.SearchHla2);
 
             var searchCriteria = new SearchCriteria
             {
-                LocusA1 = hlaA1Matches,
-                LocusA2 = hlaA2Matches,
+                LocusA = hlaAMatches,
                 SearchType = searchRequest.SearchType,
                 Registries = searchRequest.RegistriesToSearch
             };
