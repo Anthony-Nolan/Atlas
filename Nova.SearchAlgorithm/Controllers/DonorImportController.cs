@@ -17,10 +17,26 @@ namespace Nova.SearchAlgorithm.Controllers
         }
 
         [HttpPost]
-        [Route("trigger-donor-import")]
-        public IHttpActionResult TriggerImport()
+        [Route("trigger-single-donor-import")]
+        public IHttpActionResult TriggerSingleImport()
         {
-            donorImportService.Import();
+            donorImportService.ImportSingleTestDonor();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("trigger-solar-donor-import")]
+        public IHttpActionResult TriggerSolarImport()
+        {
+            donorImportService.ImportTenSolarDonors();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("trigger-dummy-donor-import")]
+        public IHttpActionResult TriggerDummyImport()
+        {
+            donorImportService.ImportDummyData();
             return Ok();
         }
     }

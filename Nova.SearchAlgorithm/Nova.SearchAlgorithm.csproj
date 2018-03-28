@@ -235,6 +235,7 @@
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Models\ImportDonor.cs" />
     <Compile Include="Models\MatchingHla.cs" />
+    <Compile Include="Models\RawDonor.cs" />
     <Compile Include="Models\SearchCriteria.cs" />
     <Compile Include="Models\Serology.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -248,6 +249,7 @@
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
     <Compile Include="Repositories\Hla\HlaRepository.cs" />
     <Compile Include="Repositories\SearchRequests\SearchRequestRepository.cs" />
+    <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImportService.cs" />
     <Compile Include="Services\SearchRequestService.cs" />
@@ -261,6 +263,7 @@
     <None Include="Properties\PublishProfiles\DEV-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LIVE-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UAT-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
+    <EmbeddedResource Include="Resources\DonorPhenotypesSample.csv" />
     <None Include="Settings\SecureSettings.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
