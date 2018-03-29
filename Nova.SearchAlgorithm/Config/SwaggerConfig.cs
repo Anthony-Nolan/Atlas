@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Config
             config
                 .EnableSwagger("docs/{apiVersion}", c =>
                 {
-                    c.SingleApiVersion("v1", "Templates API V1");
+                    c.SingleApiVersion("v1", "Search Algorithm API V1");
                     c.IgnoreObsoleteActions();
                     c.IgnoreObsoleteProperties();
                     c.ApiKey("apiKey")
