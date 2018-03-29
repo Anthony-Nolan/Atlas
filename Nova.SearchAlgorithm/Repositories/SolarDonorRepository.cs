@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Repositories
             }
         }
 
-        public RawDonor RawDonorMap(dynamic result)
+        private RawDonor RawDonorMap(dynamic result)
         {
             return new RawDonor
             {
