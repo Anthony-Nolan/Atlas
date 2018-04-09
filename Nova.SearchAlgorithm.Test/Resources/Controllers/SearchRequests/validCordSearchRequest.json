@@ -1,35 +1,28 @@
 ﻿{
   "searchType": "Cord",
   "matchCriteria": {
-    "donorMismatchTier1": {
-      "totalMismatch": 2,
-      "antigenMismatch": 2,
-      "mixedCountCutoff": 4
-    },
+    "donorMismatchCountTier1": 0,
     "locusMismatchA": {
       "searchHLA1": "01:FH",
       "searchHLA2": "210",
       "locus": "A",
       "isAntigenLevel": true,
-      "totalMismatch": 2,
-      "antigenMismatch": 2
+      "mismatchCount": 2
     },
     "locusMismatchB": {
       "searchHLA1": "12",
       "searchHLA2": "12",
       "locus": "B",
       "isAntigenLevel": true,
-      "totalMismatch": 2,
-      "antigenMismatch": 2
+      "mismatchCount": 2
     },
     "locusMismatchDRB1": {
       "searchHLA1": "01:KBVF",
       "searchHLA2": "04:94:01N",
       "locus": "DRB1",
       "isAntigenLevel": false,
-      "totalMismatch": 2,
-      "antigenMismatch": 2
+      "mismatchCount": 2
     }
   },
-  "registriesToSearch": [ "ANBMT", "NHSBT" ]
+  "registriesToSearch": [ "AN", "NHSBT" ]
 }

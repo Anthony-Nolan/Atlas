@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Client.Test.Models
         public void ShouldHaveValidationErrorFor_MissingMatchCriteria()
         {
             var validator = new SearchRequestValidator();
-            validator.ShouldHaveValidationErrorFor(x => x.MatchCriteria, (MatchCriteria)null);
+            validator.ShouldHaveValidationErrorFor(x => x.MatchCriteria, (MismatchCriteria)null);
         }
 
         [Test]

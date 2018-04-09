@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             donorRepository.InsertDonor(new ImportDonor
             {
-                RegistryCode = RegistryCode.ANBMT,
+                RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
                 DonorId = "1",
                 MatchingHla = new FiveLociDetails<MatchingHla>

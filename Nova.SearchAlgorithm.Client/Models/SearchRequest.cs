@@ -12,17 +12,19 @@ namespace Nova.SearchAlgorithm.Client.Models
 
     public enum RegistryCode
     {
-        ANBMT = 1, // Anthony Nolan
+        AN = 1, // Anthony Nolan
         NHSBT = 2, // NHS Blood Transfusion
         WBS = 3, // Welsh Blood Service
-        DKMS = 4, // German Marrow Donor Program
+        DKMS = 4, // German Marrow Donor Program,
+        FRANCE = 5,
+        NMDP = 6
     }
 
     [FluentValidation.Attributes.Validator(typeof(SearchRequestValidator))]
     public class SearchRequest
     {
         public SearchType SearchType { get; set; }
-        public MatchCriteria MatchCriteria { get; set; }
+        public MismatchCriteria MatchCriteria { get; set; }
         public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
     }
 

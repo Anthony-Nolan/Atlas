@@ -3,28 +3,23 @@
     public class LocusMismatchCriteria
     {
         /// <summary>
-        /// String representation of the 1st search HLA type
+        /// String representation of the 1st search HLA type position at this locus.
         /// </summary>
         public string SearchHla1 { get; set; }
 
         /// <summary>
-        /// String representation of the 2nd search HLA type
+        /// String representation of the 2nd search HLA type position at this locus.
         /// </summary>
         public string SearchHla2 { get; set; }
 
         /// <summary>
-        /// Should matches at this locus be counted at antigen level?
+        /// Total number of mismatches permitted, either 0, 1 or 2.
+        /// </summary>
+        public int MismatchCount { get; set; }
+
+        /// <summary>
+        /// Dictates whether matches at this locus should be counted at antigen level.
         /// </summary>
         public bool IsAntigenLevel { get; set; }
-
-        /// <summary>
-        /// Total number of mismatches permitted
-        /// </summary>
-        public int TotalMismatch { get; set; }
-
-        /// <summary>
-        /// Number of antigen mismatches permitted
-        /// </summary>
-        public int AntigenMismatch { get; set; }
     }
 }

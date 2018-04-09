@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Services
     }
     static class MatchCriteriaExtensions
     {
-        public static FiveLociDetails<LocusMismatchCriteria> LocusCriteria(this MatchCriteria matchCriteria)
+        public static FiveLociDetails<LocusMismatchCriteria> LocusCriteria(this MismatchCriteria matchCriteria)
         {
             return new FiveLociDetails<LocusMismatchCriteria>
             {

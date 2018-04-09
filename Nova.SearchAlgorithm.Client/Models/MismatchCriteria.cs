@@ -2,17 +2,19 @@
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    public class MatchCriteria
+    public class MismatchCriteria
     {
         /// <summary>
-        /// Number of mismatches permitted per tier1 donor
+        /// Number of mismatches permitted per tier1 donor.
+        /// Required.
         /// </summary>
-        public DonorMismatchCriteria DonorMismatchTier1 { get; set; }
+        public int DonorMismatchCountTier1 { get; set; }
 
         /// <summary>
-        /// Number of mismatches permitted per tier2 donor
+        /// Number of mismatches permitted per tier2 donor.
+        /// Can be empty if only A,B,DRB1 search
         /// </summary>
-        public DonorMismatchCriteria DonorMismatchTier2 { get; set; }
+        public int? DonorMismatchCountTier2 { get; set; }
 
         /// <summary>
         /// Mismatch preferences for locus HLA-A
