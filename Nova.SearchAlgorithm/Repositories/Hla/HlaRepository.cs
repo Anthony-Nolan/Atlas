@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Models;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hlas
 {
     public interface IHlaRepository
     {
-        MatchingHla RetrieveHlaMatches(string locus, string name1, string name2);
+        MatchingHla RetrieveHlaMatches(string locusName, SingleLocusDetails<string> names);
     }
 
     public class HlaRepository : IHlaRepository
@@ -23,11 +24,11 @@ namespace Nova.SearchAlgorithm.Repositories.Hlas
             this.mapper = mapper;
         }
 
-        public MatchingHla RetrieveHlaMatches(string locus, string name1, string name2)
+        public MatchingHla RetrieveHlaMatches(string locusName, SingleLocusDetails<string> names)
         {
             // TODO:NOVA-918 get data by querying an HLA matching database
             return new MatchingHla {
-                Locus = locus,
+                Locus = locusName,
                 Type = "Allele",
                 IsDeleted = false,
                 MatchingProteinGroups = new List<string> { "01:01P" },

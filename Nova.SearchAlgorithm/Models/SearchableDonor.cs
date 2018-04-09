@@ -16,9 +16,9 @@ namespace Nova.SearchAlgorithm.Models
 
         // TODO: NOVA-930 add fields for sorting such as birth date, gender, TNC final count.
 
-        public Donor ToApiDonor()
+        public DonorMatch ToApiDonorMatch()
         {
-            return new Donor
+            return new DonorMatch
             {
                 DonorId = DonorId,
                 DonorType = DonorType,

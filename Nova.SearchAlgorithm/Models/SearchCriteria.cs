@@ -7,7 +7,6 @@ namespace Nova.SearchAlgorithm.Models
     {
         public SearchType SearchType { get; set; }
         public IEnumerable<RegistryCode> Registries { get; set; }
-
-        public MatchingHla LocusA {get; set;}
+        public FiveLociDetails<MatchingHla> LocusMatchCriteria {get; set;}
     }
 }

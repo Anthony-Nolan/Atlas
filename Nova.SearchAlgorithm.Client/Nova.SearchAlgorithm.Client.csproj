@@ -140,14 +140,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Donor.cs" />
+    <Compile Include="Models\DonorLocusMatchDetails.cs" />
+    <Compile Include="Models\DonorMatch.cs" />
+    <Compile Include="Models\FiveLociDetails.cs" />
     <Compile Include="Models\LocusMismatchCriteria.cs" />
     <Compile Include="Models\DonorMismatchCriteria.cs" />
     <Compile Include="Models\MatchCriteria.cs" />
-    <Compile Include="Models\DonorMatch.cs" />
     <Compile Include="Models\SearchRequest.cs" />
     <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Models\SearchResultSet.cs" />
+    <Compile Include="Models\SingleLocusDetails.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

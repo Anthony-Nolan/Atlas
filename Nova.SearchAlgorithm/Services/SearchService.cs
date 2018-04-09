@@ -13,6 +13,29 @@ namespace Nova.SearchAlgorithm.Services
     {
         IEnumerable<DonorMatch> Search(SearchRequest searchRequest);
     }
+    static class MatchCriteriaExtensions
+    {
+        public static FiveLociDetails<LocusMismatchCriteria> LocusCriteria(this MatchCriteria matchCriteria)
+        {
+            return new FiveLociDetails<LocusMismatchCriteria>
+            {
+                A = matchCriteria.LocusMismatchA,
+                B = matchCriteria.LocusMismatchB,
+                C = matchCriteria.LocusMismatchC,
+                DQB1 = matchCriteria.LocusMismatchDQB1,
+                DRB1 = matchCriteria.LocusMismatchDRB1
+            };
+        }
+
+        public static SingleLocusDetails<string> SearchHla(this LocusMismatchCriteria locusCriteria)
+        {
+            return new SingleLocusDetails<string>
+            {
+                One = locusCriteria.SearchHla1,
+                Two = locusCriteria.SearchHla2
+            };
+        }
+    }
 
     public class SearchService : ISearchService
     {
@@ -27,24 +50,15 @@ namespace Nova.SearchAlgorithm.Services
 
         public IEnumerable<DonorMatch> Search(SearchRequest searchRequest)
         {
-            var hlaAMatches = hlaRepository.RetrieveHlaMatches(
-                "A",
-                searchRequest.MatchCriteria.LocusMismatchA.SearchHla1,
-                searchRequest.MatchCriteria.LocusMismatchA.SearchHla2);
-
             var searchCriteria = new SearchCriteria
             {
-                LocusA = hlaAMatches,
+                LocusMatchCriteria = searchRequest.MatchCriteria.LocusCriteria().Map((string a, LocusMismatchCriteria b) => hlaRepository.RetrieveHlaMatches(a, b.SearchHla())),
                 SearchType = searchRequest.SearchType,
                 Registries = searchRequest.RegistriesToSearch
             };
 
             var matchingDonors = donorRepository.MatchDonors(searchCriteria);
-            return matchingDonors.Select(d => new DonorMatch
-            {
-                Donor = d.ToApiDonor(),
-                MatchDescription = MatchDescription.A & MatchDescription.B & MatchDescription.C & MatchDescription.DQB1 & MatchDescription.DRB1
-            });
+            return matchingDonors.Select(d => d.ToApiDonorMatch());
         }
     }
 }

@@ -41,13 +41,16 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = RegistryCode.ANBMT,
                 DonorType = "Adult",
                 DonorId = "1",
-                LocusA = new MatchingHla
+                MatchingHla = new FiveLociDetails<MatchingHla>
                 {
-                    Locus = "A",
-                    Type = "Allele",
-                    IsDeleted = false,
-                    MatchingProteinGroups = new List<string> { "01:01P" },
-                    MatchingSerologyNames = new List<string> { "1" }
+                    A = new MatchingHla
+                    {
+                        Locus = "A",
+                        Type = "Allele",
+                        IsDeleted = false,
+                        MatchingProteinGroups = new List<string> { "01:01P" },
+                        MatchingSerologyNames = new List<string> { "1" }
+                    }
                 }
             });
         }
@@ -68,7 +71,7 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = code,
                 DonorType = "Adult",
                 DonorId = donor.DonorId,
-                LocusA = hlaRepository.RetrieveHlaMatches("A", donor.A_1, donor.A_2)
+                MatchingHla = donor.HlaNames.Map(hlaRepository.RetrieveHlaMatches)
             });
         }
 
@@ -95,16 +98,34 @@ namespace Nova.SearchAlgorithm.Services
                     DonorId = i.ToString(),
                     DonorType = a[1],
                     RegistryCode = a[0],
-                    A_1 = a[2],
-                    A_2 = a[3],
-                    B_1 = a[4],
-                    B_2 = a[5],
-                    C_1 = a[6],
-                    C_2 = a[7],
-                    DQB1_1 = a[8],
-                    DQB1_2 = a[9],
-                    DRB1_1 = a[10],
-                    DRB1_2 = a[11],
+                    HlaNames = new FiveLociDetails<SingleLocusDetails<string>>
+                    {
+                        A = new SingleLocusDetails<string>
+                        {
+                            One = a[2],
+                            Two = a[3]
+                        },
+                        B = new SingleLocusDetails<string>
+                        {
+                            One = a[4],
+                            Two = a[5]
+                        },
+                        C = new SingleLocusDetails<string>
+                        {
+                            One = a[6],
+                            Two = a[7]
+                        },
+                        DQB1 = new SingleLocusDetails<string>
+                        {
+                            One = a[8],
+                            Two = a[9]
+                        },
+                        DRB1 = new SingleLocusDetails<string>
+                        {
+                            One = a[10],
+                            Two = a[11]
+                        }
+                    }
                 });
 
             // TODO:NOVA-919 batch import
