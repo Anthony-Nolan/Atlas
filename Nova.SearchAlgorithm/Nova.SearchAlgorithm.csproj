@@ -232,6 +232,7 @@
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
+    <Compile Include="Controllers\HlaMatchesController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Models\ImportDonor.cs" />
     <Compile Include="Models\MatchingHla.cs" />
@@ -245,6 +246,7 @@
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
     <Compile Include="Repositories\Donors\DonorRepository.cs" />
+    <Compile Include="Repositories\Hla\RawMatchingHla.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestExtensions.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
     <Compile Include="Repositories\Hla\HlaRepository.cs" />
@@ -264,6 +266,7 @@
     <None Include="Properties\PublishProfiles\LIVE-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UAT-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <EmbeddedResource Include="Resources\DonorPhenotypesSample.csv" />
+    <EmbeddedResource Include="Resources\matching_hla.json" />
     <None Include="Settings\SecureSettings.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

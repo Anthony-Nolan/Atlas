@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Repositories.Hlas;
+using Nova.SearchAlgorithm.Repositories.Hla;
 
 
 namespace Nova.SearchAlgorithm.Services

@@ -1,7 +1,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Repositories.Hlas.AzureStorage
+namespace Nova.SearchAlgorithm.Repositories.Hla.AzureStorage
 {
     public class HlaTableEntity : TableEntity
     {
