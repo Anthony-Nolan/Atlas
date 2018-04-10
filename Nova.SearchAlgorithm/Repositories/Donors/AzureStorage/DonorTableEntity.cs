@@ -16,8 +16,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         //
         // This field will store both serologies and pgroups, to simplify querying by match.
         // TODO:NOVA-919 consider splitting into two tables/fields
-        public MatchingHla LocusA1 { get; set; }
-        public MatchingHla LocusA2 { get; set; }
+        public FiveLociDetails<SingleLocusDetails<MatchingHla>> MatchingHla { get; set; }
 
         public DonorTableEntity() { }
 

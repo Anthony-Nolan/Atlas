@@ -4,7 +4,7 @@ namespace Nova.SearchAlgorithm.Models
 {
     public class RawDonor
     {
-        public string DonorId { get; set; }
+        public int DonorId { get; set; }
 
         // This might not match our own idea of registry codes, e.g. "AN" vs "ANBMT"
         public string RegistryCode { get; set; }

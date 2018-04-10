@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
-                DonorId = "1",
+                DonorId = 1,
                 MatchingHla = new FiveLociDetails<SingleLocusDetails<MatchingHla>>
                 {
                     A = new SingleLocusDetails<MatchingHla>
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Services
                 .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray<string>())
                 .Select((a, i) => new RawDonor
                 {
-                    DonorId = i.ToString(),
+                    DonorId = i,
                     DonorType = a[1],
                     RegistryCode = a[0],
                     HlaNames = new FiveLociDetails<SingleLocusDetails<string>>

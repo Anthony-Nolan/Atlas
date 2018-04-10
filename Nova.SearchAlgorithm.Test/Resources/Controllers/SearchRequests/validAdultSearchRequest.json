@@ -4,7 +4,7 @@
     "donorMismatchCountTier1": 0,
     "donorMismatchCountTier2": 0,
     "locusMismatchA": {
-      "searchHLA1": "01:FH",
+      "searchHLA1": "80:01:01:02",
       "searchHLA2": "210",
       "locus": "A",
       "isAntigenLevel": false,
@@ -18,7 +18,7 @@
       "mismatchCount": 0
     },
     "locusMismatchDRB1": {
-      "searchHLA1": "01:KBVF",
+      "searchHLA1": "13:01:05",
       "searchHLA2": "04:94:01N",
       "locus": "DRB1",
       "isAntigenLevel": false,

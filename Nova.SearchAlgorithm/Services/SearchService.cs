@@ -50,10 +50,9 @@ namespace Nova.SearchAlgorithm.Services
 
         public IEnumerable<DonorMatch> Search(SearchRequest searchRequest)
         {
-
             var searchCriteria = new SearchCriteria
             {
-                LocusMatchCriteria = searchRequest.MatchCriteria.LocusCriteria().Map((string a, LocusMismatchCriteria b) => hlaRepository.RetrieveHlaMatches(a, b.SearchHla())),
+                LocusMatchCriteria = searchRequest.MatchCriteria.LocusCriteria().Map((string a, LocusMismatchCriteria b) => b == null ? null : hlaRepository.RetrieveHlaMatches(a, b.SearchHla())),
                 SearchType = searchRequest.SearchType,
                 Registries = searchRequest.RegistriesToSearch
             };

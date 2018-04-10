@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
+    // TODO:NOVA-929 rename to 'phenotype' or similar?
+    // TODO:NOVA-929 should this be combined with SingleLocusDetail
     /// <summary>
     /// Data type to hold one instance of T for each of the five HLA loci.
     /// </summary>
@@ -28,6 +30,15 @@ namespace Nova.SearchAlgorithm.Client.Models
                 DQB1 = mapping("DQB1", DQB1),
                 DRB1 = mapping("DRB1", DRB1),
             };
+        }
+
+        public void Each(Action<string, T> action)
+        {
+            action("A", A);
+            action("B", B);
+            action("C", C);
+            action("DQB1", DQB1);
+            action("DRB1", DRB1);
         }
     }
 }
