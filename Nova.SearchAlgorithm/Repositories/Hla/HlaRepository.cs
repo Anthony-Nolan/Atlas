@@ -47,6 +47,11 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
         {
             var raw = rawMatchingData.FirstOrDefault(hla => hla.Locus == locusName && hla.Name == hlaName);
 
+            if (raw == null)
+            {
+                return null;
+            }
+
             return new MatchingHla {
                 Name = raw.Name,
                 Locus = raw.Locus,
