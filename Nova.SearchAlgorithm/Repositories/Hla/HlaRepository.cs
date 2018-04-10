@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Client.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +11,8 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
 {
     public interface IHlaRepository
     {
-        MatchingHla RetrieveHlaMatches(string locusName, SingleLocusDetails<string> names);
+        MatchingHla RetrieveHlaMatches(string locusName, string hlaName);
+        SingleLocusDetails<MatchingHla> RetrieveHlaMatches(string locusName, SingleLocusDetails<string> locusHla);
     }
 
     public class HlaRepository : IHlaRepository
@@ -20,8 +21,8 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
         private readonly CloudTable selectedHlaTable;
         private readonly IMapper mapper;
 
-        // TODO:NOVA-918 this is a temporary in-memory fix.
-        // We should get data by querying an HLA matching database, which can be regenerated as necessary.
+        // TODO:NOVA-928 this is a temporary in-memory solution based on a static file.
+        // We will need to be able to regenerate the dictionary when needed, whether it remains as a file or moves into a DB.
         private readonly IEnumerable<RawMatchingHla> rawMatchingData = ReadJsonFromFile();
 
         private static IEnumerable<RawMatchingHla> ReadJsonFromFile()
@@ -42,16 +43,26 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             this.mapper = mapper;
         }
 
-        // TODO:NOVA-918 does the dictonary match both type positions at once or only one?
-        public MatchingHla RetrieveHlaMatches(string locusName, SingleLocusDetails<string> names)
+        public MatchingHla RetrieveHlaMatches(string locusName, string hlaName)
         {
-            var raw1 = rawMatchingData.FirstOrDefault(hla => hla.Locus == locusName && hla.Name == names.One);
-            var raw2 = rawMatchingData.FirstOrDefault(hla => hla.Locus == locusName && hla.Name == names.Two);
+            var raw = rawMatchingData.FirstOrDefault(hla => hla.Locus == locusName && hla.Name == hlaName);
 
             return new MatchingHla {
-                Locus = locusName,
-                MatchingProteinGroups = raw1.MatchingPGroups.Union(raw2.MatchingPGroups),
-                MatchingSerologyNames = raw1.MatchingSerology.Select(s => s.Name).Union(raw2.MatchingSerology.Select(s => s.Name))
+                Name = raw.Name,
+                Locus = raw.Locus,
+                IsDeleted = raw.IsDeleted,
+                Type = raw.Type,
+                MatchingProteinGroups = raw.MatchingPGroups,
+                MatchingSerologyNames = raw.MatchingSerology.Select(s => s.Name)
+            };
+        }
+
+        public SingleLocusDetails<MatchingHla> RetrieveHlaMatches(string locusName, SingleLocusDetails<string> locusHla)
+        {
+            return new SingleLocusDetails<MatchingHla>
+            {
+                One = RetrieveHlaMatches(locusName, locusHla.One),
+                Two = RetrieveHlaMatches(locusName, locusHla.Two)
             };
         }
     }

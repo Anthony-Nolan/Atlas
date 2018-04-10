@@ -7,6 +7,7 @@ namespace Nova.SearchAlgorithm.Models
 {
     public class MatchingHla
     {
+        public string Name { get; set; }
         public string Locus { get; set; }
         public string Type { get; set; }
         public bool IsDeleted { get; set; }

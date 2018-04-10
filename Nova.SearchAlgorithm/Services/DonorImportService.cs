@@ -41,15 +41,26 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
                 DonorId = "1",
-                MatchingHla = new FiveLociDetails<MatchingHla>
+                MatchingHla = new FiveLociDetails<SingleLocusDetails<MatchingHla>>
                 {
-                    A = new MatchingHla
+                    A = new SingleLocusDetails<MatchingHla>
                     {
-                        Locus = "A",
-                        Type = "Allele",
-                        IsDeleted = false,
-                        MatchingProteinGroups = new List<string> { "01:01P" },
-                        MatchingSerologyNames = new List<string> { "1" }
+                        One = new MatchingHla
+                        {
+                            Locus = "A",
+                            Type = "Allele",
+                            IsDeleted = false,
+                            MatchingProteinGroups = new List<string> { "01:01P" },
+                            MatchingSerologyNames = new List<string> { "1" }
+                        },
+                        Two = new MatchingHla
+                        {
+                            Locus = "A",
+                            Type = "Allele",
+                            IsDeleted = false,
+                            MatchingProteinGroups = new List<string> { "01:01P" },
+                            MatchingSerologyNames = new List<string> { "1" }
+                        }
                     }
                 }
             });

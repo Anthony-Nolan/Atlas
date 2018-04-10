@@ -23,13 +23,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("match")]
-        public IHttpActionResult Search(string locusName, string typePositionOneName, string typePositionTwoName)
+        public IHttpActionResult Search(string locusName, string hlaName)
         {
-            var result = hlaRepository.RetrieveHlaMatches(locusName, new SingleLocusDetails<string>
-            {
-                One = typePositionOneName,
-                Two = typePositionTwoName
-            });
+            var result = hlaRepository.RetrieveHlaMatches(locusName, hlaName);
 
             return Ok(result);
         }
