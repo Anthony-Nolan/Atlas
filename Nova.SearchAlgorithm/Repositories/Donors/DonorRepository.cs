@@ -11,8 +11,30 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public interface IDonorRepository
     {
-        IEnumerable<SearchableDonor> MatchDonors(SearchCriteria criteria);
+        SearchableDonor GetDonor(int donorId);
+        IEnumerable<HlaMatchTableEntity> MatchDonors(SearchCriteria criteria);
         void InsertDonor(ImportDonor donor);
+    }
+
+    static class TableQueryExtensions
+    {
+        public static TableQuery<TElement> AndWhere<TElement>(this TableQuery<TElement> @this, string filter)
+        {
+            @this.FilterString = TableQuery.CombineFilters(@this.FilterString, TableOperators.And, filter);
+            return @this;
+        }
+
+        public static TableQuery<TElement> OrWhere<TElement>(this TableQuery<TElement> @this, string filter)
+        {
+            @this.FilterString = @this.FilterString == null ? filter : TableQuery.CombineFilters(@this.FilterString, TableOperators.Or, filter);
+            return @this;
+        }
+
+        public static TableQuery<TElement> NotWhere<TElement>(this TableQuery<TElement> @this, string filter)
+        {
+            @this.FilterString = TableQuery.CombineFilters(@this.FilterString, TableOperators.Not, filter);
+            return @this;
+        }
     }
 
     public class DonorRepository : IDonorRepository
@@ -26,13 +48,27 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             donorTable = cloudTableFactory.GetTable(TableReference);
             this.mapper = mapper;
         }
-
-        public IEnumerable<SearchableDonor> MatchDonors(SearchCriteria criteria)
+        
+        public IEnumerable<HlaMatchTableEntity> MatchDonors(SearchCriteria criteria)
         {
-            // TODO:NOVA-931 implement matching
-            var donorQuery = new TableQuery<DonorTableEntity>();
+            // TODO:NOVA-931 extend to other loci
+            IEnumerable<string> hlaNamesToMatchInLocusA = criteria.LocusMatchCriteria.A_1.MatchingProteinGroups
+                .Union(criteria.LocusMatchCriteria.A_1.MatchingSerologyNames)
+                .Union(criteria.LocusMatchCriteria.A_2.MatchingProteinGroups)
+                .Union(criteria.LocusMatchCriteria.A_2.MatchingSerologyNames);
+            var matchesQuery = new TableQuery<HlaMatchTableEntity>();
+            foreach (string name in hlaNamesToMatchInLocusA)
+            {
+                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, HlaMatchTableEntity.GeneratePartitionKey("A", name)));
+            }
 
-            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToSearchableDonor(mapper));
+            return donorTable.ExecuteQuery(matchesQuery);
+        }
+
+        public SearchableDonor GetDonor(int donorId)
+        {
+            var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
+            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToSearchableDonor(mapper)).FirstOrDefault();
         }
 
         public void InsertDonor(ImportDonor donor)
@@ -48,7 +84,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         public void UpdateDonorWithNewHla(ImportDonor donor)
         {
             // TODO:NOVA-929 implment for the (daily?) donor update process
-            // It should include removing any HlaMatchTableEntities which no longer apply
+            // It should include removing any HlaMatchTableEntities which no longer apply, by searching for them by donor_id (row key)
         }
 
         private void InsertLocusMatch(string locusName, int typePosition, MatchingHla matchingHla, int donorId)

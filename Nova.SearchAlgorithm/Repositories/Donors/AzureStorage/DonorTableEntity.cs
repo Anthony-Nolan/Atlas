@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
     {
         public string SerialisedDonor { get; set; }
 
-        public string DonorId { get; set; }
+        public int DonorId { get; set; }
         public string DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
         // TODO:NOVA-919 Rename

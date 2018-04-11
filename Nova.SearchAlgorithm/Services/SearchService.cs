@@ -53,8 +53,8 @@ namespace Nova.SearchAlgorithm.Services
                 Registries = searchRequest.RegistriesToSearch
             };
 
-            var matchingDonors = donorRepository.MatchDonors(searchCriteria);
-            return matchingDonors.Select(d => d.ToApiDonorMatch());
+            var matches = donorRepository.MatchDonors(searchCriteria);
+            return matches.GroupBy(m => m.DonorId).Select(group => donorRepository.GetDonor(group.Key)).Select(d => d.ToApiDonorMatch());
         }
     }
 }
