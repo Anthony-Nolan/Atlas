@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public HlaMatchTableEntity(string partitionKey, string rowKey) : base(partitionKey, rowKey) {}
 
-        public HlaMatchTableEntity(string locus, int typePosition, string matchName, int donorId) : base(GeneratePartitionKey(locus, typePosition, matchName), donorId.ToString())
+        public HlaMatchTableEntity(string locus, int typePosition, string matchName, int donorId) : base(GeneratePartitionKey(locus, matchName), donorId.ToString())
         {
             Locus = locus;
             TypePosition = typePosition;
@@ -28,9 +28,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             DonorId = donorId;
         }
 
-        public static string GeneratePartitionKey(string locus, int typePosition, string matchName)
+        public static string GeneratePartitionKey(string locus, string matchName)
         {
-            return string.Format("{0}_{1}-{2}", locus, typePosition, matchName);
+            return string.Format("{0}_{1}", locus, matchName);
         }
     }
 }
