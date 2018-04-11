@@ -5,21 +5,18 @@
     "locusMismatchA": {
       "searchHLA1": "01:FH",
       "searchHLA2": "210",
-      "locus": "A",
       "isAntigenLevel": true,
       "mismatchCount": 2
     },
     "locusMismatchB": {
       "searchHLA1": "12",
       "searchHLA2": "12",
-      "locus": "B",
       "isAntigenLevel": true,
       "mismatchCount": 2
     },
     "locusMismatchDRB1": {
       "searchHLA1": "01:KBVF",
       "searchHLA2": "04:94:01N",
-      "locus": "DRB1",
       "isAntigenLevel": false,
       "mismatchCount": 2
     }
