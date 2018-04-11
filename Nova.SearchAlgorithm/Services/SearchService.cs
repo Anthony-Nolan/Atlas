@@ -15,24 +15,20 @@ namespace Nova.SearchAlgorithm.Services
     }
     static class MatchCriteriaExtensions
     {
-        public static FiveLociDetails<LocusMismatchCriteria> LocusCriteria(this MismatchCriteria matchCriteria)
+        public static PhenotypeInfo<string> LocusCriteria(this MismatchCriteria matchCriteria)
         {
-            return new FiveLociDetails<LocusMismatchCriteria>
+            return new PhenotypeInfo<string>
             {
-                A = matchCriteria.LocusMismatchA,
-                B = matchCriteria.LocusMismatchB,
-                C = matchCriteria.LocusMismatchC,
-                DQB1 = matchCriteria.LocusMismatchDQB1,
-                DRB1 = matchCriteria.LocusMismatchDRB1
-            };
-        }
-
-        public static SingleLocusDetails<string> SearchHla(this LocusMismatchCriteria locusCriteria)
-        {
-            return new SingleLocusDetails<string>
-            {
-                One = locusCriteria.SearchHla1,
-                Two = locusCriteria.SearchHla2
+                A_1 = matchCriteria.LocusMismatchA?.SearchHla1,
+                A_2 = matchCriteria.LocusMismatchA?.SearchHla2,
+                B_1 = matchCriteria.LocusMismatchB?.SearchHla1,
+                B_2 = matchCriteria.LocusMismatchB?.SearchHla2,
+                C_1 = matchCriteria.LocusMismatchC?.SearchHla1,
+                C_2 = matchCriteria.LocusMismatchC?.SearchHla2,
+                DQB1_1 = matchCriteria.LocusMismatchDQB1?.SearchHla1,
+                DQB1_2 = matchCriteria.LocusMismatchDQB1?.SearchHla2,
+                DRB1_1 = matchCriteria.LocusMismatchDRB1?.SearchHla1,
+                DRB1_2 = matchCriteria.LocusMismatchDRB1?.SearchHla2
             };
         }
     }
@@ -52,7 +48,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             var searchCriteria = new SearchCriteria
             {
-                LocusMatchCriteria = searchRequest.MatchCriteria.LocusCriteria().Map((string a, LocusMismatchCriteria b) => b == null ? null : hlaRepository.RetrieveHlaMatches(a, b.SearchHla())),
+                LocusMatchCriteria = searchRequest.MatchCriteria.LocusCriteria().Map((string locus, int position, string name) => hlaRepository.RetrieveHlaMatches(locus, name)),
                 SearchType = searchRequest.SearchType,
                 Registries = searchRequest.RegistriesToSearch
             };

@@ -74,33 +74,18 @@ namespace Nova.SearchAlgorithm.Repositories
                 DonorId = result.DONOR_ID.ToString(),
                 RegistryCode = result.DONOR_TYPE,
                 DonorType = "A",
-                HlaNames = new FiveLociDetails<SingleLocusDetails<string>>
+                HlaNames = new PhenotypeInfo<string>
                 {
-                    A = new SingleLocusDetails<string>
-                    {
-                        One = result.A_1_HLA_NAME,
-                        Two = result.A_2_HLA_NAME
-                    },
-                    B = new SingleLocusDetails<string>
-                    {
-                        One = result.B_1_HLA_NAME,
-                        Two = result.B_2_HLA_NAME
-                    },
-                    C = new SingleLocusDetails<string>
-                    {
-                        One = result.C_1_HLA_NAME,
-                        Two = result.C_2_HLA_NAME
-                    },
-                    DQB1 = new SingleLocusDetails<string>
-                    {
-                        One = result.DQB1_1_HLA_NAME,
-                        Two = result.DQB1_2_HLA_NAME
-                    },
-                    DRB1 = new SingleLocusDetails<string>
-                    {
-                        One = result.DRB1_1_HLA_NAME,
-                        Two = result.DRB1_2_HLA_NAME
-                    },
+                    A_1 = result.A_1_HLA_NAME,
+                    A_2 = result.A_2_HLA_NAME,
+                    B_1 = result.B_1_HLA_NAME,
+                    B_2 = result.B_2_HLA_NAME,
+                    C_1 = result.C_1_HLA_NAME,
+                    C_2 = result.C_2_HLA_NAME,
+                    DQB1_1 = result.DQB1_1_HLA_NAME,
+                    DQB1_2 = result.DQB1_2_HLA_NAME,
+                    DRB1_1 = result.DRB1_1_HLA_NAME,
+                    DRB1_2 = result.DRB1_2_HLA_NAME
                 }
             };
         }

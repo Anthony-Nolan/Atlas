@@ -14,9 +14,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         // TODO:NOVA-919 Rename
         // TODO:NOVA-919 expand into concrete type with Locus, Value
         //
-        // This field will store both serologies and pgroups, to simplify querying by match.
+        // This field will potentially store both serologies and pgroups, to simplify querying by match.
         // TODO:NOVA-919 consider splitting into two tables/fields
-        public FiveLociDetails<SingleLocusDetails<MatchingHla>> MatchingHla { get; set; }
+        public PhenotypeInfo<MatchingHla> MatchingHla { get; set; }
 
         public DonorTableEntity() { }
 

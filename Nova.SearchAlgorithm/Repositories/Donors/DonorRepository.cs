@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             var insertDonor = TableOperation.Insert(donor.ToTableEntity(mapper));
             donorTable.Execute(insertDonor);
 
-            donor.MatchingHla.Each((locusName, matchingHla) => InsertLocusMatch(locusName, matchingHla, donor.DonorId));
+            donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
 
             // TODO:NOVA-929 if this method stays, sort out a return value
         }
@@ -51,13 +51,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             // It should include removing any HlaMatchTableEntities which no longer apply
         }
 
-        private void InsertLocusMatch(string locusName, SingleLocusDetails<MatchingHla> matchingHla, int donorId)
-        {
-            InsertMatchesForSingleTypePosition(locusName, 1, matchingHla.One, donorId);
-            InsertMatchesForSingleTypePosition(locusName, 2, matchingHla.Two, donorId);
-        }
-
-        private void InsertMatchesForSingleTypePosition(string locusName, int typePosition, MatchingHla matchingHla, int donorId)
+        private void InsertLocusMatch(string locusName, int typePosition, MatchingHla matchingHla, int donorId)
         {
             foreach (string matchName in matchingHla.MatchingProteinGroups.Union(matchingHla.MatchingSerologyNames))
             {

@@ -41,26 +41,23 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
                 DonorId = 1,
-                MatchingHla = new FiveLociDetails<SingleLocusDetails<MatchingHla>>
+                MatchingHla = new PhenotypeInfo<MatchingHla>
                 {
-                    A = new SingleLocusDetails<MatchingHla>
+                    A_1 = new MatchingHla
                     {
-                        One = new MatchingHla
-                        {
-                            Locus = "A",
-                            Type = "Allele",
-                            IsDeleted = false,
-                            MatchingProteinGroups = new List<string> { "01:01P" },
-                            MatchingSerologyNames = new List<string> { "1" }
-                        },
-                        Two = new MatchingHla
-                        {
-                            Locus = "A",
-                            Type = "Allele",
-                            IsDeleted = false,
-                            MatchingProteinGroups = new List<string> { "01:01P" },
-                            MatchingSerologyNames = new List<string> { "1" }
-                        }
+                        Locus = "A",
+                        Type = "Allele",
+                        IsDeleted = false,
+                        MatchingProteinGroups = new List<string> { "01:01P" },
+                        MatchingSerologyNames = new List<string> { "1" }
+                    },
+                    A_2 = new MatchingHla
+                    {
+                        Locus = "A",
+                        Type = "Allele",
+                        IsDeleted = false,
+                        MatchingProteinGroups = new List<string> { "01:01P" },
+                        MatchingSerologyNames = new List<string> { "1" }
                     }
                 }
             });
@@ -82,7 +79,7 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = code,
                 DonorType = "Adult",
                 DonorId = donor.DonorId,
-                MatchingHla = donor.HlaNames.Map(hlaRepository.RetrieveHlaMatches)
+                MatchingHla = donor.HlaNames.Map((locus, position, hla) => hlaRepository.RetrieveHlaMatches(locus, hla))
             });
         }
 
@@ -109,33 +106,18 @@ namespace Nova.SearchAlgorithm.Services
                     DonorId = i,
                     DonorType = a[1],
                     RegistryCode = a[0],
-                    HlaNames = new FiveLociDetails<SingleLocusDetails<string>>
+                    HlaNames = new PhenotypeInfo<string>
                     {
-                        A = new SingleLocusDetails<string>
-                        {
-                            One = a[2],
-                            Two = a[3]
-                        },
-                        B = new SingleLocusDetails<string>
-                        {
-                            One = a[4],
-                            Two = a[5]
-                        },
-                        C = new SingleLocusDetails<string>
-                        {
-                            One = a[6],
-                            Two = a[7]
-                        },
-                        DQB1 = new SingleLocusDetails<string>
-                        {
-                            One = a[8],
-                            Two = a[9]
-                        },
-                        DRB1 = new SingleLocusDetails<string>
-                        {
-                            One = a[10],
-                            Two = a[11]
-                        }
+                        A_1 = a[2],
+                        A_2 = a[3],
+                        B_1 = a[4],
+                        B_2 = a[5],
+                        C_1 = a[6],
+                        C_2 = a[7],
+                        DQB1_1 = a[8],
+                        DQB1_2 = a[9],
+                        DRB1_1 = a[10],
+                        DRB1_2 = a[11]
                     }
                 });
 

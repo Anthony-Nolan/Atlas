@@ -12,6 +12,6 @@ namespace Nova.SearchAlgorithm.Models
         // This might not match our own idea of types, e.g. "A" vs "Adult"
         public string DonorType { get; set; }
 
-        public FiveLociDetails<SingleLocusDetails<string>> HlaNames { get; set; }
+        public PhenotypeInfo<string> HlaNames { get; set; }
     }
 }

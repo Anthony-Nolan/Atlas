@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         /// <summary>
         /// The details of the match at each individual locus.
         /// </summary>
-        public FiveLociDetails<DonorLocusMatchDetails> LocusMatchDetails { get; set; }
+        public PhenotypeInfo<DonorLocusMatchDetails> LocusMatchDetails { get; set; }
 
         // TODO: NOVA-924 Do we need to include the (original) phenotype,
         // or can the search client retrieve that from the original registry?
