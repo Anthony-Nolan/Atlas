@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories;
@@ -36,7 +35,7 @@ namespace Nova.SearchAlgorithm.Services
 
         public void ImportSingleTestDonor()
         {
-            donorRepository.InsertDonor(new ImportDonor
+            donorRepository.InsertDonor(new SearchableDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
@@ -74,7 +73,7 @@ namespace Nova.SearchAlgorithm.Services
         private void InsertSingleRawDonor(RawDonor donor)
         {
             Enum.TryParse(donor.RegistryCode, out RegistryCode code);
-            donorRepository.InsertDonor(new ImportDonor
+            donorRepository.InsertDonor(new SearchableDonor
             {
                 RegistryCode = code,
                 DonorType = "Adult",

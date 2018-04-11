@@ -12,8 +12,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     public interface IDonorRepository
     {
         SearchableDonor GetDonor(int donorId);
+        IEnumerable<SearchableDonor> AllDonors();
         IEnumerable<HlaMatch> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria);
-        void InsertDonor(ImportDonor donor);
+        void InsertDonor(SearchableDonor donor);
+        void UpdateDonorWithNewHla(SearchableDonor donor);
     }
 
     static class TableQueryExtensions
@@ -74,7 +76,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToSearchableDonor(mapper)).FirstOrDefault();
         }
 
-        public void InsertDonor(ImportDonor donor)
+        public void InsertDonor(SearchableDonor donor)
         {
             var insertDonor = TableOperation.Insert(donor.ToTableEntity(mapper));
             donorTable.Execute(insertDonor);
@@ -84,10 +86,29 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             // TODO:NOVA-929 if this method stays, sort out a return value
         }
 
-        public void UpdateDonorWithNewHla(ImportDonor donor)
+        // TODO:NOVA-929 This will be too many donors
+        // Can we stream them in batches with IEnumerable?
+        public IEnumerable<SearchableDonor> AllDonors()
         {
-            // TODO:NOVA-929 implment for the (daily?) donor update process
-            // It should include removing any HlaMatchTableEntities which no longer apply, by searching for them by donor_id (row key)
+            var query = new TableQuery<DonorTableEntity>();
+            return donorTable.ExecuteQuery(query).Select(dte => dte.ToSearchableDonor(mapper));
+        }
+
+        public void UpdateDonorWithNewHla(SearchableDonor donor)
+        {
+            // Update the donor itself
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
+            donorTable.Execute(insertDonor);
+
+            // First delete all the old matches
+            var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterConditionForInt("DonorId", QueryComparisons.Equal, donor.DonorId));
+            foreach (var match in donorTable.ExecuteQuery(matchesQuery))
+            {
+                donorTable.Execute(TableOperation.Delete(match));
+            }
+
+            // Add back the new matches
+            donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
         }
 
         private void InsertLocusMatch(string locusName, int typePosition, MatchingHla matchingHla, int donorId)

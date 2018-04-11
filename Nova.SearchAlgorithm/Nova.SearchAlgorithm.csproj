@@ -235,7 +235,7 @@
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\HlaMatchesController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
-    <Compile Include="Models\ImportDonor.cs" />
+    <Compile Include="Exceptions\HlaException.cs" />
     <Compile Include="Models\MatchingHla.cs" />
     <Compile Include="Models\RawDonor.cs" />
     <Compile Include="Models\LocusSearchCriteria.cs" />
@@ -254,6 +254,7 @@
     <Compile Include="Repositories\Hla\HlaRepository.cs" />
     <Compile Include="Repositories\SearchRequests\SearchRequestRepository.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
+    <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImportService.cs" />
     <Compile Include="Services\SearchRequestService.cs" />
