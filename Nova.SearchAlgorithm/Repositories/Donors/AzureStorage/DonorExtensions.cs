@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
     {
         internal static DonorTableEntity ToTableEntity(this SearchableDonor donor, IMapper mapper)
         {
-            return new DonorTableEntity(donor.RegistryCode.ToString(), donor.DonorId)
+            return new DonorTableEntity(donor.RegistryCode.ToString(), donor.DonorId.ToString())
             {
                 SerialisedDonor = JsonConvert.SerializeObject(mapper.Map<SearchableDonor>(donor)),
             };

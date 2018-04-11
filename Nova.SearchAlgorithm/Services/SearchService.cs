@@ -1,36 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Hla;
-
 
 namespace Nova.SearchAlgorithm.Services
 {
     public interface ISearchService
     {
         IEnumerable<DonorMatch> Search(SearchRequest searchRequest);
-    }
-    static class MatchCriteriaExtensions
-    {
-        public static PhenotypeInfo<string> LocusCriteria(this MismatchCriteria matchCriteria)
-        {
-            return new PhenotypeInfo<string>
-            {
-                A_1 = matchCriteria.LocusMismatchA?.SearchHla1,
-                A_2 = matchCriteria.LocusMismatchA?.SearchHla2,
-                B_1 = matchCriteria.LocusMismatchB?.SearchHla1,
-                B_2 = matchCriteria.LocusMismatchB?.SearchHla2,
-                C_1 = matchCriteria.LocusMismatchC?.SearchHla1,
-                C_2 = matchCriteria.LocusMismatchC?.SearchHla2,
-                DQB1_1 = matchCriteria.LocusMismatchDQB1?.SearchHla1,
-                DQB1_2 = matchCriteria.LocusMismatchDQB1?.SearchHla2,
-                DRB1_1 = matchCriteria.LocusMismatchDRB1?.SearchHla1,
-                DRB1_2 = matchCriteria.LocusMismatchDRB1?.SearchHla2
-            };
-        }
     }
 
     public class SearchService : ISearchService
@@ -46,15 +25,50 @@ namespace Nova.SearchAlgorithm.Services
 
         public IEnumerable<DonorMatch> Search(SearchRequest searchRequest)
         {
-            var searchCriteria = new SearchCriteria
+            // TODO:NOVA-931 extend beyond locus A
+            MatchingHla hla1 = hlaRepository.RetrieveHlaMatches("A", searchRequest.MatchCriteria.LocusMismatchA.SearchHla1);
+            MatchingHla hla2 = hlaRepository.RetrieveHlaMatches("A", searchRequest.MatchCriteria.LocusMismatchA.SearchHla2);
+
+            // TODO:NOVA-931 test antigen vs serology search behaviour
+            LocusSearchCriteria criteriaA = new LocusSearchCriteria
             {
-                LocusMatchCriteria = searchRequest.MatchCriteria.LocusCriteria().Map((string locus, int position, string name) => hlaRepository.RetrieveHlaMatches(locus, name)),
                 SearchType = searchRequest.SearchType,
-                Registries = searchRequest.RegistriesToSearch
+                Registries = searchRequest.RegistriesToSearch,
+                HlaNamesToMatchInPositionOne = searchRequest.MatchCriteria.LocusMismatchA.IsAntigenLevel ? hla1.MatchingProteinGroups : hla1.MatchingSerologyNames,
+                HlaNamesToMatchInPositionTwo = searchRequest.MatchCriteria.LocusMismatchA.IsAntigenLevel ? hla2.MatchingProteinGroups : hla2.MatchingSerologyNames,
             };
 
-            var matches = donorRepository.MatchDonors(searchCriteria);
-            return matches.GroupBy(m => m.DonorId).Select(group => donorRepository.GetDonor(group.Key)).Select(d => d.ToApiDonorMatch());
+            var matches = donorRepository.GetDonorMatchesAtLocus(searchRequest.SearchType, searchRequest.RegistriesToSearch, "A", criteriaA)
+                .GroupBy(m => m.DonorId);
+
+            if (searchRequest.MatchCriteria.LocusMismatchA.MismatchCount == 0)
+            {
+                matches = matches.Where(g => DirectMatch(g) || CrossMatch(g));
+            }
+            
+            return matches.Select(DonorMatchFromGroup);
+        }
+
+        private bool DirectMatch(IEnumerable<HlaMatch> matches)
+        {
+            return matches.Where(m => m.SearchTypePosition == 1 && m.MatchingTypePosition == 1).Any()
+                && matches.Where(m => m.SearchTypePosition == 2 && m.MatchingTypePosition == 2).Any();
+        }
+
+        private bool CrossMatch(IEnumerable<HlaMatch> matches)
+        {
+            return matches.Where(m => m.SearchTypePosition == 1 && m.MatchingTypePosition == 2).Any()
+                && matches.Where(m => m.SearchTypePosition == 2 && m.MatchingTypePosition == 1).Any();
+        }
+
+        private DonorMatch DonorMatchFromGroup(IGrouping<int, HlaMatch> group)
+        {
+            var donor = donorRepository.GetDonor(group.Key).ToApiDonorMatch();
+
+            // TODO:NOVA-931 extend beyond locus A
+            donor.TotalMatchCount = DirectMatch(group) || CrossMatch(group) ? 2 : 1;
+
+            return donor;
         }
     }
 }

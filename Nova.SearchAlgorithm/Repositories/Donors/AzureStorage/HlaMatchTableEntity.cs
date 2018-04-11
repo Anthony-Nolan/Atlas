@@ -28,6 +28,18 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             DonorId = donorId;
         }
 
+        public HlaMatch ToHlaMatch(int searchTypePosition)
+        {
+            return new HlaMatch
+            {
+                Locus = Locus,
+                SearchTypePosition = searchTypePosition,
+                MatchingTypePosition = TypePosition,
+                Name = Name,
+                DonorId = DonorId
+            };
+        }
+
         public static string GeneratePartitionKey(string locus, string matchName)
         {
             return string.Format("{0}_{1}", locus, matchName);

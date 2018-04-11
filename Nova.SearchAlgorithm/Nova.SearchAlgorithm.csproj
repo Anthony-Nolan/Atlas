@@ -238,7 +238,7 @@
     <Compile Include="Models\ImportDonor.cs" />
     <Compile Include="Models\MatchingHla.cs" />
     <Compile Include="Models\RawDonor.cs" />
-    <Compile Include="Models\SearchCriteria.cs" />
+    <Compile Include="Models\LocusSearchCriteria.cs" />
     <Compile Include="Models\Serology.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\SearchableDonor.cs" />

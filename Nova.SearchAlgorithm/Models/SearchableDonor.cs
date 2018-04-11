@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Models
     // TODO:NOVA-919 rename as appropriate
     public class SearchableDonor
     {
-        public string DonorId { get; set; }
+        public int DonorId { get; set; }
         public string DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
 

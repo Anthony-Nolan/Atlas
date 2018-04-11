@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     public interface IDonorRepository
     {
         SearchableDonor GetDonor(int donorId);
-        IEnumerable<HlaMatchTableEntity> MatchDonors(SearchCriteria criteria);
+        IEnumerable<HlaMatch> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria);
         void InsertDonor(ImportDonor donor);
     }
 
@@ -49,17 +49,20 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             this.mapper = mapper;
         }
         
-        public IEnumerable<HlaMatchTableEntity> MatchDonors(SearchCriteria criteria)
+        public IEnumerable<HlaMatch> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria)
         {
-            // TODO:NOVA-931 extend to other loci
-            IEnumerable<string> hlaNamesToMatchInLocusA = criteria.LocusMatchCriteria.A_1.MatchingProteinGroups
-                .Union(criteria.LocusMatchCriteria.A_1.MatchingSerologyNames)
-                .Union(criteria.LocusMatchCriteria.A_2.MatchingProteinGroups)
-                .Union(criteria.LocusMatchCriteria.A_2.MatchingSerologyNames);
+            var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
+            var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);
+
+            return matchesFromPositionOne.Select(m => m.ToHlaMatch(1)).Union(matchesFromPositionTwo.Select(m => m.ToHlaMatch(2)));
+        }
+
+        private IEnumerable<HlaMatchTableEntity> GetMatches(string locus, IEnumerable<string> namesToMatch)
+        {
             var matchesQuery = new TableQuery<HlaMatchTableEntity>();
-            foreach (string name in hlaNamesToMatchInLocusA)
+            foreach (string name in namesToMatch)
             {
-                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, HlaMatchTableEntity.GeneratePartitionKey("A", name)));
+                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, HlaMatchTableEntity.GeneratePartitionKey(locus, name)));
             }
 
             return donorTable.ExecuteQuery(matchesQuery);

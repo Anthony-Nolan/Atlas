@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Models
 {
-    // TODO:NOVA-931 this merely duplicates SearchRequest, maybe we don't need it?
-    public class SearchCriteria
+    public class LocusSearchCriteria
     {
         public SearchType SearchType { get; set; }
         public IEnumerable<RegistryCode> Registries { get; set; }
-        public PhenotypeInfo<MatchingHla> LocusMatchCriteria {get; set;}
+        public IEnumerable<string> HlaNamesToMatchInPositionOne { get; set; }
+        public IEnumerable<string> HlaNamesToMatchInPositionTwo { get; set; }
     }
 }
