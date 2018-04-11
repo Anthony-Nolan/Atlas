@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             System.Reflection.Assembly assem = System.Reflection.Assembly.GetExecutingAssembly();
             using (Stream stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Resources.matching_hla.json"))
             {
-                using (var reader = new StreamReader(stream))
+                using (StreamReader reader = new StreamReader(stream))
                 {
                     return JsonConvert.DeserializeObject<IEnumerable<RawMatchingHla>> (reader.ReadToEnd());
                 }
