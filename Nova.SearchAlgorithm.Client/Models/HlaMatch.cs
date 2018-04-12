@@ -9,8 +9,10 @@ namespace Nova.SearchAlgorithm.Client.Models
     [Flags]
     public enum TypePositions
     {
+        None = 0,
         One = 1,
-        Two = 2
+        Two = 2,
+        Both = 3
     }
 
     public class HlaMatch

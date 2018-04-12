@@ -19,6 +19,14 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         void UpdateDonorWithNewHla(SearchableDonor donor);
     }
 
+    static class MatchingHlaExtensions
+    {
+        public static IEnumerable<string> AllMatchingHlaNames(this MatchingHla hla)
+        {
+            return (hla.MatchingProteinGroups ?? Enumerable.Empty<string>()).Union(hla.MatchingSerologyNames ?? Enumerable.Empty<string>());
+        }
+    }
+
     static class TableQueryExtensions
     {
         public static TableQuery<TElement> AndWhere<TElement>(this TableQuery<TElement> @this, string filter)
@@ -90,7 +98,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
             donorTable.Execute(insertDonor);
 
-            UpdateDonorHlaMatches(donor); donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
+            UpdateDonorHlaMatches(donor);
 
             // TODO:NOVA-929 if this method stays, sort out a return value
         }
@@ -121,28 +129,38 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             }
 
             // Add back the new matches
-            donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
+            donor.MatchingHla.EachLocus((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
         }
 
         private IEnumerable<HlaMatchTableEntity> AllMatchesForDonor(int donorId)
         { 
-            var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterConditionForInt("DonorId", QueryComparisons.Equal, donorId));
-
-            //var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
+            var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
 
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        private void InsertLocusMatch(string locusName, TypePositions typePosition, MatchingHla matchingHla, int donorId)
+        private void InsertLocusMatch(string locusName, MatchingHla matchingHla1, MatchingHla matchingHla2, int donorId)
         {
-            if (matchingHla == null)
+            if (matchingHla1 == null)
             {
                 return;
             }
 
-            foreach (string matchName in (matchingHla.MatchingProteinGroups ?? new List<string>()).Union(matchingHla.MatchingSerologyNames))
+            var list1 = matchingHla1.AllMatchingHlaNames();
+            var list2 = matchingHla2.AllMatchingHlaNames();
+
+            foreach (string matchName in list1.Union(list2))
             {
-                var insertMatch = TableOperation.InsertOrMerge(new HlaMatchTableEntity(locusName, typePosition, matchName, donorId));
+                TypePositions typePositions = (TypePositions.None);
+                if (list1.Contains(matchName))
+                {
+                    typePositions |= TypePositions.One;
+                }
+                if (list2.Contains(matchName))
+                {
+                    typePositions |= TypePositions.Two;
+                }
+                var insertMatch = TableOperation.InsertOrMerge(new HlaMatchTableEntity(locusName, typePositions, matchName, donorId));
                 matchTable.Execute(insertMatch);
             }
         }

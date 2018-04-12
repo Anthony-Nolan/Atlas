@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    // TODO:NOVA-929 rename to 'phenotype' or similar?
-    // TODO:NOVA-929 should this be combined with SingleLocusDetail
     /// <summary>
-    /// Data type to hold one instance of T for each of the five HLA loci.
+    /// Data type to hold one instance of T for each of the five HLA loci and each type position within.
     /// </summary>
-    /// <typeparam name="T">The type of the information that is required for each loci.</typeparam>
+    /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
     public class PhenotypeInfo<T>
     {
         public T A_1 { get; set; }
@@ -42,7 +40,7 @@ namespace Nova.SearchAlgorithm.Client.Models
             };
         }
 
-        public void Each(Action<string, TypePositions, T> action)
+        public void EachPosition(Action<string, TypePositions, T> action)
         {
             action("A", TypePositions.One, A_1);
             action("A", TypePositions.Two, A_2);
@@ -54,6 +52,15 @@ namespace Nova.SearchAlgorithm.Client.Models
             action("DQB1", TypePositions.Two, DQB1_2);
             action("DRB1", TypePositions.One, DRB1_1);
             action("DRB1", TypePositions.Two, DRB1_2);
+        }
+
+        public void EachLocus(Action<string, T, T> action)
+        {
+            action("A", A_1, A_2);
+            action("B", B_1, B_2);
+            action("C", C_1, C_2);
+            action("DQB1", DQB1_1, DQB1_2);
+            action("DRB1", DRB1_1, DRB1_2);
         }
     }
 }
