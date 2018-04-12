@@ -231,6 +231,7 @@
     <Compile Include="Config\AutofacConfig.cs" />
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
+    <Compile Include="Controllers\DonorController.cs" />
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\HlaMatchesController.cs" />

@@ -12,6 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     public interface IDonorRepository
     {
         SearchableDonor GetDonor(int donorId);
+        IEnumerable<HlaMatch> GetMatchesForDonor(int donorId);
         IEnumerable<SearchableDonor> AllDonors();
         IEnumerable<HlaMatch> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria);
         void InsertDonor(SearchableDonor donor);
@@ -41,13 +42,16 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
     public class DonorRepository : IDonorRepository
     {
-        private const string TableReference = "Donors";
+        private const string DonorTableReference = "Donors";
+        private const string MatchTableReference = "Matches";
         private readonly CloudTable donorTable;
+        private readonly CloudTable matchTable;
         private readonly IMapper mapper;
 
         public DonorRepository(IMapper mapper, ICloudTableFactory cloudTableFactory)
         {
-            donorTable = cloudTableFactory.GetTable(TableReference);
+            donorTable = cloudTableFactory.GetTable(DonorTableReference);
+            matchTable = cloudTableFactory.GetTable(MatchTableReference);
             this.mapper = mapper;
         }
         
@@ -56,7 +60,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
             var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);
 
-            return matchesFromPositionOne.Select(m => m.ToHlaMatch(1)).Union(matchesFromPositionTwo.Select(m => m.ToHlaMatch(2)));
+            return matchesFromPositionOne.Select(m => m.ToHlaMatch(TypePositions.One)).Union(matchesFromPositionTwo.Select(m => m.ToHlaMatch(TypePositions.Two)));
         }
 
         private IEnumerable<HlaMatchTableEntity> GetMatches(string locus, IEnumerable<string> namesToMatch)
@@ -67,7 +71,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, HlaMatchTableEntity.GeneratePartitionKey(locus, name)));
             }
 
-            return donorTable.ExecuteQuery(matchesQuery);
+            return matchTable.ExecuteQuery(matchesQuery);
         }
 
         public SearchableDonor GetDonor(int donorId)
@@ -76,12 +80,17 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToSearchableDonor(mapper)).FirstOrDefault();
         }
 
+        public IEnumerable<HlaMatch> GetMatchesForDonor(int donorId)
+        {
+            return AllMatchesForDonor(donorId).Select(m => m.ToHlaMatch(0));
+        }
+
         public void InsertDonor(SearchableDonor donor)
         {
-            var insertDonor = TableOperation.Insert(donor.ToTableEntity(mapper));
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
             donorTable.Execute(insertDonor);
 
-            donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
+            UpdateDonorHlaMatches(donor); donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
 
             // TODO:NOVA-929 if this method stays, sort out a return value
         }
@@ -99,24 +108,42 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             // Update the donor itself
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
             donorTable.Execute(insertDonor);
+            UpdateDonorHlaMatches(donor);
+        }
 
+        private void UpdateDonorHlaMatches(SearchableDonor donor)
+        {
             // First delete all the old matches
-            var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterConditionForInt("DonorId", QueryComparisons.Equal, donor.DonorId));
-            foreach (var match in donorTable.ExecuteQuery(matchesQuery))
+            var matches = AllMatchesForDonor(donor.DonorId);
+            foreach (var match in matches)
             {
-                donorTable.Execute(TableOperation.Delete(match));
+                matchTable.Execute(TableOperation.Delete(match));
             }
 
             // Add back the new matches
             donor.MatchingHla.Each((locusName, position, matchingHla) => InsertLocusMatch(locusName, position, matchingHla, donor.DonorId));
         }
 
-        private void InsertLocusMatch(string locusName, int typePosition, MatchingHla matchingHla, int donorId)
+        private IEnumerable<HlaMatchTableEntity> AllMatchesForDonor(int donorId)
+        { 
+            var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterConditionForInt("DonorId", QueryComparisons.Equal, donorId));
+
+            //var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
+
+            return matchTable.ExecuteQuery(matchesQuery);
+        }
+
+        private void InsertLocusMatch(string locusName, TypePositions typePosition, MatchingHla matchingHla, int donorId)
         {
-            foreach (string matchName in matchingHla.MatchingProteinGroups.Union(matchingHla.MatchingSerologyNames))
+            if (matchingHla == null)
             {
-                var insertMatch = TableOperation.Insert(new HlaMatchTableEntity(locusName, typePosition, matchName, donorId));
-                donorTable.Execute(insertMatch);
+                return;
+            }
+
+            foreach (string matchName in (matchingHla.MatchingProteinGroups ?? new List<string>()).Union(matchingHla.MatchingSerologyNames))
+            {
+                var insertMatch = TableOperation.InsertOrMerge(new HlaMatchTableEntity(locusName, typePosition, matchName, donorId));
+                matchTable.Execute(insertMatch);
             }
         }
     }

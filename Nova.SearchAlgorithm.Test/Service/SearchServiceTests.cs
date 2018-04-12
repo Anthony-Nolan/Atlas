@@ -46,14 +46,14 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             GetFake<IDonorRepository>().GetDonorMatchesAtLocus(SearchType.Adult, Arg.Any<IEnumerable<RegistryCode>>(), "A", Arg.Any<LocusSearchCriteria>()).Returns(new List<HlaMatch>
             {
-                HlaMatchFor("A", 1, 1, exactMatch, PGroupA1),
-                HlaMatchFor("A", 2, 2, exactMatch, PGroupA2),
+                HlaMatchFor("A", TypePositions.One, TypePositions.One, exactMatch, PGroupA1),
+                HlaMatchFor("A", TypePositions.Two, TypePositions.Two, exactMatch, PGroupA2),
 
-                HlaMatchFor("A", 1, 1, bothPositionsMatchGroupOne, PGroupA1),
-                HlaMatchFor("A", 1, 2, bothPositionsMatchGroupOne, PGroupA1),
+                HlaMatchFor("A", TypePositions.One, TypePositions.One, bothPositionsMatchGroupOne, PGroupA1),
+                HlaMatchFor("A", TypePositions.One, TypePositions.Two, bothPositionsMatchGroupOne, PGroupA1),
 
-                HlaMatchFor("A", 1, 1, bothGroupsMatchPositionOne, PGroupA1),
-                HlaMatchFor("A", 2, 1, bothGroupsMatchPositionOne, PGroupA2),
+                HlaMatchFor("A", TypePositions.One, TypePositions.One, bothGroupsMatchPositionOne, PGroupA1),
+                HlaMatchFor("A", TypePositions.Two, TypePositions.One, bothGroupsMatchPositionOne, PGroupA2),
             });
 
             GetFake<IDonorRepository>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
@@ -61,13 +61,13 @@ namespace Nova.SearchAlgorithm.Test.Service
             GetFake<IDonorRepository>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
         }
 
-        private HlaMatch HlaMatchFor(string locus, int searchPosition, int matchPosition, SearchableDonor donor, string hlaMatchName)
+        private HlaMatch HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, SearchableDonor donor, string hlaMatchName)
         {
             return new HlaMatch
             {
                 DonorId = donor.DonorId,
                 SearchTypePosition = searchPosition,
-                MatchingTypePosition = matchPosition,
+                MatchingTypePositions = matchPosition,
                 Locus = locus,
                 Name = hlaMatchName
             };

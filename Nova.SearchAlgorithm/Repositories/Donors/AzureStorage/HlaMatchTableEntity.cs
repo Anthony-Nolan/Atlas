@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
     public class HlaMatchTableEntity : TableEntity
     {
         public string Locus { get; set; }
-        public int TypePosition { get; set; }
+        public int TypePositions { get; set; }
         public string Name { get; set; }
         
         public int DonorId { get; set; }
@@ -20,22 +20,26 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public HlaMatchTableEntity(string partitionKey, string rowKey) : base(partitionKey, rowKey) {}
 
-        public HlaMatchTableEntity(string locus, int typePosition, string matchName, int donorId) : base(GeneratePartitionKey(locus, matchName), donorId.ToString())
+        public HlaMatchTableEntity(string locus, TypePositions typePositions, string matchName, int donorId) : base(GeneratePartitionKey(locus, matchName), donorId.ToString())
         {
             Locus = locus;
-            TypePosition = typePosition;
+            TypePositions = (int)typePositions;
             Name = matchName;
             DonorId = donorId;
         }
 
-        public HlaMatch ToHlaMatch(int searchTypePosition)
+        public HlaMatchTableEntity(HlaMatch match) : this(match.Locus, match.MatchingTypePositions, match.Name, match.DonorId)
         {
-            return new HlaMatch
+        }
+
+        public HlaMatch ToHlaMatch(TypePositions searchTypePosition)
+        {
+            return new HlaMatch()
             {
                 Locus = Locus,
-                SearchTypePosition = searchTypePosition,
-                MatchingTypePosition = TypePosition,
                 Name = Name,
+                SearchTypePosition = searchTypePosition,
+                MatchingTypePositions = (TypePositions)TypePositions,
                 DonorId = DonorId
             };
         }

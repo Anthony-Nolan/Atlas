@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
+    [Flags]
+    public enum TypePositions
+    {
+        One = 1,
+        Two = 2
+    }
+
     public class HlaMatch
     {
         public string Locus { get; set; }
-        public int SearchTypePosition { get; set; }
-        public int MatchingTypePosition { get; set; }
+        public TypePositions SearchTypePosition { get; set; }
+        public TypePositions MatchingTypePositions { get; set; }
         public string Name { get; set; }
 
         public int DonorId { get; set; }

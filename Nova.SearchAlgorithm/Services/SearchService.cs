@@ -51,14 +51,14 @@ namespace Nova.SearchAlgorithm.Services
 
         private bool DirectMatch(IEnumerable<HlaMatch> matches)
         {
-            return matches.Where(m => m.SearchTypePosition == 1 && m.MatchingTypePosition == 1).Any()
-                && matches.Where(m => m.SearchTypePosition == 2 && m.MatchingTypePosition == 2).Any();
+            return matches.Where(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.One)).Any()
+                && matches.Where(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.Two)).Any();
         }
 
         private bool CrossMatch(IEnumerable<HlaMatch> matches)
         {
-            return matches.Where(m => m.SearchTypePosition == 1 && m.MatchingTypePosition == 2).Any()
-                && matches.Where(m => m.SearchTypePosition == 2 && m.MatchingTypePosition == 1).Any();
+            return matches.Where(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.Two)).Any()
+                && matches.Where(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One)).Any();
         }
 
         private DonorMatch DonorMatchFromGroup(IGrouping<int, HlaMatch> group)
