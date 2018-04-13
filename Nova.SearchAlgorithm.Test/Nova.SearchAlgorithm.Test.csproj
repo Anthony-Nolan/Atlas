@@ -157,6 +157,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Console, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Console.4.0.0\lib\net46\System.Console.dll</HintPath>
       <Private>True</Private>
@@ -255,6 +256,7 @@
   <ItemGroup>
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
+    <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\SearchTests.cs" />
     <Compile Include="Integration\StorageEmulator.cs" />
     <Compile Include="TestBase.cs" />
