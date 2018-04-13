@@ -20,9 +20,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            // TODO: realistically use the repo directly to import
-            // bespoke test data relevant to this classes tests
-            // Using ImportSingleTestDonor is a POC shortcut
+            // TODO: We probably want use the DonorRepo directly to import
+            // bespoke test donors relevant to each test classes' test suite.
+            // Using ImportSingleTestDonor here is a shortcut to prove we can insert data.
             donorImportService = container.Resolve<IDonorImportService>();
             donorImportService.ImportSingleTestDonor();
         }
