@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             {
             });
 
-            results.Should().Contain(d => d.DonorId == "1");
+            results.Should().Contain(d => d.DonorId == 1);
         }
     }
 }

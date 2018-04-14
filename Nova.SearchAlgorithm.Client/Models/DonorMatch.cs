@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         /// <summary>
         /// The ID of the donor for lookup in donor registries.
         /// </summary>
-        public string DonorId { get; set; }
+        public int DonorId { get; set; }
         
         // TODO:NOVA-924 make donor type a strongly typed Enum
         /// <summary>

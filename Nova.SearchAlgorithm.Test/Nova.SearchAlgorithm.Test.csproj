@@ -254,11 +254,13 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Builders\SearchRequestBuilder.cs" />
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\SearchTests.cs" />
     <Compile Include="Integration\StorageEmulator.cs" />
+    <Compile Include="Service\SearchServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -49,7 +49,14 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
 
             if (raw == null)
             {
-                return null;
+                // TODO:NOVA-926 If we have validated the HLA coming in, this might not be necessary
+                // At the moment we do this so that we can re-generate from the Name field when we regenerate HLA.
+                return new MatchingHla
+                {
+                    Name = hlaName,
+                    Locus = locusName,
+                    IsDeleted = false
+                };
             }
 
             return new MatchingHla {

@@ -142,6 +142,7 @@
   <ItemGroup>
     <Compile Include="Models\DonorLocusMatchDetails.cs" />
     <Compile Include="Models\DonorMatch.cs" />
+    <Compile Include="Models\HlaMatch.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\LocusMismatchCriteria.cs" />
     <Compile Include="Models\MismatchCriteria.cs" />
