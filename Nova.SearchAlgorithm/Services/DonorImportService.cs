@@ -98,11 +98,12 @@ namespace Nova.SearchAlgorithm.Services
         public void ImportDummyData()
         {
             var spreadsheetDonors = Regex.Split(SpreadsheetContents(), "\r\n|\r|\n")
+                .Skip(1) // Header row
                 .Select(a => a.Split(','))
                 .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray<string>())
                 .Select((a, i) => new RawDonor
                 {
-                    DonorId = i,
+                    DonorId = i+1, // Don't want donor ID 0
                     DonorType = a[1],
                     RegistryCode = a[0],
                     HlaNames = new PhenotypeInfo<string>
