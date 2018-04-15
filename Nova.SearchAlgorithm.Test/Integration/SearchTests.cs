@@ -38,6 +38,16 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             IEnumerable<DonorMatch> results = searchService.Search(new SearchRequest
             {
+                MatchCriteria = new MismatchCriteria
+                {
+                    LocusMismatchA = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        IsAntigenLevel = true,
+                        SearchHla1 = "01:02",
+                        SearchHla2 = "01:02"
+                    }
+                }
             });
 
             results.Should().Contain(d => d.DonorId == 1);
