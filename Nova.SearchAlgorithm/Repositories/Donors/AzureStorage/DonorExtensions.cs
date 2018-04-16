@@ -1,6 +1,6 @@
 using AutoMapper;
 using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using System;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage

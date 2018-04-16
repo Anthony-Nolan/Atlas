@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Hla;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -13,9 +14,9 @@ namespace Nova.SearchAlgorithm.Services
     public class HlaUpdateService : IHlaUpdateService
     {
         private readonly IHlaRepository hlaRepository;
-        private readonly IDonorRepository donorRepository;
+        private readonly IDonorMatchRepository donorRepository;
 
-        public HlaUpdateService(IHlaRepository hlaRepository, IDonorRepository donorRepository)
+        public HlaUpdateService(IHlaRepository hlaRepository, IDonorMatchRepository donorRepository)
         {
             this.hlaRepository = hlaRepository;
             this.donorRepository = donorRepository;

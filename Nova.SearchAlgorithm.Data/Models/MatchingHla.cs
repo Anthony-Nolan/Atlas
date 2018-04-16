@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Nova.SearchAlgorithm.Models
+namespace Nova.SearchAlgorithm.Data.Models
 {
+    // TODO: Rename to ExpandedHla
     public class MatchingHla
     {
         public string Name { get; set; }

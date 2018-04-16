@@ -237,18 +237,17 @@
     <Compile Include="Controllers\HlaMatchesController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\HlaException.cs" />
-    <Compile Include="Models\MatchingHla.cs" />
     <Compile Include="Models\RawDonor.cs" />
-    <Compile Include="Models\LocusSearchCriteria.cs" />
-    <Compile Include="Models\Serology.cs" />
+    <Compile Include="Repositories\Donors\HlaMatch.cs" />
+    <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Models\SearchableDonor.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />
+    <Compile Include="Repositories\BlobDonorMatchRepository.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
+    <Compile Include="Repositories\Donors\BlobDonorRepository.cs" />
     <Compile Include="Repositories\Hla\AzureStorage\HlaTableEntity.cs" />
-    <Compile Include="Repositories\Donors\AzureStorage\HlaMatchTableEntity.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\PotentialHlaMatchRelationTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
-    <Compile Include="Repositories\Donors\DonorRepository.cs" />
     <Compile Include="Repositories\Hla\RawMatchingHla.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestExtensions.cs" />
     <Compile Include="Repositories\SearchRequests\AzureStorage\SearchRequestTableEntity.cs" />
@@ -284,6 +283,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
       <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>
       <Name>Nova.SearchAlgorithm.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
+      <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>
+      <Name>Nova.SearchAlgorithm.Data</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -235,10 +235,11 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Builders\DonorMatchCriteriaBuilder.cs" />
     <Compile Include="Builders\SearchRequestBuilder.cs" />
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
-    <Compile Include="Service\SearchServiceTests.cs" />
+    <Compile Include="Service\DonorRepositoryTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -259,6 +260,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
       <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>
       <Name>Nova.SearchAlgorithm.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
+      <Project>{7DC2A865-304B-402B-AC56-342681368568}</Project>
+      <Name>Nova.SearchAlgorithm.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj">
       <Project>{B5CB5431-D854-4F2B-8ECA-06055376EE02}</Project>

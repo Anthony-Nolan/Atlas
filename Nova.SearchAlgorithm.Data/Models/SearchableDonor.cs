@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 
-namespace Nova.SearchAlgorithm.Models
+namespace Nova.SearchAlgorithm.Data.Models
 {
     public class SearchableDonor
     {
@@ -11,9 +11,9 @@ namespace Nova.SearchAlgorithm.Models
         public RegistryCode RegistryCode { get; set; }
         public PhenotypeInfo<MatchingHla> MatchingHla { get; set; }
 
-        public DonorMatch ToApiDonorMatch()
+        public PotentialMatch ToApiDonorMatch()
         {
-            return new DonorMatch
+            return new PotentialMatch
             {
                 DonorId = DonorId,
                 DonorType = DonorType,

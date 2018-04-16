@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Repositories.Hla;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
+/// <summary>
+/// Tests the interface between the BlobDonorMatchRepository (the blob storage implementation of a donor match repo)
+/// and the DonorBlobRepository (the repo for persisting data in cloud storage)
+/// </summary>
 namespace Nova.SearchAlgorithm.Test.Service
 {
     [TestFixture]
-    public class SearchServiceTests : TestBase<SearchService>
+    public class DonorRepositoryTests : TestBase<BlobDonorMatchRepository>
     {
-        private const string HlaNameA1 = "a1";
-        private const string HlaNameA2 = "a2";
         private const string PGroupA1 = "p1";
         private const string PGroupA1_alternative = "p1a";
         private const string PGroupA2 = "p2";
@@ -26,25 +28,14 @@ namespace Nova.SearchAlgorithm.Test.Service
         private readonly SearchableDonor bothPositionsMatchGroupOne = new SearchableDonor { DonorId = 2 };
         private readonly SearchableDonor bothGroupsMatchPositionOne = new SearchableDonor { DonorId = 3 };
 
-        private SearchService service;
+        private IDonorMatchRepository repositoryUnderTest;
 
         [SetUp]
-        public void setup()
+        public void SetUp()
         {
-            service = new SearchService(GetFake<IDonorRepository>(), GetFake<IHlaRepository>());
+            repositoryUnderTest = new BlobDonorMatchRepository(GetFake<IDonorBlobRepository>());
 
-            GetFake<IHlaRepository>().RetrieveHlaMatches("A", HlaNameA1).Returns(new MatchingHla
-            {
-                MatchingProteinGroups = new List<string> { PGroupA1, PGroupA1_alternative },
-                MatchingSerologyNames = new List<string>()
-            });
-            GetFake<IHlaRepository>().RetrieveHlaMatches("A", HlaNameA2).Returns(new MatchingHla
-            {
-                MatchingProteinGroups = new List<string> { PGroupA2 },
-                MatchingSerologyNames = new List<string>()
-            });
-
-            GetFake<IDonorRepository>().GetDonorMatchesAtLocus(SearchType.Adult, Arg.Any<IEnumerable<RegistryCode>>(), "A", Arg.Any<LocusSearchCriteria>()).Returns(new List<HlaMatch>
+            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus(SearchType.Adult, Arg.Any<IEnumerable<RegistryCode>>(), "A", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor("A", TypePositions.One, TypePositions.One, exactMatch, PGroupA1),
                 HlaMatchFor("A", TypePositions.Two, TypePositions.Two, exactMatch, PGroupA2),
@@ -56,14 +47,14 @@ namespace Nova.SearchAlgorithm.Test.Service
                 HlaMatchFor("A", TypePositions.Two, TypePositions.One, bothGroupsMatchPositionOne, PGroupA2),
             });
 
-            GetFake<IDonorRepository>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
-            GetFake<IDonorRepository>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
-            GetFake<IDonorRepository>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
+            GetFake<IDonorBlobRepository>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
+            GetFake<IDonorBlobRepository>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
+            GetFake<IDonorBlobRepository>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
         }
 
-        private HlaMatch HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, SearchableDonor donor, string hlaMatchName)
+        private PotentialHlaMatchRelation HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, SearchableDonor donor, string hlaMatchName)
         {
-            return new HlaMatch
+            return new PotentialHlaMatchRelation
             {
                 DonorId = donor.DonorId,
                 SearchTypePosition = searchPosition,
@@ -76,9 +67,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void ExactMatchDonorIsReturnedWhenTwoMatchesRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 0).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
             results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(2);
@@ -87,9 +78,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void SingleMatchDonorOnSearchSideIsNotReturnedWhenTwoMatchesRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 0).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().NotContain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
         }
@@ -97,9 +88,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void SingleMatchDonorOnMatchSideIsNotReturnedWhenTwoMatchesRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 0).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().NotContain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
         }
@@ -107,9 +98,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void ExactMatchDonorIsReturnedWhenOneMatchRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 1).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
             results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(2);
@@ -118,9 +109,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void SingleMatchDonorOnSearchSideIsNotReturnedWhenOneMatchRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 1).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
             results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(1);
@@ -129,9 +120,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void SingleMatchDonorOnMatchSideIsNotReturnedWhenOneMatchRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 1).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
             results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(1);
@@ -140,9 +131,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void ExactMatchDonorIsReturnedWhenNoMatchRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 2).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
             results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(2);
@@ -151,9 +142,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void SingleMatchDonorOnSearchSideIsNotReturnedWhenNoMatchRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 2).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
             results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(1);
@@ -162,9 +153,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [Test]
         public void SingleMatchDonorOnMatchSideIsNotReturnedWhenNoMatchRequired()
         {
-            SearchRequest request = new SearchRequestBuilder().WithLocusMismatchA(HlaNameA1, HlaNameA2, 2).Build();
+            DonorMatchCriteria criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            IEnumerable<DonorMatch> results = service.Search(request);
+            IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
             results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(1);

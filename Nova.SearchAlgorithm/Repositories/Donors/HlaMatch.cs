@@ -1,21 +1,16 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.Client.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Client.Models
+namespace Nova.SearchAlgorithm.Repositories.Donors
 {
-    [Flags]
-    public enum TypePositions
-    {
-        None = 0,
-        One = 1,
-        Two = 2,
-        Both = 3
-    }
-
-    public class HlaMatch
+    /// <summary>
+    /// An entity to store the relationship between hla (key) and donor ids (value)
+    /// </summary>
+    public class PotentialHlaMatchRelation
     {
         public string Locus { get; set; }
         public TypePositions SearchTypePosition { get; set; }

@@ -6,6 +6,6 @@ namespace Nova.SearchAlgorithm.Client.Models
     public class SearchResult
     {
         public int SearchRequestId { get; set; }
-        public DonorMatch DonorMatch { get; set; }
+        public PotentialMatch DonorMatch { get; set; }
     }
 }

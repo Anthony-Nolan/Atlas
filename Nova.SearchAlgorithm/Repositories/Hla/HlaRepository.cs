@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Repositories.Hla
 {

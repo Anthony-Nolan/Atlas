@@ -2,6 +2,10 @@
 
 namespace Nova.SearchAlgorithm.Models
 {
+    /// <summary>
+    /// This class represents raw donor data from some outside source
+    /// such as Solar or a donor repository.
+    /// </summary>
     public class RawDonor
     {
         public int DonorId { get; set; }

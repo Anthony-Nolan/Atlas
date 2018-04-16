@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.Client.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    public class DonorMatch
+    public class PotentialMatch
     {
         /// <summary>
         /// The ID of the donor for lookup in donor registries.
@@ -37,7 +38,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         /// <summary>
         /// The details of the match at each individual locus.
         /// </summary>
-        public PhenotypeInfo<DonorLocusMatchDetails> LocusMatchDetails { get; set; }
+        public PhenotypeInfo<LocusMatchDetails> LocusMatchDetails { get; set; }
 
         // TODO: NOVA-924 Do we need to include the (original) phenotype,
         // or can the search client retrieve that from the original registry?

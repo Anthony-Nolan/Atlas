@@ -6,7 +6,7 @@ using System.Web;
 namespace Nova.SearchAlgorithm.Client.Models
 {
     // TODO:NOVA-924 could we just replace this class with a nullable integer?
-    public class DonorLocusMatchDetails
+    public class LocusMatchDetails
     {
         /// <summary>
         /// Reports whether this locus is typed for the given donor.

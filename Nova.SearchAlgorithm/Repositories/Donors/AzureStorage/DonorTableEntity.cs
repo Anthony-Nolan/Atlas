@@ -1,5 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Models;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage

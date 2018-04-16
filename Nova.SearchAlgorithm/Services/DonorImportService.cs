@@ -9,6 +9,8 @@ using Nova.SearchAlgorithm.Repositories.Hla;
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -22,11 +24,11 @@ namespace Nova.SearchAlgorithm.Services
     // TODO:NOVA-929 implement correctly
     public class DonorImportService : IDonorImportService
     {
-        private readonly IDonorRepository donorRepository;
+        private readonly IDonorMatchRepository donorRepository;
         private readonly IHlaRepository hlaRepository;
         private readonly ISolarDonorRepository solarRepository;
 
-        public DonorImportService(IDonorRepository donorRepository, IHlaRepository hlaRepository, ISolarDonorRepository solarRepository)
+        public DonorImportService(IDonorMatchRepository donorRepository, IHlaRepository hlaRepository, ISolarDonorRepository solarRepository)
         {
             this.donorRepository = donorRepository;
             this.solarRepository = solarRepository;

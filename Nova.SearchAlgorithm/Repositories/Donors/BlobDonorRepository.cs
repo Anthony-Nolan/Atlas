@@ -5,18 +5,19 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
-
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {
-    public interface IDonorRepository
+    public interface IDonorBlobRepository
     {
-        SearchableDonor GetDonor(int donorId);
-        IEnumerable<HlaMatch> GetMatchesForDonor(int donorId);
-        IEnumerable<SearchableDonor> AllDonors();
-        IEnumerable<HlaMatch> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria);
         void InsertDonor(SearchableDonor donor);
         void UpdateDonorWithNewHla(SearchableDonor donor);
+        SearchableDonor GetDonor(int donorId);
+        IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId);
+        IEnumerable<SearchableDonor> AllDonors();
+        IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria);
+
     }
 
     static class MatchingHlaExtensions
@@ -48,7 +49,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         }
     }
 
-    public class DonorRepository : IDonorRepository
+    public class BlobDonorRepository : IDonorBlobRepository
     {
         private const string DonorTableReference = "Donors";
         private const string MatchTableReference = "Matches";
@@ -56,27 +57,27 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         private readonly CloudTable matchTable;
         private readonly IMapper mapper;
 
-        public DonorRepository(IMapper mapper, ICloudTableFactory cloudTableFactory)
+        public BlobDonorRepository(IMapper mapper, ICloudTableFactory cloudTableFactory)
         {
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
             matchTable = cloudTableFactory.GetTable(MatchTableReference);
             this.mapper = mapper;
         }
         
-        public IEnumerable<HlaMatch> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria)
+        public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria)
         {
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
             var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);
 
-            return matchesFromPositionOne.Select(m => m.ToHlaMatch(TypePositions.One)).Union(matchesFromPositionTwo.Select(m => m.ToHlaMatch(TypePositions.Two)));
+            return matchesFromPositionOne.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.One)).Union(matchesFromPositionTwo.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two)));
         }
 
-        private IEnumerable<HlaMatchTableEntity> GetMatches(string locus, IEnumerable<string> namesToMatch)
+        private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(string locus, IEnumerable<string> namesToMatch)
         {
-            var matchesQuery = new TableQuery<HlaMatchTableEntity>();
+            var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>();
             foreach (string name in namesToMatch)
             {
-                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, HlaMatchTableEntity.GeneratePartitionKey(locus, name)));
+                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GeneratePartitionKey(locus, name)));
             }
 
             return matchTable.ExecuteQuery(matchesQuery);
@@ -88,9 +89,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToSearchableDonor(mapper)).FirstOrDefault();
         }
 
-        public IEnumerable<HlaMatch> GetMatchesForDonor(int donorId)
+        public IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId)
         {
-            return AllMatchesForDonor(donorId).Select(m => m.ToHlaMatch(0));
+            return AllMatchesForDonor(donorId).Select(m => m.ToPotentialHlaMatchRelation(0));
         }
 
         public void InsertDonor(SearchableDonor donor)
@@ -132,9 +133,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             donor.MatchingHla.EachLocus((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
         }
 
-        private IEnumerable<HlaMatchTableEntity> AllMatchesForDonor(int donorId)
+        private IEnumerable<PotentialHlaMatchRelationTableEntity> AllMatchesForDonor(int donorId)
         { 
-            var matchesQuery = new TableQuery<HlaMatchTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
+            var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
 
             return matchTable.ExecuteQuery(matchesQuery);
         }
@@ -160,7 +161,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 {
                     typePositions |= TypePositions.Two;
                 }
-                var insertMatch = TableOperation.InsertOrMerge(new HlaMatchTableEntity(locusName, typePositions, matchName, donorId));
+                var insertMatch = TableOperation.InsertOrMerge(new PotentialHlaMatchRelationTableEntity(locusName, typePositions, matchName, donorId));
                 matchTable.Execute(insertMatch);
             }
         }
