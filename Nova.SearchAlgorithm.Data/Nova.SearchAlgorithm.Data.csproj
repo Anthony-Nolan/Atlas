@@ -139,6 +139,7 @@
     <Compile Include="Config\SearchDataModule.cs" />
     <Compile Include="Entity\DonorHla.cs" />
     <Compile Include="Entity\Donor.cs" />
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\DonorMatchCriteria.cs" />
     <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\SearchableDonor.cs" />
