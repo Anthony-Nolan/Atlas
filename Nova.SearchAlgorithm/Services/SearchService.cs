@@ -41,8 +41,8 @@ namespace Nova.SearchAlgorithm.Services
                 LocusMismatchA = new DonorLocusMatchCriteria
                 {
                     MismatchCount = searchRequest.MatchCriteria.LocusMismatchA.MismatchCount,
-                    HlaNamesToMatchInPositionOne = searchRequest.MatchCriteria.LocusMismatchA.IsAntigenLevel ? hlaA1.PGroups : hlaA1.SerologyNames,
-                    HlaNamesToMatchInPositionTwo = searchRequest.MatchCriteria.LocusMismatchA.IsAntigenLevel ? hlaA2.PGroups : hlaA2.SerologyNames,
+                    HlaNamesToMatchInPositionOne = hlaA1.PGroups,
+                    HlaNamesToMatchInPositionTwo = hlaA2.PGroups,
                 }
             };
 
