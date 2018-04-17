@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Data.Models
 
         public string DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
-        public PhenotypeInfo<MatchingHla> MatchingHla { get; set; }
+        public PhenotypeInfo<ExpandedHla> MatchingHla { get; set; }
 
         public PotentialMatch ToApiDonorMatch()
         {

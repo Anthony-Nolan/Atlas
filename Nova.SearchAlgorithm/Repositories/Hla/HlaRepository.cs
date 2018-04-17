@@ -12,8 +12,8 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
 {
     public interface IHlaRepository
     {
-        MatchingHla RetrieveHlaMatches(string locusName, string hlaName);
-        PhenotypeInfo<MatchingHla> RetrieveHlaMatches(string locusName, PhenotypeInfo<string> locusHla);
+        ExpandedHla RetrieveHlaMatches(string locusName, string hlaName);
+        PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(string locusName, PhenotypeInfo<string> locusHla);
     }
 
     public class HlaRepository : IHlaRepository
@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             this.mapper = mapper;
         }
 
-        public MatchingHla RetrieveHlaMatches(string locusName, string hlaName)
+        public ExpandedHla RetrieveHlaMatches(string locusName, string hlaName)
         {
             var raw = rawMatchingData.FirstOrDefault(hla => hla.Locus == locusName && hla.Name == hlaName);
 
@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             {
                 // TODO:NOVA-926 If we have validated the HLA coming in, this might not be necessary
                 // At the moment we do this so that we can re-generate from the Name field when we regenerate HLA.
-                return new MatchingHla
+                return new ExpandedHla
                 {
                     Name = hlaName,
                     Locus = locusName,
@@ -60,17 +60,17 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
                 };
             }
 
-            return new MatchingHla {
+            return new ExpandedHla {
                 Name = raw.Name,
                 Locus = raw.Locus,
                 IsDeleted = raw.IsDeleted,
                 Type = raw.Type,
-                MatchingProteinGroups = raw.MatchingPGroups,
-                MatchingSerologyNames = raw.MatchingSerology.Select(s => s.Name)
+                PGroups = raw.MatchingPGroups,
+                SerologyNames = raw.MatchingSerology.Select(s => s.Name)
             };
         }
 
-        public PhenotypeInfo<MatchingHla> RetrieveHlaMatches(string locusName, PhenotypeInfo<string> locusHla)
+        public PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(string locusName, PhenotypeInfo<string> locusHla)
         {
             return locusHla.Map((locus, position, name) => RetrieveHlaMatches(locus, name));
         }

@@ -5,14 +5,13 @@ using System.Web;
 
 namespace Nova.SearchAlgorithm.Data.Models
 {
-    // TODO: Rename to ExpandedHla
-    public class MatchingHla
+    public class ExpandedHla
     {
         public string Name { get; set; }
         public string Locus { get; set; }
         public string Type { get; set; }
         public bool IsDeleted { get; set; }
-        public IEnumerable<string> MatchingProteinGroups { get; set; }
-        public IEnumerable<string> MatchingSerologyNames { get; set; }
+        public IEnumerable<string> PGroups { get; set; }
+        public IEnumerable<string> SerologyNames { get; set; }
     }
 }

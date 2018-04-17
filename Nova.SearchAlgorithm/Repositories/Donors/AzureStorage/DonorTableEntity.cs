@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public int DonorId { get; set; }
         public string DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
-        public PhenotypeInfo<MatchingHla> MatchingHla { get; set; }
+        public PhenotypeInfo<ExpandedHla> MatchingHla { get; set; }
 
         public DonorTableEntity() { }
 

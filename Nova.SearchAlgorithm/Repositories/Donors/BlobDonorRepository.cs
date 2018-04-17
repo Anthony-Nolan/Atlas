@@ -22,9 +22,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
     static class MatchingHlaExtensions
     {
-        public static IEnumerable<string> AllMatchingHlaNames(this MatchingHla hla)
+        public static IEnumerable<string> AllMatchingHlaNames(this ExpandedHla hla)
         {
-            return (hla.MatchingProteinGroups ?? Enumerable.Empty<string>()).Union(hla.MatchingSerologyNames ?? Enumerable.Empty<string>());
+            return (hla.PGroups ?? Enumerable.Empty<string>()).Union(hla.SerologyNames ?? Enumerable.Empty<string>());
         }
     }
 
@@ -140,7 +140,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        private void InsertLocusMatch(string locusName, MatchingHla matchingHla1, MatchingHla matchingHla2, int donorId)
+        private void InsertLocusMatch(string locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
         {
             if (matchingHla1 == null)
             {

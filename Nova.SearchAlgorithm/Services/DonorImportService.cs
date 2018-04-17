@@ -42,23 +42,23 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
                 DonorId = 1,
-                MatchingHla = new PhenotypeInfo<MatchingHla>
+                MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
-                    A_1 = new MatchingHla
+                    A_1 = new ExpandedHla
                     {
                         Locus = "A",
                         Type = "Allele",
                         IsDeleted = false,
-                        MatchingProteinGroups = new List<string> { "01:01P" },
-                        MatchingSerologyNames = new List<string> { "1" }
+                        PGroups = new List<string> { "01:01P" },
+                        SerologyNames = new List<string> { "1" }
                     },
-                    A_2 = new MatchingHla
+                    A_2 = new ExpandedHla
                     {
                         Locus = "A",
                         Type = "Allele",
                         IsDeleted = false,
-                        MatchingProteinGroups = new List<string> { "01:01P" },
-                        MatchingSerologyNames = new List<string> { "1" }
+                        PGroups = new List<string> { "01:01P" },
+                        SerologyNames = new List<string> { "1" }
                     }
                 }
             });
