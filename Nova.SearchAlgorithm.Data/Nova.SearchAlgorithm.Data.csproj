@@ -137,11 +137,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\SearchDataModule.cs" />
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Entity\Entity.cs" />
-    <Compile Include="Entity\PotentialMatch.cs" />
+    <Compile Include="Entity\DonorHla.cs" />
+    <Compile Include="Entity\Donor.cs" />
     <Compile Include="Models\DonorMatchCriteria.cs" />
-    <Compile Include="Models\MatchingHla.cs" />
+    <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\SearchableDonor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\SqlDonorMatchRepository.cs" />

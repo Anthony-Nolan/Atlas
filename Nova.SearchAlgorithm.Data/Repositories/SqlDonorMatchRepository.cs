@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Models;
-using RefactorThis.GraphDiff;
+using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
@@ -16,6 +15,19 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         SearchableDonor GetDonor(int donorId);
         IEnumerable<SearchableDonor> AllDonors();
         IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest);
+    }
+
+    static class SearchDonorExtensions
+    {
+        public static Donor ToDonorEntity(this SearchableDonor donor)
+        {
+            return new Donor
+            {
+                DonorId = donor.DonorId,
+                DonorType = donor.DonorType,
+                RegistryCode = donor.RegistryCode
+            };
+        }
     }
 
     public class SqlDonorMatchRepository : IDonorMatchRepository
@@ -29,17 +41,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public IEnumerable<SearchableDonor> AllDonors()
         {
-            return context.Donors;
+            return context.Donors.Select(d => d.ToSearchableDonor());
         }
 
         public SearchableDonor GetDonor(int donorId)
         {
-            return context.Donors.First(d => d.DonorId == donorId);
+            return context.Donors.FirstOrDefault(d => d.DonorId == donorId)?.ToSearchableDonor();
         }
 
         public void InsertDonor(SearchableDonor donor)
         {
-            context.Donors.AddOrUpdate(donor);
+            context.Donors.AddOrUpdate(donor.ToDonorEntity());
+            context.SaveChanges();
         }
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
@@ -49,7 +62,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public void UpdateDonorWithNewHla(SearchableDonor donor)
         {
-            context.Donors.AddOrUpdate(donor);
+            context.Donors.AddOrUpdate(donor.ToDonorEntity());
+            context.SaveChanges();
         }
     }
 }

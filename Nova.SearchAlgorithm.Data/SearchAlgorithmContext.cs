@@ -2,7 +2,6 @@
 using System.Data.Entity;
 using System.Reflection;
 using Nova.SearchAlgorithm.Data.Entity;
-using Nova.SearchAlgorithm.Data.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Entity;
 
@@ -10,13 +9,13 @@ namespace Nova.SearchAlgorithm.Data
 {
     public interface ISearchServiceContext : IDisposable
     {
-        DbSet<SearchableDonor> Donors { get; set; }
-        DbSet<PotentialMatch> PotentialMatch { get; set; }
+        DbSet<Donor> Donors { get; set; }
+        DbSet<DonorHla> DonorHla { get; set; }
     }
 
     public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
     {
-        public const string ConnectionStringName = "SearchConnectionString";
+        public const string ConnectionStringName = "SqlConnectionString";
 
         public SearchAlgorithmContext() : this((IEntityLogger)null)
         {
@@ -39,8 +38,7 @@ namespace Nova.SearchAlgorithm.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        // TODO get the actual SQL working!
-        public DbSet<SearchableDonor> Donors { get; set; }
-        public DbSet<PotentialMatch> PotentialMatch { get; set; }
+        public DbSet<Donor> Donors { get; set; }
+        public DbSet<DonorHla> DonorHla { get; set; }
     }
 }
