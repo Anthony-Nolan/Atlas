@@ -29,17 +29,17 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public IEnumerable<SearchableDonor> AllDonors()
         {
-            throw new NotImplementedException();
+            return context.Donors;
         }
 
         public SearchableDonor GetDonor(int donorId)
         {
-            throw new NotImplementedException();
+            return context.Donors.First(d => d.DonorId == donorId);
         }
 
         public void InsertDonor(SearchableDonor donor)
         {
-            throw new NotImplementedException();
+            context.Donors.AddOrUpdate(donor);
         }
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public void UpdateDonorWithNewHla(SearchableDonor donor)
         {
-            throw new NotImplementedException();
+            context.Donors.AddOrUpdate(donor);
         }
     }
 }
