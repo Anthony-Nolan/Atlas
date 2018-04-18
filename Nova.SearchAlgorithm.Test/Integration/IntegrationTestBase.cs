@@ -22,13 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             container = CreateContainer();
             emulator.Start();
-            CleanStorage();
-        }
-
-        public void CleanStorage()
-        {
-            emulator.ClearBlobItems();
-            emulator.ClearTableItems();
+            emulator.Clear();
         }
 
         [OneTimeTearDown]
@@ -37,6 +31,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
             emulator.Stop();
         }
 
+        // This is almost a duplicate of the container in 
+        // Nova.SearchAlgorithm.Config.Modules.ServiceModule
         private IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();

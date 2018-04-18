@@ -22,14 +22,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
             ExecuteCommandOnEmulator("stop");
         }
 
-        public void ClearBlobItems()
+        public void Clear()
         {
-            ExecuteCommandOnEmulator("clear blob");
-        }
-
-        public void ClearTableItems()
-        {
-            ExecuteCommandOnEmulator("clear table");
+            ExecuteCommandOnEmulator("clear blob table");
         }
 
         private void ExecuteCommandOnEmulator(string arguments)
