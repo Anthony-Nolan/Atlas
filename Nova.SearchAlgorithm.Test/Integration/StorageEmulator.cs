@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -9,8 +10,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
 {
     public class StorageEmulator
     {
-        // TODO:configure this in case it changes from machine to machine
-        private const string StorageEmulatorLocation = @"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe";
+        private readonly string StorageEmulatorLocation = ConfigurationManager.AppSettings["emulatorLocation"];
 
         public void Start()
         {
