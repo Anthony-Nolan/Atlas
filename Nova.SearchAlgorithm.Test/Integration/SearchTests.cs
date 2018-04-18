@@ -81,5 +81,40 @@ namespace Nova.SearchAlgorithm.Test.Integration
 
             results.Should().Contain(d => d.DonorId == 1);
         }
+
+        [Test]
+        public void SixOfSixSingleDonorMismatchAtLocusA()
+        {
+            IEnumerable<DonorMatch> results = searchService.Search(new SearchRequest
+            {
+                SearchType = SearchType.Adult,
+                RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
+                MatchCriteria = new MismatchCriteria
+                {
+                    DonorMismatchCountTier1 = 0,
+                    DonorMismatchCountTier2 = 0,
+                    LocusMismatchA = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = "01:01:01:02N",
+                        SearchHla2 = "01:01:01:02N"
+                    },
+                    LocusMismatchB = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = "14:53",
+                        SearchHla2 = "14:57"
+                    },
+                    LocusMismatchDRB1 = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = "04:163",
+                        SearchHla2 = "01:04"
+                    }
+                }
+            });
+
+            results.Should().BeEmpty();
+        }
     }
 }
