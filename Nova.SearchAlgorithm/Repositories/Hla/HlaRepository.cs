@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
     public interface IHlaRepository
     {
         ExpandedHla RetrieveHlaMatches(string locusName, string hlaName);
-        PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(string locusName, PhenotypeInfo<string> locusHla);
+        PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(PhenotypeInfo<string> locusHla);
     }
 
     public class HlaRepository : IHlaRepository
@@ -70,7 +70,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             };
         }
 
-        public PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(string locusName, PhenotypeInfo<string> locusHla)
+        public PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(PhenotypeInfo<string> locusHla)
         {
             return locusHla.Map((locus, position, name) => RetrieveHlaMatches(locus, name));
         }
