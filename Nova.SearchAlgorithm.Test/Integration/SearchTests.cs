@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Services;
 using Nova.Utils.TestUtils.Assertions;
 using NUnit.Framework;
@@ -10,7 +9,8 @@ using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Hla;
-using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void ImportTestDonors()
         {
             var hlaRepository = container.Resolve<IHlaRepository>();
-            var donorRepository = container.Resolve<IDonorRepository>();
+            var donorRepository = container.Resolve<IDonorMatchRepository>();
             donorRepository.InsertDonor(new SearchableDonor
             {
                 RegistryCode = RegistryCode.AN,
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         [Test]
         public void SixOfSixSingleDonorExactMatch()
         {
-            IEnumerable<DonorMatch> results = searchService.Search(new SearchRequest
+            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
             {
                 SearchType = SearchType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         [Test]
         public void SixOfSixSingleDonorMismatchAtLocusA()
         {
-            IEnumerable<DonorMatch> results = searchService.Search(new SearchRequest
+            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
             {
                 SearchType = SearchType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
