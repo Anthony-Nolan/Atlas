@@ -74,6 +74,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(string locus, IEnumerable<string> namesToMatch)
         {
+            if (!namesToMatch.Any())
+            {
+                return Enumerable.Empty<PotentialHlaMatchRelationTableEntity>();
+            }
+
             var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>();
             foreach (string name in namesToMatch)
             {
