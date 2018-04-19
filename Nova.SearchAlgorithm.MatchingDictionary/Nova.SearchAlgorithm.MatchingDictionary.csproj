@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
+  <Import Project="..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Nova.SearchAlgorithm.MatchingDictionary</RootNamespace>
+    <AssemblyName>Nova.SearchAlgorithm.MatchingDictionary</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
+      <HintPath>..\packages\ApprovalTests.3.0.14\lib\net45\ApprovalTests.dll</HintPath>
+    </Reference>
+    <Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
+      <HintPath>..\packages\ApprovalUtilities.3.0.14\lib\net45\ApprovalUtilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Wmda\ConfidentialExtractor.cs" />
+    <Compile Include="Data\Wmda\HlaNomExtractor.cs" />
+    <Compile Include="Data\Wmda\HlaNomPExtractor.cs" />
+    <Compile Include="Data\Wmda\IWmdaDataExtractor.cs" />
+    <Compile Include="Data\Wmda\RelDnaSerExtractor.cs" />
+    <Compile Include="Data\Wmda\RelSerSerExtractor.cs" />
+    <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
+    <Compile Include="Models\HLATypes\Allele.cs" />
+    <Compile Include="Models\HLATypes\Helper.cs" />
+    <Compile Include="Models\HLATypes\HlaType.cs" />
+    <Compile Include="Models\HLATypes\LocusNames.cs" />
+    <Compile Include="Models\HLATypes\Serology.cs" />
+    <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchedHla.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchingSerology.cs" />
+    <Compile Include="Models\MatchingTypes\MatchedAllele.cs" />
+    <Compile Include="Models\MatchingTypes\MatchedHla.cs" />
+    <Compile Include="Models\MatchingTypes\SerologyMappingInfo.cs" />
+    <Compile Include="Models\MatchingTypes\SerologyMatchInfo.cs" />
+    <Compile Include="Models\MatchingTypes\SerologyToSerology.cs" />
+    <Compile Include="Models\Wmda\Assignment.cs" />
+    <Compile Include="Models\Wmda\Confidential.cs" />
+    <Compile Include="Models\Wmda\Filters\MatchLociFilter.cs" />
+    <Compile Include="Models\Wmda\Filters\MolecularFilter.cs" />
+    <Compile Include="Models\Wmda\Filters\SerologyFilter.cs" />
+    <Compile Include="Models\Wmda\HlaNom.cs" />
+    <Compile Include="Models\Wmda\HlaNomP.cs" />
+    <Compile Include="Models\Wmda\IWmdaHlaType.cs" />
+    <Compile Include="Models\Wmda\RelDnaSer.cs" />
+    <Compile Include="Models\Wmda\RelSerSer.cs" />
+    <Compile Include="Models\Wmda\SerologyAssignment.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\WmdaRepository.cs" />
+    <Compile Include="Services\AlleleMatchingService.cs" />
+    <Compile Include="Services\AlleleToSerologyMatching.cs" />
+    <Compile Include="Services\HlaMatchingService.cs" />
+    <Compile Include="Services\SerologyMatchingService.cs" />
+    <Compile Include="Services\SerologyToPGroupsMatching.cs" />
+    <Compile Include="Tests\Data\Wmda\ConfidentialTest.cs" />
+    <Compile Include="Tests\Data\Wmda\HlaNomAllelesTest.cs" />
+    <Compile Include="Tests\Data\Wmda\HlaNomPTest.cs" />
+    <Compile Include="Tests\Data\Wmda\HlaNomSerologyTest.cs" />
+    <Compile Include="Tests\Data\Wmda\MolecularTestFixtureArgs.cs" />
+    <Compile Include="Tests\Data\Wmda\RelDnaSerTest.cs" />
+    <Compile Include="Tests\Data\Wmda\RelSerSerTest.cs" />
+    <Compile Include="Tests\Data\Wmda\SerologyTestFixtureArgs.cs" />
+    <Compile Include="Tests\Data\Wmda\WmdaDataTestBase.cs" />
+    <Compile Include="Tests\Models\HlaTypes\AlleleModelTest.cs" />
+    <Compile Include="Tests\Models\HlaTypes\HlaTypeModelTest.cs" />
+    <Compile Include="Tests\Repositories\MockWmdaRepository.cs" />
+    <Compile Include="Tests\Services\AlleleMatching\AlleleMatchingTest.cs" />
+    <Compile Include="Tests\Services\AlleleMatching\AlleleMatchingTestFixtureArgs.cs" />
+    <Compile Include="Tests\Services\HlaMatching\AlleleToSerologyMatchingTest.cs" />
+    <Compile Include="Tests\Services\HlaMatching\HlaMatchingTestFixtureArgs.cs" />
+    <Compile Include="Tests\Services\HlaMatching\ReciprocalMatchingTest.cs" />
+    <Compile Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.cs" />
+    <Compile Include="Tests\Services\MatchedHlaTestBase.cs" />
+    <Compile Include="Tests\Services\MatchedHLA\MatchedHLATest.cs" />
+    <Compile Include="Tests\Services\MatchedHLA\MatchedHlaTestFixtureArgs.cs" />
+    <Compile Include="Tests\Services\MatchingServiceTestData.cs" />
+    <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTest.cs" />
+    <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTestFixtureArgs.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Tests\Data\Wmda\HlaNomSerologyTest.HlaNomContainsAllExpectedSerology.approved.txt" />
+    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom.txt" />
+    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom_p.txt" />
+    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_dna_ser.txt" />
+    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_ser_ser.txt" />
+    <Content Include="Tests\Repositories\wmda-v3-31-0\version_report.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15And70ShareMatchingPGroups.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15BroadPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15SplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B70BroadPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B70SplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.DeletedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="Tests\Services\SerologyMatching\SerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.1\build\NUnit.props'))" />
+  </Target>
+</Project>

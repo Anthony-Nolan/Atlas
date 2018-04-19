@@ -26,7 +26,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client.Tests", "Nova.SearchAlgorithm.Client.Tests\Nova.SearchAlgorithm.Client.Tests.csproj", "{8CDD810A-EC50-4B54-AA84-04277D7F9E25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data", "Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj", "{078E5F22-DF50-4F6B-A4C2-9C3A965C4BC8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data", "Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj", "{7DC2A865-304B-402B-AC56-342681368568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +52,14 @@ Global
 		{8CDD810A-EC50-4B54-AA84-04277D7F9E25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CDD810A-EC50-4B54-AA84-04277D7F9E25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CDD810A-EC50-4B54-AA84-04277D7F9E25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{078E5F22-DF50-4F6B-A4C2-9C3A965C4BC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{078E5F22-DF50-4F6B-A4C2-9C3A965C4BC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{078E5F22-DF50-4F6B-A4C2-9C3A965C4BC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{078E5F22-DF50-4F6B-A4C2-9C3A965C4BC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
