@@ -32,9 +32,24 @@ namespace Nova.SearchAlgorithm.Test.Builders
             return WithLocusMismatchA(new List<string> { hla1 }, new List<string> { hla2 }, mismatchCount);
         }
 
+        public DonorMatchCriteriaBuilder WithLocusMismatchB(string hla1, string hla2, int mismatchCount)
+        {
+            return WithLocusMismatchB(new List<string> { hla1 }, new List<string> { hla2 }, mismatchCount);
+        }
+
         public DonorMatchCriteriaBuilder WithLocusMismatchA(IEnumerable<string> hla1, IEnumerable<string> hla2, int mismatchCount)
         {
             request.LocusMismatchA = new DonorLocusMatchCriteria
+            {
+                HlaNamesToMatchInPositionOne = hla1,
+                HlaNamesToMatchInPositionTwo = hla2,
+                MismatchCount = mismatchCount,
+            };
+            return this;
+        }
+        public DonorMatchCriteriaBuilder WithLocusMismatchB(IEnumerable<string> hla1, IEnumerable<string> hla2, int mismatchCount)
+        {
+            request.LocusMismatchB = new DonorLocusMatchCriteria
             {
                 HlaNamesToMatchInPositionOne = hla1,
                 HlaNamesToMatchInPositionTwo = hla2,
