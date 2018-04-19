@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     {
                         MismatchCount = 0,
                         SearchHla1 = "14:53",
-                        SearchHla2 = "14:57"
+                        SearchHla2 = "14:47"
                     },
                     LocusMismatchDRB1 = new LocusMismatchCriteria
                     {
@@ -103,7 +103,42 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     {
                         MismatchCount = 0,
                         SearchHla1 = "14:53",
-                        SearchHla2 = "14:57"
+                        SearchHla2 = "14:47"
+                    },
+                    LocusMismatchDRB1 = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = "04:163",
+                        SearchHla2 = "01:04"
+                    }
+                }
+            });
+
+            results.Should().BeEmpty();
+        }
+
+        [Test]
+        public void SixOfSixSingleDonorMismatchAtLocusB()
+        {
+            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
+            {
+                SearchType = SearchType.Adult,
+                RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
+                MatchCriteria = new MismatchCriteria
+                {
+                    DonorMismatchCountTier1 = 0,
+                    DonorMismatchCountTier2 = 0,
+                    LocusMismatchA = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = "01:02",
+                        SearchHla2 = "01:02"
+                    },
+                    LocusMismatchB = new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = "07:02:01:01",
+                        SearchHla2 = "07:02:13"
                     },
                     LocusMismatchDRB1 = new LocusMismatchCriteria
                     {

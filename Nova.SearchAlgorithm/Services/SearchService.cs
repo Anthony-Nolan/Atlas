@@ -27,26 +27,38 @@ namespace Nova.SearchAlgorithm.Services
 
         public IEnumerable<PotentialMatch> Search(SearchRequest searchRequest)
         {
-            // TODO:NOVA-931 extend beyond locus A
-            var hlaA1 = hlaRepository.RetrieveHlaMatches("A", searchRequest.MatchCriteria.LocusMismatchA.SearchHla1);
-            var hlaA2 = hlaRepository.RetrieveHlaMatches("A", searchRequest.MatchCriteria.LocusMismatchA.SearchHla2);
-
-            // TODO:NOVA-931 test antigen vs serology search behaviour
             DonorMatchCriteria criteria = new DonorMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
                 DonorMismatchCountTier1 = searchRequest.MatchCriteria.DonorMismatchCountTier1,
                 DonorMismatchCountTier2 = searchRequest.MatchCriteria.DonorMismatchCountTier2,
-                LocusMismatchA = new DonorLocusMatchCriteria
-                {
-                    MismatchCount = searchRequest.MatchCriteria.LocusMismatchA.MismatchCount,
-                    HlaNamesToMatchInPositionOne = hlaA1.PGroups,
-                    HlaNamesToMatchInPositionTwo = hlaA2.PGroups,
-                }
+                LocusMismatchA = MapMismatchToMatchCriteria("A", searchRequest.MatchCriteria.LocusMismatchA),
+                LocusMismatchB = MapMismatchToMatchCriteria("B", searchRequest.MatchCriteria.LocusMismatchB),
+                LocusMismatchC = MapMismatchToMatchCriteria("C", searchRequest.MatchCriteria.LocusMismatchC),
+                LocusMismatchDRB1 = MapMismatchToMatchCriteria("DRB1", searchRequest.MatchCriteria.LocusMismatchDRB1),
+                LocusMismatchDQB1 = MapMismatchToMatchCriteria("DQB1", searchRequest.MatchCriteria.LocusMismatchDQB1),
             };
 
             return donorRepository.Search(criteria);
+        }
+
+        private DonorLocusMatchCriteria MapMismatchToMatchCriteria(string locusName, LocusMismatchCriteria mismatch)
+        {
+            if (mismatch == null)
+            {
+                return null;
+            }
+
+            var hla1 = hlaRepository.RetrieveHlaMatches(locusName, mismatch.SearchHla1);
+            var hla2 = hlaRepository.RetrieveHlaMatches(locusName, mismatch.SearchHla2);
+
+            return new DonorLocusMatchCriteria
+            {
+                MismatchCount = mismatch.MismatchCount,
+                HlaNamesToMatchInPositionOne = hla1.PGroups,
+                HlaNamesToMatchInPositionTwo = hla2.PGroups,
+            };
         }
     }
 }
