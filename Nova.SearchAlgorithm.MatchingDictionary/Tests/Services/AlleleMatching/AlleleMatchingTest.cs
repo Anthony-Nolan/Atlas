@@ -22,10 +22,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.AlleleMatching
                 .ToList();
 
             var expressed = pGroupCounts.Where(p =>
-                !p.Allele.IsNullExpressor && p.PGroupCount != 1);
+                !p.Allele.IsNullExpresser && p.PGroupCount != 1);
 
             var notExpressed = pGroupCounts.Where(p =>
-                p.Allele.IsNullExpressor && p.PGroupCount != 0);
+                p.Allele.IsNullExpresser && p.PGroupCount != 0);
 
             Assert.Multiple(() =>
             {

@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
             var isAlleleFamilyInvalidSerology =
                 !allele.IsDeleted
-                && !allele.IsNullExpressor
+                && !allele.IsNullExpresser
                 && !serologyToSerology.Any(s => s.HlaType.Equals(alleleFamily));
 
             if (isAlleleFamilyInvalidSerology)

@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Models.HlaTypes
         }
 
         [TestCaseSource(nameof(_alleles))]
-        public void NullExpressorCorrectlyIdentified(
+        public void NullExpresserCorrectlyIdentified(
             Allele normalAllele,
             Allele lowAllele,
             Allele questionableAllele,
@@ -51,13 +51,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Models.HlaTypes
             Allele cytoplasmAllele,
             Allele nullAllele)
         {
-            Assert.IsFalse(normalAllele.IsNullExpressor);
-            Assert.IsFalse(lowAllele.IsNullExpressor);
-            Assert.IsFalse(questionableAllele.IsNullExpressor);
-            Assert.IsFalse(secretedAllele.IsNullExpressor);
-            Assert.IsFalse(aberrantAllele.IsNullExpressor);
-            Assert.IsFalse(cytoplasmAllele.IsNullExpressor);
-            Assert.IsTrue(nullAllele.IsNullExpressor);
+            Assert.IsFalse(normalAllele.IsNullExpresser);
+            Assert.IsFalse(lowAllele.IsNullExpresser);
+            Assert.IsFalse(questionableAllele.IsNullExpresser);
+            Assert.IsFalse(secretedAllele.IsNullExpresser);
+            Assert.IsFalse(aberrantAllele.IsNullExpresser);
+            Assert.IsFalse(cytoplasmAllele.IsNullExpresser);
+            Assert.IsTrue(nullAllele.IsNullExpresser);
         }
 
         [TestCaseSource(nameof(_alleles))]

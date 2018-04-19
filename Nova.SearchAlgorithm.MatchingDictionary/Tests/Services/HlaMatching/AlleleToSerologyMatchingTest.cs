@@ -69,7 +69,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
                 });
 
             Assert.IsEmpty(serologyCounts.Where(s =>
-                s.Allele.IsNullExpressor && s.SerologyCount != 0));
+                s.Allele.IsNullExpresser && s.SerologyCount != 0));
         }
 
         [Test]

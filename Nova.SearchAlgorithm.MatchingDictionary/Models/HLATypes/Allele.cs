@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
 {
@@ -9,13 +8,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
     {
         public IEnumerable<string> Fields { get; }
         public string ExpressionSuffix { get; }
-        public bool IsNullExpressor { get; }
+        public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
 
         public Allele(string wmdaLocus, string hlaName, bool isDeleted = false) : base(wmdaLocus, hlaName, isDeleted)
         {
             ExpressionSuffix = GetExpressionSuffix(hlaName);
-            IsNullExpressor = AlleleExpression.NullExpressionSuffixes.Contains(ExpressionSuffix);
+            IsNullExpresser = AlleleExpression.NullExpressionSuffixes.Contains(ExpressionSuffix);
 
             var fields = GetFields(hlaName, ExpressionSuffix).ToList();
             Fields = fields;
