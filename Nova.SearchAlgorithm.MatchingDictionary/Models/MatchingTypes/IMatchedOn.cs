@@ -2,7 +2,7 @@
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public interface IMatchedHla
+    public interface IMatchedOn
     {
         HlaType HlaType { get; }
         HlaType TypeUsedInMatching { get; }

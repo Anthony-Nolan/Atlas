@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.MatchedHLA
+namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.MatchedOn
 {
-    public class MatchedHlaTestFixtureArgs : IEnumerable
+    public class MatchedOnTestFixtureArgs : IEnumerable
     {
         public IEnumerator GetEnumerator()
         {

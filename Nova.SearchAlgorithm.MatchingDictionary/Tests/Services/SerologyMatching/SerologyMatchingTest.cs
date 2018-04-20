@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.SerologyMatchin
 {
     [TestFixtureSource(typeof(SerologyMatchingTestFixtureArgs))]
     [UseReporter(typeof(NUnitReporter))]
-    public class SerologyMatchingTest : MatchedHlaTestBase<IMatchingSerology>
+    public class SerologyMatchingTest : MatchedOnTestBase<IMatchingSerology>
     {
         public SerologyMatchingTest(IEnumerable<IMatchingSerology> matchingSerology) : base(matchingSerology)
         {

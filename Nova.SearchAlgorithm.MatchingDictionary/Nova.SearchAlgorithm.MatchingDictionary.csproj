@@ -72,7 +72,7 @@
     <Compile Include="Models\HLATypes\LocusNames.cs" />
     <Compile Include="Models\HLATypes\Serology.cs" />
     <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
-    <Compile Include="Models\MatchingTypes\IMatchedHla.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchedOn.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingSerology.cs" />
     <Compile Include="Models\MatchingTypes\MatchedAllele.cs" />
@@ -116,9 +116,9 @@
     <Compile Include="Tests\Services\HlaMatching\HlaMatchingTestFixtureArgs.cs" />
     <Compile Include="Tests\Services\HlaMatching\ReciprocalMatchingTest.cs" />
     <Compile Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.cs" />
-    <Compile Include="Tests\Services\MatchedHlaTestBase.cs" />
-    <Compile Include="Tests\Services\MatchedHLA\MatchedHLATest.cs" />
-    <Compile Include="Tests\Services\MatchedHLA\MatchedHlaTestFixtureArgs.cs" />
+    <Compile Include="Tests\Services\MatchedOnTestBase.cs" />
+    <Compile Include="Tests\Services\MatchedOn\MatchedOnTest.cs" />
+    <Compile Include="Tests\Services\MatchedOn\MatchedOnTestFixtureArgs.cs" />
     <Compile Include="Tests\Services\MatchingServiceTestData.cs" />
     <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTest.cs" />
     <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTestFixtureArgs.cs" />
