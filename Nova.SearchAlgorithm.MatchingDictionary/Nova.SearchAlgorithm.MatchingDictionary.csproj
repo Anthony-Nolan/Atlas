@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AlphaFS, Version=2.1.0.0, Culture=neutral, PublicKeyToken=4d31a58f7d7ad5c9, processorArchitecture=MSIL">
+      <HintPath>..\packages\AlphaFS.2.1.3\lib\net452\AlphaFS.dll</HintPath>
+    </Reference>
     <Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
       <HintPath>..\packages\ApprovalTests.3.0.14\lib\net45\ApprovalTests.dll</HintPath>
     </Reference>
@@ -124,29 +127,75 @@
     <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTestFixtureArgs.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Tests\Data\Wmda\HlaNomSerologyTest.HlaNomContainsAllExpectedSerology.approved.txt" />
-    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom.txt" />
-    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom_p.txt" />
-    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_dna_ser.txt" />
-    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_ser_ser.txt" />
-    <Content Include="Tests\Repositories\wmda-v3-31-0\version_report.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15And70ShareMatchingPGroups.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B70BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B70SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.DeletedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\SerologyMatching\SerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt" />
+    <Content Include="Tests\Data\Wmda\HlaNomSerologyTest.HlaNomContainsAllExpectedSerology.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom_p.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_dna_ser.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_ser_ser.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Repositories\wmda-v3-31-0\version_report.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15And70ShareMatchingPGroups.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15BroadPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B15SplitPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B70BroadPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.B70SplitPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.DeletedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\HlaMatching\SerologyToAlleleMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\Services\SerologyMatching\SerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
