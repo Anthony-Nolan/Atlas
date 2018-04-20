@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Data
 {
     public static class LocusNames
     {
@@ -18,6 +18,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
                 Match = match;
             }
         }
+        
+        public static IEnumerable<string> SerologyLoci => Names.Select(n => n.Serology);
+        public static IEnumerable<string> MolecularLoci => Names.Select(n => n.Molecular);
+        public static IEnumerable<string> MatchLoci => Names.Select(n => n.Match);
 
         private static readonly List<LocusName> Names = new List<LocusName>
         {

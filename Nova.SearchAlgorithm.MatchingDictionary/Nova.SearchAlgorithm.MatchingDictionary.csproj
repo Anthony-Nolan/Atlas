@@ -72,7 +72,7 @@
     <Compile Include="Models\HLATypes\Allele.cs" />
     <Compile Include="Models\HLATypes\Helper.cs" />
     <Compile Include="Models\HLATypes\HlaType.cs" />
-    <Compile Include="Models\HLATypes\LocusNames.cs" />
+    <Compile Include="Data\LocusNames.cs" />
     <Compile Include="Models\HLATypes\Serology.cs" />
     <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedOn.cs" />

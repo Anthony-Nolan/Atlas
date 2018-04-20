@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Data;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters
 {
@@ -8,7 +9,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters
 
         private MolecularFilter()
         {
-            MatchLoci = new List<string> { "A*", "B*", "C*", "DQB1*", "DRB1*" };
+            MatchLoci = new List<string> (LocusNames.MolecularLoci);
             Filter = entry => MatchLoci.Contains(entry.WmdaLocus);
         }
     }
