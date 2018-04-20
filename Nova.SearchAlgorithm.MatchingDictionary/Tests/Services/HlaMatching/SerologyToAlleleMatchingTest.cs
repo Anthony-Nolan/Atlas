@@ -10,9 +10,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
 {
     [TestFixtureSource(typeof(HlaMatchingTestFixtureArgs), "MatchedSerology")]
     [UseReporter(typeof(NUnitReporter))]
-    public class SerologyToAlleleMatchingTest : MatchedOnTestBase<MatchedHla>
+    public class SerologyToAlleleMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
-        public SerologyToAlleleMatchingTest(IEnumerable<MatchedHla> matchingTypes) : base(matchingTypes)
+        public SerologyToAlleleMatchingTest(IEnumerable<IMatchedHla> matchingTypes) : base(matchingTypes)
         {
         }
 

@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IHlaMatchingService
     {
-        IEnumerable<MatchedHla> MatchAllHla(
+        IEnumerable<IMatchedHla> MatchAllHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter);
     }
 
@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             _serologyMatchingService = serologyMatchingService;
         }
 
-        public IEnumerable<MatchedHla> MatchAllHla(
+        public IEnumerable<IMatchedHla> MatchAllHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
         {
             var allelesToPGroups = _alleleMatchingService.MatchAllelesToPGroups(molecularFilter).ToList();
@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             var matchedAlleles = new AlleleToSerologyMatching().MatchAllelesToSerology(allelesToPGroups, serologyToSerology, relDnaSer);
             var matchedSerology = new SerologyToPGroupsMatching().MatchSerologyToAlleles(allelesToPGroups, serologyToSerology, relDnaSer);
 
-            var allMatchingHla = new List<MatchedHla>();
+            var allMatchingHla = new List<IMatchedHla>();
             allMatchingHla.AddRange(matchedAlleles);
             allMatchingHla.AddRange(matchedSerology);
 

@@ -4,7 +4,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class MatchedHla : IMatchingPGroups, IMatchingSerology
+    public interface IMatchedHla : IMatchingPGroups, IMatchingSerology
+    {
+        
+    }
+
+    public class MatchedHla : IMatchedHla
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }

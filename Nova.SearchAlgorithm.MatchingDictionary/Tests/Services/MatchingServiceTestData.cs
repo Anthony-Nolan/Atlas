@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services
     {
         public static MatchingServiceTestData Instance { get; } = new MatchingServiceTestData();
 
-        public IEnumerable<MatchedHla> AllMatchedHla { get; }
+        public IEnumerable<IMatchedHla> AllMatchedHla { get; }
         public IEnumerable<IMatchingPGroups> AllelesToPGroups { get; }
         public IEnumerable<IMatchingSerology> SerologyToSerology { get; }
 

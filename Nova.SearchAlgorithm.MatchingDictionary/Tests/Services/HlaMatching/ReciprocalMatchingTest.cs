@@ -6,9 +6,9 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
 {
     [TestFixtureSource(typeof(HlaMatchingTestFixtureArgs), "MatchedHla")]
-    public class ReciprocalMatchingTest : MatchedOnTestBase<MatchedHla>
+    public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
-        public ReciprocalMatchingTest(IEnumerable<MatchedHla> matchingTypes) : base(matchingTypes)
+        public ReciprocalMatchingTest(IEnumerable<IMatchedHla> matchingTypes) : base(matchingTypes)
         {
         }
 
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             IsReciprocallyMatchedTest(alleleDrb1, serologyDrb1);
         }
 
-        private static void IsReciprocallyMatchedTest(MatchedHla allele, MatchedHla serology)
+        private static void IsReciprocallyMatchedTest(IMatchedHla allele, IMatchedHla serology)
         {
             Assert.IsTrue(allele.MatchingSerologies.Contains(serology.HlaType));
             Assert.IsTrue(serology.MatchingPGroups.Intersect(allele.MatchingPGroups).Any());
