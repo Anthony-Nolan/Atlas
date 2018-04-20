@@ -3,7 +3,7 @@ using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public class SerologyToPGroupsMatching
     {

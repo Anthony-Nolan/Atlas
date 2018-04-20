@@ -7,7 +7,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public interface IAlleleMatchingService
     {
