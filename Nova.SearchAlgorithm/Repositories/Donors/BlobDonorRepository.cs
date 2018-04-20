@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         SearchableDonor GetDonor(int donorId);
         IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId);
         IEnumerable<SearchableDonor> AllDonors();
-        IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria);
+        IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(string locus, LocusSearchCriteria criteria);
 
     }
 
@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             this.mapper = mapper;
         }
         
-        public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registries, string locus, LocusSearchCriteria criteria)
+        public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(string locus, LocusSearchCriteria criteria)
         {
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
             var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);

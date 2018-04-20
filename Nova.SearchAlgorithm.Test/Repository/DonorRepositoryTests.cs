@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Service
         {
             repositoryUnderTest = new BlobDonorMatchRepository(GetFake<IDonorBlobRepository>());
 
-            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus(SearchType.Adult, Arg.Any<IEnumerable<RegistryCode>>(), "A", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus("A", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor("A", TypePositions.One, TypePositions.One, exactMatch, PGroupA1),
                 HlaMatchFor("A", TypePositions.Two, TypePositions.Two, exactMatch, PGroupA2),
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Service
                 HlaMatchFor("A", TypePositions.Two, TypePositions.One, bothGroupsMatchPositionOne, PGroupA2),
             });
 
-            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus(SearchType.Adult, Arg.Any<IEnumerable<RegistryCode>>(), "B", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus("B", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor("B", TypePositions.One, TypePositions.Both, exactMatch, PGroupB),
                 HlaMatchFor("B", TypePositions.Two, TypePositions.Both, exactMatch, PGroupB),
@@ -63,7 +63,9 @@ namespace Nova.SearchAlgorithm.Test.Service
             GetFake<IDonorBlobRepository>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
             GetFake<IDonorBlobRepository>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
 
-            criteriaBuilder = new DonorMatchCriteriaBuilder().WithLocusMismatchB(PGroupB, PGroupB, 2);
+            criteriaBuilder = new DonorMatchCriteriaBuilder()
+                .WithDonorMismatchCounts(2,2)
+                .WithLocusMismatchB(PGroupB, PGroupB, 2);
         }
 
         private PotentialHlaMatchRelation HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, SearchableDonor donor, string hlaMatchName)
@@ -86,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Service
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
-            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(2);
+            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(4);
         }
 
         [Test]
@@ -117,29 +119,29 @@ namespace Nova.SearchAlgorithm.Test.Service
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
-            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(2);
+            results.Where(d => d.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
         }
 
         [Test]
-        public void SingleMatchDonorOnSearchSideIsNotReturnedWhenOneMatchRequired()
+        public void SingleMatchDonorOnSearchSideIsReturnedWhenOneMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
-            results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
         }
 
         [Test]
-        public void SingleMatchDonorOnMatchSideIsNotReturnedWhenOneMatchRequired()
+        public void SingleMatchDonorOnMatchSideIsReturnedWhenOneMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
-            results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
         }
 
         [Test]
@@ -150,7 +152,7 @@ namespace Nova.SearchAlgorithm.Test.Service
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
-            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(2);
+            results.Where(d => d.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
         }
 
         [Test]
@@ -161,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Service
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
-            results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
         }
 
         [Test]
@@ -172,7 +174,7 @@ namespace Nova.SearchAlgorithm.Test.Service
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
-            results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
         }
     }
 }

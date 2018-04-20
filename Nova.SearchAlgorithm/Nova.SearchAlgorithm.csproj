@@ -238,7 +238,7 @@
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\HlaException.cs" />
     <Compile Include="Models\RawDonor.cs" />
-    <Compile Include="Repositories\Donors\HlaMatch.cs" />
+    <Compile Include="Repositories\Donors\PotentialHlaMatch.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />

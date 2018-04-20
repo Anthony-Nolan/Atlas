@@ -21,24 +21,44 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
         {
-            // TODO:NOVA-931 extend beyond locus A
-            LocusSearchCriteria criteriaA = new LocusSearchCriteria
+            // TODO:NOVA-931 extend beyond loci A and B
+            // TODO:NOVA-931 handle missing donor hla
+            var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "A", matchRequest.LocusMismatchA);
+            var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "B", matchRequest.LocusMismatchB);
+
+            var matches = matchesAtA.Union(matchesAtB)
+                .GroupBy(m => m.Key)
+                .Select(g => new PotentialMatch
+                {
+                    DonorId = g.Key,
+                    TotalMatchCount = g.Sum(m => m.Value.MatchCount ?? 0),
+                    MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key] : new LocusMatchDetails { MatchCount = 0 },
+                    MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key] : new LocusMatchDetails { MatchCount = 0 },
+                })
+                .Where(m => m.TotalMatchCount >= 4 - matchRequest.DonorMismatchCountTier1)
+                // TODO:NOVA-931 handle absent criteria at locus
+                .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
+                .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount);
+
+            // TODO:NOVA-931 Augment with registry and other data from GetDonor(id)
+            return matches;
+        }
+
+        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registriesToSearch, string locusName, DonorLocusMatchCriteria criteria)
+        {
+            LocusSearchCriteria repoCriteria = new LocusSearchCriteria
             {
-                SearchType = matchRequest.SearchType,
-                Registries = matchRequest.RegistriesToSearch,
-                HlaNamesToMatchInPositionOne = matchRequest.LocusMismatchA.HlaNamesToMatchInPositionOne,
-                HlaNamesToMatchInPositionTwo = matchRequest.LocusMismatchA.HlaNamesToMatchInPositionTwo,
+                SearchType = searchType,
+                Registries = registriesToSearch,
+                HlaNamesToMatchInPositionOne = criteria.HlaNamesToMatchInPositionOne,
+                HlaNamesToMatchInPositionTwo = criteria.HlaNamesToMatchInPositionTwo,
             };
 
-            var matches = donorBlobRepository.GetDonorMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "A", criteriaA)
-                .GroupBy(m => m.DonorId);
+            var matches = donorBlobRepository.GetDonorMatchesAtLocus(locusName, repoCriteria)
+                .GroupBy(m => m.DonorId)
+                .ToDictionary(g => g.Key, LocusMatchFromGroup);
 
-            if (matchRequest.LocusMismatchA.MismatchCount == 0)
-            {
-                matches = matches.Where(g => DirectMatch(g) || CrossMatch(g));
-            }
-
-            return matches.Select(DonorMatchFromGroup);
+            return matches;
         }
 
         private bool DirectMatch(IEnumerable<PotentialHlaMatchRelation> matches)
@@ -53,14 +73,12 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 && matches.Where(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One)).Any();
         }
 
-        private PotentialMatch DonorMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group)
+        private LocusMatchDetails LocusMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group)
         {
-            var donor = donorBlobRepository.GetDonor(group.Key).ToApiDonorMatch();
-
-            // TODO:NOVA-931 extend beyond locus A
-            donor.TotalMatchCount = DirectMatch(group) || CrossMatch(group) ? 2 : 1;
-
-            return donor;
+            return new LocusMatchDetails
+            {
+                MatchCount = DirectMatch(group) || CrossMatch(group) ? 2 : 1
+            };
         }
 
         public SearchableDonor GetDonor(int donorId)
