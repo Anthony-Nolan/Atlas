@@ -234,7 +234,6 @@
     <Compile Include="Controllers\DonorController.cs" />
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
-    <Compile Include="Controllers\HlaMatchesController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\HlaException.cs" />
