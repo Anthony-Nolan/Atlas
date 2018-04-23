@@ -33,7 +33,6 @@ namespace Nova.SearchAlgorithm.Test.Builders
                 SearchHla1 = hla1,
                 SearchHla2 = hla2,
                 MismatchCount = mismatchCount,
-                IsAntigenLevel = true
             };
             return this;
         }

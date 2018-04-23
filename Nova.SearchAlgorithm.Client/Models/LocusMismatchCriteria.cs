@@ -16,10 +16,5 @@
         /// Total number of mismatches permitted, either 0, 1 or 2.
         /// </summary>
         public int MismatchCount { get; set; }
-
-        /// <summary>
-        /// Dictates whether matches at this locus should be counted at antigen level.
-        /// </summary>
-        public bool IsAntigenLevel { get; set; }
     }
 }
