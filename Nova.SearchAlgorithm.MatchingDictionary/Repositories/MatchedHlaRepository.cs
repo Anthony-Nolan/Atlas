@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     public interface IMatchedHlaRepository
     {
         void RecreateDictionaryTable(IEnumerable<IMatchedHla> dictionaryContents);
+        IMatchedHla GetMatchedHlaWhereExactMatch(string partition, string rowKey);
     }
 
     public class MatchedHlaRepository : IMatchedHlaRepository
@@ -17,26 +18,41 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         private const int BatchSize = 100;
         private const string TableReference = "MatchedHlaDictionary";
         private readonly ICloudTableFactory tableFactory;
+        private CloudTable table;
 
         public MatchedHlaRepository(ICloudTableFactory factory)
         {
             tableFactory = factory;
+            GetDictionaryTable();
         }
 
         public void RecreateDictionaryTable(IEnumerable<IMatchedHla> dictionaryContents)
         {
-            var table = DropCreateTable();
-            InsertContentsIntoDictionaryTable(dictionaryContents.ToList(), table);
+            DropCreateTable();
+            InsertContentsIntoDictionaryTable(dictionaryContents.ToList());
         }
 
-        private CloudTable DropCreateTable()
+        public IMatchedHla GetMatchedHlaWhereExactMatch(string partition, string rowKey)
         {
-            var table = tableFactory.GetTable(TableReference);
-            table.DeleteIfExists();
-            return tableFactory.GetTable(TableReference);
+            return table
+                .CreateQuery<MatchedHlaTableEntity>()
+                .Where(entity => entity.PartitionKey.Equals(partition) && entity.RowKey.Equals(rowKey))
+                .FirstOrDefault()
+                ?.ToMatchedHla();
         }
 
-        private static void InsertContentsIntoDictionaryTable(IReadOnlyCollection<IMatchedHla> contents, CloudTable table)
+        private void GetDictionaryTable()
+        {
+            table = tableFactory.GetTable(TableReference);
+        }
+
+        private void DropCreateTable()
+        {
+            table.DeleteIfExists();
+            GetDictionaryTable();
+        }
+
+        private void InsertContentsIntoDictionaryTable(IReadOnlyCollection<IMatchedHla> contents)
         {
             foreach (var partition in LocusNames.MatchLoci)
             {
@@ -48,12 +64,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
                 for (var i = 0; i < entitiesForPartition.Count; i = i + BatchSize)
                 {
                     var batchToInsert = entitiesForPartition.Skip(i).Take(BatchSize).ToList();
-                    BatchInsertIntoDictionaryTable(batchToInsert, table);
+                    BatchInsertIntoDictionaryTable(batchToInsert);
                 }
             }
         }
-        
-        private static void BatchInsertIntoDictionaryTable(List<MatchedHlaTableEntity> entities, CloudTable table)
+
+        private void BatchInsertIntoDictionaryTable(List<MatchedHlaTableEntity> entities)
         {
             var batchOperation = new TableBatchOperation();
             entities.ForEach(entity => batchOperation.Insert(entity));

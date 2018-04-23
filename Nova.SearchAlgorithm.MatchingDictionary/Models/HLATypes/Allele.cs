@@ -11,14 +11,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
 
-        public Allele(string wmdaLocus, string hlaName, bool isDeleted = false) : base(wmdaLocus, hlaName, isDeleted)
+        public Allele(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
         {
-            ExpressionSuffix = GetExpressionSuffix(hlaName);
+            ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = AlleleExpression.NullExpressionSuffixes.Contains(ExpressionSuffix);
 
-            var fields = GetFields(hlaName, ExpressionSuffix).ToList();
+            var fields = GetFields(name, ExpressionSuffix).ToList();
             Fields = fields;
-            TwoFieldName = fields.Count >= 2 ? $"{fields.ElementAt(0)}:{fields.ElementAt(1)}{ExpressionSuffix}" : hlaName;
+            TwoFieldName = fields.Count >= 2 ? $"{fields.ElementAt(0)}:{fields.ElementAt(1)}{ExpressionSuffix}" : name;
         }
 
         public Allele(Allele allele) : this(allele.WmdaLocus, allele.Name, allele.IsDeleted)

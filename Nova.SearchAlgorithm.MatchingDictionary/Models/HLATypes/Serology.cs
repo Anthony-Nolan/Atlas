@@ -28,8 +28,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
         {
         }
 
-        public Serology(string wmdaLocus, string hlaName, Subtype subtype, bool isDeleted = false) 
-            : base(wmdaLocus, hlaName, isDeleted)
+        [JsonConstructor]
+        public Serology(string wmdaLocus, string name, Subtype subtype, bool isDeleted = false) 
+            : base(wmdaLocus, name, isDeleted)
         {
             Subtype = subtype;
         }

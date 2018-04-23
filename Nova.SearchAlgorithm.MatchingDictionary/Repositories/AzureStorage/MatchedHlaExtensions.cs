@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
         internal static IMatchedHla ToMatchedHla(this MatchedHlaTableEntity result)
         {
-            return JsonConvert.DeserializeObject<IMatchedHla>(result.SerialisedMatchedHla);
+            return JsonConvert.DeserializeObject<MatchedHla>(result.SerialisedMatchedHla);
         }
     }
 }

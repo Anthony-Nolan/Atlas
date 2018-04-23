@@ -1,5 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Web.Http;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
@@ -7,10 +8,12 @@ namespace Nova.SearchAlgorithm.Controllers
     public class MatchingDictionaryController : ApiController
     {
         private readonly IManageDictionaryService manageService;
+        private readonly IMatchedHlaRepository dictionaryRepository;
 
-        public MatchingDictionaryController(IManageDictionaryService service)
+        public MatchingDictionaryController(IManageDictionaryService manageService, IMatchedHlaRepository dictionaryRepository)
         {
-            manageService = service;
+            this.manageService = manageService;
+            this.dictionaryRepository = dictionaryRepository;
         }
 
         [HttpPost]
@@ -19,6 +22,14 @@ namespace Nova.SearchAlgorithm.Controllers
         {
             manageService.RecreateDictionary();
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("lookup")]
+        public IHttpActionResult GetMatchedHla(string locus, string lookupTerm)
+        {
+            var result = dictionaryRepository.GetMatchedHlaWhereExactMatch(locus, lookupTerm);
+            return Ok(result);
         }
     }
 }

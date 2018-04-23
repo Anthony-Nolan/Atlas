@@ -12,12 +12,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
         public string Name { get; }
         public bool IsDeleted { get; }
 
-        public HlaType(string wmdaLocus, string hlaName, bool isDeleted = false)
+        public HlaType(string wmdaLocus, string name, bool isDeleted = false)
         {
             WmdaLocus = wmdaLocus;
-            Name = hlaName;
+            Name = name;
             IsDeleted = isDeleted;
-            MatchLocus = SetMatchLocus(wmdaLocus, hlaName);
+            MatchLocus = SetMatchLocus(wmdaLocus, name);
         }
 
         public override string ToString()
@@ -54,10 +54,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
             }
         }
 
-        protected static string SetMatchLocus(string wmdaLocus, string hlaName)
+        protected static string SetMatchLocus(string wmdaLocus, string name)
         {
-            if (wmdaLocus.Equals("DR") && Drb345Serologies.Drb345Types.Contains(hlaName))
-                throw new ArgumentException($"{hlaName} is part of DRB345, not DRB1.");
+            if (wmdaLocus.Equals("DR") && Drb345Serologies.Drb345Types.Contains(name))
+                throw new ArgumentException($"{name} is part of DRB345, not DRB1.");
 
             var matchLocus = LocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
 
