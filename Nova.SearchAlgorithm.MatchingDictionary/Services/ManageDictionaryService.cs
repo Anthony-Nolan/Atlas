@@ -6,28 +6,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IManageDictionaryService
     {
-        void RecreateDictionary();
+        void RecreateDictionary(IWmdaRepository wmdaRepository);
     }
     public class ManageDictionaryService : IManageDictionaryService
     {
-        private readonly IMatchedHlaRepository dictionaryRepo;
+        private readonly IMatchedHlaRepository dictionaryRepository;
 
         public ManageDictionaryService(IMatchedHlaRepository repository)
         {
-            dictionaryRepo = repository;
+            dictionaryRepository = repository;
         }
 
-        public void RecreateDictionary()
+        public void RecreateDictionary(IWmdaRepository wmdaRepository)
         {
-            var wmdaRepo = WmdaRepository.Instance;
-            var alleleMatcher = new AlleleMatchingService(wmdaRepo);
-            var serologyMatcher = new SerologyMatchingService(wmdaRepo);
+            var alleleMatcher = new AlleleMatchingService(wmdaRepository);
+            var serologyMatcher = new SerologyMatchingService(wmdaRepository);
 
             var allMatchedHla = 
-                new HlaMatchingService(wmdaRepo, alleleMatcher, serologyMatcher)
+                new HlaMatchingService(wmdaRepository, alleleMatcher, serologyMatcher)
                     .MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
 
-            dictionaryRepo.RecreateDictionaryTable(allMatchedHla);
+            dictionaryRepository.RecreateDictionaryTable(allMatchedHla);
         }
     }
 }

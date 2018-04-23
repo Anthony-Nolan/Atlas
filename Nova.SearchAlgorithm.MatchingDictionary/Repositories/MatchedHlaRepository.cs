@@ -16,45 +16,48 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     {
         private const int BatchSize = 100;
         private const string TableReference = "MatchedHlaDictionary";
-        private readonly CloudTable selectedDictionaryTable;
+        private readonly ICloudTableFactory tableFactory;
 
-        public MatchedHlaRepository()
+        public MatchedHlaRepository(ICloudTableFactory factory)
         {
-            selectedDictionaryTable = new CloudTableFactory().GetTable(TableReference);
+            tableFactory = factory;
         }
 
         public void RecreateDictionaryTable(IEnumerable<IMatchedHla> dictionaryContents)
         {
-            DeleteDictionaryTable();
+            var table = DropCreateTable();
+            InsertContentsIntoDictionaryTable(dictionaryContents.ToList(), table);
+        }
 
-            var contents = dictionaryContents.ToList();
+        private CloudTable DropCreateTable()
+        {
+            var table = tableFactory.GetTable(TableReference);
+            table.DeleteIfExists();
+            return tableFactory.GetTable(TableReference);
+        }
+
+        private static void InsertContentsIntoDictionaryTable(IReadOnlyCollection<IMatchedHla> contents, CloudTable table)
+        {
             foreach (var partition in LocusNames.MatchLoci)
             {
-                BatchInsertIntoDictionaryTable(
-                    contents
-                        .Where(hla => hla.HlaType.MatchLocus.Equals(partition))
-                        .Select(hla => hla.ToTableEntity())
-                        .ToList()
-                        );
+                var entitiesForPartition = contents
+                    .Where(hla => hla.HlaType.MatchLocus.Equals(partition))
+                    .Select(hla => hla.ToTableEntity())
+                    .ToList();
+
+                for (var i = 0; i < entitiesForPartition.Count; i = i + BatchSize)
+                {
+                    var batchToInsert = entitiesForPartition.Skip(i).Take(BatchSize).ToList();
+                    BatchInsertIntoDictionaryTable(batchToInsert, table);
+                }
             }
         }
-
-        private void DeleteDictionaryTable()
-        {
-            selectedDictionaryTable.DeleteIfExists();
-        }
-
-        private void BatchInsertIntoDictionaryTable(IReadOnlyCollection<MatchedHlaTableEntity> entities)
+        
+        private static void BatchInsertIntoDictionaryTable(List<MatchedHlaTableEntity> entities, CloudTable table)
         {
             var batchOperation = new TableBatchOperation();
-
-            for (var i = 0; i < entities.Count; i = i + BatchSize)
-            {
-                var batchToInsert = entities.Skip(i).Take(BatchSize).ToList();
-                batchToInsert.ForEach(entity => batchOperation.Insert(entity));
-            }
-
-            selectedDictionaryTable.ExecuteBatch(batchOperation);
+            entities.ForEach(entity => batchOperation.Insert(entity));
+            table.ExecuteBatch(batchOperation);
         }
     }
 }
