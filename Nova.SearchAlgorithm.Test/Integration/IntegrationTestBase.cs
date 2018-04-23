@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using Microsoft.ApplicationInsights;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Auth;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.SearchAlgorithm.Config;
 using NUnit.Framework;
 using Autofac;
+using Nova.SearchAlgorithm.Data;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
@@ -21,6 +21,12 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void Setup()
         {
             container = CreateContainer();
+
+            if (container.TryResolve(out SearchAlgorithmContext context))
+            {
+                context.Database.Delete();
+            }
+
             emulator.Start();
             emulator.Clear();
         }
@@ -42,11 +48,11 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 .AsImplementedInterfaces();
 
             // TODO:NOVA-1034 cleanly switch between testing different implementations
-            builder.RegisterType<Repositories.Donors.BlobDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Donors.BlobDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            //builder.RegisterType<Repositories.Donors.BlobDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            //builder.RegisterType<Repositories.Donors.BlobDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            //builder.RegisterType<Data.SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-            //builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Data.SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Repositories.Hla.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
