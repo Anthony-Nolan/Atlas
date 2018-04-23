@@ -38,7 +38,7 @@ node('windows') {
         def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.dll')
 
         //Run the tests
-        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
+        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --where=\"test != Nova.SearchAlgorithm.Test.Integration\" --noheader"
 
         // Generate reports
         nunit testResultsPattern: testOutput
