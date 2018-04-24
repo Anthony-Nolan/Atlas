@@ -20,28 +20,28 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var normalAllele = GetSingleMatchingType("A", "01:01:01:01");
             var normalSerology = new List<Serology>
             {
-                new Serology("A", "1", Subtype.NotSplit)
+                new Serology("A", "1", SerologySubtype.NotSplit)
             };
 
             var lowAllele = GetSingleMatchingType("B", "39:01:01:02L");
             var lowSerology = new List<Serology>
             {
-                new Serology("B", "3901", Subtype.Associated),
-                new Serology("B", "39", Subtype.Split),
-                new Serology("B", "16", Subtype.Broad)
+                new Serology("B", "3901", SerologySubtype.Associated),
+                new Serology("B", "39", SerologySubtype.Split),
+                new Serology("B", "16", SerologySubtype.Broad)
             };
 
             var questionableAllele = GetSingleMatchingType("C", "07:01:01:14Q");
             var questionableSerology = new List<Serology>
             {
-                new Serology("Cw", "7", Subtype.NotSplit)
+                new Serology("Cw", "7", SerologySubtype.NotSplit)
             };
 
             var secretedAllele = GetSingleMatchingType("B", "44:02:01:02S");
             var secretedSerology = new List<Serology>
             {
-                new Serology("B", "44", Subtype.Split),
-                new Serology("B", "12", Subtype.Broad)
+                new Serology("B", "44", SerologySubtype.Split),
+                new Serology("B", "12", SerologySubtype.Broad)
             };
 
             Assert.IsTrue(normalAllele.MatchingSerologies.SequenceEqual(normalSerology));
@@ -78,13 +78,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var deletedWithIdentical = GetSingleMatchingType("A", "11:53");
             var withIdenticalSer = new List<Serology>
             {
-                new Serology("A", "11", Subtype.NotSplit)
+                new Serology("A", "11", SerologySubtype.NotSplit)
             };
 
             var deletedIsNullIdenticalIsExpressing = GetSingleMatchingType("A", "01:34N");
             var nullToExpressingSer = new List<Serology>
             {
-                new Serology("A", "1", Subtype.NotSplit)
+                new Serology("A", "1", SerologySubtype.NotSplit)
             };
 
             var deletedIsExpressingIdenticalIsNull = GetSingleMatchingType("A", "03:260");
@@ -107,23 +107,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var broadNoAssociatedAllele = GetSingleMatchingType("A", "26:10");
             var broadNoAssociatedSer = new List<Serology>
             {
-                new Serology("A", "10", Subtype.Broad),
-                new Serology("A", "25", Subtype.Split),
-                new Serology("A", "26", Subtype.Split),
-                new Serology("A", "34", Subtype.Split),
-                new Serology("A", "66", Subtype.Split)
+                new Serology("A", "10", SerologySubtype.Broad),
+                new Serology("A", "25", SerologySubtype.Split),
+                new Serology("A", "26", SerologySubtype.Split),
+                new Serology("A", "34", SerologySubtype.Split),
+                new Serology("A", "66", SerologySubtype.Split)
             };
 
             var broadWithAssociatedAllele = GetSingleMatchingType("B", "40:26");
             var broadWithAssociatedSer = new List<Serology>
             {
-                new Serology("B", "21", Subtype.Broad),
-                new Serology("B", "4005", Subtype.Associated),
-                new Serology("B", "49", Subtype.Split),
-                new Serology("B", "50", Subtype.Split),
-                new Serology("B", "40", Subtype.Broad),
-                new Serology("B", "60", Subtype.Split),
-                new Serology("B", "61", Subtype.Split)
+                new Serology("B", "21", SerologySubtype.Broad),
+                new Serology("B", "4005", SerologySubtype.Associated),
+                new Serology("B", "49", SerologySubtype.Split),
+                new Serology("B", "50", SerologySubtype.Split),
+                new Serology("B", "40", SerologySubtype.Broad),
+                new Serology("B", "60", SerologySubtype.Split),
+                new Serology("B", "61", SerologySubtype.Split)
             };
 
             Assert.IsTrue(broadNoAssociatedAllele.MatchingSerologies.SequenceEqual(broadNoAssociatedSer));
@@ -136,17 +136,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var splitNoAssociatedAllele = GetSingleMatchingType("C", "03:02:01");
             var splitNoAssociatedSer = new List<Serology>
             {
-                new Serology("Cw", "10", Subtype.Split),
-                new Serology("Cw", "3", Subtype.Broad)
+                new Serology("Cw", "10", SerologySubtype.Split),
+                new Serology("Cw", "3", SerologySubtype.Broad)
             };
 
             var splitWithAssociatedAllele = GetSingleMatchingType("DRB1", "14:01:01");
             var splitWithAssociatedSer = new List<Serology>
             {
-                new Serology("DR", "14", Subtype.Split),
-                new Serology("DR", "6", Subtype.Broad),
-                new Serology("DR", "1403", Subtype.Associated),
-                new Serology("DR", "1404", Subtype.Associated)
+                new Serology("DR", "14", SerologySubtype.Split),
+                new Serology("DR", "6", SerologySubtype.Broad),
+                new Serology("DR", "1403", SerologySubtype.Associated),
+                new Serology("DR", "1404", SerologySubtype.Associated)
             };
 
             Assert.IsTrue(splitNoAssociatedAllele.MatchingSerologies.SequenceEqual(splitNoAssociatedSer));
@@ -159,26 +159,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var associatedOfBroadAllele = GetSingleMatchingType("B", "40:05:01:01");
             var associatedOfBroadSer = new List<Serology>
             {
-                new Serology("B", "40", Subtype.Broad),
-                new Serology("B", "60", Subtype.Split),
-                new Serology("B", "61", Subtype.Split),
-                new Serology("B", "4005", Subtype.Associated),
-                new Serology("B", "21", Subtype.Broad)
+                new Serology("B", "40", SerologySubtype.Broad),
+                new Serology("B", "60", SerologySubtype.Split),
+                new Serology("B", "61", SerologySubtype.Split),
+                new Serology("B", "4005", SerologySubtype.Associated),
+                new Serology("B", "21", SerologySubtype.Broad)
             };
 
             var associatedOfSplitAllele = GetSingleMatchingType("A", "24:03:01:01");
             var associatedOfSplitSer = new List<Serology>
             {
-                new Serology("A", "2403", Subtype.Associated),
-                new Serology("A", "24", Subtype.Split),
-                new Serology("A", "9", Subtype.Broad)
+                new Serology("A", "2403", SerologySubtype.Associated),
+                new Serology("A", "24", SerologySubtype.Split),
+                new Serology("A", "9", SerologySubtype.Broad)
             };
 
             var associatedOfNotSplitAllele = GetSingleMatchingType("DRB1", "01:03:02");
             var associatedOfNotSplitSer = new List<Serology>
             {
-                new Serology("DR", "103", Subtype.Associated),
-                new Serology("DR", "1", Subtype.NotSplit)
+                new Serology("DR", "103", SerologySubtype.Associated),
+                new Serology("DR", "1", SerologySubtype.NotSplit)
             };
 
             Assert.IsTrue(associatedOfBroadAllele.MatchingSerologies.SequenceEqual(associatedOfBroadSer));
@@ -192,14 +192,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var notSplitWithAssociatedAllele = GetSingleMatchingType("B", "07:02:27");
             var notSplitWithAssociatedSer = new List<Serology>
             {
-                new Serology("B", "7", Subtype.NotSplit),
-                new Serology("B", "703", Subtype.Associated)
+                new Serology("B", "7", SerologySubtype.NotSplit),
+                new Serology("B", "703", SerologySubtype.Associated)
             };
 
             var notSplitNoAssociatedAllele = GetSingleMatchingType("DQB1", "02:02:01:01");
             var notSplitNoAssociatedSer = new List<Serology>
             {
-                new Serology("DQ", "2", Subtype.NotSplit)
+                new Serology("DQ", "2", SerologySubtype.NotSplit)
             };
 
             Assert.IsTrue(notSplitWithAssociatedAllele.MatchingSerologies.SequenceEqual(notSplitWithAssociatedSer));
@@ -212,48 +212,48 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var b15BroadAllele = GetSingleMatchingType("B", "15:33");
             var b15BroadSer = new List<Serology>
             {
-                new Serology("B", "15", Subtype.Broad),
-                new Serology("B", "62", Subtype.Split),
-                new Serology("B", "63", Subtype.Split),
-                new Serology("B", "75", Subtype.Split),
-                new Serology("B", "76", Subtype.Split),
-                new Serology("B", "77", Subtype.Split)
+                new Serology("B", "15", SerologySubtype.Broad),
+                new Serology("B", "62", SerologySubtype.Split),
+                new Serology("B", "63", SerologySubtype.Split),
+                new Serology("B", "75", SerologySubtype.Split),
+                new Serology("B", "76", SerologySubtype.Split),
+                new Serology("B", "77", SerologySubtype.Split)
             };
 
             var b15SplitAllele = GetSingleMatchingType("B", "15:01:01:01");
             var b15SplitSer = new List<Serology>
             {
-                new Serology("B", "62", Subtype.Split),
-                new Serology("B", "15", Subtype.Broad)
+                new Serology("B", "62", SerologySubtype.Split),
+                new Serology("B", "15", SerologySubtype.Broad)
             };
 
             var b70BroadAllele = GetSingleMatchingType("B", "15:09:01");
             var b70BroadSer = new List<Serology>
             {
-                new Serology("B", "70", Subtype.Broad),
-                new Serology("B", "71", Subtype.Split),
-                new Serology("B", "72", Subtype.Split)
+                new Serology("B", "70", SerologySubtype.Broad),
+                new Serology("B", "71", SerologySubtype.Split),
+                new Serology("B", "72", SerologySubtype.Split)
             };
 
             var b70SplitAllele = GetSingleMatchingType("B", "15:03:01:01");
             var b70SplitSer = new List<Serology>
             {
-                new Serology("B", "72", Subtype.Split),
-                new Serology("B", "70", Subtype.Broad)
+                new Serology("B", "72", SerologySubtype.Split),
+                new Serology("B", "70", SerologySubtype.Broad)
             };
 
             var b1570BroadAllele = GetSingleMatchingType("B", "15:36");
             var b1570BroadSer = new List<Serology>
             {
-                new Serology("B", "15", Subtype.Broad),
-                new Serology("B", "62", Subtype.Split),
-                new Serology("B", "63", Subtype.Split),
-                new Serology("B", "75", Subtype.Split),
-                new Serology("B", "76", Subtype.Split),
-                new Serology("B", "77", Subtype.Split),
-                new Serology("B", "70", Subtype.Broad),
-                new Serology("B", "71", Subtype.Split),
-                new Serology("B", "72", Subtype.Split)
+                new Serology("B", "15", SerologySubtype.Broad),
+                new Serology("B", "62", SerologySubtype.Split),
+                new Serology("B", "63", SerologySubtype.Split),
+                new Serology("B", "75", SerologySubtype.Split),
+                new Serology("B", "76", SerologySubtype.Split),
+                new Serology("B", "77", SerologySubtype.Split),
+                new Serology("B", "70", SerologySubtype.Broad),
+                new Serology("B", "71", SerologySubtype.Split),
+                new Serology("B", "72", SerologySubtype.Split)
             };
 
             Assert.IsTrue(b15BroadAllele.MatchingSerologies.SequenceEqual(b15BroadSer));
@@ -279,15 +279,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var mappedToSameBroadMapping = new List<SerologyMappingInfo>
             {
                 new SerologyMappingInfo(
-                    new Serology("A", "10", Subtype.Broad),
+                    new Serology("A", "10", SerologySubtype.Broad),
                     Assignment.Unambiguous,
                     new List<SerologyMatchInfo>
                     {
-                        new SerologyMatchInfo(new Serology("A", "10", Subtype.Broad)),
-                        new SerologyMatchInfo(new Serology("A", "25", Subtype.Split), true),
-                        new SerologyMatchInfo(new Serology("A", "26", Subtype.Split)),
-                        new SerologyMatchInfo(new Serology("A", "34", Subtype.Split), true),
-                        new SerologyMatchInfo(new Serology("A", "66", Subtype.Split), true)
+                        new SerologyMatchInfo(new Serology("A", "10", SerologySubtype.Broad)),
+                        new SerologyMatchInfo(new Serology("A", "25", SerologySubtype.Split), true),
+                        new SerologyMatchInfo(new Serology("A", "26", SerologySubtype.Split)),
+                        new SerologyMatchInfo(new Serology("A", "34", SerologySubtype.Split), true),
+                        new SerologyMatchInfo(new Serology("A", "66", SerologySubtype.Split), true)
                     })
             };
 
@@ -295,22 +295,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var mappedToDifferentBroadMapping = new List<SerologyMappingInfo>
             {
                 new SerologyMappingInfo(
-                    new Serology("A", "2", Subtype.NotSplit),
+                    new Serology("A", "2", SerologySubtype.NotSplit),
                     Assignment.Assumed,
                     new List<SerologyMatchInfo>
                     {
-                        new SerologyMatchInfo(new Serology("A", "2", Subtype.NotSplit)),
-                        new SerologyMatchInfo(new Serology("A", "203", Subtype.Associated)),
-                        new SerologyMatchInfo(new Serology("A", "210", Subtype.Associated))
+                        new SerologyMatchInfo(new Serology("A", "2", SerologySubtype.NotSplit)),
+                        new SerologyMatchInfo(new Serology("A", "203", SerologySubtype.Associated)),
+                        new SerologyMatchInfo(new Serology("A", "210", SerologySubtype.Associated))
                     }),
                 new SerologyMappingInfo(
-                    new Serology("A", "28", Subtype.Broad),
+                    new Serology("A", "28", SerologySubtype.Broad),
                     Assignment.Expert,
                     new List<SerologyMatchInfo>
                     {
-                        new SerologyMatchInfo(new Serology("A", "28", Subtype.Broad), true),
-                        new SerologyMatchInfo(new Serology("A", "68", Subtype.Split), true),
-                        new SerologyMatchInfo(new Serology("A", "69", Subtype.Split), true)
+                        new SerologyMatchInfo(new Serology("A", "28", SerologySubtype.Broad), true),
+                        new SerologyMatchInfo(new Serology("A", "68", SerologySubtype.Split), true),
+                        new SerologyMatchInfo(new Serology("A", "69", SerologySubtype.Split), true)
                     })
             };
 
@@ -325,11 +325,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var noAssignmentMapping = new List<SerologyMappingInfo>
             {
                 new SerologyMappingInfo(
-                    new Serology("Cw", "12", Subtype.NotSplit),
+                    new Serology("Cw", "12", SerologySubtype.NotSplit),
                     Assignment.None,
                     new List<SerologyMatchInfo>
                     {
-                        new SerologyMatchInfo(new Serology("Cw", "12", Subtype.NotSplit))
+                        new SerologyMatchInfo(new Serology("Cw", "12", SerologySubtype.NotSplit))
                     })
             };
 
@@ -337,20 +337,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Tests.Services.HlaMatching
             var expertAssignmentMapping = new List<SerologyMappingInfo>
             {
                new SerologyMappingInfo(
-                    new Serology("Cw", "3", Subtype.Broad), 
+                    new Serology("Cw", "3", SerologySubtype.Broad), 
                     Assignment.Expert,
                     new List<SerologyMatchInfo>
                     {
-                        new SerologyMatchInfo(new Serology("Cw", "3", Subtype.Broad), true),
-                        new SerologyMatchInfo(new Serology("Cw", "9", Subtype.Split), true),
-                        new SerologyMatchInfo(new Serology("Cw", "10", Subtype.Split), true)
+                        new SerologyMatchInfo(new Serology("Cw", "3", SerologySubtype.Broad), true),
+                        new SerologyMatchInfo(new Serology("Cw", "9", SerologySubtype.Split), true),
+                        new SerologyMatchInfo(new Serology("Cw", "10", SerologySubtype.Split), true)
                     }),
                 new SerologyMappingInfo(
-                    new Serology("Cw", "15", Subtype.NotSplit),
+                    new Serology("Cw", "15", SerologySubtype.NotSplit),
                     Assignment.None,
                     new List<SerologyMatchInfo>
                     {
-                        new SerologyMatchInfo(new Serology("Cw", "15", Subtype.NotSplit))
+                        new SerologyMatchInfo(new Serology("Cw", "15", SerologySubtype.NotSplit))
                     })
             };
 

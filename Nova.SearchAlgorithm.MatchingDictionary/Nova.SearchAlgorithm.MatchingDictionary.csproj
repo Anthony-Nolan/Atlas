@@ -97,6 +97,7 @@
     <Compile Include="Models\HLATypes\HlaType.cs" />
     <Compile Include="Data\LocusNames.cs" />
     <Compile Include="Models\HLATypes\Serology.cs" />
+    <Compile Include="Models\HLATypes\SerologySubtype.cs" />
     <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedOn.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />

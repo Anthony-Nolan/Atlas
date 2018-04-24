@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
         private static SerologyMappingInfo CreateMappingFromAlleleFamily(IWmdaHlaType alleleFamily)
         {
-            var newSerology = new Serology(alleleFamily, Subtype.NotSplit);
+            var newSerology = new Serology(alleleFamily, SerologySubtype.NotSplit);
             return new SerologyMappingInfo(
                 newSerology,
                 Assignment.None,
