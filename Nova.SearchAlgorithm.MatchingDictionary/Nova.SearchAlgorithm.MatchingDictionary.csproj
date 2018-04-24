@@ -92,6 +92,9 @@
     <Compile Include="Data\Wmda\RelDnaSerExtractor.cs" />
     <Compile Include="Data\Wmda\RelSerSerExtractor.cs" />
     <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
+    <Compile Include="Models\Dictionary\DictionaryEntryExtensions.cs" />
+    <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
+    <Compile Include="Models\Dictionary\SerologyEntry.cs" />
     <Compile Include="Models\HLATypes\Allele.cs" />
     <Compile Include="Models\HLATypes\Helper.cs" />
     <Compile Include="Models\HLATypes\HlaType.cs" />
@@ -119,8 +122,8 @@
     <Compile Include="Models\Wmda\RelSerSer.cs" />
     <Compile Include="Models\Wmda\SerologyAssignment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\AzureStorage\MatchedHlaTableEntity.cs" />
-    <Compile Include="Repositories\AzureStorage\MatchedHlaExtensions.cs" />
+    <Compile Include="Repositories\AzureStorage\DictionaryTableEntity.cs" />
+    <Compile Include="Repositories\AzureStorage\DictionaryEntityExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
