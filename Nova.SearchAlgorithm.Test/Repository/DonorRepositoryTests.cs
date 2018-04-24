@@ -18,7 +18,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Service
 {
     [TestFixture]
-    public class DonorRepositoryTests : TestBase<BlobDonorMatchRepository>
+    public class DonorRepositoryTests : TestBase<CloudStorageDonorMatchRepository>
     {
         private const string PGroupA1 = "p1";
         private const string PGroupA1_alternative = "p1a";
@@ -36,9 +36,9 @@ namespace Nova.SearchAlgorithm.Test.Service
         [SetUp]
         public void SetUp()
         {
-            repositoryUnderTest = new BlobDonorMatchRepository(GetFake<IDonorBlobRepository>());
+            repositoryUnderTest = new CloudStorageDonorMatchRepository(GetFake<IDonorCloudTables>());
 
-            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus("A", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus("A", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor("A", TypePositions.One, TypePositions.One, exactMatch, PGroupA1),
                 HlaMatchFor("A", TypePositions.Two, TypePositions.Two, exactMatch, PGroupA2),
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Service
                 HlaMatchFor("A", TypePositions.Two, TypePositions.One, bothGroupsMatchPositionOne, PGroupA2),
             });
 
-            GetFake<IDonorBlobRepository>().GetDonorMatchesAtLocus("B", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus("B", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor("B", TypePositions.One, TypePositions.Both, exactMatch, PGroupB),
                 HlaMatchFor("B", TypePositions.Two, TypePositions.Both, exactMatch, PGroupB),
@@ -59,9 +59,9 @@ namespace Nova.SearchAlgorithm.Test.Service
                 HlaMatchFor("B", TypePositions.Two, TypePositions.Both, bothGroupsMatchPositionOne, PGroupB),
             });
 
-            GetFake<IDonorBlobRepository>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
-            GetFake<IDonorBlobRepository>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
-            GetFake<IDonorBlobRepository>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
+            GetFake<IDonorCloudTables>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
+            GetFake<IDonorCloudTables>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
+            GetFake<IDonorCloudTables>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
                 .WithDonorMismatchCounts(2,2)

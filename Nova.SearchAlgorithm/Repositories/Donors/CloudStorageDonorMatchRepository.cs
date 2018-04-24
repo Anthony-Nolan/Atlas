@@ -10,11 +10,11 @@ using Nova.SearchAlgorithm.Data.Repositories;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {
-    public class BlobDonorMatchRepository : IDonorMatchRepository
+    public class CloudStorageDonorMatchRepository : IDonorMatchRepository
     {
-        private readonly IDonorBlobRepository donorBlobRepository;
+        private readonly IDonorCloudTables donorBlobRepository;
 
-        public BlobDonorMatchRepository(IDonorBlobRepository donorBlobRepository)
+        public CloudStorageDonorMatchRepository(IDonorCloudTables donorBlobRepository)
         {
             this.donorBlobRepository = donorBlobRepository;
         }
