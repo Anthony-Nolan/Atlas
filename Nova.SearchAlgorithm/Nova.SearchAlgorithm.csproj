@@ -234,7 +234,7 @@
     <Compile Include="Controllers\DonorController.cs" />
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
-    <Compile Include="Controllers\HlaMatchesController.cs" />
+    <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\HlaException.cs" />
     <Compile Include="Models\RawDonor.cs" />
@@ -287,6 +287,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
       <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>
       <Name>Nova.SearchAlgorithm.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj">
+      <Project>{478d829d-9aa2-4de2-9fdd-dee35e50111e}</Project>
+      <Name>Nova.SearchAlgorithm.MatchingDictionary</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
