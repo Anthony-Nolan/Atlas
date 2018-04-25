@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {
-    public interface IDonorBlobRepository
+    public interface IDonorCloudTables
     {
         void InsertDonor(SearchableDonor donor);
         void UpdateDonorWithNewHla(SearchableDonor donor);
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         }
     }
 
-    public class BlobDonorRepository : IDonorBlobRepository
+    public class DonorCloudTables : IDonorCloudTables
     {
         private const string DonorTableReference = "Donors";
         private const string MatchTableReference = "Matches";
@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         private readonly CloudTable matchTable;
         private readonly IMapper mapper;
 
-        public BlobDonorRepository(IMapper mapper, ICloudTableFactory cloudTableFactory)
+        public DonorCloudTables(IMapper mapper, ICloudTableFactory cloudTableFactory)
         {
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
             matchTable = cloudTableFactory.GetTable(MatchTableReference);

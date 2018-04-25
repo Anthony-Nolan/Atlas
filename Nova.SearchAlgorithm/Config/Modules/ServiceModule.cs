@@ -23,16 +23,16 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .AsImplementedInterfaces();
 
             builder.RegisterType<Repositories.SearchRequests.SearchRequestRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Donors.BlobDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.Hla.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Donors.BlobDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            // builder.RegisterType<Repositories.Donors.BlobDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
+            
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
@@ -48,6 +48,18 @@ namespace Nova.SearchAlgorithm.Config.Modules
             var logger = new RequestAwareLogger(new TelemetryClient(),
                 ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+
+            RegisterMatchingDictionaryTypes(builder);
+        }
+
+        private static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
+        {
+            builder.RegisterType<MatchingDictionary.Repositories.MatchedHlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+
+            builder.RegisterInstance(MatchingDictionary.Repositories.WmdaRepository.Instance).AsImplementedInterfaces().ExternallyOwned();
+
+            builder.RegisterType<MatchingDictionary.Services.ManageDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();           
         }
     }
 }
