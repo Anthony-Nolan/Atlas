@@ -88,7 +88,8 @@ FROM (
 			-- get DISTINCT list of matches between search and donor type by Locus and position
 			SELECT DISTINCT DonorId, matching_direction, Locus, type_position
 			FROM (
-				-- join search and donor match lists by Locus & matching hla name
+				-- Select search and donor directional match lists by Locus & matching hla name
+                -- First from type position 1 in the search hla
 				SELECT d.DonorId, d.Locus, d.TypePosition AS GvH, 1 AS HvG
                 FROM DonorHlas d
 				WHERE (d.Locus = 'A' AND d.HlaName IN ('{0}'))
@@ -96,6 +97,7 @@ FROM (
                    OR (d.Locus = 'DRB1' AND d.HlaName IN ('{4}'))
 				GROUP BY d.DonorId, d.Locus, d.TypePosition
                 UNION
+                -- Next from type position 2 in the search hla
 				SELECT d.DonorId, d.Locus, d.TypePosition AS GvH, 2 AS HvG
                 FROM DonorHlas d
 				WHERE (d.Locus = 'A' AND d.HlaName IN ('{1}'))
