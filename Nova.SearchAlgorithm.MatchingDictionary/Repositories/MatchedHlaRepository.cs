@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +9,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IMatchedHlaRepository
     {
-        void RecreateDictionaryTable(IEnumerable<IMatchedHla> dictionaryContents);
-        IMatchedHla GetMatchedHlaWhereExactMatch(string partition, string rowKey);
+        void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
+        MatchingDictionaryEntry GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
     public class MatchedHlaRepository : IMatchedHlaRepository
@@ -26,19 +26,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             GetDictionaryTable();
         }
 
-        public void RecreateDictionaryTable(IEnumerable<IMatchedHla> dictionaryContents)
+        public void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
             DropCreateTable();
             InsertContentsIntoDictionaryTable(dictionaryContents.ToList());
         }
 
-        public IMatchedHla GetMatchedHlaWhereExactMatch(string partition, string rowKey)
+        public MatchingDictionaryEntry GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod)
         {
+            var rowKey = DictionaryTableEntity.GetRowKey(lookupName, typingMethod);
+
             return table
-                .CreateQuery<MatchedHlaTableEntity>()
-                .Where(entity => entity.PartitionKey.Equals(partition) && entity.RowKey.Equals(rowKey))
+                .CreateQuery<DictionaryTableEntity>()
+                .Where(entity => entity.PartitionKey.Equals(matchLocus) && entity.RowKey.Equals(rowKey))
                 .FirstOrDefault()
-                ?.ToMatchedHla();
+                ?.ToDictionaryEntry();
         }
 
         private void GetDictionaryTable()
@@ -48,17 +50,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private void DropCreateTable()
         {
-            table.DeleteIfExists();
+            table.Delete();
             GetDictionaryTable();
         }
 
-        private void InsertContentsIntoDictionaryTable(IReadOnlyCollection<IMatchedHla> contents)
+        private void InsertContentsIntoDictionaryTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
         {
             foreach (var partition in LocusNames.MatchLoci)
             {
                 var entitiesForPartition = contents
-                    .Where(hla => hla.HlaType.MatchLocus.Equals(partition))
-                    .Select(hla => hla.ToTableEntity())
+                    .Where(entry => entry.MatchLocus.Equals(partition))
+                    .Select(entry => entry.ToTableEntity())
                     .ToList();
 
                 for (var i = 0; i < entitiesForPartition.Count; i = i + BatchSize)
@@ -69,7 +71,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             }
         }
 
-        private void BatchInsertIntoDictionaryTable(List<MatchedHlaTableEntity> entities)
+        private void BatchInsertIntoDictionaryTable(List<DictionaryTableEntity> entities)
         {
             var batchOperation = new TableBatchOperation();
             entities.ForEach(entity => batchOperation.Insert(entity));

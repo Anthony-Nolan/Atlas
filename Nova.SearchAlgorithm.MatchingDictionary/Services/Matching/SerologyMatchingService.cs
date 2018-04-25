@@ -52,20 +52,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     r.WmdaLocus.Equals(serology.WmdaLocus) && r.Name.Equals(serology.Name));
             }
 
-            private Subtype GetSerologySubtype(string serologyName)
+            private SerologySubtype GetSerologySubtype(string serologyName)
             {
                 if (Parent != null)
                 {
                     if (Parent.SplitAntigens.Contains(serologyName))
-                        return Subtype.Split;
+                        return SerologySubtype.Split;
                     if (Parent.AssociatedAntigens.Contains(serologyName))
-                        return Subtype.Associated;
+                        return SerologySubtype.Associated;
                 }
 
                 if (Child != null && Child.SplitAntigens.Any())
-                    return Subtype.Broad;
+                    return SerologySubtype.Broad;
 
-                return Subtype.NotSplit;
+                return SerologySubtype.NotSplit;
             }
         }
 
@@ -112,18 +112,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
             var matching = new List<Serology> { serology };
 
-            switch (serology.Subtype)
+            switch (serology.SerologySubtype)
             {
-                case Subtype.NotSplit:
+                case SerologySubtype.NotSplit:
                     AddAssociated(child, matching);
                     break;
 
-                case Subtype.Split:
+                case SerologySubtype.Split:
                     AddBroad(parent, matching);
                     AddAssociated(child, matching);
                     break;
 
-                case Subtype.Broad:
+                case SerologySubtype.Broad:
                     AddAssociated(child, matching);
 
                     foreach (var split in child.SplitAntigens.Select(s => new HlaNom(child.WmdaLocus, s)))
@@ -133,7 +133,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     }
                     break;
 
-                case Subtype.Associated:
+                case SerologySubtype.Associated:
                     var grandparent = SerologyFamily.GetParent(relSerSer, parent);
                     if (grandparent != null)
                     {
@@ -150,12 +150,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
         private static void AddBroad(IWmdaHlaType broad, List<Serology> matching)
         {
-            matching.Add(new Serology(broad, Subtype.Broad));
+            matching.Add(new Serology(broad, SerologySubtype.Broad));
         }
 
         private static void AddSplit(IWmdaHlaType split, List<Serology> matching)
         {
-            matching.Add(new Serology(split, Subtype.Split));
+            matching.Add(new Serology(split, SerologySubtype.Split));
         }
 
         private static void AddAssociated(RelSerSer child, List<Serology> matching)
@@ -163,7 +163,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             if (child != null)
                 matching.AddRange(
                     child.AssociatedAntigens.Select(a =>
-                        new Serology(child.WmdaLocus, a, Subtype.Associated)));
+                        new Serology(child.WmdaLocus, a, SerologySubtype.Associated)));
         }
 
         private static void AddUnknownSubtype(

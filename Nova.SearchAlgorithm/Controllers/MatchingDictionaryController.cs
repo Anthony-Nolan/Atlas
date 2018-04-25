@@ -1,5 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Web.Http;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.Controllers
@@ -26,9 +27,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("lookup")]
-        public IHttpActionResult GetMatchedHla(string locus, string lookupTerm)
+        public IHttpActionResult GetMatchedHla(string locus, string lookupTerm, TypingMethod typingMethod)
         {
-            var result = dictionaryRepository.GetMatchedHlaWhereExactMatch(locus, lookupTerm);
+            var result = dictionaryRepository.GetDictionaryEntry(locus, lookupTerm, typingMethod);
             return Ok(result);
         }
     }
