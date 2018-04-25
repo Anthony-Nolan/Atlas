@@ -48,11 +48,11 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 .AsImplementedInterfaces();
 
             // TODO:NOVA-1034 cleanly switch between testing different implementations
-            builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Donors.CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            //builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            //builder.RegisterType<Repositories.Donors.CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            //builder.RegisterType<Data.SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-            //builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Data.SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Repositories.Hla.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();

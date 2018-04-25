@@ -15,7 +15,7 @@ using Nova.SearchAlgorithm.Data.Models;
 namespace Nova.SearchAlgorithm.Test.Integration
 {
     [TestFixture]
-    public class SearchTests : IntegrationTestBase
+    public class ExactMatchAndMismatchAtLocusATests : IntegrationTestBase
     {
         private ISearchService searchService;
 
