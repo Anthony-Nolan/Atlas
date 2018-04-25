@@ -93,12 +93,14 @@ FROM (
                 FROM DonorHlas d
 				WHERE (d.Locus = '{0}' AND d.HlaName IN ('{1}'))
                    OR (d.Locus = '{3}' AND d.HlaName IN ('{4}'))
+                   OR (d.Locus = '{6}' AND d.HlaName IN ('{7}'))
 				GROUP BY d.DonorId, d.Locus, d.TypePosition
                 UNION
 				SELECT d.DonorId, d.Locus, d.TypePosition AS GvH, 2 AS HvG
                 FROM DonorHlas d
 				WHERE (d.Locus = '{0}' AND d.HlaName IN ('{2}'))
                    OR (d.Locus = '{3}' AND d.HlaName IN ('{5}'))
+                   OR (d.Locus = '{6}' AND d.HlaName IN ('{8}'))
 				GROUP BY d.DonorId, d.Locus, d.TypePosition
 				) AS src
 			UNPIVOT (type_position FOR matching_direction IN (GvH, HvG)) AS unpvt
@@ -108,13 +110,17 @@ FROM (
 	GROUP BY DonorId, Locus
 	) ByDonor
 GROUP BY DonorId
-HAVING SUM(match_count) >= 4
-ORDER BY TotalMatchCount DESC", "A",
+HAVING SUM(match_count) >= 6
+ORDER BY TotalMatchCount DESC",
+                "A",
                 string.Join("','", matchRequest.LocusMismatchA.HlaNamesToMatchInPositionOne),
                 string.Join("','", matchRequest.LocusMismatchA.HlaNamesToMatchInPositionTwo),
                  "B",
                 string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionOne),
-                string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionTwo));
+                string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionTwo),
+                "DRB1",
+                string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionOne),
+                string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionTwo));
 
             return context.Database.SqlQuery<PotentialMatch>(sql);
         }
