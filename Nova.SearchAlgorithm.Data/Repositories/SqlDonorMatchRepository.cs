@@ -91,16 +91,16 @@ FROM (
 				-- join search and donor match lists by Locus & matching hla name
 				SELECT d.DonorId, d.Locus, d.TypePosition AS GvH, 1 AS HvG
                 FROM DonorHlas d
-				WHERE (d.Locus = '{0}' AND d.HlaName IN ('{1}'))
-                   OR (d.Locus = '{3}' AND d.HlaName IN ('{4}'))
-                   OR (d.Locus = '{6}' AND d.HlaName IN ('{7}'))
+				WHERE (d.Locus = 'A' AND d.HlaName IN ('{0}'))
+                   OR (d.Locus = 'B' AND d.HlaName IN ('{2}'))
+                   OR (d.Locus = 'DRB1' AND d.HlaName IN ('{4}'))
 				GROUP BY d.DonorId, d.Locus, d.TypePosition
                 UNION
 				SELECT d.DonorId, d.Locus, d.TypePosition AS GvH, 2 AS HvG
                 FROM DonorHlas d
-				WHERE (d.Locus = '{0}' AND d.HlaName IN ('{2}'))
-                   OR (d.Locus = '{3}' AND d.HlaName IN ('{5}'))
-                   OR (d.Locus = '{6}' AND d.HlaName IN ('{8}'))
+				WHERE (d.Locus = 'A' AND d.HlaName IN ('{1}'))
+                   OR (d.Locus = 'B' AND d.HlaName IN ('{3}'))
+                   OR (d.Locus = 'DRB1' AND d.HlaName IN ('{5}'))
 				GROUP BY d.DonorId, d.Locus, d.TypePosition
 				) AS src
 			UNPIVOT (type_position FOR matching_direction IN (GvH, HvG)) AS unpvt
@@ -112,13 +112,11 @@ FROM (
 GROUP BY DonorId
 HAVING SUM(match_count) >= 6
 ORDER BY TotalMatchCount DESC",
-                "A",
+                // No chance of injection attack since these strings come from our own matching dictionary.
                 string.Join("','", matchRequest.LocusMismatchA.HlaNamesToMatchInPositionOne),
                 string.Join("','", matchRequest.LocusMismatchA.HlaNamesToMatchInPositionTwo),
-                 "B",
                 string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionOne),
                 string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionTwo),
-                "DRB1",
                 string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionOne),
                 string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionTwo));
 
