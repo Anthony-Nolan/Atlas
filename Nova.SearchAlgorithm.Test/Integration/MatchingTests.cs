@@ -185,6 +185,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void ExactMatchIsReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCountTier1 = 1;
+            searchCriteria.LocusMismatchA.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 1);
             results.Should().Contain(d => d.DonorId == 2);
@@ -194,6 +195,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void OneOfTwoHvGAtLocusAReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCountTier1 = 1;
+            searchCriteria.LocusMismatchA.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 3);
         }
@@ -202,6 +204,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void OneOfTwoBothDirectionsAtLocusAReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCountTier1 = 1;
+            searchCriteria.LocusMismatchA.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 4);
         }
@@ -210,6 +213,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void NoMatchAtLocusANotReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCountTier1 = 1;
+            searchCriteria.LocusMismatchA.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().NotContain(d => d.DonorId == 5);
             results.Should().NotContain(d => d.DonorId == 6);
@@ -219,6 +223,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void NoMatchAtLocusAReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 2;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 5);
         }
@@ -227,6 +232,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void NoMatchAtLocusAHalfAtLocusBNotReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 2;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().NotContain(d => d.DonorId == 6);
         }
@@ -235,6 +241,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void ExactMatchIsReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 2;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 1);
             results.Should().Contain(d => d.DonorId == 2);
@@ -244,6 +251,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void HalfMatchAtLocusAReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 2;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 3);
             results.Should().Contain(d => d.DonorId == 4);
@@ -253,6 +261,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void ExactMatchIsReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 3;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
+            searchCriteria.LocusMismatchB.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 1);
             results.Should().Contain(d => d.DonorId == 2);
@@ -262,6 +272,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void HalfMatchAtLocusaReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 3;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
+            searchCriteria.LocusMismatchB.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 3);
             results.Should().Contain(d => d.DonorId == 4);
@@ -271,6 +283,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void NoMatchAtLocusABReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 3;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
+            searchCriteria.LocusMismatchB.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 5);
         }
@@ -279,6 +293,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void NoMatchAtLocusAHalfAtLocusBReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCountTier1 = 3;
+            searchCriteria.LocusMismatchA.MismatchCount = 2;
+            searchCriteria.LocusMismatchB.MismatchCount = 1;
             IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
             results.Should().Contain(d => d.DonorId == 6);
         }

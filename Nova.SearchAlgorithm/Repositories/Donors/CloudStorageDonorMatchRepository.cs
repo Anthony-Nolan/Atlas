@@ -21,8 +21,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
         {
-            // TODO:NOVA-931 extend beyond loci A and B
-            // TODO:NOVA-931 handle missing donor hla
             var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "A", matchRequest.LocusMismatchA);
             var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "B", matchRequest.LocusMismatchB);
             var matchesAtDRB1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "DRB1", matchRequest.LocusMismatchDRB1);
@@ -38,7 +36,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                     MatchDetailsAtLocusDRB1 = matchesAtDRB1.ContainsKey(g.Key) ? matchesAtDRB1[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                 })
                 .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCountTier1)
-                // TODO:NOVA-931 handle absent criteria at locus
                 .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
                 .Where(m => m.MatchDetailsAtLocusB.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount)
                 .Where(m => m.MatchDetailsAtLocusDRB1.MatchCount >= 2 - matchRequest.LocusMismatchDRB1.MismatchCount)
