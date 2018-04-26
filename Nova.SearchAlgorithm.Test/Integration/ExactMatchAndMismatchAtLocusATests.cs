@@ -15,7 +15,7 @@ using Nova.SearchAlgorithm.Data.Models;
 namespace Nova.SearchAlgorithm.Test.Integration
 {
     [TestFixture]
-    public class SearchTests : IntegrationTestBase
+    public class ExactMatchAndMismatchAtLocusATests : IntegrationTestBase
     {
         private ISearchService searchService;
 
@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     {
                         MismatchCount = 0,
                         SearchHla1 = "04:163",
-                        SearchHla2 = "01:04"
+                        SearchHla2 = "01:08"
                     }
                 }
             });
@@ -109,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     {
                         MismatchCount = 0,
                         SearchHla1 = "04:163",
-                        SearchHla2 = "01:04"
+                        SearchHla2 = "01:08"
                     }
                 }
             });
@@ -144,7 +144,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     {
                         MismatchCount = 0,
                         SearchHla1 = "04:163",
-                        SearchHla2 = "01:04"
+                        SearchHla2 = "01:08"
                     }
                 }
             });
