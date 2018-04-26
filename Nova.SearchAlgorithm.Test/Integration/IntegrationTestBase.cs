@@ -27,14 +27,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 context.Database.Delete();
             }
 
-            emulator.Start();
+            // Starting and stopping the emulator is managed in the setup fixture StorageSetup.cs
             emulator.Clear();
-        }
-
-        [OneTimeTearDown]
-        public void ShutdownStorage()
-        {
-            emulator.Stop();
         }
 
         // This is almost a duplicate of the container in 

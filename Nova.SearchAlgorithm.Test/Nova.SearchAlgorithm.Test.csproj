@@ -262,6 +262,7 @@
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="Integration\MatchingTests.cs" />
+    <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="Repository\DonorRepositoryTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
