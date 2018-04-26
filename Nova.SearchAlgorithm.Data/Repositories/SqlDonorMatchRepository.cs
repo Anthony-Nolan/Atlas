@@ -112,7 +112,7 @@ FROM (
 	GROUP BY DonorId, Locus
 	) ByDonor
 GROUP BY DonorId
-HAVING SUM(match_count) >= 6
+HAVING SUM(match_count) >= {6}
 ORDER BY TotalMatchCount DESC",
                 // No chance of injection attack since these strings come from our own matching dictionary.
                 string.Join("','", matchRequest.LocusMismatchA.HlaNamesToMatchInPositionOne),
@@ -120,7 +120,9 @@ ORDER BY TotalMatchCount DESC",
                 string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionOne),
                 string.Join("','", matchRequest.LocusMismatchB.HlaNamesToMatchInPositionTwo),
                 string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionOne),
-                string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionTwo));
+                string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionTwo),
+                // TODO:NOVA-1119 fix the maxing logic
+                6 - matchRequest.DonorMismatchCountTier1);
 
             return context.Database.SqlQuery<PotentialMatch>(sql);
         }

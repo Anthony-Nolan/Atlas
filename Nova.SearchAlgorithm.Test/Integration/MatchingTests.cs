@@ -180,5 +180,107 @@ namespace Nova.SearchAlgorithm.Test.Integration
             results.Should().NotContain(d => d.DonorId == 5);
             results.Should().NotContain(d => d.DonorId == 6);
         }
+
+        [Test]
+        public void ExactMatchIsReturnedBySearchWithOneMismatch()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 1;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 1);
+            results.Should().Contain(d => d.DonorId == 2);
+        }
+
+        [Test]
+        public void OneOfTwoHvGAtLocusAReturnedBySearchWithOneMismatch()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 1;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 3);
+        }
+
+        [Test]
+        public void OneOfTwoBothDirectionsAtLocusAReturnedBySearchWithOneMismatch()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 1;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 4);
+        }
+
+        [Test]
+        public void NoMatchAtLocusANotReturnedBySearchWithOneMismatch()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 1;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().NotContain(d => d.DonorId == 5);
+            results.Should().NotContain(d => d.DonorId == 6);
+        }
+
+        [Test]
+        public void NoMatchAtLocusAReturnedBySearchWithTwoMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 2;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 5);
+        }
+
+        [Test]
+        public void NoMatchAtLocusAHalfAtLocusBNotReturnedBySearchWithTwoMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 2;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().NotContain(d => d.DonorId == 6);
+        }
+
+        [Test]
+        public void ExactMatchIsReturnedBySearchWithTwoMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 2;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 1);
+            results.Should().Contain(d => d.DonorId == 2);
+        }
+
+        [Test]
+        public void HalfMatchAtLocusAReturnedBySearchWithTwoMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 2;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 3);
+            results.Should().Contain(d => d.DonorId == 4);
+        }
+
+        [Test]
+        public void ExactMatchIsReturnedBySearchWithThreeMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 3;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 1);
+            results.Should().Contain(d => d.DonorId == 2);
+        }
+
+        [Test]
+        public void HalfMatchAtLocusaReturnedBySearchWithThreeMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 3;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 3);
+            results.Should().Contain(d => d.DonorId == 4);
+        }
+
+        [Test]
+        public void NoMatchAtLocusABReturnedBySearchWithThreeMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 3;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 5);
+        }
+
+        [Test]
+        public void NoMatchAtLocusAHalfAtLocusBReturnedBySearchWithThreeMismatches()
+        {
+            searchCriteria.DonorMismatchCountTier1 = 3;
+            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.DonorId == 6);
+        }
     }
 }
