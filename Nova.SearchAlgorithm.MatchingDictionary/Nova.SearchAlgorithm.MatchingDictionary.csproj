@@ -178,37 +178,21 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithBroadPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithSplitPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15And70ShareMatchingPGroups.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15And70ShareMatchingPGroups.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15BroadPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15SplitPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70BroadPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70SplitPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.DeletedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.DeletedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.received.txt" />
     <Content Include="Tests\Services\SerologyMatching\SerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
