@@ -21,12 +21,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
         {
-            // TODO:NOVA-931 extend beyond loci A and B
-            // TODO:NOVA-931 handle missing donor hla
             var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "A", matchRequest.LocusMismatchA);
             var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "B", matchRequest.LocusMismatchB);
+            var matchesAtDRB1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "DRB1", matchRequest.LocusMismatchDRB1);
 
-            var matches = matchesAtA.Union(matchesAtB)
+            var matches = matchesAtA.Union(matchesAtB).Union(matchesAtDRB1)
                 .GroupBy(m => m.Key)
                 .Select(g => new PotentialMatch
                 {
@@ -34,13 +33,22 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                     TotalMatchCount = g.Sum(m => m.Value.MatchCount ?? 0),
                     MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key] : new LocusMatchDetails { MatchCount = 0 },
+                    MatchDetailsAtLocusDRB1 = matchesAtDRB1.ContainsKey(g.Key) ? matchesAtDRB1[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                 })
-                .Where(m => m.TotalMatchCount >= 4 - matchRequest.DonorMismatchCountTier1)
-                // TODO:NOVA-931 handle absent criteria at locus
+                .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCountTier1)
                 .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
-                .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount);
-
-            // TODO:NOVA-931 Augment with registry and other data from GetDonor(id)
+                .Where(m => m.MatchDetailsAtLocusB.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount)
+                .Where(m => m.MatchDetailsAtLocusDRB1.MatchCount >= 2 - matchRequest.LocusMismatchDRB1.MismatchCount)
+                .Select(m =>
+                {
+                    // Augment each match with registry and other data from GetDonor(id)
+                    // Performance could be improved here
+                    var donor = GetDonor(m.DonorId);
+                    m.Registry = donor.RegistryCode;
+                    m.DonorType = donor.DonorType;
+                    return m;
+                });
+            
             return matches;
         }
 

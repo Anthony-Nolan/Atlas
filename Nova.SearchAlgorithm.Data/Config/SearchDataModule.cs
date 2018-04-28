@@ -11,13 +11,16 @@ namespace Nova.SearchAlgorithm.Data.Config
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
-            builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            //
+            // To switch implementation from cloud storage to SQL server, uncomment this module.
+            //
+            //var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+            //builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+            //builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
 
-            builder.RegisterType<SqlDonorMatchRepository>()
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
+            //builder.RegisterType<SqlDonorMatchRepository>()
+            //    .AsImplementedInterfaces()
+            //    .InstancePerLifetimeScope();
         }
     }
 }

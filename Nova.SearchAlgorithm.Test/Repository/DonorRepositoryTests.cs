@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Service
         private const string PGroupA1_alternative = "p1a";
         private const string PGroupA2 = "p2";
         private const string PGroupB = "14";
+        private const string PGroupDRB1 = "pgDRB1";
 
         private readonly SearchableDonor exactMatch = new SearchableDonor { DonorId = 1 };
         private readonly SearchableDonor bothPositionsMatchGroupOne = new SearchableDonor { DonorId = 2 };
@@ -59,13 +60,24 @@ namespace Nova.SearchAlgorithm.Test.Service
                 HlaMatchFor("B", TypePositions.Two, TypePositions.Both, bothGroupsMatchPositionOne, PGroupB),
             });
 
+            GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus("DRB1", Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            {
+                HlaMatchFor("DRB1", TypePositions.One, TypePositions.Both, exactMatch, PGroupDRB1),
+                HlaMatchFor("DRB1", TypePositions.Two, TypePositions.Both, exactMatch, PGroupDRB1),
+                HlaMatchFor("DRB1", TypePositions.One, TypePositions.Both, bothPositionsMatchGroupOne, PGroupDRB1),
+                HlaMatchFor("DRB1", TypePositions.Two, TypePositions.Both, bothPositionsMatchGroupOne, PGroupDRB1),
+                HlaMatchFor("DRB1", TypePositions.One, TypePositions.Both, bothGroupsMatchPositionOne, PGroupDRB1),
+                HlaMatchFor("DRB1", TypePositions.Two, TypePositions.Both, bothGroupsMatchPositionOne, PGroupDRB1),
+            });
+
             GetFake<IDonorCloudTables>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
             GetFake<IDonorCloudTables>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
             GetFake<IDonorCloudTables>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
                 .WithDonorMismatchCounts(2,2)
-                .WithLocusMismatchB(PGroupB, PGroupB, 2);
+                .WithLocusMismatchB(PGroupB, PGroupB, 2)
+                .WithLocusMismatchDRB1(PGroupDRB1, PGroupDRB1, 2);
         }
 
         private PotentialHlaMatchRelation HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, SearchableDonor donor, string hlaMatchName)
@@ -88,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Service
             IEnumerable<PotentialMatch> results = repositoryUnderTest.Search(criteria);
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
-            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(4);
+            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(6);
         }
 
         [Test]
@@ -120,6 +132,7 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
             results.Where(d => d.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
+            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(6);
         }
 
         [Test]
@@ -131,6 +144,7 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             results.Should().Contain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
             results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
 
         [Test]
@@ -142,6 +156,7 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             results.Should().Contain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
             results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
 
         [Test]
@@ -153,6 +168,7 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             results.Should().Contain(d => d.DonorId == exactMatch.DonorId);
             results.Where(d => d.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
+            results.Where(d => d.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(6);
         }
 
         [Test]
@@ -164,6 +180,7 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             results.Should().Contain(d => d.DonorId == bothPositionsMatchGroupOne.DonorId);
             results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
 
         [Test]
@@ -175,6 +192,7 @@ namespace Nova.SearchAlgorithm.Test.Service
 
             results.Should().Contain(d => d.DonorId == bothGroupsMatchPositionOne.DonorId);
             results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
     }
 }
