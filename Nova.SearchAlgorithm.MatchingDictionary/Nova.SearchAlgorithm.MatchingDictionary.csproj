@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
-  <Import Project="..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -36,15 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AlphaFS, Version=2.1.0.0, Culture=neutral, PublicKeyToken=4d31a58f7d7ad5c9, processorArchitecture=MSIL">
-      <HintPath>..\packages\AlphaFS.2.1.3\lib\net452\AlphaFS.dll</HintPath>
-    </Reference>
-    <Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
-      <HintPath>..\packages\ApprovalTests.3.0.14\lib\net45\ApprovalTests.dll</HintPath>
-    </Reference>
-    <Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
-      <HintPath>..\packages\ApprovalUtilities.3.0.14\lib\net45\ApprovalUtilities.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
     </Reference>
@@ -65,9 +54,6 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -133,69 +119,6 @@
     <Compile Include="Services\Matching\HlaMatchingService.cs" />
     <Compile Include="Services\Matching\SerologyMatchingService.cs" />
     <Compile Include="Services\Matching\SerologyToPGroupsMatching.cs" />
-    <Compile Include="Tests\Data\Wmda\ConfidentialTest.cs" />
-    <Compile Include="Tests\Data\Wmda\HlaNomAllelesTest.cs" />
-    <Compile Include="Tests\Data\Wmda\HlaNomPTest.cs" />
-    <Compile Include="Tests\Data\Wmda\HlaNomSerologyTest.cs" />
-    <Compile Include="Tests\Data\Wmda\MolecularTestFixtureArgs.cs" />
-    <Compile Include="Tests\Data\Wmda\RelDnaSerTest.cs" />
-    <Compile Include="Tests\Data\Wmda\RelSerSerTest.cs" />
-    <Compile Include="Tests\Data\Wmda\SerologyTestFixtureArgs.cs" />
-    <Compile Include="Tests\Data\Wmda\WmdaDataTestBase.cs" />
-    <Compile Include="Tests\Models\HlaTypes\AlleleModelTest.cs" />
-    <Compile Include="Tests\Models\HlaTypes\HlaTypeModelTest.cs" />
-    <Compile Include="Tests\Repositories\MockWmdaRepository.cs" />
-    <Compile Include="Tests\Services\AlleleMatching\AlleleMatchingTest.cs" />
-    <Compile Include="Tests\Services\AlleleMatching\AlleleMatchingTestFixtureArgs.cs" />
-    <Compile Include="Tests\Services\HlaMatching\AlleleToSerologyMatchingTest.cs" />
-    <Compile Include="Tests\Services\HlaMatching\HlaMatchingTestFixtureArgs.cs" />
-    <Compile Include="Tests\Services\HlaMatching\ReciprocalMatchingTest.cs" />
-    <Compile Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.cs" />
-    <Compile Include="Tests\Services\MatchedOnTestBase.cs" />
-    <Compile Include="Tests\Services\MatchedOn\MatchedOnTest.cs" />
-    <Compile Include="Tests\Services\MatchedOn\MatchedOnTestFixtureArgs.cs" />
-    <Compile Include="Tests\Services\MatchingServiceTestData.cs" />
-    <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTest.cs" />
-    <Compile Include="Tests\Services\SerologyMatching\SerologyMatchingTestFixtureArgs.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Tests\Data\Wmda\HlaNomSerologyTest.HlaNomContainsAllExpectedSerology.approved.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Tests\Repositories\wmda-v3-31-0\hla_nom_p.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_dna_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Tests\Repositories\wmda-v3-31-0\rel_ser_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Tests\Repositories\wmda-v3-31-0\version_report.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15And70ShareMatchingPGroups.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.DeletedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Tests\Services\SerologyMatching\SerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -210,11 +133,4 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.10.0\build\net35\NUnit3TestAdapter.props'))" />
-    <Error Condition="!Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.1\build\NUnit.props'))" />
-  </Target>
 </Project>
