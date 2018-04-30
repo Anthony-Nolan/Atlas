@@ -11,8 +11,8 @@
   DTS:LocaleID="2057"
   DTS:ObjectName="Package"
   DTS:PackageType="5"
-  DTS:VersionBuild="20"
-  DTS:VersionGUID="{50C8709A-ACBD-4CBA-A3BB-E730E4F1B93B}">
+  DTS:VersionBuild="23"
+  DTS:VersionGUID="{B119FC15-2158-42B9-9611-9BAE226F5521}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -28,16 +28,16 @@
     </DTS:ConnectionManager>
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[solarlive.nova]"
-      DTS:CreationName="ADO.NET:System.Data.OleDb.OleDbConnection, System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+      DTS:CreationName="ADO.NET:System.Data.OracleClient.OracleConnection, System.Data.OracleClient, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
       DTS:DTSID="{EB0FA3A0-8120-472A-9272-952C73C76113}"
       DTS:ObjectName="solarlive.nova">
       <DTS:ObjectData>
         <DTS:ConnectionManager
-          DTS:ConnectionString="Data Source=solarlive;User ID=nova;Provider=OraOLEDB.Oracle.1;Persist Security Info=True;">
+          DTS:ConnectionString="Data Source=solarlive;User ID=nova;Persist Security Info=True;Unicode=True;">
           <DTS:Password
             DTS:Name="Password"
             Sensitive="1"
-            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA3nq1jrz/8E+LOXg5wcz+sQAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAAAlYt7iNFqyZw4Rwse6t0gOAAAAAASAAACgAAAAEAAAAPTw5VDIgoL38rkg0jp6mxUYAAAAFSzH4lRiZH+M76bWk9+qAO9wAlhpHswKFAAAAN66yja1cjyPBKwMksa8XUdoKZ0T</DTS:Password>
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA3nq1jrz/8E+LOXg5wcz+sQAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAACw3YcGMiW08au2Ee1tlM8PAAAAAASAAACgAAAAEAAAACONhLcsQEt5KGClZxr1iBwYAAAA+tf8WBPK80Q9qY8lo8m03IELSEBDTaw2FAAAAK8fFjuFFGCgkRiVX17w9kB1o5VP</DTS:Password>
         </DTS:ConnectionManager>
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -559,7 +559,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_1_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[A_1_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_1_ID]"
                       name="A_1_ID"
@@ -569,7 +569,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_2_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[A_2_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_2_ID]"
                       name="A_2_ID"
@@ -579,7 +579,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_1_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[B_1_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_1_ID]"
                       name="B_1_ID"
@@ -589,7 +589,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_2_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[B_2_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_2_ID]"
                       name="B_2_ID"
@@ -599,7 +599,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[CW_1_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[CW_1_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[CW_1_ID]"
                       name="CW_1_ID"
@@ -609,7 +609,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[CW_2_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[CW_2_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[CW_2_ID]"
                       name="CW_2_ID"
@@ -619,7 +619,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_1_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DQB1_1_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_1_ID]"
                       name="DQB1_1_ID"
@@ -629,7 +629,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_2_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DQB1_2_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_2_ID]"
                       name="DQB1_2_ID"
@@ -639,7 +639,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_1_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DRB1_1_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_1_ID]"
                       name="DRB1_1_ID"
@@ -649,7 +649,7 @@ WHERE
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_2_ID]"
                       dataType="numeric"
                       errorOrTruncationOperation="Conversion"
-                      errorRowDisposition="FailComponent"
+                      errorRowDisposition="IgnoreFailure"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DRB1_2_ID]"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_2_ID]"
                       name="DRB1_2_ID"
@@ -1150,6 +1150,14 @@ WHERE
       </GraphLayout>
     </LayoutInfo>
   </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Import Donor Table\SQL Server Donors">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
   <PipelineComponentMetadata
     design-time-name="Package\Import Donor Table\Solar Donors">
     <Properties>
