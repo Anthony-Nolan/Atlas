@@ -42,6 +42,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AlphaFS, Version=2.1.0.0, Culture=neutral, PublicKeyToken=4d31a58f7d7ad5c9, processorArchitecture=MSIL">
+      <HintPath>..\packages\AlphaFS.2.1.3\lib\net452\AlphaFS.dll</HintPath>
+    </Reference>
+    <Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
+      <HintPath>..\packages\ApprovalTests.3.0.14\lib\net45\ApprovalTests.dll</HintPath>
+    </Reference>
+    <Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
+      <HintPath>..\packages\ApprovalUtilities.3.0.14\lib\net45\ApprovalUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.6.2\lib\net45\Autofac.dll</HintPath>
     </Reference>
@@ -237,6 +246,7 @@
     <Reference Include="System.Spatial, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Spatial.5.8.2\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -270,6 +280,30 @@
     <Compile Include="TestBase.cs" />
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\ConfidentialTest.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\HlaNomAllelesTest.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\HlaNomPTest.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\HlaNomSerologyTest.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\MolecularTestFixtureArgs.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\RelDnaSerTest.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\RelSerSerTest.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\SerologyTestFixtureArgs.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\WmdaDataTestBase.cs" />
+    <Compile Include="MatchingDictionary\Models\HlaTypes\AlleleModelTest.cs" />
+    <Compile Include="MatchingDictionary\Models\HlaTypes\HlaTypeModelTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\MockWmdaRepository.cs" />
+    <Compile Include="MatchingDictionary\Services\AlleleMatching\AlleleMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\AlleleMatching\AlleleMatchingTestFixtureArgs.cs" />
+    <Compile Include="MatchingDictionary\Services\HlaMatching\AlleleToSerologyMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\HlaMatching\HlaMatchingTestFixtureArgs.cs" />
+    <Compile Include="MatchingDictionary\Services\HlaMatching\ReciprocalMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchedOnTestBase.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchedOn\MatchedOnTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchedOn\MatchedOnTestFixtureArgs.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchingServiceTestData.cs" />
+    <Compile Include="MatchingDictionary\Services\SerologyMatching\SerologyMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\SerologyMatching\SerologyMatchingTestFixtureArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -292,12 +326,54 @@
       <Project>{7DC2A865-304B-402B-AC56-342681368568}</Project>
       <Name>Nova.SearchAlgorithm.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj">
+      <Project>{478d829d-9aa2-4de2-9fdd-dee35e50111e}</Project>
+      <Name>Nova.SearchAlgorithm.MatchingDictionary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj">
       <Project>{B5CB5431-D854-4F2B-8ECA-06055376EE02}</Project>
       <Name>Nova.SearchAlgorithm</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="MatchingDictionary\Data\Wmda\HlaNomSerologyTest.HlaNomContainsAllExpectedSerology.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom_p.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\rel_dna_ser.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\rel_ser_ser.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\version_report.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15And70ShareMatchingPGroups.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15BroadPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.B15SplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70BroadPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.B70SplitPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.DeletedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\HlaMatching\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\SerologyMatching\SerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
