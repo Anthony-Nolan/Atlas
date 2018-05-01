@@ -6,9 +6,11 @@ using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Repositories;
+using Nova.SearchAlgorithm.Repositories.Hla;
 using NUnit.Framework;
 using Autofac;
-using Nova.SearchAlgorithm.Data;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
@@ -45,17 +47,17 @@ namespace Nova.SearchAlgorithm.Test.Integration
             //builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
             //builder.RegisterType<Repositories.Donors.CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Data.SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Repositories.Hla.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Repositories.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
             // Tests should not use Solar, so don't provide an actual connection string.

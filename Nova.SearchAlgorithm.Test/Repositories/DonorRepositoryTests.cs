@@ -15,7 +15,7 @@ using NUnit.Framework;
 /// Tests the interface between the BlobDonorMatchRepository (the blob storage implementation of a donor match repo)
 /// and the DonorBlobRepository (the repo for persisting data in cloud storage)
 /// </summary>
-namespace Nova.SearchAlgorithm.Test.Service
+namespace Nova.SearchAlgorithm.Test.Repositories
 {
     [TestFixture]
     public class DonorRepositoryTests : TestBase<CloudStorageDonorMatchRepository>
