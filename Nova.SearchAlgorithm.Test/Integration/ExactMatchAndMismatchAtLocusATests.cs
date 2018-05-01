@@ -11,13 +11,15 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Hla;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using System.Collections;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
-    [TestFixture]
     public class ExactMatchAndMismatchAtLocusATests : IntegrationTestBase
     {
         private ISearchService searchService;
+        
+        public ExactMatchAndMismatchAtLocusATests(DonorStorageImplementation param) : base(param) { }
 
         [OneTimeSetUp]
         public void ImportTestDonors()

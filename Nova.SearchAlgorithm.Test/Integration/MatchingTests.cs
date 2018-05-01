@@ -12,13 +12,14 @@ using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
-    [TestFixture]
     public class MatchingTests : IntegrationTestBase
     {
         private DonorMatchCriteria searchCriteria;
 
         private IDonorMatchRepository searchRepo;
 
+        public MatchingTests(DonorStorageImplementation param) : base(param) { }
+        
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
