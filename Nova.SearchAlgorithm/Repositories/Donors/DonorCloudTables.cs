@@ -11,11 +11,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public interface IDonorCloudTables
     {
-        void InsertDonor(SearchableDonor donor);
-        void UpdateDonorWithNewHla(SearchableDonor donor);
+        void InsertDonor(InputDonor donor);
+        void UpdateDonorWithNewHla(InputDonor donor);
         SearchableDonor GetDonor(int donorId);
         IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId);
-        IEnumerable<SearchableDonor> AllDonors();
+        IEnumerable<RawDonor> AllDonors();
         IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(string locus, LocusSearchCriteria criteria);
 
     }
@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return AllMatchesForDonor(donorId).Select(m => m.ToPotentialHlaMatchRelation(0));
         }
 
-        public void InsertDonor(SearchableDonor donor)
+        public void InsertDonor(InputDonor donor)
         {
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
             donorTable.Execute(insertDonor);
@@ -111,13 +111,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         // TODO:NOVA-929 This will be too many donors
         // Can we stream them in batches with IEnumerable?
-        public IEnumerable<SearchableDonor> AllDonors()
+        public IEnumerable<RawDonor> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
-            return donorTable.ExecuteQuery(query).Select(dte => dte.ToSearchableDonor(mapper));
+            return donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor(mapper));
         }
 
-        public void UpdateDonorWithNewHla(SearchableDonor donor)
+        public void UpdateDonorWithNewHla(InputDonor donor)
         {
             // Update the donor itself
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
@@ -125,7 +125,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             UpdateDonorHlaMatches(donor);
         }
 
-        private void UpdateDonorHlaMatches(SearchableDonor donor)
+        private void UpdateDonorHlaMatches(InputDonor donor)
         {
             // First delete all the old matches
             var matches = AllMatchesForDonor(donor.DonorId);

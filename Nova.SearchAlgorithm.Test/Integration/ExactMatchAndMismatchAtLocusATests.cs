@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             var hlaRepository = container.Resolve<IHlaRepository>();
             var donorRepository = container.Resolve<IDonorMatchRepository>();
-            donorRepository.InsertDonor(new SearchableDonor
+            donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",

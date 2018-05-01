@@ -2,7 +2,10 @@
 
 namespace Nova.SearchAlgorithm.Data.Models
 {
-    public class SearchableDonor
+    /// <summary>
+    /// A donor from our data source along with the donor's raw hla data.
+    /// </summary>
+    public class RawDonor
     {
         public int DonorId { get; set; }
 
@@ -10,14 +13,6 @@ namespace Nova.SearchAlgorithm.Data.Models
         public string DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
 
-        public PotentialMatch ToApiDonorMatch()
-        {
-            return new PotentialMatch
-            {
-                DonorId = DonorId,
-                DonorType = DonorType,
-                Registry = RegistryCode
-            };
-        }
+        public PhenotypeInfo<string> HlaNames { get; set; }
     }
 }

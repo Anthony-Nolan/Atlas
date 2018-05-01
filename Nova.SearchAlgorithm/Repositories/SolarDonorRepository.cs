@@ -5,13 +5,12 @@ using Dapper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Models;
 using Nova.Utils.Solar;
-using Nova.Utils.Helpers;
 
 namespace Nova.SearchAlgorithm.Repositories
 {
     public interface ISolarDonorRepository
     {
-        IEnumerable<RawDonor> SomeDonors(int maxResults);
+        IEnumerable<RawInputDonor> SomeDonors(int maxResults);
     }
 
     public class SolarDonorRepository : ISolarDonorRepository
@@ -23,7 +22,7 @@ namespace Nova.SearchAlgorithm.Repositories
             this.factory = factory;
         }
 
-        public IEnumerable<RawDonor> SomeDonors(int maxResults)
+        public IEnumerable<RawInputDonor> SomeDonors(int maxResults)
         {
             const string sql = @"SELECT 
                                    d.donor_id, birth_date, blood_group_type, rh_type, donor_type, donor_status_type, donor_state_type,
@@ -67,9 +66,9 @@ namespace Nova.SearchAlgorithm.Repositories
             }
         }
 
-        private RawDonor RawDonorMap(dynamic result)
+        private RawInputDonor RawDonorMap(dynamic result)
         {
-            return new RawDonor
+            return new RawInputDonor
             {
                 DonorId = result.DONOR_ID.ToString(),
                 RegistryCode = result.DONOR_TYPE,

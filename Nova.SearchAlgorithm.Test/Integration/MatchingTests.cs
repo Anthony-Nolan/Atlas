@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo = container.Resolve<IDonorMatchRepository>();
 
             // potential 2/2 homozygous match at locus A
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // potential 2/2 heterozygous match at locus A
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // potential 1/2 match at locus A - 1/2 in HvG direction, 2/2 in GvH direction
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // potential 1/2 match at locus A - 1/2 in both directions
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // 0/2 at locus A
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
@@ -111,7 +111,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // 0/2 at locus A, 1/2 at locus B
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = "Adult",
