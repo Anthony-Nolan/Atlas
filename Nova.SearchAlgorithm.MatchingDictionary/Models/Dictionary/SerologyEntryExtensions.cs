@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
 {
-    internal static class SerologyEntryExtensions
+    public static class SerologyEntryExtensions
     {
-        internal static IEnumerable<SerologyEntry> ToSerologyEntries(this IEnumerable<Serology> serologyCollection)
+        public static IEnumerable<SerologyEntry> ToSerologyEntries(this IEnumerable<Serology> serologyCollection)
         {
             return serologyCollection.Select(s => new SerologyEntry(s.Name, s.SerologySubtype));
         }
