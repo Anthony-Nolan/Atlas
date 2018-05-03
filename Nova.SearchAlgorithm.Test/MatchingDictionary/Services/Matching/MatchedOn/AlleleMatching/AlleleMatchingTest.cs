@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.MatchedOn.AlleleMatching
 {
     [TestFixtureSource(typeof(AlleleMatchingTestFixtureArgs))]
     public class AlleleMatchingTest : MatchedOnTestBase<IMatchingPGroups>

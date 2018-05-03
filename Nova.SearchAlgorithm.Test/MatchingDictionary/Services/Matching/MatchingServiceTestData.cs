@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
     public sealed class MatchingServiceTestData
     {

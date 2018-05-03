@@ -2,7 +2,7 @@
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.MatchedOn.AlleleMatching
 {
     public class AlleleMatchingTestFixtureArgs : IEnumerable
     {

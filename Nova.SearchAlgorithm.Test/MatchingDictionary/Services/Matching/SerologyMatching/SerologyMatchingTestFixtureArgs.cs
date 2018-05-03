@@ -2,7 +2,7 @@
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.SerologyMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyMatching
 {
     public class SerologyMatchingTestFixtureArgs : IEnumerable
     {

@@ -6,7 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.SerologyMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyMatching
 {
     [TestFixtureSource(typeof(SerologyMatchingTestFixtureArgs))]
     [UseReporter(typeof(NUnitReporter))]

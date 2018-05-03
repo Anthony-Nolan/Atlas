@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchedOn
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.MatchedOn
 {
     public class MatchedOnTestFixtureArgs : IEnumerable
     {
