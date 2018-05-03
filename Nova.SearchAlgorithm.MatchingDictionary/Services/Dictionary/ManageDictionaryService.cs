@@ -1,4 +1,8 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 
@@ -21,12 +25,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 
         public void RecreateDictionary()
         {
-            var hlaMatcher = new HlaMatchingService(
-                wmdaRepository, new AlleleMatchingService(wmdaRepository), new SerologyMatchingService(wmdaRepository));
-            var allMatchedHla = hlaMatcher.MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
-
-            var entries = new DictionaryGenerator().GenerateDictionaryEntries(allMatchedHla);
+            var allMatchedHla = GetMatchedHla().ToList();
+            var entries = GetDictionaryEntries(allMatchedHla);
             dictionaryRepository.RecreateDictionaryTable(entries);
-        }      
+        }
+
+        private IEnumerable<IMatchedHla> GetMatchedHla()
+        {
+            var alleleMatcher = new AlleleMatchingService(wmdaRepository);
+            var serologyMatcher = new SerologyMatchingService(wmdaRepository);
+            var hlaMatcher = new HlaMatchingService(wmdaRepository, alleleMatcher, serologyMatcher);
+
+            return hlaMatcher.MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter).ToList();
+        }
+
+        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IReadOnlyCollection<IMatchedHla> allMatchedHla)
+        {
+            var entries = new List<MatchingDictionaryEntry>();
+            entries.AddRange(new DictionaryFromSerology().GetDictionaryEntries(allMatchedHla.Where(m => !(m is MatchedAllele))));
+            entries.AddRange(new DictionaryFromAllele().GetDictionaryEntries(allMatchedHla.OfType<MatchedAllele>()));
+
+            return entries;
+        }
     }
 }
