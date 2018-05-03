@@ -122,7 +122,7 @@ ORDER BY TotalMatchCount DESC",
                 string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionOne),
                 string.Join("','", matchRequest.LocusMismatchDRB1.HlaNamesToMatchInPositionTwo),
                 // TODO:NOVA-1119 fix the matching logic
-                6 - matchRequest.DonorMismatchCountTier1);
+                6 - matchRequest.DonorMismatchCount);
 
             return context.Database.SqlQuery<PotentialMatch>(sql);
         }

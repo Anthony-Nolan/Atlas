@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                     MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusDRB1 = matchesAtDRB1.ContainsKey(g.Key) ? matchesAtDRB1[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                 })
-                .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCountTier1)
+                .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCount)
                 .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
                 .Where(m => m.MatchDetailsAtLocusB.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount)
                 .Where(m => m.MatchDetailsAtLocusDRB1.MatchCount >= 2 - matchRequest.LocusMismatchDRB1.MismatchCount)

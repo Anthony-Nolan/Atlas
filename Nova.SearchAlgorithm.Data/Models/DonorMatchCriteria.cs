@@ -11,8 +11,7 @@ namespace Nova.SearchAlgorithm.Data.Models
         public SearchType SearchType { get; set; }
         public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
 
-        public int DonorMismatchCountTier1 { get; set; }
-        public int? DonorMismatchCountTier2 { get; set; }
+        public int DonorMismatchCount { get; set; }
 
         public DonorLocusMatchCriteria LocusMismatchA { get; set; }
         public DonorLocusMatchCriteria LocusMismatchB { get; set; }

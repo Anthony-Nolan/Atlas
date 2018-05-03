@@ -75,7 +75,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             GetFake<IDonorCloudTables>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
-                .WithDonorMismatchCounts(2,2)
+                .WithDonorMismatchCount(2)
                 .WithLocusMismatchB(PGroupB, PGroupB, 2)
                 .WithLocusMismatchDRB1(PGroupDRB1, PGroupDRB1, 2);
         }

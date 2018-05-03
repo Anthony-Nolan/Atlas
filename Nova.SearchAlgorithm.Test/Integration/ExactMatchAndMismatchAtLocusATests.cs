@@ -58,8 +58,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 MatchCriteria = new MismatchCriteria
                 {
-                    DonorMismatchCountTier1 = 0,
-                    DonorMismatchCountTier2 = 0,
+                    DonorMismatchCount = 0,
                     LocusMismatchA = new LocusMismatchCriteria
                     {
                         MismatchCount = 0,
@@ -93,8 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 MatchCriteria = new MismatchCriteria
                 {
-                    DonorMismatchCountTier1 = 0,
-                    DonorMismatchCountTier2 = 0,
+                    DonorMismatchCount = 0,
                     LocusMismatchA = new LocusMismatchCriteria
                     {
                         MismatchCount = 0,
@@ -128,8 +126,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 MatchCriteria = new MismatchCriteria
                 {
-                    DonorMismatchCountTier1 = 0,
-                    DonorMismatchCountTier2 = 0,
+                    DonorMismatchCount = 0,
                     LocusMismatchA = new LocusMismatchCriteria
                     {
                         MismatchCount = 0,

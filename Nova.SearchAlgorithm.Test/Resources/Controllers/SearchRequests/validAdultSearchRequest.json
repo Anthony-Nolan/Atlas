@@ -1,8 +1,7 @@
 ﻿{
   "SearchType": "Adult",
   "MatchCriteria": {
-    "donorMismatchCountTier1": 0,
-    "donorMismatchCountTier2": 0,
+    "donorMismatchCount": 0,
     "locusMismatchA": {
       "searchHLA1": "80:01:01:02",
       "searchHLA2": "210",

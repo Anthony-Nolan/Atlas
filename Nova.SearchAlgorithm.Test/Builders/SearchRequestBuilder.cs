@@ -18,10 +18,9 @@ namespace Nova.SearchAlgorithm.Test.Builders
             MatchCriteria = new MismatchCriteria()
         };
 
-        public SearchRequestBuilder WithDonorMismatchCounts(int tier1, int tier2)
+        public SearchRequestBuilder WithDonorMismatchCount(int count)
         {
-            request.MatchCriteria.DonorMismatchCountTier1 = tier1;
-            request.MatchCriteria.DonorMismatchCountTier2 = tier2;
+            request.MatchCriteria.DonorMismatchCount = count;
 
             return this;
         }
