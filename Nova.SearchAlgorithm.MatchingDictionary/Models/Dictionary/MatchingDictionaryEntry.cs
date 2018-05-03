@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
     {
         NotMolecularType = 0,
         CompleteAllele = 1,
-        TruncatedAllele = 2,
+        TwoFieldAllele = 2,
         FirstFieldAllele = 3
     }
 

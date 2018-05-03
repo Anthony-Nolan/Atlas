@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
                 case MolecularSubtype.CompleteAllele:
                     lookupName = allele.Name;
                     break;
-                case MolecularSubtype.TruncatedAllele:
+                case MolecularSubtype.TwoFieldAllele:
                     lookupName = allele.TwoFieldName;
                     break;
                 case MolecularSubtype.FirstFieldAllele:

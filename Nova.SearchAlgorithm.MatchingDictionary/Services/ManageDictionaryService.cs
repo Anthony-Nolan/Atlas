@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             var entries = new List<MatchingDictionaryEntry>(
                 matchedAlleles.SelectMany(allele => new List<MatchingDictionaryEntry>{
                     allele.ToDictionaryEntry(MolecularSubtype.CompleteAllele),
-                    allele.ToDictionaryEntry(MolecularSubtype.TruncatedAllele),
+                    allele.ToDictionaryEntry(MolecularSubtype.TwoFieldAllele),
                     allele.ToDictionaryEntry(MolecularSubtype.FirstFieldAllele)
                     }));
 
