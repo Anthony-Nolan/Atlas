@@ -1,7 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using System.Web.Http;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
+using System.Web.Http;
 
 namespace Nova.SearchAlgorithm.Controllers
 {

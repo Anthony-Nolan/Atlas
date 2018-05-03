@@ -7,29 +7,26 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
-    public interface IManageDictionaryService
+    public class DictionaryGenerator
     {
-        void RecreateDictionary();
-    }
-    public class ManageDictionaryService : IManageDictionaryService
-    {
-        private readonly IMatchedHlaRepository dictionaryRepository;
         private readonly IWmdaRepository wmdaRepository;
 
-        public ManageDictionaryService(IMatchedHlaRepository dictionaryRepository, IWmdaRepository wmdaRepository)
+        public DictionaryGenerator(IWmdaRepository wmdaRepository)
         {
-            this.dictionaryRepository = dictionaryRepository;
             this.wmdaRepository = wmdaRepository;
         }
 
-        public void RecreateDictionary()
+        public IEnumerable<MatchingDictionaryEntry> GenerateDictionaryEntries()
         {
             var allMatchedHla = GetAllMatchedHla().ToList();
-            var entries = GetAllDictionaryEntries(allMatchedHla);
 
-            dictionaryRepository.RecreateDictionaryTable(entries);
+            var entries = new List<MatchingDictionaryEntry>();
+            entries.AddRange(GetDictionaryEntriesFromMatchedSerology(allMatchedHla.Where(m => !(m is MatchedAllele))));
+            entries.AddRange(GetDictionaryEntriesFromMatchedAlleles(allMatchedHla.OfType<MatchedAllele>()));
+
+            return entries;
         }
 
         private IEnumerable<IMatchedHla> GetAllMatchedHla()
@@ -41,14 +38,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 new HlaMatchingService(wmdaRepository, alleleMatcher, serologyMatcher)
                     .MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
             return allMatchedHla;
-        }
-
-        private static IEnumerable<MatchingDictionaryEntry> GetAllDictionaryEntries(IReadOnlyCollection<IMatchedHla> allMatchedHla)
-        {
-            var entries = new List<MatchingDictionaryEntry>();
-            entries.AddRange(GetDictionaryEntriesFromMatchedSerology(allMatchedHla.Where(m => !(m is MatchedAllele))));
-            entries.AddRange(GetDictionaryEntriesFromMatchedAlleles(allMatchedHla.OfType<MatchedAllele>()));
-            return entries;
         }
 
         private static IEnumerable<SerologyEntry> GetSerologyEntries(IEnumerable<Serology> serologyCollection)
@@ -69,7 +58,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     GetSerologyEntries(serology.MatchingSerologies)
                 ));
         }
-        
+
         private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromMatchedAlleles(IEnumerable<MatchedAllele> matchedAlleles)
         {
             var entries = new List<MatchingDictionaryEntry>(
