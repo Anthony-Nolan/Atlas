@@ -1,4 +1,6 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
@@ -19,7 +21,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 
         public void RecreateDictionary()
         {
-            var entries = new DictionaryGenerator().GenerateDictionaryEntries(wmdaRepository);
+            var hlaMatcher = new HlaMatchingService(
+                wmdaRepository, new AlleleMatchingService(wmdaRepository), new SerologyMatchingService(wmdaRepository));
+            var allMatchedHla = hlaMatcher.MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
+
+            var entries = new DictionaryGenerator().GenerateDictionaryEntries(allMatchedHla);
             dictionaryRepository.RecreateDictionaryTable(entries);
         }      
     }

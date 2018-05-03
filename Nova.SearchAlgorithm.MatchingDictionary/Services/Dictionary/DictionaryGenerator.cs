@@ -11,26 +11,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     public class DictionaryGenerator
     {
-        public IEnumerable<MatchingDictionaryEntry> GenerateDictionaryEntries(IWmdaRepository wmdaRepository)
+        public IEnumerable<MatchingDictionaryEntry> GenerateDictionaryEntries(IEnumerable<IMatchedHla> allMatchedHla)
         {
-            var allMatchedHla = GetAllMatchedHla(wmdaRepository).ToList();
+            var hla = allMatchedHla.ToList();
 
             var entries = new List<MatchingDictionaryEntry>();
-            entries.AddRange(GetDictionaryEntriesFromMatchedSerology(allMatchedHla.Where(m => !(m is MatchedAllele))));
-            entries.AddRange(GetDictionaryEntriesFromMatchedAlleles(allMatchedHla.OfType<MatchedAllele>()));
+            entries.AddRange(GetDictionaryEntriesFromMatchedSerology(hla.Where(m => !(m is MatchedAllele))));
+            entries.AddRange(GetDictionaryEntriesFromMatchedAlleles(hla.OfType<MatchedAllele>()));
 
             return entries;
-        }
-
-        private static IEnumerable<IMatchedHla> GetAllMatchedHla(IWmdaRepository wmdaRepository)
-        {
-            var alleleMatcher = new AlleleMatchingService(wmdaRepository);
-            var serologyMatcher = new SerologyMatchingService(wmdaRepository);
-
-            var allMatchedHla =
-                new HlaMatchingService(wmdaRepository, alleleMatcher, serologyMatcher)
-                    .MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
-            return allMatchedHla;
         }
 
         private static IEnumerable<SerologyEntry> GetSerologyEntries(IEnumerable<Serology> serologyCollection)
