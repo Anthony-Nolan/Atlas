@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matches;
         }
 
-        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(SearchType searchType, IEnumerable<RegistryCode> registriesToSearch, string locusName, DonorLocusMatchCriteria criteria)
+        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, string locusName, DonorLocusMatchCriteria criteria)
         {
             LocusSearchCriteria repoCriteria = new LocusSearchCriteria
             {
@@ -104,7 +104,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             donorBlobRepository.InsertDonor(donor);
         }
 
-        // TODO:NOVA-929 This will be too many donors
+        // TODO:NOVA-937 This will be too many donors
         // Can we stream them in batches with IEnumerable?
         public IEnumerable<RawDonor> AllDonors()
         {

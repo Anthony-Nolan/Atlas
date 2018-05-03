@@ -2,11 +2,15 @@
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
+    /// <summary>
+    /// These endpoints will not import genuine data but will
+    /// create test data for manual testing.
+    /// TODO:NOVA-1151 remove these endpoints before going into production
+    /// </summary>
     public class DonorImportController : ApiController
     {
         private readonly IDonorImportService donorImportService;

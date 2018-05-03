@@ -105,11 +105,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             donorTable.Execute(insertDonor);
 
             UpdateDonorHlaMatches(donor);
-
-            // TODO:NOVA-929 if this method stays, sort out a return value
         }
 
-        // TODO:NOVA-929 This will be too many donors
+        // TODO:NOVA-939 This will be too many donors
         // Can we stream them in batches with IEnumerable?
         public IEnumerable<RawDonor> AllDonors()
         {

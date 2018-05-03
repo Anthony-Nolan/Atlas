@@ -21,7 +21,6 @@ namespace Nova.SearchAlgorithm.Services
         void ImportDummyData();
     }
 
-    // TODO:NOVA-929 implement correctly
     public class DonorImportService : IDonorImportService
     {
         private readonly IDonorMatchRepository donorRepository;
@@ -40,7 +39,7 @@ namespace Nova.SearchAlgorithm.Services
             donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 1,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -78,7 +77,7 @@ namespace Nova.SearchAlgorithm.Services
             donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = code,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = donor.DonorId,
                 MatchingHla = donor.HlaNames.Map((locus, position, hla) => hlaRepository.RetrieveHlaMatches(locus, hla))
             });

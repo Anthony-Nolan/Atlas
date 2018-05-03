@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 1,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 2,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 3,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 4,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 5,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -114,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 6,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -133,7 +133,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria = new DonorMatchCriteria
             {
-                SearchType = SearchType.Adult,
+                SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 DonorMismatchCountTier1 = 0,
                 DonorMismatchCountTier2 = 0,

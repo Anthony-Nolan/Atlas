@@ -11,8 +11,8 @@
   DTS:LocaleID="2057"
   DTS:ObjectName="Package"
   DTS:PackageType="5"
-  DTS:VersionBuild="33"
-  DTS:VersionGUID="{48CB0EB8-5C28-48ED-BFB0-B4E068790C48}">
+  DTS:VersionBuild="34"
+  DTS:VersionGUID="{964E6349-B18D-411D-80E7-5B50BCC661C5}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -37,7 +37,7 @@
           <DTS:Password
             DTS:Name="Password"
             Sensitive="1"
-            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA3nq1jrz/8E+LOXg5wcz+sQAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAACfA1ebYNKLVIRzdRa/MLmRAAAAAASAAACgAAAAEAAAAOB34j5QIxcaO+fFWPA543IYAAAAWesDCK6ZLv9u6q0dZChlUkDu4LYlPLuQFAAAAHxPmAzv6iS9KkE9Pc7gxQ75H6XQ</DTS:Password>
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA3nq1jrz/8E+LOXg5wcz+sQAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAADChyE4Alk0Wy6D35247GpdAAAAAASAAACgAAAAEAAAAD1GsiWtyJnATy9lOef0/7AYAAAAG4WGTcvtb7QSa08WKsXh9n/QMSOe36g7FAAAALcE7ZSiwVwaH+PlsYc9iyzBltHr</DTS:Password>
         </DTS:ConnectionManager>
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -139,7 +139,7 @@
                     <inputColumn
                       refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DONOR_TYPE]"
                       cachedDataType="wstr"
-                      cachedLength="5"
+                      cachedLength="40"
                       cachedName="DONOR_TYPE"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_TYPE]" />
                   </inputColumns>
@@ -374,12 +374,12 @@
                       </properties>
                     </outputColumn>
                     <outputColumn
-                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DONOR_TYPE]"
-                      dataType="nText"
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorType]"
+                      dataType="i4"
                       errorOrTruncationOperation="Conversion"
                       errorRowDisposition="FailComponent"
-                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DONOR_TYPE]"
-                      name="DONOR_TYPE"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorType]"
+                      name="DonorType"
                       truncationRowDisposition="FailComponent">
                       <properties>
                         <property
@@ -519,8 +519,8 @@
 -- DONOR INFO
 d.donor_id,
 CASE
-  WHEN d.donor_type LIKE '%Cord' THEN 'Cord'
-  ELSE 'Adult' 
+  WHEN d.donor_type LIKE '%Cord' THEN 2
+  ELSE 1
   END AS donor_type,
 CASE 
   WHEN d.donor_type = 'ANBMT' THEN 'AN'
@@ -608,7 +608,7 @@ WHERE
                       errorOrTruncationOperation="Conversion"
                       errorRowDisposition="FailComponent"
                       externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_TYPE]"
-                      length="5"
+                      length="40"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_TYPE]"
                       name="DONOR_TYPE"
                       truncationRowDisposition="FailComponent" />
@@ -732,8 +732,7 @@ WHERE
                       precision="7" />
                     <externalMetadataColumn
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_TYPE]"
-                      dataType="wstr"
-                      length="5"
+                      dataType="numeric"
                       name="DONOR_TYPE" />
                     <externalMetadataColumn
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_REGISTRY_CODE]"
@@ -806,7 +805,7 @@ WHERE
                     <outputColumn
                       refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_TYPE]"
                       dataType="wstr"
-                      length="5"
+                      length="40"
                       lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_TYPE]"
                       name="DONOR_TYPE" />
                     <outputColumn
@@ -1013,12 +1012,6 @@ WHERE
                       externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[B_2]"
                       lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_2]" />
                     <inputColumn
-                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DONOR_TYPE]"
-                      cachedDataType="nText"
-                      cachedName="DONOR_TYPE"
-                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorType]"
-                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DONOR_TYPE]" />
-                    <inputColumn
                       refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[C_1]"
                       cachedDataType="nText"
                       cachedName="C_1"
@@ -1054,6 +1047,12 @@ WHERE
                       cachedName="DRB1_2"
                       externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DRB1_2]"
                       lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DonorType]"
+                      cachedDataType="i4"
+                      cachedName="DonorType"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorType]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorType]" />
                   </inputColumns>
                   <externalMetadataColumns
                     isUsed="True">
@@ -1063,7 +1062,7 @@ WHERE
                       name="DonorId" />
                     <externalMetadataColumn
                       refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorType]"
-                      dataType="nText"
+                      dataType="i4"
                       name="DonorType" />
                     <externalMetadataColumn
                       refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[RegistryCode]"
@@ -1160,35 +1159,57 @@ WHERE
       <GraphLayout
         Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
-          Size="152,41.6"
-          Id="Package\Import Donor Table\Registry Codes"
-          TopLeft="38.7692321912777,189.264514614466" />
-        <NodeLayout
           Size="172.8,41.6"
           Id="Package\Import Donor Table\SQL Server Donors"
-          TopLeft="27.9615392854229,267.912902315003" />
+          TopLeft="27.9615392854229,268.080644247907" />
+        <NodeLayout
+          Size="141.6,41.6"
+          Id="Package\Import Donor Table\Solar Donors"
+          TopLeft="41.2538468930849,5.49999999999995" />
         <NodeLayout
           Size="148.8,41.6"
           Id="Package\Import Donor Table\Convert Types"
           TopLeft="37.5000007335957,107.267741932904" />
         <NodeLayout
-          Size="141.6,41.6"
-          Id="Package\Import Donor Table\Solar Donors"
-          TopLeft="41.2538468930849,5.49999999999995" />
+          Size="152,41.6"
+          Id="Package\Import Donor Table\Registry Codes"
+          TopLeft="38.7692321912777,189.264514614466" />
+        <EdgeLayout
+          Id="Package\Import Donor Table.Paths[ADO NET Source Output]"
+          TopLeft="111.97692381334,47.1">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60.1677419329037"
+              Start="0,0"
+              End="0,52.6677419329037">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.6677419329037" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
         <EdgeLayout
           Id="Package\Import Donor Table.Paths[Derived Column Output]"
           TopLeft="114.56538573835,230.864514614466">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
-              EndConnector="0,37.0483877005364"
+              EndConnector="0,37.2161296334407"
               Start="0,0"
-              End="0,29.5483877005364">
+              End="0,29.7161296334407">
               <mssgle:Curve.Segments>
                 <mssgle:SegmentCollection
                   Capacity="5">
                   <mssgle:LineSegment
-                    End="0,29.5483877005364" />
+                    End="0,29.7161296334407" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>
@@ -1211,28 +1232,6 @@ WHERE
                   Capacity="5">
                   <mssgle:LineSegment
                     End="0,32.8967726815623" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-        <EdgeLayout
-          Id="Package\Import Donor Table.Paths[ADO NET Source Output]"
-          TopLeft="111.97692381334,47.1">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="0,60.1677419329037"
-              Start="0,0"
-              End="0,52.6677419329037">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,52.6677419329037" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>

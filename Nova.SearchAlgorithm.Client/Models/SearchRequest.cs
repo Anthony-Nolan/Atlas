@@ -3,11 +3,10 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    public enum SearchType
+    public enum DonorType
     {
         Adult = 1,
-        Cord = 2,
-        Nima = 3
+        Cord = 2
     }
 
     public enum RegistryCode
@@ -23,7 +22,7 @@ namespace Nova.SearchAlgorithm.Client.Models
     [FluentValidation.Attributes.Validator(typeof(SearchRequestValidator))]
     public class SearchRequest
     {
-        public SearchType SearchType { get; set; }
+        public DonorType SearchType { get; set; }
         public MismatchCriteria MatchCriteria { get; set; }
         public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
     }

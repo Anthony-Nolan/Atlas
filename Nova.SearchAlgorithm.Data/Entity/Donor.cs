@@ -8,10 +8,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
     {
         [Key]
         public int DonorId { get; set; }
-
-        // TODO:NOVA-929 make donor types a strongly typed Enum
-        public string DonorType { get; set; }
-        // TODO:NOVA-931 this might need to be a string?
+        public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
 
         public string A_1 { get; set; }

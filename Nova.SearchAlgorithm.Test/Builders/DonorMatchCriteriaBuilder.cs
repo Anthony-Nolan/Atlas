@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
             RegistriesToSearch = new List<RegistryCode> {
                 RegistryCode.AN, RegistryCode.DKMS, RegistryCode.FRANCE, RegistryCode.NHSBT, RegistryCode.NMDP, RegistryCode.WBS
             },
-            SearchType = SearchType.Adult
+            SearchType = DonorType.Adult
         };
 
         public DonorMatchCriteriaBuilder WithDonorMismatchCounts(int tier1, int tier2)
