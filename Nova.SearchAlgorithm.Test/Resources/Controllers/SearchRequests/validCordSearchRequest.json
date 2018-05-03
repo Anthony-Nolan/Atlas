@@ -1,7 +1,7 @@
 ﻿{
   "searchType": "Cord",
   "matchCriteria": {
-    "donorMismatchCountTier1": 0,
+    "donorMismatchCount": 0,
     "locusMismatchA": {
       "searchHLA1": "01:FH",
       "searchHLA2": "210",

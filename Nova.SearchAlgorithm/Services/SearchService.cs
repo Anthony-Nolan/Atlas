@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Hla;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
@@ -31,8 +29,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
-                DonorMismatchCountTier1 = searchRequest.MatchCriteria.DonorMismatchCountTier1,
-                DonorMismatchCountTier2 = searchRequest.MatchCriteria.DonorMismatchCountTier2,
+                DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
                 LocusMismatchA = MapMismatchToMatchCriteria("A", searchRequest.MatchCriteria.LocusMismatchA),
                 LocusMismatchB = MapMismatchToMatchCriteria("B", searchRequest.MatchCriteria.LocusMismatchB),
                 LocusMismatchC = MapMismatchToMatchCriteria("C", searchRequest.MatchCriteria.LocusMismatchC),
