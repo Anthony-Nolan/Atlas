@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 
         public void RecreateDictionary()
         {
-            var entries = new DictionaryGenerator(wmdaRepository).GenerateDictionaryEntries();
+            var entries = new DictionaryGenerator().GenerateDictionaryEntries(wmdaRepository);
             dictionaryRepository.RecreateDictionaryTable(entries);
         }      
     }

@@ -11,16 +11,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     public class DictionaryGenerator
     {
-        private readonly IWmdaRepository wmdaRepository;
-
-        public DictionaryGenerator(IWmdaRepository wmdaRepository)
+        public IEnumerable<MatchingDictionaryEntry> GenerateDictionaryEntries(IWmdaRepository wmdaRepository)
         {
-            this.wmdaRepository = wmdaRepository;
-        }
-
-        public IEnumerable<MatchingDictionaryEntry> GenerateDictionaryEntries()
-        {
-            var allMatchedHla = GetAllMatchedHla().ToList();
+            var allMatchedHla = GetAllMatchedHla(wmdaRepository).ToList();
 
             var entries = new List<MatchingDictionaryEntry>();
             entries.AddRange(GetDictionaryEntriesFromMatchedSerology(allMatchedHla.Where(m => !(m is MatchedAllele))));
@@ -29,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             return entries;
         }
 
-        private IEnumerable<IMatchedHla> GetAllMatchedHla()
+        private static IEnumerable<IMatchedHla> GetAllMatchedHla(IWmdaRepository wmdaRepository)
         {
             var alleleMatcher = new AlleleMatchingService(wmdaRepository);
             var serologyMatcher = new SerologyMatchingService(wmdaRepository);
