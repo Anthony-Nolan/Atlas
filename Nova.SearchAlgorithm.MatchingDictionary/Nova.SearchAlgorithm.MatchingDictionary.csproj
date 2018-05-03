@@ -78,7 +78,6 @@
     <Compile Include="Data\Wmda\RelDnaSerExtractor.cs" />
     <Compile Include="Data\Wmda\RelSerSerExtractor.cs" />
     <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
-    <Compile Include="Models\Dictionary\DictionaryEntryExtensions.cs" />
     <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
     <Compile Include="Models\Dictionary\SerologyEntry.cs" />
     <Compile Include="Models\HLATypes\Allele.cs" />
