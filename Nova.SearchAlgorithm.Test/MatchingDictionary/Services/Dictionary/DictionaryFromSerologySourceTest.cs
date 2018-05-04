@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
 using NSubstitute;
@@ -10,9 +10,9 @@ using System.Linq;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
 {
     [TestFixture]
-    public class DictionaryFromSerologyTest
+    public class DictionaryFromSerologySourceTest
     {
-        private DictionaryFromSerology dictionaryFromSerology;
+        private DictionaryFromSerologySource dictionaryFromSerology;
         private const string Locus = "A";
         private static IEnumerable<string> _matchingPGroups;
         private static IEnumerable<Serology> _matchingSerologies;
@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         [SetUp]
         public void SetUp()
         {
-            dictionaryFromSerology = new DictionaryFromSerology();
+            dictionaryFromSerology = new DictionaryFromSerologySource();
             _matchingPGroups = new List<string> { "123:123P" };
             _matchingSerologies = new List<Serology> {new Serology(Locus, "123", SerologySubtype.NotSplit)};
             _matchingSerologyEntries = new List<SerologyEntry>{ new SerologyEntry("123", SerologySubtype.NotSplit)};

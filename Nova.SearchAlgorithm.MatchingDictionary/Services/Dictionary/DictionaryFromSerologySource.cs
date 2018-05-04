@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
-    public class DictionaryFromSerology
+    public class DictionaryFromSerologySource
     {
         public IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IEnumerable<IDictionarySerologySource> matchedSerology)
         {

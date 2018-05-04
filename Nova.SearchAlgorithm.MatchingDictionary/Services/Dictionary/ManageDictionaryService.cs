@@ -42,8 +42,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
         private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IReadOnlyCollection<IMatchedHla> allMatchedHla)
         {
             var entries = new List<MatchingDictionaryEntry>();
-            entries.AddRange(new DictionaryFromSerology().GetDictionaryEntries(allMatchedHla.OfType<MatchedSerology>()));
-            entries.AddRange(new DictionaryFromAllele().GetDictionaryEntries(allMatchedHla.OfType<MatchedAllele>()));
+            entries.AddRange(new DictionaryFromSerologySource().GetDictionaryEntries(allMatchedHla.OfType<MatchedSerology>()));
+            entries.AddRange(new DictionaryFromAlleleSource().GetDictionaryEntries(allMatchedHla.OfType<MatchedAllele>()));
 
             return entries;
         }

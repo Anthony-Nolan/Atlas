@@ -1,12 +1,11 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
-    public class DictionaryFromAllele
+    public class DictionaryFromAlleleSource
     {
         public IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IEnumerable<IDictionaryAlleleSource> matchedAlleles)
         {

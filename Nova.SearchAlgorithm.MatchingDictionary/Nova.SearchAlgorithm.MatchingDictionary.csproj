@@ -115,8 +115,8 @@
     <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
-    <Compile Include="Services\Dictionary\DictionaryFromAllele.cs" />
-    <Compile Include="Services\Dictionary\DictionaryFromSerology.cs" />
+    <Compile Include="Services\Dictionary\DictionaryFromAlleleSource.cs" />
+    <Compile Include="Services\Dictionary\DictionaryFromSerologySource.cs" />
     <Compile Include="Services\Dictionary\ManageDictionaryService.cs" />
     <Compile Include="Services\Matching\AlleleMatchingService.cs" />
     <Compile Include="Services\Matching\AlleleToSerologyMatching.cs" />
