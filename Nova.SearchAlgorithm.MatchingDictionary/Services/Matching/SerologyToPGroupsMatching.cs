@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public class SerologyToPGroupsMatching
     {
-        public IEnumerable<IMatchedHla> MatchSerologyToAlleles(
+        public IEnumerable<MatchedSerology> MatchSerologyToAlleles(
             IEnumerable<IMatchingPGroups> allelesToPGroups,
             IEnumerable<IMatchingSerology> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer)
@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return serologyToSerologyList.Select(serology => GetMatchedSerology(allelesToPGroupsList, relDnaSerList, serology));
         }
 
-        private static IMatchedHla GetMatchedSerology(
+        private static MatchedSerology GetMatchedSerology(
             List<IMatchingPGroups> allelesToPGroupsList,
             List<RelDnaSer> relDnaSerList,
             IMatchingSerology serologyToMatch)
@@ -36,11 +36,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                       && dnaToSer.Serologies.Intersect(matchingSerology).Any()
                 select allele.MatchingPGroups;
 
-            return new MatchedHla(
-                serologyToMatch.HlaType,
-                serologyToMatch.TypeUsedInMatching,
-                matchingPGroups.SelectMany(m => m).Distinct(),
-                serologyToMatch.MatchingSerologies);
+            return new MatchedSerology(
+                serologyToMatch,
+                matchingPGroups.SelectMany(m => m).Distinct());
         }
     }
 }

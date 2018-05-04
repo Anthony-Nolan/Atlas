@@ -92,6 +92,7 @@
     <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingSerology.cs" />
     <Compile Include="Models\MatchingTypes\MatchedAllele.cs" />
+    <Compile Include="Models\MatchingTypes\MatchedSerology.cs" />
     <Compile Include="Models\MatchingTypes\MatchedHla.cs" />
     <Compile Include="Models\MatchingTypes\SerologyMappingInfo.cs" />
     <Compile Include="Models\MatchingTypes\SerologyMatchInfo.cs" />

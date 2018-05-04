@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     public class DictionaryFromSerology
     {
-        public IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IEnumerable<IMatchedHla> matchedSerology)
+        public IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IEnumerable<MatchedSerology> matchedSerology)
         {
             return matchedSerology.Select(serology =>
                 new MatchingDictionaryEntry(
