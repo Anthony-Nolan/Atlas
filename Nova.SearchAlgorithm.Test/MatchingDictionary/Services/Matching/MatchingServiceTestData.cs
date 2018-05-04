@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         public static MatchingServiceTestData Instance { get; } = new MatchingServiceTestData();
 
         public IEnumerable<IMatchedHla> AllMatchedHla { get; }
-        public IEnumerable<IMatchingPGroups> AllelesToPGroups { get; }
+        public IEnumerable<IAlleleToPGroup> AllelesToPGroups { get; }
         public IEnumerable<IMatchingSerology> SerologyToSerology { get; }
 
         private MatchingServiceTestData()

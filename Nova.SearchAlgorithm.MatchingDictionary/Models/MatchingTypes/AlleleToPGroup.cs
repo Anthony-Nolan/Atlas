@@ -5,7 +5,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class AlleleToPGroup : IMatchingPGroups, IEquatable<IMatchingPGroups>
+    public interface IAlleleToPGroup : IMatchingPGroups, IMatchedOn
+    {
+        
+    }
+
+    public class AlleleToPGroup : IAlleleToPGroup, IEquatable<IAlleleToPGroup>
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }
@@ -24,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
                    $"matchingPGroup: {string.Join("/", MatchingPGroups.Select(m => m))}";
         }
 
-        public bool Equals(IMatchingPGroups other)
+        public bool Equals(IAlleleToPGroup other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -38,7 +43,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is IMatchingPGroups other && Equals(other);
+            return obj is IAlleleToPGroup other && Equals(other);
         }
 
         public override int GetHashCode()

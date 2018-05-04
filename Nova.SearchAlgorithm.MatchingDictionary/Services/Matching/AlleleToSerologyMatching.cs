@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     public class AlleleToSerologyMatching
     {
         public IEnumerable<MatchedAllele> MatchAllelesToSerology(
-            IEnumerable<IMatchingPGroups> allelesToPGroups,
+            IEnumerable<IAlleleToPGroup> allelesToPGroups,
             IEnumerable<IMatchingSerology> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer)
         {
@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         private static MatchedAllele GetMatchedAllele(
             IList<IMatchingSerology> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer,
-            IMatchingPGroups alleleToPGroup)
+            IAlleleToPGroup alleleToPGroup)
         {
             var allele = (Allele)alleleToPGroup.HlaType;
             var molecularLocus = allele.WmdaLocus;

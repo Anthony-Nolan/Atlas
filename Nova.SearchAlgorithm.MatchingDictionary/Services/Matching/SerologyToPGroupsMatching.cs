@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     public class SerologyToPGroupsMatching
     {
         public IEnumerable<MatchedSerology> MatchSerologyToAlleles(
-            IEnumerable<IMatchingPGroups> allelesToPGroups,
+            IEnumerable<IAlleleToPGroup> allelesToPGroups,
             IEnumerable<IMatchingSerology> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer)
         {
@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         }
 
         private static MatchedSerology GetMatchedSerology(
-            List<IMatchingPGroups> allelesToPGroupsList,
+            List<IAlleleToPGroup> allelesToPGroupsList,
             List<RelDnaSer> relDnaSerList,
             IMatchingSerology serologyToMatch)
         {
