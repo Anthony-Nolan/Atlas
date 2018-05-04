@@ -274,6 +274,7 @@
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="MatchingDictionary\Models\Dictionary\SerologyEntryExtensionsTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Dictionary\DictionaryFromAlleleTest.cs" />
     <Compile Include="Repositories\DonorRepositoryTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
