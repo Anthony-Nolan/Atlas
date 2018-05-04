@@ -90,7 +90,7 @@
     <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedOn.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />
-    <Compile Include="Models\MatchingTypes\IMatchingSerology.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchingSerologies.cs" />
     <Compile Include="Models\MatchingTypes\MatchedAllele.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedHla.cs" />
     <Compile Include="Models\MatchingTypes\MatchedSerology.cs" />
