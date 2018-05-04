@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
                     e.Select(m => m.MolecularSubtype).OrderBy(m => m).First(),
                     SerologySubtype.NotSerologyType,
                     e.SelectMany(p => p.MatchingPGroups).Distinct(),
-                    e.SelectMany(s => s.MatchingSerology).Distinct()
+                    e.SelectMany(s => s.MatchingSerologies).Distinct()
                     ));
 
             return grouped;

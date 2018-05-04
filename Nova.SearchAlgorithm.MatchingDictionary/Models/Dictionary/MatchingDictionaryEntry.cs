@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         public MolecularSubtype MolecularSubtype { get; }
         public SerologySubtype SerologySubtype { get; }
         public IEnumerable<string> MatchingPGroups { get; }
-        public IEnumerable<SerologyEntry> MatchingSerology { get; }
+        public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         public MatchingDictionaryEntry(
             string matchLocus,
@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
             MolecularSubtype molecularSubtype,
             SerologySubtype serologySubtype,
             IEnumerable<string> matchingPGroups,
-            IEnumerable<SerologyEntry> matchingSerology
+            IEnumerable<SerologyEntry> matchingSerologies
             )
         {
             MatchLocus = matchLocus;
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
             MolecularSubtype = molecularSubtype;
             SerologySubtype = serologySubtype;
             MatchingPGroups = matchingPGroups;
-            MatchingSerology = matchingSerology;
+            MatchingSerologies = matchingSerologies;
         }
 
         public bool Equals(MatchingDictionaryEntry other)
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
                 MolecularSubtype == other.MolecularSubtype && 
                 SerologySubtype == other.SerologySubtype && 
                 MatchingPGroups.SequenceEqual(other.MatchingPGroups) && 
-                MatchingSerology.SequenceEqual(other.MatchingSerology);
+                MatchingSerologies.SequenceEqual(other.MatchingSerologies);
         }
 
         public override bool Equals(object obj)
@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
                 hashCode = (hashCode * 397) ^ (int) MolecularSubtype;
                 hashCode = (hashCode * 397) ^ (int) SerologySubtype;
                 hashCode = (hashCode * 397) ^ MatchingPGroups.GetHashCode();
-                hashCode = (hashCode * 397) ^ MatchingSerology.GetHashCode();
+                hashCode = (hashCode * 397) ^ MatchingSerologies.GetHashCode();
                 return hashCode;
             }
         }
