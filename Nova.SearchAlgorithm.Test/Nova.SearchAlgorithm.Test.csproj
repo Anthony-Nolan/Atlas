@@ -293,8 +293,8 @@
     <Compile Include="MatchingDictionary\Models\HlaTypes\AlleleModelTest.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypes\HlaTypeModelTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\MockWmdaRepository.cs" />
-    <Compile Include="MatchingDictionary\Services\Matching\MatchedOn\AlleleMatching\AlleleMatchingTest.cs" />
-    <Compile Include="MatchingDictionary\Services\Matching\MatchedOn\AlleleMatching\AlleleMatchingTestFixtureArgs.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\AlleleMatching\AlleleMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\AlleleMatching\AlleleMatchingTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\HlaMatching\AlleleToSerologyMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\HlaMatching\HlaMatchingTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\HlaMatching\ReciprocalMatchingTest.cs" />
