@@ -1,16 +1,21 @@
 ﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class MatchedSerology : MatchedHla
+    public class MatchedSerology : IMatchedHla
     {
+        public HlaType HlaType { get; }
+        public HlaType TypeUsedInMatching { get; }
+        public IEnumerable<string> MatchingPGroups { get; }
+        public IEnumerable<Serology> MatchingSerologies { get; }
+
         public MatchedSerology(IMatchingSerology matchedSerology, IEnumerable<string> matchingPGroups)
-            : base(
-                  matchedSerology.HlaType,
-                  matchedSerology.TypeUsedInMatching,
-                  matchingPGroups,
-                  matchedSerology.MatchingSerologies)                  
         {
+            HlaType = matchedSerology.HlaType;
+            TypeUsedInMatching = matchedSerology.TypeUsedInMatching;
+            MatchingPGroups = matchingPGroups;
+            MatchingSerologies = matchedSerology.MatchingSerologies;
         }
     }
 }
