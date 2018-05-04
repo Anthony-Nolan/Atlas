@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class MatchedAllele : IMatchedHla
+    public class MatchedAllele : IMatchedHla, IDictionaryAlleleSource
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<Serology> MatchingSerologies { get; }
         public IEnumerable<SerologyMappingInfo> SerologyMappings { get; }
+        public Allele MatchedOnAllele => (Allele) HlaType;
 
         public MatchedAllele(IAlleleToPGroup matchedAllele, IList<SerologyMappingInfo> serologyMappings)
         {

@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     public class DictionaryFromAllele
     {
-        public IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IEnumerable<MatchedAllele> matchedAlleles)
+        public IEnumerable<MatchingDictionaryEntry> GetDictionaryEntries(IEnumerable<IDictionaryAlleleSource> matchedAlleles)
         {
             var entries = new List<MatchingDictionaryEntry>(
                 matchedAlleles.SelectMany(allele => new List<MatchingDictionaryEntry>{
@@ -32,12 +32,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             return grouped;
         }
 
-        private static MatchingDictionaryEntry GetDictionaryEntryFromMatchedAllele(MatchedAllele matchedAllele, MolecularSubtype molecularSubtype)
+        private static MatchingDictionaryEntry GetDictionaryEntryFromMatchedAllele(IDictionaryAlleleSource matchedAllele, MolecularSubtype molecularSubtype)
         {
-            var lookupName = GetAlleleLookupName((Allele)matchedAllele.HlaType, molecularSubtype);
+            var lookupName = GetAlleleLookupName(matchedAllele.MatchedOnAllele, molecularSubtype);
 
             var entry = new MatchingDictionaryEntry(
-                matchedAllele.HlaType.MatchLocus,
+                matchedAllele.MatchedOnAllele.MatchLocus,
                 lookupName,
                 TypingMethod.Molecular,
                 molecularSubtype,
