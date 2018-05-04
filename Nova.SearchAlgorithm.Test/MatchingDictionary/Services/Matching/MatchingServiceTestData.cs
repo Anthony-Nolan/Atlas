@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 
         public IEnumerable<IMatchedHla> AllMatchedHla { get; }
         public IEnumerable<IAlleleToPGroup> AllelesToPGroups { get; }
-        public IEnumerable<IMatchingSerology> SerologyToSerology { get; }
+        public IEnumerable<ISerologyToSerology> SerologyToSerology { get; }
 
         private MatchingServiceTestData()
         {

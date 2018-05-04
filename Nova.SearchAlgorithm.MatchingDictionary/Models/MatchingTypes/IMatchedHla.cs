@@ -1,6 +1,6 @@
 ﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public interface IMatchedHla : IAlleleToPGroup, IMatchingSerology
+    public interface IMatchedHla : IAlleleToPGroup, ISerologyToSerology
     {
         
     }

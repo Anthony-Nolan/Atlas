@@ -5,7 +5,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class SerologyToSerology : IMatchingSerology, IEquatable<IMatchingSerology>
+    public interface ISerologyToSerology : IMatchedOn, IMatchingSerology
+    {
+        
+    }
+
+    public class SerologyToSerology : ISerologyToSerology, IEquatable<ISerologyToSerology>
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }
@@ -24,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
                    $"matchingSerologies: {string.Join("; ", MatchingSerologies.Select(m => m))}";
         }
 
-        public bool Equals(IMatchingSerology other)
+        public bool Equals(ISerologyToSerology other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -38,7 +43,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is IMatchingSerology other && Equals(other);
+            return obj is ISerologyToSerology other && Equals(other);
         }
 
         public override int GetHashCode()
