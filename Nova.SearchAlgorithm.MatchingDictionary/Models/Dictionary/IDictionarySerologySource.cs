@@ -7,9 +7,4 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
     {
         Serology MatchedOnSerology { get; }
     }
-
-    public interface IDictionaryAlleleSource : IMatchingPGroups, IMatchingSerologies
-    {
-        Allele MatchedOnAllele { get; }
-    }
 }
