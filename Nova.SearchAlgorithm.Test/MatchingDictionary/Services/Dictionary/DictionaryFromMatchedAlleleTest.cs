@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         private static IList<SerologyMappingInfo> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
 
-        [SetUp]
+        [OneTimeSetUp]
         public void SetUp()
         {
             _matchingPGroups = new List<string> { "01:01P" };
