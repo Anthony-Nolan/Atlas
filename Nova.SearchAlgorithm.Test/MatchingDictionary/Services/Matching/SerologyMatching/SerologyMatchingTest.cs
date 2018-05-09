@@ -6,13 +6,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.SerologyMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyMatching
 {
     [TestFixtureSource(typeof(SerologyMatchingTestFixtureArgs))]
     [UseReporter(typeof(NUnitReporter))]
-    public class SerologyMatchingTest : MatchedOnTestBase<IMatchingSerology>
+    public class SerologyMatchingTest : MatchedOnTestBase<ISerologyToSerology>
     {
-        public SerologyMatchingTest(IEnumerable<IMatchingSerology> matchingSerology) : base(matchingSerology)
+        public SerologyMatchingTest(IEnumerable<ISerologyToSerology> matchingSerology) : base(matchingSerology)
         {
         }
 

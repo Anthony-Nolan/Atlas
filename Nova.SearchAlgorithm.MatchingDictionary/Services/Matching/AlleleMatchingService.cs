@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public interface IAlleleMatchingService
     {
-        IEnumerable<IMatchingPGroups> MatchAllelesToPGroups(Func<IWmdaHlaType, bool> filter);
+        IEnumerable<IAlleleToPGroup> MatchAllelesToPGroups(Func<IWmdaHlaType, bool> filter);
     }
 
     public class AlleleMatchingService : IAlleleMatchingService
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             _repository = repo;
         }
 
-        public IEnumerable<IMatchingPGroups> MatchAllelesToPGroups(Func<IWmdaHlaType, bool> filter)
+        public IEnumerable<IAlleleToPGroup> MatchAllelesToPGroups(Func<IWmdaHlaType, bool> filter)
         {
             var allAlleles = WmdaDataFactory.GetData<HlaNom>(_repository, filter);
             var confidentialAlleles = WmdaDataFactory.GetData<Confidential>(_repository, filter);
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return allMatching;
         }
 
-        private static IMatchingPGroups GetSingleMatchingAllele(IEnumerable<HlaNomP> allPGroups, HlaNom hlaNom)
+        private static IAlleleToPGroup GetSingleMatchingAllele(IEnumerable<HlaNomP> allPGroups, HlaNom hlaNom)
         {
             var allele = new Allele(hlaNom.WmdaLocus, hlaNom.Name, hlaNom.IsDeleted);
 

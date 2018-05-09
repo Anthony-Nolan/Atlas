@@ -4,15 +4,15 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
     public sealed class MatchingServiceTestData
     {
         public static MatchingServiceTestData Instance { get; } = new MatchingServiceTestData();
 
         public IEnumerable<IMatchedHla> AllMatchedHla { get; }
-        public IEnumerable<IMatchingPGroups> AllelesToPGroups { get; }
-        public IEnumerable<IMatchingSerology> SerologyToSerology { get; }
+        public IEnumerable<IAlleleToPGroup> AllelesToPGroups { get; }
+        public IEnumerable<ISerologyToSerology> SerologyToSerology { get; }
 
         private MatchingServiceTestData()
         {

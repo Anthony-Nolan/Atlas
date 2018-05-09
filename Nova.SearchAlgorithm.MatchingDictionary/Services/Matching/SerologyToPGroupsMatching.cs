@@ -7,9 +7,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public class SerologyToPGroupsMatching
     {
-        public IEnumerable<IMatchedHla> MatchSerologyToAlleles(
-            IEnumerable<IMatchingPGroups> allelesToPGroups,
-            IEnumerable<IMatchingSerology> serologyToSerology,
+        public IEnumerable<MatchedSerology> MatchSerologyToAlleles(
+            IEnumerable<IAlleleToPGroup> allelesToPGroups,
+            IEnumerable<ISerologyToSerology> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer)
         {
             var allelesToPGroupsList = allelesToPGroups.ToList();
@@ -19,10 +19,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return serologyToSerologyList.Select(serology => GetMatchedSerology(allelesToPGroupsList, relDnaSerList, serology));
         }
 
-        private static IMatchedHla GetMatchedSerology(
-            List<IMatchingPGroups> allelesToPGroupsList,
+        private static MatchedSerology GetMatchedSerology(
+            List<IAlleleToPGroup> allelesToPGroupsList,
             List<RelDnaSer> relDnaSerList,
-            IMatchingSerology serologyToMatch)
+            ISerologyToSerology serologyToMatch)
         {
             var matchLocus = serologyToMatch.TypeUsedInMatching.MatchLocus;
             var matchingSerology = serologyToMatch.MatchingSerologies.Select(m => m.Name);
@@ -36,11 +36,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                       && dnaToSer.Serologies.Intersect(matchingSerology).Any()
                 select allele.MatchingPGroups;
 
-            return new MatchedHla(
-                serologyToMatch.HlaType,
-                serologyToMatch.TypeUsedInMatching,
-                matchingPGroups.SelectMany(m => m).Distinct(),
-                serologyToMatch.MatchingSerologies);
+            return new MatchedSerology(
+                serologyToMatch,
+                matchingPGroups.SelectMany(m => m).Distinct());
         }
     }
 }

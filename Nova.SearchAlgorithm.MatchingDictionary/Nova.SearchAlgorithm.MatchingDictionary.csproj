@@ -78,9 +78,11 @@
     <Compile Include="Data\Wmda\RelDnaSerExtractor.cs" />
     <Compile Include="Data\Wmda\RelSerSerExtractor.cs" />
     <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
-    <Compile Include="Models\Dictionary\DictionaryEntryExtensions.cs" />
+    <Compile Include="Models\Dictionary\IDictionarySource.cs" />
     <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
+    <Compile Include="Services\Dictionary\MatchingDictionaryEntryExtensions.cs" />
     <Compile Include="Models\Dictionary\SerologyEntry.cs" />
+    <Compile Include="Models\Dictionary\SerologyEntryExtensions.cs" />
     <Compile Include="Models\HLATypes\Allele.cs" />
     <Compile Include="Models\HLATypes\Helper.cs" />
     <Compile Include="Models\HLATypes\HlaType.cs" />
@@ -90,9 +92,10 @@
     <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedOn.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />
-    <Compile Include="Models\MatchingTypes\IMatchingSerology.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchingSerologies.cs" />
     <Compile Include="Models\MatchingTypes\MatchedAllele.cs" />
-    <Compile Include="Models\MatchingTypes\MatchedHla.cs" />
+    <Compile Include="Models\MatchingTypes\IMatchedHla.cs" />
+    <Compile Include="Models\MatchingTypes\MatchedSerology.cs" />
     <Compile Include="Models\MatchingTypes\SerologyMappingInfo.cs" />
     <Compile Include="Models\MatchingTypes\SerologyMatchInfo.cs" />
     <Compile Include="Models\MatchingTypes\SerologyToSerology.cs" />
@@ -113,7 +116,7 @@
     <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
-    <Compile Include="Services\ManageDictionaryService.cs" />
+    <Compile Include="Services\Dictionary\ManageDictionaryService.cs" />
     <Compile Include="Services\Matching\AlleleMatchingService.cs" />
     <Compile Include="Services\Matching\AlleleToSerologyMatching.cs" />
     <Compile Include="Services\Matching\HlaMatchingService.cs" />

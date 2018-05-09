@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public interface ISerologyMatchingService
     {
-        IEnumerable<IMatchingSerology> MatchSerologyToSerology(Func<IWmdaHlaType, bool> filter);
+        IEnumerable<ISerologyToSerology> MatchSerologyToSerology(Func<IWmdaHlaType, bool> filter);
     }
 
     public class SerologyMatchingService : ISerologyMatchingService
@@ -76,7 +76,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             _repository = repo;
         }
 
-        public IEnumerable<IMatchingSerology> MatchSerologyToSerology(Func<IWmdaHlaType, bool> filter)
+        public IEnumerable<ISerologyToSerology> MatchSerologyToSerology(Func<IWmdaHlaType, bool> filter)
         {
             var relSerSer = WmdaDataFactory.GetData<RelSerSer>(_repository, filter);
             var allSerology = WmdaDataFactory.GetData<HlaNom>(_repository, filter);
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return allMatching;
         }
 
-        private static IMatchingSerology GetSingleMatchingSerology(IEnumerable<RelSerSer> relSerSer, HlaNom ser)
+        private static ISerologyToSerology GetSingleMatchingSerology(IEnumerable<RelSerSer> relSerSer, HlaNom ser)
         {
             var relSerSerList = relSerSer.ToList();
 
