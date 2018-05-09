@@ -46,27 +46,15 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
 
         public ExpandedHla RetrieveHlaMatches(string locusName, string hlaName)
         {
-            var raw = rawMatchingData.FirstOrDefault(hla => hla.Locus == locusName && hla.Name == hlaName);
-
-            if (raw == null)
-            {
-                // TODO:NOVA-926 If we have validated the HLA coming in, this might not be necessary
-                // At the moment we do this so that we can re-generate from the Name field when we regenerate HLA.
-                return new ExpandedHla
-                {
-                    Name = hlaName,
-                    Locus = locusName,
-                    IsDeleted = false
-                };
-            }
+            var raw = hlaName == null
+                ? Enumerable.Empty<RawMatchingHla>()
+                : rawMatchingData.Where(hla => hla.Locus == locusName && hla.Name.StartsWith(hlaName));
 
             return new ExpandedHla {
-                Name = raw.Name,
-                Locus = raw.Locus,
-                IsDeleted = raw.IsDeleted,
-                Type = raw.Type,
-                PGroups = raw.MatchingPGroups,
-                SerologyNames = raw.MatchingSerology.Select(s => s.Name)
+                Name = hlaName,
+                Locus = locusName,
+                PGroups = raw.SelectMany(r => r.MatchingPGroups).Distinct(),
+                SerologyNames = raw.SelectMany(r => r.MatchingSerology.Select(s => s.Name)).Distinct()
             };
         }
 

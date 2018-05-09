@@ -46,16 +46,12 @@ namespace Nova.SearchAlgorithm.Services
                     A_1 = new ExpandedHla
                     {
                         Locus = "A",
-                        Type = "Allele",
-                        IsDeleted = false,
                         PGroups = new List<string> { "01:01P" },
                         SerologyNames = new List<string> { "1" }
                     },
                     A_2 = new ExpandedHla
                     {
                         Locus = "A",
-                        Type = "Allele",
-                        IsDeleted = false,
                         PGroups = new List<string> { "01:01P" },
                         SerologyNames = new List<string> { "1" }
                     }
