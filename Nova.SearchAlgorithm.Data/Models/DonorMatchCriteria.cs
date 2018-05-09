@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Data.Models
 {
     public class DonorMatchCriteria
     {
-        public SearchType SearchType { get; set; }
+        public DonorType SearchType { get; set; }
         public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
 
         public int DonorMismatchCount { get; set; }

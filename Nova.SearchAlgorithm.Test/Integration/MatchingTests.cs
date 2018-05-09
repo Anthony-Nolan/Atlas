@@ -26,10 +26,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchRepo = container.Resolve<IDonorMatchRepository>();
 
             // potential 2/2 homozygous match at locus A
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 1,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -43,10 +43,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // potential 2/2 heterozygous match at locus A
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 2,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -60,10 +60,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // potential 1/2 match at locus A - 1/2 in HvG direction, 2/2 in GvH direction
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 3,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -77,10 +77,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // potential 1/2 match at locus A - 1/2 in both directions
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 4,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -94,10 +94,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // 0/2 at locus A
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 5,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -111,10 +111,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             });
 
             // 0/2 at locus A, 1/2 at locus B
-            searchRepo.InsertDonor(new SearchableDonor
+            searchRepo.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 6,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -133,7 +133,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria = new DonorMatchCriteria
             {
-                SearchType = SearchType.Adult,
+                SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 DonorMismatchCount = 0,
                 LocusMismatchA = new DonorLocusMatchCriteria

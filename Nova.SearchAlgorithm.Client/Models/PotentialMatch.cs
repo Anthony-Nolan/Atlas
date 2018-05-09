@@ -13,11 +13,10 @@ namespace Nova.SearchAlgorithm.Client.Models
         /// </summary>
         public int DonorId { get; set; }
         
-        // TODO:NOVA-924 make donor type a strongly typed Enum
         /// <summary>
         /// The type of donor, for example Adult or Cord
         /// </summary>
-        public string DonorType { get; set; }
+        public DonorType DonorType { get; set; }
 
         /// <summary>
         /// The code of the donor registry which this donor originates from.
@@ -62,6 +61,5 @@ namespace Nova.SearchAlgorithm.Client.Models
 
         // TODO: NOVA-924 Do we need to include the (original) phenotype,
         // or can the search client retrieve that from the original registry?
-        // TODO: NOVA-930 add fields for sorting such as birth date, gender, TNC final count.
     }
 }

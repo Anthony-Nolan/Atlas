@@ -1,0 +1,1263 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/26/2018 2:11:40 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="PIWAKAWAKA"
+  DTS:CreatorName="ZOO\SJW"
+  DTS:DTSID="{6357714A-D459-4047-9539-34E9415D3734}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="14.0.3002.101"
+  DTS:LocaleID="2057"
+  DTS:ObjectName="Package"
+  DTS:PackageType="5"
+  DTS:VersionBuild="34"
+  DTS:VersionGUID="{964E6349-B18D-411D-80E7-5B50BCC661C5}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[localhost.SearchAlgorithmSSIS]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{3805952B-57DA-41B8-A22A-75EC20A29959}"
+      DTS:ObjectName="localhost.SearchAlgorithmSSIS">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=localhost;Initial Catalog=SearchAlgorithm;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[solarlive.nova]"
+      DTS:CreationName="ADO.NET:System.Data.OracleClient.OracleConnection, System.Data.OracleClient, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+      DTS:DTSID="{EB0FA3A0-8120-472A-9272-952C73C76113}"
+      DTS:ObjectName="solarlive.nova">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=solarlive;User ID=nova;Persist Security Info=True;Unicode=True;">
+          <DTS:Password
+            DTS:Name="Password"
+            Sensitive="1"
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA3nq1jrz/8E+LOXg5wcz+sQAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAADChyE4Alk0Wy6D35247GpdAAAAAASAAACgAAAAEAAAAD1GsiWtyJnATy9lOef0/7AYAAAAG4WGTcvtb7QSa08WKsXh9n/QMSOe36g7FAAAALcE7ZSiwVwaH+PlsYc9iyzBltHr</DTS:Password>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Import Donor Table"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{A3FD93BB-0DC9-431C-9E09-DB905F336A5E}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Import Donor Table"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Import Donor Table\Convert Types"
+              componentClassID="Microsoft.DataConvert"
+              contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Data Conversion"
+              name="Convert Types"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input]"
+                  name="Data Conversion Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DONOR_ID]"
+                      cachedDataType="numeric"
+                      cachedName="DONOR_ID"
+                      cachedPrecision="7"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_ID]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[A_1]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="A_1"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[A_2]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="A_2"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[B_1]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="B_1"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[B_2]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="B_2"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[C_1]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="C_1"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[C_2]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="C_2"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DRB1_1]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="DRB1_1"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DRB1_2]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="DRB1_2"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DQB1_1]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="DQB1_1"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DQB1_2]"
+                      cachedDataType="wstr"
+                      cachedLength="4000"
+                      cachedName="DQB1_2"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input].Columns[DONOR_TYPE]"
+                      cachedDataType="wstr"
+                      cachedLength="40"
+                      cachedName="DONOR_TYPE"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_TYPE]" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output]"
+                  exclusionGroup="1"
+                  name="Data Conversion Output"
+                  synchronousInputId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorId]"
+                      name="DonorId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_ID]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[A_1]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[A_1]"
+                      name="A_1"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_1]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[A_2]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[A_2]"
+                      name="A_2"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_2]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_1]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_1]"
+                      name="B_1"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_1]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_2]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_2]"
+                      name="B_2"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_2]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[C_1]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[C_1]"
+                      name="C_1"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_1]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[C_2]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[C_2]"
+                      name="C_2"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_2]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_1]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_1]"
+                      name="DRB1_1"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_1]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_2]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_2]"
+                      name="DRB1_2"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_2]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DQB1_1]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DQB1_1]"
+                      name="DQB1_1"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_1]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DQB1_2]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DQB1_2]"
+                      name="DQB1_2"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_2]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorType]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorType]"
+                      name="DonorType"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_TYPE]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Data Conversion Error Output"
+                  synchronousInputId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Import Donor Table\Registry Codes"
+              componentClassID="Microsoft.DerivedColumn"
+              contactInfo="Derived Column;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Creates new column values by applying expressions to transformation input columns. Create new columns or overwrite existing ones. For example, concatenate the values from the 'first name' and 'last name' column to make a 'full name' column."
+              name="Registry Codes"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Import Donor Table\Registry Codes.Inputs[Derived Column Input]"
+                  description="Input to the Derived Column Transformation"
+                  name="Derived Column Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Import Donor Table\Registry Codes.Inputs[Derived Column Input].Columns[DONOR_REGISTRY_CODE]"
+                      cachedDataType="wstr"
+                      cachedLength="20"
+                      cachedName="DONOR_REGISTRY_CODE"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Output]"
+                  description="Default Output of the Derived Column Transformation"
+                  exclusionGroup="1"
+                  name="Derived Column Output"
+                  synchronousInputId="Package\Import Donor Table\Registry Codes.Inputs[Derived Column Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Output].Columns[RegistryCode]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Computation"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Output].Columns[RegistryCode]"
+                      name="RegistryCode"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Derived Column Expression"
+                          name="Expression">#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]} == "AN" ? 1 : (#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]} == "NHSBT" ? 2 : (#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]} == "WBS" ? 3 : (#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]} == "DKMS" ? 4 : (#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]} == "FRANCE" ? 5 : (#{Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]} == "NMDP" ? 6 : 0)))))</property>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Derived Column Friendly Expression"
+                          expressionType="Notify"
+                          name="FriendlyExpression">DONOR_REGISTRY_CODE == "AN" ? 1 : (DONOR_REGISTRY_CODE == "NHSBT" ? 2 : (DONOR_REGISTRY_CODE == "WBS" ? 3 : (DONOR_REGISTRY_CODE == "DKMS" ? 4 : (DONOR_REGISTRY_CODE == "FRANCE" ? 5 : (DONOR_REGISTRY_CODE == "NMDP" ? 6 : 0)))))</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Error Output]"
+                  description="Error Output of the Derived Column Transformation"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Derived Column Error Output"
+                  synchronousInputId="Package\Import Donor Table\Registry Codes.Inputs[Derived Column Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Import Donor Table\Solar Donors"
+              componentClassID="Microsoft.ManagedComponentHost"
+              contactInfo="Consumes data from SQL Server, OLE DB, ODBC, or Oracle, using the corresponding .NET Framework data provider. Use a Transact-SQL statement to define the result set. For example, extract data from SQL Server with the .NET Framework data provider for SQL Server.;Microsoft Corporation; Microsoft SQL Server; © Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="Consumes data from SQL Server, OLE DB, ODBC, or Oracle, using the corresponding .NET Framework data provider. Use a Transact-SQL statement to define the result set. For example, extract data from SQL Server with the .NET Framework data provider for SQL Server."
+              name="Solar Donors"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement used by the component to extract data."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">SELECT
+-- DONOR INFO
+d.donor_id,
+CASE
+  WHEN d.donor_type LIKE '%Cord' THEN 2
+  ELSE 1
+  END AS donor_type,
+CASE 
+  WHEN d.donor_type = 'ANBMT' THEN 'AN'
+  ELSE REPLACE(d.donor_type,'Cord','') 
+  END AS donor_registry_code,
+a_1.hla_name as A_1, a_2.hla_name as A_2,
+b_1.hla_name as B_1, b_2.hla_name as B_2,
+c_1.hla_name as C_1, c_2.hla_name as C_2,
+drb1_1.hla_name as DRB1_1, drb1_2.hla_name as DRB1_2,
+dqb1_1.hla_name as DQB1_1, dqb1_2.hla_name as DQB1_2
+FROM DRS.DR_DONORS d
+JOIN DRS.DR_DEFINITIVE_HLA_TYPE h
+ON d.donor_id = h.donor_patient_id
+LEFT JOIN DRS.DR_CORDS c
+ON d.donor_id = c.donor_id
+LEFT JOIN DRS.DR_ANTIGENS a_1 ON A_1_ID = a_1.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS a_2 ON A_2_ID = a_2.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS b_1 ON B_1_ID = b_1.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS b_2 ON B_2_ID = b_2.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS c_1 ON CW_1_ID = c_1.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS c_2 ON CW_2_ID = c_2.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS drb1_1 ON DRB1_1_ID = drb1_1.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS drb1_2 ON DRB1_2_ID = drb1_2.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS dqb1_1 ON DQB1_1_ID = dqb1_1.antigen_id
+LEFT JOIN DRS.DR_ANTIGENS dqb1_2 ON DQB1_2_ID = dqb1_2.antigen_id
+WHERE
+  -- ONLY ACTIVE
+  ((d.donor_status_type = 'Active' AND d.donor_type IN ('DKMS','NHSBT','ANBMT','WBS')) OR
+   (c.donor_status_type != 'Closed' AND d.donor_type IN ('NHSBTCord','ANCord','NMDPCord','FRANCECord') AND c.donor_id is not null))
+  -- ONLY THOSE WITH AT LEAST THREE LOCUS TYPE
+  AND h.donor_patient_type = 'D'
+  AND
+        A_1_ID IS NOT NULL AND A_2_ID IS NOT NULL AND
+        B_1_ID IS NOT NULL AND B_2_ID IS NOT NULL AND
+        DRB1_1_ID IS NOT NULL AND DRB1_2_ID IS NOT NULL</property>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">30</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether to allow non-string external columns to be implicitly converted to strings at the output columns."
+                  name="AllowImplicitStringConversion">true</property>
+                <property
+                  dataType="System.String"
+                  description="The Source database table name."
+                  expressionType="Notify"
+                  name="TableOrViewName"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specify the mode to retrieve external column information"
+                  name="AccessMode"
+                  typeConverter="Microsoft.SqlServer.Dts.Pipeline.DataReaderSourceAdapter+EnumToStringConverter">2</property>
+                <property
+                  dataType="System.String"
+                  name="UserComponentTypeName">Microsoft.DataReaderSourceAdapter</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Import Donor Table\Solar Donors.Connections[IDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[solarlive.nova]"
+                  connectionManagerRefId="Package.ConnectionManagers[solarlive.nova]"
+                  description="Managed connection manager"
+                  name="IDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output]"
+                  name="ADO NET Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_ID]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_ID]"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_ID]"
+                      name="DONOR_ID"
+                      precision="7"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_TYPE]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_TYPE]"
+                      length="40"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_TYPE]"
+                      name="DONOR_TYPE"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_REGISTRY_CODE]"
+                      length="20"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DONOR_REGISTRY_CODE]"
+                      name="DONOR_REGISTRY_CODE"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_1]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[A_1]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_1]"
+                      name="A_1"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_2]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[A_2]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[A_2]"
+                      name="A_2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_1]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[B_1]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_1]"
+                      name="B_1"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_2]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[B_2]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[B_2]"
+                      name="B_2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_1]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[C_1]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_1]"
+                      name="C_1"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_2]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[C_2]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[C_2]"
+                      name="C_2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_1]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DRB1_1]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_1]"
+                      name="DRB1_1"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_2]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DRB1_2]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DRB1_2]"
+                      name="DRB1_2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_1]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DQB1_1]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_1]"
+                      name="DQB1_1"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_2]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DQB1_2]"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].Columns[DQB1_2]"
+                      name="DQB1_2"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_ID]"
+                      dataType="numeric"
+                      name="DONOR_ID"
+                      precision="7" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_TYPE]"
+                      dataType="numeric"
+                      name="DONOR_TYPE" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DONOR_REGISTRY_CODE]"
+                      dataType="wstr"
+                      length="20"
+                      name="DONOR_REGISTRY_CODE" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[A_1]"
+                      dataType="wstr"
+                      length="4000"
+                      name="A_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[A_2]"
+                      dataType="wstr"
+                      length="4000"
+                      name="A_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[B_1]"
+                      dataType="wstr"
+                      length="4000"
+                      name="B_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[B_2]"
+                      dataType="wstr"
+                      length="4000"
+                      name="B_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[C_1]"
+                      dataType="wstr"
+                      length="4000"
+                      name="C_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[C_2]"
+                      dataType="wstr"
+                      length="4000"
+                      name="C_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DRB1_1]"
+                      dataType="wstr"
+                      length="4000"
+                      name="DRB1_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DRB1_2]"
+                      dataType="wstr"
+                      length="4000"
+                      name="DRB1_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DQB1_1]"
+                      dataType="wstr"
+                      length="4000"
+                      name="DQB1_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output].ExternalColumns[DQB1_2]"
+                      dataType="wstr"
+                      length="4000"
+                      name="DQB1_2" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output]"
+                  isErrorOut="true"
+                  name="ADO NET Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_ID]"
+                      dataType="numeric"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_ID]"
+                      name="DONOR_ID"
+                      precision="7" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_TYPE]"
+                      dataType="wstr"
+                      length="40"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_TYPE]"
+                      name="DONOR_TYPE" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_REGISTRY_CODE]"
+                      dataType="wstr"
+                      length="20"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DONOR_REGISTRY_CODE]"
+                      name="DONOR_REGISTRY_CODE" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[A_1]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[A_1]"
+                      name="A_1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[A_2]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[A_2]"
+                      name="A_2" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[B_1]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[B_1]"
+                      name="B_1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[B_2]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[B_2]"
+                      name="B_2" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[C_1]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[C_1]"
+                      name="C_1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[C_2]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[C_2]"
+                      name="C_2" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DRB1_1]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DRB1_1]"
+                      name="DRB1_1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DRB1_2]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DRB1_2]"
+                      name="DRB1_2" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DQB1_1]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DQB1_1]"
+                      name="DQB1_1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DQB1_2]"
+                      dataType="wstr"
+                      length="4000"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[DQB1_2]"
+                      name="DQB1_2" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Import Donor Table\SQL Server Donors"
+              componentClassID="Microsoft.SQLServerDestination"
+              contactInfo="SQL Server Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;5"
+              description="SQL Server Destination"
+              name="SQL Server Donors"
+              version="5">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.String"
+                  description="The name of the database object to copy data into."
+                  expressionType="Notify"
+                  name="BulkInsertTableName">[dbo].[Donors]</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Specifies that any constraints on the destination object are checked during the data copy operation. Corresponds to the bulk insert CHECK_CONSTRAINTS option."
+                  name="BulkInsertCheckConstraints">true</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the number of the first row to copy. Corresponds to the bulk insert FIRSTROW option."
+                  expressionType="Notify"
+                  name="BulkInsertFirstRow">-1</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Specifies that any insert triggers defined on the destination object will execute during the data copy. Corresponds to the bulk insert FIRE_TRIGGERS option."
+                  name="BulkInsertFireTriggers">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Corresponds to the bulk insert KEEPIDENTITY option."
+                  name="BulkInsertKeepIdentity">true</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null copied to the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="BulkInsertKeepNulls">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the number of the last row to copy. Corresponds to the bulk insert LASTROW option."
+                  expressionType="Notify"
+                  name="BulkInsertLastRow">-1</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the maximum number of syntax errors and compilation errors that can occur before the data copy operation is canceled. Each row that cannot be copied is ignored and counted as one error. Corresponds to the bulk insert MAXERRORS option."
+                  name="BulkInsertMaxErrors">-1</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies how the data to be copied is sorted. Corresponds to the bulk insert ORDER option."
+                  expressionType="Notify"
+                  name="BulkInsertOrder"></property>
+                <property
+                  dataType="System.Boolean"
+                  description="Specifies that a table-level lock is acquired for the duration of the data copy operation. Corresponds to the bulk insert TABLOCK option."
+                  name="BulkInsertTablock">true</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies in seconds the amount of time the SQL Destination adapter will wait before terminating if there is no data available for insertion.  A timeout value of 0 means the SQL Destination adapter will not time out."
+                  expressionType="Notify"
+                  name="Timeout">3000</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion."
+                  name="MaxInsertCommitSize">0</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Import Donor Table\SQL Server Donors.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[localhost.SearchAlgorithmSSIS]"
+                  connectionManagerRefId="Package.ConnectionManagers[localhost.SearchAlgorithmSSIS]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input]"
+                  hasSideEffects="true"
+                  name="SQL Server Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[RegistryCode]"
+                      cachedDataType="i4"
+                      cachedName="RegistryCode"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[RegistryCode]"
+                      lineageId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Output].Columns[RegistryCode]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DonorId]"
+                      cachedDataType="i4"
+                      cachedName="DonorId"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorId]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorId]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[A_1]"
+                      cachedDataType="nText"
+                      cachedName="A_1"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[A_1]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[A_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[A_2]"
+                      cachedDataType="nText"
+                      cachedName="A_2"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[A_2]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[A_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[B_1]"
+                      cachedDataType="nText"
+                      cachedName="B_1"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[B_1]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[B_2]"
+                      cachedDataType="nText"
+                      cachedName="B_2"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[B_2]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[B_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[C_1]"
+                      cachedDataType="nText"
+                      cachedName="C_1"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[C_1]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[C_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[C_2]"
+                      cachedDataType="nText"
+                      cachedName="C_2"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[C_2]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[C_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DQB1_1]"
+                      cachedDataType="nText"
+                      cachedName="DQB1_1"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DQB1_1]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DQB1_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DQB1_2]"
+                      cachedDataType="nText"
+                      cachedName="DQB1_2"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DQB1_2]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DQB1_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DRB1_1]"
+                      cachedDataType="nText"
+                      cachedName="DRB1_1"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DRB1_1]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_1]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DRB1_2]"
+                      cachedDataType="nText"
+                      cachedName="DRB1_2"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DRB1_2]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DRB1_2]" />
+                    <inputColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].Columns[DonorType]"
+                      cachedDataType="i4"
+                      cachedName="DonorType"
+                      externalMetadataColumnId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorType]"
+                      lineageId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output].Columns[DonorType]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorId]"
+                      dataType="i4"
+                      name="DonorId" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DonorType]"
+                      dataType="i4"
+                      name="DonorType" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[RegistryCode]"
+                      dataType="i4"
+                      name="RegistryCode" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[A_1]"
+                      dataType="nText"
+                      name="A_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[A_2]"
+                      dataType="nText"
+                      name="A_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[B_1]"
+                      dataType="nText"
+                      name="B_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[B_2]"
+                      dataType="nText"
+                      name="B_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DRB1_1]"
+                      dataType="nText"
+                      name="DRB1_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DRB1_2]"
+                      dataType="nText"
+                      name="DRB1_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DQB1_1]"
+                      dataType="nText"
+                      name="DQB1_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[DQB1_2]"
+                      dataType="nText"
+                      name="DQB1_2" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[C_1]"
+                      dataType="nText"
+                      name="C_1" />
+                    <externalMetadataColumn
+                      refId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input].ExternalColumns[C_2]"
+                      dataType="nText"
+                      name="C_2" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Import Donor Table.Paths[ADO NET Source Output]"
+              endId="Package\Import Donor Table\Convert Types.Inputs[Data Conversion Input]"
+              name="ADO NET Source Output"
+              startId="Package\Import Donor Table\Solar Donors.Outputs[ADO NET Source Output]" />
+            <path
+              refId="Package\Import Donor Table.Paths[Data Conversion Output]"
+              endId="Package\Import Donor Table\Registry Codes.Inputs[Derived Column Input]"
+              name="Data Conversion Output"
+              startId="Package\Import Donor Table\Convert Types.Outputs[Data Conversion Output]" />
+            <path
+              refId="Package\Import Donor Table.Paths[Derived Column Output]"
+              endId="Package\Import Donor Table\SQL Server Donors.Inputs[SQL Server Destination Input]"
+              name="Derived Column Output"
+              startId="Package\Import Donor Table\Registry Codes.Outputs[Derived Column Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
+        <NodeLayout
+          Size="171.2,41.6"
+          Id="Package\Import Donor Table"
+          TopLeft="5.5,5.49999999999995" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Import Donor Table">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="172.8,41.6"
+          Id="Package\Import Donor Table\SQL Server Donors"
+          TopLeft="27.9615392854229,268.080644247907" />
+        <NodeLayout
+          Size="141.6,41.6"
+          Id="Package\Import Donor Table\Solar Donors"
+          TopLeft="41.2538468930849,5.49999999999995" />
+        <NodeLayout
+          Size="148.8,41.6"
+          Id="Package\Import Donor Table\Convert Types"
+          TopLeft="37.5000007335957,107.267741932904" />
+        <NodeLayout
+          Size="152,41.6"
+          Id="Package\Import Donor Table\Registry Codes"
+          TopLeft="38.7692321912777,189.264514614466" />
+        <EdgeLayout
+          Id="Package\Import Donor Table.Paths[ADO NET Source Output]"
+          TopLeft="111.97692381334,47.1">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60.1677419329037"
+              Start="0,0"
+              End="0,52.6677419329037">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.6677419329037" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Import Donor Table.Paths[Derived Column Output]"
+          TopLeft="114.56538573835,230.864514614466">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,37.2161296334407"
+              Start="0,0"
+              End="0,29.7161296334407">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29.7161296334407" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Import Donor Table.Paths[Data Conversion Output]"
+          TopLeft="113.334616462437,148.867741932904">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,40.3967726815623"
+              Start="0,0"
+              End="0,32.8967726815623">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,32.8967726815623" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Import Donor Table\SQL Server Donors">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Import Donor Table\Solar Donors">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

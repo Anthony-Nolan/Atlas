@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Hla;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 
 namespace Nova.SearchAlgorithm.Services
@@ -26,12 +27,14 @@ namespace Nova.SearchAlgorithm.Services
         {
             foreach (var donor in donorRepository.AllDonors())
             {
-                // TODO:NOVA-919 MatchingHla shouldn't be null
-                if (donor.MatchingHla != null)
+                var update = new InputDonor
                 {
-                    donor.MatchingHla = donor.MatchingHla.Map((l, p, n) => n == null ? null : hlaRepository.RetrieveHlaMatches(l, n.Name));
-                    donorRepository.UpdateDonorWithNewHla(donor);
-                }
+                    DonorId = donor.DonorId,
+                    DonorType = donor.DonorType,
+                    RegistryCode = donor.RegistryCode,
+                    MatchingHla = donor.HlaNames.Map((l, p, n) => n == null ? null : hlaRepository.RetrieveHlaMatches(l, n))
+                };
+                donorRepository.UpdateDonorWithNewHla(update);
             }
         }
     }

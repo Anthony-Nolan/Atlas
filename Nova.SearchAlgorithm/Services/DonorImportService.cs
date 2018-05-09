@@ -21,7 +21,6 @@ namespace Nova.SearchAlgorithm.Services
         void ImportDummyData();
     }
 
-    // TODO:NOVA-929 implement correctly
     public class DonorImportService : IDonorImportService
     {
         private readonly IDonorMatchRepository donorRepository;
@@ -37,10 +36,10 @@ namespace Nova.SearchAlgorithm.Services
 
         public void ImportSingleTestDonor()
         {
-            donorRepository.InsertDonor(new SearchableDonor
+            donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 1,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -66,19 +65,19 @@ namespace Nova.SearchAlgorithm.Services
 
         public void ImportTenSolarDonors()
         {
-            foreach (RawDonor donor in solarRepository.SomeDonors(10))
+            foreach (RawInputDonor donor in solarRepository.SomeDonors(10))
             {
                 InsertSingleRawDonor(donor);
             }
         }
 
-        private void InsertSingleRawDonor(RawDonor donor)
+        private void InsertSingleRawDonor(RawInputDonor donor)
         {
             Enum.TryParse(donor.RegistryCode, out RegistryCode code);
-            donorRepository.InsertDonor(new SearchableDonor
+            donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = code,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = donor.DonorId,
                 MatchingHla = donor.HlaNames.Map((locus, position, hla) => hlaRepository.RetrieveHlaMatches(locus, hla))
             });
@@ -103,7 +102,7 @@ namespace Nova.SearchAlgorithm.Services
                 .Skip(1) // Header row
                 .Select(a => a.Split(','))
                 .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray<string>())
-                .Select((a, i) => new RawDonor
+                .Select((a, i) => new RawInputDonor
                 {
                     DonorId = i+1, // Don't want donor ID 0
                     DonorType = a[1],
@@ -124,7 +123,7 @@ namespace Nova.SearchAlgorithm.Services
                 });
 
             // TODO:NOVA-919 batch import
-            foreach (RawDonor donor in spreadsheetDonors)
+            foreach (RawInputDonor donor in spreadsheetDonors)
             {
                 InsertSingleRawDonor(donor);
             }

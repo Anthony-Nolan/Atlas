@@ -26,10 +26,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             var hlaRepository = container.Resolve<IHlaRepository>();
             var donorRepository = container.Resolve<IDonorMatchRepository>();
-            donorRepository.InsertDonor(new SearchableDonor
+            donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
-                DonorType = "Adult",
+                DonorType = DonorType.Adult,
                 DonorId = 1,
                 MatchingHla = hlaRepository.RetrieveHlaMatches(new PhenotypeInfo<string>
                 {
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
             {
-                SearchType = SearchType.Adult,
+                SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 MatchCriteria = new MismatchCriteria
                 {
@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
             {
-                SearchType = SearchType.Adult,
+                SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 MatchCriteria = new MismatchCriteria
                 {
@@ -122,7 +122,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
             {
-                SearchType = SearchType.Adult,
+                SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 MatchCriteria = new MismatchCriteria
                 {

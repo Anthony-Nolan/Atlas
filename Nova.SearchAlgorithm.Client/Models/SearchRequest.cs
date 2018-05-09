@@ -3,15 +3,16 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-    public enum SearchType
+    public enum DonorType
     {
+        // Do not renumber, these values are stored in the database as integers.
         Adult = 1,
-        Cord = 2,
-        Nima = 3
+        Cord = 2
     }
 
     public enum RegistryCode
     {
+        // Do not renumber, these values are stored in the database as integers.
         AN = 1, // Anthony Nolan
         NHSBT = 2, // NHS Blood Transfusion
         WBS = 3, // Welsh Blood Service
@@ -23,7 +24,7 @@ namespace Nova.SearchAlgorithm.Client.Models
     [FluentValidation.Attributes.Validator(typeof(SearchRequestValidator))]
     public class SearchRequest
     {
-        public SearchType SearchType { get; set; }
+        public DonorType SearchType { get; set; }
         public MismatchCriteria MatchCriteria { get; set; }
         public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
     }
