@@ -5,14 +5,14 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class MatchedAllele : IMatchedHla, IDictionaryAlleleSource
+    public class MatchedAllele : IMatchedHla, IDictionarySource<Allele>
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<Serology> MatchingSerologies { get; }
         public IEnumerable<SerologyMappingInfo> SerologyMappings { get; }
-        public Allele MatchedOnAllele => (Allele) HlaType;
+        public Allele TypeForDictionary => (Allele) HlaType;
 
         public MatchedAllele(IAlleleToPGroup matchedAllele, IList<SerologyMappingInfo> serologyMappings)
         {

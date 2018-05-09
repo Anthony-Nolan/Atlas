@@ -3,8 +3,8 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
 {
-    public interface IDictionarySerologySource : IMatchingPGroups, IMatchingSerologies
+    public interface IDictionarySource<out THlaType> : IMatchingPGroups, IMatchingSerologies where THlaType : HlaType
     {
-        Serology MatchedOnSerology { get; }
+        THlaType TypeForDictionary { get; }
     }
 }
