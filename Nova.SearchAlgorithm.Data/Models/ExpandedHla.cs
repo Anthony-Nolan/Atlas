@@ -9,8 +9,6 @@ namespace Nova.SearchAlgorithm.Data.Models
     {
         public string Name { get; set; }
         public string Locus { get; set; }
-        public string Type { get; set; }
-        public bool IsDeleted { get; set; }
         public IEnumerable<string> PGroups { get; set; }
         public IEnumerable<string> SerologyNames { get; set; }
     }
