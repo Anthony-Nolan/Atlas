@@ -153,6 +153,9 @@
       <HintPath>..\packages\NLog.Owin.Logging.1.1.0\lib\net45\NLog.Owin.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Nova.HLAService.Client, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.HLAService.Client.1.2.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
+    </Reference>
     <Reference Include="Nova.Utils, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.Utils.3.1.1\lib\net462\Nova.Utils.dll</HintPath>
     </Reference>
@@ -165,6 +168,9 @@
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
@@ -223,7 +229,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\AutomapperConfig.cs" />
+    <Compile Include="Config\Configuration.cs" />
     <Compile Include="Config\InstrumentationConfig.cs" />
+    <Compile Include="Config\Modules\ClientModule.cs" />
     <Compile Include="Config\Modules\ServiceModule.cs" />
     <Compile Include="Config\SwaggerConfig.cs" />
     <Compile Include="Config\ValidatorConfig.cs" />
@@ -237,6 +245,7 @@
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\HlaException.cs" />
+    <Compile Include="Helpers\ClientSettingsProvider.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Repositories\Donors\PotentialHlaMatch.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
@@ -261,7 +270,9 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

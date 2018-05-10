@@ -59,7 +59,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             builder.RegisterInstance(MatchingDictionary.Repositories.WmdaRepository.Instance).AsImplementedInterfaces().ExternallyOwned();
 
-            builder.RegisterType<MatchingDictionary.Services.Dictionary.ManageDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();           
+            builder.RegisterType<MatchingDictionary.Services.Dictionary.ManageDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.Dictionary.DictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }
