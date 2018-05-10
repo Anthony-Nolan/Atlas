@@ -1,12 +1,11 @@
 ﻿using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups;
 using System;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
@@ -31,41 +30,32 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             {
                 var lookupName = hlaName.Trim().TrimStart('*');
                 var category = await hlaServiceClient.GetHlaTypingCategory(lookupName);
-                
+
+                MatchingDictionaryLookup lookup;
                 switch (category)
                 {
                     case HlaTypingCategory.Allele:
-                        return LookupAllele(matchLocus, lookupName);
+                        lookup = new AlleleLookup(dictionaryRepository);
+                        break;
                     case HlaTypingCategory.XxCode:
-                        return LookupXxCode(matchLocus, lookupName);
+                        lookup = new XxCodeLookup(dictionaryRepository) ;
+                        break;
                     case HlaTypingCategory.Serology:
-                        return GetDictionaryEntry(matchLocus, lookupName, TypingMethod.Serology);
+                        lookup = new SerologyLookup(dictionaryRepository);
+                        break;
+                    case HlaTypingCategory.NmdpCode:
+                        lookup = new NmdpCodeLookup(dictionaryRepository);
+                        break;
                     default:
                         throw new ArgumentException($"Dictionary lookup cannot be performed for HLA typing category: {category}.");
                 }
+
+                return lookup.PerformLookup(matchLocus, lookupName);
             }
             catch (Exception ex)
             {
                 throw new MatchingDictionaryException(ex.Message, ex);
             }
-        }
-
-        private MatchingDictionaryEntry GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod)
-        {
-            var entry = dictionaryRepository.GetDictionaryEntry(matchLocus, lookupName, typingMethod);
-            return entry ?? throw new InvalidHlaException(matchLocus, lookupName);
-        }
-
-        private MatchingDictionaryEntry LookupAllele(string matchLocus, string lookupName)
-        {
-            var allele = new Allele(LocusNames.GetMolecularLocusNameFromMatch(matchLocus), lookupName);
-            return GetDictionaryEntry(matchLocus, allele.TwoFieldName, TypingMethod.Molecular);
-        }
-
-        private MatchingDictionaryEntry LookupXxCode(string matchLocus, string lookupName)
-        {
-            var firstField = lookupName.Split(':')[0];
-            return GetDictionaryEntry(matchLocus, firstField, TypingMethod.Molecular);
         }
     }
 }

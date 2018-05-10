@@ -166,6 +166,11 @@
     <Compile Include="Models\Dictionary\IDictionarySource.cs" />
     <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
     <Compile Include="Services\Dictionary\DictionaryLookupService.cs" />
+    <Compile Include="Services\Dictionary\Lookups\SerologyLookup.cs" />
+    <Compile Include="Services\Dictionary\Lookups\NmdpCodeLookup.cs" />
+    <Compile Include="Services\Dictionary\Lookups\XxCodeLookup.cs" />
+    <Compile Include="Services\Dictionary\Lookups\AlleleLookup.cs" />
+    <Compile Include="Services\Dictionary\Lookups\MatchingDictionaryLookup.cs" />
     <Compile Include="Services\Dictionary\MatchingDictionaryEntryExtensions.cs" />
     <Compile Include="Models\Dictionary\SerologyEntry.cs" />
     <Compile Include="Models\Dictionary\SerologyEntryExtensions.cs" />
