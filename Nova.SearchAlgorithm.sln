@@ -30,8 +30,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}"
 EndProject
-Project("{159641D6-6404-4A2A-AE62-294DE0FE8301}") = "Nova.SearchAlgorithm.DataImport", "Nova.SearchAlgorithm.DataImport\Nova.SearchAlgorithm.DataImport.dtproj", "{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,12 +73,6 @@ Global
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}.Debug|Any CPU.ActiveCfg = Development
-		{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}.Debug|Any CPU.Build.0 = Development
-		{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}.Development|Any CPU.ActiveCfg = Development
-		{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}.Development|Any CPU.Build.0 = Development
-		{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}.Release|Any CPU.ActiveCfg = Development
-		{8340315C-F5BE-4B83-9EBE-516ECDFC9C07}.Release|Any CPU.Build.0 = Development
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
