@@ -43,5 +43,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data
         {
             return Names.First(l => l.Molecular.Equals(molecularLocusName)).Serology;
         }
+
+        public static string GetMolecularLocusNameFromMatch(string matchLocusName)
+        {
+            return Names.First(l => l.Match.Equals(matchLocusName)).Molecular;
+        }
     }
 }
