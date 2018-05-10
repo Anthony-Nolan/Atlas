@@ -70,7 +70,7 @@ namespace Nova.SearchAlgorithm.Repositories
         {
             return new RawInputDonor
             {
-                DonorId = result.DONOR_ID.ToString(),
+                DonorId = result.DONOR_ID,
                 RegistryCode = result.DONOR_TYPE,
                 DonorType = "A",
                 HlaNames = new PhenotypeInfo<string>
