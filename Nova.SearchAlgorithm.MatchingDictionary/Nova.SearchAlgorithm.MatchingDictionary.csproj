@@ -161,6 +161,7 @@
     <Compile Include="Data\Wmda\RelDnaSerExtractor.cs" />
     <Compile Include="Data\Wmda\RelSerSerExtractor.cs" />
     <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
+    <Compile Include="Exceptions\MatchingDictionaryException.cs" />
     <Compile Include="Models\Dictionary\IDictionarySource.cs" />
     <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
     <Compile Include="Services\Dictionary\DictionaryLookupService.cs" />
