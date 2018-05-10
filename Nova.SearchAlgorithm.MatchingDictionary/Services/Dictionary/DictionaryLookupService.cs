@@ -27,10 +27,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             MatchingDictionaryEntry entry;
             try
             {
-                var categoryResult = hlaServiceClient.GetHlaTypingCategory(hlaName);
+                var category = await hlaServiceClient.GetHlaTypingCategory(hlaName);
                 //todo: handle service error - general errors, and specific unknown HLA error
 
-                var category = await categoryResult;
                 var typingMethod = category == HlaTypingCategory.Serology ?
                     TypingMethod.Serology : TypingMethod.Molecular;
                 entry = dictionaryRepository.GetDictionaryEntry(matchLocus, hlaName, typingMethod);

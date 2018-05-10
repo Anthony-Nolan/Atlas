@@ -1,5 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
+﻿using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
 using System.Web.Http;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
@@ -25,10 +27,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("lookup")]
-        public IHttpActionResult GetMatchedHla(string locus, string hlaName)
+        public async Task<MatchingDictionaryEntry> GetMatchedHla(string locus, string hlaName)
         {
-            var result = lookupService.GetMatchedHla(locus, hlaName);
-            return Ok(result);
+            return await lookupService.GetMatchedHla(locus, hlaName);
         }
     }
 }
