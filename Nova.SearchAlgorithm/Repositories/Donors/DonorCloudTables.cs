@@ -13,9 +13,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     {
         void InsertDonor(InputDonor donor);
         void UpdateDonorWithNewHla(InputDonor donor);
-        SearchableDonor GetDonor(int donorId);
+        DonorResult GetDonor(int donorId);
         IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId);
-        IEnumerable<RawDonor> AllDonors();
+        IEnumerable<DonorResult> AllDonors();
         IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(string locus, LocusSearchCriteria criteria);
 
     }
@@ -88,10 +88,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        public SearchableDonor GetDonor(int donorId)
+        public DonorResult GetDonor(int donorId)
         {
             var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
-            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToSearchableDonor(mapper)).FirstOrDefault();
+            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor(mapper)).FirstOrDefault();
         }
 
         public IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId)
@@ -109,7 +109,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         // TODO:NOVA-939 This will be too many donors
         // Can we stream them in batches with IEnumerable?
-        public IEnumerable<RawDonor> AllDonors()
+        public IEnumerable<DonorResult> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
             return donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor(mapper));

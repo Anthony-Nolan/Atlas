@@ -12,8 +12,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     {
         void InsertDonor(InputDonor donor);
         void UpdateDonorWithNewHla(InputDonor donor);
-        SearchableDonor GetDonor(int donorId);
-        IEnumerable<RawDonor> AllDonors();
+        DonorResult GetDonor(int donorId);
+        IEnumerable<DonorResult> AllDonors();
         IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest);
     }
 
@@ -49,14 +49,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             this.context = context;
         }
 
-        public IEnumerable<RawDonor> AllDonors()
+        public IEnumerable<DonorResult> AllDonors()
         {
             return context.Donors.ToList().Select(d => d.ToRawDonor());
         }
 
-        public SearchableDonor GetDonor(int donorId)
+        public DonorResult GetDonor(int donorId)
         {
-            return context.Donors.FirstOrDefault(d => d.DonorId == donorId)?.ToSearchableDonor();
+            return context.Donors.FirstOrDefault(d => d.DonorId == donorId)?.ToRawDonor();
         }
 
         public void InsertDonor(InputDonor donor)

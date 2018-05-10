@@ -26,9 +26,9 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         private const string PGroupB = "14";
         private const string PGroupDRB1 = "pgDRB1";
 
-        private readonly SearchableDonor exactMatch = new SearchableDonor { DonorId = 1 };
-        private readonly SearchableDonor bothPositionsMatchGroupOne = new SearchableDonor { DonorId = 2 };
-        private readonly SearchableDonor bothGroupsMatchPositionOne = new SearchableDonor { DonorId = 3 };
+        private readonly DonorResult exactMatch = new DonorResult { DonorId = 1 };
+        private readonly DonorResult bothPositionsMatchGroupOne = new DonorResult { DonorId = 2 };
+        private readonly DonorResult bothGroupsMatchPositionOne = new DonorResult { DonorId = 3 };
 
         private IDonorMatchRepository repositoryUnderTest;
 
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
                 .WithLocusMismatchDRB1(PGroupDRB1, PGroupDRB1, 2);
         }
 
-        private PotentialHlaMatchRelation HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, SearchableDonor donor, string hlaMatchName)
+        private PotentialHlaMatchRelation HlaMatchFor(string locus, TypePositions searchPosition, TypePositions matchPosition, DonorResult donor, string hlaMatchName)
         {
             return new PotentialHlaMatchRelation
             {

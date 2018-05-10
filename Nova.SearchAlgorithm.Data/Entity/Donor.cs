@@ -22,19 +22,9 @@ namespace Nova.SearchAlgorithm.Data.Entity
         public string DQB1_1 { get; set; }
         public string DQB1_2 { get; set; }
 
-        public SearchableDonor ToSearchableDonor()
+        public DonorResult ToRawDonor()
         {
-            return new SearchableDonor
-            {
-                DonorId = DonorId,
-                DonorType = DonorType,
-                RegistryCode = RegistryCode
-            };
-        }
-
-        public RawDonor ToRawDonor()
-        {
-            return new RawDonor
+            return new DonorResult
             {
                 DonorId = DonorId,
                 DonorType = DonorType,

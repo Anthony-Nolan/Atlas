@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             };
         }
 
-        public SearchableDonor GetDonor(int donorId)
+        public DonorResult GetDonor(int donorId)
         {
             return donorBlobRepository.GetDonor(donorId);
         }
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         // TODO:NOVA-937 This will be too many donors
         // Can we stream them in batches with IEnumerable?
-        public IEnumerable<RawDonor> AllDonors()
+        public IEnumerable<DonorResult> AllDonors()
         {
             return donorBlobRepository.AllDonors();
         }

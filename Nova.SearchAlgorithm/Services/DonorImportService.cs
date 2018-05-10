@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Services
 
         public void ImportTenSolarDonors()
         {
-            foreach (RawInputDonor donor in solarRepository.SomeDonors(10))
+            foreach (RawInputDonor donor in solarRepository.SomeDonors(1000))
             {
                 InsertSingleRawDonor(donor);
             }

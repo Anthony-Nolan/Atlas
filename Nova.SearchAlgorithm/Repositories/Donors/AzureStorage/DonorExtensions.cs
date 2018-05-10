@@ -15,26 +15,15 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             };
         }
 
-        internal static SearchableDonor ToSearchableDonor(this DonorTableEntity result, IMapper mapper)
+        internal static DonorResult ToRawDonor(this DonorTableEntity result, IMapper mapper)
         {
-            var searchableDonor = mapper.Map<SearchableDonor>(DeserializeSearchableDonor(result.SerialisedDonor));
-            return searchableDonor;
+            var rawDonor = mapper.Map<DonorResult>(DeserializeRawDonor(result.SerialisedDonor));
+            return rawDonor;
         }
 
-        internal static RawDonor ToRawDonor(this DonorTableEntity result, IMapper mapper)
+        private static DonorResult DeserializeRawDonor(string serialisedDonor)
         {
-            var searchableDonor = mapper.Map<RawDonor>(DeserializeRawDonor(result.SerialisedDonor));
-            return searchableDonor;
-        }
-
-        private static SearchableDonor DeserializeSearchableDonor(string serialisedDonor)
-        {
-            return JsonConvert.DeserializeObject<SearchableDonor>(serialisedDonor);
-        }
-
-        private static RawDonor DeserializeRawDonor(string serialisedDonor)
-        {
-            return JsonConvert.DeserializeObject<RawDonor>(serialisedDonor);
+            return JsonConvert.DeserializeObject<DonorResult>(serialisedDonor);
         }
     }
 }

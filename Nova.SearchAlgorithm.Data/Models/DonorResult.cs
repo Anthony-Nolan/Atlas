@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.Data.Models
     /// <summary>
     /// A donor from our data source along with the donor's raw hla data.
     /// </summary>
-    public class RawDonor
+    public class DonorResult
     {
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
