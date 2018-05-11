@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         AlleleString = 4
     }
 
-    public class MatchingDictionaryEntry : IEquatable<MatchingDictionaryEntry>
+    public class MatchingDictionaryEntry : IMatchingHlaLookupResult, IEquatable<MatchingDictionaryEntry>
     {
         public string MatchLocus { get; }
         public string LookupName { get; }

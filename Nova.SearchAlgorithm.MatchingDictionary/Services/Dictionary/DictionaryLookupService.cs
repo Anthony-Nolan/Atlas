@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     public interface IDictionaryLookupService
     {
-        Task<MatchingDictionaryEntry> GetMatchedHla(string matchLocus, string hlaName);
+        Task<IMatchingHlaLookupResult> GetMatchingHla(string matchLocus, string hlaName);
     }
     public class DictionaryLookupService : IDictionaryLookupService
     {
@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             this.hlaServiceClient = hlaServiceClient;
         }
 
-        public async Task<MatchingDictionaryEntry> GetMatchedHla(string matchLocus, string hlaName)
+        public async Task<IMatchingHlaLookupResult> GetMatchingHla(string matchLocus, string hlaName)
         {
             try
             {

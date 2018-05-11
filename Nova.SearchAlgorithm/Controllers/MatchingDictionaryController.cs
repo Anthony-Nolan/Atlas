@@ -27,9 +27,10 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("lookup")]
-        public async Task<MatchingDictionaryEntry> GetMatchedHla(string locus, string hlaName)
+        //todo: delete this endpoint - only used for demo/testing, not required for production
+        public async Task<IMatchingHlaLookupResult> GetMatchingHla(string locus, string hlaName)
         {
-            return await lookupService.GetMatchedHla(locus, hlaName);
+            return await lookupService.GetMatchingHla(locus, hlaName);
         }
     }
 }
