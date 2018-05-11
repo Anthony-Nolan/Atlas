@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
                     matchLocus,
                     lookupName,
                     TypingMethod.Molecular,
-                    MolecularSubtype.AlleleString,
+                    MolecularSubtype.NmdpCode,
                     SerologySubtype.NotSerologyType,
                     entries.SelectMany(p => p.MatchingPGroups).Distinct(),
                     entries.SelectMany(s => s.MatchingSerologies).Distinct()

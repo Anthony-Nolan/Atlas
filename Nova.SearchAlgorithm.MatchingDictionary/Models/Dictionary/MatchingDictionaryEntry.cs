@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         CompleteAllele = 1,
         TwoFieldAllele = 2,
         FirstFieldAllele = 3,
-        AlleleString = 4
+        NmdpCode = 4
     }
 
     public class MatchingDictionaryEntry : IMatchingHlaLookupResult, IEquatable<MatchingDictionaryEntry>
