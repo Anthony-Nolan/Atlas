@@ -29,11 +29,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
             lookupService = new DictionaryLookupService(repository, hlaServiceClient);
         }
 
-        [SetUp]
-        public void EachTestSetup()
-        {
-        }
-
         [TestCase(HlaTypingCategory.AlleleString)]
         [TestCase(HlaTypingCategory.GGroup)]
         [TestCase(HlaTypingCategory.PGroup)]
@@ -56,6 +51,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
             Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetMatchingHla(matchLocus, hlaName));
         }
 
+        [TestCase("*99:99", "99:99")]
         [TestCase("99:99", "99:99")]
         [TestCase("99:99N", "99:99N")]
         [TestCase("99:99:99", "99:99")]
@@ -87,11 +83,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
             repository.Received().GetDictionaryEntry(matchLocus, allele, TypingMethod.Molecular);
         }
 
-        [Test]
-        public void GetMatchingHla_WhenXxCode_LookupTheFirstField()
+        [TestCase("99:XX")]
+        [TestCase("*99:XX")]
+        public void GetMatchingHla_WhenXxCode_LookupTheFirstField(string hlaName)
         {
             const string matchLocus = "A";
-            const string hlaName = "99:XX";
             const string firstField = "99";
 
             hlaServiceClient.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.XxCode);
