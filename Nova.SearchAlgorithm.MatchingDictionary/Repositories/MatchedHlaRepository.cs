@@ -4,13 +4,14 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IMatchedHlaRepository
     {
         void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
-        MatchingDictionaryEntry GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod);
+        Task<MatchingDictionaryEntry> GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
     public class MatchedHlaRepository : IMatchedHlaRepository
@@ -32,15 +33,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             InsertContentsIntoDictionaryTable(dictionaryContents.ToList());
         }
 
-        public MatchingDictionaryEntry GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<MatchingDictionaryEntry> GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var rowKey = DictionaryTableEntity.GetRowKey(lookupName, typingMethod);
+            var retrieveOperation = TableOperation.Retrieve<DictionaryTableEntity>(matchLocus, rowKey);            
+            var tableResult = await table.ExecuteAsync(retrieveOperation);
+            var entry = ((DictionaryTableEntity) tableResult.Result)?.ToDictionaryEntry();
 
-            return table
-                .CreateQuery<DictionaryTableEntity>()
-                .Where(entity => entity.PartitionKey.Equals(matchLocus) && entity.RowKey.Equals(rowKey))
-                .FirstOrDefault()
-                ?.ToDictionaryEntry();
+            return entry;
         }
 
         private void GetDictionaryTable()

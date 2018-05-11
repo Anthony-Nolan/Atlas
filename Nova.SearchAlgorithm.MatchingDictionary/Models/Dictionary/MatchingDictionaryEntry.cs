@@ -20,7 +20,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         NotMolecularType = 0,
         CompleteAllele = 1,
         TwoFieldAllele = 2,
-        FirstFieldAllele = 3
+        FirstFieldAllele = 3,
+        AlleleString = 4
     }
 
     public class MatchingDictionaryEntry : IEquatable<MatchingDictionaryEntry>

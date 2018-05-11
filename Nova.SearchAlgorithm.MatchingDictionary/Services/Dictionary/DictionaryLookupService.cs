@@ -44,13 +44,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
                         lookup = new SerologyLookup(dictionaryRepository);
                         break;
                     case HlaTypingCategory.NmdpCode:
-                        lookup = new NmdpCodeLookup(dictionaryRepository);
+                        lookup = new NmdpCodeLookup(dictionaryRepository, hlaServiceClient);
                         break;
                     default:
                         throw new ArgumentException($"Dictionary lookup cannot be performed for HLA typing category: {category}.");
                 }
 
-                return lookup.PerformLookup(matchLocus, lookupName);
+                return await lookup.PerformLookupAsync(matchLocus, lookupName);
             }
             catch (Exception ex)
             {

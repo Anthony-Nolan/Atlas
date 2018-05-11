@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+﻿using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
@@ -9,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
         {
         }
 
-        public override MatchingDictionaryEntry PerformLookup(string matchLocus, string lookupName)
+        public override Task<MatchingDictionaryEntry> PerformLookupAsync(string matchLocus, string lookupName)
         {
             return GetDictionaryEntry(matchLocus, lookupName, TypingMethod.Serology);
         }
