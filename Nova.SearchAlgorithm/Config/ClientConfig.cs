@@ -18,5 +18,16 @@ namespace Nova.SearchAlgorithm.Config
                 JsonSettings = JsonConfig.GlobalSettings
             };
         }
+
+        public static ClientSettings GetDonorServiceClientSettings()
+        {
+            return new ClientSettings
+            {
+                ApiKey = Configuration.DonorServiceApiKey,
+                BaseUrl = Configuration.DonorServiceBaseUrl,
+                ClientName = "donor_service_client",
+                JsonSettings = JsonConfig.GlobalSettings
+            };
+        }
     }
 }

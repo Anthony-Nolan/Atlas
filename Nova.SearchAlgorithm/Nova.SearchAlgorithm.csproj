@@ -156,6 +156,9 @@
     <Reference Include="Nova.HLAService.Client, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.HLAService.Client.1.2.1\lib\net462\Nova.HLAService.Client.dll</HintPath>
     </Reference>
+    <Reference Include="Nova.DonorService.Client, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.DonorService.Client.1.2.0\lib\net462\Nova.DonorService.Client.dll</HintPath>
+    </Reference>
     <Reference Include="Nova.Utils, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.Utils.3.1.1\lib\net462\Nova.Utils.dll</HintPath>
     </Reference>
