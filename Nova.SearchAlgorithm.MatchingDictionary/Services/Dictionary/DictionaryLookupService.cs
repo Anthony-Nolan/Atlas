@@ -6,12 +6,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups;
 using System;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     public interface IDictionaryLookupService
     {
-        Task<IMatchingHlaLookupResult> GetMatchingHla(string matchLocus, string hlaName);
+        Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName);
     }
     public class DictionaryLookupService : IDictionaryLookupService
     {
@@ -24,7 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             this.hlaServiceClient = hlaServiceClient;
         }
 
-        public async Task<IMatchingHlaLookupResult> GetMatchingHla(string matchLocus, string hlaName)
+        public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
         {
             try
             {

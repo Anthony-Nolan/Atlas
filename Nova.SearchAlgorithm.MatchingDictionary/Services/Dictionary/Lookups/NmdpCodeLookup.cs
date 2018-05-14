@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
             this.hlaServiceClient = hlaServiceClient;
         }
 
-        public override async Task<MatchingDictionaryEntry> PerformLookupAsync(string matchLocus, string lookupName)
+        public override async Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var alleles = await ExpandNmdpCode(matchLocus, lookupName);
             var tasks = alleles.Select(allele => GetDictionaryEntry(matchLocus, allele, TypingMethod.Molecular)).ToArray();
@@ -36,9 +36,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
                 );
         }
 
-        private async Task<IEnumerable<string>> ExpandNmdpCode(string matchLocus, string lookupName)
+        private async Task<IEnumerable<string>> ExpandNmdpCode(MatchLocus matchLocus, string lookupName)
         {
-            Enum.TryParse(matchLocus, true, out MolecularLocusType molLocusType);
+            Enum.TryParse(matchLocus.ToString(), true, out MolecularLocusType molLocusType);
             return await hlaServiceClient.GetAllelesForDefinedNmdpCode(molLocusType, lookupName);
         }
     }

@@ -19,11 +19,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
             var hlaDqb1 = new HlaType("DQ", hlaName);
             var hlaDrb1 = new HlaType("DR", hlaName);
 
-            Assert.AreEqual(hlaA.MatchLocus, "A");
-            Assert.AreEqual(hlaB.MatchLocus, "B");
-            Assert.AreEqual(hlaC.MatchLocus, "C");
-            Assert.AreEqual(hlaDqb1.MatchLocus, "DQB1");
-            Assert.AreEqual(hlaDrb1.MatchLocus, "DRB1");
+            Assert.AreEqual(hlaA.MatchLocus, MatchLocus.A);
+            Assert.AreEqual(hlaB.MatchLocus, MatchLocus.B);
+            Assert.AreEqual(hlaC.MatchLocus, MatchLocus.C);
+            Assert.AreEqual(hlaDqb1.MatchLocus, MatchLocus.Dqb1);
+            Assert.AreEqual(hlaDrb1.MatchLocus, MatchLocus.Drb1);
 
             Assert.Throws<ArgumentException>(() =>
             {
@@ -43,11 +43,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
             var hlaDqb1 = new HlaType("DQB1*", hlaName);
             var hlaDrb1 = new HlaType("DRB1*", hlaName);
 
-            Assert.AreEqual(hlaA.MatchLocus, "A");
-            Assert.AreEqual(hlaB.MatchLocus, "B");
-            Assert.AreEqual(hlaC.MatchLocus, "C");
-            Assert.AreEqual(hlaDqb1.MatchLocus, "DQB1");
-            Assert.AreEqual(hlaDrb1.MatchLocus, "DRB1");
+            Assert.AreEqual(hlaA.MatchLocus, MatchLocus.A);
+            Assert.AreEqual(hlaB.MatchLocus, MatchLocus.B);
+            Assert.AreEqual(hlaC.MatchLocus, MatchLocus.C);
+            Assert.AreEqual(hlaDqb1.MatchLocus, MatchLocus.Dqb1);
+            Assert.AreEqual(hlaDrb1.MatchLocus, MatchLocus.Drb1);
         }
 
         [Test]

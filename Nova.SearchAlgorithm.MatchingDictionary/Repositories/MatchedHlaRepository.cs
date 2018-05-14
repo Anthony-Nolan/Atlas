@@ -5,13 +5,14 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IMatchedHlaRepository
     {
         void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
-        Task<MatchingDictionaryEntry> GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod);
+        Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
     public class MatchedHlaRepository : IMatchedHlaRepository
@@ -33,10 +34,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             InsertContentsIntoDictionaryTable(dictionaryContents.ToList());
         }
 
-        public async Task<MatchingDictionaryEntry> GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
+            var partition = DictionaryTableEntity.GetPartition(matchLocus);
             var rowKey = DictionaryTableEntity.GetRowKey(lookupName, typingMethod);
-            var retrieveOperation = TableOperation.Retrieve<DictionaryTableEntity>(matchLocus, rowKey);            
+            var retrieveOperation = TableOperation.Retrieve<DictionaryTableEntity>(partition, rowKey);            
             var tableResult = await table.ExecuteAsync(retrieveOperation);
             var entry = ((DictionaryTableEntity) tableResult.Result)?.ToDictionaryEntry();
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
@@ -15,20 +16,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.HlaMatc
         [Test]
         public void HlaTypesMatchReciprocally()
         {
-            var alleleA = GetSingleMatchingType("A", "02:01:100");
-            var serologyA = GetSingleMatchingType("A", "2");
+            var alleleA = GetSingleMatchingType(MatchLocus.A, "02:01:100");
+            var serologyA = GetSingleMatchingType(MatchLocus.A, "2");
 
-            var alleleB = GetSingleMatchingType("B", "39:55");
-            var serologyB = GetSingleMatchingType("B", "39");
+            var alleleB = GetSingleMatchingType(MatchLocus.B, "39:55");
+            var serologyB = GetSingleMatchingType(MatchLocus.B, "39");
 
-            var alleleC = GetSingleMatchingType("C", "01:80");
-            var serologyC = GetSingleMatchingType("C", "1");
+            var alleleC = GetSingleMatchingType(MatchLocus.C, "01:80");
+            var serologyC = GetSingleMatchingType(MatchLocus.C, "1");
 
-            var alleleDqb1 = GetSingleMatchingType("DQB1", "03:01:15");
-            var serologyDqb1 = GetSingleMatchingType("DQB1", "7");
+            var alleleDqb1 = GetSingleMatchingType(MatchLocus.Dqb1, "03:01:15");
+            var serologyDqb1 = GetSingleMatchingType(MatchLocus.Dqb1, "7");
 
-            var alleleDrb1 = GetSingleMatchingType("DRB1", "04:155");
-            var serologyDrb1 = GetSingleMatchingType("DRB1", "4");
+            var alleleDrb1 = GetSingleMatchingType(MatchLocus.Drb1, "04:155");
+            var serologyDrb1 = GetSingleMatchingType(MatchLocus.Drb1, "4");
 
             IsReciprocallyMatchedTest(alleleA, serologyA);
             IsReciprocallyMatchedTest(alleleB, serologyB);

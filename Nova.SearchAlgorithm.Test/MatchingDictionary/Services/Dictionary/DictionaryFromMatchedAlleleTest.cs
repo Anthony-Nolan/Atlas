@@ -14,7 +14,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
     [TestFixture]
     public class DictionaryFromMatchedAlleleTest
     {
-        private const string Locus = "A";
+        private const MatchLocus Locus = MatchLocus.A;
+        private static readonly string SerologyLocus = Locus.ToString();
         private static IEnumerable<string> _matchingPGroups;
         private static IList<SerologyMappingInfo> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
@@ -24,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         {
             _matchingPGroups = new List<string> { "01:01P" };
 
-            var serology = new Serology(Locus, "1", SerologySubtype.NotSplit);
+            var serology = new Serology(SerologyLocus, "1", SerologySubtype.NotSplit);
             _matchingSerologies = new List<SerologyMappingInfo>
             {
                 new SerologyMappingInfo(serology, Assignment.None, new List<SerologyMatchInfo>{ new SerologyMatchInfo(serology) })

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
@@ -13,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
             MatchingTypes = matchingTypes.ToList();
         }
 
-        protected TMatchedOn GetSingleMatchingType(string matchLocus, string hlaName)
+        protected TMatchedOn GetSingleMatchingType(MatchLocus matchLocus, string hlaName)
         {
             return MatchingTypes.Single(m =>
                 m.HlaType.MatchLocus.Equals(matchLocus) && m.HlaType.Name.Equals(hlaName));

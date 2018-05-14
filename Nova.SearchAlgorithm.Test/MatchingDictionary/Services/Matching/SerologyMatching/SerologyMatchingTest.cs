@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
             var str = string.Join("\r\n", MatchingTypes
                 .OrderBy(s => s.HlaType.MatchLocus)
                 .ThenBy(s => int.Parse(s.HlaType.Name))
-                .Select(s => $"{s.HlaType.MatchLocus}\t{s.HlaType.Name}")
+                .Select(s => $"{s.HlaType.MatchLocus.ToString().ToUpper()}\t{s.HlaType.Name}")
                 .ToList());
             Approvals.Verify(str);
         }
@@ -68,9 +68,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            Assert.AreEqual(broadWhereSplitHasAssociated, GetSingleMatchingType("A", "9"));
-            Assert.AreEqual(broadWhereSplitHasNoAssociated, GetSingleMatchingType("DQB1", "1"));
-            Assert.AreEqual(broadHasSplitAndAssociated, GetSingleMatchingType("B", "21"));
+            Assert.AreEqual(broadWhereSplitHasAssociated, GetSingleMatchingType(MatchLocus.A, "9"));
+            Assert.AreEqual(broadWhereSplitHasNoAssociated, GetSingleMatchingType(MatchLocus.Dqb1, "1"));
+            Assert.AreEqual(broadHasSplitAndAssociated, GetSingleMatchingType(MatchLocus.B, "21"));
         }
 
         [Test]
@@ -100,8 +100,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            Assert.AreEqual(splitHasAssociated, GetSingleMatchingType("B", "51"));
-            Assert.AreEqual(splitNoAssociated, GetSingleMatchingType("C", "10"));
+            Assert.AreEqual(splitHasAssociated, GetSingleMatchingType(MatchLocus.B, "51"));
+            Assert.AreEqual(splitNoAssociated, GetSingleMatchingType(MatchLocus.C, "10"));
         }
 
         [Test]
@@ -141,9 +141,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            Assert.AreEqual(associatedWithSplit, GetSingleMatchingType("B", "3902"));
-            Assert.AreEqual(associatedWithBroad, GetSingleMatchingType("B", "4005"));
-            Assert.AreEqual(associatedWithNotSplit, GetSingleMatchingType("DRB1", "103"));
+            Assert.AreEqual(associatedWithSplit, GetSingleMatchingType(MatchLocus.B, "3902"));
+            Assert.AreEqual(associatedWithBroad, GetSingleMatchingType(MatchLocus.B, "4005"));
+            Assert.AreEqual(associatedWithNotSplit, GetSingleMatchingType(MatchLocus.Drb1, "103"));
         }
 
         [Test]
@@ -196,12 +196,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 new List<Serology> { new Serology("DR", "9", SerologySubtype.NotSplit) }
             );
 
-            Assert.AreEqual(notSplitWithAssociated, GetSingleMatchingType("A", "2"));
-            Assert.AreEqual(notSplitNoAssociatedA, GetSingleMatchingType("A", "1"));
-            Assert.AreEqual(notSplitNoAssociatedB, GetSingleMatchingType("B", "13"));
-            Assert.AreEqual(notSplitNoAssociatedC, GetSingleMatchingType("C", "8"));
-            Assert.AreEqual(notSplitNoAssociatedDq, GetSingleMatchingType("DQB1", "4"));
-            Assert.AreEqual(notSplitNoAssociatedDr, GetSingleMatchingType("DRB1", "9"));
+            Assert.AreEqual(notSplitWithAssociated, GetSingleMatchingType(MatchLocus.A, "2"));
+            Assert.AreEqual(notSplitNoAssociatedA, GetSingleMatchingType(MatchLocus.A, "1"));
+            Assert.AreEqual(notSplitNoAssociatedB, GetSingleMatchingType(MatchLocus.B, "13"));
+            Assert.AreEqual(notSplitNoAssociatedC, GetSingleMatchingType(MatchLocus.C, "8"));
+            Assert.AreEqual(notSplitNoAssociatedDq, GetSingleMatchingType(MatchLocus.Dqb1, "4"));
+            Assert.AreEqual(notSplitNoAssociatedDr, GetSingleMatchingType(MatchLocus.Drb1, "9"));
         }
 
         [Test]
@@ -218,7 +218,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            Assert.AreEqual(deletedSerology, GetSingleMatchingType("C", "11"));
+            Assert.AreEqual(deletedSerology, GetSingleMatchingType(MatchLocus.C, "11"));
         }
 
         [Test]

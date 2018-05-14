@@ -141,9 +141,9 @@
     <Compile Include="Entity\Donor.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\DonorMatchCriteria.cs" />
+    <Compile Include="Models\DonorResult.cs" />
     <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\InputDonor.cs" />
-    <Compile Include="Models\DonorResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\SqlDonorMatchRepository.cs" />
     <Compile Include="SearchAlgorithmContext.cs" />
