@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("lookup")]
-        //todo: delete this endpoint - only used for demo/testing, not required for production
+        //todo: NOVA-1201 - delete this endpoint; only used for demo/testing, not required for production
         public async Task<IMatchingHlaLookupResult> GetMatchingHla(string locus, string hlaName)
         {
             return await lookupService.GetMatchingHla(locus, hlaName);

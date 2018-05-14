@@ -54,7 +54,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             }
             catch (Exception ex)
             {
-                throw new MatchingDictionaryException(ex.Message, ex);
+                var msg = $"Failed to get matching HLA for {hlaName} at locus {matchLocus}.";
+                throw new MatchingDictionaryException(msg, ex);
             }
         }
     }
