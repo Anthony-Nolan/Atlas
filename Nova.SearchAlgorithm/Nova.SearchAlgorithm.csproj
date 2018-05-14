@@ -245,7 +245,7 @@
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\HlaException.cs" />
-    <Compile Include="Helpers\ClientSettingsProvider.cs" />
+    <Compile Include="Config\ClientConfig.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Repositories\Donors\PotentialHlaMatch.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
