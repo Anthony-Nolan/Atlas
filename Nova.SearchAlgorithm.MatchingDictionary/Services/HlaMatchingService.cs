@@ -18,21 +18,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public class HlaMatchingService : IHlaMatchingService
     {
         private readonly IWmdaRepository _repository;
-        private readonly ISerologyMatchingService _serologyMatchingService;
 
-        public HlaMatchingService(
-            IWmdaRepository repo,
-            ISerologyMatchingService serologyMatchingService)
+        public HlaMatchingService(IWmdaRepository repo)
         {
             _repository = repo;
-            _serologyMatchingService = serologyMatchingService;
         }
 
         public IEnumerable<IMatchedHla> MatchAllHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
         {
             var allelesToPGroups = new AlleleToPGroupMatching().MatchAllelesToPGroups(_repository, molecularFilter).ToList();
-            var serologyToSerology = _serologyMatchingService.MatchSerologyToSerology(serologyFilter).ToList();
+            var serologyToSerology = new SerologyToSerologyMatching().MatchSerologyToSerology(_repository, serologyFilter).ToList();
             var relDnaSer = WmdaDataFactory.GetData<RelDnaSer>(_repository, molecularFilter).ToList();
 
             var matchedAlleles = new AlleleToSerologyMatching().MatchAllelesToSerology(allelesToPGroups, serologyToSerology, relDnaSer);

@@ -213,7 +213,7 @@
     <Compile Include="Services\Matching\AlleleToPGroupMatching.cs" />
     <Compile Include="Services\Matching\AlleleToSerologyMatching.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
-    <Compile Include="Services\Matching\SerologyMatchingService.cs" />
+    <Compile Include="Services\Matching\SerologyToSerologyMatching.cs" />
     <Compile Include="Services\Matching\SerologyToPGroupsMatching.cs" />
   </ItemGroup>
   <ItemGroup>

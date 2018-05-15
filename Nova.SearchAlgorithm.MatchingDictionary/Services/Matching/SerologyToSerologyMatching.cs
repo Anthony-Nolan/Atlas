@@ -9,12 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public interface ISerologyMatchingService
-    {
-        IEnumerable<ISerologyToSerology> MatchSerologyToSerology(Func<IWmdaHlaType, bool> filter);
-    }
-
-    public class SerologyMatchingService : ISerologyMatchingService
+    public class SerologyToSerologyMatching
     {
         private class SerologyFamily
         {
@@ -69,17 +64,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             }
         }
 
-        private readonly IWmdaRepository _repository;
-
-        public SerologyMatchingService(IWmdaRepository repo)
+        public IEnumerable<ISerologyToSerology> MatchSerologyToSerology(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
         {
-            _repository = repo;
-        }
-
-        public IEnumerable<ISerologyToSerology> MatchSerologyToSerology(Func<IWmdaHlaType, bool> filter)
-        {
-            var relSerSer = WmdaDataFactory.GetData<RelSerSer>(_repository, filter);
-            var allSerology = WmdaDataFactory.GetData<HlaNom>(_repository, filter);
+            var relSerSer = WmdaDataFactory.GetData<RelSerSer>(repo, filter);
+            var allSerology = WmdaDataFactory.GetData<HlaNom>(repo, filter);
             var allMatching = allSerology.Select(ser => GetSingleMatchingSerology(relSerSer, ser));
 
             return allMatching;

@@ -31,9 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private IEnumerable<IMatchedHla> GetMatchedHla()
         {
-            var serologyMatcher = new SerologyMatchingService(wmdaRepository);
-            var hlaMatcher = new HlaMatchingService(wmdaRepository, serologyMatcher);
-
+            var hlaMatcher = new HlaMatchingService(wmdaRepository);
             return hlaMatcher.MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
         }
     }
