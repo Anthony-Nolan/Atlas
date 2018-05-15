@@ -210,7 +210,7 @@
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
     <Compile Include="Services\ManageDictionaryService.cs" />
-    <Compile Include="Services\Matching\AlleleMatchingService.cs" />
+    <Compile Include="Services\Matching\AlleleToPGroupMatching.cs" />
     <Compile Include="Services\Matching\AlleleToSerologyMatching.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
     <Compile Include="Services\Matching\SerologyMatchingService.cs" />

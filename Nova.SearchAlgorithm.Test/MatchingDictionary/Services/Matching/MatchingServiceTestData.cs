@@ -18,12 +18,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         private MatchingServiceTestData()
         {
             var repo = MockWmdaRepository.Instance;
-            var alleleMatcher = new AlleleMatchingService(repo);
+            var alleleMatcher = new AlleleToPGroupMatching();
             var serologyMatcher = new SerologyMatchingService(repo);
 
-            AllelesToPGroups = alleleMatcher.MatchAllelesToPGroups(MolecularFilter.Instance.Filter);
+            AllelesToPGroups = alleleMatcher.MatchAllelesToPGroups(repo, MolecularFilter.Instance.Filter);
             SerologyToSerology = serologyMatcher.MatchSerologyToSerology(SerologyFilter.Instance.Filter);
-            AllMatchedHla = new HlaMatchingService(repo, alleleMatcher, serologyMatcher)
+            AllMatchedHla = new HlaMatchingService(repo, serologyMatcher)
                 .MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
         }
     }

@@ -9,25 +9,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public interface IAlleleMatchingService
+    public class AlleleToPGroupMatching
     {
-        IEnumerable<IAlleleToPGroup> MatchAllelesToPGroups(Func<IWmdaHlaType, bool> filter);
-    }
-
-    public class AlleleMatchingService : IAlleleMatchingService
-    {
-        private readonly IWmdaRepository _repository;
-
-        public AlleleMatchingService(IWmdaRepository repo)
+        public IEnumerable<IAlleleToPGroup> MatchAllelesToPGroups(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
         {
-            _repository = repo;
-        }
-
-        public IEnumerable<IAlleleToPGroup> MatchAllelesToPGroups(Func<IWmdaHlaType, bool> filter)
-        {
-            var allAlleles = WmdaDataFactory.GetData<HlaNom>(_repository, filter);
-            var confidentialAlleles = WmdaDataFactory.GetData<Confidential>(_repository, filter);
-            var pGroups = WmdaDataFactory.GetData<HlaNomP>(_repository, filter);
+            var allAlleles = WmdaDataFactory.GetData<HlaNom>(repo, filter);
+            var confidentialAlleles = WmdaDataFactory.GetData<Confidential>(repo, filter);
+            var pGroups = WmdaDataFactory.GetData<HlaNomP>(repo, filter);
 
             var allMatching = allAlleles
                 .Where(a => !confidentialAlleles.Contains(a as IWmdaHlaType))
