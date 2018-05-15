@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class SerologyToSerologyMatching
+    public class SerologyToSerologyMatcher
     {
         private class SerologyFamily
         {

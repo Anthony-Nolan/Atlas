@@ -7,7 +7,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class AlleleToSerologyMatching
+    public class AlleleToSerologyMatcher
     {
         public IEnumerable<MatchedAllele> MatchAllelesToSerology(
             IEnumerable<IAlleleToPGroup> allelesToPGroups,

@@ -27,12 +27,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         public IEnumerable<IMatchedHla> MatchAllHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
         {
-            var allelesToPGroups = new AlleleToPGroupMatching().MatchAllelesToPGroups(_repository, molecularFilter).ToList();
-            var serologyToSerology = new SerologyToSerologyMatching().MatchSerologyToSerology(_repository, serologyFilter).ToList();
+            var allelesToPGroups = new AlleleToPGroupMatcher().MatchAllelesToPGroups(_repository, molecularFilter).ToList();
+            var serologyToSerology = new SerologyToSerologyMatcher().MatchSerologyToSerology(_repository, serologyFilter).ToList();
             var relDnaSer = WmdaDataFactory.GetData<RelDnaSer>(_repository, molecularFilter).ToList();
 
-            var matchedAlleles = new AlleleToSerologyMatching().MatchAllelesToSerology(allelesToPGroups, serologyToSerology, relDnaSer);
-            var matchedSerology = new SerologyToPGroupsMatching().MatchSerologyToAlleles(allelesToPGroups, serologyToSerology, relDnaSer);
+            var matchedAlleles = new AlleleToSerologyMatcher().MatchAllelesToSerology(allelesToPGroups, serologyToSerology, relDnaSer);
+            var matchedSerology = new SerologyToPGroupsMatcher().MatchSerologyToAlleles(allelesToPGroups, serologyToSerology, relDnaSer);
 
             var allMatchingHla = new List<IMatchedHla>();
             allMatchingHla.AddRange(matchedAlleles);

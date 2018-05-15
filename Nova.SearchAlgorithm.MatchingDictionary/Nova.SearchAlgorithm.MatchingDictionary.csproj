@@ -210,11 +210,11 @@
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
     <Compile Include="Services\ManageDictionaryService.cs" />
-    <Compile Include="Services\Matching\AlleleToPGroupMatching.cs" />
-    <Compile Include="Services\Matching\AlleleToSerologyMatching.cs" />
+    <Compile Include="Services\Matching\AlleleToPGroupMatcher.cs" />
+    <Compile Include="Services\Matching\AlleleToSerologyMatcher.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
-    <Compile Include="Services\Matching\SerologyToSerologyMatching.cs" />
-    <Compile Include="Services\Matching\SerologyToPGroupsMatching.cs" />
+    <Compile Include="Services\Matching\SerologyToSerologyMatcher.cs" />
+    <Compile Include="Services\Matching\SerologyToPGroupsMatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

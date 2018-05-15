@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class AlleleToPGroupMatching
+    public class AlleleToPGroupMatcher
     {
         public IEnumerable<IAlleleToPGroup> MatchAllelesToPGroups(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
         {

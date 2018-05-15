@@ -18,8 +18,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         private MatchingServiceTestData()
         {
             var repo = MockWmdaRepository.Instance;
-            var alleleMatcher = new AlleleToPGroupMatching();
-            var serologyMatcher = new SerologyToSerologyMatching();
+            var alleleMatcher = new AlleleToPGroupMatcher();
+            var serologyMatcher = new SerologyToSerologyMatcher();
 
             AllelesToPGroups = alleleMatcher.MatchAllelesToPGroups(repo, MolecularFilter.Instance.Filter);
             SerologyToSerology = serologyMatcher.MatchSerologyToSerology(repo, SerologyFilter.Instance.Filter);
