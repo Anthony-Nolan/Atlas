@@ -46,10 +46,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.AlleleM
             var secretedAllele = new AlleleToPGroup(
                 new Allele("B*", "44:02:01:02S"), new Allele("B*", "44:02:01:02S"), new List<string> { "44:02P" });
 
-            Assert.AreEqual(normalAllele, GetSingleMatchingType("A", "01:01:01:01"));
-            Assert.AreEqual(lowAllele, GetSingleMatchingType("B", "39:01:01:02L"));
-            Assert.AreEqual(questionableAllele, GetSingleMatchingType("C", "07:01:01:14Q"));
-            Assert.AreEqual(secretedAllele, GetSingleMatchingType("B", "44:02:01:02S"));
+            Assert.AreEqual(normalAllele, GetSingleMatchingType(MatchLocus.A, "01:01:01:01"));
+            Assert.AreEqual(lowAllele, GetSingleMatchingType(MatchLocus.B, "39:01:01:02L"));
+            Assert.AreEqual(questionableAllele, GetSingleMatchingType(MatchLocus.C, "07:01:01:14Q"));
+            Assert.AreEqual(secretedAllele, GetSingleMatchingType(MatchLocus.B, "44:02:01:02S"));
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.AlleleM
             var nullAllele = new AlleleToPGroup(
                 new Allele("A*", "29:01:01:02N"), new Allele("A*", "29:01:01:02N"), new List<string>());
 
-            Assert.AreEqual(nullAllele, GetSingleMatchingType("A", "29:01:01:02N"));
+            Assert.AreEqual(nullAllele, GetSingleMatchingType(MatchLocus.A, "29:01:01:02N"));
         }
 
         [Test]
@@ -71,9 +71,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.AlleleM
             var deletedIsExpressingIdenticalIsNull = new AlleleToPGroup(
                 new Allele("A*", "03:260", true), new Allele("A*", "03:284N"), new List<string>());
 
-            Assert.AreEqual(deletedWithIdentical, GetSingleMatchingType("A", "11:53"));
-            Assert.AreEqual(deletedIsNullIdenticalIsExpressing, GetSingleMatchingType("A", "01:34N"));
-            Assert.AreEqual(deletedIsExpressingIdenticalIsNull, GetSingleMatchingType("A", "03:260"));
+            Assert.AreEqual(deletedWithIdentical, GetSingleMatchingType(MatchLocus.A, "11:53"));
+            Assert.AreEqual(deletedIsNullIdenticalIsExpressing, GetSingleMatchingType(MatchLocus.A, "01:34N"));
+            Assert.AreEqual(deletedIsExpressingIdenticalIsNull, GetSingleMatchingType(MatchLocus.A, "03:260"));
         }
 
         [Test]
@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.AlleleM
             var deletedNoIdentical = new AlleleToPGroup(
                 new Allele("A*", "02:100", true), new Allele("A*", "02:100", true), new List<string>());
 
-            Assert.AreEqual(deletedNoIdentical, GetSingleMatchingType("A", "02:100"));
+            Assert.AreEqual(deletedNoIdentical, GetSingleMatchingType(MatchLocus.A, "02:100"));
         }
 
         [Test]

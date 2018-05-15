@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Matched
             var matchCopy = new List<IMatchedOn>(MatchingTypes);
             Assert.IsNotEmpty(matchCopy);
 
-            matchCopy.RemoveAll(m => new List<string> { "A", "B", "C", "DQB1", "DRB1" }.Contains(m.HlaType.MatchLocus));
+            matchCopy.RemoveAll(m => new List<string> { "A", "B", "C", "DQB1", "DRB1" }.Contains(m.HlaType.MatchLocus.ToString().ToUpper()));
             Assert.IsEmpty(matchCopy);
         }
     }

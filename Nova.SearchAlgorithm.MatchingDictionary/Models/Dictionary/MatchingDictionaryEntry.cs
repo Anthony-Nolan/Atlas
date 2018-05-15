@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
 
     public class MatchingDictionaryEntry : IMatchingHlaLookupResult, IEquatable<MatchingDictionaryEntry>
     {
-        public string MatchLocus { get; }
+        public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public MolecularSubtype MolecularSubtype { get; }
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         public MatchingDictionaryEntry(
-            string matchLocus,
+            MatchLocus matchLocus,
             string lookupName,
             TypingMethod typingMethod,
             MolecularSubtype molecularSubtype,

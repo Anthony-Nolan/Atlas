@@ -1,5 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -9,9 +10,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
         public DictionaryTableEntity() { }
 
-        public DictionaryTableEntity(string matchLocus, string lookupName, TypingMethod typingMethod) 
-            : base(matchLocus, GetRowKey(lookupName, typingMethod))
+        public DictionaryTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod) 
+            : base(GetPartition(matchLocus), GetRowKey(lookupName, typingMethod))
         {
+        }
+
+        public static string GetPartition(MatchLocus matchLocus)
+        {
+            return matchLocus.ToString();
         }
 
         public static string GetRowKey(string lookupName, TypingMethod typingMethod)

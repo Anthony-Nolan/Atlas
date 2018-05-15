@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
     public class HlaType : IEquatable<HlaType>, IWmdaHlaType
     {
         public string WmdaLocus { get; }
-        public string MatchLocus { get; }
+        public MatchLocus MatchLocus { get; }
         public string Name { get; }
         public bool IsDeleted { get; }
 
@@ -23,15 +23,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
         public override string ToString()
         {
             return $"{WmdaLocus}{Name}";
-        }
+        }       
 
         public bool Equals(HlaType other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return
-                string.Equals(WmdaLocus, other.WmdaLocus) &&
-                string.Equals(Name, other.Name) &&
+            return 
+                string.Equals(WmdaLocus, other.WmdaLocus) && 
+                MatchLocus == other.MatchLocus && 
+                string.Equals(Name, other.Name) && 
                 IsDeleted == other.IsDeleted;
         }
 
@@ -39,8 +40,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            var other = obj as HlaType;
-            return other != null && Equals(other);
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((HlaType) obj);
         }
 
         public override int GetHashCode()
@@ -48,23 +49,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
             unchecked
             {
                 var hashCode = WmdaLocus.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int) MatchLocus;
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
                 hashCode = (hashCode * 397) ^ IsDeleted.GetHashCode();
                 return hashCode;
             }
         }
 
-        protected static string SetMatchLocus(string wmdaLocus, string name)
+        protected static MatchLocus SetMatchLocus(string wmdaLocus, string name)
         {
             if (wmdaLocus.Equals("DR") && Drb345Serologies.Drb345Types.Contains(name))
                 throw new ArgumentException($"{name} is part of DRB345, not DRB1.");
 
-            var matchLocus = LocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
-
-            if (matchLocus == null)
-                throw new ArgumentException($"{wmdaLocus} is not a match locus");
-
-            return matchLocus;
+            return LocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
         }
     }
 }

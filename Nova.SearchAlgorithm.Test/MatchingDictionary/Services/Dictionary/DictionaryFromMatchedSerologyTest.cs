@@ -1,19 +1,20 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
 {
     [TestFixture]
     public class DictionaryFromMatchedSerologyTest
     {
-        private const string Locus = "A";
+        private const MatchLocus Locus = MatchLocus.A;
+        private static readonly string SerologyLocus = Locus.ToString();
         private static IEnumerable<string> _matchingPGroups;
         private static IEnumerable<Serology> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
@@ -22,13 +23,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         public void SetUp()
         {
             _matchingPGroups = new List<string> { "123:123P" };
-            _matchingSerologies = new List<Serology> {new Serology(Locus, "123", SerologySubtype.NotSplit)};
+            _matchingSerologies = new List<Serology> {new Serology(SerologyLocus, "123", SerologySubtype.NotSplit)};
             _matchingSerologyEntries = new List<SerologyEntry>{ new SerologyEntry("123", SerologySubtype.NotSplit)};
         }
 
         private static MatchedSerology BuildMatchedSerology(string serologyName, SerologySubtype subtype)
         {
-            var serology = new Serology(Locus, serologyName, subtype);
+            var serology = new Serology(SerologyLocus, serologyName, subtype);
 
             var serologyToSerology = Substitute.For<ISerologyToSerology>();
             serologyToSerology.HlaType.Returns(serology);

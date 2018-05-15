@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
@@ -14,12 +15,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
             this.dictionaryRepository = dictionaryRepository;
         }
 
-        public abstract Task<MatchingDictionaryEntry> PerformLookupAsync(string matchLocus, string lookupName);
+        public abstract Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName);
 
-        protected async Task<MatchingDictionaryEntry> GetDictionaryEntry(string matchLocus, string lookupName, TypingMethod typingMethod)
+        protected async Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var entry = await dictionaryRepository.GetDictionaryEntry(matchLocus, lookupName, typingMethod);
-            return entry ?? throw new InvalidHlaException(matchLocus, lookupName);
+            return entry ?? throw new InvalidHlaException(matchLocus.ToString(), lookupName);
         }
     }
 }
