@@ -1,11 +1,14 @@
 ﻿using Nova.SearchAlgorithm.Config;
 using Nova.Utils.WebApi.Client;
 
-namespace Nova.SearchAlgorithm.Helpers
+namespace Nova.SearchAlgorithm.Config
 {
-    public class ClientSettingsProvider
+    /// <summary>
+    /// Provides configuration for those Nova microservice client libraries used by this service.
+    /// </summary>
+    public class ClientConfig
     {
-        public ClientSettings GetHlaServiceClientSettings()
+        public static ClientSettings GetHlaServiceClientSettings()
         {
             return new ClientSettings
             {
