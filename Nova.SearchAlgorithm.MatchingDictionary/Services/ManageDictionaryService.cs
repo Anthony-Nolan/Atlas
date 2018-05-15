@@ -1,12 +1,11 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+﻿using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IManageDictionaryService
     {

@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;

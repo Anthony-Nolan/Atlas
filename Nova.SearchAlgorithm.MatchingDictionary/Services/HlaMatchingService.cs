@@ -5,8 +5,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IHlaMatchingService
     {

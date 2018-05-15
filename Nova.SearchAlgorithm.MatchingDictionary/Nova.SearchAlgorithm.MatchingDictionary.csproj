@@ -167,7 +167,7 @@
     <Compile Include="Models\Dictionary\IMatchingHlaLookupResult.cs" />
     <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
     <Compile Include="Models\HLATypes\MatchLocus.cs" />
-    <Compile Include="Services\Dictionary\DictionaryLookupService.cs" />
+    <Compile Include="Services\DictionaryLookupService.cs" />
     <Compile Include="Services\Dictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\Dictionary\Lookups\NmdpCodeLookup.cs" />
     <Compile Include="Services\Dictionary\Lookups\XxCodeLookup.cs" />
@@ -209,10 +209,10 @@
     <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
-    <Compile Include="Services\Dictionary\ManageDictionaryService.cs" />
+    <Compile Include="Services\ManageDictionaryService.cs" />
     <Compile Include="Services\Matching\AlleleMatchingService.cs" />
     <Compile Include="Services\Matching\AlleleToSerologyMatching.cs" />
-    <Compile Include="Services\Matching\HlaMatchingService.cs" />
+    <Compile Include="Services\HlaMatchingService.cs" />
     <Compile Include="Services\Matching\SerologyMatchingService.cs" />
     <Compile Include="Services\Matching\SerologyToPGroupsMatching.cs" />
   </ItemGroup>

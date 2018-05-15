@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories;
 
