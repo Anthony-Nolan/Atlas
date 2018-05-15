@@ -10,7 +10,12 @@ namespace Nova.SearchAlgorithm.Data
     public interface ISearchServiceContext : IDisposable
     {
         DbSet<Donor> Donors { get; set; }
-        DbSet<DonorHla> DonorHla { get; set; }
+        DbSet<PGroupName> PGroupNames { get; set; }
+        DbSet<MatchingGroupAtA> MatchingGroupsAtA { get; set; }
+        DbSet<MatchingGroupAtB> MatchingGroupsAtB { get; set; }
+        DbSet<MatchingGroupAtC> MatchingGroupsAtC { get; set; }
+        DbSet<MatchingGroupAtDrb1> MatchingGroupsAtDrb1 { get; set; }
+        DbSet<MatchingGroupAtDqb1> MatchingGroupsAtDqb1 { get; set; }
     }
 
     public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
@@ -39,6 +44,11 @@ namespace Nova.SearchAlgorithm.Data
         }
 
         public DbSet<Donor> Donors { get; set; }
-        public DbSet<DonorHla> DonorHla { get; set; }
+        public DbSet<PGroupName> PGroupNames { get; set; }
+        public DbSet<MatchingGroupAtA> MatchingGroupsAtA { get; set; }
+        public DbSet<MatchingGroupAtB> MatchingGroupsAtB { get; set; }
+        public DbSet<MatchingGroupAtC> MatchingGroupsAtC { get; set; }
+        public DbSet<MatchingGroupAtDrb1> MatchingGroupsAtDrb1 { get; set; }
+        public DbSet<MatchingGroupAtDqb1> MatchingGroupsAtDqb1 { get; set; }
     }
 }

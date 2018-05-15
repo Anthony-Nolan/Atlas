@@ -137,7 +137,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\SearchDataModule.cs" />
-    <Compile Include="Entity\DonorHla.cs" />
+    <Compile Include="Entity\MatchingGroup.cs" />
+    <Compile Include="Entity\MatchingGroupAtDqb1.cs" />
+    <Compile Include="Entity\MatchingGroupAtDrb1.cs" />
+    <Compile Include="Entity\MatchingGroupAtC.cs" />
+    <Compile Include="Entity\MatchingGroupAtB.cs" />
+    <Compile Include="Entity\PGroupName.cs" />
+    <Compile Include="Entity\MatchingGroupAtA.cs" />
     <Compile Include="Entity\Donor.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\DonorMatchCriteria.cs" />
