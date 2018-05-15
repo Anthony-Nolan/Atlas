@@ -9,13 +9,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     public class AlleleToSerologyMatcher
     {
-        public IEnumerable<MatchedAllele> MatchAllelesToSerology(
-            IEnumerable<IAlleleToPGroup> allelesToPGroups,
-            IEnumerable<ISerologyToSerology> serologyToSerology,
-            IEnumerable<RelDnaSer> relDnaSer)
+        public IEnumerable<MatchedAllele> MatchAllelesToSerology(MatchedHlaSourceData sourceData)
         {
-            return allelesToPGroups.Select(allele =>
-                GetMatchedAllele(serologyToSerology.ToList(), relDnaSer, allele));
+            return sourceData.AlleleToPGroups.Select(allele =>
+                GetMatchedAllele(sourceData.SerologyToSerology, sourceData.RelDnaSer, allele));
         }
 
         private static MatchedAllele GetMatchedAllele(
