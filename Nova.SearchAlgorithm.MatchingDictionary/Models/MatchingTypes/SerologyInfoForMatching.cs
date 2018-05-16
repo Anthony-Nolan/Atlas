@@ -5,18 +5,18 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public interface ISerologyToSerology : IMatchedOn, IMatchingSerologies
+    public interface ISerologyInfoForMatching : IMatchedOn, IMatchingSerologies
     {
         
     }
 
-    public class SerologyToSerology : ISerologyToSerology, IEquatable<ISerologyToSerology>
+    public class SerologyInfoForMatching : ISerologyInfoForMatching, IEquatable<ISerologyInfoForMatching>
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }
         public IEnumerable<Serology> MatchingSerologies { get; }
 
-        public SerologyToSerology(Serology hlaType, HlaType typeUsedInMatching, IEnumerable<Serology> matchingSerologies)
+        public SerologyInfoForMatching(Serology hlaType, HlaType typeUsedInMatching, IEnumerable<Serology> matchingSerologies)
         {
             HlaType = hlaType;
             TypeUsedInMatching = typeUsedInMatching;
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
                    $"matchingSerologies: {string.Join("; ", MatchingSerologies.Select(m => m))}";
         }
 
-        public bool Equals(ISerologyToSerology other)
+        public bool Equals(ISerologyInfoForMatching other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is ISerologyToSerology other && Equals(other);
+            return obj is ISerologyInfoForMatching other && Equals(other);
         }
 
         public override int GetHashCode()

@@ -11,16 +11,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         public HlaType TypeUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<Serology> MatchingSerologies { get; }
-        public IEnumerable<SerologyMappingInfo> SerologyMappings { get; }
+        public IEnumerable<RelDnaSerMapping> RelDnaSerMappings { get; }
         public Allele TypeForDictionary => (Allele) HlaType;
 
-        public MatchedAllele(IAlleleToPGroup matchedAllele, IList<SerologyMappingInfo> serologyMappings)
+        public MatchedAllele(IAlleleInfoForMatching matchedAllele, IList<RelDnaSerMapping> relDnaSerMappings)
         {
             HlaType = matchedAllele.HlaType;
             TypeUsedInMatching = matchedAllele.TypeUsedInMatching;
             MatchingPGroups = matchedAllele.MatchingPGroups;
-            MatchingSerologies = serologyMappings.SelectMany(m => m.AllMatchingSerology.Select(s => s.Serology));
-            SerologyMappings = serologyMappings;
+            MatchingSerologies = relDnaSerMappings.SelectMany(m => m.AllMatchingSerology.Select(s => s.Serology));
+            RelDnaSerMappings = relDnaSerMappings;
         }
     }
 }

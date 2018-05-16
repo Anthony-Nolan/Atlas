@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         {
             var serology = new Serology(SerologyLocus, serologyName, subtype);
 
-            var serologyToSerology = Substitute.For<ISerologyToSerology>();
+            var serologyToSerology = Substitute.For<ISerologyInfoForMatching>();
             serologyToSerology.HlaType.Returns(serology);
             serologyToSerology.TypeUsedInMatching.Returns(serology);
             serologyToSerology.MatchingSerologies.Returns(_matchingSerologies);

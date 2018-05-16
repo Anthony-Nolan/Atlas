@@ -12,19 +12,19 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         public static MatchingServiceTestData Instance { get; } = new MatchingServiceTestData();
 
         public IEnumerable<IMatchedHla> AllMatchedHla { get; }
-        public IEnumerable<IAlleleToPGroup> AllelesToPGroups { get; }
-        public IEnumerable<ISerologyToSerology> SerologyToSerology { get; }
+        public IEnumerable<IAlleleInfoForMatching> AllelesToPGroups { get; }
+        public IEnumerable<ISerologyInfoForMatching> SerologyToSerology { get; }
 
         private MatchingServiceTestData()
         {
             var repo = MockWmdaRepository.Instance;
-            var alleleMatcher = new AlleleToPGroupMatcher();
-            var serologyMatcher = new SerologyToSerologyMatcher();
+            var alleleMatcher = new AlleleInfoGenerator();
+            var serologyMatcher = new SerologyInfoGenerator();
 
-            AllelesToPGroups = alleleMatcher.MatchAllelesToPGroups(repo, MolecularFilter.Instance.Filter);
-            SerologyToSerology = serologyMatcher.MatchSerologyToSerology(repo, SerologyFilter.Instance.Filter);
+            AllelesToPGroups = alleleMatcher.GetAlleleInfoForMatching(repo, MolecularFilter.Instance.Filter);
+            SerologyToSerology = serologyMatcher.GetSerologyInfoForMatching(repo, SerologyFilter.Instance.Filter);
             AllMatchedHla = new HlaMatchingService(repo)
-                .MatchAllHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
+                .GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
         }
     }
 }

@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class SerologyToSerologyMatcher
+    public class SerologyInfoGenerator
     {
         private class SerologyFamily
         {
@@ -64,16 +64,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             }
         }
 
-        public IEnumerable<ISerologyToSerology> MatchSerologyToSerology(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
+        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
         {
             var relSerSer = WmdaDataFactory.GetData<RelSerSer>(repo, filter);
             var allSerology = WmdaDataFactory.GetData<HlaNom>(repo, filter);
-            var allMatching = allSerology.Select(ser => GetSingleMatchingSerology(relSerSer, ser));
+            var allMatching = allSerology.Select(ser => GetInfoForSingleSerology(relSerSer, ser));
 
             return allMatching;
         }
 
-        private static ISerologyToSerology GetSingleMatchingSerology(IEnumerable<RelSerSer> relSerSer, HlaNom ser)
+        private static ISerologyInfoForMatching GetInfoForSingleSerology(IEnumerable<RelSerSer> relSerSer, HlaNom ser)
         {
             var relSerSerList = relSerSer.ToList();
 
@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 matchList.AddRange(CalculateMatchingSerologiesFromFamily(relSerSerList, identicalSerFamily));
             }
 
-            return new SerologyToSerology(serFamily.Serology, usedInMatching, matchList);
+            return new SerologyInfoForMatching(serFamily.Serology, usedInMatching, matchList);
         }
 
         private static IEnumerable<Serology> CalculateMatchingSerologiesFromFamily(List<RelSerSer> relSerSer, SerologyFamily family)

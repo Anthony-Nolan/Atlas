@@ -182,16 +182,16 @@
     <Compile Include="Data\LocusNames.cs" />
     <Compile Include="Models\HLATypes\Serology.cs" />
     <Compile Include="Models\HLATypes\SerologySubtype.cs" />
-    <Compile Include="Models\MatchingTypes\AlleleToPGroup.cs" />
+    <Compile Include="Models\MatchingTypes\AlleleInfoForMatching.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedOn.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingPGroups.cs" />
     <Compile Include="Models\MatchingTypes\IMatchingSerologies.cs" />
     <Compile Include="Models\MatchingTypes\MatchedAllele.cs" />
     <Compile Include="Models\MatchingTypes\IMatchedHla.cs" />
     <Compile Include="Models\MatchingTypes\MatchedSerology.cs" />
-    <Compile Include="Models\MatchingTypes\SerologyMappingInfo.cs" />
-    <Compile Include="Models\MatchingTypes\SerologyMatchInfo.cs" />
-    <Compile Include="Models\MatchingTypes\SerologyToSerology.cs" />
+    <Compile Include="Models\MatchingTypes\RelDnaSerMapping.cs" />
+    <Compile Include="Models\MatchingTypes\RelDnaSerMatch.cs" />
+    <Compile Include="Models\MatchingTypes\SerologyInfoForMatching.cs" />
     <Compile Include="Models\Wmda\Assignment.cs" />
     <Compile Include="Models\Wmda\Confidential.cs" />
     <Compile Include="Models\Wmda\Filters\MatchLociFilter.cs" />
@@ -210,12 +210,13 @@
     <Compile Include="Repositories\MatchedHlaRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
     <Compile Include="Services\ManageDictionaryService.cs" />
-    <Compile Include="Services\Matching\AlleleToPGroupMatcher.cs" />
-    <Compile Include="Services\Matching\AlleleToSerologyMatcher.cs" />
+    <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />
+    <Compile Include="Services\Matching\AlleleMatcher.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
-    <Compile Include="Services\Matching\MatchedHlaSourceData.cs" />
-    <Compile Include="Services\Matching\SerologyToSerologyMatcher.cs" />
-    <Compile Include="Services\Matching\SerologyToPGroupsMatcher.cs" />
+    <Compile Include="Services\Matching\IHlaMatcher.cs" />
+    <Compile Include="Services\Matching\HlaInfoForMatching.cs" />
+    <Compile Include="Services\Matching\SerologyInfoGenerator.cs" />
+    <Compile Include="Services\Matching\SerologyMatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

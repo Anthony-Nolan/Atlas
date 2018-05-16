@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IHlaMatchingService
     {
-        IEnumerable<IMatchedHla> MatchAllHla(
+        IEnumerable<IMatchedHla> GetMatchedHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter);
     }
 
@@ -24,27 +24,32 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             _repository = repo;
         }
 
-        public IEnumerable<IMatchedHla> MatchAllHla(
+        public IEnumerable<IMatchedHla> GetMatchedHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
         {
-            var matchedHlaSourceData = new MatchedHlaSourceData
-            {
-                AlleleToPGroups =
-                    new AlleleToPGroupMatcher().MatchAllelesToPGroups(_repository, molecularFilter).ToList(),
-                SerologyToSerology = new SerologyToSerologyMatcher()
-                    .MatchSerologyToSerology(_repository, serologyFilter).ToList(),
-                RelDnaSer = WmdaDataFactory
-                    .GetData<RelDnaSer>(_repository, molecularFilter).ToList()
-            };
+            var hlaInfo = GetHlaInfoForMatching(serologyFilter, molecularFilter);
+            var hlaMatchers = new List<IHlaMatcher>{ new AlleleMatcher(), new SerologyMatcher() };
+            var matchedHla = CreateMatchedHla(hlaMatchers, hlaInfo);
 
-            var matchedAlleles = new AlleleToSerologyMatcher().MatchAllelesToSerology(matchedHlaSourceData);
-            var matchedSerology = new SerologyToPGroupsMatcher().MatchSerologyToPGroups(matchedHlaSourceData);
+            return matchedHla;
+        }
 
-            var allMatchingHla = new List<IMatchedHla>();
-            allMatchingHla.AddRange(matchedAlleles);
-            allMatchingHla.AddRange(matchedSerology);
+        private HlaInfoForMatching GetHlaInfoForMatching(
+            Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
+        {
+            var alleleInfoForMatching =
+                new AlleleInfoGenerator().GetAlleleInfoForMatching(_repository, molecularFilter).ToList();
+            var serologyInfoForMatching =
+                new SerologyInfoGenerator().GetSerologyInfoForMatching(_repository, serologyFilter).ToList();
+            var relDnaSer = 
+                WmdaDataFactory.GetData<RelDnaSer>(_repository, molecularFilter).ToList();
 
-            return allMatchingHla;
-        }        
+            return new HlaInfoForMatching(alleleInfoForMatching, serologyInfoForMatching, relDnaSer);
+        }
+
+        private static IEnumerable<IMatchedHla> CreateMatchedHla(IEnumerable<IHlaMatcher> hlaMatchers, HlaInfoForMatching hlaInfo)
+        {
+            return hlaMatchers.SelectMany(matcher => matcher.CreateMatchedHla(hlaInfo));
+        }
     }
 }

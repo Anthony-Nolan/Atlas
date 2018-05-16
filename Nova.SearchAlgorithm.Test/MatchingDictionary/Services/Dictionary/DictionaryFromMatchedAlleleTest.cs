@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         private const MatchLocus Locus = MatchLocus.A;
         private static readonly string SerologyLocus = Locus.ToString();
         private static IEnumerable<string> _matchingPGroups;
-        private static IList<SerologyMappingInfo> _matchingSerologies;
+        private static IList<RelDnaSerMapping> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
 
         [OneTimeSetUp]
@@ -26,9 +26,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
             _matchingPGroups = new List<string> { "01:01P" };
 
             var serology = new Serology(SerologyLocus, "1", SerologySubtype.NotSplit);
-            _matchingSerologies = new List<SerologyMappingInfo>
+            _matchingSerologies = new List<RelDnaSerMapping>
             {
-                new SerologyMappingInfo(serology, Assignment.None, new List<SerologyMatchInfo>{ new SerologyMatchInfo(serology) })
+                new RelDnaSerMapping(serology, Assignment.None, new List<RelDnaSerMatch>{ new RelDnaSerMatch(serology) })
             };
 
             _matchingSerologyEntries = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit) };
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         {
             var allele = new Allele($"{Locus}*", alleleName);
 
-            var alleleToPGroup = Substitute.For<IAlleleToPGroup>();
+            var alleleToPGroup = Substitute.For<IAlleleInfoForMatching>();
             alleleToPGroup.HlaType.Returns(allele);
             alleleToPGroup.TypeUsedInMatching.Returns(allele);
             alleleToPGroup.MatchingPGroups.Returns(_matchingPGroups);
