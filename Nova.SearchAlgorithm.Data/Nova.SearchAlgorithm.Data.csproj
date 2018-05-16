@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\SearchDataModule.cs" />
+    <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
     <Compile Include="Entity\MatchingGroup.cs" />
     <Compile Include="Entity\MatchingGroupAtDqb1.cs" />
     <Compile Include="Entity\MatchingGroupAtDrb1.cs" />
