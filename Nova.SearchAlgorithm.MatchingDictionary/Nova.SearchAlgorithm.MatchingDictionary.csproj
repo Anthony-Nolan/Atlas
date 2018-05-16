@@ -214,7 +214,7 @@
     <Compile Include="Services\Matching\AlleleMatcher.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
     <Compile Include="Services\Matching\IHlaMatcher.cs" />
-    <Compile Include="Services\Matching\HlaInfoForMatching.cs" />
+    <Compile Include="Models\MatchingTypes\HlaInfoForMatching.cs" />
     <Compile Include="Services\Matching\SerologyInfoGenerator.cs" />
     <Compile Include="Services\Matching\SerologyMatcher.cs" />
   </ItemGroup>

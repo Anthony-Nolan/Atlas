@@ -1,8 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+﻿using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
     public class HlaInfoForMatching
     {
