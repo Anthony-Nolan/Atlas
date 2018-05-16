@@ -7,7 +7,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class AlleleMatcher : IHlaMatcher
+    internal class AlleleMatcher : IHlaMatcher
     {
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {

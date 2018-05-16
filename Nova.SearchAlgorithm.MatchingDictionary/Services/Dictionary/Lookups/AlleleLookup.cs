@@ -6,7 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
-    public class AlleleLookup : MatchingDictionaryLookup
+    internal class AlleleLookup : MatchingDictionaryLookup
     {
         public AlleleLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)
         {

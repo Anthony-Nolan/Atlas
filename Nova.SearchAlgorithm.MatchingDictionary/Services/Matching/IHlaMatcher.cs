@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public interface IHlaMatcher
+    internal interface IHlaMatcher
     {
         IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo);
     }

@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class AlleleInfoGenerator
+    internal class AlleleInfoGenerator
     {
         public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
         {
