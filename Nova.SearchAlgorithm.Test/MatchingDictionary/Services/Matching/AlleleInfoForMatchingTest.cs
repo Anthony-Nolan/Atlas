@@ -4,12 +4,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.AlleleMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
-    [TestFixtureSource(typeof(AlleleMatchingTestFixtureArgs))]
-    public class AlleleMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
+    public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {
-        public AlleleMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
+        public AlleleInfoForMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
         {
         }
 

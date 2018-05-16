@@ -5,12 +5,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.HlaMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
-    [TestFixtureSource(typeof(HlaMatchingTestFixtureArgs), "MatchedAlleles")]
-    public class AlleleToSerologyMatchingTest : MatchedOnTestBase<MatchedAllele>
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
+    public class AlleleMatcherTest : MatchedOnTestBase<MatchedAllele>
     {
-        public AlleleToSerologyMatchingTest(IEnumerable<MatchedAllele> matchingTypes) : base(matchingTypes)
+        public AlleleMatcherTest(IEnumerable<MatchedAllele> matchingTypes) : base(matchingTypes)
         {
         }
 

@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.MatchedOn
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
-    [TestFixtureSource(typeof(MatchedOnTestFixtureArgs))]
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedHla))]
     public class MatchedOnTest : MatchedOnTestBase<IMatchedOn>
     {
         public MatchedOnTest(IEnumerable<IMatchedOn> matchingTypes) : base(matchingTypes)

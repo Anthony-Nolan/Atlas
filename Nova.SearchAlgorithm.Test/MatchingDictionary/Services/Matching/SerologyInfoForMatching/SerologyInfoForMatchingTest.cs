@@ -6,13 +6,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyInfoForMatching
 {
-    [TestFixtureSource(typeof(SerologyMatchingTestFixtureArgs))]
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerology))]
     [UseReporter(typeof(NUnitReporter))]
-    public class SerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
+    public class SerologyInfoForMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
-        public SerologyMatchingTest(IEnumerable<ISerologyInfoForMatching> matchingSerology) : base(matchingSerology)
+        public SerologyInfoForMatchingTest(IEnumerable<ISerologyInfoForMatching> matchingSerology) : base(matchingSerology)
         {
         }
 
@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void BroadMatchingSerologiesAreCorrect()
         {
-            var broadWhereSplitHasAssociated = new SerologyInfoForMatching
+            var broadWhereSplitHasAssociated = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("A", "9", SerologySubtype.Broad),
                 new Serology("A", "9", SerologySubtype.Broad),
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            var broadWhereSplitHasNoAssociated = new SerologyInfoForMatching
+            var broadWhereSplitHasNoAssociated = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("DQ", "1", SerologySubtype.Broad),
                 new Serology("DQ", "1", SerologySubtype.Broad),
@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            var broadHasSplitAndAssociated = new SerologyInfoForMatching
+            var broadHasSplitAndAssociated = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("B", "21", SerologySubtype.Broad),
                 new Serology("B", "21", SerologySubtype.Broad),
@@ -76,7 +76,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void SplitMatchingSerologiesAreCorrect()
         {
-            var splitHasAssociated = new SerologyInfoForMatching
+            var splitHasAssociated = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("B", "51", SerologySubtype.Split),
                 new Serology("B", "51", SerologySubtype.Split),
@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            var splitNoAssociated = new SerologyInfoForMatching
+            var splitNoAssociated = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("Cw", "10", SerologySubtype.Split),
                 new Serology("Cw", "10", SerologySubtype.Split),
@@ -107,7 +107,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void AssociatedMatchingSerologiesAreCorrect()
         {
-            var associatedWithSplit = new SerologyInfoForMatching
+            var associatedWithSplit = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("B", "3902", SerologySubtype.Associated),
                 new Serology("B", "3902", SerologySubtype.Associated),
@@ -119,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            var associatedWithBroad = new SerologyInfoForMatching
+            var associatedWithBroad = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("B", "4005", SerologySubtype.Associated),
                 new Serology("B", "4005", SerologySubtype.Associated),
@@ -130,7 +130,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            var associatedWithNotSplit = new SerologyInfoForMatching
+            var associatedWithNotSplit = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("DR", "103", SerologySubtype.Associated),
                 new Serology("DR", "103", SerologySubtype.Associated),
@@ -149,7 +149,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void NotSplitMatchingSerologiesAreCorrect()
         {
-            var notSplitWithAssociated = new SerologyInfoForMatching
+            var notSplitWithAssociated = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("A", "2", SerologySubtype.NotSplit),
                 new Serology("A", "2", SerologySubtype.NotSplit),
@@ -161,35 +161,35 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
                 }
             );
 
-            var notSplitNoAssociatedA = new SerologyInfoForMatching
+            var notSplitNoAssociatedA = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("A", "1", SerologySubtype.NotSplit),
                 new Serology("A", "1", SerologySubtype.NotSplit),
                 new List<Serology> { new Serology("A", "1", SerologySubtype.NotSplit) }
             );
 
-            var notSplitNoAssociatedB = new SerologyInfoForMatching
+            var notSplitNoAssociatedB = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("B", "13", SerologySubtype.NotSplit),
                 new Serology("B", "13", SerologySubtype.NotSplit),
                 new List<Serology> { new Serology("B", "13", SerologySubtype.NotSplit) }
             );
 
-            var notSplitNoAssociatedC = new SerologyInfoForMatching
+            var notSplitNoAssociatedC = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("Cw", "8", SerologySubtype.NotSplit),
                 new Serology("Cw", "8", SerologySubtype.NotSplit),
                 new List<Serology> { new Serology("Cw", "8", SerologySubtype.NotSplit) }
             );
 
-            var notSplitNoAssociatedDq = new SerologyInfoForMatching
+            var notSplitNoAssociatedDq = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("DQ", "4", SerologySubtype.NotSplit),
                 new Serology("DQ", "4", SerologySubtype.NotSplit),
                 new List<Serology> { new Serology("DQ", "4", SerologySubtype.NotSplit) }
             );
 
-            var notSplitNoAssociatedDr = new SerologyInfoForMatching
+            var notSplitNoAssociatedDr = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("DR", "9", SerologySubtype.NotSplit),
                 new Serology("DR", "9", SerologySubtype.NotSplit),
@@ -207,7 +207,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void DeletedMatchingSerologiesAreCorrect()
         {
-            var deletedSerology = new SerologyInfoForMatching
+            var deletedSerology = new SearchAlgorithm.MatchingDictionary.Models.MatchingTypes.SerologyInfoForMatching
             (
                 new Serology("Cw", "11", SerologySubtype.NotSplit, true),
                 new Serology("Cw", "1", SerologySubtype.NotSplit),

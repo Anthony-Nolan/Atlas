@@ -4,9 +4,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.HlaMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
-    [TestFixtureSource(typeof(HlaMatchingTestFixtureArgs), "MatchedHla")]
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedHla))]
     public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
         public ReciprocalMatchingTest(IEnumerable<IMatchedHla> matchingTypes) : base(matchingTypes)
