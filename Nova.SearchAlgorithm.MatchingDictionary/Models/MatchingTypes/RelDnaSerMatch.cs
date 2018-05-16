@@ -3,18 +3,18 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public class SerologyMatchInfo : IEquatable<SerologyMatchInfo>
+    public class RelDnaSerMatch : IEquatable<RelDnaSerMatch>
     {
         public Serology Serology { get; }
         public bool IsUnexpected { get; set; }
 
-        public SerologyMatchInfo(Serology serology, bool isUnexpected = false)
+        public RelDnaSerMatch(Serology serology, bool isUnexpected = false)
         {
             Serology = serology;
             IsUnexpected = isUnexpected;
         }
 
-        public bool Equals(SerologyMatchInfo other)
+        public bool Equals(RelDnaSerMatch other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((SerologyMatchInfo) obj);
+            return Equals((RelDnaSerMatch) obj);
         }
 
         public override int GetHashCode()

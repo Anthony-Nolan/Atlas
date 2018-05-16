@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
-using System.Web.Http;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Nova.SearchAlgorithm.Controllers
 {

@@ -5,24 +5,18 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class SerologyToPGroupsMatching
+    public class SerologyMatcher : IHlaMatcher
     {
-        public IEnumerable<MatchedSerology> MatchSerologyToAlleles(
-            IEnumerable<IAlleleToPGroup> allelesToPGroups,
-            IEnumerable<ISerologyToSerology> serologyToSerology,
-            IEnumerable<RelDnaSer> relDnaSer)
+        public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            var allelesToPGroupsList = allelesToPGroups.ToList();
-            var serologyToSerologyList = serologyToSerology.ToList();
-            var relDnaSerList = relDnaSer.ToList();
-
-            return serologyToSerologyList.Select(serology => GetMatchedSerology(allelesToPGroupsList, relDnaSerList, serology));
+            return hlaInfo.SerologyInfoForMatching.Select(serology =>
+                GetMatchedSerology(hlaInfo.AlleleInfoForMatching, hlaInfo.RelDnaSer, serology));
         }
 
         private static MatchedSerology GetMatchedSerology(
-            List<IAlleleToPGroup> allelesToPGroupsList,
+            List<IAlleleInfoForMatching> allelesToPGroupsList,
             List<RelDnaSer> relDnaSerList,
-            ISerologyToSerology serologyToMatch)
+            ISerologyInfoForMatching serologyToMatch)
         {
             var matchLocus = serologyToMatch.TypeUsedInMatching.MatchLocus;
             var matchingSerology = serologyToMatch.MatchingSerologies.Select(m => m.Name);

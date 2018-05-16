@@ -7,25 +7,22 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    public class AlleleToSerologyMatching
+    public class AlleleMatcher : IHlaMatcher
     {
-        public IEnumerable<MatchedAllele> MatchAllelesToSerology(
-            IEnumerable<IAlleleToPGroup> allelesToPGroups,
-            IEnumerable<ISerologyToSerology> serologyToSerology,
-            IEnumerable<RelDnaSer> relDnaSer)
+        public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            return allelesToPGroups.Select(allele =>
-                GetMatchedAllele(serologyToSerology.ToList(), relDnaSer, allele));
+            return hlaInfo.AlleleInfoForMatching.Select(allele =>
+                GetMatchedAllele(hlaInfo.SerologyInfoForMatching, hlaInfo.RelDnaSer, allele));
         }
 
         private static MatchedAllele GetMatchedAllele(
-            IList<ISerologyToSerology> serologyToSerology,
+            IList<ISerologyInfoForMatching> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer,
-            IAlleleToPGroup alleleToPGroup)
+            IAlleleInfoForMatching alleleInfoForMatching)
         {
-            var allele = (Allele)alleleToPGroup.HlaType;
+            var allele = (Allele)alleleInfoForMatching.HlaType;
             var molecularLocus = allele.WmdaLocus;
-            var usedName = alleleToPGroup.TypeUsedInMatching.Name;
+            var usedName = alleleInfoForMatching.TypeUsedInMatching.Name;
             var alleleFamily = ConvertAlleleFamilyToSerology(molecularLocus, usedName);
 
             var mappingInfo = GetMappingInfoFromRelDnaSer(serologyToSerology, relDnaSer, molecularLocus, usedName, alleleFamily);
@@ -38,7 +35,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             if (isAlleleFamilyInvalidSerology)
                 mappingInfo.Add(CreateMappingFromAlleleFamily(alleleFamily));
 
-            return new MatchedAllele(alleleToPGroup, mappingInfo);
+            return new MatchedAllele(alleleInfoForMatching, mappingInfo);
         }
 
         private static HlaType ConvertAlleleFamilyToSerology(string molecularLocus, string alleleName)
@@ -48,8 +45,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return new HlaType(serologyLocus, serologyName);
         }
 
-        private static IList<SerologyMappingInfo> GetMappingInfoFromRelDnaSer(
-            IList<ISerologyToSerology> serologyToSerology,
+        private static IList<RelDnaSerMapping> GetMappingInfoFromRelDnaSer(
+            IList<ISerologyInfoForMatching> serologyToSerology,
             IEnumerable<RelDnaSer> relDnaSer,
             string molecularLocus,
             string usedName,
@@ -59,7 +56,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 r.WmdaLocus.Equals(molecularLocus) && r.Name.Equals(usedName));
 
             if (relDnaSerForAllele == null || !relDnaSerForAllele.Assignments.Any())
-                return new List<SerologyMappingInfo>();
+                return new List<RelDnaSerMapping>();
 
             var expectedMatchingSerology = serologyToSerology
                     .FirstOrDefault(m => m.HlaType.Equals(alleleFamily))
@@ -70,7 +67,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 join assigned in relDnaSerForAllele.Assignments
                     on serology.TypeUsedInMatching.Name equals assigned.Name
                 where serology.TypeUsedInMatching.MatchLocus.Equals(alleleFamily.MatchLocus)
-                select new SerologyMappingInfo(
+                select new RelDnaSerMapping(
                     (Serology)serology.HlaType,
                     assigned.Assignment,
                     serology.MatchingSerologies.Select(actualMatchingSerology =>
@@ -78,23 +75,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 )).ToList();
         }
 
-        private static SerologyMappingInfo CreateMappingFromAlleleFamily(IWmdaHlaType alleleFamily)
+        private static RelDnaSerMapping CreateMappingFromAlleleFamily(IWmdaHlaType alleleFamily)
         {
             var newSerology = new Serology(alleleFamily, SerologySubtype.NotSplit);
-            return new SerologyMappingInfo(
+            return new RelDnaSerMapping(
                 newSerology,
                 Assignment.None,
-                new List<SerologyMatchInfo> { new SerologyMatchInfo(newSerology) }
+                new List<RelDnaSerMatch> { new RelDnaSerMatch(newSerology) }
             );
         }
 
-        private static SerologyMatchInfo GetSerologyMatchInfo(
+        private static RelDnaSerMatch GetSerologyMatchInfo(
             Serology actualMatchingSerology,
             HlaType alleleFamily,
             IEnumerable<Serology> expectedMatchingSerology
         )
         {
-            var matchInfo = new SerologyMatchInfo(actualMatchingSerology);
+            var matchInfo = new RelDnaSerMatch(actualMatchingSerology);
 
             if (actualMatchingSerology.IsDeleted 
                 || UnexpectedMappings.AcceptableSerologies.Contains(alleleFamily))

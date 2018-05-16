@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         public IEnumerable<Serology> MatchingSerologies { get; }
         public Serology TypeForDictionary => (Serology) HlaType;
 
-        public MatchedSerology(ISerologyToSerology matchedSerology, IEnumerable<string> matchingPGroups)
+        public MatchedSerology(ISerologyInfoForMatching matchedSerology, IEnumerable<string> matchingPGroups)
         {
             HlaType = matchedSerology.HlaType;
             TypeUsedInMatching = matchedSerology.TypeUsedInMatching;

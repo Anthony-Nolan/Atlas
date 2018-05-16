@@ -1,14 +1,14 @@
-﻿using Nova.HLAService.Client;
+﻿using System;
+using System.Threading.Tasks;
+using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups;
-using System;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IDictionaryLookupService
     {

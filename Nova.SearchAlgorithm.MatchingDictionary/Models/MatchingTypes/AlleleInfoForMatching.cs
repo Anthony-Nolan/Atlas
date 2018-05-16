@@ -5,18 +5,18 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 {
-    public interface IAlleleToPGroup : IMatchingPGroups, IMatchedOn
+    public interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups
     {
         
     }
 
-    public class AlleleToPGroup : IAlleleToPGroup, IEquatable<IAlleleToPGroup>
+    public class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>
     {
         public HlaType HlaType { get; }
         public HlaType TypeUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
 
-        public AlleleToPGroup(Allele hlaType, Allele typeUsedInMatching, IEnumerable<string> pGroups)
+        public AlleleInfoForMatching(Allele hlaType, Allele typeUsedInMatching, IEnumerable<string> pGroups)
         {
             HlaType = hlaType;
             TypeUsedInMatching = typeUsedInMatching;
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
                    $"matchingPGroup: {string.Join("/", MatchingPGroups.Select(m => m))}";
         }
 
-        public bool Equals(IAlleleToPGroup other)
+        public bool Equals(IAlleleInfoForMatching other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is IAlleleToPGroup other && Equals(other);
+            return obj is IAlleleInfoForMatching other && Equals(other);
         }
 
         public override int GetHashCode()
