@@ -1,11 +1,8 @@
-namespace Nova.SearchService.Data.Migrations
+namespace Nova.SearchAlgorithm.Data.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Nova.SearchAlgorithm.Data.SearchAlgorithmContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<SearchAlgorithmContext>
     {
         public Configuration()
         {
@@ -13,7 +10,7 @@ namespace Nova.SearchService.Data.Migrations
             ContextKey = "Nova.SearchAlgorithm.Data.SearchAlgorithmContext";
         }
 
-        protected override void Seed(Nova.SearchAlgorithm.Data.SearchAlgorithmContext context)
+        protected override void Seed(SearchAlgorithmContext context)
         {
             //  This method will be called after migrating to the latest version.
 
