@@ -7,9 +7,9 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
     [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
-    public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
+    public class AlleleToPGroupMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {
-        public AlleleInfoForMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
+        public AlleleToPGroupMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
         {
         }
 
