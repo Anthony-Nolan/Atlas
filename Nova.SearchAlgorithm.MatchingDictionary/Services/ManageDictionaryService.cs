@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -13,26 +10,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     }
     public class ManageDictionaryService : IManageDictionaryService
     {
+        private readonly IHlaMatchingService matchingService;
         private readonly IMatchedHlaRepository dictionaryRepository;
-        private readonly IWmdaRepository wmdaRepository;
 
-        public ManageDictionaryService(IMatchedHlaRepository dictionaryRepository, IWmdaRepository wmdaRepository)
+        public ManageDictionaryService(IHlaMatchingService matchingService, IMatchedHlaRepository dictionaryRepository)
         {
+            this.matchingService = matchingService;
             this.dictionaryRepository = dictionaryRepository;
-            this.wmdaRepository = wmdaRepository;
         }
 
         public void RecreateDictionary()
         {
-            var allMatchedHla = GetMatchedHla();
+            var allMatchedHla = matchingService.GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
             var entries = allMatchedHla.ToMatchingDictionaryEntries();
             dictionaryRepository.RecreateDictionaryTable(entries);
-        }
-
-        private IEnumerable<IMatchedHla> GetMatchedHla()
-        {
-            var hlaMatcher = new HlaMatchingService(wmdaRepository);
-            return hlaMatcher.GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
         }
     }
 }
