@@ -5,6 +5,11 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
 {
+    /// <summary>
+    /// This class is responsible for
+    /// holding details and base functionality
+    /// for a single HLA typing.
+    /// </summary>
     public class HlaType : IEquatable<HlaType>, IWmdaHlaType
     {
         public string WmdaLocus { get; }
