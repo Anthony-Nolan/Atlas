@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var matchInfo = new RelDnaSerMatch(actualMatchingSerology);
 
             if (actualMatchingSerology.IsDeleted 
-                || UnexpectedMappings.PermittedExceptions.Contains(alleleFamily))
+                || UnexpectedRelDnaSerMappings.PermittedExceptions.Contains(alleleFamily))
                 return matchInfo;
 
             matchInfo.IsUnexpected =

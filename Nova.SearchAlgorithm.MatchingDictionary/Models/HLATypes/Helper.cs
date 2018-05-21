@@ -23,7 +23,7 @@
     /// This class is responsible for
     /// defining static data related to unexpected dna-to-serology mappings.
     /// </summary>
-    public static class UnexpectedMappings
+    public static class UnexpectedRelDnaSerMappings
     {
         public static HlaType[] PermittedExceptions =
         {
