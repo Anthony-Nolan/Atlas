@@ -8,6 +8,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     {
         void RecreateDictionary();
     }
+
+    /// <summary>
+    /// This class is responsible for
+    /// managing the contents of the matching dictionary,
+    /// including its (re)creation.
+    /// </summary>
     public class ManageDictionaryService : IManageDictionaryService
     {
         private readonly IHlaMatchingService matchingService;
