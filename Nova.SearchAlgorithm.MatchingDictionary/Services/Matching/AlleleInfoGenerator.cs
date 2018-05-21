@@ -9,6 +9,11 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
+    /// <summary>
+    /// This class is responsible for 
+    /// pulling together the data from different WMDA files
+    /// that is required for matching on single allele typings.
+    /// </summary>
     internal class AlleleInfoGenerator
     {
         public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
@@ -17,11 +22,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var confidentialAlleles = WmdaDataFactory.GetData<Confidential>(repo, filter);
             var pGroups = WmdaDataFactory.GetData<HlaNomP>(repo, filter);
 
-            var allMatching = allAlleles
+            var alleleInfo = allAlleles
                 .Where(allele => !confidentialAlleles.Contains(allele as IWmdaHlaType))
                 .Select(allele => GetInfoForSingleAllele(allele, pGroups));
 
-            return allMatching;
+            return alleleInfo;
         }
 
         private static IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom alleleHlaNom, IEnumerable<HlaNomP> allPGroups)

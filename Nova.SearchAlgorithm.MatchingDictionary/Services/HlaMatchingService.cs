@@ -15,6 +15,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter);
     }
 
+    /// <summary>
+    /// This class is responsible for
+    /// creating a complete collection of matched HLA
+    /// by invoking the generation and compilation of matching info
+    /// that is extracted from the WMDA files.
+    /// </summary>
     public class HlaMatchingService : IHlaMatchingService
     {
         private readonly IWmdaRepository _repository;

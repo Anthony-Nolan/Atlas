@@ -9,6 +9,11 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
+    /// <summary>
+    /// This class is responsible for 
+    /// pulling together the data from different WMDA files
+    /// that is required for matching on serology typings.
+    /// </summary>
     internal class SerologyInfoGenerator
     {
         private class SerologyFamily
@@ -68,9 +73,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         {
             var relSerSer = WmdaDataFactory.GetData<RelSerSer>(repo, filter);
             var allSerology = WmdaDataFactory.GetData<HlaNom>(repo, filter);
-            var allMatching = allSerology.Select(ser => GetInfoForSingleSerology(relSerSer, ser));
+            var serologyInfo = allSerology.Select(ser => GetInfoForSingleSerology(relSerSer, ser));
 
-            return allMatching;
+            return serologyInfo;
         }
 
         private static ISerologyInfoForMatching GetInfoForSingleSerology(IEnumerable<RelSerSer> relSerSer, HlaNom ser)
