@@ -15,6 +15,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
+    /// <summary>
+    /// This class is responsible for
+    /// storage and querying of the matched HLA dictionary dataset.
+    /// </summary>
     public class MatchedHlaRepository : IMatchedHlaRepository
     {
         private const int BatchSize = 100;

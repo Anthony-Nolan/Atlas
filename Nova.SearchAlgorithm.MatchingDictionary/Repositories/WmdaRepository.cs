@@ -14,6 +14,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         IEnumerable<string> VersionReport { get; }
     }
 
+    /// <summary>
+    /// This class is responsible for
+    /// importing the WMDA files
+    /// and preparing the file contents for data extraction.
+    /// </summary>
     public sealed class WmdaRepository : IWmdaRepository
     {
         public static WmdaRepository Instance { get; } = new WmdaRepository();
