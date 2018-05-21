@@ -24,6 +24,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         NmdpCode = 4
     }
 
+    /// <summary>
+    /// This class is responsible for
+    /// holding the HLA data that makes up the matching dictionary.
+    /// It is optimised for dictionary lookups.
+    /// </summary>
     public class MatchingDictionaryEntry : IMatchingHlaLookupResult, IEquatable<MatchingDictionaryEntry>
     {
         public MatchLocus MatchLocus { get; }
