@@ -14,6 +14,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     {
         Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName);
     }
+
+    /// <summary>
+    /// This class is responsible for
+    /// determining the dictionary lookup strategy
+    /// for submitted HLA types.
+    /// </summary>
     public class DictionaryLookupService : IDictionaryLookupService
     {
         private readonly IMatchedHlaRepository dictionaryRepository;

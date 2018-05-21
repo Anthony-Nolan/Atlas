@@ -5,6 +5,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
+    /// <summary>
+    /// This class is responsible for
+    /// looking up a serology typing in the matching dictionary.
+    /// </summary>
     internal class SerologyLookup : MatchingDictionaryLookup
     {
         public SerologyLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)

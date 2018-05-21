@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
+    /// <summary>
+    /// This class is responsible for
+    /// looking up an NMDP code typing in the matching dictionary.
+    /// </summary>
     internal class NmdpCodeLookup : MatchingDictionaryLookup
     {
         private readonly IHlaServiceClient hlaServiceClient;

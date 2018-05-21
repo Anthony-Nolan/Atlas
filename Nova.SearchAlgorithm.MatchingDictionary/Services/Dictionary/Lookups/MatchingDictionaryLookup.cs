@@ -6,6 +6,11 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
+    /// <summary>
+    /// This class is responsible for
+    /// providing base functionality 
+    /// for the different types of dictionary lookup.
+    /// </summary>
     internal abstract class MatchingDictionaryLookup
     {
         private readonly IMatchedHlaRepository dictionaryRepository;
