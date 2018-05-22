@@ -11,11 +11,11 @@ namespace Nova.SearchAlgorithm.Data
     {
         DbSet<Donor> Donors { get; set; }
         DbSet<PGroupName> PGroupNames { get; set; }
-        DbSet<MatchingGroupAtA> MatchingGroupsAtA { get; set; }
-        DbSet<MatchingGroupAtB> MatchingGroupsAtB { get; set; }
-        DbSet<MatchingGroupAtC> MatchingGroupsAtC { get; set; }
-        DbSet<MatchingGroupAtDrb1> MatchingGroupsAtDrb1 { get; set; }
-        DbSet<MatchingGroupAtDqb1> MatchingGroupsAtDqb1 { get; set; }
+        DbSet<MatchingHlaAtA> MatchingHlaAtA { get; set; }
+        DbSet<MatchingHlaAtB> MatchingHlaAtB { get; set; }
+        DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
+        DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
+        DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
     }
 
     public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
@@ -45,10 +45,10 @@ namespace Nova.SearchAlgorithm.Data
 
         public DbSet<Donor> Donors { get; set; }
         public DbSet<PGroupName> PGroupNames { get; set; }
-        public DbSet<MatchingGroupAtA> MatchingGroupsAtA { get; set; }
-        public DbSet<MatchingGroupAtB> MatchingGroupsAtB { get; set; }
-        public DbSet<MatchingGroupAtC> MatchingGroupsAtC { get; set; }
-        public DbSet<MatchingGroupAtDrb1> MatchingGroupsAtDrb1 { get; set; }
-        public DbSet<MatchingGroupAtDqb1> MatchingGroupsAtDqb1 { get; set; }
+        public DbSet<MatchingHlaAtA> MatchingHlaAtA { get; set; }
+        public DbSet<MatchingHlaAtB> MatchingHlaAtB { get; set; }
+        public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
+        public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
+        public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
     }
 }

@@ -44,24 +44,24 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
             foreach (string locus in new List<string> { "A", "B", "C", "DRB1", "DQB1" })
             {
-                context.Database.ExecuteSqlCommand($@"DELETE FROM MatchingGroupAt{locus} WHERE DonorId = " + donor.DonorId);
+                context.Database.ExecuteSqlCommand($@"DELETE FROM MatchingHlaAt{locus} WHERE DonorId = {donor.DonorId}");
             }
 
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtA, donor.MatchingHla.A_1, TypePositions.One, () => new MatchingGroupAtA());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtA, donor.MatchingHla.A_2, TypePositions.Two, () => new MatchingGroupAtA());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtB, donor.MatchingHla.B_1, TypePositions.One, () => new MatchingGroupAtB());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtB, donor.MatchingHla.B_2, TypePositions.Two, () => new MatchingGroupAtB());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtC, donor.MatchingHla.C_1, TypePositions.One, () => new MatchingGroupAtC());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtC, donor.MatchingHla.C_2, TypePositions.Two, () => new MatchingGroupAtC());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtDrb1, donor.MatchingHla.DRB1_1, TypePositions.One, () => new MatchingGroupAtDrb1());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtDrb1, donor.MatchingHla.DRB1_2, TypePositions.Two, () => new MatchingGroupAtDrb1());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtDqb1, donor.MatchingHla.DQB1_1, TypePositions.One, () => new MatchingGroupAtDqb1());
-            InsertPGroupMatches(donor.DonorId, context.MatchingGroupsAtDqb1, donor.MatchingHla.DQB1_2, TypePositions.Two, () => new MatchingGroupAtDqb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_1, TypePositions.One, () => new MatchingHlaAtA());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_2, TypePositions.Two, () => new MatchingHlaAtA());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtB, donor.MatchingHla.B_1, TypePositions.One, () => new MatchingHlaAtB());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtB, donor.MatchingHla.B_2, TypePositions.Two, () => new MatchingHlaAtB());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtC, donor.MatchingHla.C_1, TypePositions.One, () => new MatchingHlaAtC());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtC, donor.MatchingHla.C_2, TypePositions.Two, () => new MatchingHlaAtC());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDrb1, donor.MatchingHla.DRB1_1, TypePositions.One, () => new MatchingHlaAtDrb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDrb1, donor.MatchingHla.DRB1_2, TypePositions.Two, () => new MatchingHlaAtDrb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDqb1, donor.MatchingHla.DQB1_1, TypePositions.One, () => new MatchingHlaAtDqb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDqb1, donor.MatchingHla.DQB1_2, TypePositions.Two, () => new MatchingHlaAtDqb1());
 
             context.SaveChanges();
         }
 
-        public void InsertPGroupMatches<T>(int donorId, DbSet<T> table, ExpandedHla hla, TypePositions position, Func<T> maker) where T : MatchingGroup
+        public void InsertPGroupMatches<T>(int donorId, DbSet<T> table, ExpandedHla hla, TypePositions position, Func<T> maker) where T : MatchingHla
         {
             if (hla != null && hla.PGroups != null)
             {
@@ -77,16 +77,16 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        private PGroupName FindOrCreatePGroup(string pGroupName)
+        private PGroupName FindOrCreatePGroup(string PGroupName)
         {
-            var existing = context.PGroupNames.FirstOrDefault(pg => pg.Name == pGroupName);
+            var existing = context.PGroupNames.FirstOrDefault(pg => pg.Name == PGroupName);
 
             if (existing != null)
             {
                 return existing;
             }
 
-            var newPGroup = context.PGroupNames.Add(new PGroupName { Name = pGroupName });
+            var newPGroup = context.PGroupNames.Add(new PGroupName { Name = PGroupName });
             context.SaveChanges();
             return newPGroup;
         }
@@ -121,11 +121,11 @@ FROM (
                 ) AS source
             UNPIVOT (TypePosition FOR MatchingDirection IN (GvH, HvG)) AS unpivoted
             ) ByDirection
-        GROUP BY DonorId, MatchingDirection, Locus
+        Hla BY DonorId, MatchingDirection, Locus
         ) ByLocus
-    GROUP BY DonorId, Locus
+    Hla BY DonorId, Locus
     ) ByDonor
-GROUP BY DonorId
+Hla BY DonorId
 HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
 ORDER BY TotalMatchCount DESC";
 
@@ -136,10 +136,10 @@ ORDER BY TotalMatchCount DESC";
         {
             var names = typePosition.Equals(TypePositions.One) ? mismatch.HlaNamesToMatchInPositionOne : mismatch.HlaNamesToMatchInPositionTwo;
             return $@"SELECT d.DonorId, '{locus}' as Locus, d.TypePosition AS GvH, {(int)typePosition} AS HvG
-                      FROM MatchingGroupAt{locus} d
-                      JOIN dbo.PGroupNames p ON p.Id = d.Pgroup_Id 
+                      FROM MatchingHlaAt{locus} d
+                      JOIN dbo.PGroupNames p ON p.Id = d.PGroup_Id 
                       WHERE [Name] IN('{string.Join("', '", names)}')
-                      GROUP BY d.DonorId, d.TypePosition";
+                      Hla BY d.DonorId, d.TypePosition";
         }
 
         public void UpdateDonorWithNewHla(InputDonor donor)

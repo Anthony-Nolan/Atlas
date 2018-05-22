@@ -1,6 +1,6 @@
 ﻿namespace Nova.SearchAlgorithm.Data.Entity
 {
-    public abstract class MatchingGroup
+    public abstract class MatchingHla
     {
         public int Id { get; set; }
         public int DonorId { get; set; }

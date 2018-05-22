@@ -2,8 +2,8 @@
 
 namespace Nova.SearchAlgorithm.Data.Entity
 {
-    [Table("MatchingGroupAtB")]
-    public class MatchingGroupAtB : MatchingGroup
+    [Table("MatchingHlaAtC")]
+    public class MatchingHlaAtC : MatchingHla
     {
     }
 }
