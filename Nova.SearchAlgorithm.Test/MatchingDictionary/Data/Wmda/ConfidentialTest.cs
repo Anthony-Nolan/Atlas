@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
     [TestFixtureSource(typeof(MolecularTestFixtureArgs), "Args")]
     public class ConfidentialTest : WmdaDataTestBase<Confidential>
     {
-        public ConfidentialTest(Func<IWmdaHlaType, bool> filter, IEnumerable<string> matchLoci) 
+        public ConfidentialTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci) 
             : base(filter, matchLoci)
         {
         }
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
                 new Confidential("DQB1*", "03:23:03")
             };
 
-            Assert.IsTrue(confidentialAlleles.SequenceEqual(AllHlaTypes));
+            Assert.IsTrue(confidentialAlleles.SequenceEqual(AllHlaTypings));
         }
     }
 }

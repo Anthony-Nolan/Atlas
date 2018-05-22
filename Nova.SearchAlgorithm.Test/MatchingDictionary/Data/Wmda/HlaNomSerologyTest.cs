@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
     [UseReporter(typeof(DiffReporter))]
     public class HlaNomSerologyTest : WmdaDataTestBase<HlaNom>
     {
-        public HlaNomSerologyTest(Func<IWmdaHlaType, bool> filter, IEnumerable<string> matchLoci)
+        public HlaNomSerologyTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
             : base(filter, matchLoci)
         {
         }
@@ -26,17 +26,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
             var fourDigit = new HlaNom("DR", "1404");
             var deletedWithIdentical = new HlaNom("Cw", "11", true, "1");
 
-            Assert.AreEqual(oneDigit, GetSingleWmdaHlaType("DQ", "1"));
-            Assert.AreEqual(twoDigit, GetSingleWmdaHlaType("A", "29"));
-            Assert.AreEqual(threeDigit, GetSingleWmdaHlaType("B", "703"));
-            Assert.AreEqual(fourDigit, GetSingleWmdaHlaType("DR", "1404"));
-            Assert.AreEqual(deletedWithIdentical, GetSingleWmdaHlaType("Cw", "11"));
+            Assert.AreEqual(oneDigit, GetSingleWmdaHlaTyping("DQ", "1"));
+            Assert.AreEqual(twoDigit, GetSingleWmdaHlaTyping("A", "29"));
+            Assert.AreEqual(threeDigit, GetSingleWmdaHlaTyping("B", "703"));
+            Assert.AreEqual(fourDigit, GetSingleWmdaHlaTyping("DR", "1404"));
+            Assert.AreEqual(deletedWithIdentical, GetSingleWmdaHlaTyping("Cw", "11"));
         }
 
         [Test]
         public void HlaNomContainsAllExpectedSerology()
         {
-            var str = string.Join("\r\n", AllHlaTypes
+            var str = string.Join("\r\n", AllHlaTypings
                 .OrderBy(s => s.WmdaLocus)
                 .ThenBy(s => int.Parse(s.Name))
                 .Select(s => $"{s.WmdaLocus}\t{s.Name}")

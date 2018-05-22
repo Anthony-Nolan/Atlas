@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
     [TestFixture]
     public class AlleleModelTest
@@ -11,26 +11,26 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
         {
             new object[]
             {
-                new Allele("DQB1*", "03:01:01:01"),
-                new Allele("A*", "24:02:01:02L"),
-                new Allele("B*", "27:05:02:04Q"),
-                new Allele("B*", "44:02:01:02S"),
+                new AlleleTyping("DQB1*", "03:01:01:01"),
+                new AlleleTyping("A*", "24:02:01:02L"),
+                new AlleleTyping("B*", "27:05:02:04Q"),
+                new AlleleTyping("B*", "44:02:01:02S"),
                 // Note: made-up alleles, as no "A" or "C" alleles have yet been found
-                new Allele("DRB1*", "01:01:01:01A"),
-                new Allele("DRB1*", "01:01:01:01C"),
-                new Allele("A*", "29:01:01:02N")
+                new AlleleTyping("DRB1*", "01:01:01:01A"),
+                new AlleleTyping("DRB1*", "01:01:01:01C"),
+                new AlleleTyping("A*", "29:01:01:02N")
             }
         };
 
         [TestCaseSource(nameof(_alleles))]
         public void AlleleExpressionCorrectlyIdentified(
-            Allele normalAllele,
-            Allele lowAllele,
-            Allele questionableAllele,
-            Allele secretedAllele,
-            Allele aberrantAllele,
-            Allele cytoplasmAllele,
-            Allele nullAllele)
+            AlleleTyping normalAllele,
+            AlleleTyping lowAllele,
+            AlleleTyping questionableAllele,
+            AlleleTyping secretedAllele,
+            AlleleTyping aberrantAllele,
+            AlleleTyping cytoplasmAllele,
+            AlleleTyping nullAllele)
         {
             Assert.AreEqual(normalAllele.ExpressionSuffix, "");
             Assert.AreEqual(lowAllele.ExpressionSuffix, "L");
@@ -43,13 +43,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
 
         [TestCaseSource(nameof(_alleles))]
         public void NullExpresserCorrectlyIdentified(
-            Allele normalAllele,
-            Allele lowAllele,
-            Allele questionableAllele,
-            Allele secretedAllele,
-            Allele aberrantAllele,
-            Allele cytoplasmAllele,
-            Allele nullAllele)
+            AlleleTyping normalAllele,
+            AlleleTyping lowAllele,
+            AlleleTyping questionableAllele,
+            AlleleTyping secretedAllele,
+            AlleleTyping aberrantAllele,
+            AlleleTyping cytoplasmAllele,
+            AlleleTyping nullAllele)
         {
             Assert.IsFalse(normalAllele.IsNullExpresser);
             Assert.IsFalse(lowAllele.IsNullExpresser);
@@ -62,13 +62,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
 
         [TestCaseSource(nameof(_alleles))]
         public void AlleleFieldsCorrectlyExtracted(
-            Allele normalAllele,
-            Allele lowAllele,
-            Allele questionableAllele,
-            Allele secretedAllele,
-            Allele aberrantAllele,
-            Allele cytoplasmAllele,
-            Allele nullAllele)
+            AlleleTyping normalAllele,
+            AlleleTyping lowAllele,
+            AlleleTyping questionableAllele,
+            AlleleTyping secretedAllele,
+            AlleleTyping aberrantAllele,
+            AlleleTyping cytoplasmAllele,
+            AlleleTyping nullAllele)
         {
             Assert.IsTrue(normalAllele.Fields.SequenceEqual(new[] { "03", "01", "01", "01" }));
             Assert.IsTrue(lowAllele.Fields.SequenceEqual(new[] { "24", "02", "01", "02" }));
@@ -81,13 +81,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
 
         [TestCaseSource(nameof(_alleles))]
         public void TwoFieldNameCorrectlyConstructed(
-            Allele normalAllele,
-            Allele lowAllele,
-            Allele questionableAllele,
-            Allele secretedAllele,
-            Allele aberrantAllele,
-            Allele cytoplasmAllele,
-            Allele nullAllele)
+            AlleleTyping normalAllele,
+            AlleleTyping lowAllele,
+            AlleleTyping questionableAllele,
+            AlleleTyping secretedAllele,
+            AlleleTyping aberrantAllele,
+            AlleleTyping cytoplasmAllele,
+            AlleleTyping nullAllele)
         {
             Assert.AreEqual(normalAllele.TwoFieldName, "03:01");
             Assert.AreEqual(lowAllele.TwoFieldName, "24:02L");

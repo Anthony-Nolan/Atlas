@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public interface IHlaMatchingService
     {
         IEnumerable<IMatchedHla> GetMatchedHla(
-            Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter);
+            Func<IWmdaHlaTyping, bool> serologyFilter, Func<IWmdaHlaTyping, bool> molecularFilter);
     }
 
     public class HlaMatchingService : IHlaMatchingService
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         public IEnumerable<IMatchedHla> GetMatchedHla(
-            Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
+            Func<IWmdaHlaTyping, bool> serologyFilter, Func<IWmdaHlaTyping, bool> molecularFilter)
         {
             var hlaInfo = GetHlaInfoForMatching(serologyFilter, molecularFilter);
             var hlaMatchers = new List<IHlaMatcher>{ new AlleleMatcher(), new SerologyMatcher() };
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         private HlaInfoForMatching GetHlaInfoForMatching(
-            Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter)
+            Func<IWmdaHlaTyping, bool> serologyFilter, Func<IWmdaHlaTyping, bool> molecularFilter)
         {
             var alleleInfoForMatching =
                 new AlleleInfoGenerator().GetAlleleInfoForMatching(_repository, molecularFilter).ToList();

@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum SerologySubtype
     {
-        NotSerologyType = 0,
+        NotSerologyTyping = 0,
         NotSplit = 1,
         Broad = 2,
         Split = 3,

@@ -6,6 +6,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
 {
     internal interface IWmdaDataExtractor
     {
-        IEnumerable<IWmdaHlaType> ExtractData(IWmdaRepository repo);
+        IEnumerable<IWmdaHlaTyping> ExtractData(IWmdaRepository repo);
     }
 }

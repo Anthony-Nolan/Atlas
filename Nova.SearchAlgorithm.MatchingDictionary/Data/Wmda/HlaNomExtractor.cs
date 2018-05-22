@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
 {
     internal class HlaNomExtractor : IWmdaDataExtractor
     {
-       public IEnumerable<IWmdaHlaType> ExtractData(IWmdaRepository repo)
+       public IEnumerable<IWmdaHlaTyping> ExtractData(IWmdaRepository repo)
         {
             var data = new List<HlaNom>();
 

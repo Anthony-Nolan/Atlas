@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
     [TestFixtureSource(typeof(MolecularTestFixtureArgs), "Args")]
     public class RelDnaSerTest : WmdaDataTestBase<RelDnaSer>
     {
-        public RelDnaSerTest(Func<IWmdaHlaType, bool> filter, IEnumerable<string> matchLoci)
+        public RelDnaSerTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
             : base(filter, matchLoci)
         {
         }
@@ -62,17 +62,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
                 new SerologyAssignment("44", Assignment.Expert)
             });
 
-            Assert.AreEqual(alleleWithUnambiguous, GetSingleWmdaHlaType("A*", "01:01:01:01"));
-            Assert.AreEqual(alleleWithPossible, GetSingleWmdaHlaType("B*", "07:31"));
-            Assert.AreEqual(alleleWithAssumed, GetSingleWmdaHlaType("C*", "04:04:01:01"));
-            Assert.AreEqual(alleleWithExpert, GetSingleWmdaHlaType("C*", "14:02:01:01"));
-            Assert.AreEqual(alleleWithMultiple, GetSingleWmdaHlaType("A*", "02:55"));
-            Assert.AreEqual(alleleWithNone, GetSingleWmdaHlaType("B*", "83:01"));
+            Assert.AreEqual(alleleWithUnambiguous, GetSingleWmdaHlaTyping("A*", "01:01:01:01"));
+            Assert.AreEqual(alleleWithPossible, GetSingleWmdaHlaTyping("B*", "07:31"));
+            Assert.AreEqual(alleleWithAssumed, GetSingleWmdaHlaTyping("C*", "04:04:01:01"));
+            Assert.AreEqual(alleleWithExpert, GetSingleWmdaHlaTyping("C*", "14:02:01:01"));
+            Assert.AreEqual(alleleWithMultiple, GetSingleWmdaHlaTyping("A*", "02:55"));
+            Assert.AreEqual(alleleWithNone, GetSingleWmdaHlaTyping("B*", "83:01"));
 
-            Assert.AreEqual(nullAllele, GetSingleWmdaHlaType("DQB1*", "02:18N"));
-            Assert.AreEqual(lowAllele, GetSingleWmdaHlaType("B*", "39:01:01:02L"));
-            Assert.AreEqual(questionableAllele, GetSingleWmdaHlaType("C*", "07:121Q"));
-            Assert.AreEqual(secretedAllele, GetSingleWmdaHlaType("B*", "44:02:01:02S"));
+            Assert.AreEqual(nullAllele, GetSingleWmdaHlaTyping("DQB1*", "02:18N"));
+            Assert.AreEqual(lowAllele, GetSingleWmdaHlaTyping("B*", "39:01:01:02L"));
+            Assert.AreEqual(questionableAllele, GetSingleWmdaHlaTyping("C*", "07:121Q"));
+            Assert.AreEqual(secretedAllele, GetSingleWmdaHlaTyping("B*", "44:02:01:02S"));
         }
     }
 }

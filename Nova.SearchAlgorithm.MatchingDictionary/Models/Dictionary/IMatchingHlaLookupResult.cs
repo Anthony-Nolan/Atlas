@@ -1,5 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
 {

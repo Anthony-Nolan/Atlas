@@ -2,7 +2,7 @@
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class HlaNom : IWmdaHlaType, IEquatable<HlaNom>
+    public class HlaNom : IWmdaHlaTyping, IEquatable<HlaNom>
     {
         public string WmdaLocus { get; }
         public string Name { get; }

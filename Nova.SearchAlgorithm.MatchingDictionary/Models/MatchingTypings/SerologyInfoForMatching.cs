@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
     public interface ISerologyInfoForMatching : IMatchedOn, IMatchingSerologies
     {
@@ -12,20 +12,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 
     public class SerologyInfoForMatching : ISerologyInfoForMatching, IEquatable<ISerologyInfoForMatching>
     {
-        public HlaType HlaType { get; }
-        public HlaType TypeUsedInMatching { get; }
-        public IEnumerable<Serology> MatchingSerologies { get; }
+        public HlaTyping HlaTyping { get; }
+        public HlaTyping TypingUsedInMatching { get; }
+        public IEnumerable<SerologyTyping> MatchingSerologies { get; }
 
-        public SerologyInfoForMatching(Serology hlaType, HlaType typeUsedInMatching, IEnumerable<Serology> matchingSerologies)
+        public SerologyInfoForMatching(SerologyTyping hlaTyping, HlaTyping typingUsedInMatching, IEnumerable<SerologyTyping> matchingSerologies)
         {
-            HlaType = hlaType;
-            TypeUsedInMatching = typeUsedInMatching;
+            HlaTyping = hlaTyping;
+            TypingUsedInMatching = typingUsedInMatching;
             MatchingSerologies = matchingSerologies;
         }
 
         public override string ToString()
         {
-            return $"{HlaType} ({TypeUsedInMatching}), " +
+            return $"{HlaTyping} ({TypingUsedInMatching}), " +
                    $"matchingSerologies: {string.Join("; ", MatchingSerologies.Select(m => m))}";
         }
 
@@ -34,8 +34,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return
-                Equals(HlaType, other.HlaType)
-                && Equals(TypeUsedInMatching, other.TypeUsedInMatching)
+                Equals(HlaTyping, other.HlaTyping)
+                && Equals(TypingUsedInMatching, other.TypingUsedInMatching)
                 && MatchingSerologies.SequenceEqual(other.MatchingSerologies);
         }
 
@@ -50,8 +50,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             unchecked
             {
-                var hashCode = HlaType.GetHashCode();
-                hashCode = (hashCode * 397) ^ TypeUsedInMatching.GetHashCode();
+                var hashCode = HlaTyping.GetHashCode();
+                hashCode = (hashCode * 397) ^ TypingUsedInMatching.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingSerologies.GetHashCode();
                 return hashCode;
             }

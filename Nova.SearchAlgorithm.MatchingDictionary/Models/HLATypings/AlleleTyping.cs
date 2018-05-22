@@ -2,16 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
-    public class Allele : HlaType
+    public class AlleleTyping : HlaTyping
     {
         public IEnumerable<string> Fields { get; }
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
 
-        public Allele(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
+        public AlleleTyping(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
         {
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = AlleleExpression.NullExpressionSuffixes.Contains(ExpressionSuffix);
@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
             TwoFieldName = fields.Count >= 2 ? $"{fields.ElementAt(0)}:{fields.ElementAt(1)}{ExpressionSuffix}" : name;
         }
 
-        public Allele(Allele allele) : this(allele.WmdaLocus, allele.Name, allele.IsDeleted)
+        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.WmdaLocus, alleleTyping.Name, alleleTyping.IsDeleted)
         {
         }
 

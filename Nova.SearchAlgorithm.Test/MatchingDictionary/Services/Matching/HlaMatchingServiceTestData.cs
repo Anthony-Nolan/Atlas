@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories;

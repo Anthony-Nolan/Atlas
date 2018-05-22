@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
     public interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups
     {
@@ -12,20 +12,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 
     public class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>
     {
-        public HlaType HlaType { get; }
-        public HlaType TypeUsedInMatching { get; }
+        public HlaTyping HlaTyping { get; }
+        public HlaTyping TypingUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
 
-        public AlleleInfoForMatching(Allele hlaType, Allele typeUsedInMatching, IEnumerable<string> pGroups)
+        public AlleleInfoForMatching(AlleleTyping hlaTyping, AlleleTyping typingUsedInMatching, IEnumerable<string> pGroups)
         {
-            HlaType = hlaType;
-            TypeUsedInMatching = typeUsedInMatching;
+            HlaTyping = hlaTyping;
+            TypingUsedInMatching = typingUsedInMatching;
             MatchingPGroups = pGroups;
         }
 
         public override string ToString()
         {
-            return $"{HlaType} ({TypeUsedInMatching}), " +
+            return $"{HlaTyping} ({TypingUsedInMatching}), " +
                    $"matchingPGroup: {string.Join("/", MatchingPGroups.Select(m => m))}";
         }
 
@@ -34,8 +34,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return
-                Equals(HlaType, other.HlaType)
-                && Equals(TypeUsedInMatching, other.TypeUsedInMatching)
+                Equals(HlaTyping, other.HlaTyping)
+                && Equals(TypingUsedInMatching, other.TypingUsedInMatching)
                 && MatchingPGroups.SequenceEqual(other.MatchingPGroups);
         }
 
@@ -50,8 +50,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             unchecked
             {
-                var hashCode = (HlaType != null ? HlaType.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ TypeUsedInMatching.GetHashCode();
+                var hashCode = (HlaTyping != null ? HlaTyping.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ TypingUsedInMatching.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingPGroups.GetHashCode();
                 return hashCode;
             }

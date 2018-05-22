@@ -1,6 +1,6 @@
 ﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public interface IWmdaHlaType
+    public interface IWmdaHlaTyping
     {
         string WmdaLocus { get; }
         string Name { get; }

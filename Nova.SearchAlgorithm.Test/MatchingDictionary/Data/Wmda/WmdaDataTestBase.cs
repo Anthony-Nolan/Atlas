@@ -9,32 +9,32 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
 {
-    public class WmdaDataTestBase<TWmdaHlaType> where TWmdaHlaType : IWmdaHlaType
+    public class WmdaDataTestBase<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
         protected IWmdaRepository Repo;
-        protected List<TWmdaHlaType> AllHlaTypes;
+        protected List<TWmdaHlaTyping> AllHlaTypings;
         protected IEnumerable<string> MatchLoci;
 
-        public WmdaDataTestBase(Func<IWmdaHlaType, bool> filter, IEnumerable<string> matchLoci)
+        public WmdaDataTestBase(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
         {
             Repo = MockWmdaRepository.Instance;
-            AllHlaTypes = WmdaDataFactory.GetData<TWmdaHlaType>(Repo, filter).ToList();
+            AllHlaTypings = WmdaDataFactory.GetData<TWmdaHlaTyping>(Repo, filter).ToList();
             MatchLoci = matchLoci;
         }
 
         [Test]
         public void WmdaCollectionOnlyContainsMatchLoci()
         {
-            var collectionCopy = new List<TWmdaHlaType>(AllHlaTypes);
+            var collectionCopy = new List<TWmdaHlaTyping>(AllHlaTypings);
             Assert.IsNotEmpty(collectionCopy);
 
             collectionCopy.RemoveAll(m => MatchLoci.Contains(m.WmdaLocus));
             Assert.IsEmpty(collectionCopy);
         }
 
-        protected TWmdaHlaType GetSingleWmdaHlaType(string wmdaLocus, string name)
+        protected TWmdaHlaTyping GetSingleWmdaHlaTyping(string wmdaLocus, string name)
         {
-            return AllHlaTypes.Single(s => s.WmdaLocus.Equals(wmdaLocus) && s.Name.Equals(name));
+            return AllHlaTypings.Single(s => s.WmdaLocus.Equals(wmdaLocus) && s.Name.Equals(name));
         }
     }
 }

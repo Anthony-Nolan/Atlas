@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
@@ -22,15 +22,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             List<RelDnaSer> relDnaSer,
             ISerologyInfoForMatching serologyToMatch)
         {
-            var matchLocus = serologyToMatch.TypeUsedInMatching.MatchLocus;
+            var matchLocus = serologyToMatch.TypingUsedInMatching.MatchLocus;
             var matchingSerologies = serologyToMatch.MatchingSerologies.Select(m => m.Name);
 
             var matchingPGroups =
                 from allele in allelesToPGroups
                 join dnaToSer in relDnaSer
-                    on new { allele.TypeUsedInMatching.WmdaLocus, allele.TypeUsedInMatching.Name }
+                    on new { allele.TypingUsedInMatching.WmdaLocus, allele.TypingUsedInMatching.Name }
                     equals new { dnaToSer.WmdaLocus, dnaToSer.Name }
-                where allele.TypeUsedInMatching.MatchLocus.Equals(matchLocus)
+                where allele.TypingUsedInMatching.MatchLocus.Equals(matchLocus)
                       && dnaToSer.Serologies.Intersect(matchingSerologies).Any()
                 select allele.MatchingPGroups;
 

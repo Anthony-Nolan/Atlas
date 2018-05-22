@@ -1,11 +1,11 @@
 ﻿using System;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
     [TestFixture]
-    public class HlaTypeModelTest
+    public class HlaTypingModelTest
     {
         [Test]
         public void SerologyWmdaLocusConvertedToExpectedMatchLocus()
@@ -13,11 +13,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
             // can use a constant hla name here, as we are only testing locus validity
             const string hlaName = "1";
 
-            var hlaA = new HlaType("A", hlaName);
-            var hlaB = new HlaType("B", hlaName);
-            var hlaC = new HlaType("Cw", hlaName);
-            var hlaDqb1 = new HlaType("DQ", hlaName);
-            var hlaDrb1 = new HlaType("DR", hlaName);
+            var hlaA = new HlaTyping("A", hlaName);
+            var hlaB = new HlaTyping("B", hlaName);
+            var hlaC = new HlaTyping("Cw", hlaName);
+            var hlaDqb1 = new HlaTyping("DQ", hlaName);
+            var hlaDrb1 = new HlaTyping("DR", hlaName);
 
             Assert.AreEqual(hlaA.MatchLocus, MatchLocus.A);
             Assert.AreEqual(hlaB.MatchLocus, MatchLocus.B);
@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
 
             Assert.Throws<ArgumentException>(() =>
             {
-                var hlaType = new HlaType("DR", "51");
+                var hlaType = new HlaTyping("DR", "51");
             });
         }
 
@@ -37,11 +37,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
             // can use a constant hla name here, as we are only testing locus validity
             const string hlaName = "01:01:01:01";
 
-            var hlaA = new HlaType("A*", hlaName);
-            var hlaB = new HlaType("B*", hlaName);
-            var hlaC = new HlaType("C*", hlaName);
-            var hlaDqb1 = new HlaType("DQB1*", hlaName);
-            var hlaDrb1 = new HlaType("DRB1*", hlaName);
+            var hlaA = new HlaTyping("A*", hlaName);
+            var hlaB = new HlaTyping("B*", hlaName);
+            var hlaC = new HlaTyping("C*", hlaName);
+            var hlaDqb1 = new HlaTyping("DQB1*", hlaName);
+            var hlaDrb1 = new HlaTyping("DRB1*", hlaName);
 
             Assert.AreEqual(hlaA.MatchLocus, MatchLocus.A);
             Assert.AreEqual(hlaB.MatchLocus, MatchLocus.B);
@@ -58,8 +58,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypes
 
             Assert.Throws<ArgumentException>(() =>
             {
-                var hlaDbp1 = new HlaType("DPB1*", hlaName);
-                var hlaMadeUpLocus = new HlaType("FOO", hlaName);
+                var hlaDbp1 = new HlaTyping("DPB1*", hlaName);
+                var hlaMadeUpLocus = new HlaTyping("FOO", hlaName);
             });
         }
     }

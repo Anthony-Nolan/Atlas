@@ -1,7 +1,7 @@
 ﻿using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
                     lookupName,
                     TypingMethod.Molecular,
                     MolecularSubtype.NmdpCode,
-                    SerologySubtype.NotSerologyType,
+                    SerologySubtype.NotSerologyTyping,
                     entries.SelectMany(p => p.MatchingPGroups).Distinct(),
                     entries.SelectMany(s => s.MatchingSerologies).Distinct()
                 );

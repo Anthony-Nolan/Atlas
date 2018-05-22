@@ -2,7 +2,7 @@
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class Confidential : IWmdaHlaType, IEquatable<IWmdaHlaType>
+    public class Confidential : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
     {
         public string WmdaLocus { get; }
         public string Name { get; }
@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             return $"locus: {WmdaLocus}, name: {Name}";
         }
 
-        public bool Equals(IWmdaHlaType other)
+        public bool Equals(IWmdaHlaTyping other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is IWmdaHlaType other && Equals(other);
+            return obj is IWmdaHlaTyping other && Equals(other);
         }
 
         public override int GetHashCode()

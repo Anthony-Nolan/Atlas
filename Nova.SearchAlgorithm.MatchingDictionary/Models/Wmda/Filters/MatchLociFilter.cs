@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters
 {
     public class MatchLociFilter
     {
-        public Func<IWmdaHlaType, bool> Filter { get; set; }
+        public Func<IWmdaHlaTyping, bool> Filter { get; set; }
         protected List<string> MatchLoci { get; set; }
     }
 }
