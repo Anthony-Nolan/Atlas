@@ -1,5 +1,5 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
 using System.Web.Http;

@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
 {
     internal class ConfidentialExtractor : IWmdaDataExtractor
     {
-       public IEnumerable<IWmdaHlaType> ExtractData(IWmdaRepository repo)
+       public IEnumerable<IWmdaHlaTyping> ExtractData(IWmdaRepository repo)
         {
             var data = new List<Confidential>();
             var keyword = "Confidential";

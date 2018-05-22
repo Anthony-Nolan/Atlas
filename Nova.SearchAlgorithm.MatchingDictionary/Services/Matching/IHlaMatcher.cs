@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching

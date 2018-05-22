@@ -1,16 +1,16 @@
 ﻿using System;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
     public class RelDnaSerMatch : IEquatable<RelDnaSerMatch>
     {
-        public Serology Serology { get; }
+        public SerologyTyping SerologyTyping { get; }
         public bool IsUnexpected { get; set; }
 
-        public RelDnaSerMatch(Serology serology, bool isUnexpected = false)
+        public RelDnaSerMatch(SerologyTyping serologyTyping, bool isUnexpected = false)
         {
-            Serology = serology;
+            SerologyTyping = serologyTyping;
             IsUnexpected = isUnexpected;
         }
 
@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Serology.Equals(other.Serology) && IsUnexpected == other.IsUnexpected;
+            return SerologyTyping.Equals(other.SerologyTyping) && IsUnexpected == other.IsUnexpected;
         }
 
         public override bool Equals(object obj)
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
 
         public override int GetHashCode()
         {
-            return Serology.GetHashCode();
+            return SerologyTyping.GetHashCode();
         }
     }
 }

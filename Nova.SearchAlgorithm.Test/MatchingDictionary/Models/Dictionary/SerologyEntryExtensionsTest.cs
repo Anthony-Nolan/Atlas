@@ -1,5 +1,5 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
@@ -14,17 +14,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.Dictionary
         {
             new object[]
             {
-                new List<Serology>{new Serology("A", "1", SerologySubtype.NotSplit)},
+                new List<SerologyTyping>{new SerologyTyping("A", "1", SerologySubtype.NotSplit)},
                 new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit)}
             },
             new object[]
             {
-                new List<Serology>
+                new List<SerologyTyping>
                 {
-                    new Serology("B", "51", SerologySubtype.Split),
-                    new Serology("B", "5", SerologySubtype.Broad),
-                    new Serology("B", "5102", SerologySubtype.Associated),
-                    new Serology("B", "5103", SerologySubtype.Associated)
+                    new SerologyTyping("B", "51", SerologySubtype.Split),
+                    new SerologyTyping("B", "5", SerologySubtype.Broad),
+                    new SerologyTyping("B", "5102", SerologySubtype.Associated),
+                    new SerologyTyping("B", "5103", SerologySubtype.Associated)
                 },
                 new List<SerologyEntry>
                 {
@@ -36,10 +36,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.Dictionary
             },
             new object[]
             {
-                new List<Serology>
+                new List<SerologyTyping>
                 {
-                    new Serology("DR", "1", SerologySubtype.NotSplit),
-                    new Serology("DR", "103", SerologySubtype.Associated)
+                    new SerologyTyping("DR", "1", SerologySubtype.NotSplit),
+                    new SerologyTyping("DR", "103", SerologySubtype.Associated)
                 },
                 new List<SerologyEntry>
                 {
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.Dictionary
         };
         
         [TestCaseSource(nameof(_serologyCollections))]
-        public void SerologyListConvertedToSerologyEntries(IEnumerable<Serology> serologyCollection, IEnumerable<SerologyEntry> expected)
+        public void SerologyListConvertedToSerologyEntries(IEnumerable<SerologyTyping> serologyCollection, IEnumerable<SerologyEntry> expected)
         {
             var actual = serologyCollection.ToSerologyEntries();
             Assert.IsTrue(actual.SequenceEqual(expected));

@@ -2,7 +2,7 @@
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
@@ -11,7 +11,7 @@ using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MatchLocus = Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes.MatchLocus;
+using MatchLocus = Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings.MatchLocus;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
 {
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         private IMatchedHlaRepository repository;
         private IHlaServiceClient hlaServiceClient;
         private const MolecularLocusType MolecularLocus = MolecularLocusType.A;
-        private const MatchLocus MatchLocus = SearchAlgorithm.MatchingDictionary.Models.HLATypes.MatchLocus.A;
+        private const MatchLocus MatchLocus = SearchAlgorithm.MatchingDictionary.Models.HLATypings.MatchLocus.A;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -164,7 +164,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
                 hlaName,
                 TypingMethod.Molecular,
                 MolecularSubtype.TwoFieldAllele,
-                SerologySubtype.NotSerologyType,
+                SerologySubtype.NotSerologyTyping,
                 matchingPGroups,
                 matchingSerologies);
         }

@@ -2,8 +2,8 @@
 using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyToPgroups
@@ -19,9 +19,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void ValidSerologyHaveAtLeastOnePGroup()
         {
-            var pGroupCounts = MatchingTypes
-                .Where(m => !m.HlaType.IsDeleted && m.HlaType is Serology)
-                .Select(m => new { m.HlaType, PGroupCount = m.MatchingPGroups.Count() })
+            var pGroupCounts = MatchingTypings
+                .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is SerologyTyping)
+                .Select(m => new { HlaType = m.HlaTyping, PGroupCount = m.MatchingPGroups.Count() })
                 .ToList();
 
             Assert.IsTrue(pGroupCounts.All(p => p.PGroupCount > 0));
@@ -120,8 +120,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void B15And70ShareMatchingPGroups()
         {
-            var b15 = GetSingleMatchingType(MatchLocus.B, "15").MatchingPGroups;
-            var b70 = GetSingleMatchingType(MatchLocus.B, "70").MatchingPGroups;
+            var b15 = GetSingleMatchingTyping(MatchLocus.B, "15").MatchingPGroups;
+            var b70 = GetSingleMatchingTyping(MatchLocus.B, "70").MatchingPGroups;
 
             Approvals.Verify(string.Join("\r\n", b15.Intersect(b70).OrderBy(p => p)));
         }
@@ -129,7 +129,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         private string GetPGroupsAsString(MatchLocus matchLocus, string serologyName)
         {
             return string.Join("\r\n",
-                GetSingleMatchingType(matchLocus, serologyName)
+                GetSingleMatchingTyping(matchLocus, serologyName)
                 .MatchingPGroups
                 .OrderBy(p => p));
         }

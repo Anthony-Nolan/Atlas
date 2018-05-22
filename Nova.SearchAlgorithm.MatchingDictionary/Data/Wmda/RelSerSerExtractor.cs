@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
 {
     internal class RelSerSerExtractor : IWmdaDataExtractor
     {
-        public IEnumerable<IWmdaHlaType> ExtractData(IWmdaRepository repo)
+        public IEnumerable<IWmdaHlaTyping> ExtractData(IWmdaRepository repo)
         {
             var data = new List<RelSerSer>();
 

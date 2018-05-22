@@ -8,8 +8,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
 {
     public static class WmdaDataFactory
     {
-        public static IEnumerable<TReturn> GetData<TReturn>(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
-            where TReturn : IWmdaHlaType
+        public static IEnumerable<TReturn> GetData<TReturn>(IWmdaRepository repo, Func<IWmdaHlaTyping, bool> filter)
+            where TReturn : IWmdaHlaTyping
         {
             IWmdaDataExtractor dataExtractor;
 

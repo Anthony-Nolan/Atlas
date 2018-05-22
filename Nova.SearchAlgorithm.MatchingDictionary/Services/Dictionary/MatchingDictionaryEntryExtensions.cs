@@ -1,8 +1,8 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
@@ -17,27 +17,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             var hla = matchedHla.ToArray();
 
             var entries = new List<MatchingDictionaryEntry>();
-            entries.AddRange(GetDictionaryEntriesFromSerology(hla.OfType<IDictionarySource<Serology>>()));
-            entries.AddRange(GetDictionaryEntriesFromAlleles(hla.OfType<IDictionarySource<Allele>>()));
+            entries.AddRange(GetDictionaryEntriesFromSerology(hla.OfType<IDictionarySource<SerologyTyping>>()));
+            entries.AddRange(GetDictionaryEntriesFromAlleles(hla.OfType<IDictionarySource<AlleleTyping>>()));
 
             return entries;
         }
 
-        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromSerology(IEnumerable<IDictionarySource<Serology>> matchedSerology)
+        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromSerology(IEnumerable<IDictionarySource<SerologyTyping>> matchedSerology)
         {
             return matchedSerology.Select(serology =>
                 new MatchingDictionaryEntry(
-                    serology.TypeForDictionary.MatchLocus,
-                    serology.TypeForDictionary.Name,
+                    serology.TypingForDictionary.MatchLocus,
+                    serology.TypingForDictionary.Name,
                     TypingMethod.Serology,
-                    MolecularSubtype.NotMolecularType,
-                    serology.TypeForDictionary.SerologySubtype,
+                    MolecularSubtype.NotMolecularTyping,
+                    serology.TypingForDictionary.SerologySubtype,
                     serology.MatchingPGroups,
                     serology.MatchingSerologies.ToSerologyEntries()
                 ));
         }
 
-        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromAlleles(IEnumerable<IDictionarySource<Allele>> matchedAlleles)
+        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromAlleles(IEnumerable<IDictionarySource<AlleleTyping>> matchedAlleles)
         {
             var entries = new List<MatchingDictionaryEntry>(
                 matchedAlleles.SelectMany(allele => new List<MatchingDictionaryEntry>{
@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
                     e.Key.LookupName,
                     e.Key.TypingMethod,
                     e.Select(m => m.MolecularSubtype).OrderBy(m => m).First(),
-                    SerologySubtype.NotSerologyType,
+                    SerologySubtype.NotSerologyTyping,
                     e.SelectMany(p => p.MatchingPGroups).Distinct(),
                     e.SelectMany(s => s.MatchingSerologies).Distinct()
                     ));
@@ -61,16 +61,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             return grouped;
         }
 
-        private static MatchingDictionaryEntry GetDictionaryEntryFromMatchedAllele(IDictionarySource<Allele> matchedAllele, MolecularSubtype molecularSubtype)
+        private static MatchingDictionaryEntry GetDictionaryEntryFromMatchedAllele(IDictionarySource<AlleleTyping> matchedAllele, MolecularSubtype molecularSubtype)
         {
-            var lookupName = GetAlleleLookupName(matchedAllele.TypeForDictionary, molecularSubtype);
+            var lookupName = GetAlleleLookupName(matchedAllele.TypingForDictionary, molecularSubtype);
 
             var entry = new MatchingDictionaryEntry(
-                matchedAllele.TypeForDictionary.MatchLocus,
+                matchedAllele.TypingForDictionary.MatchLocus,
                 lookupName,
                 TypingMethod.Molecular,
                 molecularSubtype,
-                SerologySubtype.NotSerologyType,
+                SerologySubtype.NotSerologyTyping,
                 matchedAllele.MatchingPGroups,
                 matchedAllele.MatchingSerologies.ToSerologyEntries()
                 );
@@ -78,16 +78,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             return entry;
         }
 
-        private static string GetAlleleLookupName(Allele allele, MolecularSubtype molecularSubtype)
+        private static string GetAlleleLookupName(AlleleTyping alleleTyping, MolecularSubtype molecularSubtype)
         {
             switch (molecularSubtype)
             {
                 case MolecularSubtype.CompleteAllele:
-                    return allele.Name;
+                    return alleleTyping.Name;
                 case MolecularSubtype.TwoFieldAllele:
-                    return allele.TwoFieldName;
+                    return alleleTyping.TwoFieldName;
                 case MolecularSubtype.FirstFieldAllele:
-                    return allele.Fields.ElementAt(0);
+                    return alleleTyping.Fields.ElementAt(0);
                 default:
                     return string.Empty;
             }

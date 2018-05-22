@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
     [TestFixtureSource(typeof(MolecularTestFixtureArgs), "Args")]
     public class HlaNomAllelesTest : WmdaDataTestBase<HlaNom>
     {
-        public HlaNomAllelesTest(Func<IWmdaHlaType, bool> filter, IEnumerable<string> matchLoci)
+        public HlaNomAllelesTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
             : base(filter, matchLoci)
         {
         }
@@ -28,17 +28,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
             var deletedWithIdentical = new HlaNom("DRB1*", "08:01:03", true, "08:01:01");
             var deletedNoIdentical = new HlaNom("C*", "07:295", true);
 
-            Assert.AreEqual(twoField, GetSingleWmdaHlaType("A*", "01:26"));
-            Assert.AreEqual(twoFieldSuffix, GetSingleWmdaHlaType("A*", "01:27N"));
+            Assert.AreEqual(twoField, GetSingleWmdaHlaTyping("A*", "01:26"));
+            Assert.AreEqual(twoFieldSuffix, GetSingleWmdaHlaTyping("A*", "01:27N"));
 
-            Assert.AreEqual(threeField, GetSingleWmdaHlaType("B*", "07:05:06"));
-            Assert.AreEqual(threeFieldSuffix, GetSingleWmdaHlaType("C*", "07:491:01N"));
+            Assert.AreEqual(threeField, GetSingleWmdaHlaTyping("B*", "07:05:06"));
+            Assert.AreEqual(threeFieldSuffix, GetSingleWmdaHlaTyping("C*", "07:491:01N"));
 
-            Assert.AreEqual(fourField, GetSingleWmdaHlaType("DQB1*", "03:01:01:07"));
-            Assert.AreEqual(fourFieldSuffix, GetSingleWmdaHlaType("C*", "07:01:01:14Q"));
+            Assert.AreEqual(fourField, GetSingleWmdaHlaTyping("DQB1*", "03:01:01:07"));
+            Assert.AreEqual(fourFieldSuffix, GetSingleWmdaHlaTyping("C*", "07:01:01:14Q"));
 
-            Assert.AreEqual(deletedWithIdentical, GetSingleWmdaHlaType("DRB1*", "08:01:03"));
-            Assert.AreEqual(deletedNoIdentical, GetSingleWmdaHlaType("C*", "07:295"));
+            Assert.AreEqual(deletedWithIdentical, GetSingleWmdaHlaTyping("DRB1*", "08:01:03"));
+            Assert.AreEqual(deletedNoIdentical, GetSingleWmdaHlaTyping("C*", "07:295"));
         }
     }
 }

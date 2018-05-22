@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
     public class RelDnaSerMapping : IEquatable<RelDnaSerMapping>
     {
-        public Serology DirectSerology { get; }
+        public SerologyTyping DirectSerology { get; }
         public Assignment Assignment { get; }
         public IEnumerable<RelDnaSerMatch> AllMatchingSerology { get; }
         
-        public RelDnaSerMapping(Serology directSerology, Assignment assignment, IEnumerable<RelDnaSerMatch> allMatchingSerology)
+        public RelDnaSerMapping(SerologyTyping directSerology, Assignment assignment, IEnumerable<RelDnaSerMatch> allMatchingSerology)
         {
             DirectSerology = directSerology;
             Assignment = assignment;

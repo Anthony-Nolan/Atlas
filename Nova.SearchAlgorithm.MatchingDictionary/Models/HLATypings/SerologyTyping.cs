@@ -2,24 +2,24 @@ using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
-    public class Serology : HlaType, IEquatable<Serology>
+    public class SerologyTyping : HlaTyping, IEquatable<SerologyTyping>
     {
         public SerologySubtype SerologySubtype { get; }
 
-        public Serology(Serology serology) 
-            : this(serology.WmdaLocus, serology.Name, serology.SerologySubtype, serology.IsDeleted)
+        public SerologyTyping(SerologyTyping serologyTyping) 
+            : this(serologyTyping.WmdaLocus, serologyTyping.Name, serologyTyping.SerologySubtype, serologyTyping.IsDeleted)
         {
         }
 
-        public Serology(IWmdaHlaType hlaType, SerologySubtype serologySubtype, bool isDeleted = false) 
-            : this(hlaType.WmdaLocus, hlaType.Name, serologySubtype, isDeleted)
+        public SerologyTyping(IWmdaHlaTyping hlaTyping, SerologySubtype serologySubtype, bool isDeleted = false) 
+            : this(hlaTyping.WmdaLocus, hlaTyping.Name, serologySubtype, isDeleted)
         {
         }
 
         [JsonConstructor]
-        public Serology(string wmdaLocus, string name, SerologySubtype serologySubtype, bool isDeleted = false) 
+        public SerologyTyping(string wmdaLocus, string name, SerologySubtype serologySubtype, bool isDeleted = false) 
             : base(wmdaLocus, name, isDeleted)
         {
             SerologySubtype = serologySubtype;
@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
             return $"{base.ToString()}, subtype: {SerologySubtype}";
         }
 
-        public bool Equals(Serology other)
+        public bool Equals(SerologyTyping other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((Serology) obj);
+            return Equals((SerologyTyping) obj);
         }
 
         public override int GetHashCode()

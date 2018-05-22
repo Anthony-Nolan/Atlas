@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
@@ -17,19 +17,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     {
         private class SerologyFamily
         {
-            public Serology Serology { get; }
+            public SerologyTyping SerologyTyping { get; }
             public RelSerSer Parent { get; }
             public RelSerSer Child { get; }
 
-            public SerologyFamily(List<RelSerSer> relSerSer, IWmdaHlaType wmdaHlaType, bool isDeleted = false)
+            public SerologyFamily(List<RelSerSer> relSerSer, IWmdaHlaTyping wmdaHlaTyping, bool isDeleted = false)
             {
-                Parent = GetParent(relSerSer, wmdaHlaType);
-                Child = GetChild(relSerSer, wmdaHlaType);
+                Parent = GetParent(relSerSer, wmdaHlaTyping);
+                Child = GetChild(relSerSer, wmdaHlaTyping);
 
-                Serology = new Serology(
-                    wmdaHlaType.WmdaLocus,
-                    wmdaHlaType.Name,
-                    GetSerologySubtype(wmdaHlaType.Name),
+                SerologyTyping = new SerologyTyping(
+                    wmdaHlaTyping.WmdaLocus,
+                    wmdaHlaTyping.Name,
+                    GetSerologySubtype(wmdaHlaTyping.Name),
                     isDeleted);
             }
 
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             {
             }
 
-            public static RelSerSer GetParent(IEnumerable<RelSerSer> relSerSer, IWmdaHlaType serology)
+            public static RelSerSer GetParent(IEnumerable<RelSerSer> relSerSer, IWmdaHlaTyping serology)
             {
                 return relSerSer.SingleOrDefault(r =>
                     r.WmdaLocus.Equals(serology.WmdaLocus)
@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     );
             }
 
-            public static RelSerSer GetChild(IEnumerable<RelSerSer> relSerSer, IWmdaHlaType serology)
+            public static RelSerSer GetChild(IEnumerable<RelSerSer> relSerSer, IWmdaHlaTyping serology)
             {
                 return relSerSer.SingleOrDefault(r =>
                     r.WmdaLocus.Equals(serology.WmdaLocus) && r.Name.Equals(serology.Name));
@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             }
         }
 
-        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaRepository repo, Func<IWmdaHlaType, bool> filter)
+        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaRepository repo, Func<IWmdaHlaTyping, bool> filter)
         {
             var relSerSer = WmdaDataFactory.GetData<RelSerSer>(repo, filter);
             var allSerology = WmdaDataFactory.GetData<HlaNom>(repo, filter);
@@ -82,27 +82,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var relSerSerList = relSerSer.ToList();
 
             var serFamily = new SerologyFamily(relSerSerList, ser);
-            var usedInMatching = new Serology(serFamily.Serology);
-            var matchList = new List<Serology>(CalculateMatchingSerologiesFromFamily(relSerSerList, serFamily));
+            var usedInMatching = new SerologyTyping(serFamily.SerologyTyping);
+            var matchList = new List<SerologyTyping>(CalculateMatchingSerologiesFromFamily(relSerSerList, serFamily));
 
             if (!ser.IdenticalHla.Equals(""))
             {
                 var identicalSer = new HlaNom(ser.WmdaLocus, ser.IdenticalHla);
                 var identicalSerFamily = new SerologyFamily(relSerSerList, identicalSer);
-                usedInMatching = new Serology(identicalSerFamily.Serology);
+                usedInMatching = new SerologyTyping(identicalSerFamily.SerologyTyping);
                 matchList.AddRange(CalculateMatchingSerologiesFromFamily(relSerSerList, identicalSerFamily));
             }
 
-            return new SerologyInfoForMatching(serFamily.Serology, usedInMatching, matchList);
+            return new SerologyInfoForMatching(serFamily.SerologyTyping, usedInMatching, matchList);
         }
 
-        private static IEnumerable<Serology> CalculateMatchingSerologiesFromFamily(List<RelSerSer> relSerSer, SerologyFamily family)
+        private static IEnumerable<SerologyTyping> CalculateMatchingSerologiesFromFamily(List<RelSerSer> relSerSer, SerologyFamily family)
         {
-            var serology = family.Serology;
+            var serology = family.SerologyTyping;
             var parent = family.Parent;
             var child = family.Child;
 
-            var matching = new List<Serology> { serology };
+            var matching = new List<SerologyTyping> { serology };
 
             switch (serology.SerologySubtype)
             {
@@ -140,28 +140,28 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return matching;
         }
 
-        private static void AddBroad(IWmdaHlaType broad, List<Serology> matching)
+        private static void AddBroad(IWmdaHlaTyping broad, List<SerologyTyping> matching)
         {
-            matching.Add(new Serology(broad, SerologySubtype.Broad));
+            matching.Add(new SerologyTyping(broad, SerologySubtype.Broad));
         }
 
-        private static void AddSplit(IWmdaHlaType split, List<Serology> matching)
+        private static void AddSplit(IWmdaHlaTyping split, List<SerologyTyping> matching)
         {
-            matching.Add(new Serology(split, SerologySubtype.Split));
+            matching.Add(new SerologyTyping(split, SerologySubtype.Split));
         }
 
-        private static void AddAssociated(RelSerSer child, List<Serology> matching)
+        private static void AddAssociated(RelSerSer child, List<SerologyTyping> matching)
         {
             if (child != null)
                 matching.AddRange(
                     child.AssociatedAntigens.Select(a =>
-                        new Serology(child.WmdaLocus, a, SerologySubtype.Associated)));
+                        new SerologyTyping(child.WmdaLocus, a, SerologySubtype.Associated)));
         }
 
         private static void AddUnknownSubtype(
-            List<RelSerSer> relSerSer, IWmdaHlaType ser, List<Serology> matching)
+            List<RelSerSer> relSerSer, IWmdaHlaTyping ser, List<SerologyTyping> matching)
         {
-            matching.Add(new SerologyFamily(relSerSer, ser).Serology);
+            matching.Add(new SerologyFamily(relSerSer, ser).SerologyTyping);
         }
     }
 }

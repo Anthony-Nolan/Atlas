@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {

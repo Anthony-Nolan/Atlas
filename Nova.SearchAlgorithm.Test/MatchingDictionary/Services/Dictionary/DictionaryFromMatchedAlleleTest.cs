@@ -1,12 +1,12 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         {
             _matchingPGroups = new List<string> { "01:01P" };
 
-            var serology = new Serology(SerologyLocus, "1", SerologySubtype.NotSplit);
+            var serology = new SerologyTyping(SerologyLocus, "1", SerologySubtype.NotSplit);
             _matchingSerologies = new List<RelDnaSerMapping>
             {
                 new RelDnaSerMapping(serology, Assignment.None, new List<RelDnaSerMatch>{ new RelDnaSerMatch(serology) })
@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
 
         private static IEnumerable<MatchingDictionaryEntry> GetActualDictionaryEntries(string alleleName)
         {
-            var allele = new Allele($"{Locus}*", alleleName);
+            var allele = new AlleleTyping($"{Locus}*", alleleName);
 
             var alleleToPGroup = Substitute.For<IAlleleInfoForMatching>();
-            alleleToPGroup.HlaType.Returns(allele);
-            alleleToPGroup.TypeUsedInMatching.Returns(allele);
+            alleleToPGroup.HlaTyping.Returns(allele);
+            alleleToPGroup.TypingUsedInMatching.Returns(allele);
             alleleToPGroup.MatchingPGroups.Returns(_matchingPGroups);
 
             var matchedAllele = new List<MatchedAllele> {new MatchedAllele(alleleToPGroup, _matchingSerologies)};
@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         private static MatchingDictionaryEntry BuildExpectedDictionaryEntry(string lookupName, MolecularSubtype subtype)
         {
             return new MatchingDictionaryEntry(
-                Locus, lookupName, TypingMethod.Molecular, subtype, SerologySubtype.NotSerologyType, _matchingPGroups, _matchingSerologyEntries);
+                Locus, lookupName, TypingMethod.Molecular, subtype, SerologySubtype.NotSerologyTyping, _matchingPGroups, _matchingSerologyEntries);
         }
 
         [Test]

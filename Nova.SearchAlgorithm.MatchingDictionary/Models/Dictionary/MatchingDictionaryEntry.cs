@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
     [JsonConverter(typeof(StringEnumConverter))]
     public enum MolecularSubtype
     {
-        NotMolecularType = 0,
+        NotMolecularTyping = 0,
         CompleteAllele = 1,
         TwoFieldAllele = 2,
         FirstFieldAllele = 3,

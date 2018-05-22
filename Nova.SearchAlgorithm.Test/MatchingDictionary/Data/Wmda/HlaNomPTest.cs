@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
     [TestFixtureSource(typeof(MolecularTestFixtureArgs), "Args")]
     public class HlaNomPTest : WmdaDataTestBase<HlaNomP>
     {
-        public HlaNomPTest(Func<IWmdaHlaType, bool> filter, IEnumerable<string> matchLoci)
+        public HlaNomPTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
             : base(filter, matchLoci)
         {
         }
@@ -32,15 +32,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
                     "05:87Q",
                     "05:102", "05:106", "05:136" });
 
-            Assert.AreEqual(alleleNoPGroup, GetSingleWmdaHlaType("B*", "08:100"));
-            Assert.AreEqual(alleleSuffixNoPGroup, GetSingleWmdaHlaType("A*", "30:14L"));
+            Assert.AreEqual(alleleNoPGroup, GetSingleWmdaHlaTyping("B*", "08:100"));
+            Assert.AreEqual(alleleSuffixNoPGroup, GetSingleWmdaHlaTyping("A*", "30:14L"));
 
-            Assert.AreEqual(sameSubtypePGroup, GetSingleWmdaHlaType("DRB1*", "03:02P"));
-            Assert.AreEqual(crossSubtypePGroup, GetSingleWmdaHlaType("C*", "03:14P"));
-            Assert.AreEqual(crossFamilyPGroup, GetSingleWmdaHlaType("A*", "02:65P"));
-            Assert.AreEqual(alleleSuffixPGroup, GetSingleWmdaHlaType("DQB1*", "05:04P"));
+            Assert.AreEqual(sameSubtypePGroup, GetSingleWmdaHlaTyping("DRB1*", "03:02P"));
+            Assert.AreEqual(crossSubtypePGroup, GetSingleWmdaHlaTyping("C*", "03:14P"));
+            Assert.AreEqual(crossFamilyPGroup, GetSingleWmdaHlaTyping("A*", "02:65P"));
+            Assert.AreEqual(alleleSuffixPGroup, GetSingleWmdaHlaTyping("DQB1*", "05:04P"));
 
-            Assert.AreEqual(longMixedPGroup, GetSingleWmdaHlaType("DQB1*", "05:02P"));
+            Assert.AreEqual(longMixedPGroup, GetSingleWmdaHlaTyping("DQB1*", "05:02P"));
         }
     }
 }

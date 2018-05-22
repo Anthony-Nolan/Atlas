@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class RelDnaSer : IWmdaHlaType, IEquatable<RelDnaSer>
+    public class RelDnaSer : IWmdaHlaTyping, IEquatable<RelDnaSer>
     {
         public string WmdaLocus { get; }
         public string Name { get; }
