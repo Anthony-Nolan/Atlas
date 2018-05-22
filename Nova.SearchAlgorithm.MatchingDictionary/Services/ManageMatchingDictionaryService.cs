@@ -8,17 +8,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// Manages the contents of the matching dictionary
     /// by orchestrating the generation and storage of the matched HLA dataset.
     /// </summary>
-    public interface IManageDictionaryService
+    public interface IManageMatchingDictionaryService
     {
         void RecreateDictionary();
     }
 
-    public class ManageDictionaryService : IManageDictionaryService
+    public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
     {
         private readonly IHlaMatchingService matchingService;
         private readonly IMatchingDictionaryRepository dictionaryRepository;
 
-        public ManageDictionaryService(IHlaMatchingService matchingService, IMatchingDictionaryRepository dictionaryRepository)
+        public ManageMatchingDictionaryService(IHlaMatchingService matchingService, IMatchingDictionaryRepository dictionaryRepository)
         {
             this.matchingService = matchingService;
             this.dictionaryRepository = dictionaryRepository;

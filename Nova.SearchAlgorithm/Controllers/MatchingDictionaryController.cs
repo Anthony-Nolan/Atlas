@@ -9,12 +9,12 @@ namespace Nova.SearchAlgorithm.Controllers
     [RoutePrefix("matching-dictionary")]
     public class MatchingDictionaryController : ApiController
     {
-        private readonly IManageDictionaryService manageService;
-        private readonly IDictionaryLookupService lookupService;
+        private readonly IManageMatchingDictionaryService manageMatchingService;
+        private readonly IMatchingDictionaryLookupService lookupService;
 
-        public MatchingDictionaryController(IManageDictionaryService manageService, IDictionaryLookupService lookupService)
+        public MatchingDictionaryController(IManageMatchingDictionaryService manageMatchingService, IMatchingDictionaryLookupService lookupService)
         {
-            this.manageService = manageService;
+            this.manageMatchingService = manageMatchingService;
             this.lookupService = lookupService;
         }
 
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Controllers
         [Route("recreate")]
         public IHttpActionResult RecreateMatchingDictionary()
         {
-            manageService.RecreateDictionary();
+            manageMatchingService.RecreateDictionary();
             return Ok();
         }
 

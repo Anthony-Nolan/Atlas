@@ -13,17 +13,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// <summary>
     /// Determines and executes the dictionary lookup strategy for submitted HLA types.
     /// </summary>
-    public interface IDictionaryLookupService
+    public interface IMatchingDictionaryLookupService
     {
         Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName);
     }
 
-    public class DictionaryLookupService : IDictionaryLookupService
+    public class MatchingDictionaryLookupService : IMatchingDictionaryLookupService
     {
         private readonly IMatchingDictionaryRepository dictionaryRepository;
         private readonly IHlaServiceClient hlaServiceClient;
 
-        public DictionaryLookupService(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient)
+        public MatchingDictionaryLookupService(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient)
         {
             this.dictionaryRepository = dictionaryRepository;
             this.hlaServiceClient = hlaServiceClient;
