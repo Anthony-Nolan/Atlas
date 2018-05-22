@@ -8,8 +8,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     /// <summary>
-    /// This class is responsible for 
-    /// creating a complete collection of matched alleles
+    /// Creates a complete collection of matched alleles
     /// from the information that was extracted from the WMDA files.
     /// </summary>
     internal class AlleleMatcher : IHlaMatcher

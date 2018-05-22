@@ -4,11 +4,6 @@ using System.Text.RegularExpressions;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
 {
-    /// <summary>
-    /// This class is responsible for
-    /// holding details and functionality
-    /// for a single allele typing.
-    /// </summary>
     public class Allele : HlaType
     {
         public IEnumerable<string> Fields { get; }

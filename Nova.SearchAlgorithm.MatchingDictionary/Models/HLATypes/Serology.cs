@@ -4,11 +4,6 @@ using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes
 {
-    /// <summary>
-    /// This class is responsible for
-    /// holding details and functionality
-    /// for a single serology typing.
-    /// </summary>
     public class Serology : HlaType, IEquatable<Serology>
     {
         public SerologySubtype SerologySubtype { get; }

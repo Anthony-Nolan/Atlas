@@ -7,9 +7,8 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
     /// <summary>
-    /// This class is responsible for
-    /// converting matched HLA to dictionary entry objects 
-    /// that are optimised for the dictionary lookup requirements.
+    /// Converts matched HLA objects to dictionary entry objects 
+    /// so the data is optimally modeled for matching dictionary lookups.
     /// </summary>
     public static class MatchingDictionaryEntryExtensions
     {

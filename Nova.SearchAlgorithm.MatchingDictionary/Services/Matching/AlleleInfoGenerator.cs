@@ -10,9 +10,8 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     /// <summary>
-    /// This class is responsible for 
-    /// pulling together the data from different WMDA files
-    /// that is required for matching on single allele typings.
+    /// Pulls together data from different WMDA files
+    /// required for matching on single allele typings.
     /// </summary>
     internal class AlleleInfoGenerator
     {

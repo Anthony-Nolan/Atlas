@@ -4,8 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
 {
     /// <summary>
-    /// This interface identifies
-    /// classes that can serve as a data source
+    /// Identifies classes that can serve as a data source
     /// for the creation of a matching dictionary entry.
     /// </summary>
     public interface IDictionarySource<out THlaType> : IMatchingPGroups, IMatchingSerologies where THlaType : HlaType

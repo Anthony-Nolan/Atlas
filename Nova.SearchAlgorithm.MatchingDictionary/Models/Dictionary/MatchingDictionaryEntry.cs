@@ -25,9 +25,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
     }
 
     /// <summary>
-    /// This class is responsible for
-    /// holding the HLA data that makes up the matching dictionary.
-    /// It is optimised for dictionary lookups.
+    /// HLA data held within the matching dictionary.
+    /// Properties are optimised for dictionary lookups.
     /// </summary>
     public class MatchingDictionaryEntry : IMatchingHlaLookupResult, IEquatable<MatchingDictionaryEntry>
     {

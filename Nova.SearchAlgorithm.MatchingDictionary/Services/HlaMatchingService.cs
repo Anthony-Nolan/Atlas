@@ -9,18 +9,16 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
+    /// <summary>
+    /// Creates a complete collection of matched HLA
+    /// by orchestrating the generation and compilation of matching info extracted from the WMDA files.
+    /// </summary>
     public interface IHlaMatchingService
     {
         IEnumerable<IMatchedHla> GetMatchedHla(
             Func<IWmdaHlaType, bool> serologyFilter, Func<IWmdaHlaType, bool> molecularFilter);
     }
 
-    /// <summary>
-    /// This class is responsible for
-    /// creating a complete collection of matched HLA
-    /// by invoking the generation and compilation of matching info
-    /// that is extracted from the WMDA files.
-    /// </summary>
     public class HlaMatchingService : IHlaMatchingService
     {
         private readonly IWmdaRepository _repository;

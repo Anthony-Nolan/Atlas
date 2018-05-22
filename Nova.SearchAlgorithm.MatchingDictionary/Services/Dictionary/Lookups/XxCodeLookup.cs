@@ -5,10 +5,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
-    /// <summary>
-    /// This class is responsible for
-    /// looking up an XX code typing in the matching dictionary.
-    /// </summary>
     internal class XxCodeLookup : MatchingDictionaryLookup
     {
         public XxCodeLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)

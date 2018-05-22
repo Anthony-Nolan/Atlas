@@ -6,10 +6,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
-    /// <summary>
-    /// This class is responsible for
-    /// looking up a single allele typing in the matching dictionary.
-    /// </summary>
     internal class AlleleLookup : MatchingDictionaryLookup
     {
         public AlleleLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)
