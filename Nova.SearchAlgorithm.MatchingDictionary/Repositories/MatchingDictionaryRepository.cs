@@ -9,20 +9,20 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
-    public interface IMatchedHlaRepository
+    public interface IMatchingDictionaryRepository
     {
         void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
         Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
-    public class MatchedHlaRepository : IMatchedHlaRepository
+    public class MatchingDictionaryRepository : IMatchingDictionaryRepository
     {
         private const int BatchSize = 100;
-        private const string TableReference = "MatchedHlaDictionary";
+        private const string TableReference = "MatchingDictionary";
         private readonly ICloudTableFactory tableFactory;
         private CloudTable table;
 
-        public MatchedHlaRepository(ICloudTableFactory factory)
+        public MatchingDictionaryRepository(ICloudTableFactory factory)
         {
             tableFactory = factory;
             GetDictionaryTable();

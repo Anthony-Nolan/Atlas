@@ -207,7 +207,7 @@
     <Compile Include="Repositories\AzureStorage\DictionaryTableEntity.cs" />
     <Compile Include="Repositories\AzureStorage\DictionaryEntityExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
-    <Compile Include="Repositories\MatchedHlaRepository.cs" />
+    <Compile Include="Repositories\MatchingDictionaryRepository.cs" />
     <Compile Include="Repositories\WmdaRepository.cs" />
     <Compile Include="Services\ManageDictionaryService.cs" />
     <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />

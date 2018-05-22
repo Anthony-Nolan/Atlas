@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
     internal class SerologyLookup : MatchingDictionaryLookup
     {
-        public SerologyLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)
+        public SerologyLookup(IMatchingDictionaryRepository dictionaryRepository) : base(dictionaryRepository)
         {
         }
 

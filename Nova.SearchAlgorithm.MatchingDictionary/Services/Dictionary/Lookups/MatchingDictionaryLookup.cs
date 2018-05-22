@@ -8,9 +8,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
     internal abstract class MatchingDictionaryLookup
     {
-        private readonly IMatchedHlaRepository dictionaryRepository;
+        private readonly IMatchingDictionaryRepository dictionaryRepository;
 
-        protected MatchingDictionaryLookup(IMatchedHlaRepository dictionaryRepository)
+        protected MatchingDictionaryLookup(IMatchingDictionaryRepository dictionaryRepository)
         {
             this.dictionaryRepository = dictionaryRepository;
         }

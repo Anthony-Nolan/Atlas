@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
     {
         private readonly IHlaServiceClient hlaServiceClient;
 
-        public NmdpCodeLookup(IMatchedHlaRepository dictionaryRepository, IHlaServiceClient hlaServiceClient) : base(dictionaryRepository)
+        public NmdpCodeLookup(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient) : base(dictionaryRepository)
         {
             this.hlaServiceClient = hlaServiceClient;
         }

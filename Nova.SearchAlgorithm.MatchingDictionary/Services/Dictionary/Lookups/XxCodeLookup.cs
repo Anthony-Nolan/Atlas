@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
     internal class XxCodeLookup : MatchingDictionaryLookup
     {
-        public XxCodeLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)
+        public XxCodeLookup(IMatchingDictionaryRepository dictionaryRepository) : base(dictionaryRepository)
         {
         }
 

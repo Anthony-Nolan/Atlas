@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
     public class DictionaryLookupServiceTest
     {
         private IDictionaryLookupService lookupService;
-        private IMatchedHlaRepository repository;
+        private IMatchingDictionaryRepository repository;
         private IHlaServiceClient hlaServiceClient;
         private const MolecularLocusType MolecularLocus = MolecularLocusType.A;
         private const MatchLocus MatchLocus = SearchAlgorithm.MatchingDictionary.Models.HLATypings.MatchLocus.A;
@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            repository = Substitute.For<IMatchedHlaRepository>();
+            repository = Substitute.For<IMatchingDictionaryRepository>();
             hlaServiceClient = Substitute.For<IHlaServiceClient>();
             lookupService = new DictionaryLookupService(repository, hlaServiceClient);
         }

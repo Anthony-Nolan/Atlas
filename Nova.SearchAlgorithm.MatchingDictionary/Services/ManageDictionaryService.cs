@@ -16,9 +16,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public class ManageDictionaryService : IManageDictionaryService
     {
         private readonly IHlaMatchingService matchingService;
-        private readonly IMatchedHlaRepository dictionaryRepository;
+        private readonly IMatchingDictionaryRepository dictionaryRepository;
 
-        public ManageDictionaryService(IHlaMatchingService matchingService, IMatchedHlaRepository dictionaryRepository)
+        public ManageDictionaryService(IHlaMatchingService matchingService, IMatchingDictionaryRepository dictionaryRepository)
         {
             this.matchingService = matchingService;
             this.dictionaryRepository = dictionaryRepository;

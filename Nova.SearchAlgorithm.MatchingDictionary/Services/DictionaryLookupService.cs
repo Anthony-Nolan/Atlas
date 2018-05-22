@@ -20,10 +20,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
     public class DictionaryLookupService : IDictionaryLookupService
     {
-        private readonly IMatchedHlaRepository dictionaryRepository;
+        private readonly IMatchingDictionaryRepository dictionaryRepository;
         private readonly IHlaServiceClient hlaServiceClient;
 
-        public DictionaryLookupService(IMatchedHlaRepository dictionaryRepository, IHlaServiceClient hlaServiceClient)
+        public DictionaryLookupService(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient)
         {
             this.dictionaryRepository = dictionaryRepository;
             this.hlaServiceClient = hlaServiceClient;
