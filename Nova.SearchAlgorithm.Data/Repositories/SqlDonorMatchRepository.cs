@@ -121,11 +121,11 @@ FROM (
                 ) AS source
             UNPIVOT (TypePosition FOR MatchingDirection IN (GvH, HvG)) AS unpivoted
             ) ByDirection
-        Hla BY DonorId, MatchingDirection, Locus
+        GROUP BY DonorId, MatchingDirection, Locus
         ) ByLocus
-    Hla BY DonorId, Locus
+    GROUP BY DonorId, Locus
     ) ByDonor
-Hla BY DonorId
+GROUP BY DonorId
 HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
 ORDER BY TotalMatchCount DESC";
 
@@ -139,7 +139,7 @@ ORDER BY TotalMatchCount DESC";
                       FROM MatchingHlaAt{locus} d
                       JOIN dbo.PGroupNames p ON p.Id = d.PGroup_Id 
                       WHERE [Name] IN('{string.Join("', '", names)}')
-                      Hla BY d.DonorId, d.TypePosition";
+                      GROUP BY d.DonorId, d.TypePosition";
         }
 
         public void UpdateDonorWithNewHla(InputDonor donor)
