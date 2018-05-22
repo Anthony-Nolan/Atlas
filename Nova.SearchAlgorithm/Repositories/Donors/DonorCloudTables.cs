@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     {
         public static IEnumerable<string> AllMatchingHlaNames(this ExpandedHla hla)
         {
-            return (hla.PGroups ?? Enumerable.Empty<string>()).Union(hla.SerologyNames ?? Enumerable.Empty<string>());
+            return hla.PGroups ?? Enumerable.Empty<string>();
         }
     }
 

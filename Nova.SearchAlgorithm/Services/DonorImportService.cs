@@ -46,14 +46,12 @@ namespace Nova.SearchAlgorithm.Services
                     A_1 = new ExpandedHla
                     {
                         Locus = "A",
-                        PGroups = new List<string> { "01:01P" },
-                        SerologyNames = new List<string> { "1" }
+                        PGroups = new List<string> { "01:01P" }
                     },
                     A_2 = new ExpandedHla
                     {
                         Locus = "A",
-                        PGroups = new List<string> { "01:01P" },
-                        SerologyNames = new List<string> { "1" }
+                        PGroups = new List<string> { "01:01P" }
                     }
                 }
             });
