@@ -4,10 +4,15 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
+    /// <summary>
+    /// Manages the contents of the matching dictionary
+    /// by orchestrating the generation and storage of the matched HLA dataset.
+    /// </summary>
     public interface IManageDictionaryService
     {
         void RecreateDictionary();
     }
+
     public class ManageDictionaryService : IManageDictionaryService
     {
         private readonly IHlaMatchingService matchingService;

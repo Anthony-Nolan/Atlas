@@ -6,6 +6,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
 {
+    /// <summary>
+    /// Converts matched HLA objects to dictionary entry objects 
+    /// so the data is optimally modeled for matching dictionary lookups.
+    /// </summary>
     public static class MatchingDictionaryEntryExtensions
     {
         public static IEnumerable<MatchingDictionaryEntry> ToMatchingDictionaryEntries(this IEnumerable<IMatchedHla> matchedHla)

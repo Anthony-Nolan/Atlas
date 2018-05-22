@@ -11,9 +11,9 @@
         public static string[] NullExpressionSuffixes = { "N" };
     }
 
-    public static class UnexpectedMappings
+    public static class UnexpectedRelDnaSerMappings
     {
-        public static HlaType[] AcceptableSerologies =
+        public static HlaType[] PermittedExceptions =
         {
             new HlaType("B", "15"),
             new HlaType("B", "70"),

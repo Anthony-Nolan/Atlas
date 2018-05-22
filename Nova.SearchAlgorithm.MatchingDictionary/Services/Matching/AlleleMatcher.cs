@@ -7,6 +7,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
+    /// <summary>
+    /// Creates a complete collection of matched alleles
+    /// from the information that was extracted from the WMDA files.
+    /// </summary>
     internal class AlleleMatcher : IHlaMatcher
     {
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
@@ -94,7 +98,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var matchInfo = new RelDnaSerMatch(actualMatchingSerology);
 
             if (actualMatchingSerology.IsDeleted 
-                || UnexpectedMappings.AcceptableSerologies.Contains(alleleFamily))
+                || UnexpectedRelDnaSerMappings.PermittedExceptions.Contains(alleleFamily))
                 return matchInfo;
 
             matchInfo.IsUnexpected =
