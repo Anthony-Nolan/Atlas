@@ -6,9 +6,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypes;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.HlaMatching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyToPgroups
 {
-    [TestFixtureSource(typeof(HlaMatchingTestFixtureArgs), "MatchedSerology")]
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerology))]
     [UseReporter(typeof(NUnitReporter))]
     public class SerologyToPGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {

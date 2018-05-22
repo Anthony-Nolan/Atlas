@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
-    public class NmdpCodeLookup : MatchingDictionaryLookup
+    internal class NmdpCodeLookup : MatchingDictionaryLookup
     {
         private readonly IHlaServiceClient hlaServiceClient;
 

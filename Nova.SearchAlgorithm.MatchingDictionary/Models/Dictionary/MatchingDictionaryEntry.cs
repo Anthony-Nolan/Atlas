@@ -24,6 +24,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
         NmdpCode = 4
     }
 
+    /// <summary>
+    /// HLA data held within the matching dictionary.
+    /// Properties are optimised for dictionary lookups.
+    /// </summary>
     public class MatchingDictionaryEntry : IMatchingHlaLookupResult, IEquatable<MatchingDictionaryEntry>
     {
         public MatchLocus MatchLocus { get; }

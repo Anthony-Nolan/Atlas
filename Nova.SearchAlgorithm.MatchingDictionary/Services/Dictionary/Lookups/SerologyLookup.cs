@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
-    public class SerologyLookup : MatchingDictionaryLookup
+    internal class SerologyLookup : MatchingDictionaryLookup
     {
         public SerologyLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)
         {

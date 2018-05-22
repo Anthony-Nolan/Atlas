@@ -9,6 +9,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.Matching;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
+    /// <summary>
+    /// Creates a complete collection of matched HLA
+    /// by orchestrating the generation and compilation of matching info extracted from the WMDA files.
+    /// </summary>
     public interface IHlaMatchingService
     {
         IEnumerable<IMatchedHla> GetMatchedHla(

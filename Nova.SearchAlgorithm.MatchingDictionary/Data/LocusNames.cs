@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypes;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Data
 {
-    public static class LocusNames
+    internal static class LocusNames
     {
         private class LocusName
         {

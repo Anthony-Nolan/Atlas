@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
 {
-    public class HlaNomExtractor : IWmdaDataExtractor
+    internal class HlaNomExtractor : IWmdaDataExtractor
     {
        public IEnumerable<IWmdaHlaType> ExtractData(IWmdaRepository repo)
         {

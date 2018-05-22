@@ -6,7 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 {
-    public abstract class MatchingDictionaryLookup
+    internal abstract class MatchingDictionaryLookup
     {
         private readonly IMatchedHlaRepository dictionaryRepository;
 
