@@ -53,8 +53,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             return new ExpandedHla {
                 Name = hlaName,
                 Locus = locusName,
-                PGroups = raw.SelectMany(r => r.MatchingPGroups).Distinct(),
-                SerologyNames = raw.SelectMany(r => r.MatchingSerology.Select(s => s.Name)).Distinct()
+                PGroups = raw.SelectMany(r => r.MatchingPGroups).Distinct()
             };
         }
 
