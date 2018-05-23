@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -8,27 +8,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// Manages the contents of the matching dictionary
     /// by orchestrating the generation and storage of the matched HLA dataset.
     /// </summary>
-    public interface IManageDictionaryService
+    public interface IManageMatchingDictionaryService
     {
-        void RecreateDictionary();
+        void RecreateMatchingDictionary();
     }
 
-    public class ManageDictionaryService : IManageDictionaryService
+    public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
     {
         private readonly IHlaMatchingService matchingService;
-        private readonly IMatchedHlaRepository dictionaryRepository;
+        private readonly IMatchingDictionaryRepository dictionaryRepository;
 
-        public ManageDictionaryService(IHlaMatchingService matchingService, IMatchedHlaRepository dictionaryRepository)
+        public ManageMatchingDictionaryService(IHlaMatchingService matchingService, IMatchingDictionaryRepository dictionaryRepository)
         {
             this.matchingService = matchingService;
             this.dictionaryRepository = dictionaryRepository;
         }
 
-        public void RecreateDictionary()
+        public void RecreateMatchingDictionary()
         {
             var allMatchedHla = matchingService.GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
             var entries = allMatchedHla.ToMatchingDictionaryEntries();
-            dictionaryRepository.RecreateDictionaryTable(entries);
+            dictionaryRepository.RecreateMatchingDictionaryTable(entries);
         }
     }
 }

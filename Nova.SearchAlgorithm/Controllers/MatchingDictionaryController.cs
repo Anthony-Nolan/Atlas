@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
@@ -9,12 +9,12 @@ namespace Nova.SearchAlgorithm.Controllers
     [RoutePrefix("matching-dictionary")]
     public class MatchingDictionaryController : ApiController
     {
-        private readonly IManageDictionaryService manageService;
-        private readonly IDictionaryLookupService lookupService;
+        private readonly IManageMatchingDictionaryService manageMatchingService;
+        private readonly IMatchingDictionaryLookupService lookupService;
 
-        public MatchingDictionaryController(IManageDictionaryService manageService, IDictionaryLookupService lookupService)
+        public MatchingDictionaryController(IManageMatchingDictionaryService manageMatchingService, IMatchingDictionaryLookupService lookupService)
         {
-            this.manageService = manageService;
+            this.manageMatchingService = manageMatchingService;
             this.lookupService = lookupService;
         }
 
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Controllers
         [Route("recreate")]
         public IHttpActionResult RecreateMatchingDictionary()
         {
-            manageService.RecreateDictionary();
+            manageMatchingService.RecreateMatchingDictionary();
             return Ok();
         }
 

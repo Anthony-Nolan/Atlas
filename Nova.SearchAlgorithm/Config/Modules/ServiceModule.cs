@@ -54,14 +54,14 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
         private static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
         {
-            builder.RegisterType<MatchingDictionary.Repositories.MatchedHlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.MatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterInstance(MatchingDictionary.Repositories.WmdaRepository.Instance).AsImplementedInterfaces().ExternallyOwned();
 
             builder.RegisterType<MatchingDictionary.Services.HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.ManageDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.DictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

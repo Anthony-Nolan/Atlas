@@ -1,19 +1,19 @@
 ﻿using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
     internal class SerologyLookup : MatchingDictionaryLookup
     {
-        public SerologyLookup(IMatchedHlaRepository dictionaryRepository) : base(dictionaryRepository)
+        public SerologyLookup(IMatchingDictionaryRepository dictionaryRepository) : base(dictionaryRepository)
         {
         }
 
         public override Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            return GetDictionaryEntry(matchLocus, lookupName, TypingMethod.Serology);
+            return GetMatchingDictionaryEntry(matchLocus, lookupName, TypingMethod.Serology);
         }
     }
 }

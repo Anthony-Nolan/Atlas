@@ -1,11 +1,11 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.Dictionary
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.MatchingDictionary
 {
     [TestFixture]
     public class SerologyEntryExtensionsTest

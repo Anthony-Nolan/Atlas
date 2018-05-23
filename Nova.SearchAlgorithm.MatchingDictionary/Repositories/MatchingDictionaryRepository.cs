@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,43 +9,43 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
-    public interface IMatchedHlaRepository
+    public interface IMatchingDictionaryRepository
     {
-        void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
-        Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
+        void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
+        Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
-    public class MatchedHlaRepository : IMatchedHlaRepository
+    public class MatchingDictionaryRepository : IMatchingDictionaryRepository
     {
         private const int BatchSize = 100;
-        private const string TableReference = "MatchedHlaDictionary";
+        private const string TableReference = "MatchingDictionary";
         private readonly ICloudTableFactory tableFactory;
         private CloudTable table;
 
-        public MatchedHlaRepository(ICloudTableFactory factory)
+        public MatchingDictionaryRepository(ICloudTableFactory factory)
         {
             tableFactory = factory;
-            GetDictionaryTable();
+            GetTable();
         }
 
-        public void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
+        public void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
             DropCreateTable();
-            InsertContentsIntoDictionaryTable(dictionaryContents.ToList());
+            InsertMatchingDictionaryEntriesIntoTable(dictionaryContents.ToList());
         }
 
-        public async Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            var partition = DictionaryTableEntity.GetPartition(matchLocus);
-            var rowKey = DictionaryTableEntity.GetRowKey(lookupName, typingMethod);
-            var retrieveOperation = TableOperation.Retrieve<DictionaryTableEntity>(partition, rowKey);            
+            var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
+            var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
+            var retrieveOperation = TableOperation.Retrieve<MatchingDictionaryTableEntity>(partition, rowKey);            
             var tableResult = await table.ExecuteAsync(retrieveOperation);
-            var entry = ((DictionaryTableEntity) tableResult.Result)?.ToDictionaryEntry();
+            var entry = ((MatchingDictionaryTableEntity) tableResult.Result)?.ToMatchingDictionaryEntry();
 
             return entry;
         }
 
-        private void GetDictionaryTable()
+        private void GetTable()
         {
             table = tableFactory.GetTable(TableReference);
         }
@@ -53,10 +53,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         private void DropCreateTable()
         {
             table.Delete();
-            GetDictionaryTable();
+            GetTable();
         }
 
-        private void InsertContentsIntoDictionaryTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
+        private void InsertMatchingDictionaryEntriesIntoTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
         {
             foreach (var partition in LocusNames.MatchLoci)
             {
@@ -68,12 +68,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
                 for (var i = 0; i < entitiesForPartition.Count; i = i + BatchSize)
                 {
                     var batchToInsert = entitiesForPartition.Skip(i).Take(BatchSize).ToList();
-                    BatchInsertIntoDictionaryTable(batchToInsert);
+                    BatchInsertIntoTable(batchToInsert);
                 }
             }
         }
 
-        private void BatchInsertIntoDictionaryTable(List<DictionaryTableEntity> entities)
+        private void BatchInsertIntoTable(List<MatchingDictionaryTableEntity> entities)
         {
             var batchOperation = new TableBatchOperation();
             entities.ForEach(entity => batchOperation.Insert(entity));
