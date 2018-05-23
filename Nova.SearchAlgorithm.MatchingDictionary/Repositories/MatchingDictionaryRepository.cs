@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IMatchingDictionaryRepository
     {
-        void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
+        void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
         Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             GetDictionaryTable();
         }
 
-        public void RecreateDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
+        public void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
             DropCreateTable();
             InsertContentsIntoDictionaryTable(dictionaryContents.ToList());

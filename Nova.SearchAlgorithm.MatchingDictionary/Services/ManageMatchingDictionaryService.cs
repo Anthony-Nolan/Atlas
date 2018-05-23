@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             var allMatchedHla = matchingService.GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
             var entries = allMatchedHla.ToMatchingDictionaryEntries();
-            dictionaryRepository.RecreateDictionaryTable(entries);
+            dictionaryRepository.RecreateMatchingDictionaryTable(entries);
         }
     }
 }
