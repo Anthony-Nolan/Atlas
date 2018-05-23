@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
         public override Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var allele = new AlleleTyping(LocusNames.GetMolecularLocusNameFromMatch(matchLocus), lookupName);
-            return GetDictionaryEntry(matchLocus, allele.TwoFieldName, TypingMethod.Molecular);
+            return GetMatchingDictionaryEntry(matchLocus, allele.TwoFieldName, TypingMethod.Molecular);
         }
     }
 }

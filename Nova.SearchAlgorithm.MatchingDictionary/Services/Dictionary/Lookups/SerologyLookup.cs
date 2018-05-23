@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 
         public override Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            return GetDictionaryEntry(matchLocus, lookupName, TypingMethod.Serology);
+            return GetMatchingDictionaryEntry(matchLocus, lookupName, TypingMethod.Serology);
         }
     }
 }

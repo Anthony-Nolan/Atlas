@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
 
         public abstract Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName);
 
-        protected async Task<MatchingDictionaryEntry> GetDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        protected async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var entry = await dictionaryRepository.GetDictionaryEntry(matchLocus, lookupName, typingMethod);
             return entry ?? throw new InvalidHlaException(matchLocus.ToString(), lookupName);
