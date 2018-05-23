@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {

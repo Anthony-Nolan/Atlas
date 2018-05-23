@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TypingMethod

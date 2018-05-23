@@ -1,6 +1,6 @@
 ﻿using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary.Lookups
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
     internal class NmdpCodeLookup : MatchingDictionaryLookup
     {

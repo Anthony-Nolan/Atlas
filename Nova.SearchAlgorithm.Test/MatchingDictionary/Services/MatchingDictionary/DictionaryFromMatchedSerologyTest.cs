@@ -1,14 +1,14 @@
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
     [TestFixture]
     public class DictionaryFromMatchedSerologyTest

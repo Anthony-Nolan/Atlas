@@ -1,7 +1,7 @@
 ﻿using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dictionary
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
     [TestFixture]
     public class DictionaryLookupServiceTest

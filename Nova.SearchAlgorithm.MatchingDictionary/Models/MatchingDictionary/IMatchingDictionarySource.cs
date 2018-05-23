@@ -1,7 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
 {
     /// <summary>
     /// Identifies classes that can serve as a data source
