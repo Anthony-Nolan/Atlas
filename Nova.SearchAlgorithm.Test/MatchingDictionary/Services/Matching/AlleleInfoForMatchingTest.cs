@@ -7,9 +7,9 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
     [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
-    public class AlleleToPGroupMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
+    public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {
-        public AlleleToPGroupMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
+        public AlleleInfoForMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
         {
         }
 
@@ -35,17 +35,44 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void ExpressedAllelesHaveCorrectMatchingPGroup()
+        public void ValidAlleleTypingsHaveOnlyOneGGroupEach()
+        {
+            var gGroupCounts = MatchingTypings
+                .Where(m => !m.HlaTyping.IsDeleted)
+                .Select(m => new { Allele = m.HlaTyping as AlleleTyping, GGroupCount = m.MatchingGGroups.Count() })
+                .ToList();
+
+            var expressed = gGroupCounts.Where(p => p.GGroupCount != 1);
+            Assert.IsFalse(expressed.Any());
+        }
+
+        [Test]
+        public void ExpressedAllelesHaveCorrectMatchingInfo()
         {
             var normalAllele = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "01:01:01:01"), new AlleleTyping("A*", "01:01:01:01"), new List<string> { "01:01P" });
-            var lowAllele = new AlleleInfoForMatching(
-                new AlleleTyping("B*", "39:01:01:02L"), new AlleleTyping("B*", "39:01:01:02L"), new List<string> { "39:01P" });
-            var questionableAllele = new AlleleInfoForMatching(
-                new AlleleTyping("C*", "07:01:01:14Q"), new AlleleTyping("C*", "07:01:01:14Q"), new List<string> { "07:01P" });
-            var secretedAllele = new AlleleInfoForMatching(
-                new AlleleTyping("B*", "44:02:01:02S"), new AlleleTyping("B*", "44:02:01:02S"), new List<string> { "44:02P" });
+                new AlleleTyping("A*", "01:01:01:01"), 
+                new AlleleTyping("A*", "01:01:01:01"), 
+                new List<string> { "01:01P" }, 
+                new List<string>{ "01:01:01G" });
 
+            var lowAllele = new AlleleInfoForMatching(
+                new AlleleTyping("B*", "39:01:01:02L"), 
+                new AlleleTyping("B*", "39:01:01:02L"), 
+                new List<string> { "39:01P" },
+                new List<string> { "39:01:01G" });
+
+            var questionableAllele = new AlleleInfoForMatching(
+                new AlleleTyping("C*", "07:01:01:14Q"), 
+                new AlleleTyping("C*", "07:01:01:14Q"), 
+                new List<string> { "07:01P" },
+                new List<string> { "07:01:01G" });
+
+            var secretedAllele = new AlleleInfoForMatching(
+                new AlleleTyping("B*", "44:02:01:02S"), 
+                new AlleleTyping("B*", "44:02:01:02S"), 
+                new List<string> { "44:02P" },
+                new List<string> { "44:02:01G" });
+            
             Assert.AreEqual(normalAllele, GetSingleMatchingTyping(MatchLocus.A, "01:01:01:01"));
             Assert.AreEqual(lowAllele, GetSingleMatchingTyping(MatchLocus.B, "39:01:01:02L"));
             Assert.AreEqual(questionableAllele, GetSingleMatchingTyping(MatchLocus.C, "07:01:01:14Q"));
@@ -53,23 +80,37 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void NonExpressedAlleleHasNoPGroup()
+        public void NullAlleleHasCorrectMatchingInfo()
         {
             var nullAllele = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "29:01:01:02N"), new AlleleTyping("A*", "29:01:01:02N"), new List<string>());
+                new AlleleTyping("A*", "29:01:01:02N"), 
+                new AlleleTyping("A*", "29:01:01:02N"), 
+                new List<string>(),
+                new List<string> { "29:01:01G" });
 
             Assert.AreEqual(nullAllele, GetSingleMatchingTyping(MatchLocus.A, "29:01:01:02N"));
         }
 
         [Test]
-        public void IdenticalHlaUsedToFindMatchingPGroupsForDeletedAlleles()
+        public void IdenticalHlaUsedToFindMatchingInfoForDeletedAlleles()
         {
             var deletedWithIdentical = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "11:53", true), new AlleleTyping("A*", "11:02:01"), new List<string> { "11:02P" });
+                new AlleleTyping("A*", "11:53", true), 
+                new AlleleTyping("A*", "11:02:01"), 
+                new List<string> { "11:02P" },
+                new List<string> { "11:02:01G" });
+
             var deletedIsNullIdenticalIsExpressing = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "01:34N", true), new AlleleTyping("A*", "01:01:38L"), new List<string> { "01:01P" });
+                new AlleleTyping("A*", "01:34N", true), 
+                new AlleleTyping("A*", "01:01:38L"), 
+                new List<string> { "01:01P" },
+                new List<string> { "01:01:01G" });
+
             var deletedIsExpressingIdenticalIsNull = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "03:260", true), new AlleleTyping("A*", "03:284N"), new List<string>());
+                new AlleleTyping("A*", "03:260", true), 
+                new AlleleTyping("A*", "03:284N"), 
+                new List<string>(),
+                new List<string> { "03:284N" });
 
             Assert.AreEqual(deletedWithIdentical, GetSingleMatchingTyping(MatchLocus.A, "11:53"));
             Assert.AreEqual(deletedIsNullIdenticalIsExpressing, GetSingleMatchingTyping(MatchLocus.A, "01:34N"));
@@ -77,10 +118,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void DeletedAlleleWithNoIdenticalHlaHasNoMatchingPGroup()
+        public void DeletedAlleleWithNoIdenticalHlaHasNoMatchingInfo()
         {
             var deletedNoIdentical = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "02:100", true), new AlleleTyping("A*", "02:100", true), new List<string>());
+                new AlleleTyping("A*", "02:100", true), 
+                new AlleleTyping("A*", "02:100", true), 
+                new List<string>(),
+                new List<string>());
 
             Assert.AreEqual(deletedNoIdentical, GetSingleMatchingTyping(MatchLocus.A, "02:100"));
         }

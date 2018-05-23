@@ -284,6 +284,7 @@
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedSerologyTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedOnTestBase.cs" />
     <Compile Include="Repositories\DonorRepositoryTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
@@ -304,7 +305,6 @@
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleModelTest.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingModelTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\MockWmdaRepository.cs" />
-    <Compile Include="MatchingDictionary\Services\Matching\AlleleToPGroupMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\AlleleToSerologyMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedHlaTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\ReciprocalMatchingTest.cs" />
