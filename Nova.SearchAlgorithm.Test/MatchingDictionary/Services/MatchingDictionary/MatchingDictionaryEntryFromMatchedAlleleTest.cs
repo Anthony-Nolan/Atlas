@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private const MatchLocus Locus = MatchLocus.A;
         private static readonly string SerologyLocus = Locus.ToString();
         private static IEnumerable<string> _matchingPGroups;
+        private static IEnumerable<string> _matchingGGroups;
         private static IList<RelDnaSerMapping> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
 
@@ -24,6 +25,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         public void SetUp()
         {
             _matchingPGroups = new List<string> { "01:01P" };
+            _matchingGGroups = new List<string> { "01:01:01G" };
 
             var serology = new SerologyTyping(SerologyLocus, "1", SerologySubtype.NotSplit);
             _matchingSerologies = new List<RelDnaSerMapping>
@@ -38,12 +40,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         {
             var allele = new AlleleTyping($"{Locus}*", alleleName);
 
-            var alleleToPGroup = Substitute.For<IAlleleInfoForMatching>();
-            alleleToPGroup.HlaTyping.Returns(allele);
-            alleleToPGroup.TypingUsedInMatching.Returns(allele);
-            alleleToPGroup.MatchingPGroups.Returns(_matchingPGroups);
+            var infoForMatching = Substitute.For<IAlleleInfoForMatching>();
+            infoForMatching.HlaTyping.Returns(allele);
+            infoForMatching.TypingUsedInMatching.Returns(allele);
+            infoForMatching.MatchingPGroups.Returns(_matchingPGroups);
+            infoForMatching.MatchingGGroups.Returns(_matchingGGroups);
 
-            var matchedAllele = new List<MatchedAllele> {new MatchedAllele(alleleToPGroup, _matchingSerologies)};
+            var matchedAllele = new List<MatchedAllele> {new MatchedAllele(infoForMatching, _matchingSerologies)};
 
             return matchedAllele.ToMatchingDictionaryEntries();
         }
@@ -51,7 +54,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static MatchingDictionaryEntry BuildExpectedMatchingDictionaryEntry(string lookupName, MolecularSubtype subtype)
         {
             return new MatchingDictionaryEntry(
-                Locus, lookupName, TypingMethod.Molecular, subtype, SerologySubtype.NotSerologyTyping, _matchingPGroups, _matchingSerologyEntries);
+                Locus, 
+                lookupName, 
+                TypingMethod.Molecular, 
+                subtype, 
+                SerologySubtype.NotSerologyTyping, 
+                _matchingPGroups,
+                _matchingGGroups,
+                _matchingSerologyEntries);
         }
 
         [Test]

@@ -44,7 +44,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static MatchingDictionaryEntry GetExpectedMatchingDictionaryEntry(string lookupName, SerologySubtype subtype)
         {
             return new MatchingDictionaryEntry(
-                Locus, lookupName, TypingMethod.Serology, MolecularSubtype.NotMolecularTyping, subtype, _matchingPGroups, _matchingSerologyEntries);
+                Locus, 
+                lookupName, 
+                TypingMethod.Serology, 
+                MolecularSubtype.NotMolecularTyping,
+                subtype,
+                _matchingPGroups,
+                _matchingGGroups,
+                _matchingSerologyEntries);
         }
 
         [Test]
