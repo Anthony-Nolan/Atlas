@@ -7,8 +7,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Dictionary
     /// Identifies classes that can serve as a data source
     /// for the creation of a matching dictionary entry.
     /// </summary>
-    public interface IDictionarySource<out THlaTyping> : IMatchingPGroups, IMatchingSerologies where THlaTyping : HlaTyping
+    public interface IMatchingDictionarySource<out THlaTyping> : IMatchingPGroups, IMatchingSerologies where THlaTyping : HlaTyping
     {
-        THlaTyping TypingForDictionary { get; }
+        THlaTyping TypingForMatchingDictionary { get; }
     }
 }

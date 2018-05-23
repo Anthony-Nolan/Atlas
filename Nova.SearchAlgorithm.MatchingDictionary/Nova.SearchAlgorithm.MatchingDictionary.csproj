@@ -163,7 +163,7 @@
     <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
-    <Compile Include="Models\Dictionary\IDictionarySource.cs" />
+    <Compile Include="Models\Dictionary\IMatchingDictionarySource.cs" />
     <Compile Include="Models\Dictionary\IMatchingHlaLookupResult.cs" />
     <Compile Include="Models\Dictionary\MatchingDictionaryEntry.cs" />
     <Compile Include="Models\HLATypings\HlaTyping.cs" />

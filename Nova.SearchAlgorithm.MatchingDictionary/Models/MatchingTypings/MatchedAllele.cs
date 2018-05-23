@@ -5,14 +5,14 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public class MatchedAllele : IMatchedHla, IDictionarySource<AlleleTyping>
+    public class MatchedAllele : IMatchedHla, IMatchingDictionarySource<AlleleTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<SerologyTyping> MatchingSerologies { get; }
         public IEnumerable<RelDnaSerMapping> RelDnaSerMappings { get; }
-        public AlleleTyping TypingForDictionary => (AlleleTyping) HlaTyping;
+        public AlleleTyping TypingForMatchingDictionary => (AlleleTyping) HlaTyping;
 
         public MatchedAllele(IAlleleInfoForMatching matchedAllele, IList<RelDnaSerMapping> relDnaSerMappings)
         {
