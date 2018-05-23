@@ -4,13 +4,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
-    public class DictionaryTableEntity : TableEntity
+    public class MatchingDictionaryTableEntity : TableEntity
     {
-        public string SerialisedDictionaryEntry { get; set; }
+        public string SerialisedMatchingDictionaryEntry { get; set; }
 
-        public DictionaryTableEntity() { }
+        public MatchingDictionaryTableEntity() { }
 
-        public DictionaryTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod) 
+        public MatchingDictionaryTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod) 
             : base(GetPartition(matchLocus), GetRowKey(lookupName, typingMethod))
         {
         }

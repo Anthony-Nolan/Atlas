@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            var partition = DictionaryTableEntity.GetPartition(matchLocus);
-            var rowKey = DictionaryTableEntity.GetRowKey(lookupName, typingMethod);
-            var retrieveOperation = TableOperation.Retrieve<DictionaryTableEntity>(partition, rowKey);            
+            var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
+            var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
+            var retrieveOperation = TableOperation.Retrieve<MatchingDictionaryTableEntity>(partition, rowKey);            
             var tableResult = await table.ExecuteAsync(retrieveOperation);
-            var entry = ((DictionaryTableEntity) tableResult.Result)?.ToDictionaryEntry();
+            var entry = ((MatchingDictionaryTableEntity) tableResult.Result)?.ToMatchingDictionaryEntry();
 
             return entry;
         }
@@ -73,7 +73,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             }
         }
 
-        private void BatchInsertIntoDictionaryTable(List<DictionaryTableEntity> entities)
+        private void BatchInsertIntoDictionaryTable(List<MatchingDictionaryTableEntity> entities)
         {
             var batchOperation = new TableBatchOperation();
             entities.ForEach(entity => batchOperation.Insert(entity));
