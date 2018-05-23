@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         
     }
 
-    public class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<AlleleInfoForMatching>
+    public class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
             MatchingGGroups = gGroup;
         }
 
-        public bool Equals(AlleleInfoForMatching other)
+        public bool Equals(IAlleleInfoForMatching other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -40,8 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((AlleleInfoForMatching) obj);
+            return Equals((IAlleleInfoForMatching) obj);
         }
 
         public override int GetHashCode()
