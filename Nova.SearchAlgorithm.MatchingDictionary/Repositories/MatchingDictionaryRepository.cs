@@ -25,13 +25,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public MatchingDictionaryRepository(ICloudTableFactory factory)
         {
             tableFactory = factory;
-            GetDictionaryTable();
+            GetTable();
         }
 
         public void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
             DropCreateTable();
-            InsertContentsIntoDictionaryTable(dictionaryContents.ToList());
+            InsertMatchingDictionaryEntriesIntoTable(dictionaryContents.ToList());
         }
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             return entry;
         }
 
-        private void GetDictionaryTable()
+        private void GetTable()
         {
             table = tableFactory.GetTable(TableReference);
         }
@@ -53,10 +53,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         private void DropCreateTable()
         {
             table.Delete();
-            GetDictionaryTable();
+            GetTable();
         }
 
-        private void InsertContentsIntoDictionaryTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
+        private void InsertMatchingDictionaryEntriesIntoTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
         {
             foreach (var partition in LocusNames.MatchLoci)
             {
@@ -68,12 +68,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
                 for (var i = 0; i < entitiesForPartition.Count; i = i + BatchSize)
                 {
                     var batchToInsert = entitiesForPartition.Skip(i).Take(BatchSize).ToList();
-                    BatchInsertIntoDictionaryTable(batchToInsert);
+                    BatchInsertIntoTable(batchToInsert);
                 }
             }
         }
 
-        private void BatchInsertIntoDictionaryTable(List<MatchingDictionaryTableEntity> entities)
+        private void BatchInsertIntoTable(List<MatchingDictionaryTableEntity> entities)
         {
             var batchOperation = new TableBatchOperation();
             entities.ForEach(entity => batchOperation.Insert(entity));
