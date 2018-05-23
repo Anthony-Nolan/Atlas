@@ -25,18 +25,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var matchLocus = serologyInfo.TypingUsedInMatching.MatchLocus;
             var matchingSerologies = serologyInfo.MatchingSerologies.Select(m => m.Name);
 
-            var matchingPGroups =
+            var alleles = (
                 from allele in alleleInfo
                 join dnaToSer in relDnaSer
                     on new { allele.TypingUsedInMatching.WmdaLocus, allele.TypingUsedInMatching.Name }
                     equals new { dnaToSer.WmdaLocus, dnaToSer.Name }
                 where allele.TypingUsedInMatching.MatchLocus.Equals(matchLocus)
                       && dnaToSer.Serologies.Intersect(matchingSerologies).Any()
-                select allele.MatchingPGroups;
+                select allele
+                ).ToList();
 
             return new MatchedSerology(
                 serologyInfo,
-                matchingPGroups.SelectMany(m => m).Distinct());
+                alleles.SelectMany(allele => allele.MatchingPGroups).Distinct(),
+                alleles.SelectMany(allele => allele.MatchingGGroups).Distinct());
         }
     }
 }
