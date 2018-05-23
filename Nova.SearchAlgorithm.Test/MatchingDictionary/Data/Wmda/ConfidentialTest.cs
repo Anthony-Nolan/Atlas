@@ -22,6 +22,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
                 new Confidential("A*", "02:01:01:28"),
                 new Confidential("B*", "18:37:02"),
                 new Confidential("B*", "48:43"),
+                new Confidential("C*", "06:211N"),
                 new Confidential("DQB1*", "03:01:01:20"),
                 new Confidential("DQB1*", "03:23:03")
             };

@@ -42,8 +42,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
                 .Select(m => new { Allele = m.HlaTyping as AlleleTyping, GGroupCount = m.MatchingGGroups.Count() })
                 .ToList();
 
-            var expressed = gGroupCounts.Where(p => p.GGroupCount != 1);
-            Assert.IsFalse(expressed.Any());
+            var allelesWithIncorrectCounts = gGroupCounts.Where(g => g.GGroupCount != 1);
+            Assert.IsFalse(allelesWithIncorrectCounts.Any());
         }
 
         [Test]
@@ -137,6 +137,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
                 new HlaTyping("A*", "02:01:01:28"),
                 new HlaTyping("B*", "18:37:02"),
                 new HlaTyping("B*", "48:43"),
+                new HlaTyping("C*", "06:211N"),
                 new HlaTyping("DQB1*", "03:01:01:20"),
                 new HlaTyping("DQB1*", "03:23:03")
             };
