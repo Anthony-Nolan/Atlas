@@ -279,6 +279,7 @@
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\HlaNomGTest.cs" />
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedSerologyTest.cs" />
