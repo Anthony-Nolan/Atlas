@@ -169,7 +169,9 @@
     <Compile Include="Models\MatchingDictionary\MatchingDictionaryEntry.cs" />
     <Compile Include="Models\HLATypings\HlaTyping.cs" />
     <Compile Include="Models\HLATypings\MatchLocus.cs" />
+    <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
     <Compile Include="Models\Wmda\HlaNomG.cs" />
+    <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />

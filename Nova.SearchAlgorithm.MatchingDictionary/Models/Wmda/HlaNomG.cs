@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class HlaNomG : IWmdaHlaTyping, IEquatable<HlaNomG>
+    public class HlaNomG : IWmdaAlleleGroup, IEquatable<HlaNomG>
     {
         public string WmdaLocus { get; }
         public string Name { get; }
