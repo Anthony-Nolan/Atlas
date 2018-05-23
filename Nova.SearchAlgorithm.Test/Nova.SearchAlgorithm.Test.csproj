@@ -353,6 +353,9 @@
     <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom_g.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom_p.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
