@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IManageMatchingDictionaryService
     {
-        void RecreateDictionary();
+        void RecreateMatchingDictionary();
     }
 
     public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.dictionaryRepository = dictionaryRepository;
         }
 
-        public void RecreateDictionary()
+        public void RecreateMatchingDictionary()
         {
             var allMatchedHla = matchingService.GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
             var entries = allMatchedHla.ToMatchingDictionaryEntries();

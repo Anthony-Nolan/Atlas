@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Controllers
         [Route("recreate")]
         public IHttpActionResult RecreateMatchingDictionary()
         {
-            manageMatchingService.RecreateDictionary();
+            manageMatchingService.RecreateMatchingDictionary();
             return Ok();
         }
 
