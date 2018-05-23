@@ -17,13 +17,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             var hla = matchedHla.ToArray();
 
             var entries = new List<MatchingDictionaryEntry>();
-            entries.AddRange(GetDictionaryEntriesFromSerology(hla.OfType<IDictionarySource<SerologyTyping>>()));
-            entries.AddRange(GetDictionaryEntriesFromAlleles(hla.OfType<IDictionarySource<AlleleTyping>>()));
+            entries.AddRange(GetMatchingDictionaryEntriesFromSerology(hla.OfType<IDictionarySource<SerologyTyping>>()));
+            entries.AddRange(GetMatchingDictionaryEntriesFromAlleles(hla.OfType<IDictionarySource<AlleleTyping>>()));
 
             return entries;
         }
 
-        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromSerology(IEnumerable<IDictionarySource<SerologyTyping>> matchedSerology)
+        private static IEnumerable<MatchingDictionaryEntry> GetMatchingDictionaryEntriesFromSerology(IEnumerable<IDictionarySource<SerologyTyping>> matchedSerology)
         {
             return matchedSerology.Select(serology =>
                 new MatchingDictionaryEntry(
@@ -37,13 +37,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
                 ));
         }
 
-        private static IEnumerable<MatchingDictionaryEntry> GetDictionaryEntriesFromAlleles(IEnumerable<IDictionarySource<AlleleTyping>> matchedAlleles)
+        private static IEnumerable<MatchingDictionaryEntry> GetMatchingDictionaryEntriesFromAlleles(IEnumerable<IDictionarySource<AlleleTyping>> matchedAlleles)
         {
             var entries = new List<MatchingDictionaryEntry>(
                 matchedAlleles.SelectMany(allele => new List<MatchingDictionaryEntry>{
-                    GetDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.CompleteAllele),
-                    GetDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.TwoFieldAllele),
-                    GetDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.FirstFieldAllele)
+                    GetMatchingDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.CompleteAllele),
+                    GetMatchingDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.TwoFieldAllele),
+                    GetMatchingDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.FirstFieldAllele)
                     }));
 
             var grouped = entries
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Dictionary
             return grouped;
         }
 
-        private static MatchingDictionaryEntry GetDictionaryEntryFromMatchedAllele(IDictionarySource<AlleleTyping> matchedAllele, MolecularSubtype molecularSubtype)
+        private static MatchingDictionaryEntry GetMatchingDictionaryEntryFromMatchedAllele(IDictionarySource<AlleleTyping> matchedAllele, MolecularSubtype molecularSubtype)
         {
             var lookupName = GetAlleleLookupName(matchedAllele.TypingForDictionary, molecularSubtype);
 
