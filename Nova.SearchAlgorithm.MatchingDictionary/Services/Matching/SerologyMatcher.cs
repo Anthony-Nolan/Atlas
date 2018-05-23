@@ -18,15 +18,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         }
 
         private static MatchedSerology GetMatchedSerology(
-            List<IAlleleInfoForMatching> allelesToPGroups,
+            List<IAlleleInfoForMatching> alleleInfo,
             List<RelDnaSer> relDnaSer,
-            ISerologyInfoForMatching serologyToMatch)
+            ISerologyInfoForMatching serologyInfo)
         {
-            var matchLocus = serologyToMatch.TypingUsedInMatching.MatchLocus;
-            var matchingSerologies = serologyToMatch.MatchingSerologies.Select(m => m.Name);
+            var matchLocus = serologyInfo.TypingUsedInMatching.MatchLocus;
+            var matchingSerologies = serologyInfo.MatchingSerologies.Select(m => m.Name);
 
             var matchingPGroups =
-                from allele in allelesToPGroups
+                from allele in alleleInfo
                 join dnaToSer in relDnaSer
                     on new { allele.TypingUsedInMatching.WmdaLocus, allele.TypingUsedInMatching.Name }
                     equals new { dnaToSer.WmdaLocus, dnaToSer.Name }
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 select allele.MatchingPGroups;
 
             return new MatchedSerology(
-                serologyToMatch,
+                serologyInfo,
                 matchingPGroups.SelectMany(m => m).Distinct());
         }
     }
