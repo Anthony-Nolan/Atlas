@@ -11,7 +11,7 @@ using System.Linq;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
     [TestFixture]
-    public class DictionaryFromMatchedSerologyTest
+    public class MatchingDictionaryEntryFromMatchedSerologyTest
     {
         private const MatchLocus Locus = MatchLocus.A;
         private static readonly string SerologyLocus = Locus.ToString();
@@ -39,14 +39,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             return new MatchedSerology(serologyToSerology, _matchingPGroups);
         }
 
-        private static MatchingDictionaryEntry GetExpectedDictionaryEntry(string lookupName, SerologySubtype subtype)
+        private static MatchingDictionaryEntry GetExpectedMatchingDictionaryEntry(string lookupName, SerologySubtype subtype)
         {
             return new MatchingDictionaryEntry(
                 Locus, lookupName, TypingMethod.Serology, MolecularSubtype.NotMolecularTyping, subtype, _matchingPGroups, _matchingSerologyEntries);
         }
 
         [Test]
-        public void DictionaryEntriesCreatedFromSerology()
+        public void MatchingDictionaryEntriesCreatedFromSerology()
         {
             var serologySource = new List<MatchedSerology>
             {
@@ -59,10 +59,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
 
             var expected = new List<MatchingDictionaryEntry>
             {
-                GetExpectedDictionaryEntry("9", SerologySubtype.Broad),
-                GetExpectedDictionaryEntry("23", SerologySubtype.Split),
-                GetExpectedDictionaryEntry("2403", SerologySubtype.Associated),
-                GetExpectedDictionaryEntry("1", SerologySubtype.NotSplit)
+                GetExpectedMatchingDictionaryEntry("9", SerologySubtype.Broad),
+                GetExpectedMatchingDictionaryEntry("23", SerologySubtype.Split),
+                GetExpectedMatchingDictionaryEntry("2403", SerologySubtype.Associated),
+                GetExpectedMatchingDictionaryEntry("1", SerologySubtype.NotSplit)
             };
 
             Assert.IsTrue(actual.SequenceEqual(expected));

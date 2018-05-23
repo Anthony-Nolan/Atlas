@@ -280,9 +280,9 @@
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
-    <Compile Include="MatchingDictionary\Services\MatchingDictionary\DictionaryFromMatchedAlleleTest.cs" />
-    <Compile Include="MatchingDictionary\Services\MatchingDictionary\DictionaryFromMatchedSerologyTest.cs" />
-    <Compile Include="MatchingDictionary\Services\MatchingDictionary\DictionaryLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedSerologyTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedOnTestBase.cs" />
     <Compile Include="Repositories\DonorRepositoryTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />

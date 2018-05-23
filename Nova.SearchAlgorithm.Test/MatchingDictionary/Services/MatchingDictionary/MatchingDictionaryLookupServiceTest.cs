@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
     [TestFixture]
-    public class DictionaryLookupServiceTest
+    public class MatchingDictionaryLookupServiceTest
     {
         private IMatchingDictionaryLookupService lookupService;
         private IMatchingDictionaryRepository repository;
