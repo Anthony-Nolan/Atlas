@@ -4,7 +4,6 @@ using System.Linq;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories;
-using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Hla;
 using System;
 using System.Reflection;

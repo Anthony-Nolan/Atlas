@@ -4,6 +4,7 @@ namespace Nova.SearchAlgorithm.Client.Models
 {
     public class SearchResultSet
     {
-        public IEnumerable<SearchResult> SearchResults { get; set; }
+        public int TotalResults { get; set; }
+        public IEnumerable<PotentialMatch> SearchResults { get; set; }
     }
 }

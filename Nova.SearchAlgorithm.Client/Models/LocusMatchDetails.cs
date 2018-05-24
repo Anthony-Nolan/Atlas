@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace Nova.SearchAlgorithm.Client.Models
+﻿namespace Nova.SearchAlgorithm.Client.Models
 {
-    // TODO:NOVA-924 could we just replace this class with a nullable integer?
     public class LocusMatchDetails
     {
         /// <summary>
@@ -19,5 +13,17 @@ namespace Nova.SearchAlgorithm.Client.Models
         /// Null if the locus is not typed.
         /// </summary>
         public int? MatchCount { get; set; }
+
+        /// <summary>
+        /// The match grade at this locus, according to the scoring algorithm,
+        /// for validation and debugging.
+        /// </summary>
+        public int MatchGrade { get; set; }
+
+        /// <summary>
+        /// The match confidence at this locus, according to the scoring algorithm,
+        /// for validation and debugging.
+        /// </summary>
+        public int MatchConfidence { get; set; }
     }
 }
