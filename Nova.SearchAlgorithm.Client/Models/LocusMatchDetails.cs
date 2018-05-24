@@ -15,7 +15,7 @@
         public int? MatchCount { get; set; }
 
         /// <summary>
-        /// The match gradeat this locus,  according to the scoring algorithm,
+        /// The match grade at this locus, according to the scoring algorithm,
         /// for validation and debugging.
         /// </summary>
         public int MatchGrade { get; set; }

@@ -26,7 +26,7 @@
         public int TotalMatchCount { get; set; }
 
         /// <summary>
-        /// The number of Loci which are typed for this donor.
+        /// The number of loci which are typed for this donor.
         /// </summary>
         public int TypedLociCount { get; set; }
 
