@@ -19,15 +19,8 @@ namespace Nova.SearchAlgorithm.Client
         {
         }
 
-        [Obsolete]
-        public SearchAlgorithmClient(string baseUrl, string apiKey, JsonSerializerSettings settings)
-            : base(new ClientSettings { ApiKey = apiKey, BaseUrl = baseUrl, ClientName = "search_algorithm_client", JsonSettings = settings})
-        {
-        }
-
         public async Task<SearchResultSet> Search(SearchRequest searchRequestCreationModel)
         {
-            //todo: NOVA-761 - decide what kind of object to return
             var request = GetRequest(HttpMethod.Post, "search", body: searchRequestCreationModel);
             return await MakeRequestAsync<SearchResultSet>(request);
         }

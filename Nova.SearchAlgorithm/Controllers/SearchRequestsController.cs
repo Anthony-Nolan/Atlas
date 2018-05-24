@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using Nova.Utils.Http.Exceptions;
 using Nova.SearchAlgorithm.Client.Models;
@@ -28,15 +27,12 @@ namespace Nova.SearchAlgorithm.Controllers
             {
                 var id = searchRequestService.CreateSearchRequest(searchRequest);
 
-                var results = searchService.Search(searchRequest);
+                var results = searchService.Search(searchRequest).ToList();
 
                 var result = new SearchResultSet
                 {
-                    SearchResults = results.Select(match => new SearchResult
-                    {
-                        SearchRequestId = id,
-                        DonorMatch = match
-                    })
+                    TotalResults = results.Count(),
+                    SearchResults = results
                 };
 
                 return Ok(result);

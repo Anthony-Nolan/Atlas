@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using System.Collections.Generic;
 using System.IO;
