@@ -279,11 +279,14 @@
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
+    <Compile Include="MatchingDictionary\Data\Wmda\HlaNomGTest.cs" />
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedSerologyTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedOnTestBase.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
     <Compile Include="Repositories\DonorRepositoryTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
@@ -303,11 +306,10 @@
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleModelTest.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingModelTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\MockWmdaRepository.cs" />
-    <Compile Include="MatchingDictionary\Services\Matching\AlleleToPGroupMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\AlleleToSerologyMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedHlaTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\ReciprocalMatchingTest.cs" />
-    <Compile Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedHlaTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\HlaMatchingServiceTestData.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.cs" />
@@ -353,6 +355,9 @@
     <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom_g.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\hla_nom_p.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -365,6 +370,22 @@
     <Content Include="MatchingDictionary\Repositories\wmda-v3-31-0\version_report.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.AssociatedWithBroadGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.AssociatedWithNotSplitGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.AssociatedWithSplitGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.B15And70ShareMatchingGGroups.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.B15BroadGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.B15SplitGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.B70BroadGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.B70SplitGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.BroadHasSplitAndAssociatedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.BroadWhereSplitHasAssociatedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.BroadWhereSplitHasNoAssociatedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.DeletedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.NotSplitNoAssociatedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.NotSplitWithAssociatedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.SplitHasAssociatedGGroupsAreCorrect.approved.txt" />
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.SplitNoAssociatedGGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />

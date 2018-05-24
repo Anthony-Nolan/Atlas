@@ -156,6 +156,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static MatchingDictionaryEntry BuildAlleleDictionaryEntry(string hlaName)
         {
             var matchingPGroups = new List<string> { hlaName };
+            var matchingGGroups = new List<string> { hlaName };
             var matchingSerologies = new List<SerologyEntry> { new SerologyEntry("SEROLOGY", SerologySubtype.NotSplit) };
 
             return new MatchingDictionaryEntry(
@@ -165,6 +166,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
                 MolecularSubtype.TwoFieldAllele,
                 SerologySubtype.NotSerologyTyping,
                 matchingPGroups,
+                matchingGGroups,
                 matchingSerologies);
         }
     }

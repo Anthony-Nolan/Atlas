@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups
+    public interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups, IMatchingGGroups
     {
         
     }
@@ -15,18 +15,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
+        public IEnumerable<string> MatchingGGroups { get; }
 
-        public AlleleInfoForMatching(AlleleTyping hlaTyping, AlleleTyping typingUsedInMatching, IEnumerable<string> pGroups)
+        public AlleleInfoForMatching(AlleleTyping hlaTyping, AlleleTyping typingUsedInMatching, IEnumerable<string> pGroup, IEnumerable<string> gGroup)
         {
             HlaTyping = hlaTyping;
             TypingUsedInMatching = typingUsedInMatching;
-            MatchingPGroups = pGroups;
-        }
-
-        public override string ToString()
-        {
-            return $"{HlaTyping} ({TypingUsedInMatching}), " +
-                   $"matchingPGroup: {string.Join("/", MatchingPGroups.Select(m => m))}";
+            MatchingPGroups = pGroup;
+            MatchingGGroups = gGroup;
         }
 
         public bool Equals(IAlleleInfoForMatching other)
@@ -34,25 +30,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return
-                Equals(HlaTyping, other.HlaTyping)
-                && Equals(TypingUsedInMatching, other.TypingUsedInMatching)
-                && MatchingPGroups.SequenceEqual(other.MatchingPGroups);
+                HlaTyping.Equals(other.HlaTyping) && 
+                TypingUsedInMatching.Equals(other.TypingUsedInMatching) && 
+                MatchingPGroups.SequenceEqual(other.MatchingPGroups) && 
+                MatchingGGroups.SequenceEqual(other.MatchingGGroups);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is IAlleleInfoForMatching other && Equals(other);
+            return Equals((IAlleleInfoForMatching) obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                var hashCode = (HlaTyping != null ? HlaTyping.GetHashCode() : 0);
+                var hashCode = HlaTyping.GetHashCode();
                 hashCode = (hashCode * 397) ^ TypingUsedInMatching.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingPGroups.GetHashCode();
+                hashCode = (hashCode * 397) ^ MatchingGGroups.GetHashCode();
                 return hashCode;
             }
         }

@@ -16,6 +16,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private const MatchLocus Locus = MatchLocus.A;
         private static readonly string SerologyLocus = Locus.ToString();
         private static IEnumerable<string> _matchingPGroups;
+        private static IEnumerable<string> _matchingGGroups;
         private static IEnumerable<SerologyTyping> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
 
@@ -23,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         public void SetUp()
         {
             _matchingPGroups = new List<string> { "123:123P" };
+            _matchingGGroups = new List<string> { "123:123:123G" };
             _matchingSerologies = new List<SerologyTyping> {new SerologyTyping(SerologyLocus, "123", SerologySubtype.NotSplit)};
             _matchingSerologyEntries = new List<SerologyEntry>{ new SerologyEntry("123", SerologySubtype.NotSplit)};
         }
@@ -36,13 +38,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             serologyToSerology.TypingUsedInMatching.Returns(serology);
             serologyToSerology.MatchingSerologies.Returns(_matchingSerologies);
 
-            return new MatchedSerology(serologyToSerology, _matchingPGroups);
+            return new MatchedSerology(serologyToSerology, _matchingPGroups, _matchingGGroups);
         }
 
         private static MatchingDictionaryEntry GetExpectedMatchingDictionaryEntry(string lookupName, SerologySubtype subtype)
         {
             return new MatchingDictionaryEntry(
-                Locus, lookupName, TypingMethod.Serology, MolecularSubtype.NotMolecularTyping, subtype, _matchingPGroups, _matchingSerologyEntries);
+                Locus, 
+                lookupName, 
+                TypingMethod.Serology, 
+                MolecularSubtype.NotMolecularTyping,
+                subtype,
+                _matchingPGroups,
+                _matchingGGroups,
+                _matchingSerologyEntries);
         }
 
         [Test]

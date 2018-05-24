@@ -4,13 +4,13 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class HlaNomP : IWmdaAlleleGroup, IEquatable<HlaNomP>
+    public class HlaNomG : IWmdaAlleleGroup, IEquatable<HlaNomG>
     {
         public string WmdaLocus { get; }
         public string Name { get; }
         public IEnumerable<string> Alleles { get; }
 
-        public HlaNomP(string wmdaLocus, string name, IEnumerable<string> alleles)
+        public HlaNomG(string wmdaLocus, string name, IEnumerable<string> alleles)
         {
             WmdaLocus = wmdaLocus;
             Name = name;
@@ -19,10 +19,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public override string ToString()
         {
-            return $"locus: {WmdaLocus}, pGroup: {Name}, alleles: {string.Join("/", Alleles)}";
+            return $"locus: {WmdaLocus}, gGroup: {Name}, alleles: {string.Join("/", Alleles)}";
         }
 
-        public bool Equals(HlaNomP other)
+        public bool Equals(HlaNomG other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((HlaNomP) obj);
+            return Equals((HlaNomG) obj);
         }
 
         public override int GetHashCode()

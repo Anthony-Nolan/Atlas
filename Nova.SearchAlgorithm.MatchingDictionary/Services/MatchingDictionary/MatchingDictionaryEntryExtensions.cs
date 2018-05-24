@@ -33,6 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary
                     MolecularSubtype.NotMolecularTyping,
                     serology.TypingForMatchingDictionary.SerologySubtype,
                     serology.MatchingPGroups,
+                    serology.MatchingGGroups,
                     serology.MatchingSerologies.ToSerologyEntries()
                 ));
         }
@@ -55,6 +56,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary
                     e.Select(m => m.MolecularSubtype).OrderBy(m => m).First(),
                     SerologySubtype.NotSerologyTyping,
                     e.SelectMany(p => p.MatchingPGroups).Distinct(),
+                    e.SelectMany(g => g.MatchingGGroups).Distinct(),
                     e.SelectMany(s => s.MatchingSerologies).Distinct()
                     ));
 
@@ -72,6 +74,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary
                 molecularSubtype,
                 SerologySubtype.NotSerologyTyping,
                 matchedAllele.MatchingPGroups,
+                matchedAllele.MatchingGGroups,
                 matchedAllele.MatchingSerologies.ToSerologyEntries()
                 );
 
