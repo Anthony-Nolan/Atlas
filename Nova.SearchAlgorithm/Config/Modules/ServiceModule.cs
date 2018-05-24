@@ -36,8 +36,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
-            builder.RegisterType<DonorService.Client.DonorServiceClient>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
             builder.RegisterType<Repositories.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 

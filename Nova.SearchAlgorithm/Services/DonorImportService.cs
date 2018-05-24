@@ -72,7 +72,8 @@ namespace Nova.SearchAlgorithm.Services
         public async void ResumeDonorImport()
         {
             // TODO:NOVA-1170 for now just import 10
-            var page = await donorServiceClient.GetDonors(10, null);
+            // TODO:NOVA-1170 update the donor client so that the second param can be omitted
+            var page = await donorServiceClient.GetDonors(10, "0");
             foreach (var donor in page.Donors)
             {
                 InsertSingleRawDonor(donor.ToRawImportDonor());
