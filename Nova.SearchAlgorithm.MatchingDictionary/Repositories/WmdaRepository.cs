@@ -6,8 +6,7 @@ using System.Configuration;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     /// <summary>
-    /// Imports the WMDA files
-    /// and prepares their contents for data extraction.
+    /// Provides WMDA data line by line
     /// </summary>
     public interface IWmdaRepository
     {
