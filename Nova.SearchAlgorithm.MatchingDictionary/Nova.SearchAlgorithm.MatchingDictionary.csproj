@@ -162,7 +162,8 @@
     <Compile Include="Repositories\Wmda\IWmdaDataMapper.cs" />
     <Compile Include="Repositories\Wmda\RelDnaSerMapper.cs" />
     <Compile Include="Repositories\Wmda\RelSerSerMapper.cs" />
-    <Compile Include="Repositories\Wmda\WmdaDataFactory.cs" />
+    <Compile Include="Repositories\Wmda\WmdaDataExtraction.cs" />
+    <Compile Include="Repositories\Wmda\WmdaDataExtractionToolSet.cs" />
     <Compile Include="Data\WmdaFileDownloader.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
