@@ -106,11 +106,11 @@
     <Reference Include="Nova.HLAService.Client, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.HLAService.Client.1.2.1\lib\net462\Nova.HLAService.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.3.1.1\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.3.3.2\lib\net462\Nova.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils.WebApi, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.WebApi.3.1.1\lib\net462\Nova.Utils.WebApi.dll</HintPath>
+    <Reference Include="Nova.Utils.WebApi, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.WebApi.3.3.2\lib\net462\Nova.Utils.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>..\packages\Oracle.ManagedDataAccess.12.2.1100\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>

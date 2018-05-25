@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -23,14 +24,14 @@ namespace Nova.SearchAlgorithm.Services
     public class DonorImportService : IDonorImportService
     {
         private readonly IDonorMatchRepository donorRepository;
-        private readonly IHlaRepository hlaRepository;
+        private readonly IMatchingDictionaryLookupService lookupService;
         private readonly ISolarDonorRepository solarRepository;
 
-        public DonorImportService(IDonorMatchRepository donorRepository, IHlaRepository hlaRepository, ISolarDonorRepository solarRepository)
+        public DonorImportService(IDonorMatchRepository donorRepository, IMatchingDictionaryLookupService lookupService, ISolarDonorRepository solarRepository)
         {
             this.donorRepository = donorRepository;
             this.solarRepository = solarRepository;
-            this.hlaRepository = hlaRepository;
+            this.lookupService = lookupService;
         }
 
         public void ImportSingleTestDonor()
@@ -72,7 +73,7 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = code,
                 DonorType = DonorType.Adult,
                 DonorId = donor.DonorId,
-                MatchingHla = donor.HlaNames.Map((locus, position, hla) => hlaRepository.RetrieveHlaMatches(locus, hla))
+                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
             });
         }
 

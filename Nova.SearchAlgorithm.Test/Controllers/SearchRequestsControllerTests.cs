@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Controllers;
@@ -12,11 +14,16 @@ namespace Nova.SearchAlgorithm.Test.Controllers
     [TestFixture]
     public class SearchRequestsControllerTests : ControllerTestBase<SearchRequestsController>
     {
+        [SetUp]
+        public void SetUp()
+        {
+            GetFake<ISearchService>().Search(Arg.Any<SearchRequest>())
+                .Returns(Task.FromResult(Enumerable.Empty<PotentialMatch>()));
+        }
+
         [Test]
         public async Task CreateSearchRequest_Returns200_WhenSearchRequestIsValidAdultSearch()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
-
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/validAdultSearchRequest.json")).PostAsync();
 
@@ -26,8 +33,6 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         [Test]
         public async Task CreateSearchRequest_Returns200_WhenSearchRequestIsValidCordSearch()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
-
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/validCordSearchRequest.json")).PostAsync();
 
@@ -37,8 +42,6 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         [Test]
         public async Task CreateSearchRequest_Returns400_WhenModelFailsValidation()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
-
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/invalidSearchRequest-empty.json")).PostAsync();
 
@@ -48,8 +51,6 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         [Test]
         public async Task CreateSearchRequest_Returns400_WhenRequestHasUnknownSearchType()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
-
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/invalidSearchRequest-badType.json")).PostAsync();
 
@@ -59,8 +60,6 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         [Test]
         public async Task CreateSearchRequest_Returns400_WhenRequestHasUnknownRegistry()
         {
-            GetFake<ISearchRequestService>().CreateSearchRequest(Arg.Any<SearchRequest>()).Returns(1);
-
             var response = await Server.CreateRequest("search")
                 .And(req => req.Content = LoadContent("SearchRequests/invalidSearchRequest-badRegistry.json")).PostAsync();
 

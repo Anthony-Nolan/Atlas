@@ -146,15 +146,15 @@
     <Reference Include="Nova.HLAService.Client, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.HLAService.Client.1.2.1\lib\net462\Nova.HLAService.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.3.1.1\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.3.3.2\lib\net462\Nova.Utils.dll</HintPath>
     </Reference>
     <Reference Include="Nova.Utils.Entity, Version=3.1.1.0, Culture=neutral, PublicKeyToken=null" />
-    <Reference Include="Nova.Utils.TestUtils, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.TestUtils.3.1.1\lib\net462\Nova.Utils.TestUtils.dll</HintPath>
+    <Reference Include="Nova.Utils.TestUtils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.TestUtils.3.3.2\lib\net462\Nova.Utils.TestUtils.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils.WebApi, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.WebApi.3.1.1\lib\net462\Nova.Utils.WebApi.dll</HintPath>
+    <Reference Include="Nova.Utils.WebApi, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.WebApi.3.3.2\lib\net462\Nova.Utils.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="NSubstitute, Version=2.0.2.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
       <HintPath>..\packages\NSubstitute.2.0.2\lib\net45\NSubstitute.dll</HintPath>

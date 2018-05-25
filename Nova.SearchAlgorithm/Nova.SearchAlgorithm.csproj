@@ -154,11 +154,11 @@
     <Reference Include="Nova.HLAService.Client, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.HLAService.Client.1.2.1\lib\net462\Nova.HLAService.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.3.1.1\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.3.3.2\lib\net462\Nova.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils.WebApi, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.WebApi.3.1.1\lib\net462\Nova.Utils.WebApi.dll</HintPath>
+    <Reference Include="Nova.Utils.WebApi, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.Utils.WebApi.3.3.2\lib\net462\Nova.Utils.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>..\packages\Oracle.ManagedDataAccess.12.2.1100\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
@@ -248,8 +248,10 @@
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
-    <Compile Include="Exceptions\HlaException.cs" />
+    <Compile Include="Exceptions\SearchHttpException.cs" />
     <Compile Include="Config\ClientConfig.cs" />
+    <Compile Include="MatchingDictionaryConversions\MatchLocusExtensions.cs" />
+    <Compile Include="MatchingDictionaryConversions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Repositories\Donors\PotentialHlaMatch.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
@@ -268,6 +270,7 @@
     <Compile Include="Repositories\SearchRequests\SearchRequestRepository.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
+    <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImportService.cs" />
     <Compile Include="Services\SearchRequestService.cs" />
