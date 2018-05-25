@@ -1,7 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.Test.MatchingDictionary.Data;
 using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
@@ -14,8 +14,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 
         private HlaMatchingServiceTestData()
         {
-            var repo = MockWmdaRepository.Instance;
-            MatchedHla = new HlaMatchingService(repo).GetMatchedHla(SerologyFilter.Instance.Filter, MolecularFilter.Instance.Filter);
+            var testFileImporter = new WmdaTestFileImporter();
+            var repo = new WmdaDataRepository(testFileImporter);
+            MatchedHla = new HlaMatchingService(repo).GetMatchedHla();
         }
     }
 }

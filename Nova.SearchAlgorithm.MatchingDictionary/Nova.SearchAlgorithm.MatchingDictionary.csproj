@@ -154,14 +154,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Wmda\ConfidentialExtractor.cs" />
-    <Compile Include="Data\Wmda\HlaNomExtractor.cs" />
-    <Compile Include="Data\Wmda\HlaNomGExtractor.cs" />
-    <Compile Include="Data\Wmda\HlaNomPExtractor.cs" />
-    <Compile Include="Data\Wmda\IWmdaDataExtractor.cs" />
-    <Compile Include="Data\Wmda\RelDnaSerExtractor.cs" />
-    <Compile Include="Data\Wmda\RelSerSerExtractor.cs" />
-    <Compile Include="Data\Wmda\WmdaDataFactory.cs" />
+    <Compile Include="Data\IWmdaFileReader.cs" />
+    <Compile Include="Repositories\Wmda\ConfidentialAlleleMapper.cs" />
+    <Compile Include="Repositories\Wmda\HlaNomMapper.cs" />
+    <Compile Include="Repositories\Wmda\HlaNomGMapper.cs" />
+    <Compile Include="Repositories\Wmda\HlaNomPMapper.cs" />
+    <Compile Include="Repositories\Wmda\IWmdaDataMapper.cs" />
+    <Compile Include="Repositories\Wmda\RelDnaSerMapper.cs" />
+    <Compile Include="Repositories\Wmda\RelSerSerMapper.cs" />
+    <Compile Include="Repositories\Wmda\WmdaDataFactory.cs" />
+    <Compile Include="Data\WmdaFileDownloader.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
     <Compile Include="Models\MatchingDictionary\IMatchingDictionarySource.cs" />
@@ -197,7 +199,7 @@
     <Compile Include="Models\MatchingTypings\RelDnaSerMatch.cs" />
     <Compile Include="Models\MatchingTypings\SerologyInfoForMatching.cs" />
     <Compile Include="Models\Wmda\Assignment.cs" />
-    <Compile Include="Models\Wmda\Confidential.cs" />
+    <Compile Include="Models\Wmda\ConfidentialAllele.cs" />
     <Compile Include="Models\Wmda\Filters\MatchLociFilter.cs" />
     <Compile Include="Models\Wmda\Filters\MolecularFilter.cs" />
     <Compile Include="Models\Wmda\Filters\SerologyFilter.cs" />
@@ -212,7 +214,7 @@
     <Compile Include="Repositories\AzureStorage\MatchingDictionaryEntityExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\MatchingDictionaryRepository.cs" />
-    <Compile Include="Repositories\WmdaRepository.cs" />
+    <Compile Include="Repositories\WmdaDataRepository.cs" />
     <Compile Include="Services\ManageMatchingDictionaryService.cs" />
     <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />
     <Compile Include="Services\Matching\AlleleMatcher.cs" />

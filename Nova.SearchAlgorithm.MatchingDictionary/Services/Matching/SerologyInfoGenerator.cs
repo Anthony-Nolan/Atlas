@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
@@ -68,11 +66,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             }
         }
 
-        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaRepository repo, Func<IWmdaHlaTyping, bool> filter)
+        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaDataRepository dataRepository)
         {
-            var relSerSer = WmdaDataFactory.GetData<RelSerSer>(repo, filter);
-            var allSerology = WmdaDataFactory.GetData<HlaNom>(repo, filter);
-            var serologyInfo = allSerology.Select(ser => GetInfoForSingleSerology(relSerSer, ser));
+            var serologyInfo = dataRepository.HlaNomSerologies
+                .Select(serology => GetInfoForSingleSerology(dataRepository.RelSerSer, serology));
 
             return serologyInfo;
         }
