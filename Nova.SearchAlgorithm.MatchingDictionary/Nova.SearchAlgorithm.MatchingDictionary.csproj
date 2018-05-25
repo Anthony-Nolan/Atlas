@@ -196,8 +196,8 @@
     <Compile Include="Models\MatchingTypings\MatchedAllele.cs" />
     <Compile Include="Models\MatchingTypings\IMatchedHla.cs" />
     <Compile Include="Models\MatchingTypings\MatchedSerology.cs" />
-    <Compile Include="Models\MatchingTypings\RelDnaSerMapping.cs" />
-    <Compile Include="Models\MatchingTypings\RelDnaSerMatch.cs" />
+    <Compile Include="Models\MatchingTypings\DnaToSerologyMapping.cs" />
+    <Compile Include="Models\MatchingTypings\DnaToSerologyMatch.cs" />
     <Compile Include="Models\MatchingTypings\SerologyInfoForMatching.cs" />
     <Compile Include="Models\Wmda\Assignment.cs" />
     <Compile Include="Models\Wmda\ConfidentialAllele.cs" />

@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             new Dictionary<string, WmdaDataExtractionToolSet>
         {
             {
-                nameof(WmdaDataNameProvider.HlaNomSerologies),
+                nameof(WmdaDataNameProvider.Serologies),
                 new WmdaDataExtractionToolSet(
                     HlaNomFileName,
                     SerologyFilter.Instance.Filter,
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                     new HlaNomMapper())
             },
             {
-                nameof(WmdaDataNameProvider.HlaNomAlleles),
+                nameof(WmdaDataNameProvider.Alleles),
                 new WmdaDataExtractionToolSet(
                     HlaNomFileName,
                     MolecularFilter.Instance.Filter,
@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                     new HlaNomMapper())
             },
             {
-                nameof(WmdaDataNameProvider.HlaNomP),
+                nameof(WmdaDataNameProvider.PGroups),
                 new WmdaDataExtractionToolSet(
                     "wmda/hla_nom_p",
                     MolecularFilter.Instance.Filter,
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                     new HlaNomPMapper())
             },
             {
-                nameof(WmdaDataNameProvider.HlaNomG),
+                nameof(WmdaDataNameProvider.GGroups),
                 new WmdaDataExtractionToolSet(
                     "wmda/hla_nom_g",
                     MolecularFilter.Instance.Filter,
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                     new HlaNomGMapper())
             },
             {
-                nameof(WmdaDataNameProvider.RelSerSer),
+                nameof(WmdaDataNameProvider.SerologyToSerologyRelationships),
                 new WmdaDataExtractionToolSet(
                     "wmda/rel_ser_ser",
                     SerologyFilter.Instance.Filter,
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                     new RelSerSerMapper())
             },
             {
-                nameof(WmdaDataNameProvider.RelDnaSer),
+                nameof(WmdaDataNameProvider.DnaToSerologyRelationships),
                 new WmdaDataExtractionToolSet(
                     "wmda/rel_dna_ser",
                     MolecularFilter.Instance.Filter,

@@ -257,105 +257,105 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
             };
 
             Assert.IsTrue(b15BroadAllele.MatchingSerologies.SequenceEqual(b15BroadSer));
-            Assert.IsEmpty(b15BroadAllele.RelDnaSerMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
+            Assert.IsEmpty(b15BroadAllele.DnaToSerologyMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
 
             Assert.IsTrue(b15SplitAllele.MatchingSerologies.SequenceEqual(b15SplitSer));
-            Assert.IsEmpty(b15SplitAllele.RelDnaSerMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
+            Assert.IsEmpty(b15SplitAllele.DnaToSerologyMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
 
             Assert.IsTrue(b70BroadAllele.MatchingSerologies.SequenceEqual(b70BroadSer));
-            Assert.IsEmpty(b70BroadAllele.RelDnaSerMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
+            Assert.IsEmpty(b70BroadAllele.DnaToSerologyMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
 
             Assert.IsTrue(b70SplitAllele.MatchingSerologies.SequenceEqual(b70SplitSer));
-            Assert.IsEmpty(b70SplitAllele.RelDnaSerMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
+            Assert.IsEmpty(b70SplitAllele.DnaToSerologyMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
 
             Assert.IsTrue(b1570BroadAllele.MatchingSerologies.SequenceEqual(b1570BroadSer));
-            Assert.IsEmpty(b1570BroadAllele.RelDnaSerMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
+            Assert.IsEmpty(b1570BroadAllele.DnaToSerologyMappings.Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected)));
         }
 
         [Test]
         public void UnexpectedMatchesCorrectlyCaptured()
         {
             var mappedToSameBroadAllele = GetSingleMatchingTyping(MatchLocus.A, "26:10");
-            var mappedToSameBroadMapping = new List<RelDnaSerMapping>
+            var mappedToSameBroadMapping = new List<DnaToSerologyMapping>
             {
-                new RelDnaSerMapping(
+                new DnaToSerologyMapping(
                     new SerologyTyping("A", "10", SerologySubtype.Broad),
                     Assignment.Unambiguous,
-                    new List<RelDnaSerMatch>
+                    new List<DnaToSerologyMatch>
                     {
-                        new RelDnaSerMatch(new SerologyTyping("A", "10", SerologySubtype.Broad)),
-                        new RelDnaSerMatch(new SerologyTyping("A", "25", SerologySubtype.Split), true),
-                        new RelDnaSerMatch(new SerologyTyping("A", "26", SerologySubtype.Split)),
-                        new RelDnaSerMatch(new SerologyTyping("A", "34", SerologySubtype.Split), true),
-                        new RelDnaSerMatch(new SerologyTyping("A", "66", SerologySubtype.Split), true)
+                        new DnaToSerologyMatch(new SerologyTyping("A", "10", SerologySubtype.Broad)),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "25", SerologySubtype.Split), true),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "26", SerologySubtype.Split)),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "34", SerologySubtype.Split), true),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "66", SerologySubtype.Split), true)
                     })
             };
 
             var mappedToDifferentBroadAllele = GetSingleMatchingTyping(MatchLocus.A, "02:55");
-            var mappedToDifferentBroadMapping = new List<RelDnaSerMapping>
+            var mappedToDifferentBroadMapping = new List<DnaToSerologyMapping>
             {
-                new RelDnaSerMapping(
+                new DnaToSerologyMapping(
                     new SerologyTyping("A", "2", SerologySubtype.NotSplit),
                     Assignment.Assumed,
-                    new List<RelDnaSerMatch>
+                    new List<DnaToSerologyMatch>
                     {
-                        new RelDnaSerMatch(new SerologyTyping("A", "2", SerologySubtype.NotSplit)),
-                        new RelDnaSerMatch(new SerologyTyping("A", "203", SerologySubtype.Associated)),
-                        new RelDnaSerMatch(new SerologyTyping("A", "210", SerologySubtype.Associated))
+                        new DnaToSerologyMatch(new SerologyTyping("A", "2", SerologySubtype.NotSplit)),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "203", SerologySubtype.Associated)),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "210", SerologySubtype.Associated))
                     }),
-                new RelDnaSerMapping(
+                new DnaToSerologyMapping(
                     new SerologyTyping("A", "28", SerologySubtype.Broad),
                     Assignment.Expert,
-                    new List<RelDnaSerMatch>
+                    new List<DnaToSerologyMatch>
                     {
-                        new RelDnaSerMatch(new SerologyTyping("A", "28", SerologySubtype.Broad), true),
-                        new RelDnaSerMatch(new SerologyTyping("A", "68", SerologySubtype.Split), true),
-                        new RelDnaSerMatch(new SerologyTyping("A", "69", SerologySubtype.Split), true)
+                        new DnaToSerologyMatch(new SerologyTyping("A", "28", SerologySubtype.Broad), true),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "68", SerologySubtype.Split), true),
+                        new DnaToSerologyMatch(new SerologyTyping("A", "69", SerologySubtype.Split), true)
                     })
             };
 
-            Assert.IsTrue(mappedToSameBroadAllele.RelDnaSerMappings.SequenceEqual(mappedToSameBroadMapping));
-            Assert.IsTrue(mappedToDifferentBroadAllele.RelDnaSerMappings.SequenceEqual(mappedToDifferentBroadMapping));
+            Assert.IsTrue(mappedToSameBroadAllele.DnaToSerologyMappings.SequenceEqual(mappedToSameBroadMapping));
+            Assert.IsTrue(mappedToDifferentBroadAllele.DnaToSerologyMappings.SequenceEqual(mappedToDifferentBroadMapping));
         }
 
         [Test]
         public void AllelesWhoseFamiliesAreInvalidSerologyTypingsHaveCorrectSerologyMappings()
         {
             var noAssignmentAllele = GetSingleMatchingTyping(MatchLocus.C, "12:02:02:01");
-            var noAssignmentMapping = new List<RelDnaSerMapping>
+            var noAssignmentMapping = new List<DnaToSerologyMapping>
             {
-                new RelDnaSerMapping(
+                new DnaToSerologyMapping(
                     new SerologyTyping("Cw", "12", SerologySubtype.NotSplit),
                     Assignment.None,
-                    new List<RelDnaSerMatch>
+                    new List<DnaToSerologyMatch>
                     {
-                        new RelDnaSerMatch(new SerologyTyping("Cw", "12", SerologySubtype.NotSplit))
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "12", SerologySubtype.NotSplit))
                     })
             };
 
             var expertAssignmentAllele = GetSingleMatchingTyping(MatchLocus.C, "15:07");
-            var expertAssignmentMapping = new List<RelDnaSerMapping>
+            var expertAssignmentMapping = new List<DnaToSerologyMapping>
             {
-               new RelDnaSerMapping(
+               new DnaToSerologyMapping(
                     new SerologyTyping("Cw", "3", SerologySubtype.Broad), 
                     Assignment.Expert,
-                    new List<RelDnaSerMatch>
+                    new List<DnaToSerologyMatch>
                     {
-                        new RelDnaSerMatch(new SerologyTyping("Cw", "3", SerologySubtype.Broad), true),
-                        new RelDnaSerMatch(new SerologyTyping("Cw", "9", SerologySubtype.Split), true),
-                        new RelDnaSerMatch(new SerologyTyping("Cw", "10", SerologySubtype.Split), true)
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "3", SerologySubtype.Broad), true),
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "9", SerologySubtype.Split), true),
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "10", SerologySubtype.Split), true)
                     }),
-                new RelDnaSerMapping(
+                new DnaToSerologyMapping(
                     new SerologyTyping("Cw", "15", SerologySubtype.NotSplit),
                     Assignment.None,
-                    new List<RelDnaSerMatch>
+                    new List<DnaToSerologyMatch>
                     {
-                        new RelDnaSerMatch(new SerologyTyping("Cw", "15", SerologySubtype.NotSplit))
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "15", SerologySubtype.NotSplit))
                     })
             };
 
-            Assert.IsTrue(noAssignmentAllele.RelDnaSerMappings.SequenceEqual(noAssignmentMapping));
-            Assert.IsTrue(expertAssignmentAllele.RelDnaSerMappings.SequenceEqual(expertAssignmentMapping));
+            Assert.IsTrue(noAssignmentAllele.DnaToSerologyMappings.SequenceEqual(noAssignmentMapping));
+            Assert.IsTrue(expertAssignmentAllele.DnaToSerologyMappings.SequenceEqual(expertAssignmentMapping));
         }
     }
 }

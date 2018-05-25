@@ -9,23 +9,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IWmdaDataRepository
     {
-        IEnumerable<HlaNom> HlaNomSerologies { get; }
-        IEnumerable<HlaNom> HlaNomAlleles { get; }
-        IEnumerable<HlaNomP> HlaNomP { get; }
-        IEnumerable<HlaNomG> HlaNomG { get; }
-        IEnumerable<RelSerSer> RelSerSer { get; }
-        IEnumerable<RelDnaSer> RelDnaSer { get; }
+        IEnumerable<HlaNom> Serologies { get; }
+        IEnumerable<HlaNom> Alleles { get; }
+        IEnumerable<HlaNomP> PGroups { get; }
+        IEnumerable<HlaNomG> GGroups { get; }
+        IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; }
+        IEnumerable<RelDnaSer> DnaToSerologyRelationships { get; }
         IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; }
     }
 
     public class WmdaDataRepository : IWmdaDataRepository
     {
-        public IEnumerable<HlaNom> HlaNomSerologies { get; private set; }
-        public IEnumerable<HlaNom> HlaNomAlleles { get; private set; }
-        public IEnumerable<HlaNomP> HlaNomP { get; private set; }
-        public IEnumerable<HlaNomG> HlaNomG { get; private set; }
-        public IEnumerable<RelSerSer> RelSerSer { get; private set; }
-        public IEnumerable<RelDnaSer> RelDnaSer { get; private set; }
+        public IEnumerable<HlaNom> Serologies { get; private set; }
+        public IEnumerable<HlaNom> Alleles { get; private set; }
+        public IEnumerable<HlaNomP> PGroups { get; private set; }
+        public IEnumerable<HlaNomG> GGroups { get; private set; }
+        public IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; private set; }
+        public IEnumerable<RelDnaSer> DnaToSerologyRelationships { get; private set; }
         public IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; private set; }
 
         private readonly IWmdaFileReader wmdaFileReader;
@@ -38,12 +38,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private void PopulateWmdaDataCollections()
         {
-            HlaNomSerologies = GetWmdaData<HlaNom>(nameof(HlaNomSerologies));
-            HlaNomAlleles = GetWmdaData<HlaNom>(nameof(HlaNomAlleles));
-            HlaNomP = GetWmdaData<HlaNomP>(nameof(HlaNomP));
-            HlaNomG = GetWmdaData<HlaNomG>(nameof(HlaNomG));
-            RelSerSer = GetWmdaData<RelSerSer>(nameof(RelSerSer));
-            RelDnaSer = GetWmdaData<RelDnaSer>(nameof(RelDnaSer));
+            Serologies = GetWmdaData<HlaNom>(nameof(Serologies));
+            Alleles = GetWmdaData<HlaNom>(nameof(Alleles));
+            PGroups = GetWmdaData<HlaNomP>(nameof(PGroups));
+            GGroups = GetWmdaData<HlaNomG>(nameof(GGroups));
+            SerologyToSerologyRelationships = GetWmdaData<RelSerSer>(nameof(SerologyToSerologyRelationships));
+            DnaToSerologyRelationships = GetWmdaData<RelDnaSer>(nameof(DnaToSerologyRelationships));
             ConfidentialAlleles = GetWmdaData<ConfidentialAllele>(nameof(ConfidentialAlleles));
         }
 

@@ -5,15 +5,15 @@ using System.Collections.Generic;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.RelDnaSerTestArgs))]
-    public class RelDnaSerTest : WmdaRepositoryTestBase<RelDnaSer>
+    public class DnaToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelDnaSer>
     {
-        public RelDnaSerTest(IEnumerable<RelDnaSer> relDnaSer, IEnumerable<string> matchLoci)
+        public DnaToSerologyRelationshipsTest(IEnumerable<RelDnaSer> relDnaSer, IEnumerable<string> matchLoci)
             : base(relDnaSer, matchLoci)
         {
         }
 
         [Test]
-        public void RelDnaSer_SuccessfullyCaptured()
+        public void DnaToSerologyRelationships_SuccessfullyCaptured()
         {
             var alleleWithUnambiguous = new RelDnaSer("A*", "01:01:01:01", new List<SerologyAssignment>
             {

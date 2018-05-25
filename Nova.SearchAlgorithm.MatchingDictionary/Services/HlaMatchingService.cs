@@ -39,9 +39,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 new AlleleInfoGenerator().GetAlleleInfoForMatching(dataRepository).ToList();
             var serologyInfoForMatching =
                 new SerologyInfoGenerator().GetSerologyInfoForMatching(dataRepository).ToList();
-            var relDnaSer = dataRepository.RelDnaSer.ToList();
+            var dnaToSerologyRelationships = dataRepository.DnaToSerologyRelationships.ToList();
 
-            return new HlaInfoForMatching(alleleInfoForMatching, serologyInfoForMatching, relDnaSer);
+            return new HlaInfoForMatching(alleleInfoForMatching, serologyInfoForMatching, dnaToSerologyRelationships);
         }
 
         private static IEnumerable<IMatchedHla> CreateMatchedHla(IEnumerable<IHlaMatcher> hlaMatchers, HlaInfoForMatching hlaInfo)
