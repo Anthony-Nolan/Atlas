@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void WmdaCollectionOnlyContainsMatchLoci()
+        public void WmdaHlaTypingCollectionOnlyContainsMatchLoci()
         {
             var collectionCopy = new List<TWmdaHlaTyping>(HlaTypings);
             Assert.IsNotEmpty(collectionCopy);

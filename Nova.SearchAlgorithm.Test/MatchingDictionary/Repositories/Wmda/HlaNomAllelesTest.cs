@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void HlaNomRegexCapturesAlleleAsExpected()
+        public void HlaNomAlleles_SuccessfullyCaptured()
         {
             var twoField = new HlaNom("A*", "01:26");
             var twoFieldSuffix = new HlaNom("A*", "01:27N");

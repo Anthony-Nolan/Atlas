@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void RelSerSerRegexCapturesRelationshipAsExpected()
+        public void RelSerSer_SuccessfullyCaptured()
         {
             var broadNoAssociated = new RelSerSer("A", "9", new List<string> { "23", "24" }, new List<string>());
             var broadWithAssociated = new RelSerSer("B", "21", new List<string> { "49", "50" }, new List<string> { "4005" });

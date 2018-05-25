@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void HlaNomRegexCapturesSerologyAsExpected()
+        public void HlaNomSerologies_SuccessfullyCaptured()
         {
             var oneDigit = new HlaNom("DQ", "1");
             var twoDigit = new HlaNom("A", "29");
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void HlaNomContainsAllExpectedSerology()
+        public void HlaNomSerologies_ContainsAllExpectedSerology()
         {
             var str = string.Join("\r\n", HlaTypings
                 .OrderBy(s => s.WmdaLocus)
