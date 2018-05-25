@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
+using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(MolecularTestFixtureArgs), "Args")]
-    public class RelDnaSerTest : WmdaDataTestBase<RelDnaSer>
+    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.RelDnaSerTestArgs))]
+    public class RelDnaSerTest : WmdaRepositoryTestBase<RelDnaSer>
     {
-        public RelDnaSerTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
-            : base(filter, matchLoci)
+        public RelDnaSerTest(IEnumerable<RelDnaSer> relDnaSer, IEnumerable<string> matchLoci)
+            : base(relDnaSer, matchLoci)
         {
         }
 

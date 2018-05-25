@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
+using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data.Wmda
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(SerologyTestFixtureArgs), "Args")]
-    public class RelSerSerTest : WmdaDataTestBase<RelSerSer>
+    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.RelSerSerTestArgs))]
+    public class RelSerSerTest : WmdaRepositoryTestBase<RelSerSer>
     {
-        public RelSerSerTest(Func<IWmdaHlaTyping, bool> filter, IEnumerable<string> matchLoci)
-            : base(filter, matchLoci)
+        public RelSerSerTest(IEnumerable<RelSerSer> relSerSer, IEnumerable<string> matchLoci)
+            : base(relSerSer, matchLoci)
         {
         }
 

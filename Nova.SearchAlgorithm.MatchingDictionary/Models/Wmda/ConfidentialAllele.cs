@@ -2,12 +2,12 @@
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class Confidential : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
+    public class ConfidentialAllele : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
     {
         public string WmdaLocus { get; }
         public string Name { get; }
 
-        public Confidential(string wmdaLocus, string name)
+        public ConfidentialAllele(string wmdaLocus, string name)
         {
             WmdaLocus = wmdaLocus;
             Name = name;
