@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Nova.SearchAlgorithm.MatchingDictionary.Data;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters
 {
