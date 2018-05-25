@@ -1,7 +1,6 @@
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {

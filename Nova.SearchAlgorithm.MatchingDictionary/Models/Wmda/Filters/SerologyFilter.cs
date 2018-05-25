@@ -1,5 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 
