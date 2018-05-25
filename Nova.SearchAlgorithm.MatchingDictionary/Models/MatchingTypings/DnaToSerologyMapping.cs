@@ -6,20 +6,20 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public class RelDnaSerMapping : IEquatable<RelDnaSerMapping>
+    public class DnaToSerologyMapping : IEquatable<DnaToSerologyMapping>
     {
         public SerologyTyping DirectSerology { get; }
         public Assignment Assignment { get; }
-        public IEnumerable<RelDnaSerMatch> AllMatchingSerology { get; }
+        public IEnumerable<DnaToSerologyMatch> AllMatchingSerology { get; }
         
-        public RelDnaSerMapping(SerologyTyping directSerology, Assignment assignment, IEnumerable<RelDnaSerMatch> allMatchingSerology)
+        public DnaToSerologyMapping(SerologyTyping directSerology, Assignment assignment, IEnumerable<DnaToSerologyMatch> allMatchingSerology)
         {
             DirectSerology = directSerology;
             Assignment = assignment;
             AllMatchingSerology = allMatchingSerology;
         }
         
-        public bool Equals(RelDnaSerMapping other)
+        public bool Equals(DnaToSerologyMapping other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((RelDnaSerMapping) obj);
+            return Equals((DnaToSerologyMapping) obj);
         }
 
         public override int GetHashCode()

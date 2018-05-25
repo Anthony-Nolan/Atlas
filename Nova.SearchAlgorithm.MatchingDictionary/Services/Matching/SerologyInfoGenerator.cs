@@ -68,26 +68,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
         public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaDataRepository dataRepository)
         {
-            var serologyInfo = dataRepository.HlaNomSerologies
-                .Select(serology => GetInfoForSingleSerology(dataRepository.RelSerSer, serology));
+            var serologyRelationships = dataRepository.SerologyToSerologyRelationships.ToList();
+
+            var serologyInfo = dataRepository.Serologies
+                .Select(serology => GetInfoForSingleSerology(serologyRelationships, serology));
 
             return serologyInfo;
         }
 
-        private static ISerologyInfoForMatching GetInfoForSingleSerology(IEnumerable<RelSerSer> relSerSer, HlaNom ser)
+        private static ISerologyInfoForMatching GetInfoForSingleSerology(List<RelSerSer> serologyRelationships, HlaNom ser)
         {
-            var relSerSerList = relSerSer.ToList();
-
-            var serFamily = new SerologyFamily(relSerSerList, ser);
+            var serFamily = new SerologyFamily(serologyRelationships, ser);
             var usedInMatching = new SerologyTyping(serFamily.SerologyTyping);
-            var matchList = new List<SerologyTyping>(CalculateMatchingSerologiesFromFamily(relSerSerList, serFamily));
+            var matchList = new List<SerologyTyping>(CalculateMatchingSerologiesFromFamily(serologyRelationships, serFamily));
 
             if (!ser.IdenticalHla.Equals(""))
             {
                 var identicalSer = new HlaNom(ser.WmdaLocus, ser.IdenticalHla);
-                var identicalSerFamily = new SerologyFamily(relSerSerList, identicalSer);
+                var identicalSerFamily = new SerologyFamily(serologyRelationships, identicalSer);
                 usedInMatching = new SerologyTyping(identicalSerFamily.SerologyTyping);
-                matchList.AddRange(CalculateMatchingSerologiesFromFamily(relSerSerList, identicalSerFamily));
+                matchList.AddRange(CalculateMatchingSerologiesFromFamily(serologyRelationships, identicalSerFamily));
             }
 
             return new SerologyInfoForMatching(serFamily.SerologyTyping, usedInMatching, matchList);

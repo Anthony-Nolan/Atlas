@@ -5,15 +5,15 @@ using System.Collections.Generic;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.HlaNomAllelesTestArgs))]
-    public class HlaNomAllelesTest : WmdaRepositoryTestBase<HlaNom>
+    public class AllelesTest : WmdaRepositoryTestBase<HlaNom>
     {
-        public HlaNomAllelesTest(IEnumerable<HlaNom> hlaNomAlleles, IEnumerable<string> matchLoci)
+        public AllelesTest(IEnumerable<HlaNom> hlaNomAlleles, IEnumerable<string> matchLoci)
             : base(hlaNomAlleles, matchLoci)
         {
         }
 
         [Test]
-        public void HlaNomAlleles_SuccessfullyCaptured()
+        public void Alleles_SuccessfullyCaptured()
         {
             var twoField = new HlaNom("A*", "01:26");
             var twoFieldSuffix = new HlaNom("A*", "01:27N");

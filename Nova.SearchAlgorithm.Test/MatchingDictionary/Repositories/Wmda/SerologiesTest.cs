@@ -9,15 +9,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.HlaNomSerologiesTestArgs))]
     [UseReporter(typeof(DiffReporter))]
-    public class HlaNomSerologiesTest : WmdaRepositoryTestBase<HlaNom>
+    public class SerologiesTest : WmdaRepositoryTestBase<HlaNom>
     {
-        public HlaNomSerologiesTest(IEnumerable<HlaNom> hlaNomSerologies, IEnumerable<string> matchLoci)
+        public SerologiesTest(IEnumerable<HlaNom> hlaNomSerologies, IEnumerable<string> matchLoci)
             : base(hlaNomSerologies, matchLoci)
         {
         }
 
         [Test]
-        public void HlaNomSerologies_SuccessfullyCaptured()
+        public void Serologies_SuccessfullyCaptured()
         {
             var oneDigit = new HlaNom("DQ", "1");
             var twoDigit = new HlaNom("A", "29");
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void HlaNomSerologies_ContainsAllExpectedSerology()
+        public void Serologies_ContainsAllExpectedSerology()
         {
             var str = string.Join("\r\n", HlaTypings
                 .OrderBy(s => s.WmdaLocus)

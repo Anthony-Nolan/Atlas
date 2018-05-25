@@ -12,22 +12,22 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         private static readonly string[] SerologyLoci = { "A", "B", "Cw", "DQ", "DR" };
 
         public static object[] HlaNomAllelesTestArgs = {
-            new object[] { Repo.HlaNomAlleles, MolecularLoci }
+            new object[] { Repo.Alleles, MolecularLoci }
         };
         public static object[] HlaNomSerologiesTestArgs = {
-            new object[] { Repo.HlaNomSerologies, SerologyLoci }
+            new object[] { Repo.Serologies, SerologyLoci }
         };
         public static object[] HlaNomPTestArgs = {
-            new object[] { Repo.HlaNomP, MolecularLoci }
+            new object[] { Repo.PGroups, MolecularLoci }
         };
         public static object[] HlaNomGTestArgs = {
-            new object[] { Repo.HlaNomG, MolecularLoci }
+            new object[] { Repo.GGroups, MolecularLoci }
         };
         public static object[] RelSerSerTestArgs = {
-            new object[] { Repo.RelSerSer, SerologyLoci }
+            new object[] { Repo.SerologyToSerologyRelationships, SerologyLoci }
         };
         public static object[] RelDnaSerTestArgs = {
-            new object[] { Repo.RelDnaSer, MolecularLoci }
+            new object[] { Repo.DnaToSerologyRelationships, MolecularLoci }
         };
         public static object[] ConfidentialAllelesTestArgs = {
             new object[] { Repo.ConfidentialAlleles, MolecularLoci }

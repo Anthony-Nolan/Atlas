@@ -280,7 +280,7 @@
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\HlaNomGTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedSerologyTest.cs" />
@@ -296,12 +296,12 @@
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\HlaNomAllelesTest.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\HlaNomPTest.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\HlaNomSerologiesTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\AllelesTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\PGroupsTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdaRepositoryTestFixtureArgs.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\RelDnaSerTest.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\RelSerSerTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\DnaToSerologyRelationshipsTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\SerologyToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdRepositoryTestBase.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleModelTest.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingModelTest.cs" />
@@ -366,7 +366,7 @@
     <Content Include="MatchingDictionary\Data\wmda-v3-31-0\version_report.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MatchingDictionary\Repositories\Wmda\HlaNomSerologiesTest.HlaNomSerologies_ContainsAllExpectedSerology.approved.txt">
+    <Content Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.Serologies_ContainsAllExpectedSerology.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.AssociatedWithBroadGGroupsAreCorrect.approved.txt" />

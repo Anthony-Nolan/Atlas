@@ -14,12 +14,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
             return hlaInfo.SerologyInfoForMatching.Select(serology =>
-                GetMatchedSerology(hlaInfo.AlleleInfoForMatching, hlaInfo.RelDnaSer, serology));
+                GetMatchedSerology(hlaInfo.AlleleInfoForMatching, hlaInfo.DnaToSerologyRelationships, serology));
         }
 
         private static MatchedSerology GetMatchedSerology(
             List<IAlleleInfoForMatching> alleleInfo,
-            List<RelDnaSer> relDnaSer,
+            List<RelDnaSer> dnaToSerologyRelationships,
             ISerologyInfoForMatching serologyInfo)
         {
             var matchLocus = serologyInfo.TypingUsedInMatching.MatchLocus;
@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
             var alleles = (
                 from allele in alleleInfo
-                join dnaToSer in relDnaSer
+                join dnaToSer in dnaToSerologyRelationships
                     on new { allele.TypingUsedInMatching.WmdaLocus, allele.TypingUsedInMatching.Name }
                     equals new { dnaToSer.WmdaLocus, dnaToSer.Name }
                 where allele.TypingUsedInMatching.MatchLocus.Equals(matchLocus)

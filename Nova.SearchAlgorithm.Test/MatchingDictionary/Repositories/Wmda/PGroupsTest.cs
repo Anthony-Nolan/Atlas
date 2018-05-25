@@ -5,15 +5,15 @@ using System.Collections.Generic;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.HlaNomPTestArgs))]
-    public class HlaNomPTest : WmdaRepositoryTestBase<HlaNomP>
+    public class PGroupsTest : WmdaRepositoryTestBase<HlaNomP>
     {
-        public HlaNomPTest(IEnumerable<HlaNomP> hlaNomP, IEnumerable<string> matchLoci)
+        public PGroupsTest(IEnumerable<HlaNomP> hlaNomP, IEnumerable<string> matchLoci)
             : base(hlaNomP, matchLoci)
         {
         }
 
         [Test]
-        public void HolNomP_SuccessfullyCaptured()
+        public void PGroups_SuccessfullyCaptured()
         {
             var alleleNoPGroup = new HlaNomP("B*", "08:100", new List<string> { "08:100" });
             var alleleSuffixNoPGroup = new HlaNomP("A*", "30:14L", new List<string> { "30:14L" });

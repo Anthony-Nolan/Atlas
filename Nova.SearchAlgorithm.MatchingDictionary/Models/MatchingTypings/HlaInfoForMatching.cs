@@ -7,16 +7,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
     {
         public List<IAlleleInfoForMatching> AlleleInfoForMatching { get; }
         public List<ISerologyInfoForMatching> SerologyInfoForMatching { get; }
-        public List<RelDnaSer> RelDnaSer { get; }
+        public List<RelDnaSer> DnaToSerologyRelationships { get; }
 
         public HlaInfoForMatching(
             List<IAlleleInfoForMatching> alleleInfoForMatching, 
             List<ISerologyInfoForMatching> serologyInfoForMatching, 
-            List<RelDnaSer> relDnaSer)
+            List<RelDnaSer> dnaToSerologyRelationships)
         {
             AlleleInfoForMatching = alleleInfoForMatching;
             SerologyInfoForMatching = serologyInfoForMatching;
-            RelDnaSer = relDnaSer;
+            DnaToSerologyRelationships = dnaToSerologyRelationships;
         }
     }
 }
