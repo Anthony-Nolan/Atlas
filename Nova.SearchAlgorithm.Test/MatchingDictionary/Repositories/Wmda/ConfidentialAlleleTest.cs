@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void ConfidentialRegexCapturesAllelesAsExpected()
+        public void ConfidentialAlleles_SuccessfullyCaptured()
         {
             var confidentialAlleles = new List<ConfidentialAllele>
             {

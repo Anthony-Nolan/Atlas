@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void HolNomPRegexCapturesPGroupAsExpected()
+        public void HolNomP_SuccessfullyCaptured()
         {
             var alleleNoPGroup = new HlaNomP("B*", "08:100", new List<string> { "08:100" });
             var alleleSuffixNoPGroup = new HlaNomP("A*", "30:14L", new List<string> { "30:14L" });

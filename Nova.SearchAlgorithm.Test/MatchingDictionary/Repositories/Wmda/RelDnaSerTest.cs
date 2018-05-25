@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void RelDnaSerRegexCapturesMappingAsExpected()
+        public void RelDnaSer_SuccessfullyCaptured()
         {
             var alleleWithUnambiguous = new RelDnaSer("A*", "01:01:01:01", new List<SerologyAssignment>
             {
