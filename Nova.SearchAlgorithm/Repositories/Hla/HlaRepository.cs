@@ -2,6 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
 {
     public interface IHlaRepository
     {
-        ExpandedHla RetrieveHlaMatches(string locusName, string hlaName);
+        ExpandedHla RetrieveHlaMatches(Locus locusName, string hlaName);
         PhenotypeInfo<ExpandedHla> RetrieveHlaMatches(PhenotypeInfo<string> locusHla);
     }
 
@@ -43,15 +44,15 @@ namespace Nova.SearchAlgorithm.Repositories.Hla
             this.mapper = mapper;
         }
 
-        public ExpandedHla RetrieveHlaMatches(string locusName, string hlaName)
+        public ExpandedHla RetrieveHlaMatches(Locus locus, string hlaName)
         {
             var raw = hlaName == null
                 ? Enumerable.Empty<RawMatchingHla>()
-                : rawMatchingData.Where(hla => hla.Locus == locusName && hla.Name.StartsWith(hlaName));
+                : rawMatchingData.Where(hla => hla.Locus.Equals(locus.ToString(), StringComparison.InvariantCultureIgnoreCase) && hla.Name.StartsWith(hlaName));
 
             return new ExpandedHla {
                 Name = hlaName,
-                Locus = locusName,
+                Locus = locus,
                 PGroups = raw.SelectMany(r => r.MatchingPGroups).Distinct()
             };
         }

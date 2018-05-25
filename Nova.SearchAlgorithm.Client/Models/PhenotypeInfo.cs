@@ -19,44 +19,44 @@ namespace Nova.SearchAlgorithm.Client.Models
         public T DRB1_1 { get; set; }
         public T DRB1_2 { get; set; }
 
-        public PhenotypeInfo<R> Map<R>(Func<string, TypePositions, T, R> mapping)
+        public PhenotypeInfo<R> Map<R>(Func<Locus, TypePositions, T, R> mapping)
         {
             return new PhenotypeInfo<R>
             {
-                A_1 = mapping("A", TypePositions.One, A_1),
-                A_2 = mapping("A", TypePositions.Two, A_1),
-                B_1 = mapping("B", TypePositions.One, B_1),
-                B_2 = mapping("B", TypePositions.Two, B_2),
-                C_1 = mapping("C", TypePositions.One, C_1),
-                C_2 = mapping("C", TypePositions.Two, C_2),
-                DQB1_1 = mapping("DQB1", TypePositions.One, DQB1_1),
-                DQB1_2 = mapping("DQB1", TypePositions.Two, DQB1_2),
-                DRB1_1 = mapping("DRB1", TypePositions.One, DRB1_1),
-                DRB1_2 = mapping("DRB1", TypePositions.Two, DRB1_2),
+                A_1 = mapping(Locus.A, TypePositions.One, A_1),
+                A_2 = mapping(Locus.A, TypePositions.Two, A_1),
+                B_1 = mapping(Locus.B, TypePositions.One, B_1),
+                B_2 = mapping(Locus.B, TypePositions.Two, B_2),
+                C_1 = mapping(Locus.C, TypePositions.One, C_1),
+                C_2 = mapping(Locus.C, TypePositions.Two, C_2),
+                DQB1_1 = mapping(Locus.Dqb1, TypePositions.One, DQB1_1),
+                DQB1_2 = mapping(Locus.Dqb1, TypePositions.Two, DQB1_2),
+                DRB1_1 = mapping(Locus.Drb1, TypePositions.One, DRB1_1),
+                DRB1_2 = mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
             };
         }
 
-        public void EachPosition(Action<string, TypePositions, T> action)
+        public void EachPosition(Action<Locus, TypePositions, T> action)
         {
-            action("A", TypePositions.One, A_1);
-            action("A", TypePositions.Two, A_2);
-            action("B", TypePositions.One, B_1);
-            action("B", TypePositions.Two, B_2);
-            action("C", TypePositions.One, C_1);
-            action("C", TypePositions.Two, C_2);
-            action("DQB1", TypePositions.One, DQB1_1);
-            action("DQB1", TypePositions.Two, DQB1_2);
-            action("DRB1", TypePositions.One, DRB1_1);
-            action("DRB1", TypePositions.Two, DRB1_2);
+            action(Locus.A, TypePositions.One, A_1);
+            action(Locus.A, TypePositions.Two, A_2);
+            action(Locus.B, TypePositions.One, B_1);
+            action(Locus.B, TypePositions.Two, B_2);
+            action(Locus.C, TypePositions.One, C_1);
+            action(Locus.C, TypePositions.Two, C_2);
+            action(Locus.Dqb1, TypePositions.One, DQB1_1);
+            action(Locus.Dqb1, TypePositions.Two, DQB1_2);
+            action(Locus.Drb1, TypePositions.One, DRB1_1);
+            action(Locus.Drb1, TypePositions.Two, DRB1_2);
         }
 
-        public void EachLocus(Action<string, T, T> action)
+        public void EachLocus(Action<Locus, T, T> action)
         {
-            action("A", A_1, A_2);
-            action("B", B_1, B_2);
-            action("C", C_1, C_2);
-            action("DQB1", DQB1_1, DQB1_2);
-            action("DRB1", DRB1_1, DRB1_2);
+            action(Locus.A, A_1, A_2);
+            action(Locus.B, B_1, B_2);
+            action(Locus.C, C_1, C_2);
+            action(Locus.Dqb1, DQB1_1, DQB1_2);
+            action(Locus.Drb1, DRB1_1, DRB1_2);
         }
     }
 }

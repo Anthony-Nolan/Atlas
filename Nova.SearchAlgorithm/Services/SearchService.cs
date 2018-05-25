@@ -30,25 +30,25 @@ namespace Nova.SearchAlgorithm.Services
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
-                LocusMismatchA = MapMismatchToMatchCriteria("A", searchRequest.MatchCriteria.LocusMismatchA),
-                LocusMismatchB = MapMismatchToMatchCriteria("B", searchRequest.MatchCriteria.LocusMismatchB),
-                LocusMismatchC = MapMismatchToMatchCriteria("C", searchRequest.MatchCriteria.LocusMismatchC),
-                LocusMismatchDRB1 = MapMismatchToMatchCriteria("DRB1", searchRequest.MatchCriteria.LocusMismatchDRB1),
-                LocusMismatchDQB1 = MapMismatchToMatchCriteria("DQB1", searchRequest.MatchCriteria.LocusMismatchDQB1),
+                LocusMismatchA = MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
+                LocusMismatchB = MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
+                LocusMismatchC = MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
+                LocusMismatchDRB1 = MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
+                LocusMismatchDQB1 = MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDQB1),
             };
 
             return donorRepository.Search(criteria);
         }
 
-        private DonorLocusMatchCriteria MapMismatchToMatchCriteria(string locusName, LocusMismatchCriteria mismatch)
+        private DonorLocusMatchCriteria MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
         {
             if (mismatch == null)
             {
                 return null;
             }
 
-            var hla1 = hlaRepository.RetrieveHlaMatches(locusName, mismatch.SearchHla1);
-            var hla2 = hlaRepository.RetrieveHlaMatches(locusName, mismatch.SearchHla2);
+            var hla1 = hlaRepository.RetrieveHlaMatches(locus, mismatch.SearchHla1);
+            var hla2 = hlaRepository.RetrieveHlaMatches(locus, mismatch.SearchHla2);
 
             return new DonorLocusMatchCriteria
             {

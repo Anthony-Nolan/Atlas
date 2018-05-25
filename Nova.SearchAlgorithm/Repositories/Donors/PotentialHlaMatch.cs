@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     /// </summary>
     public class PotentialHlaMatchRelation
     {
-        public string Locus { get; set; }
+        public Locus Locus { get; set; }
         public TypePositions SearchTypePosition { get; set; }
         public TypePositions MatchingTypePositions { get; set; }
         public string Name { get; set; }
