@@ -4,8 +4,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
     public class ConfidentialAllele : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
     {
-        public string WmdaLocus { get; }
-        public string Name { get; }
+        public string WmdaLocus { get; set; }
+        public string Name { get; set; }
 
         public ConfidentialAllele(string wmdaLocus, string name)
         {
