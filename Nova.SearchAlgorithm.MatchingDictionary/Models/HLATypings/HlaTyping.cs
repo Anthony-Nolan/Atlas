@@ -6,9 +6,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
     public class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
     {
-        public string WmdaLocus { get; }
+        public string WmdaLocus { get; set; }
         public MatchLocus MatchLocus { get; }
-        public string Name { get; }
+        public string Name { get; set; }
         public bool IsDeleted { get; }
 
         public HlaTyping(string wmdaLocus, string name, bool isDeleted = false)

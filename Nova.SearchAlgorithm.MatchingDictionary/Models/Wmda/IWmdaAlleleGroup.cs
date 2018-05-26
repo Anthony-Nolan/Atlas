@@ -8,6 +8,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     /// </summary>
     public interface IWmdaAlleleGroup: IWmdaHlaTyping
     {
-        IEnumerable<string> Alleles { get; }
+        IEnumerable<string> Alleles { get; set; }
     }
 }

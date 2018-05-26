@@ -2,7 +2,7 @@
 {
     public interface IWmdaHlaTyping
     {
-        string WmdaLocus { get; }
-        string Name { get; }
+        string WmdaLocus { get; set; }
+        string Name { get; set; }
     }
 }

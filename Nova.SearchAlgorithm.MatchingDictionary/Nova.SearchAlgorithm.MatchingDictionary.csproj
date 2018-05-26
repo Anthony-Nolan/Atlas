@@ -155,15 +155,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
-    <Compile Include="Repositories\Wmda\ConfidentialAlleleMapper.cs" />
-    <Compile Include="Repositories\Wmda\HlaNomMapper.cs" />
-    <Compile Include="Repositories\Wmda\HlaNomGMapper.cs" />
-    <Compile Include="Repositories\Wmda\HlaNomPMapper.cs" />
-    <Compile Include="Repositories\Wmda\IWmdaDataMapper.cs" />
-    <Compile Include="Repositories\Wmda\RelDnaSerMapper.cs" />
-    <Compile Include="Repositories\Wmda\RelSerSerMapper.cs" />
-    <Compile Include="Repositories\Wmda\WmdaDataExtraction.cs" />
-    <Compile Include="Repositories\Wmda\WmdaDataExtractionToolSet.cs" />
+    <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
+    <Compile Include="Models\HLATypings\TypingMethod.cs" />
+    <Compile Include="Models\Wmda\Filters\MatchLociFilter.cs" />
+    <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
+    <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
+    <Compile Include="Repositories\Wmda\GGroupExtractor.cs" />
+    <Compile Include="Repositories\Wmda\PGroupExtractor.cs" />
+    <Compile Include="Repositories\Wmda\AlleleExtractor.cs" />
+    <Compile Include="Repositories\Wmda\SerologyToSerologyRelationshipExtractor.cs" />
+    <Compile Include="Repositories\Wmda\DnaToSerologyRelationshipExtractor.cs" />
+    <Compile Include="Repositories\Wmda\SerologyExtractor.cs" />
+    <Compile Include="Repositories\Wmda\ConfidentialAlleleExtractor.cs" />
     <Compile Include="Data\WmdaFileDownloader.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
@@ -175,6 +178,7 @@
     <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
+    <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
@@ -201,7 +205,6 @@
     <Compile Include="Models\MatchingTypings\SerologyInfoForMatching.cs" />
     <Compile Include="Models\Wmda\Assignment.cs" />
     <Compile Include="Models\Wmda\ConfidentialAllele.cs" />
-    <Compile Include="Models\Wmda\Filters\MatchLociFilter.cs" />
     <Compile Include="Models\Wmda\Filters\MolecularFilter.cs" />
     <Compile Include="Models\Wmda\Filters\SerologyFilter.cs" />
     <Compile Include="Models\Wmda\HlaNom.cs" />

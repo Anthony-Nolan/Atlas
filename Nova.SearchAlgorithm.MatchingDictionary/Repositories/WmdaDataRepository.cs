@@ -1,9 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
@@ -38,43 +36,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private void PopulateWmdaDataCollections()
         {
-            Serologies = GetWmdaData<HlaNom>(nameof(Serologies));
-            Alleles = GetWmdaData<HlaNom>(nameof(Alleles));
-            PGroups = GetWmdaData<HlaNomP>(nameof(PGroups));
-            GGroups = GetWmdaData<HlaNomG>(nameof(GGroups));
-            SerologyToSerologyRelationships = GetWmdaData<RelSerSer>(nameof(SerologyToSerologyRelationships));
-            DnaToSerologyRelationships = GetWmdaData<RelDnaSer>(nameof(DnaToSerologyRelationships));
-            ConfidentialAlleles = GetWmdaData<ConfidentialAllele>(nameof(ConfidentialAlleles));
+            Serologies = GetWmdaData(new SerologyExtractor());
+            Alleles = GetWmdaData(new AlleleExtractor());
+            PGroups = GetWmdaData(new PGroupExtractor());
+            GGroups = GetWmdaData(new GGroupExtractor());
+            SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor());
+            DnaToSerologyRelationships = GetWmdaData(new DnaToSerologyRelationshipExtractor());
+            ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor());
         }
 
-        private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(string wmdaDataName)
+        private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor)
             where TWmdaHlaTyping : IWmdaHlaTyping
         {
-            var toolSet = WmdaDataExtraction.GetWmdaDataExtractionToolSet(wmdaDataName);
-            var fileContents = wmdaFileReader.GetFileContentsWithoutHeader(toolSet.FileName);
-            var data = ExtractWmdaDataFromFileContents<TWmdaHlaTyping>(fileContents, toolSet);
-
-            return data;
-        }
-
-        private static TWmdaHlaTyping[] ExtractWmdaDataFromFileContents<TWmdaHlaTyping>(
-            IEnumerable<string> wmdaFileContents,
-            WmdaDataExtractionToolSet toolSet)
-                where TWmdaHlaTyping : IWmdaHlaTyping
-        {
-            var regex = new Regex(toolSet.RegexPattern);
-
-            var extractionQuery =
-                from line in wmdaFileContents
-                select regex.Match(line).Groups into regexResults
-                where regexResults.Count > 0
-                select toolSet.DataMapper.MapDataExtractedFromWmdaFile(regexResults) into mapped
-                where toolSet.DataFilter(mapped)
-                select (TWmdaHlaTyping) mapped;
-
-            var enumeratedData = extractionQuery.ToArray();
-
-            return enumeratedData;
+            return extractor.GetWmdaData(wmdaFileReader);
         }
     }
 }
