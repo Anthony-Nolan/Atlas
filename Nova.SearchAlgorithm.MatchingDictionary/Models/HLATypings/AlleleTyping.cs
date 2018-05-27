@@ -15,25 +15,29 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         {
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = AlleleExpression.NullExpressionSuffixes.Contains(ExpressionSuffix);
-
-            var fields = GetFields(name, ExpressionSuffix).ToList();
-            Fields = fields;
-            TwoFieldName = fields.Count >= 2 ? $"{fields.ElementAt(0)}:{fields.ElementAt(1)}{ExpressionSuffix}" : name;
+            Fields = GetFields(name, ExpressionSuffix);
+            TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
 
         public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.WmdaLocus, alleleTyping.Name, alleleTyping.IsDeleted)
         {
         }
 
-        private static string GetExpressionSuffix(string hlaName)
+        private static string GetExpressionSuffix(string name)
         {
-            return new Regex(@"[A-Z]$").Match(hlaName).Value;
+            return new Regex(@"[A-Z]$").Match(name).Value;
         }
 
-        private static IEnumerable<string> GetFields(string hlaName, string expressionSuffix)
+        private static IEnumerable<string> GetFields(string name, string expressionSuffix)
         {
-            var name = expressionSuffix.Equals("") ? hlaName : hlaName.Split(expressionSuffix[0])[0];
-            return name.Split(':');
+            var trimmedName = name.TrimEnd(expressionSuffix.ToCharArray());
+            return trimmedName.Split(':');
+        }
+
+        private static string GetTwoFieldName(IEnumerable<string> fields, string expressionSuffix, string name)
+        {
+            var fieldsArr = fields.ToArray();
+            return fieldsArr.Length >= 2 ? $"{fieldsArr[0]}:{fieldsArr[1]}{expressionSuffix}" : name;
         }
     }
 }
