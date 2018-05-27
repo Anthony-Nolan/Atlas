@@ -1,9 +1,17 @@
-﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
+﻿using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
-    public static class Drb345Serologies
+    public static class Drb345Typings
     {
-        public const string SerologyDrbLocus = "DR";
-        public static string[] Drb345Typings = { "51", "52", "53" };
+        private const string SerologyLocus = "DR";
+        private static readonly string[] SerologyTypings = { "51", "52", "53" };
+
+        public static bool IsDrb345SerologyTyping(IWmdaHlaTyping typing)
+        {
+            return typing.WmdaLocus.Equals(SerologyLocus) && SerologyTypings.Contains(typing.Name);
+        }
     }
 
     public static class AlleleExpression

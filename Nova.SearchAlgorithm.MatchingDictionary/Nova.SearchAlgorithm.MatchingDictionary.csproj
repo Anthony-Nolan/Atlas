@@ -157,7 +157,6 @@
     <Compile Include="Data\IWmdaFileReader.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
-    <Compile Include="Models\Wmda\Filters\MatchLociFilter.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\GGroupExtractor.cs" />
@@ -205,8 +204,6 @@
     <Compile Include="Models\MatchingTypings\SerologyInfoForMatching.cs" />
     <Compile Include="Models\Wmda\Assignment.cs" />
     <Compile Include="Models\Wmda\ConfidentialAllele.cs" />
-    <Compile Include="Models\Wmda\Filters\MolecularFilter.cs" />
-    <Compile Include="Models\Wmda\Filters\SerologyFilter.cs" />
     <Compile Include="Models\Wmda\HlaNom.cs" />
     <Compile Include="Models\Wmda\HlaNomP.cs" />
     <Compile Include="Models\Wmda\IWmdaHlaTyping.cs" />
