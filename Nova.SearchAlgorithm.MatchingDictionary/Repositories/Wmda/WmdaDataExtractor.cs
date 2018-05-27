@@ -1,7 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda.Filters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +11,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     internal abstract class WmdaDataExtractor<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
         protected const string WmdaFilePathPrefix = "wmda/";
+
+        private static readonly Func<TWmdaHlaTyping, bool> MolecularDataFilter =
+            typing => LocusNames.MolecularLoci.Contains(typing.WmdaLocus);
+
+        private static readonly Func<TWmdaHlaTyping, bool> SerologyDataFilter =
+            typing => LocusNames.SerologyLoci.Contains(typing.WmdaLocus) && 
+                !Drb345Typings.IsDrb345SerologyTyping(typing);
 
         private readonly string fileName;
         private readonly string regexPattern;
@@ -34,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private TWmdaHlaTyping[] ExtractWmdaDataFromFileContents(IEnumerable<string> wmdaFileContents)
         {
             var regex = new Regex(regexPattern);
-            var dataFilter = typingMethod == TypingMethod.Molecular ? MolecularFilter.Instance.Filter : SerologyFilter.Instance.Filter;
+            var dataFilter = typingMethod == TypingMethod.Molecular ? MolecularDataFilter : SerologyDataFilter;
 
             var extractionQuery =
                 from line in wmdaFileContents
