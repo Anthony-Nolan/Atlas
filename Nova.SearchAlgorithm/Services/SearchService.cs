@@ -1,60 +1,60 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories.Hla;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services
 {
     public interface ISearchService
     {
-        IEnumerable<PotentialMatch> Search(SearchRequest searchRequest);
+        Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest);
     }
 
     public class SearchService : ISearchService
     {
         private readonly IDonorMatchRepository donorRepository;
-        private readonly IHlaRepository hlaRepository;
+        private readonly IMatchingDictionaryLookupService lookupService;
 
-        public SearchService(IDonorMatchRepository donorRepository, IHlaRepository hlaRepository)
+        public SearchService(IDonorMatchRepository donorRepository, IMatchingDictionaryLookupService lookupService)
         {
             this.donorRepository = donorRepository;
-            this.hlaRepository = hlaRepository;
+            this.lookupService = lookupService;
         }
 
-        public IEnumerable<PotentialMatch> Search(SearchRequest searchRequest)
+        public async Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest)
         {
             DonorMatchCriteria criteria = new DonorMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
-                LocusMismatchA = MapMismatchToMatchCriteria("A", searchRequest.MatchCriteria.LocusMismatchA),
-                LocusMismatchB = MapMismatchToMatchCriteria("B", searchRequest.MatchCriteria.LocusMismatchB),
-                LocusMismatchC = MapMismatchToMatchCriteria("C", searchRequest.MatchCriteria.LocusMismatchC),
-                LocusMismatchDRB1 = MapMismatchToMatchCriteria("DRB1", searchRequest.MatchCriteria.LocusMismatchDRB1),
-                LocusMismatchDQB1 = MapMismatchToMatchCriteria("DQB1", searchRequest.MatchCriteria.LocusMismatchDQB1),
+                LocusMismatchA = await MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
+                LocusMismatchB = await MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
+                LocusMismatchC = await MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
+                LocusMismatchDRB1 = await MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
+                LocusMismatchDQB1 = await MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1),
             };
 
             return donorRepository.Search(criteria);
         }
 
-        private DonorLocusMatchCriteria MapMismatchToMatchCriteria(string locusName, LocusMismatchCriteria mismatch)
+        private async Task<DonorLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
         {
             if (mismatch == null)
             {
                 return null;
             }
 
-            var hla1 = hlaRepository.RetrieveHlaMatches(locusName, mismatch.SearchHla1);
-            var hla2 = hlaRepository.RetrieveHlaMatches(locusName, mismatch.SearchHla2);
+            var hla1 = lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1);
+            var hla2 = lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2);
 
             return new DonorLocusMatchCriteria
             {
                 MismatchCount = mismatch.MismatchCount,
-                HlaNamesToMatchInPositionOne = hla1.PGroups,
-                HlaNamesToMatchInPositionTwo = hla2.PGroups,
+                HlaNamesToMatchInPositionOne = (await hla1).MatchingPGroups,
+                HlaNamesToMatchInPositionTwo = (await hla2).MatchingPGroups,
             };
         }
     }

@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         DonorResult GetDonor(int donorId);
         IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId);
         IEnumerable<DonorResult> AllDonors();
-        IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(string locus, LocusSearchCriteria criteria);
+        IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria);
 
     }
 
@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             this.mapper = mapper;
         }
         
-        public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(string locus, LocusSearchCriteria criteria)
+        public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
             var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);
@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matchesFromPositionOne.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.One)).Union(matchesFromPositionTwo.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two)));
         }
 
-        private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(string locus, IEnumerable<string> namesToMatch)
+        private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(Locus locus, IEnumerable<string> namesToMatch)
         {
             if (!namesToMatch.Any())
             {
@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        private void InsertLocusMatch(string locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
+        private void InsertLocusMatch(Locus locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
         {
             if (matchingHla1 == null)
             {

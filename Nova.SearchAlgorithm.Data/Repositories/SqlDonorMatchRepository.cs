@@ -42,9 +42,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         {
             context.Donors.AddOrUpdate(donor.ToDonorEntity());
 
-            foreach (string locus in new List<string> { "A", "B", "C", "DRB1", "DQB1" })
+            foreach (Locus locus in Enum.GetValues(typeof(Locus)).Cast<Locus>())
             {
-                context.Database.ExecuteSqlCommand($@"DELETE FROM MatchingHlaAt{locus} WHERE DonorId = {donor.DonorId}");
+                context.Database.ExecuteSqlCommand($@"DELETE FROM MatchingHlaAt{locus.ToString().ToUpper()} WHERE DonorId = {donor.DonorId}");
             }
 
             InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_1, TypePositions.One, () => new MatchingHlaAtA());
@@ -106,18 +106,18 @@ FROM (
             FROM (
                 -- Select search and donor directional match lists by Locus & matching hla name
                 -- First from type position 1 in the search hla
-				{SelectForLocus("A", matchRequest.LocusMismatchA, TypePositions.One)}
+				{SelectForLocus(Locus.A, matchRequest.LocusMismatchA, TypePositions.One)}
                 UNION
-				{SelectForLocus("B", matchRequest.LocusMismatchB, TypePositions.One)}
+				{SelectForLocus(Locus.B, matchRequest.LocusMismatchB, TypePositions.One)}
                 UNION
-				{SelectForLocus("DRB1", matchRequest.LocusMismatchDRB1, TypePositions.One)}
+				{SelectForLocus(Locus.Drb1, matchRequest.LocusMismatchDRB1, TypePositions.One)}
                 UNION
                 -- Next from type position 2 in the search hla
-				{SelectForLocus("A", matchRequest.LocusMismatchA, TypePositions.Two)}
+				{SelectForLocus(Locus.A, matchRequest.LocusMismatchA, TypePositions.Two)}
                 UNION
-				{SelectForLocus("B", matchRequest.LocusMismatchB, TypePositions.Two)}
+				{SelectForLocus(Locus.B, matchRequest.LocusMismatchB, TypePositions.Two)}
                 UNION
-				{SelectForLocus("DRB1", matchRequest.LocusMismatchDRB1, TypePositions.Two)}
+				{SelectForLocus(Locus.Drb1, matchRequest.LocusMismatchDRB1, TypePositions.Two)}
                 ) AS source
             UNPIVOT (TypePosition FOR MatchingDirection IN (GvH, HvG)) AS unpivoted
             ) ByDirection
@@ -132,11 +132,11 @@ ORDER BY TotalMatchCount DESC";
             return context.Database.SqlQuery<PotentialMatch>(sql);
         }
 
-        private string SelectForLocus(string locus, DonorLocusMatchCriteria mismatch, TypePositions typePosition)
+        private string SelectForLocus(Locus locus, DonorLocusMatchCriteria mismatch, TypePositions typePosition)
         {
             var names = typePosition.Equals(TypePositions.One) ? mismatch.HlaNamesToMatchInPositionOne : mismatch.HlaNamesToMatchInPositionTwo;
-            return $@"SELECT d.DonorId, '{locus}' as Locus, d.TypePosition AS GvH, {(int)typePosition} AS HvG
-                      FROM MatchingHlaAt{locus} d
+            return $@"SELECT d.DonorId, '{locus.ToString().ToUpper()}' as Locus, d.TypePosition AS GvH, {(int)typePosition} AS HvG
+                      FROM MatchingHlaAt{locus.ToString().ToUpper()} d
                       JOIN dbo.PGroupNames p ON p.Id = d.PGroup_Id 
                       WHERE [Name] IN('{string.Join("', '", names)}')
                       GROUP BY d.DonorId, d.TypePosition";

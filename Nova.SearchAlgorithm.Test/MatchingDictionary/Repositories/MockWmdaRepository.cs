@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories
 
         public IEnumerable<string> HlaNom { get; } = GetFileContents("hla_nom");
         public IEnumerable<string> HlaNomP { get; } = GetFileContents("hla_nom_p");
+        public IEnumerable<string> HlaNomG { get; } = GetFileContents("hla_nom_g");
         public IEnumerable<string> RelSerSer { get; } = GetFileContents("rel_ser_ser");
         public IEnumerable<string> RelDnaSer { get; } = GetFileContents("rel_dna_ser");
         public IEnumerable<string> VersionReport { get; } = GetFileContents("version_report");

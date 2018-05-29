@@ -20,26 +20,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         }
 
         private static MatchedAllele GetMatchedAllele(
-            IList<ISerologyInfoForMatching> serologyToSerology,
+            IList<ISerologyInfoForMatching> serologyInfo,
             IEnumerable<RelDnaSer> relDnaSer,
-            IAlleleInfoForMatching alleleInfoForMatching)
+            IAlleleInfoForMatching alleleInfo)
         {
-            var allele = (AlleleTyping)alleleInfoForMatching.HlaTyping;
+            var allele = (AlleleTyping)alleleInfo.HlaTyping;
             var molecularLocus = allele.WmdaLocus;
-            var usedName = alleleInfoForMatching.TypingUsedInMatching.Name;
+            var usedName = alleleInfo.TypingUsedInMatching.Name;
             var alleleFamily = ConvertAlleleFamilyToSerology(molecularLocus, usedName);
 
-            var mappingInfo = GetMappingInfoFromRelDnaSer(serologyToSerology, relDnaSer, molecularLocus, usedName, alleleFamily);
+            var mappingInfo = GetMappingInfoFromRelDnaSer(serologyInfo, relDnaSer, molecularLocus, usedName, alleleFamily);
 
             var isAlleleFamilyInvalidSerology =
                 !allele.IsDeleted
                 && !allele.IsNullExpresser
-                && !serologyToSerology.Any(s => s.HlaTyping.Equals(alleleFamily));
+                && !serologyInfo.Any(s => s.HlaTyping.Equals(alleleFamily));
 
             if (isAlleleFamilyInvalidSerology)
                 mappingInfo.Add(CreateMappingFromAlleleFamily(alleleFamily));
 
-            return new MatchedAllele(alleleInfoForMatching, mappingInfo);
+            return new MatchedAllele(alleleInfo, mappingInfo);
         }
 
         private static HlaTyping ConvertAlleleFamilyToSerology(string molecularLocus, string alleleName)
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         }
 
         private static IList<RelDnaSerMapping> GetMappingInfoFromRelDnaSer(
-            IList<ISerologyInfoForMatching> serologyToSerology,
+            IList<ISerologyInfoForMatching> serologyInfo,
             IEnumerable<RelDnaSer> relDnaSer,
             string molecularLocus,
             string usedName,
@@ -62,12 +62,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             if (relDnaSerForAllele == null || !relDnaSerForAllele.Assignments.Any())
                 return new List<RelDnaSerMapping>();
 
-            var expectedMatchingSerology = serologyToSerology
+            var expectedMatchingSerology = serologyInfo
                     .FirstOrDefault(m => m.HlaTyping.Equals(alleleFamily))
                     ?.MatchingSerologies;
 
             return (
-                from serology in serologyToSerology
+                from serology in serologyInfo
                 join assigned in relDnaSerForAllele.Assignments
                     on serology.TypingUsedInMatching.Name equals assigned.Name
                 where serology.TypingUsedInMatching.MatchLocus.Equals(alleleFamily.MatchLocus)

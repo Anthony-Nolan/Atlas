@@ -21,9 +21,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
         {
-            var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "A", matchRequest.LocusMismatchA);
-            var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "B", matchRequest.LocusMismatchB);
-            var matchesAtDRB1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, "DRB1", matchRequest.LocusMismatchDRB1);
+            var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA);
+            var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.B, matchRequest.LocusMismatchB);
+            var matchesAtDRB1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.Drb1, matchRequest.LocusMismatchDRB1);
 
             var matches = matchesAtA.Union(matchesAtB).Union(matchesAtDRB1)
                 .GroupBy(m => m.Key)
@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matches;
         }
 
-        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, string locusName, DonorLocusMatchCriteria criteria)
+        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, DonorLocusMatchCriteria criteria)
         {
             LocusSearchCriteria repoCriteria = new LocusSearchCriteria
             {
@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 HlaNamesToMatchInPositionTwo = criteria.HlaNamesToMatchInPositionTwo,
             };
 
-            var matches = donorBlobRepository.GetDonorMatchesAtLocus(locusName, repoCriteria)
+            var matches = donorBlobRepository.GetDonorMatchesAtLocus(locus, repoCriteria)
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, LocusMatchFromGroup);
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Nova.SearchAlgorithm.Repositories.Hla
+namespace Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary
 {
     public class RawMatchingHla
     {

@@ -4,8 +4,6 @@ using System.Linq;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Repositories;
-using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Repositories.Hla;
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -13,6 +11,7 @@ using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -53,19 +52,19 @@ namespace Nova.SearchAlgorithm.Services
     public class DonorImportService : IDonorImportService
     {
         private readonly IDonorMatchRepository donorRepository;
-        private readonly IHlaRepository hlaRepository;
+        private readonly IMatchingDictionaryLookupService lookupService;
         private readonly ISolarDonorRepository solarRepository;
         private readonly IDonorServiceClient donorServiceClient;
-
+        
         public DonorImportService(
             IDonorMatchRepository donorRepository,
-            IHlaRepository hlaRepository,
+            IMatchingDictionaryLookupService lookupService,
             ISolarDonorRepository solarRepository,
             IDonorServiceClient donorServiceClient)
         {
             this.donorRepository = donorRepository;
             this.solarRepository = solarRepository;
-            this.hlaRepository = hlaRepository;
+            this.lookupService = lookupService;
             this.donorServiceClient = donorServiceClient;
         }
 
@@ -91,12 +90,12 @@ namespace Nova.SearchAlgorithm.Services
                 {
                     A_1 = new ExpandedHla
                     {
-                        Locus = "A",
+                        Locus = Locus.A,
                         PGroups = new List<string> { "01:01P" }
                     },
                     A_2 = new ExpandedHla
                     {
-                        Locus = "A",
+                        Locus = Locus.A,
                         PGroups = new List<string> { "01:01P" }
                     }
                 }
@@ -119,7 +118,7 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = code,
                 DonorType = DonorType.Adult,
                 DonorId = donor.DonorId,
-                MatchingHla = donor.HlaNames.Map((locus, position, hla) => hlaRepository.RetrieveHlaMatches(locus, hla))
+                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
             });
         }
 

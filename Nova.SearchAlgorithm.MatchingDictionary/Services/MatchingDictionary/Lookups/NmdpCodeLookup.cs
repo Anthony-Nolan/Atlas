@@ -32,6 +32,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
                     MolecularSubtype.NmdpCode,
                     SerologySubtype.NotSerologyTyping,
                     entries.SelectMany(p => p.MatchingPGroups).Distinct(),
+                    entries.SelectMany(g => g.MatchingGGroups).Distinct(),
                     entries.SelectMany(s => s.MatchingSerologies).Distinct()
                 );
         }

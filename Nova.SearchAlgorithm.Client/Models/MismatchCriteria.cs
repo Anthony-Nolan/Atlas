@@ -11,27 +11,32 @@ namespace Nova.SearchAlgorithm.Client.Models
         public int DonorMismatchCount { get; set; }
 
         /// <summary>
-        /// Mismatch preferences for locus HLA-A
+        /// Search HLA and mismatch preferences for locus HLA-A.
+        /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchA { get; set; }
 
         /// <summary>
-        /// Mismatch preferences for locus HLA-B
+        /// Search HLA and mismatch preferences for locus HLA-B.
+        /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchB { get; set; }
 
         /// <summary>
-        /// Mismatch preferences for locus HLA-C
+        /// Search HLA and mismatch preferences for locus HLA-C.
+        /// Optional.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchC { get; set; }
 
         /// <summary>
-        /// Mismatch preferences for locus HLA-DQB1
+        /// Search HLA and mismatch preferences for locus HLA-DQB1.
+        /// Optional.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchDQB1 { get; set; }
 
         /// <summary>
-        /// Mismatch preferences for locus HLA-DRB1
+        /// Search HLA and mismatch preferences for locus HLA-DRB1.
+        /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchDRB1 { get; set; }
     }

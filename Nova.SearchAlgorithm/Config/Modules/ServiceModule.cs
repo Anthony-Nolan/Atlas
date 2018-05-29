@@ -22,13 +22,9 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            builder.RegisterType<Repositories.SearchRequests.SearchRequestRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Hla.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.Donors.CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();

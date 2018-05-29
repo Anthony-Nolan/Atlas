@@ -21,6 +21,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data.Wmda
                 case List<HlaNomP> _:
                     dataExtractor = new HlaNomPExtractor();
                     break;
+                case List<HlaNomG> _:
+                    dataExtractor = new HlaNomGExtractor();
+                    break;
                 case List<RelSerSer> _:
                     dataExtractor = new RelSerSerExtractor();
                     break;

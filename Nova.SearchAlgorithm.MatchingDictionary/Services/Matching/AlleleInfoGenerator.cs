@@ -20,15 +20,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var allAlleles = WmdaDataFactory.GetData<HlaNom>(repo, filter);
             var confidentialAlleles = WmdaDataFactory.GetData<Confidential>(repo, filter);
             var pGroups = WmdaDataFactory.GetData<HlaNomP>(repo, filter);
+            var gGroups = WmdaDataFactory.GetData<HlaNomG>(repo, filter);
 
             var alleleInfo = allAlleles
                 .Where(allele => !confidentialAlleles.Contains(allele as IWmdaHlaTyping))
-                .Select(allele => GetInfoForSingleAllele(allele, pGroups));
+                .Select(allele => GetInfoForSingleAllele(allele, pGroups, gGroups));
 
             return alleleInfo;
         }
 
-        private static IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom alleleHlaNom, IEnumerable<HlaNomP> allPGroups)
+        private static IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom alleleHlaNom, IEnumerable<HlaNomP> allPGroups, IEnumerable<HlaNomG> allGGroups)
         {
             var allele = new AlleleTyping(alleleHlaNom.WmdaLocus, alleleHlaNom.Name, alleleHlaNom.IsDeleted);
 
@@ -36,17 +37,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     ? new AlleleTyping(alleleHlaNom.WmdaLocus, alleleHlaNom.IdenticalHla)
                     : new AlleleTyping(allele);
 
-            return new AlleleInfoForMatching(allele, usedInMatching, GetPGroup(allPGroups, usedInMatching));
+            var pGroup = GetAlleleGroup(allPGroups, usedInMatching);
+            var gGroup = GetAlleleGroup(allGGroups, usedInMatching);
+
+            return new AlleleInfoForMatching(allele, usedInMatching, pGroup, gGroup);
         }
 
-        private static IEnumerable<string> GetPGroup(IEnumerable<HlaNomP> allPGroups, IWmdaHlaTyping allele)
+        private static IEnumerable<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> allAlleleGroups, IWmdaHlaTyping allele)
         {
-            var pGroup = allPGroups.SingleOrDefault(p =>
-                p.WmdaLocus.Equals(allele.WmdaLocus)
-                && p.Alleles.Contains(allele.Name)
+            var alleleGroup = allAlleleGroups.SingleOrDefault(group =>
+                group.WmdaLocus.Equals(allele.WmdaLocus)
+                && group.Alleles.Contains(allele.Name)
                 )?.Name;
 
-            return pGroup != null ? new List<string> { pGroup } : new List<string>();
+            return alleleGroup != null ? new List<string> { alleleGroup } : new List<string>();
         }
     }
 }
