@@ -8,7 +8,7 @@
         public int DonorId { get; set; }
         
         /// <summary>
-        /// The type of donor, for example Adult or Cord
+        /// The type of donor, for example Adult or Cord.
         /// </summary>
         public DonorType DonorType { get; set; }
 

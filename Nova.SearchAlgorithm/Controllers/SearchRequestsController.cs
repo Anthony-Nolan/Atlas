@@ -10,12 +10,10 @@ namespace Nova.SearchAlgorithm.Controllers
 {
     public class SearchRequestsController : ApiController
     {
-        private readonly ISearchRequestService searchRequestService;
         private readonly ISearchService searchService;
 
-        public SearchRequestsController(ISearchRequestService creationService, ISearchService search)
+        public SearchRequestsController(ISearchService search)
         {
-            searchRequestService = creationService;
             searchService = search;
         }
 
@@ -25,9 +23,7 @@ namespace Nova.SearchAlgorithm.Controllers
         {
             try
             {
-                var id = searchRequestService.CreateSearchRequest(searchRequest);
-
-                var results = await searchService.Search(searchRequest);
+                var results = (await searchService.Search(searchRequest)).ToList();
 
                 var result = new SearchResultSet
                 {
