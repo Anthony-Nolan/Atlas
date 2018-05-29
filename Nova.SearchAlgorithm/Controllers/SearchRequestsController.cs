@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Web.Http;
-using Nova.Utils.Http.Exceptions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Services;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Exceptions;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
@@ -19,11 +19,11 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("search")]
-        public IHttpActionResult Search([FromBody] SearchRequest searchRequest)
+        public async Task<SearchResultSet> Search([FromBody] SearchRequest searchRequest)
         {
             try
             {
-                var results = searchService.Search(searchRequest).ToList();
+                var results = (await searchService.Search(searchRequest)).ToList();
 
                 var result = new SearchResultSet
                 {
@@ -31,11 +31,11 @@ namespace Nova.SearchAlgorithm.Controllers
                     SearchResults = results
                 };
 
-                return Ok(result);
+                return result;
             }
             catch (Exception e)
             {
-                throw new NovaHttpException(HttpStatusCode.InternalServerError, e.Message);
+                throw new SearchHttpException("There was a problem while executing a search", e);
             }
         }
     }

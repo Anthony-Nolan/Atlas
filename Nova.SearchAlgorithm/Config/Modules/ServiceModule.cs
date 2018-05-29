@@ -22,7 +22,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            builder.RegisterType<Repositories.Hla.HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             // builder.RegisterType<Repositories.Donors.BlobDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 

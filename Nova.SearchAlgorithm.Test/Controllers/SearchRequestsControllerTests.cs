@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Controllers;
@@ -12,6 +14,13 @@ namespace Nova.SearchAlgorithm.Test.Controllers
     [TestFixture]
     public class SearchRequestsControllerTests : ControllerTestBase<SearchRequestsController>
     {
+        [SetUp]
+        public void SetUp()
+        {
+            GetFake<ISearchService>().Search(Arg.Any<SearchRequest>())
+                .Returns(Task.FromResult(Enumerable.Empty<PotentialMatch>()));
+        }
+
         [Test]
         public async Task CreateSearchRequest_Returns200_WhenSearchRequestIsValidAdultSearch()
         {
