@@ -146,6 +146,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Locus.cs" />
     <Compile Include="Models\DonorType.cs" />
     <Compile Include="Models\LocusMatchDetails.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
