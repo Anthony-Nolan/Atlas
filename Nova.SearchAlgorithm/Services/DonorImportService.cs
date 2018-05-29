@@ -9,15 +9,44 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.DonorService.Client;
+using Nova.DonorService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services
 {
     public interface IDonorImportService
     {
+        void ResumeDonorImport();
+
         void ImportSingleTestDonor();
         void ImportTenSolarDonors();
         void ImportDummyData();
+    }
+    static class DonorExtensions
+    {
+        public static RawInputDonor ToRawImportDonor(this Donor donor)
+        {
+            return new RawInputDonor
+            {
+                DonorId = donor.DonorId,
+                DonorType = donor.DonorType,
+                RegistryCode = donor.RegistryCode,
+                HlaNames = new PhenotypeInfo<string>
+                {
+                    A_1 = donor.A_1,
+                    A_2 = donor.A_2,
+                    B_1 = donor.B_1,
+                    B_2 = donor.B_2,
+                    C_1 = donor.C_1,
+                    C_2 = donor.C_2,
+                    DQB1_1 = donor.DQB1_1,
+                    DQB1_2 = donor.DQB1_2,
+                    DRB1_1 = donor.DRB1_1,
+                    DRB1_2 = donor.DRB1_2
+                }
+            };
+        }
     }
 
     public class DonorImportService : IDonorImportService
@@ -25,12 +54,29 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorMatchRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
         private readonly ISolarDonorRepository solarRepository;
-
-        public DonorImportService(IDonorMatchRepository donorRepository, IMatchingDictionaryLookupService lookupService, ISolarDonorRepository solarRepository)
+        private readonly IDonorServiceClient donorServiceClient;
+        
+        public DonorImportService(
+            IDonorMatchRepository donorRepository,
+            IMatchingDictionaryLookupService lookupService,
+            ISolarDonorRepository solarRepository,
+            IDonorServiceClient donorServiceClient)
         {
             this.donorRepository = donorRepository;
             this.solarRepository = solarRepository;
             this.lookupService = lookupService;
+            this.donorServiceClient = donorServiceClient;
+        }
+
+        public async void ResumeDonorImport()
+        {
+            // TODO:NOVA-1170 for now just import 10
+            // TODO:NOVA-1170 update the donor client so that the second param can be omitted
+            var page = await donorServiceClient.GetDonors(10, "0");
+            foreach (var donor in page.Donors)
+            {
+                InsertSingleRawDonor(donor.ToRawImportDonor());
+            }
         }
 
         public void ImportSingleTestDonor()

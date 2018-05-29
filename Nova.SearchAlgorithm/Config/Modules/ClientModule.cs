@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Nova.DonorService.Client;
 using Nova.HLAService.Client;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -12,6 +13,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
         {
             builder.RegisterType<HlaServiceClient>().AsImplementedInterfaces()
                 .WithParameter(new NamedParameter("settings", ClientConfig.GetHlaServiceClientSettings())).InstancePerLifetimeScope();
+            builder.RegisterType<DonorServiceClient>().AsImplementedInterfaces()
+                .WithParameter(new NamedParameter("settings", ClientConfig.GetDonorServiceClientSettings())).InstancePerLifetimeScope();
         }
     }
 }

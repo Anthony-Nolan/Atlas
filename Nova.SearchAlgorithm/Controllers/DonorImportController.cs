@@ -21,6 +21,14 @@ namespace Nova.SearchAlgorithm.Controllers
         }
 
         [HttpPost]
+        [Route("trigger-donor-import")]
+        public IHttpActionResult TriggerImport()
+        {
+            donorImportService.ResumeDonorImport();
+            return Ok();
+        }
+
+        [HttpPost]
         [Route("trigger-single-donor-import")]
         public IHttpActionResult TriggerSingleImport()
         {
