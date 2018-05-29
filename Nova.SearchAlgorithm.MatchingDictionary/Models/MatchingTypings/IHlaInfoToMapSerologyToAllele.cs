@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    internal interface IHlaInfoForAlleleMatcher
+    internal interface IHlaInfoToMapSerologyToAllele
     {
         List<ISerologyInfoForMatching> SerologyInfoForMatching { get; }
         List<RelDnaSer> DnaToSerologyRelationships { get; }
