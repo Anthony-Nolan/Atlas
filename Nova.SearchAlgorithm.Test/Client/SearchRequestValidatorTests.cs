@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.Utils.TestUtils.Assertions;
-using NSubstitute;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Client.Test.Models
+namespace Nova.SearchAlgorithm.Test.Client
 {
     [TestFixture]
     public class SearchRequestsValidatorTests
