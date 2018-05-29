@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             return data;
         }
 
-        private TWmdaHlaTyping[] ExtractWmdaDataFromFileContents(IEnumerable<string> wmdaFileContents)
+        private IEnumerable<TWmdaHlaTyping> ExtractWmdaDataFromFileContents(IEnumerable<string> wmdaFileContents)
         {
             var regex = new Regex(regexPattern);
             var filterToOnlySelectTypingsForLociOfInterest =
@@ -51,9 +51,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                 where filterToOnlySelectTypingsForLociOfInterest(mapped)
                 select mapped;
 
-            var enumeratedData = extractionQuery.ToArray();
-
-            return enumeratedData;
+            var extractedData = extractionQuery.ToArray();
+            return extractedData;
         }
 
         protected abstract TWmdaHlaTyping MapDataExtractedFromWmdaFile(GroupCollection extractedData);
