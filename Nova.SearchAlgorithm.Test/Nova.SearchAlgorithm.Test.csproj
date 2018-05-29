@@ -291,6 +291,8 @@
     <Compile Include="Client\SearchRequestValidatorTests.cs" />
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
+    <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryLookup.cs" />
+    <Compile Include="Integration\FileBackedMatchingDictionary\RawMatchingHla.cs" />
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="MatchingDictionary\Data\Wmda\HlaNomGTest.cs" />
@@ -343,6 +345,7 @@
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badRegistry.json" />
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badType.json" />
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\validCordSearchRequest.json" />
+    <EmbeddedResource Include="Resources\MatchingDictionary\matching_hla.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">

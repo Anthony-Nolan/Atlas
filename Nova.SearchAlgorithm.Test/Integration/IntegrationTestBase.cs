@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using Microsoft.ApplicationInsights;
 using Nova.Utils.ApplicationInsights;
@@ -9,10 +8,9 @@ using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Repositories.Hla;
+using Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary;
 using NUnit.Framework;
 using Autofac;
-using System.Collections;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
@@ -65,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
 
-            builder.RegisterType<HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedMatchingDictionaryLookup>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -84,20 +82,6 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
             return builder.Build();
-        }
-    }
-
-    internal class DonorStorageImplementationData
-    {
-        public static IEnumerable FixtureParms
-        {
-            get
-            {
-                //yield return new TestFixtureData(DonorStorageImplementation.SQL);
-                //yield return new TestFixtureData(DonorStorageImplementation.CloudTable);
-                yield return new TestFixtureData(true);
-                yield return new TestFixtureData(false);
-            }
         }
     }
 
