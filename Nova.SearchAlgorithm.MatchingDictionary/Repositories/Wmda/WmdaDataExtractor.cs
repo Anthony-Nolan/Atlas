@@ -12,10 +12,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     {
         protected const string WmdaFilePathPrefix = "wmda/";
 
-        private static readonly Func<TWmdaHlaTyping, bool> MolecularDataFilter =
+        private static readonly Func<TWmdaHlaTyping, bool> FilterDataByMolecularLociNames =
             typing => LocusNames.MolecularLoci.Contains(typing.WmdaLocus);
 
-        private static readonly Func<TWmdaHlaTyping, bool> SerologyDataFilter =
+        private static readonly Func<TWmdaHlaTyping, bool> FilterDataBySerologyLociNames =
             typing => LocusNames.SerologyLoci.Contains(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
 
         private readonly string fileName;
@@ -40,14 +40,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private TWmdaHlaTyping[] ExtractWmdaDataFromFileContents(IEnumerable<string> wmdaFileContents)
         {
             var regex = new Regex(regexPattern);
-            var dataFilter = typingMethod == TypingMethod.Molecular ? MolecularDataFilter : SerologyDataFilter;
+            var filterToOnlySelectTypingsForLociOfInterest =
+                typingMethod == TypingMethod.Molecular ? FilterDataByMolecularLociNames : FilterDataBySerologyLociNames;
 
             var extractionQuery =
                 from line in wmdaFileContents
                 select regex.Match(line).Groups into regexResults
                 where regexResults.Count > 0
                 select MapDataExtractedFromWmdaFile(regexResults) into mapped
-                where dataFilter(mapped)
+                where filterToOnlySelectTypingsForLociOfInterest(mapped)
                 select mapped;
 
             var enumeratedData = extractionQuery.ToArray();
