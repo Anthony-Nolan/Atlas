@@ -8,21 +8,20 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Repositories.Hla
+namespace Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary
 {
     /// <summary>
-    /// An in-memory implementation of the matching dictionary lookup, for testing.
+    /// An implementation of the matching dictionary lookup which loads the data from a file,
+    /// necessary for testing without an internet dependency.
     /// </summary>
-    public class HlaRepository : IMatchingDictionaryLookupService
+    public class FileBackedMatchingDictionaryLookup : IMatchingDictionaryLookupService
     {
-        // TODO:NOVA-928 this is a temporary in-memory solution based on a static file.
-        // We will need to be able to regenerate the dictionary when needed, whether it remains as a file or moves into a DB.
         private readonly IEnumerable<RawMatchingHla> rawMatchingData = ReadJsonFromFile();
 
         private static IEnumerable<RawMatchingHla> ReadJsonFromFile()
         {
             System.Reflection.Assembly assem = System.Reflection.Assembly.GetExecutingAssembly();
-            using (Stream stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Resources.matching_hla.json"))
+            using (Stream stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Resources.MatchingDictionary.matching_hla.json"))
             {
                 using (StreamReader reader = new StreamReader(stream))
                 {

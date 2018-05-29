@@ -260,11 +260,8 @@
     <Compile Include="Repositories\Donors\CloudStorageDonorMatchRepository.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
     <Compile Include="Repositories\Donors\DonorCloudTables.cs" />
-    <Compile Include="Repositories\Hla\AzureStorage\HlaTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\PotentialHlaMatchRelationTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
-    <Compile Include="Repositories\Hla\RawMatchingHla.cs" />
-    <Compile Include="Repositories\Hla\HlaRepository.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />
@@ -283,7 +280,6 @@
     <None Include="Properties\PublishProfiles\LIVE-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UAT-NOVA-APP-SEARCH-ALGORITHM-SERVICE - Web Deploy.pubxml" />
     <EmbeddedResource Include="Resources\DonorPhenotypesSample.csv" />
-    <EmbeddedResource Include="Resources\matching_hla.json" />
     <None Include="Settings\SecureSettings.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

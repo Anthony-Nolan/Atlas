@@ -8,10 +8,8 @@ using NUnit.Framework;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories.Hla;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
-using System.Collections;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Test.Integration
