@@ -15,25 +15,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
             return hlaInfo.AlleleInfoForMatching.Select(allele =>
-                GetMatchedAllele(hlaInfo.SerologyInfoForMatching, hlaInfo.DnaToSerologyRelationships, allele));
+                GetMatchedAllele(hlaInfo, allele));
         }
 
-        private static MatchedAllele GetMatchedAllele(
-            IList<ISerologyInfoForMatching> serologyInfo,
-            IEnumerable<RelDnaSer> dnaToSerologyRelationships,
-            IAlleleInfoForMatching alleleInfo)
+        private static MatchedAllele GetMatchedAllele(IHlaInfoForAlleleMatcher hlaInfo, IAlleleInfoForMatching alleleInfo)
         {
             var allele = (AlleleTyping)alleleInfo.HlaTyping;
             var molecularLocus = allele.WmdaLocus;
             var usedName = alleleInfo.TypingUsedInMatching.Name;
             var alleleFamily = ConvertAlleleFamilyToSerology(molecularLocus, usedName);
 
-            var mappingInfo = GetMappingInfoFromDnaToSerologyRelationships(serologyInfo, dnaToSerologyRelationships, molecularLocus, usedName, alleleFamily);
+            var mappingInfo = GetMappingInfoFromDnaToSerologyRelationships(
+                hlaInfo.SerologyInfoForMatching,
+                hlaInfo.DnaToSerologyRelationships,
+                molecularLocus,
+                usedName,
+                alleleFamily);
 
             var isAlleleFamilyInvalidSerology =
                 !allele.IsDeleted
                 && !allele.IsNullExpresser
-                && !serologyInfo.Any(s => s.HlaTyping.Equals(alleleFamily));
+                && !hlaInfo.SerologyInfoForMatching.Any(s => s.HlaTyping.Equals(alleleFamily));
 
             if (isAlleleFamilyInvalidSerology)
                 mappingInfo.Add(CreateMappingFromAlleleFamily(alleleFamily));

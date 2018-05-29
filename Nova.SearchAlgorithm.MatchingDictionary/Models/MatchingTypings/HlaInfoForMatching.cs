@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public class HlaInfoForMatching
+    public class HlaInfoForMatching: IHlaInfoForAlleleMatcher
     {
         public List<IAlleleInfoForMatching> AlleleInfoForMatching { get; }
         public List<ISerologyInfoForMatching> SerologyInfoForMatching { get; }
