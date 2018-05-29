@@ -68,7 +68,6 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterType<HlaRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Services.SearchRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
