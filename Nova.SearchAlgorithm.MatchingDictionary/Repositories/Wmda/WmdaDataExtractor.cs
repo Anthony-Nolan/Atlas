@@ -16,8 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             typing => LocusNames.MolecularLoci.Contains(typing.WmdaLocus);
 
         private static readonly Func<TWmdaHlaTyping, bool> SerologyDataFilter =
-            typing => LocusNames.SerologyLoci.Contains(typing.WmdaLocus) && 
-                !Drb345Typings.IsDrb345SerologyTyping(typing);
+            typing => LocusNames.SerologyLoci.Contains(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
 
         private readonly string fileName;
         private readonly string regexPattern;

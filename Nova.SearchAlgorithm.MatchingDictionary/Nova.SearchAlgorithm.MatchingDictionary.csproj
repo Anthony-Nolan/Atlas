@@ -157,6 +157,7 @@
     <Compile Include="Data\IWmdaFileReader.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
+    <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\GGroupExtractor.cs" />
