@@ -16,8 +16,6 @@ namespace Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary
     /// </summary>
     public class FileBackedMatchingDictionaryLookup : IMatchingDictionaryLookupService
     {
-        // TODO:NOVA-928 this is a temporary in-memory solution based on a static file.
-        // We will need to be able to regenerate the dictionary when needed, whether it remains as a file or moves into a DB.
         private readonly IEnumerable<RawMatchingHla> rawMatchingData = ReadJsonFromFile();
 
         private static IEnumerable<RawMatchingHla> ReadJsonFromFile()
