@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
             var extractionQuery =
                 from line in wmdaFileContents
-                select TryToMapLineOfFileToWmdaHlaTyping(line) into typing
+                select MapLineOfFileToWmdaHlaTypingElseNull(line) into typing
                 where typing != null && selectTypingsForLociOfInterestOnly(typing)
                 select typing;
 
@@ -49,6 +49,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             return extractedData;
         }
 
-        protected abstract TWmdaHlaTyping TryToMapLineOfFileToWmdaHlaTyping(string line);
+        protected abstract TWmdaHlaTyping MapLineOfFileToWmdaHlaTypingElseNull(string line);
     }
 }

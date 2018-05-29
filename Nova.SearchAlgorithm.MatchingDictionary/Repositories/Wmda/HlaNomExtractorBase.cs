@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        protected override HlaNom TryToMapLineOfFileToWmdaHlaTyping(string line)
+        protected override HlaNom MapLineOfFileToWmdaHlaTypingElseNull(string line)
         {
             var regex = new Regex(RegexPattern);
 
