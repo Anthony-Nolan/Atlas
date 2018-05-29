@@ -4,7 +4,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
@@ -12,20 +11,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     {
         protected const string WmdaFilePathPrefix = "wmda/";
 
-        private static readonly Func<TWmdaHlaTyping, bool> FilterDataByMolecularLociNames =
+        private static readonly Func<TWmdaHlaTyping, bool> FilterTypingsByMolecularLociNames =
             typing => LocusNames.MolecularLoci.Contains(typing.WmdaLocus);
 
-        private static readonly Func<TWmdaHlaTyping, bool> FilterDataBySerologyLociNames =
+        private static readonly Func<TWmdaHlaTyping, bool> FilterTypingsBySerologyLociNames =
             typing => LocusNames.SerologyLoci.Contains(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
 
         private readonly string fileName;
-        private readonly string regexPattern;
         private readonly TypingMethod typingMethod;
 
-        protected WmdaDataExtractor(string fileName, string regexPattern, TypingMethod typingMethod)
+        protected WmdaDataExtractor(string fileName, TypingMethod typingMethod)
         {
             this.fileName = fileName;
-            this.regexPattern = regexPattern;
             this.typingMethod = typingMethod;
         }
 
@@ -39,22 +36,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         private IEnumerable<TWmdaHlaTyping> ExtractWmdaDataFromFileContents(IEnumerable<string> wmdaFileContents)
         {
-            var regex = new Regex(regexPattern);
-            var filterToOnlySelectTypingsForLociOfInterest =
-                typingMethod == TypingMethod.Molecular ? FilterDataByMolecularLociNames : FilterDataBySerologyLociNames;
+            var selectTypingsForLociOfInterestOnly =
+                typingMethod == TypingMethod.Molecular ? FilterTypingsByMolecularLociNames : FilterTypingsBySerologyLociNames;
 
             var extractionQuery =
                 from line in wmdaFileContents
-                select regex.Match(line).Groups into regexResults
-                where regexResults.Count > 0
-                select MapDataExtractedFromWmdaFile(regexResults) into mapped
-                where filterToOnlySelectTypingsForLociOfInterest(mapped)
-                select mapped;
+                select TryToMapLineOfFileToWmdaHlaTyping(line) into typing
+                where typing != null && selectTypingsForLociOfInterestOnly(typing)
+                select typing;
 
             var extractedData = extractionQuery.ToArray();
             return extractedData;
         }
 
-        protected abstract TWmdaHlaTyping MapDataExtractedFromWmdaFile(GroupCollection extractedData);
+        protected abstract TWmdaHlaTyping TryToMapLineOfFileToWmdaHlaTyping(string line);
     }
 }

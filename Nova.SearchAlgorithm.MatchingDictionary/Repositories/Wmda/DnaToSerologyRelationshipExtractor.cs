@@ -11,22 +11,30 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private const string FileName = WmdaFilePathPrefix + "rel_dna_ser";
         private const string RegexPattern = @"^(\w+\*)\;([\w:]+)\;([\d\/\\?]*);([\d\/\\?]*)\;([\d\/\\?]*)\;([\d\/\\?]*)$";
 
-        public DnaToSerologyRelationshipExtractor() : base(FileName, RegexPattern, TypingMethod.Molecular)
+        public DnaToSerologyRelationshipExtractor() : base(FileName, TypingMethod.Molecular)
         {
         }
 
-        protected override RelDnaSer MapDataExtractedFromWmdaFile(GroupCollection extractedData)
+        protected override RelDnaSer TryToMapLineOfFileToWmdaHlaTyping(string line)
         {
+            var regex = new Regex(RegexPattern);
+
+            if (!regex.IsMatch(line))
+                return null;
+
+            var extractedData = regex.Match(line).Groups;
+
             var unambiguous = GetAssignments(Assignment.Unambiguous, extractedData[3].Value);
             var possible = GetAssignments(Assignment.Possible, extractedData[4].Value);
             var assumed = GetAssignments(Assignment.Assumed, extractedData[5].Value);
             var expert = GetAssignments(Assignment.Expert, extractedData[6].Value);
-            var assignments = unambiguous.Union(possible.Union(assumed.Union(expert)));
+
+            var allAssignments = unambiguous.Union(possible.Union(assumed.Union(expert)));
 
             return new RelDnaSer(
                 extractedData[1].Value,
                 extractedData[2].Value,
-                assignments
+                allAssignments
             );
         }
 

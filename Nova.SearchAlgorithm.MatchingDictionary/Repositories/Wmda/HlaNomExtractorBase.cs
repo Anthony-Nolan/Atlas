@@ -9,12 +9,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private const string FileName = WmdaFilePathPrefix + "hla_nom";
         private const string RegexPattern = @"^(\w+\*{0,1})\;([\w:]+)\;\d+\;(\d*)\;([\w:]*)\;";
 
-        protected HlaNomExtractorBase(TypingMethod typingMethod) : base(FileName, RegexPattern, typingMethod)
+        protected HlaNomExtractorBase(TypingMethod typingMethod) : base(FileName, typingMethod)
         {
         }
 
-        protected override HlaNom MapDataExtractedFromWmdaFile(GroupCollection extractedData)
+        protected override HlaNom TryToMapLineOfFileToWmdaHlaTyping(string line)
         {
+            var regex = new Regex(RegexPattern);
+
+            if (!regex.IsMatch(line))
+                return null;
+
+            var extractedData = regex.Match(line).Groups;
+
             return new HlaNom(
                 extractedData[1].Value,
                 extractedData[2].Value,

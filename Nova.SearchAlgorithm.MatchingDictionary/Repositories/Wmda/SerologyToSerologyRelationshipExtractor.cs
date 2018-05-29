@@ -9,12 +9,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private const string FileName = WmdaFilePathPrefix + "rel_ser_ser";
         private const string RegexPattern = @"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)";
 
-        public SerologyToSerologyRelationshipExtractor() : base(FileName, RegexPattern, TypingMethod.Serology)
+        public SerologyToSerologyRelationshipExtractor() : base(FileName, TypingMethod.Serology)
         {
         }
 
-        protected override RelSerSer MapDataExtractedFromWmdaFile(GroupCollection extractedData)
+        protected override RelSerSer TryToMapLineOfFileToWmdaHlaTyping(string line)
         {
+            var regex = new Regex(RegexPattern);
+
+            if (!regex.IsMatch(line))
+                return null;
+
+            var extractedData = regex.Match(line).Groups;
+
             return new RelSerSer(
                 extractedData[1].Value,
                 extractedData[2].Value,

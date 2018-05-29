@@ -9,16 +9,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private const string FileName = "version_report";
         private const string RegexPattern = @"^Confidential,(\w+\*)([\w:]+),";
 
-        public ConfidentialAlleleExtractor() : base(FileName, RegexPattern, TypingMethod.Molecular)
+        public ConfidentialAlleleExtractor() : base(FileName, TypingMethod.Molecular)
         {
         }
 
-        protected override ConfidentialAllele MapDataExtractedFromWmdaFile(GroupCollection extractedData)
+        protected override ConfidentialAllele TryToMapLineOfFileToWmdaHlaTyping(string line)
         {
+            var regex = new Regex(RegexPattern);
+
+            if (!regex.IsMatch(line))
+                return null;
+
+            var extractedData = regex.Match(line).Groups;
+
             return new ConfidentialAllele(
-                extractedData[1].Value,
-                extractedData[2].Value
-            );
+                    extractedData[1].Value,
+                    extractedData[2].Value
+                );
         }
     }
 }

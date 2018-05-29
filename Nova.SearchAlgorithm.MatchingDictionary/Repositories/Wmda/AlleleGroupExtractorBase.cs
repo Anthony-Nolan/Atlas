@@ -9,13 +9,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     {
         private const string RegexPattern = @"^(\w+\*)\;([\w:\/]+)\;([\w:]*)$";
 
-        protected AlleleGroupExtractorBase(string fileName) : 
-            base(WmdaFilePathPrefix + fileName, RegexPattern, TypingMethod.Molecular)
+        protected AlleleGroupExtractorBase(string fileName) : base(WmdaFilePathPrefix + fileName, TypingMethod.Molecular)
         {
         }
 
-        protected override TWmdaAlleleGroup MapDataExtractedFromWmdaFile(GroupCollection extractedData)
+        protected override TWmdaAlleleGroup TryToMapLineOfFileToWmdaHlaTyping(string line)
         {
+            var regex = new Regex(RegexPattern);
+
+            if (!regex.IsMatch(line))
+                return default;
+
+            var extractedData = regex.Match(line).Groups;
+
             var alleleGroup = new TWmdaAlleleGroup
             {
                 WmdaLocus = extractedData[1].Value,
