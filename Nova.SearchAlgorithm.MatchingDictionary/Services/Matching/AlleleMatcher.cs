@@ -31,7 +31,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     alleleFamilyAsTyping);
 
             if (IsAlleleFamilyInvalidSerology(hlaInfo.SerologyInfoForMatching, allele, alleleFamilyAsTyping))
+            {
                 mappingInfo.Add(CreateMappingFromAlleleFamily(alleleFamilyAsTyping));
+            }
 
             return mappingInfo;
         }
@@ -94,10 +96,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         {
             var matchInfo = new DnaToSerologyMatch(actualMatchingSerology);
 
-            if (actualMatchingSerology.IsDeleted 
+            if (actualMatchingSerology.IsDeleted
                 || UnexpectedDnaToSerologyMappings.PermittedExceptions.Contains(alleleFamilyAsTyping))
+            {
                 return matchInfo;
-
+            }
+                
             matchInfo.IsUnexpected =
                 expectedMatchingSerology == null 
                 || !expectedMatchingSerology.Contains(actualMatchingSerology);
