@@ -11,6 +11,7 @@ using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
+using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services
@@ -70,11 +71,11 @@ namespace Nova.SearchAlgorithm.Services
 
         public async void ResumeDonorImport()
         {
-            // TODO:NOVA-1170 for now just import 10
-            var page = await donorServiceClient.GetDonors(10);
+            // TODO:NOVA-1170 for now just import 10. Increase batch size later.
+            var page = await donorServiceClient.GetDonors(10, donorRepository.HighestDonorId());
             foreach (var donor in page.Donors)
             {
-                InsertSingleRawDonor(donor.ToRawImportDonor());
+                donorRepository.InsertDonor(ConvertRawDonor(donor));
             }
         }
 
@@ -121,7 +122,7 @@ namespace Nova.SearchAlgorithm.Services
             });
         }
 
-        // TODO:NOVA-919 extract to a spreasheet-backed repository if this stays
+        // TODO:NOVA-919 extract to a spreadsheet-backed repository if this stays
         private string SpreadsheetContents()
         {
             Assembly assem = this.GetType().Assembly;
@@ -164,6 +165,59 @@ namespace Nova.SearchAlgorithm.Services
             foreach (RawInputDonor donor in spreadsheetDonors)
             {
                 InsertSingleRawDonor(donor);
+            }
+        }
+
+        private InputDonor ConvertRawDonor(Donor donor)
+        {
+            var rawHlaAsPhenotype = new PhenotypeInfo<string>
+            {
+                A_1 = donor.A_1,
+                A_2 = donor.A_2,
+                B_1 = donor.B_1,
+                B_2 = donor.B_2,
+                C_1 = donor.C_1,
+                C_2 = donor.C_2,
+                DQB1_1 = donor.DQB1_1,
+                DQB1_2 = donor.DQB1_2,
+                DRB1_1 = donor.DRB1_1,
+                DRB1_2 = donor.DRB1_2
+            };
+
+            return new InputDonor
+            {
+                RegistryCode = RegistryCodeFromString(donor.DonorType),
+                DonorType = DonorTypeFromString(donor.DonorType),
+                DonorId = 1,
+                MatchingHla = rawHlaAsPhenotype.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
+            };
+        }
+
+        private static RegistryCode RegistryCodeFromString(string input)
+        {
+            if (Enum.TryParse(input, out RegistryCode code))
+            {
+                return code;
+            }
+            // TODO:NOVA-1170 DonorImportException
+            // TODO:NOVA-1170 Log exceptions and continue
+            throw new SearchHttpException($"Could not understand registry code {input}");
+        }
+
+        private static DonorType DonorTypeFromString(string input)
+        {
+            switch (input.ToLower())
+            {
+                case "adult":
+                case "a":
+                    return DonorType.Adult;
+                case "cord":
+                case "c":
+                    return DonorType.Cord;
+                default:
+                    // TODO:NOVA-1170 DonorImportException
+                    // TODO:NOVA-1170 Log exceptions and continue
+                    throw new SearchHttpException($"Could not understand donor type {input}");
             }
         }
     }

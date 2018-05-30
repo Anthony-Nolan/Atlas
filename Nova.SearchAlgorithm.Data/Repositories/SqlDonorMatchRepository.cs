@@ -12,6 +12,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public interface IDonorMatchRepository
     {
+        int HighestDonorId();
         void InsertDonor(InputDonor donor);
         void UpdateDonorWithNewHla(InputDonor donor);
         DonorResult GetDonor(int donorId);
@@ -26,6 +27,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public SqlDonorMatchRepository(SearchAlgorithmContext context)
         {
             this.context = context;
+        }
+
+        public int HighestDonorId()
+        {
+            return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefault();
         }
 
         public IEnumerable<DonorResult> AllDonors()
