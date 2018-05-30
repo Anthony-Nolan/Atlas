@@ -7,8 +7,8 @@
     <ProjectGuid>{7DC2A865-304B-402B-AC56-342681368568}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nova.SearchService.Data</RootNamespace>
-    <AssemblyName>Nova.SearchService.Data</AssemblyName>
+    <RootNamespace>Nova.SearchAlgorithm.Data</RootNamespace>
+    <AssemblyName>Nova.SearchAlgorithm.Data</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
