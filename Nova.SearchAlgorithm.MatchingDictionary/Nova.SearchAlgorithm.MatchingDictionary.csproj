@@ -157,8 +157,8 @@
     <Compile Include="Data\IWmdaFileReader.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
-    <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
-    <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
+    <Compile Include="Models\MatchingTypings\IHlaInfoToMapDnaToSerology.cs" />
+    <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToDna.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\GGroupExtractor.cs" />
@@ -222,6 +222,8 @@
     <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />
     <Compile Include="Services\Matching\AlleleMatcher.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
+    <Compile Include="Services\Matching\SerologyToDnaMapper.cs" />
+    <Compile Include="Services\Matching\DnaToSerologyMapper.cs" />
     <Compile Include="Services\Matching\IHlaMatcher.cs" />
     <Compile Include="Models\MatchingTypings\HlaInfoForMatching.cs" />
     <Compile Include="Services\Matching\SerologyInfoGenerator.cs" />
