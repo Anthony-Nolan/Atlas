@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         {
             var matchedHlaQuery =
                 from serologyInfo in hlaInfo.SerologyInfoForMatching
-                let allelesInfo = GetAlleleMappingsForSerology(hlaInfo, serologyInfo).ToArray()
+                let allelesInfo = GetAlleleMappingsForSerology(hlaInfo, serologyInfo)
                 let pGroups = allelesInfo.SelectMany(allele => allele.MatchingPGroups).Distinct()
                 let gGroups = allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()
                 select new MatchedSerology(serologyInfo, pGroups, gGroups);
