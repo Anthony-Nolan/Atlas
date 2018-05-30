@@ -1,11 +1,11 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    internal interface IHlaInfoToMapDnaToSerology
+    internal interface IHlaInfoToMapAlleleToSerology
     {
         List<ISerologyInfoForMatching> SerologyInfoForMatching { get; }
-        List<RelDnaSer> DnaToSerologyRelationships { get; }
+        List<RelDnaSer> AlleleToSerologyRelationships { get; }
     }
 }

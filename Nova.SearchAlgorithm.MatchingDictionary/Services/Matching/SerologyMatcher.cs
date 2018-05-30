@@ -12,11 +12,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     {
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            var serologyToDnaMapper = new SerologyToDnaMapper();
+            var serologyToAlleleMapper = new SerologyToAlleleMapper();
 
             var matchedHlaQuery =
                 from serologyInfo in hlaInfo.SerologyInfoForMatching
-                let allelesInfo = serologyToDnaMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo)
+                let allelesInfo = serologyToAlleleMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo)
                 let pGroups = allelesInfo.SelectMany(allele => allele.MatchingPGroups).Distinct()
                 let gGroups = allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()
                 select new MatchedSerology(serologyInfo, pGroups, gGroups);

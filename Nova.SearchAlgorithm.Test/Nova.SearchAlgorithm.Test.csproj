@@ -322,7 +322,7 @@
     <Compile Include="MatchingDictionary\Repositories\Wmda\PGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdaRepositoryTestFixtureArgs.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\DnaToSerologyRelationshipsTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\SerologyToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdRepositoryTestBase.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleModelTest.cs" />

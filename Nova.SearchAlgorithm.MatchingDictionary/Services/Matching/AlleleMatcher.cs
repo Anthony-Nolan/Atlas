@@ -13,13 +13,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     {
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            var dnaToSerologyMapper = new DnaToSerologyMapper();
+            var alleleToSerologyMapper = new AlleleToSerologyMapper();
 
             var matchedHlaQuery =
                 from alleleInfo in hlaInfo.AlleleInfoForMatching
-                let dnaToSerologyMapping = dnaToSerologyMapper.GetSerologyMappingsForAllele(
+                let serologyMappings = alleleToSerologyMapper.GetSerologyMappingsForAllele(
                     hlaInfo, (AlleleTyping)alleleInfo.TypingUsedInMatching)
-                select new MatchedAllele(alleleInfo, dnaToSerologyMapping);
+                select new MatchedAllele(alleleInfo, serologyMappings);
 
             return matchedHlaQuery.ToArray();
         }        

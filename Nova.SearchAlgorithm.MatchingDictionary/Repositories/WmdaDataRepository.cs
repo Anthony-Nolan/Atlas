@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         IEnumerable<HlaNomP> PGroups { get; }
         IEnumerable<HlaNomG> GGroups { get; }
         IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; }
-        IEnumerable<RelDnaSer> DnaToSerologyRelationships { get; }
+        IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; }
         IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; }
     }
 
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public IEnumerable<HlaNomP> PGroups { get; private set; }
         public IEnumerable<HlaNomG> GGroups { get; private set; }
         public IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; private set; }
-        public IEnumerable<RelDnaSer> DnaToSerologyRelationships { get; private set; }
+        public IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; private set; }
         public IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; private set; }
 
         private readonly IWmdaFileReader wmdaFileReader;
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             PGroups = GetWmdaData(new PGroupExtractor());
             GGroups = GetWmdaData(new GGroupExtractor());
             SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor());
-            DnaToSerologyRelationships = GetWmdaData(new DnaToSerologyRelationshipExtractor());
+            AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor());
             ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor());
         }
 
