@@ -25,8 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
             var assignments = GetSerologyAssignmentsForAlleleIfExists(hlaInfo.DnaToSerologyRelationships, allele);
 
-            var mappingInfo = assignments == null ? new List<DnaToSerologyMapping>() : 
-                GetMappingInfoFromDnaToSerologyRelationships(
+            var mappingInfo = GetMappingInfoFromDnaToSerologyRelationships(
                     hlaInfo.SerologyInfoForMatching,
                     assignments,
                     alleleFamilyAsTyping);
@@ -51,9 +50,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             var relationshipForAllele = dnaToSerologyRelationships.SingleOrDefault(r =>
                 r.WmdaLocus.Equals(allele.WmdaLocus) && r.Name.Equals(allele.Name));
 
-            return relationshipForAllele == null || !relationshipForAllele.Assignments.Any()
-                ? null
-                : relationshipForAllele.Assignments;
+            return relationshipForAllele != null ? 
+                relationshipForAllele.Assignments : new List<SerologyAssignment>();
         }
 
         private static IList<DnaToSerologyMapping> GetMappingInfoFromDnaToSerologyRelationships(
