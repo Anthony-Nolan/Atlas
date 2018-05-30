@@ -19,13 +19,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     assignments,
                     alleleFamilyAsTyping);
 
-            if (alleleTyping.IsValidExpressingAllele
-                && AlleleFamilyDoesNotMapToAnySerologyTyping(hlaInfo.SerologyInfoForMatching, alleleFamilyAsTyping))
-            {
-                var mappingFromAlleleFamily = CreateNewMappingFromAlleleFamily(alleleFamilyAsTyping);
-                mappingInfo.Add(mappingFromAlleleFamily);
-            }
-
             return mappingInfo;
         }
 
@@ -88,23 +81,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 || !expectedMatchingSerology.Contains(actualMatchingSerology);
 
             return matchInfo;
-        }
-
-        private static bool AlleleFamilyDoesNotMapToAnySerologyTyping(
-            IEnumerable<ISerologyInfoForMatching> serologyInfoForMatching,
-            HlaTyping alleleFamilyAsTyping)
-        {
-            return !serologyInfoForMatching.Any(s => s.HlaTyping.Equals(alleleFamilyAsTyping));
-        }
-
-        private static SerologyMappingForAllele CreateNewMappingFromAlleleFamily(IWmdaHlaTyping alleleFamilyAsTyping)
-        {
-            var newSerology = new SerologyTyping(alleleFamilyAsTyping, SerologySubtype.NotSerologyTyping);
-            return new SerologyMappingForAllele(
-                newSerology,
-                Assignment.None,
-                new List<SerologyMatch> { new SerologyMatch(newSerology) }
-            );
         }
     }
 }

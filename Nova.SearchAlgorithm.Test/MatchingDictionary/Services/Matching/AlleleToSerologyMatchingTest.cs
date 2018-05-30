@@ -319,19 +319,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void AllelesWhoseFamiliesAreInvalidSerologyTypingsHaveCorrectSerologyMappings()
+        public void AllelesWithNoCorrespondingAntigenHaveCorrectSerologyMappings()
         {
             var noAssignmentAllele = GetSingleMatchingTyping(MatchLocus.C, "12:02:02:01");
-            var noAssignmentMapping = new List<SerologyMappingForAllele>
-            {
-                new SerologyMappingForAllele(
-                    new SerologyTyping("Cw", "12", SerologySubtype.NotSerologyTyping),
-                    Assignment.None,
-                    new List<SerologyMatch>
-                    {
-                        new SerologyMatch(new SerologyTyping("Cw", "12", SerologySubtype.NotSerologyTyping))
-                    })
-            };
+            var noAssignmentMapping = new List<SerologyMappingForAllele>();
 
             var expertAssignmentAllele = GetSingleMatchingTyping(MatchLocus.C, "15:07");
             var expertAssignmentMapping = new List<SerologyMappingForAllele>
@@ -344,13 +335,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
                         new SerologyMatch(new SerologyTyping("Cw", "3", SerologySubtype.Broad), true),
                         new SerologyMatch(new SerologyTyping("Cw", "9", SerologySubtype.Split), true),
                         new SerologyMatch(new SerologyTyping("Cw", "10", SerologySubtype.Split), true)
-                    }),
-                new SerologyMappingForAllele(
-                    new SerologyTyping("Cw", "15", SerologySubtype.NotSerologyTyping),
-                    Assignment.None,
-                    new List<SerologyMatch>
-                    {
-                        new SerologyMatch(new SerologyTyping("Cw", "15", SerologySubtype.NotSerologyTyping))
                     })
             };
 
