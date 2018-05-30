@@ -19,6 +19,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             this.donorBlobRepository = donorBlobRepository;
         }
 
+        public int HighestDonorId()
+        {
+            return donorBlobRepository.HighestDonorId();
+        }
+
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
         {
             var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA);

@@ -1,18 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories;
-using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
+using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Repositories;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -24,58 +25,58 @@ namespace Nova.SearchAlgorithm.Services
         void ImportTenSolarDonors();
         void ImportDummyData();
     }
-    static class DonorExtensions
-    {
-        public static RawInputDonor ToRawImportDonor(this Donor donor)
-        {
-            return new RawInputDonor
-            {
-                DonorId = donor.DonorId,
-                DonorType = donor.DonorType,
-                RegistryCode = donor.RegistryCode,
-                HlaNames = new PhenotypeInfo<string>
-                {
-                    A_1 = donor.A_1,
-                    A_2 = donor.A_2,
-                    B_1 = donor.B_1,
-                    B_2 = donor.B_2,
-                    C_1 = donor.C_1,
-                    C_2 = donor.C_2,
-                    DQB1_1 = donor.DQB1_1,
-                    DQB1_2 = donor.DQB1_2,
-                    DRB1_1 = donor.DRB1_1,
-                    DRB1_2 = donor.DRB1_2
-                }
-            };
-        }
-    }
 
     public class DonorImportService : IDonorImportService
     {
+        // TODO:NOVA-1170 for now just import 10. Increase batch size later.
+        private const int DonorPageSize = 10;
+
         private readonly IDonorMatchRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
         private readonly ISolarDonorRepository solarRepository;
         private readonly IDonorServiceClient donorServiceClient;
-        
+        private readonly ILogger logger;
+
         public DonorImportService(
             IDonorMatchRepository donorRepository,
             IMatchingDictionaryLookupService lookupService,
             ISolarDonorRepository solarRepository,
-            IDonorServiceClient donorServiceClient)
+            IDonorServiceClient donorServiceClient,
+            ILogger logger)
         {
             this.donorRepository = donorRepository;
             this.solarRepository = solarRepository;
             this.lookupService = lookupService;
             this.donorServiceClient = donorServiceClient;
+            this.logger = logger;
         }
 
-        public async void ResumeDonorImport()
+        public void ResumeDonorImport()
         {
-            // TODO:NOVA-1170 for now just import 10. Increase batch size later.
-            var page = await donorServiceClient.GetDonors(10, donorRepository.HighestDonorId());
-            foreach (var donor in page.Donors)
+            ResumeDonorImportAsync(donorRepository.HighestDonorId());
+        }
+
+        public async void ResumeDonorImportAsync(int lastId)
+        {
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {lastId} onwards", LogLevel.Trace);
+
+            var page = await donorServiceClient.GetDonors(DonorPageSize, lastId);
+
+            if (page.Donors.Any())
             {
-                donorRepository.InsertDonor(ConvertRawDonor(donor));
+                foreach (var donor in page.Donors)
+                {
+                    // TODO:NOVA-1170: Insert in batches for efficiency
+                    donorRepository.InsertDonor(ConvertRawDonor(donor));
+                }
+
+                var nextId = page.LastId ?? donorRepository.HighestDonorId();
+
+                ResumeDonorImportAsync(nextId);
+            }
+            else
+            {
+                logger.SendTrace("Donor import complete", LogLevel.Info);
             }
         }
 
@@ -116,7 +117,7 @@ namespace Nova.SearchAlgorithm.Services
             donorRepository.InsertDonor(new InputDonor
             {
                 RegistryCode = code,
-                DonorType = DonorType.Adult,
+                DonorType = DonorTypeFromString(donor.DonorType),
                 DonorId = donor.DonorId,
                 MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
             });
