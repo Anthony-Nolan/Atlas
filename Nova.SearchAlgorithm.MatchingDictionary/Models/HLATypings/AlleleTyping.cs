@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
+        public bool IsValidExpressingAllele => !IsDeleted && !IsNullExpresser;
 
         public AlleleTyping(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
         {
