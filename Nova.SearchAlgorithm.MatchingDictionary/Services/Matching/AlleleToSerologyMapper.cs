@@ -6,15 +6,15 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
-    internal class DnaToSerologyMapper
+    internal class AlleleToSerologyMapper
     {
-        public IList<DnaToSerologyMapping> GetSerologyMappingsForAllele(IHlaInfoToMapDnaToSerology hlaInfo, AlleleTyping alleleTyping)
+        public IList<SerologyMappingForAllele> GetSerologyMappingsForAllele(IHlaInfoToMapAlleleToSerology hlaInfo, AlleleTyping alleleTyping)
         {
             var alleleFamilyAsTyping = ConvertAlleleFamilyToHlaTypingWithSerologyLocus(alleleTyping);
 
-            var assignments = GetSerologyAssignmentsForAlleleIfExists(hlaInfo.DnaToSerologyRelationships, alleleTyping);
+            var assignments = GetSerologyAssignmentsForAlleleIfExists(hlaInfo.AlleleToSerologyRelationships, alleleTyping);
 
-            var mappingInfo = GetMappingInfoFromDnaToSerologyRelationships(
+            var mappingInfo = GetMappingInfoFromSerologyAssignments(
                     hlaInfo.SerologyInfoForMatching,
                     assignments,
                     alleleFamilyAsTyping);
@@ -37,17 +37,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         }
 
         private static IEnumerable<SerologyAssignment> GetSerologyAssignmentsForAlleleIfExists(
-            IEnumerable<RelDnaSer> dnaToSerologyRelationships,
+            IEnumerable<RelDnaSer> alleleToSerologyRelationships,
             IWmdaHlaTyping allele)
         {
-            var relationshipForAllele = dnaToSerologyRelationships.SingleOrDefault(r =>
+            var relationshipForAllele = alleleToSerologyRelationships.SingleOrDefault(r =>
                 r.WmdaLocus.Equals(allele.WmdaLocus) && r.Name.Equals(allele.Name));
 
             return relationshipForAllele != null ?
                 relationshipForAllele.Assignments : new List<SerologyAssignment>();
         }
 
-        private static IList<DnaToSerologyMapping> GetMappingInfoFromDnaToSerologyRelationships(
+        private static IList<SerologyMappingForAllele> GetMappingInfoFromSerologyAssignments(
             IList<ISerologyInfoForMatching> serologiesInfo,
             IEnumerable<SerologyAssignment> assignmentsForAllele,
             HlaTyping alleleFamilyAsTyping)
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 join assigned in assignmentsForAllele
                     on serology.TypingUsedInMatching.Name equals assigned.Name
                 where serology.TypingUsedInMatching.MatchLocus.Equals(alleleFamilyAsTyping.MatchLocus)
-                select new DnaToSerologyMapping(
+                select new SerologyMappingForAllele(
                     (SerologyTyping)serology.HlaTyping,
                     assigned.Assignment,
                     serology.MatchingSerologies.Select(actualMatchingSerology =>
@@ -69,16 +69,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 )).ToList();
         }
 
-        private static DnaToSerologyMatch GetSerologyMatchInfo(
+        private static SerologyMatch GetSerologyMatchInfo(
             SerologyTyping actualMatchingSerology,
             HlaTyping alleleFamilyAsTyping,
             IEnumerable<SerologyTyping> expectedMatchingSerology
         )
         {
-            var matchInfo = new DnaToSerologyMatch(actualMatchingSerology);
+            var matchInfo = new SerologyMatch(actualMatchingSerology);
 
             if (actualMatchingSerology.IsDeleted
-                || UnexpectedDnaToSerologyMappings.PermittedExceptions.Contains(alleleFamilyAsTyping))
+                || UnexpectedAlleleToSerologyMappings.PermittedExceptions.Contains(alleleFamilyAsTyping))
             {
                 return matchInfo;
             }
@@ -97,13 +97,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return !serologyInfoForMatching.Any(s => s.HlaTyping.Equals(alleleFamilyAsTyping));
         }
 
-        private static DnaToSerologyMapping CreateNewMappingFromAlleleFamily(IWmdaHlaTyping alleleFamilyAsTyping)
+        private static SerologyMappingForAllele CreateNewMappingFromAlleleFamily(IWmdaHlaTyping alleleFamilyAsTyping)
         {
             var newSerology = new SerologyTyping(alleleFamilyAsTyping, SerologySubtype.NotSerologyTyping);
-            return new DnaToSerologyMapping(
+            return new SerologyMappingForAllele(
                 newSerology,
                 Assignment.None,
-                new List<DnaToSerologyMatch> { new DnaToSerologyMatch(newSerology) }
+                new List<SerologyMatch> { new SerologyMatch(newSerology) }
             );
         }
     }

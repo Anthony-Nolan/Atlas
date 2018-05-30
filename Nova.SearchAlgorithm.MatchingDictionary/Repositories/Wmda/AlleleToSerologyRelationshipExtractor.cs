@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
-    internal class DnaToSerologyRelationshipExtractor : WmdaDataExtractor<RelDnaSer>
+    internal class AlleleToSerologyRelationshipExtractor : WmdaDataExtractor<RelDnaSer>
     {
         private const string FileName = WmdaFilePathPrefix + "rel_dna_ser";
         private const string RegexPattern = @"^(\w+\*)\;([\w:]+)\;([\d\/\\?]*);([\d\/\\?]*)\;([\d\/\\?]*)\;([\d\/\\?]*)$";
 
-        public DnaToSerologyRelationshipExtractor() : base(FileName, RegexPattern, TypingMethod.Molecular)
+        public AlleleToSerologyRelationshipExtractor() : base(FileName, RegexPattern, TypingMethod.Molecular)
         {
         }
 

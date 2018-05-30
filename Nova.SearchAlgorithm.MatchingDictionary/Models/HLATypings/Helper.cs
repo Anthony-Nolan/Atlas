@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public static string[] NullExpressionSuffixes = { "N" };
     }
 
-    public static class UnexpectedDnaToSerologyMappings
+    public static class UnexpectedAlleleToSerologyMappings
     {
         public static HlaTyping[] PermittedExceptions =
         {

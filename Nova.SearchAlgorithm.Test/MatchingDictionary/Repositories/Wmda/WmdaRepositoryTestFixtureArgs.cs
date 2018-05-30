@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
             new object[] { Repo.SerologyToSerologyRelationships, SerologyLoci }
         };
         public static object[] RelDnaSerTestArgs = {
-            new object[] { Repo.DnaToSerologyRelationships, MolecularLoci }
+            new object[] { Repo.AlleleToSerologyRelationships, MolecularLoci }
         };
         public static object[] ConfidentialAllelesTestArgs = {
             new object[] { Repo.ConfidentialAlleles, MolecularLoci }
