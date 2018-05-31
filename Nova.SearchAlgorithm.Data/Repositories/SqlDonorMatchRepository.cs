@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Migrations;
 using System.Linq;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
@@ -10,28 +11,44 @@ using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
-    public interface IDonorMatchRepository
+    public interface IDonorSearchRepository
     {
-        int HighestDonorId();
-        void InsertDonor(InputDonor donor);
-        void UpdateDonorWithNewHla(InputDonor donor);
-        DonorResult GetDonor(int donorId);
-        IEnumerable<DonorResult> AllDonors();
         IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest);
     }
 
-    public class SqlDonorMatchRepository : IDonorMatchRepository
+    public interface IDonorImportRepository
+    {
+        /// <summary>
+        /// If a donor with the given DonorId already exists, update the HLA and refresh the pre-processed matching groups.
+        /// Otherwise, insert the donor and generate the matching groups.
+        /// </summary>
+        Task AddOrUpdateDonor(InputDonor donor);
+
+        /// <summary>
+        /// Refreshes the pre-processed matching groups for a single donor, for example if the HLA matching dictionary has been updated.
+        /// </summary>
+        Task RefreshMatchingGroupsForExistingDonor(InputDonor donor);
+    }
+
+    public interface IDonorInspectionRepository
+    {
+        Task<int> HighestDonorId();
+        IEnumerable<DonorResult> AllDonors();
+        DonorResult GetDonor(int donorId);
+    }
+
+    public class SqlDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
     {
         private readonly SearchAlgorithmContext context;
 
-        public SqlDonorMatchRepository(SearchAlgorithmContext context)
+        public SqlDonorSearchRepository(SearchAlgorithmContext context)
         {
             this.context = context;
         }
 
-        public int HighestDonorId()
+        public Task<int> HighestDonorId()
         {
-            return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefault();
+            return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefaultAsync();
         }
 
         public IEnumerable<DonorResult> AllDonors()
@@ -44,35 +61,60 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return context.Donors.FirstOrDefault(d => d.DonorId == donorId)?.ToRawDonor();
         }
 
-        public void InsertDonor(InputDonor donor)
+        public async Task AddOrUpdateDonor(InputDonor donor)
         {
-            // Delete donor if it exists, since it won't be attached to the entity context so we can't just update it.
-            DeleteDonorIfExists(donor);
-
-            context.Donors.Add(donor.ToDonorEntity());
-
-            foreach (Locus locus in Enum.GetValues(typeof(Locus)).Cast<Locus>())
+            var result = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
+            if (result == null)
             {
-                context.Database.ExecuteSqlCommand($@"DELETE FROM MatchingHlaAt{locus.ToString().ToUpper()} WHERE DonorId = {donor.DonorId}");
+                context.Donors.Add(donor.ToDonorEntity());
+            }
+            else
+            {
+                result.CopyRawHlaFrom(donor);
+                await context.SaveChangesAsync();
+                await RefreshMatchingGroupsForExistingDonor(donor);
             }
 
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_1, TypePositions.One, () => new MatchingHlaAtA());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_2, TypePositions.Two, () => new MatchingHlaAtA());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtB, donor.MatchingHla.B_1, TypePositions.One, () => new MatchingHlaAtB());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtB, donor.MatchingHla.B_2, TypePositions.Two, () => new MatchingHlaAtB());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtC, donor.MatchingHla.C_1, TypePositions.One, () => new MatchingHlaAtC());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtC, donor.MatchingHla.C_2, TypePositions.Two, () => new MatchingHlaAtC());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDrb1, donor.MatchingHla.DRB1_1, TypePositions.One, () => new MatchingHlaAtDrb1());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDrb1, donor.MatchingHla.DRB1_2, TypePositions.Two, () => new MatchingHlaAtDrb1());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDqb1, donor.MatchingHla.DQB1_1, TypePositions.One, () => new MatchingHlaAtDqb1());
-            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDqb1, donor.MatchingHla.DQB1_2, TypePositions.Two, () => new MatchingHlaAtDqb1());
+            await RefreshMatchingGroupsForExistingDonor(donor);
 
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
-        private void DeleteDonorIfExists(InputDonor donor)
+        public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
-            var result = context.Donors.FirstOrDefault(d => d.DonorId == donor.DonorId);
+            foreach (Locus locus in Enum.GetValues(typeof(Locus)).Cast<Locus>())
+            {
+                context.Database.ExecuteSqlCommand(
+                    $@"DELETE FROM MatchingHlaAt{locus.ToString().ToUpper()} WHERE DonorId = {donor.DonorId}");
+            }
+
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_1, TypePositions.One,
+                () => new MatchingHlaAtA());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtA, donor.MatchingHla.A_2, TypePositions.Two,
+                () => new MatchingHlaAtA());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtB, donor.MatchingHla.B_1, TypePositions.One,
+                () => new MatchingHlaAtB());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtB, donor.MatchingHla.B_2, TypePositions.Two,
+                () => new MatchingHlaAtB());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtC, donor.MatchingHla.C_1, TypePositions.One,
+                () => new MatchingHlaAtC());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtC, donor.MatchingHla.C_2, TypePositions.Two,
+                () => new MatchingHlaAtC());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDrb1, donor.MatchingHla.DRB1_1, TypePositions.One,
+                () => new MatchingHlaAtDrb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDrb1, donor.MatchingHla.DRB1_2, TypePositions.Two,
+                () => new MatchingHlaAtDrb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDqb1, donor.MatchingHla.DQB1_1, TypePositions.One,
+                () => new MatchingHlaAtDqb1());
+            InsertPGroupMatches(donor.DonorId, context.MatchingHlaAtDqb1, donor.MatchingHla.DQB1_2, TypePositions.Two,
+                () => new MatchingHlaAtDqb1());
+
+            await context.SaveChangesAsync();
+        }
+
+        private async Task DeleteDonorIfExists(InputDonor donor)
+        {
+            var result = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
             if (result != null)
             {
                 context.Donors.Remove(result);
@@ -158,12 +200,6 @@ ORDER BY TotalMatchCount DESC";
                       JOIN dbo.PGroupNames p ON p.Id = d.PGroup_Id 
                       WHERE [Name] IN('{string.Join("', '", names)}')
                       GROUP BY d.DonorId, d.TypePosition";
-        }
-
-        public void UpdateDonorWithNewHla(InputDonor donor)
-        {
-            // Insert will insert or update.
-            InsertDonor(donor);
         }
     }
 }

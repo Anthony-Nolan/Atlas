@@ -27,12 +27,12 @@ namespace Nova.SearchAlgorithm.Services
 
     public class TestDataService : ITestDataService
     {
-        private readonly IDonorMatchRepository donorRepository;
+        private readonly IDonorImportRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
         private readonly ISolarDonorRepository solarRepository;
 
         public TestDataService(
-            IDonorMatchRepository donorRepository,
+            IDonorImportRepository donorRepository,
             IMatchingDictionaryLookupService lookupService,
             ISolarDonorRepository solarRepository)
         {
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Services
 
         public void ImportSingleTestDonor()
         {
-            donorRepository.InsertDonor(new InputDonor
+            donorRepository.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -75,7 +75,7 @@ namespace Nova.SearchAlgorithm.Services
         private void InsertSingleRawDonor(RawInputDonor donor)
         {
             Enum.TryParse(donor.RegistryCode, out RegistryCode code);
-            donorRepository.InsertDonor(new InputDonor
+            donorRepository.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = code,
                 DonorType = DonorTypeFromString(donor.DonorType),

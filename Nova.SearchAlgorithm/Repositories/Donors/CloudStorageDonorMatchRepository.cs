@@ -1,36 +1,34 @@
-﻿using AutoMapper;
-using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Models;
+﻿using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {
-    public class CloudStorageDonorMatchRepository : IDonorMatchRepository
+    public class CloudStorageDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
     {
         private readonly IDonorCloudTables donorBlobRepository;
 
-        public CloudStorageDonorMatchRepository(IDonorCloudTables donorBlobRepository)
+        public CloudStorageDonorSearchRepository(IDonorCloudTables donorBlobRepository)
         {
             this.donorBlobRepository = donorBlobRepository;
         }
 
-        public int HighestDonorId()
+        public Task<int> HighestDonorId()
         {
-            return donorBlobRepository.HighestDonorId();
+            return Task.FromResult(donorBlobRepository.HighestDonorId());
         }
 
         public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
         {
             var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA);
             var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.B, matchRequest.LocusMismatchB);
-            var matchesAtDRB1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.Drb1, matchRequest.LocusMismatchDRB1);
+            var matchesAtDrb1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.Drb1, matchRequest.LocusMismatchDRB1);
 
-            var matches = matchesAtA.Union(matchesAtB).Union(matchesAtDRB1)
+            var matches = matchesAtA.Union(matchesAtB).Union(matchesAtDrb1)
                 .GroupBy(m => m.Key)
                 .Select(g => new PotentialMatch
                 {
@@ -38,7 +36,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                     TotalMatchCount = g.Sum(m => m.Value.MatchCount ?? 0),
                     MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key] : new LocusMatchDetails { MatchCount = 0 },
-                    MatchDetailsAtLocusDRB1 = matchesAtDRB1.ContainsKey(g.Key) ? matchesAtDRB1[g.Key] : new LocusMatchDetails { MatchCount = 0 },
+                    MatchDetailsAtLocusDRB1 = matchesAtDrb1.ContainsKey(g.Key) ? matchesAtDrb1[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                 })
                 .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCount)
                 .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
@@ -99,14 +97,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorBlobRepository.GetDonor(donorId);
         }
 
-        public IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId)
-        {
-            return donorBlobRepository.GetMatchesForDonor(donorId);
-        }
-
-        public void InsertDonor(InputDonor donor)
+        public Task AddOrUpdateDonor(InputDonor donor)
         {
             donorBlobRepository.InsertDonor(donor);
+            return Task.CompletedTask;
         }
 
         // TODO:NOVA-937 This will be too many donors
@@ -116,9 +110,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorBlobRepository.AllDonors();
         }
 
-        public void UpdateDonorWithNewHla(InputDonor donor)
+        public Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             donorBlobRepository.UpdateDonorWithNewHla(donor);
+            return Task.CompletedTask;
         }
     }
 }

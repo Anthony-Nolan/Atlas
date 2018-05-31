@@ -18,7 +18,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Repositories
 {
     [TestFixture]
-    public class DonorRepositoryTests : TestBase<CloudStorageDonorMatchRepository>
+    public class DonorRepositoryTests : TestBase<CloudStorageDonorSearchRepository>
     {
         private const string PGroupA1 = "p1";
         private const string PGroupA1_alternative = "p1a";
@@ -30,14 +30,14 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         private readonly DonorResult bothPositionsMatchGroupOne = new DonorResult { DonorId = 2 };
         private readonly DonorResult bothGroupsMatchPositionOne = new DonorResult { DonorId = 3 };
 
-        private IDonorMatchRepository repositoryUnderTest;
+        private IDonorSearchRepository repositoryUnderTest;
 
         private DonorMatchCriteriaBuilder criteriaBuilder;
 
         [SetUp]
         public void SetUp()
         {
-            repositoryUnderTest = new CloudStorageDonorMatchRepository(GetFake<IDonorCloudTables>());
+            repositoryUnderTest = new CloudStorageDonorSearchRepository(GetFake<IDonorCloudTables>());
 
             GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {

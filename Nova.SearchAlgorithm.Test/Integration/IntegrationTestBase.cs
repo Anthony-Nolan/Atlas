@@ -55,12 +55,12 @@ namespace Nova.SearchAlgorithm.Test.Integration
             if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
             {
                 builder.RegisterType<DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
             else
             {
                 builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-                builder.RegisterType<Data.Repositories.SqlDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
 
             builder.RegisterType<FileBackedMatchingDictionaryLookup>().AsImplementedInterfaces().InstancePerLifetimeScope();

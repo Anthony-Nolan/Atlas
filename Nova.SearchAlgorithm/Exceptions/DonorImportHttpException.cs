@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Net;
+using Nova.Utils.Http.Exceptions;
 
 namespace Nova.SearchAlgorithm.Exceptions
 {
-    public class DonorImportHttpException : Exception
+    public class DonorImportHttpException : NovaHttpException
     {
         public DonorImportHttpException(string message)
-            : base(message)
+            : base(HttpStatusCode.InternalServerError, message)
         {
         }
 
         public DonorImportHttpException(string message, Exception inner)
-            : base(message, inner)
+            : base(HttpStatusCode.InternalServerError, message, inner)
         {
         }
     }

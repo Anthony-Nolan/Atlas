@@ -14,10 +14,10 @@ namespace Nova.SearchAlgorithm.Services
 
     public class SearchService : ISearchService
     {
-        private readonly IDonorMatchRepository donorRepository;
+        private readonly IDonorSearchRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
 
-        public SearchService(IDonorMatchRepository donorRepository, IMatchingDictionaryLookupService lookupService)
+        public SearchService(IDonorSearchRepository donorRepository, IMatchingDictionaryLookupService lookupService)
         {
             this.donorRepository = donorRepository;
             this.lookupService = lookupService;

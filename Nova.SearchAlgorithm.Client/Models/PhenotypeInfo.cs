@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
@@ -57,6 +58,40 @@ namespace Nova.SearchAlgorithm.Client.Models
             action(Locus.C, C_1, C_2);
             action(Locus.Dqb1, DQB1_1, DQB1_2);
             action(Locus.Drb1, DRB1_1, DRB1_2);
+        }
+
+        public Task<PhenotypeInfo<R>> WhenAll<R>(Func<Locus, T, Task<R>> action)
+        {
+            return WhenAll((l, p, t) => action(l, t));
+        }
+
+        public async Task<PhenotypeInfo<R>> WhenAll<R>(Func<Locus, TypePositions, T, Task<R>> action)
+        {
+            R[] results = await Task.WhenAll(
+                action(Locus.A, TypePositions.One, A_1),
+                action(Locus.A, TypePositions.Two, A_2),
+                action(Locus.B, TypePositions.One, B_1),
+                action(Locus.B, TypePositions.Two, B_2),
+                action(Locus.C, TypePositions.One, C_1),
+                action(Locus.C, TypePositions.Two, C_2),
+                action(Locus.Dqb1, TypePositions.One, DQB1_1),
+                action(Locus.Dqb1, TypePositions.Two, DQB1_2),
+                action(Locus.Drb1, TypePositions.One, DRB1_1),
+                action(Locus.Drb1, TypePositions.Two, DRB1_2));
+
+            return new PhenotypeInfo<R>
+            {
+                A_1 = results[0],
+                A_2 = results[1],
+                B_1 = results[2],
+                B_2 = results[3],
+                C_1 = results[4],
+                C_2 = results[5],
+                DQB1_1 = results[6],
+                DQB1_2 = results[7],
+                DRB1_1 = results[8],
+                DRB1_2 = results[9]
+            };
         }
     }
 }

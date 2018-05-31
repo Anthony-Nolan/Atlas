@@ -21,11 +21,11 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public ExactMatchAndMismatchAtLocusATests(DonorStorageImplementation param) : base(param) { }
 
         [OneTimeSetUp]
-        public void ImportTestDonors()
+        public void ImportTestDonor()
         {
             var lookupService = container.Resolve<IMatchingDictionaryLookupService>();
-            var donorRepository = container.Resolve<IDonorMatchRepository>();
-            donorRepository.InsertDonor(new InputDonor
+            var donorRepository = container.Resolve<IDonorImportRepository>();
+            donorRepository.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = "13:03:01",
                     DRB1_2 = "13:02:01:03",
                 }).Map((l, p, h) => lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla())
-            });
+            }).Wait();
         }
 
         [SetUp]

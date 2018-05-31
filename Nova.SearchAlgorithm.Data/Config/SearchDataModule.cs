@@ -17,11 +17,11 @@ namespace Nova.SearchAlgorithm.Data.Config
             var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithmContext>().AsSelf().SingleInstance();
 
-            builder.RegisterType<SqlDonorMatchRepository>()
+            builder.RegisterType<SqlDonorSearchRepository>()
                 .AsImplementedInterfaces()
-                .SingleInstance();
+                .InstancePerLifetimeScope();
         }
     }
 }
