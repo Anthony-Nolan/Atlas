@@ -247,10 +247,13 @@
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
     <Compile Include="Controllers\DonorController.cs" />
+    <Compile Include="Controllers\TestDataController.cs" />
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
+    <Compile Include="Exceptions\DonorImportHttpException.cs" />
+    <Compile Include="Exceptions\DonorImportException.cs" />
     <Compile Include="Exceptions\SearchHttpException.cs" />
     <Compile Include="Config\ClientConfig.cs" />
     <Compile Include="MatchingDictionaryConversions\MatchLocusExtensions.cs" />
@@ -266,6 +269,7 @@
     <Compile Include="Repositories\Donors\AzureStorage\PotentialHlaMatchRelationTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
+    <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />
     <Compile Include="Services\SearchService.cs" />

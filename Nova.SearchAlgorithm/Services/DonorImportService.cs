@@ -41,7 +41,14 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task StartDonorImport()
         {
-            await ContinueDonorImport(donorRepository.HighestDonorId());
+            try
+            {
+                await ContinueDonorImport(await donorRepository.HighestDonorId());
+            }
+            catch (Exception ex)
+            {
+                throw new DonorImportHttpException("Unable to complete donor import.", ex);
+            }
         }
 
         public async Task ContinueDonorImport(int lastId)
