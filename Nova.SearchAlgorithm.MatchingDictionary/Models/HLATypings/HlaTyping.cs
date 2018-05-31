@@ -1,5 +1,6 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
@@ -15,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             WmdaLocus = wmdaLocus;
             Name = name;
             IsDeleted = isDeleted;
-            MatchLocus = LocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
+            MatchLocus = PermittedLocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
         }
 
         public override string ToString()

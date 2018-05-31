@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
+namespace Nova.SearchAlgorithm.MatchingDictionary.HlaInfo
 {
-    internal static class LocusNames
+    /// <summary>
+    /// The matching dictionary will only contain typing data for a subset of all the possible HLA loci.
+    /// This class defines the names of these permitted loci, and their variants according to typing method.
+    /// </summary>
+    internal static class PermittedLocusNames
     {
         private class LocusName
         {
@@ -20,11 +25,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             }
         }
         
-        public static IEnumerable<string> SerologyLoci => Names.Select(n => n.Serology);
-        public static IEnumerable<string> MolecularLoci => Names.Select(n => n.Molecular);
-        public static IEnumerable<MatchLocus> MatchLoci => Names.Select(n => n.Match);
+        public static IEnumerable<string> SerologyLoci => NamesOfPermittedLoci.Select(n => n.Serology);
+        public static IEnumerable<string> MolecularLoci => NamesOfPermittedLoci.Select(n => n.Molecular);
+        public static IEnumerable<MatchLocus> MatchLoci => NamesOfPermittedLoci.Select(n => n.Match);
 
-        private static readonly List<LocusName> Names = new List<LocusName>
+        private static readonly List<LocusName> NamesOfPermittedLoci = new List<LocusName>
         {
             new LocusName("A", "A*", MatchLocus.A),
             new LocusName("B", "B*", MatchLocus.B),
@@ -35,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         public static MatchLocus GetMatchLocusFromWmdaLocus(string wmdaLocus)
         {
-            var locus = Names.FirstOrDefault(
+            var locus = NamesOfPermittedLoci.FirstOrDefault(
                     l => l.Molecular.Equals(wmdaLocus) || l.Serology.Equals(wmdaLocus));
 
             if (locus == null)
@@ -46,12 +51,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         public static string GetSerologyLocusNameFromMolecular(string molecularLocusName)
         {
-            return Names.First(l => l.Molecular.Equals(molecularLocusName)).Serology;
+            return NamesOfPermittedLoci.First(l => l.Molecular.Equals(molecularLocusName)).Serology;
         }
 
         public static string GetMolecularLocusNameFromMatch(MatchLocus matchLocusName)
         {
-            return Names.First(l => l.Match.Equals(matchLocusName)).Molecular;
+            return NamesOfPermittedLoci.First(l => l.Match.Equals(matchLocusName)).Molecular;
         }
     }
 }

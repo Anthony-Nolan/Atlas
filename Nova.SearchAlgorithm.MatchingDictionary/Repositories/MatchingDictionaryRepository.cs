@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
@@ -57,7 +58,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private void InsertMatchingDictionaryEntriesIntoTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
         {
-            foreach (var partition in LocusNames.MatchLoci)
+            foreach (var partition in PermittedLocusNames.MatchLoci)
             {
                 var entitiesForPartition = contents
                     .Where(entry => entry.MatchLocus.Equals(partition))

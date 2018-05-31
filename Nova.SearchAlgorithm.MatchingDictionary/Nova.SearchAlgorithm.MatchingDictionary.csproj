@@ -190,7 +190,7 @@
     <Compile Include="Models\MatchingDictionary\SerologyEntryExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
     <Compile Include="Services\Matching\UnexpectedDnaToSerologyMappings.cs" />
-    <Compile Include="Models\HLATypings\LocusNames.cs" />
+    <Compile Include="HlaInfo\PermittedLocusNames.cs" />
     <Compile Include="Models\HLATypings\SerologyTyping.cs" />
     <Compile Include="Models\HLATypings\SerologySubtype.cs" />
     <Compile Include="Models\MatchingTypings\AlleleInfoForMatching.cs" />

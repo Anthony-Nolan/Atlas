@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
@@ -43,7 +44,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
         private static HlaTyping ConvertAlleleFamilyToSerology(string molecularLocus, string alleleName)
         {
-            var serologyLocus = LocusNames.GetSerologyLocusNameFromMolecular(molecularLocus);
+            var serologyLocus = PermittedLocusNames.GetSerologyLocusNameFromMolecular(molecularLocus);
             var serologyName = alleleName.Split(':')[0].TrimStart('0');
             return new HlaTyping(serologyLocus, serologyName);
         }

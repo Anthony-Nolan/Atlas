@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
@@ -12,10 +13,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         protected const string WmdaFilePathPrefix = "wmda/";
 
         private static readonly Func<TWmdaHlaTyping, bool> FilterTypingsByMolecularLociNames =
-            typing => LocusNames.MolecularLoci.Contains(typing.WmdaLocus);
+            typing => PermittedLocusNames.MolecularLoci.Contains(typing.WmdaLocus);
 
         private static readonly Func<TWmdaHlaTyping, bool> FilterTypingsBySerologyLociNames =
-            typing => LocusNames.SerologyLoci.Contains(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
+            typing => PermittedLocusNames.SerologyLoci.Contains(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
 
         private readonly string fileName;
         private readonly TypingMethod typingMethod;
