@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Nova.DonorService.Client;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
@@ -12,7 +11,6 @@ using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Repositories;
-using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -32,21 +30,15 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorMatchRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
         private readonly ISolarDonorRepository solarRepository;
-        private readonly IDonorServiceClient donorServiceClient;
-        private readonly ILogger logger;
 
         public TestDataService(
             IDonorMatchRepository donorRepository,
             IMatchingDictionaryLookupService lookupService,
-            ISolarDonorRepository solarRepository,
-            IDonorServiceClient donorServiceClient,
-            ILogger logger)
+            ISolarDonorRepository solarRepository)
         {
             this.donorRepository = donorRepository;
             this.solarRepository = solarRepository;
             this.lookupService = lookupService;
-            this.donorServiceClient = donorServiceClient;
-            this.logger = logger;
         }
 
         public void ImportSingleTestDonor()
@@ -110,7 +102,7 @@ namespace Nova.SearchAlgorithm.Services
             var spreadsheetDonors = Regex.Split(SpreadsheetContents(), "\r\n|\r|\n")
                 .Skip(1) // Header row
                 .Select(a => a.Split(','))
-                .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray<string>())
+                .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray())
                 .Select((a, i) => new RawInputDonor
                 {
                     DonorId = i+1, // Don't want donor ID 0

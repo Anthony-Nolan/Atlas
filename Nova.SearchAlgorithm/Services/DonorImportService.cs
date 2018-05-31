@@ -8,7 +8,6 @@ using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Repositories;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
@@ -25,19 +24,16 @@ namespace Nova.SearchAlgorithm.Services
 
         private readonly IDonorMatchRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
-        private readonly ISolarDonorRepository solarRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImportService(
             IDonorMatchRepository donorRepository,
             IMatchingDictionaryLookupService lookupService,
-            ISolarDonorRepository solarRepository,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
             this.donorRepository = donorRepository;
-            this.solarRepository = solarRepository;
             this.lookupService = lookupService;
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
@@ -57,6 +53,7 @@ namespace Nova.SearchAlgorithm.Services
             if (page.Donors.Any())
             {
                 // TODO:NOVA-1170: Insert in batches for efficiency
+                // TODO:NOVA-1170: Log exceptions and continue to other donors
                 foreach (var donor in page.Donors)
                 {
                     donorRepository.InsertDonor(await ConvertRawDonor(donor));
@@ -117,9 +114,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 return code;
             }
-            // TODO:NOVA-1170 DonorImportException
-            // TODO:NOVA-1170 Log exceptions and continue
-            throw new SearchHttpException($"Could not understand registry code {input}");
+            throw new DonorImportException($"Could not understand registry code {input}");
         }
 
         private static DonorType DonorTypeFromString(string input)
@@ -133,9 +128,7 @@ namespace Nova.SearchAlgorithm.Services
                 case "c":
                     return DonorType.Cord;
                 default:
-                    // TODO:NOVA-1170 DonorImportException
-                    // TODO:NOVA-1170 Log exceptions and continue
-                    throw new SearchHttpException($"Could not understand donor type {input}");
+                    throw new DonorImportException($"Could not understand donor type {input}");
             }
         }
     }
