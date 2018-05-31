@@ -1,6 +1,6 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaInfo;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {

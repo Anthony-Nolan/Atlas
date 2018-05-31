@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
 {
     internal static class UnexpectedDnaToSerologyMappings
     {

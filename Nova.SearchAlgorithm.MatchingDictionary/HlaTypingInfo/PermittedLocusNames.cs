@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.HlaInfo
+namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
 {
     /// <summary>
     /// The matching dictionary will only contain typing data for a subset of all the possible HLA loci.

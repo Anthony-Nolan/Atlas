@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaInfo;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
