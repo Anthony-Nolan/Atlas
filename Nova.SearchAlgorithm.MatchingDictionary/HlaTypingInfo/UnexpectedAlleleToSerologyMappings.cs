@@ -2,7 +2,7 @@
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
 {
-    internal static class UnexpectedDnaToSerologyMappings
+    internal static class UnexpectedAlleleToSerologyMappings
     {
         public static HlaTyping[] PermittedExceptions =
         {

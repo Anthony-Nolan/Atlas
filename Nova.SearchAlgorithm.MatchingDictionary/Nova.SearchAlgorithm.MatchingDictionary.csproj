@@ -155,6 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
+    <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
@@ -191,7 +192,6 @@
     <Compile Include="Models\MatchingDictionary\SerologyEntry.cs" />
     <Compile Include="Models\MatchingDictionary\SerologyEntryExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
-    <Compile Include="HlaTypingInfo\UnexpectedDnaToSerologyMappings.cs" />
     <Compile Include="HlaTypingInfo\PermittedLocusNames.cs" />
     <Compile Include="Models\HLATypings\SerologyTyping.cs" />
     <Compile Include="Models\HLATypings\SerologySubtype.cs" />
