@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
 {
     public class Donor
     {
-        [Key]
+        public int Id { get; set; }
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }

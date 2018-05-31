@@ -46,7 +46,10 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public void InsertDonor(InputDonor donor)
         {
-            context.Donors.AddOrUpdate(donor.ToDonorEntity());
+            // Delete donor if it exists, since it won't be attached to the entity context so we can't just update it.
+            DeleteDonorIfExists(donor);
+
+            context.Donors.Add(donor.ToDonorEntity());
 
             foreach (Locus locus in Enum.GetValues(typeof(Locus)).Cast<Locus>())
             {
@@ -67,9 +70,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             context.SaveChanges();
         }
 
+        private void DeleteDonorIfExists(InputDonor donor)
+        {
+            var result = context.Donors.FirstOrDefault(d => d.DonorId == donor.DonorId);
+            if (result != null)
+            {
+                context.Donors.Remove(result);
+            }
+        }
+
         public void InsertPGroupMatches<T>(int donorId, DbSet<T> table, ExpandedHla hla, TypePositions position, Func<T> maker) where T : MatchingHla
         {
-            if (hla != null && hla.PGroups != null)
+            if (hla?.PGroups != null)
             {
                 table.AddRange(
                     hla.PGroups.Select(pg => {
@@ -83,16 +95,16 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        private PGroupName FindOrCreatePGroup(string PGroupName)
+        private PGroupName FindOrCreatePGroup(string pGroupName)
         {
-            var existing = context.PGroupNames.FirstOrDefault(pg => pg.Name == PGroupName);
+            var existing = context.PGroupNames.FirstOrDefault(pg => pg.Name == pGroupName);
 
             if (existing != null)
             {
                 return existing;
             }
 
-            var newPGroup = context.PGroupNames.Add(new PGroupName { Name = PGroupName });
+            var newPGroup = context.PGroupNames.Add(new PGroupName { Name = pGroupName });
             context.SaveChanges();
             return newPGroup;
         }

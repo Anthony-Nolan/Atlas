@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using Nova.SearchAlgorithm.Services;
 
@@ -22,10 +23,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("trigger-donor-import")]
-        public IHttpActionResult TriggerImport()
+        public async Task TriggerImport()
         {
-            donorImportService.ResumeDonorImport();
-            return Ok();
+            await donorImportService.StartDonorImport();
         }
 
         [HttpPost]

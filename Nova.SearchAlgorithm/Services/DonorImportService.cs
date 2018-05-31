@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Repositories;
@@ -19,7 +22,7 @@ namespace Nova.SearchAlgorithm.Services
 {
     public interface IDonorImportService
     {
-        void ResumeDonorImport();
+        Task StartDonorImport();
 
         void ImportSingleTestDonor();
         void ImportTenSolarDonors();
@@ -51,12 +54,12 @@ namespace Nova.SearchAlgorithm.Services
             this.logger = logger;
         }
 
-        public void ResumeDonorImport()
+        public async Task StartDonorImport()
         {
-            ResumeDonorImportAsync(donorRepository.HighestDonorId());
+            await ContinueDonorImport(donorRepository.HighestDonorId());
         }
 
-        public async void ResumeDonorImportAsync(int lastId)
+        public async Task ContinueDonorImport(int lastId)
         {
             logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {lastId} onwards", LogLevel.Trace);
 
@@ -64,15 +67,15 @@ namespace Nova.SearchAlgorithm.Services
 
             if (page.Donors.Any())
             {
+                // TODO:NOVA-1170: Insert in batches for efficiency
                 foreach (var donor in page.Donors)
                 {
-                    // TODO:NOVA-1170: Insert in batches for efficiency
-                    donorRepository.InsertDonor(ConvertRawDonor(donor));
+                    donorRepository.InsertDonor(await ConvertRawDonor(donor));
                 }
 
                 var nextId = page.LastId ?? donorRepository.HighestDonorId();
 
-                ResumeDonorImportAsync(nextId);
+                await ContinueDonorImport(nextId);
             }
             else
             {
@@ -169,29 +172,43 @@ namespace Nova.SearchAlgorithm.Services
             }
         }
 
-        private InputDonor ConvertRawDonor(Donor donor)
+        private async Task<InputDonor> ConvertRawDonor(Donor donor)
         {
-            var rawHlaAsPhenotype = new PhenotypeInfo<string>
-            {
-                A_1 = donor.A_1,
-                A_2 = donor.A_2,
-                B_1 = donor.B_1,
-                B_2 = donor.B_2,
-                C_1 = donor.C_1,
-                C_2 = donor.C_2,
-                DQB1_1 = donor.DQB1_1,
-                DQB1_2 = donor.DQB1_2,
-                DRB1_1 = donor.DRB1_1,
-                DRB1_2 = donor.DRB1_2
-            };
-
             return new InputDonor
             {
-                RegistryCode = RegistryCodeFromString(donor.DonorType),
+                RegistryCode = RegistryCodeFromString(donor.RegistryCode),
                 DonorType = DonorTypeFromString(donor.DonorType),
-                DonorId = 1,
-                MatchingHla = rawHlaAsPhenotype.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
+                DonorId = donor.DonorId,
+                MatchingHla = await LookupDonorHla(donor)
             };
+        }
+
+        private async Task<PhenotypeInfo<ExpandedHla>> LookupDonorHla(Donor donor)
+        {
+            return new PhenotypeInfo<ExpandedHla>
+            {
+                A_1 = await LookupMatchingHla(Locus.A, donor.A_1),
+                A_2 = await LookupMatchingHla(Locus.A, donor.A_2),
+                B_1 = await LookupMatchingHla(Locus.B, donor.B_1),
+                B_2 = await LookupMatchingHla(Locus.B, donor.B_2),
+                C_1 = await LookupMatchingHla(Locus.C, donor.C_1),
+                C_2 = await LookupMatchingHla(Locus.C, donor.C_2),
+                DQB1_1 = await LookupMatchingHla(Locus.Dqb1, donor.DQB1_1),
+                DQB1_2 = await LookupMatchingHla(Locus.Dqb1, donor.DQB1_2),
+                DRB1_1 = await LookupMatchingHla(Locus.Drb1, donor.DRB1_1),
+                DRB1_2 = await LookupMatchingHla(Locus.Drb1, donor.DRB1_2)
+            };
+        }
+
+        private async Task<ExpandedHla> LookupMatchingHla(Locus locus, string hla)
+        {
+            if (string.IsNullOrEmpty(hla))
+            {
+                return null;
+            }
+
+            var matchingResult = await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla);
+            return matchingResult.ToExpandedHla();
         }
 
         private static RegistryCode RegistryCodeFromString(string input)
