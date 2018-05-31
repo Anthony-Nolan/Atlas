@@ -1,10 +1,7 @@
-﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
-{
-    internal static class AlleleExpression
-    {
-        public static string[] NullExpressionSuffixes = { "N" };
-    }
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+{
     internal static class UnexpectedDnaToSerologyMappings
     {
         public static HlaTyping[] PermittedExceptions =

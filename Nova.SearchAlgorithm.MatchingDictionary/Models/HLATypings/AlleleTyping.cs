@@ -11,10 +11,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
 
-        public AlleleTyping(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
+        private static readonly string[] NullExpressionSuffixes = { "N" };
+
+    public AlleleTyping(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
         {
             ExpressionSuffix = GetExpressionSuffix(name);
-            IsNullExpresser = AlleleExpression.NullExpressionSuffixes.Contains(ExpressionSuffix);
+            IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
             Fields = GetFields(name, ExpressionSuffix);
             TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
