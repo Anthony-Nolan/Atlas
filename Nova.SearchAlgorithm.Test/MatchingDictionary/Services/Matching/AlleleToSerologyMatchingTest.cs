@@ -325,11 +325,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
             var noAssignmentMapping = new List<DnaToSerologyMapping>
             {
                 new DnaToSerologyMapping(
-                    new SerologyTyping("Cw", "12", SerologySubtype.NotSplit),
+                    new SerologyTyping("Cw", "12", SerologySubtype.NotSerologyTyping),
                     Assignment.None,
                     new List<DnaToSerologyMatch>
                     {
-                        new DnaToSerologyMatch(new SerologyTyping("Cw", "12", SerologySubtype.NotSplit))
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "12", SerologySubtype.NotSerologyTyping))
                     })
             };
 
@@ -346,11 +346,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
                         new DnaToSerologyMatch(new SerologyTyping("Cw", "10", SerologySubtype.Split), true)
                     }),
                 new DnaToSerologyMapping(
-                    new SerologyTyping("Cw", "15", SerologySubtype.NotSplit),
+                    new SerologyTyping("Cw", "15", SerologySubtype.NotSerologyTyping),
                     Assignment.None,
                     new List<DnaToSerologyMatch>
                     {
-                        new DnaToSerologyMatch(new SerologyTyping("Cw", "15", SerologySubtype.NotSplit))
+                        new DnaToSerologyMatch(new SerologyTyping("Cw", "15", SerologySubtype.NotSerologyTyping))
                     })
             };
 

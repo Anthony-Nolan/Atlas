@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
@@ -13,32 +12,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     {
         public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            return hlaInfo.SerologyInfoForMatching.Select(serology =>
-                GetMatchedSerology(hlaInfo.AlleleInfoForMatching, hlaInfo.DnaToSerologyRelationships, serology));
-        }
+            var serologyToDnaMapper = new SerologyToDnaMapper();
 
-        private static MatchedSerology GetMatchedSerology(
-            List<IAlleleInfoForMatching> alleleInfo,
-            List<RelDnaSer> dnaToSerologyRelationships,
-            ISerologyInfoForMatching serologyInfo)
-        {
-            var matchLocus = serologyInfo.TypingUsedInMatching.MatchLocus;
-            var matchingSerologies = serologyInfo.MatchingSerologies.Select(m => m.Name);
+            var matchedHlaQuery =
+                from serologyInfo in hlaInfo.SerologyInfoForMatching
+                let allelesInfo = serologyToDnaMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo)
+                let pGroups = allelesInfo.SelectMany(allele => allele.MatchingPGroups).Distinct()
+                let gGroups = allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()
+                select new MatchedSerology(serologyInfo, pGroups, gGroups);
 
-            var alleles = (
-                from allele in alleleInfo
-                join dnaToSer in dnaToSerologyRelationships
-                    on new { allele.TypingUsedInMatching.WmdaLocus, allele.TypingUsedInMatching.Name }
-                    equals new { dnaToSer.WmdaLocus, dnaToSer.Name }
-                where allele.TypingUsedInMatching.MatchLocus.Equals(matchLocus)
-                      && dnaToSer.Serologies.Intersect(matchingSerologies).Any()
-                select allele
-                ).ToList();
-
-            return new MatchedSerology(
-                serologyInfo,
-                alleles.SelectMany(allele => allele.MatchingPGroups).Distinct(),
-                alleles.SelectMany(allele => allele.MatchingGGroups).Distinct());
+            return matchedHlaQuery.ToArray();
         }
     }
 }

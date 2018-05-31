@@ -221,6 +221,8 @@
     <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />
     <Compile Include="Services\Matching\AlleleMatcher.cs" />
     <Compile Include="Services\HlaMatchingService.cs" />
+    <Compile Include="Services\Matching\SerologyToDnaMapper.cs" />
+    <Compile Include="Services\Matching\DnaToSerologyMapper.cs" />
     <Compile Include="Services\Matching\IHlaMatcher.cs" />
     <Compile Include="Models\MatchingTypings\HlaInfoForMatching.cs" />
     <Compile Include="Services\Matching\SerologyInfoGenerator.cs" />
