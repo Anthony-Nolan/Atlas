@@ -1,4 +1,6 @@
-﻿namespace Nova.SearchAlgorithm.Client.Models
+﻿using Nova.SearchAlgorithm.Common.Models;
+
+namespace Nova.SearchAlgorithm.Client.Models
 {
     public class PotentialMatch
     {

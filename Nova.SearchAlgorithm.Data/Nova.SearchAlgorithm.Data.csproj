@@ -149,8 +149,8 @@
     <Compile Include="Entity\Donor.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\DonorMatchCriteria.cs" />
-    <Compile Include="Models\DonorResult.cs" />
     <Compile Include="Models\ExpandedHla.cs" />
+    <Compile Include="Models\FlatSearchQueryResult.cs" />
     <Compile Include="Models\InputDonor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\SqlDonorMatchRepository.cs" />
@@ -164,9 +164,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
-      <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>
-      <Name>Nova.SearchAlgorithm.Client</Name>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
+      <Project>{FB453E02-3CE1-42E7-BDC4-13899B993F2A}</Project>
+      <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

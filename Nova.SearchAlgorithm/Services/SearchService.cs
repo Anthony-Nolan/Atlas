@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
@@ -48,7 +49,7 @@ namespace Nova.SearchAlgorithm.Services
 
             var scoredMatches = await Task.WhenAll(fiveLociMatches.Select(calculateScore.Score));
 
-            return scoredMatches;
+            return scoredMatches.Select(MapSearchResultToApiObject);
         }
 
         private async Task<DonorLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
@@ -69,16 +70,36 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private Func<PotentialMatch, PotentialMatch> AddMatchCounts(DonorMatchCriteria criteria)
+        private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(DonorMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
             return m => m;
         }
 
-        private Func<PotentialMatch, bool> FilterByMismatchCriteria(DonorMatchCriteria criteria)
+        private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(DonorMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
             return m => true;
+        }
+
+        private PotentialMatch MapSearchResultToApiObject(PotentialSearchResult result)
+        {
+            return new PotentialMatch
+            {
+                DonorId = result.Donor.DonorId,
+                DonorType = result.Donor.DonorType,
+                Registry = result.Donor.RegistryCode,
+                MatchRank = result.MatchRank,
+                TotalMatchConfidence = result.TotalMatchConfidence,
+                TotalMatchGrade = result.TotalMatchGrade,
+                TotalMatchCount = result.TotalMatchCount,
+                TypedLociCount = result.TypedLociCount,
+                MatchDetailsAtLocusA = result.MatchDetailsAtLocusA,
+                MatchDetailsAtLocusB = result.MatchDetailsAtLocusB,
+                MatchDetailsAtLocusC = result.MatchDetailsAtLocusC,
+                MatchDetailsAtLocusDQB1 = result.MatchDetailsAtLocusDqb1,
+                MatchDetailsAtLocusDRB1 = result.MatchDetailsAtLocusDrb1
+            };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.Client.Models
+﻿namespace Nova.SearchAlgorithm.Common.Models
 {
     public class LocusMatchDetails
     {

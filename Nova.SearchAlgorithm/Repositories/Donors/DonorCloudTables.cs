@@ -1,9 +1,7 @@
 ﻿using System;
 using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
+using Nova.SearchAlgorithm.Common.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Data.Models;

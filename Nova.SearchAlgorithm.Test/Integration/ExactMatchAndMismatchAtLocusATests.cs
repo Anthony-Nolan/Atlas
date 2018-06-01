@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Services;
-using Nova.Utils.TestUtils.Assertions;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
@@ -151,7 +148,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         }
 
         [Test]
-        public void SixOfSixSingleDonorMismatchAtLocusDRB1()
+        public void SixOfSixSingleDonorMismatchAtLocusDrb1()
         {
             IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
             {

@@ -6,12 +6,13 @@ using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Scoring
 {
     public interface ICalculateScore
     {
-        Task<PotentialMatch> Score(PotentialMatch potentialMatch);
+        Task<PotentialSearchResult> Score(PotentialSearchResult potentialMatch);
     }
 
     public class CalculateScore : ICalculateScore
@@ -21,7 +22,7 @@ namespace Nova.SearchAlgorithm.Scoring
         {
         }
 
-        public Task<PotentialMatch> Score(PotentialMatch potentialMatch)
+        public Task<PotentialSearchResult> Score(PotentialSearchResult potentialMatch)
         {
             // TODO:NOVA-1170 (write tests and) implement
             return Task.FromResult(potentialMatch);

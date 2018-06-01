@@ -1,11 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Models;
-using System;
+using Nova.SearchAlgorithm.Common.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Builders
 {

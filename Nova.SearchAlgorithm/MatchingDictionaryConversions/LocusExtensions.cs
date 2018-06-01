@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 

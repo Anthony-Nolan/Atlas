@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
 using Nova.SearchAlgorithm.Data.Entity;
@@ -13,7 +12,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public interface IDonorSearchRepository
     {
-        IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest);
+        IEnumerable<PotentialSearchResult> Search(DonorMatchCriteria matchRequest);
     }
 
     public interface IDonorImportRepository
@@ -124,7 +123,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return newPGroup;
         }
 
-        public IEnumerable<PotentialMatch> Search(DonorMatchCriteria matchRequest)
+        public IEnumerable<PotentialSearchResult> Search(DonorMatchCriteria matchRequest)
         {
             string sql = $@"SELECT DonorId, SUM(MatchCount) AS TotalMatchCount
 FROM (
@@ -161,8 +160,9 @@ FROM (
 GROUP BY DonorId
 HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
 ORDER BY TotalMatchCount DESC";
-
-            return context.Database.SqlQuery<PotentialMatch>(sql);
+        
+            // TODO:NOVA-1171 fix mapping from sql to PotentialSearchResult
+            return context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult());
         }
 
         private string SelectForLocus(Locus locus, DonorLocusMatchCriteria mismatch, TypePositions typePosition)

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dapper;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Models;
 using Nova.Utils.Solar;
 

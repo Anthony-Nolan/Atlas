@@ -146,17 +146,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Locus.cs" />
-    <Compile Include="Models\DonorType.cs" />
-    <Compile Include="Models\LocusMatchDetails.cs" />
-    <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialMatch.cs" />
     <Compile Include="Models\LocusMismatchCriteria.cs" />
     <Compile Include="Models\MismatchCriteria.cs" />
-    <Compile Include="Models\RegistryCode.cs" />
     <Compile Include="Models\SearchRequest.cs" />
     <Compile Include="Models\SearchResultSet.cs" />
-    <Compile Include="Models\TypePositions.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -173,6 +167,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Filters\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
+      <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
+      <Name>Nova.SearchAlgorithm.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

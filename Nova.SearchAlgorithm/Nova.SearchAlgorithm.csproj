@@ -259,7 +259,7 @@
     <Compile Include="MatchingDictionaryConversions\MatchLocusExtensions.cs" />
     <Compile Include="MatchingDictionaryConversions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
-    <Compile Include="Repositories\Donors\PotentialHlaMatch.cs" />
+    <Compile Include="Repositories\Donors\PotentialHlaMatchRelation.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />
@@ -270,6 +270,7 @@
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\TestDataService.cs" />
+    <Compile Include="Scoring\CalculateScore.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />
     <Compile Include="Services\SearchService.cs" />
@@ -300,6 +301,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
       <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>
       <Name>Nova.SearchAlgorithm.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
+      <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
+      <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
       <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>

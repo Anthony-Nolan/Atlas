@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Reflection;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Exceptions;
 using Nova.Utils.ApplicationInsights;

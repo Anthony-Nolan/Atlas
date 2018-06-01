@@ -1,9 +1,4 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {

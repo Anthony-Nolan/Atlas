@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Autofac;
 using FluentAssertions;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 
@@ -162,25 +162,25 @@ namespace Nova.SearchAlgorithm.Test.Integration
         [Test]
         public void TwoOfTwoHomozygousMatchAtLocusA()
         {
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 1);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 1);
         }
 
         [Test]
         public void TwoOfTwoHeterozygousMatchAtLocusA()
         {
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 2);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
         public void OneHalfMatchesNotPresentInExactSearchResults()
         {
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().NotContain(d => d.DonorId == 3);
-            results.Should().NotContain(d => d.DonorId == 4);
-            results.Should().NotContain(d => d.DonorId == 5);
-            results.Should().NotContain(d => d.DonorId == 6);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == 3);
+            results.Should().NotContain(d => d.Donor.DonorId == 4);
+            results.Should().NotContain(d => d.Donor.DonorId == 5);
+            results.Should().NotContain(d => d.Donor.DonorId == 6);
         }
 
         [Test]
@@ -188,9 +188,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 1);
-            results.Should().Contain(d => d.DonorId == 2);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 1);
+            results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
@@ -198,8 +198,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 3);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 3);
         }
 
         [Test]
@@ -207,8 +207,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 4);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 4);
         }
 
         [Test]
@@ -216,9 +216,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().NotContain(d => d.DonorId == 5);
-            results.Should().NotContain(d => d.DonorId == 6);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == 5);
+            results.Should().NotContain(d => d.Donor.DonorId == 6);
         }
 
         [Test]
@@ -226,8 +226,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 5);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 5);
         }
 
         [Test]
@@ -235,8 +235,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().NotContain(d => d.DonorId == 6);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == 6);
         }
 
         [Test]
@@ -244,9 +244,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 1);
-            results.Should().Contain(d => d.DonorId == 2);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 1);
+            results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
@@ -254,9 +254,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 3);
-            results.Should().Contain(d => d.DonorId == 4);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 3);
+            results.Should().Contain(d => d.Donor.DonorId == 4);
         }
 
         [Test]
@@ -265,9 +265,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 1);
-            results.Should().Contain(d => d.DonorId == 2);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 1);
+            results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
@@ -276,9 +276,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 3);
-            results.Should().Contain(d => d.DonorId == 4);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 3);
+            results.Should().Contain(d => d.Donor.DonorId == 4);
         }
 
         [Test]
@@ -287,8 +287,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 5);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 5);
         }
 
         [Test]
@@ -297,8 +297,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            IEnumerable<PotentialMatch> results = searchRepo.Search(searchCriteria);
-            results.Should().Contain(d => d.DonorId == 6);
+            IEnumerable<PotentialSearchResult> results = searchRepo.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == 6);
         }
     }
 }
