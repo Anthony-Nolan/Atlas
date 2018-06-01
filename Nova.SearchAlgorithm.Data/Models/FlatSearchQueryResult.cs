@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Entity;
+﻿using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Data.Models
 {
+    // TODO:NOVA-930 NOVA-1253 extend with more fields, matching the query in the sql matching repository,
+    // in order to extract any further required information for matching and scoring.
     internal class FlatSearchQueryResult
     {
         public int DonorId { get; set; }

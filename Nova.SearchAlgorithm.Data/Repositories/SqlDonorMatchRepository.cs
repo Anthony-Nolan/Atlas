@@ -161,7 +161,6 @@ GROUP BY DonorId
 HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
 ORDER BY TotalMatchCount DESC";
         
-            // TODO:NOVA-1171 fix mapping from sql to PotentialSearchResult
             return context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult());
         }
 
