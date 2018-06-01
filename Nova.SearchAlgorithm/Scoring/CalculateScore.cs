@@ -17,14 +17,14 @@ namespace Nova.SearchAlgorithm.Scoring
 
     public class CalculateScore : ICalculateScore
     {
-        // TODO:NOVA-1170 inject dependencies
+        // TODO:NOVA-930 inject dependencies
         public CalculateScore()
         {
         }
 
         public Task<PotentialSearchResult> Score(PotentialSearchResult potentialMatch)
         {
-            // TODO:NOVA-1170 (write tests and) implement
+            // TODO:NOVA-930 (write tests and) implement
             return Task.FromResult(potentialMatch);
         }
     }
