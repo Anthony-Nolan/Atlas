@@ -47,9 +47,9 @@ namespace Nova.SearchAlgorithm.Services
 
             var fiveLociMatches = threeLociMatches.Select(AddMatchCounts(criteria)).Where(FilterByMismatchCriteria(criteria));
 
-            var scoredMatches = await Task.WhenAll(fiveLociMatches.Select(calculateScore.Score));
+            var scoredMatches = await Task.WhenAll(fiveLociMatches.Select(m => calculateScore.Score(criteria, m)));
 
-            return scoredMatches.Select(MapSearchResultToApiObject);
+            return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }
 
         private async Task<DonorLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
