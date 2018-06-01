@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Scoring;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -18,11 +19,13 @@ namespace Nova.SearchAlgorithm.Services
     {
         private readonly IDonorSearchRepository donorRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
+        private readonly ICalculateScore calculateScore;
 
-        public SearchService(IDonorSearchRepository donorRepository, IMatchingDictionaryLookupService lookupService)
+        public SearchService(IDonorSearchRepository donorRepository, IMatchingDictionaryLookupService lookupService, ICalculateScore calculateScore)
         {
             this.donorRepository = donorRepository;
             this.lookupService = lookupService;
+            this.calculateScore = calculateScore;
         }
 
         public async Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest)
@@ -43,8 +46,7 @@ namespace Nova.SearchAlgorithm.Services
 
             var fiveLociMatches = threeLociMatches.Select(AddMatchCounts(criteria)).Where(FilterByMismatchCriteria(criteria));
 
-            // TODO:NOVA-1171 add skeleton scoring module and call here
-            var scoredMatches = fiveLociMatches;
+            var scoredMatches = await Task.WhenAll(fiveLociMatches.Select(calculateScore.Score));
 
             return scoredMatches;
         }
