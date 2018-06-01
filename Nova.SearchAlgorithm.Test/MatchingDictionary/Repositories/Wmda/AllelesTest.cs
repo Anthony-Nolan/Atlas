@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -15,17 +16,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [Test]
         public void Alleles_SuccessfullyCaptured()
         {
-            var twoField = new HlaNom("A*", "01:26");
-            var twoFieldSuffix = new HlaNom("A*", "01:27N");
+            var twoField = new HlaNom(TypingMethod.Molecular, "A*", "01:26");
+            var twoFieldSuffix = new HlaNom(TypingMethod.Molecular, "A*", "01:27N");
 
-            var threeField = new HlaNom("B*", "07:05:06");
-            var threeFieldSuffix = new HlaNom("C*", "07:491:01N");
+            var threeField = new HlaNom(TypingMethod.Molecular, "B*", "07:05:06");
+            var threeFieldSuffix = new HlaNom(TypingMethod.Molecular, "C*", "07:491:01N");
 
-            var fourField = new HlaNom("DQB1*", "03:01:01:07");
-            var fourFieldSuffix = new HlaNom("C*", "07:01:01:14Q");
+            var fourField = new HlaNom(TypingMethod.Molecular, "DQB1*", "03:01:01:07");
+            var fourFieldSuffix = new HlaNom(TypingMethod.Molecular, "C*", "07:01:01:14Q");
 
-            var deletedWithIdentical = new HlaNom("DRB1*", "08:01:03", true, "08:01:01");
-            var deletedNoIdentical = new HlaNom("C*", "07:295", true);
+            var deletedWithIdentical = new HlaNom(TypingMethod.Molecular, "DRB1*", "08:01:03", true, "08:01:01");
+            var deletedNoIdentical = new HlaNom(TypingMethod.Molecular, "C*", "07:295", true);
 
             Assert.AreEqual(twoField, GetSingleWmdaHlaTyping("A*", "01:26"));
             Assert.AreEqual(twoFieldSuffix, GetSingleWmdaHlaTyping("A*", "01:27N"));

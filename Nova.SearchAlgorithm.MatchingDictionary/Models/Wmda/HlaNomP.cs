@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
     public class HlaNomP : IWmdaAlleleGroup, IEquatable<HlaNomP>
     {
+        public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string WmdaLocus { get; set; }
         public string Name { get; set; }
         public IEnumerable<string> Alleles { get; set; }

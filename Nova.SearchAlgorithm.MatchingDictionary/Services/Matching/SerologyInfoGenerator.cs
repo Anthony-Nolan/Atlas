@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
             if (!ser.IdenticalHla.Equals(""))
             {
-                var identicalSer = new HlaNom(ser.WmdaLocus, ser.IdenticalHla);
+                var identicalSer = new HlaNom(TypingMethod.Serology, ser.WmdaLocus, ser.IdenticalHla);
                 var identicalSerFamily = new SerologyFamily(serologyRelationships, identicalSer);
                 usedInMatching = new SerologyTyping(identicalSerFamily.SerologyTyping);
                 matchList.AddRange(CalculateMatchingSerologiesFromFamily(serologyRelationships, identicalSerFamily));
@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 case SerologySubtype.Broad:
                     AddAssociated(child, matching);
 
-                    foreach (var split in child.SplitAntigens.Select(s => new HlaNom(child.WmdaLocus, s)))
+                    foreach (var split in child.SplitAntigens.Select(s => new HlaNom(TypingMethod.Serology, child.WmdaLocus, s)))
                     {
                         AddSplit(split, matching);
                         AddAssociated(SerologyFamily.GetChild(relSerSer, split), matching);

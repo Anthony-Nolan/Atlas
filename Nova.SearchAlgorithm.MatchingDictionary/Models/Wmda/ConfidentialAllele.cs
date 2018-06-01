@@ -1,9 +1,11 @@
 ﻿using System;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
     public class ConfidentialAllele : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
     {
+        public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string WmdaLocus { get; set; }
         public string Name { get; set; }
 

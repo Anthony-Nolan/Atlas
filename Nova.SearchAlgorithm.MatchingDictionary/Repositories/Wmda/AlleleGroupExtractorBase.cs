@@ -1,5 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Text.RegularExpressions;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
@@ -9,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     {
         private const string RegexPattern = @"^(\w+\*)\;([\w:\/]+)\;([\w:]*)$";
 
-        protected AlleleGroupExtractorBase(string fileName) : base(WmdaFilePathPrefix + fileName, TypingMethod.Molecular)
+        protected AlleleGroupExtractorBase(string fileName) : base(WmdaFilePathPrefix + fileName)
         {
         }
 

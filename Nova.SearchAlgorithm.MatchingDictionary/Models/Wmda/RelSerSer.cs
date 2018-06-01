@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
     public class RelSerSer : IWmdaHlaTyping, IEquatable<RelSerSer>
     {
+        public TypingMethod TypingMethod => TypingMethod.Serology;
         public string WmdaLocus { get; set; }
         public string Name { get; set; }
         public IEnumerable<string> SplitAntigens { get; }
@@ -24,15 +26,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             return $"locus: {WmdaLocus}, name: {Name}, splits: {string.Join("/", SplitAntigens)}, associated: {string.Join("/", AssociatedAntigens)}";
         }
 
+
         public bool Equals(RelSerSer other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                string.Equals(WmdaLocus, other.WmdaLocus) 
-                && string.Equals(Name, other.Name) 
-                && SplitAntigens.SequenceEqual(other.SplitAntigens) 
-                && AssociatedAntigens.SequenceEqual(other.AssociatedAntigens);
+                string.Equals(WmdaLocus, other.WmdaLocus) && 
+                string.Equals(Name, other.Name) && 
+                SplitAntigens.SequenceEqual(other.SplitAntigens) && 
+                AssociatedAntigens.SequenceEqual(other.AssociatedAntigens);
         }
 
         public override bool Equals(object obj)

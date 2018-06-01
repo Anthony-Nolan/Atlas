@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         {
             var serologyLocus = PermittedLocusNames.GetSerologyLocusNameFromMolecular(allele.WmdaLocus);
             var serologyName = allele.Name.Split(':')[0].TrimStart('0');
-            return new HlaTyping(serologyLocus, serologyName);
+            return new HlaTyping(TypingMethod.Serology, serologyLocus, serologyName);
         }
 
         private static IEnumerable<SerologyAssignment> GetSerologyAssignmentsForAlleleIfExists(

@@ -134,12 +134,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         {
             var confidentialAlleles = new List<HlaTyping>
             {
-                new HlaTyping("A*", "02:01:01:28"),
-                new HlaTyping("B*", "18:37:02"),
-                new HlaTyping("B*", "48:43"),
-                new HlaTyping("C*", "06:211N"),
-                new HlaTyping("DQB1*", "03:01:01:20"),
-                new HlaTyping("DQB1*", "03:23:03")
+                new HlaTyping(TypingMethod.Molecular, "A*", "02:01:01:28"),
+                new HlaTyping(TypingMethod.Molecular, "B*", "18:37:02"),
+                new HlaTyping(TypingMethod.Molecular, "B*", "48:43"),
+                new HlaTyping(TypingMethod.Molecular, "C*", "06:211N"),
+                new HlaTyping(TypingMethod.Molecular, "DQB1*", "03:01:01:20"),
+                new HlaTyping(TypingMethod.Molecular, "DQB1*", "03:23:03")
             };
 
             Assert.IsEmpty(MatchingTypings.Where(m => confidentialAlleles.Contains(m.HlaTyping)));

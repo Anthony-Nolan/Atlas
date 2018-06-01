@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         [JsonConstructor]
         public SerologyTyping(string wmdaLocus, string name, SerologySubtype serologySubtype, bool isDeleted = false) 
-            : base(wmdaLocus, name, isDeleted)
+            : base(TypingMethod.Serology, wmdaLocus, name, isDeleted)
         {
             SerologySubtype = serologySubtype;
         }

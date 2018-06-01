@@ -6,8 +6,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
     {
         public static HlaTyping[] PermittedExceptions =
         {
-            new HlaTyping("B", "15"),
-            new HlaTyping("B", "70"),
+            new HlaTyping(TypingMethod.Serology, "B", "15"),
+            new HlaTyping(TypingMethod.Serology, "B", "70")
         };
     }
 }
