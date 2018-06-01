@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
@@ -37,7 +39,14 @@ namespace Nova.SearchAlgorithm.Services
                 LocusMismatchDQB1 = await MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1),
             };
 
-            return donorRepository.Search(criteria);
+            var threeLociMatches = donorRepository.Search(criteria);
+
+            var fiveLociMatches = threeLociMatches.Select(AddMatchCounts(criteria)).Where(FilterByMismatchCriteria(criteria));
+
+            // TODO:NOVA-1171 add skeleton scoring module and call here
+            var scoredMatches = fiveLociMatches;
+
+            return scoredMatches;
         }
 
         private async Task<DonorLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
@@ -56,6 +65,18 @@ namespace Nova.SearchAlgorithm.Services
                 HlaNamesToMatchInPositionOne = (await hla1).MatchingPGroups,
                 HlaNamesToMatchInPositionTwo = (await hla2).MatchingPGroups,
             };
+        }
+
+        private Func<PotentialMatch, PotentialMatch> AddMatchCounts(DonorMatchCriteria criteria)
+        {
+            // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
+            return m => m;
+        }
+
+        private Func<PotentialMatch, bool> FilterByMismatchCriteria(DonorMatchCriteria criteria)
+        {
+            // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
+            return m => true;
         }
     }
 }
