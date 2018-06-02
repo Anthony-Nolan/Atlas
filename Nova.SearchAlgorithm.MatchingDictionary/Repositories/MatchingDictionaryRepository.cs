@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private void InsertMatchingDictionaryEntriesIntoTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
         {
-            foreach (var partition in PermittedLocusNames.MatchLoci)
+            foreach (var partition in PermittedLocusNames.GetPermittedMatchLoci())
             {
                 var entitiesForPartition = contents
                     .Where(entry => entry.MatchLocus.Equals(partition))

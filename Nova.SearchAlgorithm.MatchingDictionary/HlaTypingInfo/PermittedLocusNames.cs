@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
 {
     /// <summary>
     /// The matching dictionary will only contain typing data for a subset of all the possible HLA loci.
-    /// This class defines the names of these permitted loci, and their variants according to typing method.
+    /// This class defines the names of these permitted loci, and their typing method variants.
     /// </summary>
     internal static class PermittedLocusNames
     {
@@ -24,10 +24,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
                 Match = match;
             }
         }
-        
-        public static IEnumerable<string> SerologyLoci => NamesOfPermittedLoci.Select(n => n.Serology);
-        public static IEnumerable<string> MolecularLoci => NamesOfPermittedLoci.Select(n => n.Molecular);
-        public static IEnumerable<MatchLocus> MatchLoci => NamesOfPermittedLoci.Select(n => n.Match);
 
         private static readonly List<LocusName> NamesOfPermittedLoci = new List<LocusName>
         {
@@ -38,25 +34,58 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             new LocusName("DR", "DRB1*", MatchLocus.Drb1)
         };
 
-        public static MatchLocus GetMatchLocusFromWmdaLocus(string wmdaLocus)
+        public static bool IsPermittedMolecularLocus(string locusName)
         {
-            var locus = NamesOfPermittedLoci.FirstOrDefault(
-                    l => l.Molecular.Equals(wmdaLocus) || l.Serology.Equals(wmdaLocus));
-
-            if (locus == null)
-                throw new ArgumentException($"{wmdaLocus} is not a match locus.");
-
-            return locus.Match;
+            return NamesOfPermittedLoci.Select(n => n.Molecular).Contains(locusName);
         }
 
-        public static string GetSerologyLocusNameFromMolecular(string molecularLocusName)
+        public static bool IsPermittedSerologyLocus(string locusName)
         {
-            return NamesOfPermittedLoci.First(l => l.Molecular.Equals(molecularLocusName)).Serology;
+            return NamesOfPermittedLoci.Select(n => n.Serology).Contains(locusName);
         }
 
-        public static string GetMolecularLocusNameFromMatch(MatchLocus matchLocusName)
+        public static IEnumerable<MatchLocus> GetPermittedMatchLoci()
         {
-            return NamesOfPermittedLoci.First(l => l.Match.Equals(matchLocusName)).Molecular;
+            return NamesOfPermittedLoci.Select(n => n.Match);
+        }
+
+        public static MatchLocus GetMatchLocusNameFromTypingLocusIfExists(TypingMethod typingMethod, string locusName)
+        {
+            var permittedLocus = NamesOfPermittedLoci.FirstOrDefault(locus =>
+                typingMethod == TypingMethod.Molecular ?
+                    locus.Molecular.Equals(locusName) :
+                    locus.Serology.Equals(locusName));
+
+            if (permittedLocus == null)
+            {
+                throw new PermittedLocusException(locusName);
+            }
+
+            return permittedLocus.Match;
+        }
+
+        public static string GetSerologyLocusNameFromMolecularIfExists(string molecularLocusName)
+        {
+            var permittedLocus = NamesOfPermittedLoci.First(l => l.Molecular.Equals(molecularLocusName));
+
+            if (permittedLocus == null)
+            {
+                throw new PermittedLocusException(molecularLocusName);
+            }
+                
+            return permittedLocus.Serology;
+        }
+
+        public static string GetMolecularLocusNameFromMatchIfExists(MatchLocus matchLocusName)
+        {
+            var permittedLocus = NamesOfPermittedLoci.First(l => l.Match.Equals(matchLocusName));
+
+            if (permittedLocus == null)
+            {
+                throw new PermittedLocusException(matchLocusName.ToString());
+            }
+
+            return permittedLocus.Molecular;
         }
     }
 }

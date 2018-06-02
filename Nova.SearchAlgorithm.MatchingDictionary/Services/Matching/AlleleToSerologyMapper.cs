@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
         private static HlaTyping ConvertAlleleFamilyToHlaTypingWithSerologyLocus(IWmdaHlaTyping allele)
         {
-            var serologyLocus = PermittedLocusNames.GetSerologyLocusNameFromMolecular(allele.WmdaLocus);
+            var serologyLocus = PermittedLocusNames.GetSerologyLocusNameFromMolecularIfExists(allele.WmdaLocus);
             var serologyName = allele.Name.Split(':')[0].TrimStart('0');
             return new HlaTyping(TypingMethod.Serology, serologyLocus, serologyName);
         }

@@ -20,8 +20,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         public static bool IsPermittedLocusTyping(this IWmdaHlaTyping typing)
         {
             return typing.TypingMethod == TypingMethod.Molecular ?
-                PermittedLocusNames.MolecularLoci.Contains(typing.WmdaLocus) :
-                    PermittedLocusNames.SerologyLoci.Contains(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
+                PermittedLocusNames.IsPermittedMolecularLocus(typing.WmdaLocus) :
+                    PermittedLocusNames.IsPermittedSerologyLocus(typing.WmdaLocus) && !typing.IsDrb345SerologyTyping();
         }
     }
 }

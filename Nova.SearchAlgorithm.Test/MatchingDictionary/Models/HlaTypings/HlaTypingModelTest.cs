@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 
@@ -46,14 +46,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         }
 
         [Test]
-        public void InvalidLocusRaisesException()
+        public void InvalidLocus_RaisesPermittedLocusException()
         {
             // can use a constant hla name here, as we are only testing locus validity
             const string hlaName = "01:01:01:01";
 
-            Assert.Throws<ArgumentException>(() =>
+            Assert.Throws<PermittedLocusException>(() =>
             {
-                var hlaDbp1 = new HlaTyping(TypingMethod.Molecular, "DPB1*", hlaName);
+                var tap1Locus = new HlaTyping(TypingMethod.Molecular, "TAP1*", hlaName);
                 var hlaMadeUpLocus = new HlaTyping(TypingMethod.Serology, "FOO", hlaName);
             });
         }
