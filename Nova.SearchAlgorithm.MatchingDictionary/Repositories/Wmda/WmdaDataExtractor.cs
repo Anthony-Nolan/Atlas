@@ -16,15 +16,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             this.fileName = fileName;
         }
 
-        public IEnumerable<TWmdaHlaTyping> GetWmdaData(IWmdaFileReader fileReader)
+        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForPermittedLoci(IWmdaFileReader fileReader)
         {
             var fileContents = fileReader.GetFileContentsWithoutHeader(fileName);
-            var data = ExtractWmdaDataFromFileContents(fileContents);
+            var data = ExtractWmdaHlaTypingsForPermittedLociFromFileContents(fileContents);
 
             return data;
         }
 
-        private IEnumerable<TWmdaHlaTyping> ExtractWmdaDataFromFileContents(IEnumerable<string> wmdaFileContents)
+        private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForPermittedLociFromFileContents(IEnumerable<string> wmdaFileContents)
         {
             var extractionQuery =
                 from line in wmdaFileContents
