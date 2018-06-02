@@ -9,9 +9,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         public string Locus { get; set; }
         public string Name { get; set; }
 
-        public ConfidentialAllele(string wmdaLocus, string name)
+        public ConfidentialAllele(string locus, string name)
         {
-            Locus = wmdaLocus;
+            Locus = locus;
             Name = name;
         }
 

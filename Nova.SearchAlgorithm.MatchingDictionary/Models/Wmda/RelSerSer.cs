@@ -13,9 +13,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         public IEnumerable<string> SplitAntigens { get; }
         public IEnumerable<string> AssociatedAntigens { get; }
 
-        public RelSerSer(string wmdaLocus, string name, IEnumerable<string> splitAntigens, IEnumerable<string> associatedAntigens)
+        public RelSerSer(string locus, string name, IEnumerable<string> splitAntigens, IEnumerable<string> associatedAntigens)
         {
-            Locus = wmdaLocus;
+            Locus = locus;
             Name = name;
             SplitAntigens = splitAntigens;
             AssociatedAntigens = associatedAntigens;

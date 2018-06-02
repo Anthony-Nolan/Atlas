@@ -11,9 +11,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         public bool IsDeleted { get; }
         public string IdenticalHla { get; }
 
-        public HlaNom(TypingMethod typingMethod, string wmdaLocus, string name, bool isDeleted = false, string identicalHla = "")
+        public HlaNom(TypingMethod typingMethod, string locus, string name, bool isDeleted = false, string identicalHla = "")
         {
-            Locus = wmdaLocus;
+            Locus = locus;
             Name = name;
             TypingMethod = typingMethod;
             IsDeleted = isDeleted;

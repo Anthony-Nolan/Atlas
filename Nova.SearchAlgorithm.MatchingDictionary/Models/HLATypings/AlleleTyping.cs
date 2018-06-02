@@ -13,8 +13,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         private static readonly string[] NullExpressionSuffixes = { "N" };
 
-    public AlleleTyping(string wmdaLocus, string name, bool isDeleted = false) 
-            : base(TypingMethod.Molecular, wmdaLocus, name, isDeleted)
+    public AlleleTyping(string locus, string name, bool isDeleted = false) 
+            : base(TypingMethod.Molecular, locus, name, isDeleted)
         {
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);

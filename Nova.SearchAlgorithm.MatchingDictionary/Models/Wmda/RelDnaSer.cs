@@ -13,9 +13,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         public IEnumerable<SerologyAssignment> Assignments { get; }
         public IEnumerable<string> Serologies { get; }
 
-        public RelDnaSer(string wmdaLocus, string name, IEnumerable<SerologyAssignment> assignments)
+        public RelDnaSer(string locus, string name, IEnumerable<SerologyAssignment> assignments)
         {
-            Locus = wmdaLocus;
+            Locus = locus;
             Name = name;
             Assignments = assignments;
             Serologies = Assignments.Select(a => a.Name).Distinct().OrderBy(s => s);

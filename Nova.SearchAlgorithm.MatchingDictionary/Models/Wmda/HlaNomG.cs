@@ -16,9 +16,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {            
         }
 
-        public HlaNomG(string wmdaLocus, string name, IEnumerable<string> alleles)
+        public HlaNomG(string locus, string name, IEnumerable<string> alleles)
         {
-            Locus = wmdaLocus;
+            Locus = locus;
             Name = name;
             Alleles = alleles;
         }

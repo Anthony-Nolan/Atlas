@@ -12,13 +12,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public string Name { get; set; }
         public bool IsDeleted { get; }
 
-        public HlaTyping(TypingMethod typingMethod, string wmdaLocus, string name, bool isDeleted = false)
+        public HlaTyping(TypingMethod typingMethod, string locus, string name, bool isDeleted = false)
         {
-            Locus = wmdaLocus;
+            Locus = locus;
             Name = name;
             TypingMethod = typingMethod;
             IsDeleted = isDeleted;
-            MatchLocus = PermittedLocusNames.GetMatchLocusNameFromTypingLocusIfExists(typingMethod, wmdaLocus);
+            MatchLocus = PermittedLocusNames.GetMatchLocusNameFromTypingLocusIfExists(typingMethod, locus);
         }
 
         public override string ToString()
