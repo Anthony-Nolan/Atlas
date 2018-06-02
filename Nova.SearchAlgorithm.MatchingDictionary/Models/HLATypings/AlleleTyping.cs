@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
 
-        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.WmdaLocus, alleleTyping.Name, alleleTyping.IsDeleted)
+        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.Locus, alleleTyping.Name, alleleTyping.IsDeleted)
         {
         }
 

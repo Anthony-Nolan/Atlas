@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public interface IWmdaHlaTyping
     {
         TypingMethod TypingMethod { get; }
-        string WmdaLocus { get; set; }
+        string Locus { get; set; }
         string Name { get; set; }
     }
 }

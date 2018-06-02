@@ -14,8 +14,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
             return
                 from alleleInfo in hlaInfo.AlleleInfoForMatching
                 join alleleToSerology in hlaInfo.AlleleToSerologyRelationships
-                    on new { alleleInfo.TypingUsedInMatching.WmdaLocus, alleleInfo.TypingUsedInMatching.Name }
-                    equals new { alleleToSerology.WmdaLocus, alleleToSerology.Name }
+                    on new { WmdaLocus = alleleInfo.TypingUsedInMatching.Locus, alleleInfo.TypingUsedInMatching.Name }
+                    equals new { WmdaLocus = alleleToSerology.Locus, alleleToSerology.Name }
                 where alleleInfo.TypingUsedInMatching.MatchLocus.Equals(matchLocus)
                       && alleleToSerology.Serologies.Intersect(matchingSerologies).Any()
                 select alleleInfo;

@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
             var alleleGroup = new TWmdaAlleleGroup
             {
-                WmdaLocus = extractedData[1].Value,
+                Locus = extractedData[1].Value,
                 Name = extractedData[3].Value.Equals("") ? extractedData[2].Value : extractedData[3].Value,
                 Alleles = extractedData[2].Value.Split('/')
             };

@@ -22,13 +22,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
             var collectionCopy = new List<TWmdaHlaTyping>(HlaTypings);
             Assert.IsNotEmpty(collectionCopy);
 
-            collectionCopy.RemoveAll(m => MatchLoci.Contains(m.WmdaLocus));
+            collectionCopy.RemoveAll(m => MatchLoci.Contains(m.Locus));
             Assert.IsEmpty(collectionCopy);
         }
 
         protected TWmdaHlaTyping GetSingleWmdaHlaTyping(string wmdaLocus, string name)
         {
-            return HlaTypings.Single(s => s.WmdaLocus.Equals(wmdaLocus) && s.Name.Equals(name));
+            return HlaTypings.Single(s => s.Locus.Equals(wmdaLocus) && s.Name.Equals(name));
         }
     }
 }

@@ -37,9 +37,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public void Serologies_ContainsAllExpectedSerology()
         {
             var str = string.Join("\r\n", HlaTypings
-                .OrderBy(s => s.WmdaLocus)
+                .OrderBy(s => s.Locus)
                 .ThenBy(s => int.Parse(s.Name))
-                .Select(s => $"{s.WmdaLocus}\t{s.Name}")
+                .Select(s => $"{s.Locus}\t{s.Name}")
                 .ToList());
             Approvals.Verify(str);
         }
