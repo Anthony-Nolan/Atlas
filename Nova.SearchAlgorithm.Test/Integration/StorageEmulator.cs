@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
@@ -11,11 +12,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
     {
         private readonly string StorageEmulatorLocation = ConfigurationManager.AppSettings["emulatorLocation"];
 
-        private CloudTable donorTable;
-        private CloudTable matchTable;
-
-        private CloudTable DonorTable => donorTable ?? (donorTable = GetTable(DonorCloudTables.DonorTableReference));
-        private CloudTable MatchTable => matchTable ?? (matchTable = GetTable(DonorCloudTables.MatchTableReference));
+        private readonly Lazy<CloudTable> donorTable = new Lazy<CloudTable>(() => GetTable(DonorCloudTables.DonorTableReference));
+        private readonly Lazy<CloudTable> matchTable = new Lazy<CloudTable>(() => GetTable(DonorCloudTables.MatchTableReference));
 
         public void Start()
         {
@@ -32,8 +30,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
             // Only clear donors and matches, to avoid developers needing to regenerate the matching dictionary.
             // (Unfortunately a dev machine can only run one emulated storage environment)
             Task.WhenAll(
-                DonorTable.DeleteAsync(),
-                MatchTable.DeleteAsync()
+                donorTable.Value.DeleteAsync(),
+                matchTable.Value.DeleteAsync()
                 ).Wait();
         }
 
