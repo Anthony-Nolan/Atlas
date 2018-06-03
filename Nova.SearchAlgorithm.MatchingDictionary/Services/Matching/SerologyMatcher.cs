@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 let gGroups = allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()
                 select new MatchedSerology(serologyInfo, pGroups, gGroups);
 
-            return matchedHlaQuery.ToArray();
+            return matchedHlaQuery;
         }
     }
 }
