@@ -39,8 +39,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         private static string GetTwoFieldName(IEnumerable<string> fields, string expressionSuffix, string name)
         {
-            var fieldsArr = fields.ToArray();
-            return fieldsArr.Length >= 2 ? $"{fieldsArr[0]}:{fieldsArr[1]}{expressionSuffix}" : name;
+            var fieldsList = fields.ToList();
+            return fieldsList.Count >= 2 ? $"{fieldsList[0]}:{fieldsList[1]}{expressionSuffix}" : name;
         }
     }
 }
