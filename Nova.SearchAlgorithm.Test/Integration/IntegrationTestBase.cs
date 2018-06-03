@@ -11,11 +11,15 @@ using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary;
 using NUnit.Framework;
 using Autofac;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
+using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
     [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]
+    [TestFixture(DonorStorageImplementation.Cosmos)]
     public abstract class IntegrationTestBase
     {
         private StorageEmulator emulator = new StorageEmulator();
@@ -54,8 +58,13 @@ namespace Nova.SearchAlgorithm.Test.Integration
             // Switch between testing different implementations
             if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
             {
-                builder.RegisterType<DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
                 builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            }
+            else if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            {
+                builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
             else
             {
@@ -88,6 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
     public enum DonorStorageImplementation
     {
         SQL,
-        CloudTable
+        CloudTable,
+        Cosmos
     }
 }

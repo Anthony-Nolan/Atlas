@@ -12,11 +12,6 @@ using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
-    public interface IDonorImportService
-    {
-        Task StartDonorImport();
-    }
-
     public class DonorImportService : IDonorImportService
     {
         // TODO:NOVA-1170 for now just import 10. Increase batch size later.

@@ -9,9 +9,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public class CloudStorageDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
     {
-        private readonly IDonorCloudTables donorBlobRepository;
+        private readonly IDonorDocumentStorage donorBlobRepository;
 
-        public CloudStorageDonorSearchRepository(IDonorCloudTables donorBlobRepository)
+        public CloudStorageDonorSearchRepository(IDonorDocumentStorage donorBlobRepository)
         {
             this.donorBlobRepository = donorBlobRepository;
         }
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matches;
         }
 
-        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, DonorLocusMatchCriteria criteria)
+        private async Task<IDictionary<int, LocusMatchDetails>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, DonorLocusMatchCriteria criteria)
         {
             LocusSearchCriteria repoCriteria = new LocusSearchCriteria
             {
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 HlaNamesToMatchInPositionTwo = criteria.HlaNamesToMatchInPositionTwo,
             };
 
-            var matches = donorBlobRepository.GetDonorMatchesAtLocus(locus, repoCriteria)
+            var matches = (await donorBlobRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, LocusMatchFromGroup);
 
@@ -85,10 +85,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public DonorResult GetDonor(int donorId)
         {
-            return donorBlobRepository.GetDonor(donorId);
+            return donorBlobRepository.GetDonor(donorId).Wait();
         }
 
-        public Task AddOrUpdateDonor(InputDonor donor)
+        public void AddOrUpdateDonor(InputDonor donor)
         {
             donorBlobRepository.InsertDonor(donor);
             return Task.CompletedTask;

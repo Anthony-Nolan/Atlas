@@ -34,9 +34,9 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         [SetUp]
         public void SetUp()
         {
-            repositoryUnderTest = new CloudStorageDonorSearchRepository(GetFake<IDonorCloudTables>());
+            repositoryUnderTest = new CloudStorageDonorSearchRepository(GetFake<IDonorDocumentStorage>());
 
-            GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorDocumentStorage>().GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor(Locus.A, TypePositions.One, TypePositions.One, exactMatch, PGroupA1),
                 HlaMatchFor(Locus.A, TypePositions.Two, TypePositions.Two, exactMatch, PGroupA2),
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
                 HlaMatchFor(Locus.A, TypePositions.Two, TypePositions.One, bothGroupsMatchPositionOne, PGroupA2),
             });
 
-            GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus(Locus.B, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorDocumentStorage>().GetDonorMatchesAtLocus(Locus.B, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, exactMatch, PGroupB),
                 HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, exactMatch, PGroupB),
@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
                 HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, bothGroupsMatchPositionOne, PGroupB),
             });
 
-            GetFake<IDonorCloudTables>().GetDonorMatchesAtLocus(Locus.Drb1, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
+            GetFake<IDonorDocumentStorage>().GetDonorMatchesAtLocus(Locus.Drb1, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
                 HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, exactMatch, PGroupDRB1),
                 HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, exactMatch, PGroupDRB1),
@@ -67,9 +67,9 @@ namespace Nova.SearchAlgorithm.Test.Repositories
                 HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, bothGroupsMatchPositionOne, PGroupDRB1),
             });
 
-            GetFake<IDonorCloudTables>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
-            GetFake<IDonorCloudTables>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
-            GetFake<IDonorCloudTables>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
+            GetFake<IDonorDocumentStorage>().GetDonor(exactMatch.DonorId).Returns(exactMatch);
+            GetFake<IDonorDocumentStorage>().GetDonor(bothPositionsMatchGroupOne.DonorId).Returns(bothPositionsMatchGroupOne);
+            GetFake<IDonorDocumentStorage>().GetDonor(bothGroupsMatchPositionOne.DonorId).Returns(bothGroupsMatchPositionOne);
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
                 .WithDonorMismatchCount(2)

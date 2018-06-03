@@ -4,10 +4,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services
 {
-    public interface IHlaUpdateService
-    {
-        void UpdateDonorHla();
-    }
     public class HlaUpdateService : IHlaUpdateService
     {
         private readonly IMatchingDictionaryLookupService lookupService;

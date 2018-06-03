@@ -2,55 +2,17 @@
 using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Client.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 
-namespace Nova.SearchAlgorithm.Repositories.Donors
+namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 {
-    public interface IDonorCloudTables
-    {
-        int HighestDonorId();
-        void InsertDonor(InputDonor donor);
-        void UpdateDonorWithNewHla(InputDonor donor);
-        DonorResult GetDonor(int donorId);
-        IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId);
-        IEnumerable<DonorResult> AllDonors();
-        IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria);
-
-    }
-
-    static class MatchingHlaExtensions
-    {
-        public static IEnumerable<string> AllMatchingHlaNames(this ExpandedHla hla)
-        {
-            return hla.PGroups ?? Enumerable.Empty<string>();
-        }
-    }
-
-    static class TableQueryExtensions
-    {
-        public static TableQuery<TElement> AndWhere<TElement>(this TableQuery<TElement> @this, string filter)
-        {
-            @this.FilterString = TableQuery.CombineFilters(@this.FilterString, TableOperators.And, filter);
-            return @this;
-        }
-
-        public static TableQuery<TElement> OrWhere<TElement>(this TableQuery<TElement> @this, string filter)
-        {
-            @this.FilterString = @this.FilterString == null ? filter : TableQuery.CombineFilters(@this.FilterString, TableOperators.Or, filter);
-            return @this;
-        }
-
-        public static TableQuery<TElement> NotWhere<TElement>(this TableQuery<TElement> @this, string filter)
-        {
-            @this.FilterString = TableQuery.CombineFilters(@this.FilterString, TableOperators.Not, filter);
-            return @this;
-        }
-    }
-
-    public class DonorCloudTables : IDonorCloudTables
+    public class CloudTableStorage : IDonorDocumentStorage
     {
         public const string DonorTableReference = "Donors";
         public const string MatchTableReference = "Matches";
@@ -58,7 +20,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         private readonly CloudTable matchTable;
         private readonly IMapper mapper;
 
-        public DonorCloudTables(IMapper mapper, ICloudTableFactory cloudTableFactory)
+        public CloudTableStorage(IMapper mapper, ICloudTableFactory cloudTableFactory)
         {
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
             matchTable = cloudTableFactory.GetTable(MatchTableReference);
@@ -78,25 +40,26 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                     })
                 .Max();
         }
-
-
-        public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
+        public Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
             var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);
 
-            return matchesFromPositionOne.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.One)).Union(matchesFromPositionTwo.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two)));
+            return Task.FromResult(matchesFromPositionOne.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.One)).Union(matchesFromPositionTwo.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two))));
         }
 
         private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(Locus locus, IEnumerable<string> namesToMatch)
         {
-            if (!namesToMatch.Any())
+            // Enumerate once
+            var namesToMatchList = namesToMatch.ToList();
+
+            if (!namesToMatchList.Any())
             {
                 return Enumerable.Empty<PotentialHlaMatchRelationTableEntity>();
             }
 
             var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>();
-            foreach (string name in namesToMatch)
+            foreach (string name in namesToMatchList)
             {
                 matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GeneratePartitionKey(locus, name)));
             }
@@ -104,38 +67,38 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        public DonorResult GetDonor(int donorId)
+        public Task<DonorResult> GetDonor(int donorId)
         {
             var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
-            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor(mapper)).FirstOrDefault();
+            return Task.FromResult(donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor(mapper)).FirstOrDefault());
         }
 
-        public IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId)
+        public Task<IEnumerable<PotentialHlaMatchRelation>> GetMatchesForDonor(int donorId)
         {
-            return AllMatchesForDonor(donorId).Select(m => m.ToPotentialHlaMatchRelation(0));
+            return Task.FromResult(AllMatchesForDonor(donorId).Select(m => m.ToPotentialHlaMatchRelation(0)));
         }
 
-        public void InsertDonor(InputDonor donor)
+        public async Task InsertDonor(InputDonor donor)
         {
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
-            donorTable.Execute(insertDonor);
+            await donorTable.ExecuteAsync(insertDonor);
 
             UpdateDonorHlaMatches(donor);
         }
 
         // TODO:NOVA-939 This will be too many donors
         // Can we stream them in batches with IEnumerable?
-        public IEnumerable<DonorResult> AllDonors()
+        public Task<IEnumerable<DonorResult>> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
-            return donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor(mapper));
+            return Task.FromResult(donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor(mapper)));
         }
 
-        public void UpdateDonorWithNewHla(InputDonor donor)
+        public async Task UpdateDonorWithNewHla(InputDonor donor)
         {
             // Update the donor itself
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
-            donorTable.Execute(insertDonor);
+            await donorTable.ExecuteAsync(insertDonor);
             UpdateDonorHlaMatches(donor);
         }
 
@@ -166,8 +129,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 return;
             }
 
-            var list1 = matchingHla1.AllMatchingHlaNames();
-            var list2 = matchingHla2.AllMatchingHlaNames();
+            var list1 = matchingHla1.AllMatchingHlaNames().ToList();
+            var list2 = matchingHla2.AllMatchingHlaNames().ToList();
 
             foreach (string matchName in list1.Union(list2))
             {
