@@ -15,9 +15,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     {
         public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(IWmdaDataRepository dataRepository)
         {
+            var confidentialAllelesList = dataRepository.ConfidentialAlleles.ToList();
+            var pGroupsList = dataRepository.PGroups.ToList();
+            var gGroupList = dataRepository.GGroups.ToList();
+
             var alleleInfo = dataRepository.Alleles
-                .Where(allele => !dataRepository.ConfidentialAlleles.Contains(allele as IWmdaHlaTyping))
-                .Select(allele => GetInfoForSingleAllele(allele, dataRepository.PGroups, dataRepository.GGroups));
+                .Where(allele => !confidentialAllelesList.Contains(allele as IWmdaHlaTyping))
+                .Select(allele => GetInfoForSingleAllele(allele, pGroupsList, gGroupList));
 
             return alleleInfo;
         }

@@ -68,10 +68,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 
         public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(IWmdaDataRepository dataRepository)
         {
-            var serologyRelationships = dataRepository.SerologyToSerologyRelationships.ToList();
+            var serologyRelationshipsList = dataRepository.SerologyToSerologyRelationships.ToList();
 
             var serologyInfo = dataRepository.Serologies
-                .Select(serology => GetInfoForSingleSerology(serologyRelationships, serology));
+                .Select(serology => GetInfoForSingleSerology(serologyRelationshipsList, serology));
 
             return serologyInfo;
         }
