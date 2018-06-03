@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
             DropCreateTable();
-            InsertMatchingDictionaryEntriesIntoTable(dictionaryContents.ToList());
+            InsertMatchingDictionaryEntriesIntoTable(dictionaryContents);
         }
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
@@ -56,27 +56,29 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             GetTable();
         }
 
-        private void InsertMatchingDictionaryEntriesIntoTable(IReadOnlyCollection<MatchingDictionaryEntry> contents)
+        private void InsertMatchingDictionaryEntriesIntoTable(IEnumerable<MatchingDictionaryEntry> contents)
         {
+            var contentsList = contents.ToList();
+
             foreach (var partition in PermittedLocusNames.GetPermittedMatchLoci())
             {
-                var entitiesForPartition = contents
+                var entitiesForPartitionList = contentsList
                     .Where(entry => entry.MatchLocus.Equals(partition))
                     .Select(entry => entry.ToTableEntity())
                     .ToList();
 
-                for (var i = 0; i < entitiesForPartition.Count; i = i + BatchSize)
+                for (var i = 0; i < entitiesForPartitionList.Count; i = i + BatchSize)
                 {
-                    var batchToInsert = entitiesForPartition.Skip(i).Take(BatchSize).ToList();
+                    var batchToInsert = entitiesForPartitionList.Skip(i).Take(BatchSize);
                     BatchInsertIntoTable(batchToInsert);
                 }
             }
         }
 
-        private void BatchInsertIntoTable(List<MatchingDictionaryTableEntity> entities)
+        private void BatchInsertIntoTable(IEnumerable<MatchingDictionaryTableEntity> entities)
         {
             var batchOperation = new TableBatchOperation();
-            entities.ForEach(entity => batchOperation.Insert(entity));
+            entities.ToList().ForEach(entity => batchOperation.Insert(entity));
             table.ExecuteBatch(batchOperation);
         }
     }

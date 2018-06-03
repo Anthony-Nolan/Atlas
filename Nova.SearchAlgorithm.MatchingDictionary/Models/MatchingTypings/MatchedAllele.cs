@@ -15,14 +15,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public IEnumerable<SerologyMappingForAllele> AlleleToSerologyMappings { get; }
         public AlleleTyping TypingForMatchingDictionary => (AlleleTyping) HlaTyping;
 
-        public MatchedAllele(IAlleleInfoForMatching matchedAllele, IList<SerologyMappingForAllele> alleleToSerologyMappings)
+        public MatchedAllele(IAlleleInfoForMatching matchedAllele, IEnumerable<SerologyMappingForAllele> alleleToSerologyMappings)
         {
             HlaTyping = matchedAllele.HlaTyping;
             TypingUsedInMatching = matchedAllele.TypingUsedInMatching;
             MatchingPGroups = matchedAllele.MatchingPGroups;
             MatchingGGroups = matchedAllele.MatchingGGroups;
-            MatchingSerologies = alleleToSerologyMappings.SelectMany(m => m.AllMatchingSerology.Select(s => s.SerologyTyping));
-            AlleleToSerologyMappings = alleleToSerologyMappings;
+
+            var serologyMappingsList = alleleToSerologyMappings.ToList();
+            MatchingSerologies = serologyMappingsList.SelectMany(m => m.AllMatchingSerology.Select(s => s.SerologyTyping));
+            AlleleToSerologyMappings = serologyMappingsList;
         }
     }
 }

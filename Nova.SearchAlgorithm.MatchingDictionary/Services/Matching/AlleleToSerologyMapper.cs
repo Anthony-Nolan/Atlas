@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
 {
     internal class AlleleToSerologyMapper
     {
-        public IList<SerologyMappingForAllele> GetSerologyMappingsForAllele(IHlaInfoToMapAlleleToSerology hlaInfo, AlleleTyping alleleTyping)
+        public IEnumerable<SerologyMappingForAllele> GetSerologyMappingsForAllele(IHlaInfoToMapAlleleToSerology hlaInfo, AlleleTyping alleleTyping)
         {
             var alleleFamilyAsTyping = ConvertAlleleFamilyToHlaTypingWithSerologyLocus(alleleTyping);
 
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                 relationshipForAllele.Assignments : new List<SerologyAssignment>();
         }
 
-        private static IList<SerologyMappingForAllele> GetMappingInfoFromSerologyAssignments(
+        private static IEnumerable<SerologyMappingForAllele> GetMappingInfoFromSerologyAssignments(
             IList<ISerologyInfoForMatching> serologiesInfo,
             IEnumerable<SerologyAssignment> assignmentsForAllele,
             HlaTyping alleleFamilyAsTyping)
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     .FirstOrDefault(m => m.HlaTyping.Equals(alleleFamilyAsTyping))
                     ?.MatchingSerologies;
 
-            return (
+            var mappingInfoQuery =
                 from serology in serologiesInfo
                 join assigned in assignmentsForAllele
                     on serology.TypingUsedInMatching.Name equals assigned.Name
@@ -59,8 +59,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     (SerologyTyping)serology.HlaTyping,
                     assigned.Assignment,
                     serology.MatchingSerologies.Select(actualMatchingSerology =>
-                        GetSerologyMatchInfo(actualMatchingSerology, alleleFamilyAsTyping, expectedMatchingSerology))
-                )).ToList();
+                        GetSerologyMatchInfo(actualMatchingSerology, alleleFamilyAsTyping, expectedMatchingSerology)));
+
+            return mappingInfoQuery;
         }
 
         private static SerologyMatch GetSerologyMatchInfo(
