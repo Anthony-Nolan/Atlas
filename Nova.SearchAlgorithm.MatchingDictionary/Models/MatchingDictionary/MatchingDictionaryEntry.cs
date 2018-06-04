@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Newtonsoft.Json;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,15 +21,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
-        public MatchingDictionaryEntry(
-            MatchLocus matchLocus,
-            string lookupName,
-            TypingMethod typingMethod,
-            MolecularSubtype molecularSubtype,
-            SerologySubtype serologySubtype,
-            IEnumerable<string> matchingPGroups,
-            IEnumerable<string> matchingGGroups,
-            IEnumerable<SerologyEntry> matchingSerologies)
+        [JsonConstructor]
+        public MatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod, MolecularSubtype molecularSubtype, SerologySubtype serologySubtype, IEnumerable<string> matchingPGroups, IEnumerable<string> matchingGGroups, IEnumerable<SerologyEntry> matchingSerologies)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
@@ -39,7 +33,45 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             MatchingGGroups = matchingGGroups;
             MatchingSerologies = matchingSerologies;
         }
-        
+
+        public MatchingDictionaryEntry(IMatchingDictionarySource<SerologyTyping> serologySource)              
+        {
+            MatchLocus = serologySource.TypingForMatchingDictionary.MatchLocus;
+            LookupName = serologySource.TypingForMatchingDictionary.Name;
+            TypingMethod = TypingMethod.Serology;
+            MolecularSubtype = MolecularSubtype.NotMolecularTyping;
+            SerologySubtype = serologySource.TypingForMatchingDictionary.SerologySubtype;
+            MatchingPGroups = serologySource.MatchingPGroups;
+            MatchingGGroups = serologySource.MatchingGGroups;
+            MatchingSerologies = serologySource.MatchingSerologies.ToSerologyEntries();
+        }
+
+        public MatchingDictionaryEntry(IMatchingDictionarySource<AlleleTyping> alleleSource, string lookupName, MolecularSubtype molecularSubtype)
+        {
+            MatchLocus = alleleSource.TypingForMatchingDictionary.MatchLocus;
+            LookupName = lookupName;
+            TypingMethod = TypingMethod.Molecular;
+            MolecularSubtype = molecularSubtype;
+            SerologySubtype = SerologySubtype.NotSerologyTyping;
+            MatchingPGroups = alleleSource.MatchingPGroups;
+            MatchingGGroups = alleleSource.MatchingGGroups;
+            MatchingSerologies = alleleSource.MatchingSerologies.ToSerologyEntries();
+        }
+
+        public MatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, MolecularSubtype molecularSubtype, IEnumerable<MatchingDictionaryEntry> entries)
+        {
+            var entriesList = entries.ToList();
+
+            MatchLocus = matchLocus;
+            LookupName = lookupName;
+            TypingMethod = TypingMethod.Molecular;
+            MolecularSubtype = molecularSubtype;
+            SerologySubtype = SerologySubtype.NotSerologyTyping;
+            MatchingPGroups = entriesList.SelectMany(p => p.MatchingPGroups).Distinct();
+            MatchingGGroups = entriesList.SelectMany(g => g.MatchingGGroups).Distinct();
+            MatchingSerologies = entriesList.SelectMany(s => s.MatchingSerologies).Distinct();
+        }
+
         public bool Equals(MatchingDictionaryEntry other)
         {
             if (ReferenceEquals(null, other)) return false;

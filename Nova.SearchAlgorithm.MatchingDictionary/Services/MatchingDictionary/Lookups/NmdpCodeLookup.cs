@@ -25,16 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
             var tasks = alleles.Select(allele => GetMatchingDictionaryEntry(matchLocus, allele, TypingMethod.Molecular));
             var entries = await Task.WhenAll(tasks);
 
-            return new MatchingDictionaryEntry(
-                    matchLocus,
-                    lookupName,
-                    TypingMethod.Molecular,
-                    MolecularSubtype.NmdpCode,
-                    SerologySubtype.NotSerologyTyping,
-                    entries.SelectMany(p => p.MatchingPGroups).Distinct(),
-                    entries.SelectMany(g => g.MatchingGGroups).Distinct(),
-                    entries.SelectMany(s => s.MatchingSerologies).Distinct()
-                );
+            return new MatchingDictionaryEntry(matchLocus, lookupName, MolecularSubtype.NmdpCode, entries);
         }
 
         private async Task<IEnumerable<string>> ExpandNmdpCode(MatchLocus matchLocus, string lookupName)

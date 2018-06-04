@@ -25,60 +25,46 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary
 
         private static IEnumerable<MatchingDictionaryEntry> GetMatchingDictionaryEntriesFromSerology(IEnumerable<IMatchingDictionarySource<SerologyTyping>> matchedSerology)
         {
-            return matchedSerology.Select(serology =>
-                new MatchingDictionaryEntry(
-                    serology.TypingForMatchingDictionary.MatchLocus,
-                    serology.TypingForMatchingDictionary.Name,
-                    TypingMethod.Serology,
-                    MolecularSubtype.NotMolecularTyping,
-                    serology.TypingForMatchingDictionary.SerologySubtype,
-                    serology.MatchingPGroups,
-                    serology.MatchingGGroups,
-                    serology.MatchingSerologies.ToSerologyEntries()
-                ));
+            return matchedSerology.Select(serology => new MatchingDictionaryEntry(serology));
         }
 
         private static IEnumerable<MatchingDictionaryEntry> GetMatchingDictionaryEntriesFromAlleles(IEnumerable<IMatchingDictionarySource<AlleleTyping>> matchedAlleles)
         {
-            var entries = new List<MatchingDictionaryEntry>(
-                matchedAlleles.SelectMany(allele => new List<MatchingDictionaryEntry>{
-                    GetMatchingDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.CompleteAllele),
-                    GetMatchingDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.TwoFieldAllele),
-                    GetMatchingDictionaryEntryFromMatchedAllele(allele, MolecularSubtype.FirstFieldAllele)
-                    }));
+            var entries = matchedAlleles.SelectMany(GetMatchingDictionaryEntriesForEachMolecularSubtype);
 
-            var grouped = entries
-                .GroupBy(e => new { e.MatchLocus, e.LookupName, e.TypingMethod })
+            var groupByQueryToMergeDuplicateEntriesCausedByAlleleNameTruncation = entries
+                .GroupBy(e => new { e.MatchLocus, e.LookupName })
                 .Select(e => new MatchingDictionaryEntry(
                     e.Key.MatchLocus,
                     e.Key.LookupName,
-                    e.Key.TypingMethod,
+                    TypingMethod.Molecular,
                     e.Select(m => m.MolecularSubtype).OrderBy(m => m).First(),
                     SerologySubtype.NotSerologyTyping,
                     e.SelectMany(p => p.MatchingPGroups).Distinct(),
                     e.SelectMany(g => g.MatchingGGroups).Distinct(),
                     e.SelectMany(s => s.MatchingSerologies).Distinct()
-                    ));
+                ));
 
-            return grouped;
+            return groupByQueryToMergeDuplicateEntriesCausedByAlleleNameTruncation;
+        }
+
+        private static IEnumerable<MatchingDictionaryEntry> GetMatchingDictionaryEntriesForEachMolecularSubtype(
+            IMatchingDictionarySource<AlleleTyping> matchedAllele)
+        {
+            var entries = new List<MatchingDictionaryEntry>
+            {
+                GetMatchingDictionaryEntryFromMatchedAllele(matchedAllele, MolecularSubtype.CompleteAllele),
+                GetMatchingDictionaryEntryFromMatchedAllele(matchedAllele, MolecularSubtype.TwoFieldAllele),
+                GetMatchingDictionaryEntryFromMatchedAllele(matchedAllele, MolecularSubtype.FirstFieldAllele)
+            };
+
+            return entries;
         }
 
         private static MatchingDictionaryEntry GetMatchingDictionaryEntryFromMatchedAllele(IMatchingDictionarySource<AlleleTyping> matchedAllele, MolecularSubtype molecularSubtype)
         {
             var lookupName = GetAlleleLookupName(matchedAllele.TypingForMatchingDictionary, molecularSubtype);
-
-            var entry = new MatchingDictionaryEntry(
-                matchedAllele.TypingForMatchingDictionary.MatchLocus,
-                lookupName,
-                TypingMethod.Molecular,
-                molecularSubtype,
-                SerologySubtype.NotSerologyTyping,
-                matchedAllele.MatchingPGroups,
-                matchedAllele.MatchingGGroups,
-                matchedAllele.MatchingSerologies.ToSerologyEntries()
-                );
-
-            return entry;
+            return new MatchingDictionaryEntry(matchedAllele, lookupName, molecularSubtype);
         }
 
         private static string GetAlleleLookupName(AlleleTyping alleleTyping, MolecularSubtype molecularSubtype)

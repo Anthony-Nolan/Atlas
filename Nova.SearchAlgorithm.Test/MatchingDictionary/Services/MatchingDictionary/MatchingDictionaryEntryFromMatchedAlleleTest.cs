@@ -1,13 +1,13 @@
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
@@ -19,7 +19,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static IEnumerable<string> _matchingPGroups;
         private static IEnumerable<string> _matchingGGroups;
         private static IList<SerologyMappingForAllele> _matchingSerologies;
-        private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
 
         [OneTimeSetUp]
         public void SetUp()
@@ -32,11 +31,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             {
                 new SerologyMappingForAllele(serology, Assignment.None, new List<SerologyMatch>{ new SerologyMatch(serology) })
             };
-
-            _matchingSerologyEntries = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit) };
         }
 
-        private static IEnumerable<MatchingDictionaryEntry> GetActualMatchingDictionaryEntries(string alleleName)
+        private static IEnumerable<MatchedAllele> BuildMatchedAlleles(string alleleName)
         {
             var allele = new AlleleTyping($"{Locus}*", alleleName);
 
@@ -46,89 +43,114 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             infoForMatching.MatchingPGroups.Returns(_matchingPGroups);
             infoForMatching.MatchingGGroups.Returns(_matchingGGroups);
 
-            var matchedAllele = new List<MatchedAllele> {new MatchedAllele(infoForMatching, _matchingSerologies)};
-
-            return matchedAllele.ToMatchingDictionaryEntries();
-        }
-
-        private static MatchingDictionaryEntry BuildExpectedMatchingDictionaryEntry(string lookupName, MolecularSubtype subtype)
-        {
-            return new MatchingDictionaryEntry(
-                Locus, 
-                lookupName, 
-                TypingMethod.Molecular, 
-                subtype, 
-                SerologySubtype.NotSerologyTyping, 
-                _matchingPGroups,
-                _matchingGGroups,
-                _matchingSerologyEntries);
+            return new List<MatchedAllele> { new MatchedAllele(infoForMatching, _matchingSerologies) };
         }
 
         [Test]
         public void MatchingDictionaryEntryCreatedFromAllele_FourFieldAllele()
         {
-            var actual = GetActualMatchingDictionaryEntries("01:01:01:01");
+            const string originalAlleleName = "01:01:01:01";
+
+            var matchedAlleles = BuildMatchedAlleles(originalAlleleName).ToList();
+
             var expected = new List<MatchingDictionaryEntry>
             {
-                BuildExpectedMatchingDictionaryEntry("01:01:01:01", MolecularSubtype.CompleteAllele),
-                BuildExpectedMatchingDictionaryEntry("01:01", MolecularSubtype.TwoFieldAllele),
-                BuildExpectedMatchingDictionaryEntry("01", MolecularSubtype.FirstFieldAllele)
+                new MatchingDictionaryEntry(matchedAlleles.First(), originalAlleleName, MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01:01", MolecularSubtype.TwoFieldAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01", MolecularSubtype.FirstFieldAllele)
             };
 
-            Assert.IsTrue(actual.SequenceEqual(expected));
+            AssertThatActualResultsEqualExpected(matchedAlleles, expected);
         }
 
         [Test]
         public void MatchingDictionaryEntryCreatedFromAllele_ThreeFieldAllele()
         {
-            var actual = GetActualMatchingDictionaryEntries("01:01:02");
+            const string originalAlleleName = "01:01:02";
+
+            var matchedAlleles = BuildMatchedAlleles(originalAlleleName).ToList();
+
             var expected = new List<MatchingDictionaryEntry>
             {
-                BuildExpectedMatchingDictionaryEntry("01:01:02", MolecularSubtype.CompleteAllele),
-                BuildExpectedMatchingDictionaryEntry("01:01", MolecularSubtype.TwoFieldAllele),
-                BuildExpectedMatchingDictionaryEntry("01", MolecularSubtype.FirstFieldAllele)
+                new MatchingDictionaryEntry(matchedAlleles.First(), originalAlleleName, MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01:01", MolecularSubtype.TwoFieldAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01", MolecularSubtype.FirstFieldAllele)
             };
 
-            Assert.IsTrue(actual.SequenceEqual(expected));
+            AssertThatActualResultsEqualExpected(matchedAlleles, expected);
         }
 
         [Test]
         public void MatchingDictionaryEntryCreatedFromAllele_TwoFieldAllele()
         {
-            var actual = GetActualMatchingDictionaryEntries("01:32");
+            const string originalAlleleName = "01:32";
+
+            var matchedAlleles = BuildMatchedAlleles(originalAlleleName).ToList();
+
             var expected = new List<MatchingDictionaryEntry>
             {
-                BuildExpectedMatchingDictionaryEntry("01:32", MolecularSubtype.CompleteAllele),
-                BuildExpectedMatchingDictionaryEntry("01", MolecularSubtype.FirstFieldAllele)
+                new MatchingDictionaryEntry(matchedAlleles.First(), originalAlleleName, MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01", MolecularSubtype.FirstFieldAllele)
             };
 
-            Assert.IsTrue(actual.SequenceEqual(expected));
+            AssertThatActualResultsEqualExpected(matchedAlleles, expected);
         }
 
         [Test]
         public void MatchingDictionaryEntryCreatedFromAllele_MoreThanTwoFieldExpressionLetter()
         {
-            var actual = GetActualMatchingDictionaryEntries("01:01:38L");
+            const string originalAlleleName = "01:01:38L";
+
+            var matchedAlleles = BuildMatchedAlleles(originalAlleleName).ToList();
+
             var expected = new List<MatchingDictionaryEntry>
             {
-                BuildExpectedMatchingDictionaryEntry("01:01:38L", MolecularSubtype.CompleteAllele),
-                BuildExpectedMatchingDictionaryEntry("01:01L", MolecularSubtype.TwoFieldAllele),
-                BuildExpectedMatchingDictionaryEntry("01", MolecularSubtype.FirstFieldAllele)
+                new MatchingDictionaryEntry(matchedAlleles.First(), originalAlleleName, MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01:01L", MolecularSubtype.TwoFieldAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01", MolecularSubtype.FirstFieldAllele)
             };
 
-            Assert.IsTrue(actual.SequenceEqual(expected));
+            AssertThatActualResultsEqualExpected(matchedAlleles, expected);
         }
 
         [Test]
         public void MatchingDictionaryEntryCreatedFromAllele_TwoFieldExpressionLetter()
         {
-            var actual = GetActualMatchingDictionaryEntries("01:248Q");
+            const string originalAlleleName = "01:248Q";
+
+            var matchedAlleles = BuildMatchedAlleles(originalAlleleName).ToList();
+
             var expected = new List<MatchingDictionaryEntry>
             {
-                BuildExpectedMatchingDictionaryEntry("01:248Q", MolecularSubtype.CompleteAllele),
-                BuildExpectedMatchingDictionaryEntry("01", MolecularSubtype.FirstFieldAllele)
+                new MatchingDictionaryEntry(matchedAlleles.First(), originalAlleleName, MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01", MolecularSubtype.FirstFieldAllele)
             };
 
+            AssertThatActualResultsEqualExpected(matchedAlleles, expected);
+        }
+
+        [Test]
+        public void MatchingDictionaryEntryCreatedFromAllele_MultipleAllelesWithSameTruncatedNames()
+        {
+            string[] alleles = { "01:01:01:01", "01:01:01:03", "01:01:51" };
+
+            var matchedAlleles = alleles.SelectMany(BuildMatchedAlleles).ToList();
+
+            var expected = new List<MatchingDictionaryEntry>
+            {
+                new MatchingDictionaryEntry(matchedAlleles[0], alleles[0], MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01:01", MolecularSubtype.TwoFieldAllele),
+                new MatchingDictionaryEntry(matchedAlleles.First(), "01", MolecularSubtype.FirstFieldAllele),
+                new MatchingDictionaryEntry(matchedAlleles[1], alleles[1], MolecularSubtype.CompleteAllele),
+                new MatchingDictionaryEntry(matchedAlleles[2], alleles[2], MolecularSubtype.CompleteAllele)
+            };
+
+            AssertThatActualResultsEqualExpected(matchedAlleles, expected);
+        }
+
+        private static void AssertThatActualResultsEqualExpected(IEnumerable<MatchedAllele> matchedAlleles, IEnumerable<MatchingDictionaryEntry> expected)
+        {
+            var actual = matchedAlleles.ToMatchingDictionaryEntries();
             Assert.IsTrue(actual.SequenceEqual(expected));
         }
     }

@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using System.Threading.Tasks;
+using NSubstitute;
 
 namespace Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary
 {
@@ -36,15 +37,12 @@ namespace Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary
                 ? Enumerable.Empty<RawMatchingHla>()
                 : rawMatchingData.Where(hla => hla.Locus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase) && hla.Name.StartsWith(hlaName));
 
-            return Task.FromResult<IMatchingHlaLookupResult>(new MatchingDictionaryEntry(
-                matchLocus,
-                hlaName,
-                TypingMethod.Molecular, // not used
-                MolecularSubtype.CompleteAllele, // not used
-                SerologySubtype.Associated, // not used
-                raw.SelectMany(r => r.MatchingPGroups).Distinct(),
-                null,
-                null));
+            var lookupResult = Substitute.For<IMatchingHlaLookupResult>();
+            lookupResult.MatchLocus.Returns(matchLocus);
+            lookupResult.LookupName.Returns(hlaName);
+            lookupResult.MatchingPGroups.Returns(raw.SelectMany(r => r.MatchingPGroups).Distinct());
+
+            return Task.FromResult(lookupResult);
         }
     }
 }

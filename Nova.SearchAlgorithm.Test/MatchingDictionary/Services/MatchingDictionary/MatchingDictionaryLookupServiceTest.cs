@@ -22,6 +22,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private IHlaServiceClient hlaServiceClient;
         private const MolecularLocusType MolecularLocus = MolecularLocusType.A;
         private const MatchLocus MatchedLocus = MatchLocus.A;
+        private const string TypingLocus = "A";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -125,7 +126,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
 
         [Test]
         public void GetMatchingHla_WhenNmdpCodeIsInvalid_ExceptionIsThrown()
-        {            
+        {
             const string hlaName = "99:INVALIDCODE";
 
             hlaServiceClient.GetHlaTypingCategory(hlaName)
@@ -155,19 +156,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
 
         private static MatchingDictionaryEntry BuildAlleleDictionaryEntry(string hlaName)
         {
-            var matchingPGroups = new List<string> { hlaName };
-            var matchingGGroups = new List<string> { hlaName };
-            var matchingSerologies = new List<SerologyEntry> { new SerologyEntry("SEROLOGY", SerologySubtype.NotSplit) };
+            var matchedAllele = Substitute.For<IMatchingDictionarySource<AlleleTyping>>();
+            matchedAllele.TypingForMatchingDictionary.Returns(new AlleleTyping(TypingLocus + "*", hlaName));
+            matchedAllele.MatchingPGroups.Returns(new List<string> { hlaName });
+            matchedAllele.MatchingGGroups.Returns(new List<string> { hlaName });
+            matchedAllele.MatchingSerologies.Returns(new List<SerologyTyping> { new SerologyTyping(TypingLocus, "SEROLOGY", SerologySubtype.NotSplit) });
 
-            return new MatchingDictionaryEntry(
-                MatchedLocus,
-                hlaName,
-                TypingMethod.Molecular,
-                MolecularSubtype.TwoFieldAllele,
-                SerologySubtype.NotSerologyTyping,
-                matchingPGroups,
-                matchingGGroups,
-                matchingSerologies);
+            return new MatchingDictionaryEntry(matchedAllele, hlaName, MolecularSubtype.TwoFieldAllele);
         }
     }
 }
