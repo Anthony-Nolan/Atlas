@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+﻿using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -9,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IManageMatchingDictionaryService
     {
-        void RecreateMatchingDictionary();
+        Task RecreateMatchingDictionary();
     }
 
     public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
@@ -23,11 +24,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.dictionaryRepository = dictionaryRepository;
         }
 
-        public void RecreateMatchingDictionary()
+        public async Task RecreateMatchingDictionary()
         {
             var allMatchedHla = matchingService.GetMatchedHla();
             var entries = allMatchedHla.ToMatchingDictionaryEntries();
-            dictionaryRepository.RecreateMatchingDictionaryTable(entries);
+            await dictionaryRepository.RecreateMatchingDictionaryTable(entries);
         }
     }
 }

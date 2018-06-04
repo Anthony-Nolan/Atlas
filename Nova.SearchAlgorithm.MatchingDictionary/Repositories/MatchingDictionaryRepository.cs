@@ -1,62 +1,67 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IMatchingDictionaryRepository
     {
-        void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
+        Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
         Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
     public class MatchingDictionaryRepository : IMatchingDictionaryRepository
     {
         private const int BatchSize = 100;
-        private const string TableReference = "MatchingDictionary";
         private readonly ICloudTableFactory tableFactory;
-        private CloudTable table;
+        private readonly ITableReferenceRepository tableReferenceRepository;
 
-        public MatchingDictionaryRepository(ICloudTableFactory factory)
+        public MatchingDictionaryRepository(ICloudTableFactory factory, ITableReferenceRepository tableReferenceRepository)
         {
             tableFactory = factory;
-            GetTable();
+            this.tableReferenceRepository = tableReferenceRepository;
         }
 
-        public void RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
+        public async Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
-            DropCreateTable();
-            InsertMatchingDictionaryEntriesIntoTable(dictionaryContents);
+            var newDataTable = CreateNewDataTable();
+            InsertMatchingDictionaryEntriesIntoDataTable(dictionaryContents, newDataTable);
+            await tableReferenceRepository.InsertOrUpdateMatchingDictionaryTableReference(newDataTable.Name);
         }
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-        {
+        {            
             var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
             var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
-            var retrieveOperation = TableOperation.Retrieve<MatchingDictionaryTableEntity>(partition, rowKey);            
-            var tableResult = await table.ExecuteAsync(retrieveOperation);
-            var entry = ((MatchingDictionaryTableEntity) tableResult.Result)?.ToMatchingDictionaryEntry();
+            var dataTable = await GetOrCreateDataTable();
+            var result = await CloudTableQueries.RetrieveResultFromTableByPartitionAndRowKey<MatchingDictionaryTableEntity>(partition, rowKey, dataTable);
 
-            return entry;
+            return result?.ToMatchingDictionaryEntry();
         }
 
-        private void GetTable()
+        private CloudTable CreateNewDataTable()
         {
-            table = tableFactory.GetTable(TableReference);
+            var dataTableReference = tableReferenceRepository.CreateNewMatchingDictionaryTableReference();
+            return tableFactory.GetOrCreateTable(dataTableReference);
         }
 
-        private void DropCreateTable()
+        private async Task<CloudTable> GetOrCreateDataTable()
         {
-            table.Delete();
-            GetTable();
+            var dataTableReference =
+                await tableReferenceRepository.GetMatchingDictionaryTableReferenceIfExistsElseEmptyString();
+
+            return dataTableReference.Equals(string.Empty)
+                ? CreateNewDataTable()
+                : tableFactory.GetOrCreateTable(dataTableReference);
         }
 
-        private void InsertMatchingDictionaryEntriesIntoTable(IEnumerable<MatchingDictionaryEntry> contents)
+        private static void InsertMatchingDictionaryEntriesIntoDataTable(IEnumerable<MatchingDictionaryEntry> contents, CloudTable dataTable)
         {
             var contentsList = contents.ToList();
 
@@ -70,16 +75,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
                 for (var i = 0; i < entitiesForPartitionList.Count; i = i + BatchSize)
                 {
                     var batchToInsert = entitiesForPartitionList.Skip(i).Take(BatchSize);
-                    BatchInsertIntoTable(batchToInsert);
+                    BatchInsertIntoTable(batchToInsert, dataTable);
                 }
             }
         }
 
-        private void BatchInsertIntoTable(IEnumerable<MatchingDictionaryTableEntity> entities)
+        private static void BatchInsertIntoTable(IEnumerable<MatchingDictionaryTableEntity> entities, CloudTable dataTable)
         {
             var batchOperation = new TableBatchOperation();
             entities.ToList().ForEach(entity => batchOperation.Insert(entity));
-            table.ExecuteBatch(batchOperation);
+            dataTable.ExecuteBatch(batchOperation);
         }
     }
 }
