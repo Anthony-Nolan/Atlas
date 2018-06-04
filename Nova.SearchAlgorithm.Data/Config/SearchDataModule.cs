@@ -14,14 +14,14 @@ namespace Nova.SearchAlgorithm.Data.Config
             //
             // To switch implementation from cloud storage to SQL server, uncomment this module.
             //
-            var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
-            builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+            //var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+            //builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterType<SearchAlgorithmContext>().AsSelf().SingleInstance();
+            //builder.RegisterType<SearchAlgorithmContext>().AsSelf().SingleInstance();
 
-            builder.RegisterType<SqlDonorSearchRepository>()
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
+            //builder.RegisterType<SqlDonorSearchRepository>()
+            //    .AsImplementedInterfaces()
+            //    .InstancePerLifetimeScope();
         }
     }
 }

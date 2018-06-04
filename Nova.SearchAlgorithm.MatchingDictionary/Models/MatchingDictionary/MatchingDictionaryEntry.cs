@@ -1,29 +1,10 @@
-﻿using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum TypingMethod
-    {
-        Molecular,
-        Serology
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MolecularSubtype
-    {
-        NotMolecularTyping = 0,
-        CompleteAllele = 1,
-        TwoFieldAllele = 2,
-        FirstFieldAllele = 3,
-        NmdpCode = 4
-    }
-
     /// <summary>
     /// HLA data held within the matching dictionary.
     /// Properties are optimised for dictionary lookups.

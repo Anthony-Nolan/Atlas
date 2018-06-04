@@ -1,15 +1,14 @@
-using System;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using System;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
     public class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
     {
-        public string WmdaLocus { get; }
+        public string WmdaLocus { get; set; }
         public MatchLocus MatchLocus { get; }
-        public string Name { get; }
+        public string Name { get; set; }
         public bool IsDeleted { get; }
 
         public HlaTyping(string wmdaLocus, string name, bool isDeleted = false)
@@ -17,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             WmdaLocus = wmdaLocus;
             Name = name;
             IsDeleted = isDeleted;
-            MatchLocus = SetMatchLocus(wmdaLocus, name);
+            MatchLocus = PermittedLocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
         }
 
         public override string ToString()
@@ -54,14 +53,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
                 hashCode = (hashCode * 397) ^ IsDeleted.GetHashCode();
                 return hashCode;
             }
-        }
-
-        protected static MatchLocus SetMatchLocus(string wmdaLocus, string name)
-        {
-            if (wmdaLocus.Equals("DR") && Drb345Serologies.Drb345Typings.Contains(name))
-                throw new ArgumentException($"{name} is part of DRB345, not DRB1.");
-
-            return LocusNames.GetMatchLocusFromWmdaLocus(wmdaLocus);
         }
     }
 }

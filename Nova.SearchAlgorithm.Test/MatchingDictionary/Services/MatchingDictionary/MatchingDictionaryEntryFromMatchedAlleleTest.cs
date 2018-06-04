@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static readonly string SerologyLocus = Locus.ToString();
         private static IEnumerable<string> _matchingPGroups;
         private static IEnumerable<string> _matchingGGroups;
-        private static IList<RelDnaSerMapping> _matchingSerologies;
+        private static IList<SerologyMappingForAllele> _matchingSerologies;
         private static IEnumerable<SerologyEntry> _matchingSerologyEntries;
 
         [OneTimeSetUp]
@@ -28,9 +28,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             _matchingGGroups = new List<string> { "01:01:01G" };
 
             var serology = new SerologyTyping(SerologyLocus, "1", SerologySubtype.NotSplit);
-            _matchingSerologies = new List<RelDnaSerMapping>
+            _matchingSerologies = new List<SerologyMappingForAllele>
             {
-                new RelDnaSerMapping(serology, Assignment.None, new List<RelDnaSerMatch>{ new RelDnaSerMatch(serology) })
+                new SerologyMappingForAllele(serology, Assignment.None, new List<SerologyMatch>{ new SerologyMatch(serology) })
             };
 
             _matchingSerologyEntries = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit) };

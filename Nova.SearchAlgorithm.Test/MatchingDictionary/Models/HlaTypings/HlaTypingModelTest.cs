@@ -24,11 +24,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             Assert.AreEqual(hlaC.MatchLocus, MatchLocus.C);
             Assert.AreEqual(hlaDqb1.MatchLocus, MatchLocus.Dqb1);
             Assert.AreEqual(hlaDrb1.MatchLocus, MatchLocus.Drb1);
-
-            Assert.Throws<ArgumentException>(() =>
-            {
-                var hlaType = new HlaTyping("DR", "51");
-            });
         }
 
         [Test]

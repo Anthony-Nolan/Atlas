@@ -6,9 +6,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
     public class HlaNomG : IWmdaAlleleGroup, IEquatable<HlaNomG>
     {
-        public string WmdaLocus { get; }
-        public string Name { get; }
-        public IEnumerable<string> Alleles { get; }
+        public string WmdaLocus { get; set; }
+        public string Name { get; set; }
+        public IEnumerable<string> Alleles { get; set; }
+
+        public HlaNomG()
+        {            
+        }
 
         public HlaNomG(string wmdaLocus, string name, IEnumerable<string> alleles)
         {
