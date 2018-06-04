@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
-/// <summary>
-/// Tests the interface between the BlobDonorMatchRepository (the blob storage implementation of a donor match repo)
-/// and the DonorBlobRepository (the repo for persisting data in cloud storage)
-/// </summary>
 namespace Nova.SearchAlgorithm.Test.Repositories
 {
+    /// <summary>
+    /// Tests the interface between the BlobDonorMatchRepository (the blob storage implementation of a donor match repo)
+    /// and the DonorBlobRepository (the repo for persisting data in cloud storage)
+    /// </summary>
     [TestFixture]
     public class DonorRepositoryTests : TestBase<CloudStorageDonorSearchRepository>
     {

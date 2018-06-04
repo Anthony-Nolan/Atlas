@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {

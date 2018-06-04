@@ -7,7 +7,9 @@ using System.Text.RegularExpressions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Repositories;
 
 namespace Nova.SearchAlgorithm.Services
