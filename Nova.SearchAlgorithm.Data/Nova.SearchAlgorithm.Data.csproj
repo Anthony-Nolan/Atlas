@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\SearchDataModule.cs" />
+    <Compile Include="Exceptions\DataHttpException.cs" />
     <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
     <Compile Include="Entity\MatchingHla.cs" />
     <Compile Include="Entity\MatchingHlaAtDqb1.cs" />

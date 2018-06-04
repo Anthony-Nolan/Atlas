@@ -1,4 +1,7 @@
-﻿namespace Nova.SearchAlgorithm.Data.Entity
+﻿using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Exceptions;
+
+namespace Nova.SearchAlgorithm.Data.Entity
 {
     public abstract class MatchingHla
     {
@@ -6,5 +9,24 @@
         public int DonorId { get; set; }
         public int TypePosition { get; set; }
         public PGroupName PGroup { get; set; }
+
+        public static MatchingHla EmptyMatchingEntityForLocus(Locus locus)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    return new MatchingHlaAtA();
+                case Locus.B:
+                    return new MatchingHlaAtB();
+                case Locus.C:
+                    return new MatchingHlaAtC();
+                case Locus.Dqb1:
+                    return new MatchingHlaAtDqb1();
+                case Locus.Drb1:
+                    return new MatchingHlaAtDrb1();
+                default:
+                    throw new DataHttpException($"Could not instantiate MatchingHla entity for unknown locus {locus}");
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Client.Models;
@@ -11,6 +12,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public interface IDonorCloudTables
     {
+        int HighestDonorId();
         void InsertDonor(InputDonor donor);
         void UpdateDonorWithNewHla(InputDonor donor);
         DonorResult GetDonor(int donorId);
@@ -63,7 +65,22 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             matchTable = cloudTableFactory.GetTable(MatchTableReference);
             this.mapper = mapper;
         }
-        
+
+        public int HighestDonorId()
+        {
+            return Enum.GetValues(typeof(RegistryCode)).Cast<RegistryCode>()
+                .Select(rc =>
+                    {
+                        TableQuery<DonorTableEntity> query = new TableQuery<DonorTableEntity>()
+                            .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, rc.ToString()));
+
+                        // Should be in order of row key (within each partition)
+                        return donorTable.ExecuteQuery(query).Take(1).Select(d => d.DonorId).FirstOrDefault();
+                    })
+                .Max();
+        }
+
+
         public IEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);

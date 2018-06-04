@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Data.Config
                 builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
                 builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
 
-                builder.RegisterType<SqlDonorMatchRepository>()
+                builder.RegisterType<SqlDonorSearchRepository>()
                     .AsImplementedInterfaces()
                     .InstancePerLifetimeScope();
             }

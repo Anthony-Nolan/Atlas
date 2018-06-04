@@ -12,17 +12,23 @@ namespace Nova.SearchAlgorithm.Test.Integration
     {
         private DonorMatchCriteria searchCriteria;
 
-        private IDonorMatchRepository searchRepo;
+        private IDonorSearchRepository searchRepo;
 
         public MatchingTests(DonorStorageImplementation param) : base(param) { }
+
+        [SetUp]
+        public void ResolveSearchRepo()
+        {
+            searchRepo = container.Resolve<IDonorSearchRepository>();
+        }
         
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            searchRepo = container.Resolve<IDonorMatchRepository>();
+            IDonorImportRepository importRepo = container.Resolve<IDonorImportRepository>();
 
             // potential 2/2 homozygous match at locus A
-            searchRepo.InsertDonor(new InputDonor
+            importRepo.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -36,10 +42,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            });
+            }).Wait();
 
             // potential 2/2 heterozygous match at locus A
-            searchRepo.InsertDonor(new InputDonor
+            importRepo.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -53,10 +59,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            });
+            }).Wait();
 
             // potential 1/2 match at locus A - 1/2 in HvG direction, 2/2 in GvH direction
-            searchRepo.InsertDonor(new InputDonor
+            importRepo.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -70,10 +76,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            });
+            }).Wait();
 
             // potential 1/2 match at locus A - 1/2 in both directions
-            searchRepo.InsertDonor(new InputDonor
+            importRepo.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -87,10 +93,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            });
+            }).Wait();
 
             // 0/2 at locus A
-            searchRepo.InsertDonor(new InputDonor
+            importRepo.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -104,10 +110,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            });
+            }).Wait();
 
             // 0/2 at locus A, 1/2 at locus B
-            searchRepo.InsertDonor(new InputDonor
+            importRepo.AddOrUpdateDonor(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -121,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            });
+            }).Wait();
         }
 
         [SetUp]

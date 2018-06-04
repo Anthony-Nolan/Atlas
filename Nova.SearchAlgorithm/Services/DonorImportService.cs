@@ -1,169 +1,145 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
 using System.Linq;
-using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Repositories;
-using System;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
+using System.Threading.Tasks;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
+using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
     public interface IDonorImportService
     {
-        void ResumeDonorImport();
-
-        void ImportSingleTestDonor();
-        void ImportTenSolarDonors();
-        void ImportDummyData();
-    }
-    static class DonorExtensions
-    {
-        public static RawInputDonor ToRawImportDonor(this Donor donor)
-        {
-            return new RawInputDonor
-            {
-                DonorId = donor.DonorId,
-                DonorType = donor.DonorType,
-                RegistryCode = donor.RegistryCode,
-                HlaNames = new PhenotypeInfo<string>
-                {
-                    A_1 = donor.A_1,
-                    A_2 = donor.A_2,
-                    B_1 = donor.B_1,
-                    B_2 = donor.B_2,
-                    C_1 = donor.C_1,
-                    C_2 = donor.C_2,
-                    DQB1_1 = donor.DQB1_1,
-                    DQB1_2 = donor.DQB1_2,
-                    DRB1_1 = donor.DRB1_1,
-                    DRB1_2 = donor.DRB1_2
-                }
-            };
-        }
+        Task StartDonorImport();
     }
 
     public class DonorImportService : IDonorImportService
     {
-        private readonly IDonorMatchRepository donorRepository;
+        // TODO:NOVA-1170 for now just import 10. Increase batch size later.
+        private const int DonorPageSize = 10;
+
+        private readonly IDonorInspectionRepository donorInspectionRespository;
+        private readonly IDonorImportRepository donorImportRepository;
         private readonly IMatchingDictionaryLookupService lookupService;
-        private readonly ISolarDonorRepository solarRepository;
         private readonly IDonorServiceClient donorServiceClient;
-        
+        private readonly ILogger logger;
+
         public DonorImportService(
-            IDonorMatchRepository donorRepository,
+            IDonorInspectionRepository donorInspectionRespository,
+            IDonorImportRepository donorImportRepository,
             IMatchingDictionaryLookupService lookupService,
-            ISolarDonorRepository solarRepository,
-            IDonorServiceClient donorServiceClient)
+            IDonorServiceClient donorServiceClient,
+            ILogger logger)
         {
-            this.donorRepository = donorRepository;
-            this.solarRepository = solarRepository;
+            this.donorInspectionRespository = donorInspectionRespository;
+            this.donorImportRepository = donorImportRepository;
             this.lookupService = lookupService;
             this.donorServiceClient = donorServiceClient;
+            this.logger = logger;
         }
 
-        public async void ResumeDonorImport()
+        public async Task StartDonorImport()
         {
-            // TODO:NOVA-1170 for now just import 10
-            var page = await donorServiceClient.GetDonors(10);
-            foreach (var donor in page.Donors)
+            try
             {
-                InsertSingleRawDonor(donor.ToRawImportDonor());
+                await ContinueDonorImport(await donorInspectionRespository.HighestDonorId());
+            }
+            catch (Exception ex)
+            {
+                throw new DonorImportHttpException("Unable to complete donor import.", ex);
             }
         }
 
-        public void ImportSingleTestDonor()
+        public async Task ContinueDonorImport(int lastId)
         {
-            donorRepository.InsertDonor(new InputDonor
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {lastId} onwards", LogLevel.Trace);
+
+            var page = await donorServiceClient.GetDonors(DonorPageSize, lastId);
+
+            if (page.Donors.Any())
             {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = 1,
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
+                // TODO:NOVA-1170: Insert in batches for efficiency
+                // TODO:NOVA-1170: Log exceptions and continue to other donors
+                foreach (var donor in page.Donors)
                 {
-                    A_1 = new ExpandedHla
-                    {
-                        Locus = Locus.A,
-                        PGroups = new List<string> { "01:01P" }
-                    },
-                    A_2 = new ExpandedHla
-                    {
-                        Locus = Locus.A,
-                        PGroups = new List<string> { "01:01P" }
-                    }
+                    await InsertRawDonor(donor);
                 }
-            });
-        }
 
-        public void ImportTenSolarDonors()
-        {
-            foreach (RawInputDonor donor in solarRepository.SomeDonors(1000))
+                var nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
+
+                await ContinueDonorImport(nextId);
+            }
+            else
             {
-                InsertSingleRawDonor(donor);
+                logger.SendTrace("Donor import complete", LogLevel.Info);
             }
         }
 
-        private void InsertSingleRawDonor(RawInputDonor donor)
+        private async Task InsertRawDonor(Donor donor)
         {
-            Enum.TryParse(donor.RegistryCode, out RegistryCode code);
-            donorRepository.InsertDonor(new InputDonor
+            await donorImportRepository.AddOrUpdateDonor(new InputDonor
             {
-                RegistryCode = code,
-                DonorType = DonorType.Adult,
+                RegistryCode = RegistryCodeFromString(donor.RegistryCode),
+                DonorType = DonorTypeFromString(donor.DonorType),
                 DonorId = donor.DonorId,
-                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
+                MatchingHla = await LookupDonorHla(donor)
             });
         }
-
-        // TODO:NOVA-919 extract to a spreasheet-backed repository if this stays
-        private string SpreadsheetContents()
+        private Task<PhenotypeInfo<ExpandedHla>> LookupDonorHla(Donor donor)
         {
-            Assembly assem = this.GetType().Assembly;
-            using (Stream stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Resources.DonorPhenotypesSample.csv"))
+            var donorHla = new PhenotypeInfo<string>
             {
-                using (var reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
-            }
+                A_1 = donor.A_1,
+                A_2 = donor.A_2,
+                B_1 = donor.B_1,
+                B_2 = donor.B_2,
+                C_1 = donor.C_1,
+                C_2 = donor.C_2,
+                DQB1_1 = donor.DQB1_1,
+                DQB1_2 = donor.DQB1_2,
+                DRB1_1 = donor.DRB1_1,
+                DRB1_2 = donor.DRB1_2
+            };
+
+            return donorHla.WhenAll(LookupMatchingHla);
         }
 
-        public void ImportDummyData()
+        private async Task<ExpandedHla> LookupMatchingHla(Locus locus, string hla)
         {
-            var spreadsheetDonors = Regex.Split(SpreadsheetContents(), "\r\n|\r|\n")
-                .Skip(1) // Header row
-                .Select(a => a.Split(','))
-                .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray<string>())
-                .Select((a, i) => new RawInputDonor
-                {
-                    DonorId = i+1, // Don't want donor ID 0
-                    DonorType = a[1],
-                    RegistryCode = a[0],
-                    HlaNames = new PhenotypeInfo<string>
-                    {
-                        A_1 = a[2],
-                        A_2 = a[3],
-                        B_1 = a[4],
-                        B_2 = a[5],
-                        C_1 = a[6],
-                        C_2 = a[7],
-                        DQB1_1 = a[8],
-                        DQB1_2 = a[9],
-                        DRB1_1 = a[10],
-                        DRB1_2 = a[11]
-                    }
-                });
-
-            // TODO:NOVA-919 batch import
-            foreach (RawInputDonor donor in spreadsheetDonors)
+            if (string.IsNullOrEmpty(hla))
             {
-                InsertSingleRawDonor(donor);
+                return null;
+            }
+
+            var matchingResult = await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla);
+            return matchingResult.ToExpandedHla();
+        }
+
+        private static RegistryCode RegistryCodeFromString(string input)
+        {
+            if (Enum.TryParse(input, out RegistryCode code))
+            {
+                return code;
+            }
+            throw new DonorImportException($"Could not understand registry code {input}");
+        }
+
+        private static DonorType DonorTypeFromString(string input)
+        {
+            switch (input.ToLower())
+            {
+                case "adult":
+                case "a":
+                    return DonorType.Adult;
+                case "cord":
+                case "c":
+                    return DonorType.Cord;
+                default:
+                    throw new DonorImportException($"Could not understand donor type {input}");
             }
         }
     }

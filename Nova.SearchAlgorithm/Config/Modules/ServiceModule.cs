@@ -28,10 +28,11 @@ namespace Nova.SearchAlgorithm.Config.Modules
             if (ConfigurationManager.AppSettings["backend.implementation"] == "table")
             {
                 builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<Repositories.Donors.CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
 
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.TestDataService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             

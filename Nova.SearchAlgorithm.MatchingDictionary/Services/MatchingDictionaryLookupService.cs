@@ -31,6 +31,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
         {
+            if (string.IsNullOrEmpty(hlaName))
+            {
+                throw new MatchingDictionaryException($"Cannot lookup null or blank HLA (locus was {matchLocus})");
+            }
+
             try
             {
                 var lookupName = hlaName.Trim().TrimStart('*');

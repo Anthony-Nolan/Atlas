@@ -1,13 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Threading.Tasks;
 using System.Web.Http;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Services;
+using Nova.Utils.Http.Exceptions;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
@@ -17,23 +12,30 @@ namespace Nova.SearchAlgorithm.Controllers
     [RoutePrefix("donor")]
     public class DonorController : ApiController
     {
-        private readonly IDonorMatchRepository donorRepository;
+        private readonly IDonorInspectionRepository donorRepository;
 
-        public DonorController(IDonorMatchRepository donorRepository)
+        public DonorController(IDonorInspectionRepository donorRepository)
         {
             this.donorRepository = donorRepository;
         }
 
         [HttpGet]
         [Route("{id}")]
-        public IHttpActionResult GetDonor(int id)
+        public DonorResult GetDonor(int id)
         {
             var donor = donorRepository.GetDonor(id);
             if (donor == null)
             {
-                return NotFound();
+                throw new NovaNotFoundException($"No donor available with ID {id}");
             }
-            return Ok(donor);
+            return donor;
+        }
+
+        [HttpGet]
+        [Route("highest-donor-id")]
+        public Task<int> GetHighestDonorId()
+        {
+            return donorRepository.HighestDonorId();
         }
     }
 }

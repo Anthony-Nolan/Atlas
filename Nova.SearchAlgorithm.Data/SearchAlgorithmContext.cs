@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Reflection;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Exceptions;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Entity;
 
@@ -16,6 +18,7 @@ namespace Nova.SearchAlgorithm.Data
         DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+        DbSet MatchingHlasAtLocus(Locus locus);
     }
 
     public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
@@ -50,5 +53,24 @@ namespace Nova.SearchAlgorithm.Data
         public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+
+        public DbSet MatchingHlasAtLocus(Locus locus)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    return MatchingHlaAtA;
+                case Locus.B:
+                    return MatchingHlaAtB;
+                case Locus.C:
+                    return MatchingHlaAtC;
+                case Locus.Dqb1:
+                    return MatchingHlaAtDqb1;
+                case Locus.Drb1:
+                    return MatchingHlaAtDrb1;
+                default:
+                    throw new DataHttpException($"Could not select DBSet for unknown locus {locus}");
+            }
+        }
     }
 }
