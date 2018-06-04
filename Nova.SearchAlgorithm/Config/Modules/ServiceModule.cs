@@ -22,10 +22,14 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
+            // TODO:NOVA-1151 remove any dependency on Solar
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            if (ConfigurationManager.AppSettings["backend.implementation"] == "table")
+            {
+                builder.RegisterType<Repositories.Donors.DonorCloudTables>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            }
 
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.TestDataService>().AsImplementedInterfaces().InstancePerLifetimeScope();

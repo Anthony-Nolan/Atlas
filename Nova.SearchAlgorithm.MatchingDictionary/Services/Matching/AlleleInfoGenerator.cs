@@ -15,19 +15,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     {
         public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(IWmdaDataRepository dataRepository)
         {
+            var confidentialAllelesList = dataRepository.ConfidentialAlleles.ToList();
+            var pGroupsList = dataRepository.PGroups.ToList();
+            var gGroupList = dataRepository.GGroups.ToList();
+
             var alleleInfo = dataRepository.Alleles
-                .Where(allele => !dataRepository.ConfidentialAlleles.Contains(allele as IWmdaHlaTyping))
-                .Select(allele => GetInfoForSingleAllele(allele, dataRepository.PGroups, dataRepository.GGroups));
+                .Where(allele => !confidentialAllelesList.Contains(allele as IWmdaHlaTyping))
+                .Select(allele => GetInfoForSingleAllele(allele, pGroupsList, gGroupList));
 
             return alleleInfo;
         }
 
         private static IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom alleleHlaNom, IEnumerable<HlaNomP> allPGroups, IEnumerable<HlaNomG> allGGroups)
         {
-            var allele = new AlleleTyping(alleleHlaNom.WmdaLocus, alleleHlaNom.Name, alleleHlaNom.IsDeleted);
+            var allele = new AlleleTyping(alleleHlaNom.Locus, alleleHlaNom.Name, alleleHlaNom.IsDeleted);
 
             var usedInMatching = !alleleHlaNom.IdenticalHla.Equals("")
-                    ? new AlleleTyping(alleleHlaNom.WmdaLocus, alleleHlaNom.IdenticalHla)
+                    ? new AlleleTyping(alleleHlaNom.Locus, alleleHlaNom.IdenticalHla)
                     : new AlleleTyping(allele);
 
             var pGroup = GetAlleleGroup(allPGroups, usedInMatching);
@@ -40,7 +44,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         {
             var alleleGroup = allAlleleGroups
                 .SingleOrDefault(group => 
-                    group.WmdaLocus.Equals(allele.WmdaLocus) && group.Alleles.Contains(allele.Name)
+                    group.Locus.Equals(allele.Locus) && group.Alleles.Contains(allele.Name)
                 )?.Name;
 
             return alleleGroup != null ? new List<string> { alleleGroup } : new List<string>();

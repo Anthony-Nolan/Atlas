@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
                     hlaInfo, (AlleleTyping)alleleInfo.TypingUsedInMatching)
                 select new MatchedAllele(alleleInfo, serologyMappings);
 
-            return matchedHlaQuery.ToArray();
+            return matchedHlaQuery;
         }        
     }
 }

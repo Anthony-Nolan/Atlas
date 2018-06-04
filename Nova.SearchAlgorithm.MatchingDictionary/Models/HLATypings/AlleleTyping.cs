@@ -13,7 +13,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         private static readonly string[] NullExpressionSuffixes = { "N" };
 
-    public AlleleTyping(string wmdaLocus, string name, bool isDeleted = false) : base(wmdaLocus, name, isDeleted)
+    public AlleleTyping(string locus, string name, bool isDeleted = false) 
+            : base(TypingMethod.Molecular, locus, name, isDeleted)
         {
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
@@ -21,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
 
-        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.WmdaLocus, alleleTyping.Name, alleleTyping.IsDeleted)
+        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.Locus, alleleTyping.Name, alleleTyping.IsDeleted)
         {
         }
 
@@ -38,8 +39,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         private static string GetTwoFieldName(IEnumerable<string> fields, string expressionSuffix, string name)
         {
-            var fieldsArr = fields.ToArray();
-            return fieldsArr.Length >= 2 ? $"{fieldsArr[0]}:{fieldsArr[1]}{expressionSuffix}" : name;
+            var fieldsList = fields.ToList();
+            return fieldsList.Count >= 2 ? $"{fieldsList[0]}:{fieldsList[1]}{expressionSuffix}" : name;
         }
     }
 }

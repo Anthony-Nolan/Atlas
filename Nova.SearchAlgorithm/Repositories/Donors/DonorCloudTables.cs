@@ -53,8 +53,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
     public class DonorCloudTables : IDonorCloudTables
     {
-        private const string DonorTableReference = "Donors";
-        private const string MatchTableReference = "Matches";
+        public const string DonorTableReference = "Donors";
+        public const string MatchTableReference = "Matches";
         private readonly CloudTable donorTable;
         private readonly CloudTable matchTable;
         private readonly IMapper mapper;

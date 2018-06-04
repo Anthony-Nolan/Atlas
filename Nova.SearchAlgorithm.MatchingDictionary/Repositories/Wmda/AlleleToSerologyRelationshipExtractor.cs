@@ -1,5 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private const string FileName = WmdaFilePathPrefix + "rel_dna_ser";
         private const string RegexPattern = @"^(\w+\*)\;([\w:]+)\;([\d\/\\?]*);([\d\/\\?]*)\;([\d\/\\?]*)\;([\d\/\\?]*)$";
 
-        public AlleleToSerologyRelationshipExtractor() : base(FileName, TypingMethod.Molecular)
+        public AlleleToSerologyRelationshipExtractor() : base(FileName)
         {
         }
 

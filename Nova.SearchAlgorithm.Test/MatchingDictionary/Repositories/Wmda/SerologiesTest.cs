@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -19,11 +20,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [Test]
         public void Serologies_SuccessfullyCaptured()
         {
-            var oneDigit = new HlaNom("DQ", "1");
-            var twoDigit = new HlaNom("A", "29");
-            var threeDigit = new HlaNom("B", "703");
-            var fourDigit = new HlaNom("DR", "1404");
-            var deletedWithIdentical = new HlaNom("Cw", "11", true, "1");
+            var oneDigit = new HlaNom(TypingMethod.Serology, "DQ", "1");
+            var twoDigit = new HlaNom(TypingMethod.Serology, "A", "29");
+            var threeDigit = new HlaNom(TypingMethod.Serology, "B", "703");
+            var fourDigit = new HlaNom(TypingMethod.Serology, "DR", "1404");
+            var deletedWithIdentical = new HlaNom(TypingMethod.Serology, "Cw", "11", true, "1");
 
             Assert.AreEqual(oneDigit, GetSingleWmdaHlaTyping("DQ", "1"));
             Assert.AreEqual(twoDigit, GetSingleWmdaHlaTyping("A", "29"));
@@ -36,9 +37,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public void Serologies_ContainsAllExpectedSerology()
         {
             var str = string.Join("\r\n", HlaTypings
-                .OrderBy(s => s.WmdaLocus)
+                .OrderBy(s => s.Locus)
                 .ThenBy(s => int.Parse(s.Name))
-                .Select(s => $"{s.WmdaLocus}\t{s.Name}")
+                .Select(s => $"{s.Locus}\t{s.Name}")
                 .ToList());
             Approvals.Verify(str);
         }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.Utils.TestUtils.Assertions;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 using Autofac;
 using FluentAssertions;
@@ -27,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         }
         
         [OneTimeSetUp]
-        public void ImportTestDonors()
+        public void ImportTestDonor()
         {
             IDonorImportRepository importRepo = container.Resolve<IDonorImportRepository>();
 

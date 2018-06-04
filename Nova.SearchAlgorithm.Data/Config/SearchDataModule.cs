@@ -12,16 +12,18 @@ namespace Nova.SearchAlgorithm.Data.Config
         protected override void Load(ContainerBuilder builder)
         {
             //
-            // To switch implementation from cloud storage to SQL server, uncomment this module.
+            // To switch implementation to SQL server, set the backend.implementation app setting to "sql".
             //
-            //var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
-            //builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+            if (ConfigurationManager.AppSettings["backend.implementation"] == "sql")
+            {
+                var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+                builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+                builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
 
-            //builder.RegisterType<SearchAlgorithmContext>().AsSelf().SingleInstance();
-
-            //builder.RegisterType<SqlDonorSearchRepository>()
-            //    .AsImplementedInterfaces()
-            //    .InstancePerLifetimeScope();
+                builder.RegisterType<SqlDonorSearchRepository>()
+                    .AsImplementedInterfaces()
+                    .InstancePerLifetimeScope();
+            }
         }
     }
 }

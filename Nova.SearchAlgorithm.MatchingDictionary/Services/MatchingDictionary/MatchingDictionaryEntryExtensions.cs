@@ -14,11 +14,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary
     {
         public static IEnumerable<MatchingDictionaryEntry> ToMatchingDictionaryEntries(this IEnumerable<IMatchedHla> matchedHla)
         {
-            var hla = matchedHla.ToArray();
+            var matchedHlaList = matchedHla.ToList();
 
             var entries = new List<MatchingDictionaryEntry>();
-            entries.AddRange(GetMatchingDictionaryEntriesFromSerology(hla.OfType<IMatchingDictionarySource<SerologyTyping>>()));
-            entries.AddRange(GetMatchingDictionaryEntriesFromAlleles(hla.OfType<IMatchingDictionarySource<AlleleTyping>>()));
+            entries.AddRange(GetMatchingDictionaryEntriesFromSerology(matchedHlaList.OfType<IMatchingDictionarySource<SerologyTyping>>()));
+            entries.AddRange(GetMatchingDictionaryEntriesFromAlleles(matchedHlaList.OfType<IMatchingDictionarySource<AlleleTyping>>()));
 
             return entries;
         }

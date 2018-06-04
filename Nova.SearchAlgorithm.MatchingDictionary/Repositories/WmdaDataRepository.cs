@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor)
             where TWmdaHlaTyping : IWmdaHlaTyping
         {
-            return extractor.GetWmdaData(wmdaFileReader);
+            return extractor.GetWmdaHlaTypingsForPermittedLoci(wmdaFileReader);
         }
     }
 }

@@ -1,8 +1,11 @@
-﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
     public interface IWmdaHlaTyping
     {
-        string WmdaLocus { get; set; }
+        TypingMethod TypingMethod { get; }
+        string Locus { get; set; }
         string Name { get; set; }
     }
 }
