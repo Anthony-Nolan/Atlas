@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.Services
                 DRB1_2 = donor.DRB1_2
             };
 
-            return donorHla.WhenAll(LookupMatchingHla);
+            return donorHla.WhenAllPositions((l, p, h) => LookupMatchingHla(l, h));
         }
 
         private async Task<ExpandedHla> LookupMatchingHla(Locus locus, string hla)

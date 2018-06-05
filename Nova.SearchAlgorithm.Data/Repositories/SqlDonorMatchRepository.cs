@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public interface IDonorSearchRepository
     {
-        IEnumerable<PotentialSearchResult> Search(DonorMatchCriteria matchRequest);
+        Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest);
     }
 
     public interface IDonorImportRepository
@@ -32,8 +32,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     public interface IDonorInspectionRepository
     {
         Task<int> HighestDonorId();
-        IEnumerable<DonorResult> AllDonors();
-        DonorResult GetDonor(int donorId);
+        Task<IEnumerable<DonorResult>> AllDonors();
+        Task<DonorResult> GetDonor(int donorId);
     }
 
     public class SqlDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
@@ -50,14 +50,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefaultAsync();
         }
 
-        public IEnumerable<DonorResult> AllDonors()
+        public async Task<IEnumerable<DonorResult>> AllDonors()
         {
-            return context.Donors.ToList().Select(d => d.ToRawDonor());
+            return (await context.Donors.ToListAsync()).Select(d => d.ToRawDonor());
         }
 
-        public DonorResult GetDonor(int donorId)
+        public async Task<DonorResult> GetDonor(int donorId)
         {
-            return context.Donors.FirstOrDefault(d => d.DonorId == donorId)?.ToRawDonor();
+            return (await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donorId))?.ToRawDonor();
         }
 
         public async Task AddOrUpdateDonor(InputDonor donor)
@@ -123,7 +123,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return newPGroup;
         }
 
-        public IEnumerable<PotentialSearchResult> Search(DonorMatchCriteria matchRequest)
+        public Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest)
         {
             string sql = $@"SELECT DonorId, SUM(MatchCount) AS TotalMatchCount
 FROM (
@@ -161,7 +161,8 @@ GROUP BY DonorId
 HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
 ORDER BY TotalMatchCount DESC";
         
-            return context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult());
+            return Task.Run(() =>
+                context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult()));
         }
 
         private string SelectForLocus(Locus locus, DonorLocusMatchCriteria mismatch, TypePositions typePosition)

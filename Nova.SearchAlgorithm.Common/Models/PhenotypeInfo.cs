@@ -60,12 +60,17 @@ namespace Nova.SearchAlgorithm.Common.Models
             action(Locus.Drb1, DRB1_1, DRB1_2);
         }
 
-        public Task<PhenotypeInfo<R>> WhenAll<R>(Func<Locus, T, Task<R>> action)
+        public async Task WhenAllLoci(Func<Locus, T, T, Task> action)
         {
-            return WhenAll((l, p, t) => action(l, t));
+            await Task.WhenAll(
+                action(Locus.A, A_1, A_2),
+                action(Locus.B, B_1, B_2),
+                action(Locus.C, C_1, C_2),
+                action(Locus.Dqb1, DQB1_1, DQB1_2),
+                action(Locus.Drb1, DRB1_1, DRB1_1)); 
         }
 
-        public async Task<PhenotypeInfo<R>> WhenAll<R>(Func<Locus, TypePositions, T, Task<R>> action)
+        public async Task<PhenotypeInfo<R>> WhenAllPositions<R>(Func<Locus, TypePositions, T, Task<R>> action)
         {
             R[] results = await Task.WhenAll(
                 action(Locus.A, TypePositions.One, A_1),

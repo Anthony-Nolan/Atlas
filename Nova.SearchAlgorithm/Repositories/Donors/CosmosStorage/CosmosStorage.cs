@@ -68,6 +68,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return (await donorRepo.GetItemsAsync(d => true)).Select(d => d.ToDonorResult());
         }
 
+        private Task<IEnumerable<PotentialHlaMatchRelationCosmosDocument>> AllMatchesForDonor(int donorId)
+        {
+            return matchRepo.GetItemsAsync(p => p.DonorId == donorId);
+        }
+
         public async Task UpdateDonorWithNewHla(InputDonor donor)
         {
             // Update the donor itself
@@ -83,14 +88,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 matchRepo.DeleteItemAsync(m.Id)));
 
             // Add back the new matches
-            // TODO: change this to WhenAll once merged - currently it does nothing!
-            donor.MatchingHla.EachLocus((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
-        }
-
-        private Task<IEnumerable<PotentialHlaMatchRelationCosmosDocument>> AllMatchesForDonor(int donorId)
-        {
-            return matchRepo.GetItemsAsync(
-                p => p.DonorId == donorId);
+            await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
         }
 
         private Task InsertLocusMatch(Locus locus, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)

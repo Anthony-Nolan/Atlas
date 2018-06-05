@@ -1,7 +1,9 @@
-﻿namespace Nova.SearchAlgorithm.Services
+﻿using System.Threading.Tasks;
+
+namespace Nova.SearchAlgorithm.Services
 {
     public interface IHlaUpdateService
     {
-        void UpdateDonorHla();
+        Task UpdateDonorHla();
     }
 }

@@ -11,7 +11,6 @@ using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary;
 using NUnit.Framework;
 using Autofac;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 
@@ -61,10 +60,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
                 builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
-            else if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            else if (donorStorageImplementation == DonorStorageImplementation.Cosmos)
             {
                 builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
             else
             {

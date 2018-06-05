@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services
                 LocusMismatchDQB1 = await MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1),
             };
 
-            var threeLociMatches = donorRepository.Search(criteria);
+            var threeLociMatches = await donorRepository.Search(criteria);
 
             var fiveLociMatches = threeLociMatches.Select(AddMatchCounts(criteria)).Where(FilterByMismatchCriteria(criteria));
 
@@ -54,14 +54,15 @@ namespace Nova.SearchAlgorithm.Services
                 return null;
             }
 
-            var hla1 = lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1);
-            var hla2 = lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2);
+            var lookupResult = await Task.WhenAll(
+                lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1),
+                lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2));
 
             return new DonorLocusMatchCriteria
             {
                 MismatchCount = mismatch.MismatchCount,
-                HlaNamesToMatchInPositionOne = (await hla1).MatchingPGroups,
-                HlaNamesToMatchInPositionTwo = (await hla2).MatchingPGroups,
+                HlaNamesToMatchInPositionOne = lookupResult[0].MatchingPGroups,
+                HlaNamesToMatchInPositionTwo = lookupResult[1].MatchingPGroups,
             };
         }
 
