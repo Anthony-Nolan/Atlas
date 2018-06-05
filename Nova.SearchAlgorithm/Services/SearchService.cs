@@ -26,16 +26,23 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest)
         {
-            DonorMatchCriteria criteria = new DonorMatchCriteria
+            var criteriaMappings = await Task.WhenAll(
+                MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
+                MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
+                MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
+                MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
+                MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1));
+
+            var criteria = new DonorMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
-                LocusMismatchA = await MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
-                LocusMismatchB = await MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
-                LocusMismatchC = await MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
-                LocusMismatchDRB1 = await MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
-                LocusMismatchDQB1 = await MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1),
+                LocusMismatchA = criteriaMappings[0],
+                LocusMismatchB = criteriaMappings[1],
+                LocusMismatchC = criteriaMappings[2],
+                LocusMismatchDRB1 = criteriaMappings[3],
+                LocusMismatchDQB1 = criteriaMappings[4]
             };
 
             var threeLociMatches = await donorRepository.Search(criteria);
