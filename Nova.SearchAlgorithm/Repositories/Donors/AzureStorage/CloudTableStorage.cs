@@ -108,17 +108,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         {
             // First delete all the old matches
             var matches = AllMatchesForDonor(donor.DonorId).ToList();
-            if (matches.Any())
-            {
-                var deleteBatch = new TableBatchOperation();
-                foreach (var match in matches)
-                {
-                    deleteBatch.Add(TableOperation.Delete(match));
-                }
-
-                await matchTable.ExecuteBatchAsync(deleteBatch);
-            }
-
+            // We can't batch delete if all the partition keys are different
+            await Task.WhenAll(matches.Select(m => matchTable.ExecuteAsync(TableOperation.Delete(m))));
+            
             // Add back the new matches
             await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
         }
@@ -135,31 +127,33 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             var list1 = (matchingHla1?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
             var list2 = (matchingHla2?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
 
-            var combinedList = list1.Union(list2);
+            var combinedList = list1.Union(list2).ToList();
 
             if (!combinedList.Any())
             {
                 return Task.CompletedTask;
             }
 
-            var batch = new TableBatchOperation();
-            
-            foreach (string matchName in list1.Union(list2))
+            // Can't batch the inserts since the partition names differ
+            return Task.WhenAll(combinedList.Select(matchName =>
             {
                 TypePositions typePositions = (TypePositions.None);
                 if (list1.Contains(matchName))
                 {
                     typePositions |= TypePositions.One;
                 }
+
                 if (list2.Contains(matchName))
                 {
                     typePositions |= TypePositions.Two;
                 }
-                var insertMatch = TableOperation.InsertOrMerge(new PotentialHlaMatchRelationTableEntity(locusName, typePositions, matchName, donorId));
-                batch.Add(insertMatch);
-            }
 
-            return matchTable.ExecuteBatchAsync(batch);
+                var insertMatch =
+                    TableOperation.InsertOrMerge(
+                        new PotentialHlaMatchRelationTableEntity(locusName, typePositions, matchName, donorId));
+
+                return matchTable.ExecuteAsync(insertMatch);
+            }));
         }
     }
 }
