@@ -8,6 +8,7 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
@@ -151,7 +152,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static void AssertThatActualResultsEqualExpected(IEnumerable<MatchedAllele> matchedAlleles, IEnumerable<MatchingDictionaryEntry> expected)
         {
             var actual = matchedAlleles.ToMatchingDictionaryEntries();
-            Assert.IsTrue(actual.SequenceEqual(expected));
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }
