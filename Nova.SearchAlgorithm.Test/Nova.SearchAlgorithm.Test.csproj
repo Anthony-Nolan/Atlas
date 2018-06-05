@@ -111,6 +111,7 @@
     <Reference Include="Microsoft.AspNet.TelemetryCorrelation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.TelemetryCorrelation.1.0.0\lib\net45\Microsoft.AspNet.TelemetryCorrelation.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.22.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
     </Reference>
@@ -300,6 +301,7 @@
     <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryLookup.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\RawMatchingHla.cs" />
     <Compile Include="Integration\MatchingTests.cs" />
+    <Compile Include="Integration\CosmosTestDatabase.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />

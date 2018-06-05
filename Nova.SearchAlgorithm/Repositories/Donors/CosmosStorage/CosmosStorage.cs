@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Exceptions;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
 {
@@ -12,9 +13,15 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         private DocumentDBRepository<PotentialHlaMatchRelationCosmosDocument> matchRepo = new DocumentDBRepository<PotentialHlaMatchRelationCosmosDocument>();
         private DocumentDBRepository<DonorCosmosDocument> donorRepo = new DocumentDBRepository<DonorCosmosDocument>();
 
-        public Task<int> HighestDonorId()
+        public async Task<int> HighestDonorId()
         {
-            return donorRepo.GetHighestValueOfProperty(d => d.Id);
+            var stringId = await donorRepo.GetHighestValueOfProperty(d => d.Id);
+            if (int.TryParse(stringId, out var donorIdResult))
+            {
+                return donorIdResult;
+            }
+
+            throw new CloudStorageException("A donor in CosmosDB seems to have a non-integer ID: " + stringId);
         }
 
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)

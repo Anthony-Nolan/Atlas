@@ -1,5 +1,8 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System;
+using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Exceptions;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
 {
@@ -8,7 +11,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
     /// </summary>
     public class DonorCosmosDocument
     {
-        public int Id { get; set; }
+        [JsonProperty(PropertyName = "id")]
+        public string Id { get; set; }
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
 
@@ -25,9 +29,14 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
 
         public DonorResult ToDonorResult()
         {
+            if (!int.TryParse(Id, out int donorId))
+            {
+                throw new CloudStorageException("A donor in CosmosDB seems to have a non-integer ID: " + Id);
+            }
+
             return new DonorResult
             {
-                DonorId = Id,
+                DonorId = donorId,
                 DonorType = DonorType,
                 RegistryCode = RegistryCode,
                 HlaNames = new PhenotypeInfo<string>
@@ -50,19 +59,19 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         {
             return new DonorCosmosDocument
             {
-                Id = input.DonorId,
+                Id = input.DonorId.ToString(),
                 RegistryCode = input.RegistryCode,
                 DonorType = input.DonorType,
-                A_1 = input.MatchingHla.A_1.Name,
-                A_2 = input.MatchingHla.A_2.Name,
-                B_1 = input.MatchingHla.B_1.Name,
-                B_2 = input.MatchingHla.B_2.Name,
-                C_1 = input.MatchingHla.C_1.Name,
-                C_2 = input.MatchingHla.C_2.Name,
-                Drb1_1 = input.MatchingHla.DRB1_1.Name,
-                Drb1_2 = input.MatchingHla.DRB1_2.Name,
-                Dqb1_1 = input.MatchingHla.DQB1_1.Name,
-                Dqb1_2 = input.MatchingHla.DQB1_2.Name,
+                A_1 = input.MatchingHla?.A_1?.Name,
+                A_2 = input.MatchingHla?.A_2?.Name,
+                B_1 = input.MatchingHla?.B_1?.Name,
+                B_2 = input.MatchingHla?.B_2?.Name,
+                C_1 = input.MatchingHla?.C_1?.Name,
+                C_2 = input.MatchingHla?.C_2?.Name,
+                Drb1_1 = input.MatchingHla?.DRB1_1?.Name,
+                Drb1_2 = input.MatchingHla?.DRB1_2?.Name,
+                Dqb1_1 = input.MatchingHla?.DQB1_1?.Name,
+                Dqb1_2 = input.MatchingHla?.DQB1_2?.Name,
             };
         }
     }

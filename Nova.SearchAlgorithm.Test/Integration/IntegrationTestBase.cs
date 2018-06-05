@@ -21,7 +21,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
     [TestFixture(DonorStorageImplementation.Cosmos)]
     public abstract class IntegrationTestBase
     {
-        private StorageEmulator emulator = new StorageEmulator();
+        private readonly StorageEmulator tableStorageEmulator = new StorageEmulator();
+        private readonly CosmosTestDatabase cosmosDatabase = new CosmosTestDatabase();
         private readonly DonorStorageImplementation donorStorageImplementation;
         protected IContainer container;
 
@@ -40,9 +41,12 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 context.Database.Delete();
             }
 
-            // Starting and stopping the emulator is managed in the setup fixture StorageSetup.cs
-            emulator.Clear();
-        }
+            // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
+            tableStorageEmulator.Clear();
+
+            // Starting the cosmos emulator is currently a manual step.
+            cosmosDatabase.Clear();
+    }
 
         // This is almost a duplicate of the container in 
         // Nova.SearchAlgorithm.Config.Modules.ServiceModule

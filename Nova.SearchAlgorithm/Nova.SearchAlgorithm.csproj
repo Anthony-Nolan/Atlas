@@ -255,6 +255,7 @@
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
+    <Compile Include="Exceptions\CloudStorageException.cs" />
     <Compile Include="Exceptions\DonorImportHttpException.cs" />
     <Compile Include="Exceptions\DonorImportException.cs" />
     <Compile Include="Exceptions\SearchHttpException.cs" />
