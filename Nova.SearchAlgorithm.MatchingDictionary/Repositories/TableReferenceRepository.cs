@@ -11,8 +11,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     public interface ITableReferenceRepository
     {
         Task<string> GetMatchingDictionaryTableReferenceIfExistsElseEmptyString();
-        string CreateNewMatchingDictionaryTableReference();
-        Task InsertOrUpdateMatchingDictionaryTableReference(string dataTableReference);
+        string GetNewMatchingDictionaryTableReference();
+        Task UpdateMatchingDictionaryTableReference(string dataTableReference);
     }
 
     public class TableReferenceRepository : ITableReferenceRepository
@@ -38,17 +38,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             }
 
             var emptyString = string.Empty;
-            await InsertOrUpdateMatchingDictionaryTableReference(emptyString);
+            await UpdateMatchingDictionaryTableReference(emptyString);
             return emptyString;
         }
 
-        public string CreateNewMatchingDictionaryTableReference()
+        public string GetNewMatchingDictionaryTableReference()
         {
             var timeStamp = $"{DateTime.Now:yyyyMMddhhmmssfff}";
             return DataTableReferencePrefix + timeStamp;
         }
 
-        public async Task InsertOrUpdateMatchingDictionaryTableReference(string dataTableReference)
+        public async Task UpdateMatchingDictionaryTableReference(string dataTableReference)
         {
             var insertOrReplaceOperation = TableOperation.InsertOrReplace(new TableReferenceTableEntity(dataTableReference));
             await table.ExecuteAsync(insertOrReplaceOperation);

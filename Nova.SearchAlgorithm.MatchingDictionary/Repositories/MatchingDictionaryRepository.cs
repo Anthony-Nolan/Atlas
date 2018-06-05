@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             var newDataTable = CreateNewDataTable();
             InsertMatchingDictionaryEntriesIntoDataTable(dictionaryContents, newDataTable);
-            await tableReferenceRepository.InsertOrUpdateMatchingDictionaryTableReference(newDataTable.Name);
+            await tableReferenceRepository.UpdateMatchingDictionaryTableReference(newDataTable.Name);
         }
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private CloudTable CreateNewDataTable()
         {
-            var dataTableReference = tableReferenceRepository.CreateNewMatchingDictionaryTableReference();
+            var dataTableReference = tableReferenceRepository.GetNewMatchingDictionaryTableReference();
             return tableFactory.GetOrCreateTable(dataTableReference);
         }
 
