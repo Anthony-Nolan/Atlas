@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     /// </summary>
     public interface ITableReferenceRepository
     {
-        Task<string> GetMatchingDictionaryTableReferenceIfExistsElseEmptyString();
+        Task<string> GetCurrentMatchingDictionaryTableReference();
         string GetNewMatchingDictionaryTableReference();
         Task UpdateMatchingDictionaryTableReference(string dataTableReference);
     }
@@ -26,20 +26,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             table = factory.GetOrCreateTable(CloudTableReference);
         }
 
-        public async Task<string> GetMatchingDictionaryTableReferenceIfExistsElseEmptyString()
+        public async Task<string> GetCurrentMatchingDictionaryTableReference()
         {
-            var partition = TableReferenceTableEntity.GetPartition();
-            var rowKey = TableReferenceTableEntity.GetRowKey();
-            var entity = await table.GetEntityByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey);
+            var entity = await GetExistingTableEntity();
 
-            if (entity != null)
-            {
-                return entity.MatchingDictionaryTableReference;
-            }
-
-            var emptyString = string.Empty;
-            await UpdateMatchingDictionaryTableReference(emptyString);
-            return emptyString;
+            return entity != null 
+                ? entity.MatchingDictionaryTableReference
+                : await InsertEntityAndReturnNewTableReference();
         }
 
         public string GetNewMatchingDictionaryTableReference()
@@ -52,6 +45,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             var insertOrReplaceOperation = TableOperation.InsertOrReplace(new TableReferenceTableEntity(dataTableReference));
             await table.ExecuteAsync(insertOrReplaceOperation);
+        }
+
+        private async Task<TableReferenceTableEntity> GetExistingTableEntity()
+        {
+            var partition = TableReferenceTableEntity.GetPartition();
+            var rowKey = TableReferenceTableEntity.GetRowKey();
+            var entity = await table.GetEntityByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey);
+            return entity;
+        }
+
+        private async Task<string> InsertEntityAndReturnNewTableReference()
+        {           
+            var newReference = GetNewMatchingDictionaryTableReference();
+            await UpdateMatchingDictionaryTableReference(newReference);
+            return newReference;
         }
     }
 }

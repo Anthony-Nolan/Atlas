@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {            
             var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
             var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
-            var dataTable = await GetOrCreateDataTable();
+            var dataTable = await GetCurrentDataTable();
             var result = await dataTable.GetEntityByPartitionAndRowKey<MatchingDictionaryTableEntity>(partition, rowKey);
 
             return result?.ToMatchingDictionaryEntry();
@@ -50,14 +50,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             return tableFactory.GetOrCreateTable(dataTableReference);
         }
 
-        private async Task<CloudTable> GetOrCreateDataTable()
+        private async Task<CloudTable> GetCurrentDataTable()
         {
-            var dataTableReference =
-                await tableReferenceRepository.GetMatchingDictionaryTableReferenceIfExistsElseEmptyString();
-
-            return dataTableReference.Equals(string.Empty)
-                ? CreateNewDataTable()
-                : tableFactory.GetOrCreateTable(dataTableReference);
+            var dataTableReference = await tableReferenceRepository.GetCurrentMatchingDictionaryTableReference();
+            return tableFactory.GetOrCreateTable(dataTableReference);
         }
 
         private static void InsertMatchingDictionaryEntriesIntoDataTable(IEnumerable<MatchingDictionaryEntry> contents, CloudTable dataTable)
