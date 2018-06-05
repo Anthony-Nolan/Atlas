@@ -20,10 +20,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("recreate")]
-        public async Task<IHttpActionResult> RecreateMatchingDictionary()
+        public Task RecreateMatchingDictionary()
         {
-            await manageMatchingService.RecreateMatchingDictionary();
-            return Ok();
+            return manageMatchingService.RecreateMatchingDictionary();
         }
 
         [HttpGet]
