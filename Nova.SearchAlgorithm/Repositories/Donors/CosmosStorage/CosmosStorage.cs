@@ -123,7 +123,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 return matchRepo.CreateItemAsync(
                     new PotentialHlaMatchRelationCosmosDocument
                     {
-                        Id = PotentialHlaMatchRelationCosmosDocument.GenerateId(locus, donorId, matchName),
                         DonorId = donorId,
                         Locus = locus,
                         MatchingTypePositions = typePositions,

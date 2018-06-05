@@ -107,13 +107,17 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         private async Task UpdateDonorHlaMatches(InputDonor donor)
         {
             // First delete all the old matches
-            var matches = AllMatchesForDonor(donor.DonorId);
-            var deleteBatch = new TableBatchOperation();
-            foreach (var match in matches)
+            var matches = AllMatchesForDonor(donor.DonorId).ToList();
+            if (matches.Any())
             {
-                deleteBatch.Add(TableOperation.Delete(match));
+                var deleteBatch = new TableBatchOperation();
+                foreach (var match in matches)
+                {
+                    deleteBatch.Add(TableOperation.Delete(match));
+                }
+
+                await matchTable.ExecuteBatchAsync(deleteBatch);
             }
-            await matchTable.ExecuteBatchAsync(deleteBatch);
 
             // Add back the new matches
             await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
@@ -130,6 +134,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         {
             var list1 = (matchingHla1?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
             var list2 = (matchingHla2?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
+
+            var combinedList = list1.Union(list2);
+
+            if (!combinedList.Any())
+            {
+                return Task.CompletedTask;
+            }
 
             var batch = new TableBatchOperation();
             
@@ -148,7 +159,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 batch.Add(insertMatch);
             }
 
-            return batch.Count > 0 ? matchTable.ExecuteBatchAsync(batch) : Task.CompletedTask;
+            return matchTable.ExecuteBatchAsync(batch);
         }
     }
 }
