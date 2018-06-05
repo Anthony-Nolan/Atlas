@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             var partition = TableReferenceTableEntity.GetPartition();
             var rowKey = TableReferenceTableEntity.GetRowKey();
-            var entity = await CloudTableQueries.RetrieveResultFromTableByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey, table);
+            var entity = await table.GetEntityByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey);
 
             if (entity != null)
             {

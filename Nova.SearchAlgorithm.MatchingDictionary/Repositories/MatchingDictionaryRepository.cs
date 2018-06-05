@@ -17,8 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     }
 
     public class MatchingDictionaryRepository : IMatchingDictionaryRepository
-    {
-        private const int BatchSize = 100;
+    {       
         private readonly ICloudTableFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
 
@@ -40,7 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
             var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
             var dataTable = await GetOrCreateDataTable();
-            var result = await CloudTableQueries.RetrieveResultFromTableByPartitionAndRowKey<MatchingDictionaryTableEntity>(partition, rowKey, dataTable);
+            var result = await dataTable.GetEntityByPartitionAndRowKey<MatchingDictionaryTableEntity>(partition, rowKey);
 
             return result?.ToMatchingDictionaryEntry();
         }
@@ -67,24 +66,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
             foreach (var partition in PermittedLocusNames.GetPermittedMatchLoci())
             {
-                var entitiesForPartitionList = contentsList
+                var partitionEntities = contentsList
                     .Where(entry => entry.MatchLocus.Equals(partition))
-                    .Select(entry => entry.ToTableEntity())
-                    .ToList();
+                    .Select(entry => entry.ToTableEntity());
 
-                for (var i = 0; i < entitiesForPartitionList.Count; i = i + BatchSize)
-                {
-                    var batchToInsert = entitiesForPartitionList.Skip(i).Take(BatchSize);
-                    BatchInsertIntoTable(batchToInsert, dataTable);
-                }
+                dataTable.BatchInsert(partitionEntities);
             }
-        }
-
-        private static void BatchInsertIntoTable(IEnumerable<MatchingDictionaryTableEntity> entities, CloudTable dataTable)
-        {
-            var batchOperation = new TableBatchOperation();
-            entities.ToList().ForEach(entity => batchOperation.Insert(entity));
-            dataTable.ExecuteBatch(batchOperation);
-        }
+        }        
     }
 }

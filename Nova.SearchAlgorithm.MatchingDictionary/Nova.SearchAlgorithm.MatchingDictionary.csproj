@@ -162,7 +162,7 @@
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Repositories\AzureStorage\CloudTableQueries.cs" />
+    <Compile Include="Repositories\AzureStorage\CloudTableExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\TableReferenceTableEntity.cs" />
     <Compile Include="Repositories\TableReferenceRepository.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
