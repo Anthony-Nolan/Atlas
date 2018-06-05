@@ -12,10 +12,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         private DocumentDBRepository<PotentialHlaMatchRelationCosmosDocument> matchRepo = new DocumentDBRepository<PotentialHlaMatchRelationCosmosDocument>();
         private DocumentDBRepository<DonorCosmosDocument> donorRepo = new DocumentDBRepository<DonorCosmosDocument>();
 
-        public int HighestDonorId()
+        public Task<int> HighestDonorId()
         {
-            //TODO:NOVA-1295 implement
-            return 0;
+            return donorRepo.GetHighestValueOfProperty(d => d.Id);
         }
 
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)

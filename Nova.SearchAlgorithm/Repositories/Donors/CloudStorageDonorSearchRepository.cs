@@ -9,16 +9,16 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public class CloudStorageDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
     {
-        private readonly IDonorDocumentStorage donorBlobRepository;
+        private readonly IDonorDocumentStorage donorDocumentRepository;
 
-        public CloudStorageDonorSearchRepository(IDonorDocumentStorage donorBlobRepository)
+        public CloudStorageDonorSearchRepository(IDonorDocumentStorage donorDocumentRepository)
         {
-            this.donorBlobRepository = donorBlobRepository;
+            this.donorDocumentRepository = donorDocumentRepository;
         }
 
         public Task<int> HighestDonorId()
         {
-            return Task.FromResult(donorBlobRepository.HighestDonorId());
+            return donorDocumentRepository.HighestDonorId();
         }
 
         public async Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest)
@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 HlaNamesToMatchInPositionTwo = criteria.HlaNamesToMatchInPositionTwo,
             };
 
-            var matches = (await donorBlobRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
+            var matches = (await donorDocumentRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, LocusMatchFromGroup);
 
@@ -97,24 +97,24 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public Task<DonorResult> GetDonor(int donorId)
         {
-            return donorBlobRepository.GetDonor(donorId);
+            return donorDocumentRepository.GetDonor(donorId);
         }
 
         public Task AddOrUpdateDonor(InputDonor donor)
         {
-            return donorBlobRepository.InsertDonor(donor);
+            return donorDocumentRepository.InsertDonor(donor);
         }
 
         // TODO:NOVA-937 This will be too many donors
         // Can we stream them in batches with IEnumerable?
         public Task<IEnumerable<DonorResult>> AllDonors()
         {
-            return donorBlobRepository.AllDonors();
+            return donorDocumentRepository.AllDonors();
         }
 
         public Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
-            return donorBlobRepository.UpdateDonorWithNewHla(donor);
+            return donorDocumentRepository.UpdateDonorWithNewHla(donor);
         }
     }
 }

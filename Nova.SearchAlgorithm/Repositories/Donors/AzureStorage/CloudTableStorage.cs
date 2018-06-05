@@ -27,9 +27,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             this.mapper = mapper;
         }
 
-        public int HighestDonorId()
+        public Task<int> HighestDonorId()
         {
-            return Enum.GetValues(typeof(RegistryCode)).Cast<RegistryCode>()
+            return Task.FromResult(Enum.GetValues(typeof(RegistryCode)).Cast<RegistryCode>()
                 .Select(rc =>
                     {
                         TableQuery<DonorTableEntity> query = new TableQuery<DonorTableEntity>()
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                         // Should be in order of row key (within each partition)
                         return donorTable.ExecuteQuery(query).Take(1).Select(d => d.DonorId).FirstOrDefault();
                     })
-                .Max();
+                .Max());
         }
         public Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {

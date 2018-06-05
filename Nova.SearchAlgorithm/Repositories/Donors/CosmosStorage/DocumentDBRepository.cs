@@ -76,6 +76,24 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id));
         }
 
+        public async Task<R> GetHighestValueOfProperty<R>(Expression<Func<T, R>> property)
+        {
+            IDocumentQuery<T> query = client.CreateDocumentQuery<T>(
+                    UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId),
+                    new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true })
+                .OrderByDescending(property)
+                .Take(1)
+                .AsDocumentQuery();
+
+            List<T> results = new List<T>();
+            while (query.HasMoreResults)
+            {
+                results.AddRange(await query.ExecuteNextAsync<T>());
+            }
+
+            return results.AsQueryable().Select(property).FirstOrDefault();
+        }
+
         private async Task CreateDatabaseIfNotExistsAsync()
         {
             try

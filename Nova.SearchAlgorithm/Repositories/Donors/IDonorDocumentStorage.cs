@@ -11,9 +11,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         Task InsertDonor(InputDonor donor);
         Task UpdateDonorWithNewHla(InputDonor donor);
         Task<DonorResult> GetDonor(int donorId);
-        Task<IEnumerable<PotentialHlaMatchRelation>> GetMatchesForDonor(int donorId);
         Task<IEnumerable<DonorResult>> AllDonors();
         Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria);
-        int HighestDonorId();
+        Task<int> HighestDonorId();
     }
 }
