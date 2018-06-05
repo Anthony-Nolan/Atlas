@@ -59,10 +59,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 // TODO:NOVA-1170: Insert in batches for efficiency
                 // TODO:NOVA-1170: Log exceptions and continue to other donors
-                foreach (var donor in page.Donors)
-                {
-                    await InsertRawDonor(donor);
-                }
+                await Task.WhenAll(page.Donors.Select(InsertRawDonor));
 
                 var nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
 

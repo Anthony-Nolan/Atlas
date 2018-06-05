@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 
@@ -83,7 +84,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
             await donorTable.ExecuteAsync(insertDonor);
 
-            UpdateDonorHlaMatches(donor);
+            await UpdateDonorHlaMatches(donor);
         }
 
         // TODO:NOVA-939 This will be too many donors
@@ -99,20 +100,23 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             // Update the donor itself
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
             await donorTable.ExecuteAsync(insertDonor);
-            UpdateDonorHlaMatches(donor);
+
+            await UpdateDonorHlaMatches(donor);
         }
 
-        private void UpdateDonorHlaMatches(InputDonor donor)
+        private async Task UpdateDonorHlaMatches(InputDonor donor)
         {
             // First delete all the old matches
             var matches = AllMatchesForDonor(donor.DonorId);
+            var deleteBatch = new TableBatchOperation();
             foreach (var match in matches)
             {
-                matchTable.Execute(TableOperation.Delete(match));
+                deleteBatch.Add(TableOperation.Delete(match));
             }
+            await matchTable.ExecuteBatchAsync(deleteBatch);
 
             // Add back the new matches
-            donor.MatchingHla.EachLocus((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
+            await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
         }
 
         private IEnumerable<PotentialHlaMatchRelationTableEntity> AllMatchesForDonor(int donorId)
@@ -122,16 +126,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        private void InsertLocusMatch(Locus locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
+        private Task InsertLocusMatch(Locus locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
         {
-            if (matchingHla1 == null)
-            {
-                return;
-            }
+            var list1 = (matchingHla1?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
+            var list2 = (matchingHla2?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
 
-            var list1 = matchingHla1.AllMatchingHlaNames().ToList();
-            var list2 = matchingHla2.AllMatchingHlaNames().ToList();
-
+            var batch = new TableBatchOperation();
+            
             foreach (string matchName in list1.Union(list2))
             {
                 TypePositions typePositions = (TypePositions.None);
@@ -144,8 +145,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                     typePositions |= TypePositions.Two;
                 }
                 var insertMatch = TableOperation.InsertOrMerge(new PotentialHlaMatchRelationTableEntity(locusName, typePositions, matchName, donorId));
-                matchTable.Execute(insertMatch);
+                batch.Add(insertMatch);
             }
+
+            return batch.Count > 0 ? matchTable.ExecuteBatchAsync(batch) : Task.CompletedTask;
         }
     }
 }
