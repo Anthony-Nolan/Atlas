@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Client.Models
+namespace Nova.SearchAlgorithm.Common.Models
 {
     /// <summary>
     /// Data type to hold one instance of T for each of the five HLA loci and each type position within.

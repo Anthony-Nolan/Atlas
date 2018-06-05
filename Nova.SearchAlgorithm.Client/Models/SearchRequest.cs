@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Client.Models
 {
-
     [FluentValidation.Attributes.Validator(typeof(SearchRequestValidator))]
     public class SearchRequest
     {

@@ -1,8 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Data.Models
 {

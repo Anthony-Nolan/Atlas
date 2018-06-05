@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Client

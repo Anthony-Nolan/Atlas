@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Common", "Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj", "{FB453E02-3CE1-42E7-BDC4-13899B993F2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,12 @@ Global
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB453E02-3CE1-42E7-BDC4-13899B993F2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB453E02-3CE1-42E7-BDC4-13899B993F2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB453E02-3CE1-42E7-BDC4-13899B993F2A}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB453E02-3CE1-42E7-BDC4-13899B993F2A}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{FB453E02-3CE1-42E7-BDC4-13899B993F2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB453E02-3CE1-42E7-BDC4-13899B993F2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

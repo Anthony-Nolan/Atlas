@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         private readonly DonorStorageImplementation donorStorageImplementation;
         protected IContainer container;
 
-        public IntegrationTestBase(DonorStorageImplementation input)
+        protected IntegrationTestBase(DonorStorageImplementation input)
         {
             this.donorStorageImplementation = input;
         }
@@ -66,6 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterType<FileBackedMatchingDictionaryLookup>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            builder.RegisterType<Scoring.CalculateScore>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 

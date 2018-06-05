@@ -1,6 +1,4 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
-
-namespace Nova.SearchAlgorithm.Data.Models
+﻿namespace Nova.SearchAlgorithm.Common.Models
 {
     /// <summary>
     /// A donor from our data source along with the donor's raw hla data.

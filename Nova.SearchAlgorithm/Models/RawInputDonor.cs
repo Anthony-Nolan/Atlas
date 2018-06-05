@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Models
 {
