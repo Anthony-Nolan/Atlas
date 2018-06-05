@@ -6,12 +6,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public interface ICloudTableFactory
     {
-        CloudTable GetTable(string tableReferenceString);
+        CloudTable GetOrCreateTable(string tableReferenceString);
     }
 
     public class CloudTableFactory : ICloudTableFactory
     {
-        public CloudTable GetTable(string tableReferenceString)
+        public CloudTable GetOrCreateTable(string tableReferenceString)
         {
             var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString);
             var tableClient = storageAccount.CreateCloudTableClient();
