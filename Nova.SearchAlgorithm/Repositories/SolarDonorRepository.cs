@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Services;
 using Nova.Utils.Solar;
 
 namespace Nova.SearchAlgorithm.Repositories
@@ -66,8 +67,8 @@ namespace Nova.SearchAlgorithm.Repositories
             return new RawInputDonor
             {
                 DonorId = result.DONOR_ID,
-                RegistryCode = result.DONOR_TYPE,
-                DonorType = "A",
+                RegistryCode = RegistryCode.AN,
+                DonorType = DonorExtensions.DonorTypeFromString(result.DONOR_TYPE),
                 HlaNames = new PhenotypeInfo<string>
                 {
                     A_1 = result.A_1_HLA_NAME,

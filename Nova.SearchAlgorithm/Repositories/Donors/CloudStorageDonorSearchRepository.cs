@@ -100,9 +100,15 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.GetDonor(donorId);
         }
 
-        public Task AddOrUpdateDonor(InputDonor donor)
+        public Task InsertDonor(RawInputDonor donor)
         {
             return donorDocumentRepository.InsertDonor(donor);
+        }
+
+        public async Task AddOrUpdateDonor(InputDonor donor)
+        {
+            await donorDocumentRepository.InsertDonor(donor.ToRawInputDonor());
+            await donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
 
         // TODO:NOVA-937 This will be too many donors
@@ -114,7 +120,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
-            return donorDocumentRepository.UpdateDonorWithNewHla(donor);
+            return donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
     }
 }

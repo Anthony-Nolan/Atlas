@@ -7,9 +7,7 @@ using System.Text.RegularExpressions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Repositories;
 
 namespace Nova.SearchAlgorithm.Services
@@ -63,11 +61,10 @@ namespace Nova.SearchAlgorithm.Services
 
         private void InsertSingleRawDonor(RawInputDonor donor)
         {
-            Enum.TryParse(donor.RegistryCode, out RegistryCode code);
             donorRepository.AddOrUpdateDonor(new InputDonor
             {
-                RegistryCode = code,
-                DonorType = DonorTypeFromString(donor.DonorType),
+                RegistryCode = donor.RegistryCode,
+                DonorType = donor.DonorType,
                 DonorId = donor.DonorId,
                 MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
             });
@@ -94,9 +91,9 @@ namespace Nova.SearchAlgorithm.Services
                 .Select(a => a.Select(val => string.IsNullOrWhiteSpace(val) ? null : val).ToArray())
                 .Select((a, i) => new RawInputDonor
                 {
-                    DonorId = i+1, // Don't want donor ID 0
-                    DonorType = a[1],
-                    RegistryCode = a[0],
+                    DonorId = i + 1, // Don't want donor ID 0
+                    RegistryCode = DonorExtensions.RegistryCodeFromString(a[0]),
+                    DonorType = DonorExtensions.DonorTypeFromString(a[1]),
                     HlaNames = new PhenotypeInfo<string>
                     {
                         A_1 = a[2],
@@ -116,21 +113,6 @@ namespace Nova.SearchAlgorithm.Services
             foreach (RawInputDonor donor in spreadsheetDonors)
             {
                 InsertSingleRawDonor(donor);
-            }
-        }
-        
-        private static DonorType DonorTypeFromString(string input)
-        {
-            switch (input.ToLower())
-            {
-                case "adult":
-                case "a":
-                    return DonorType.Adult;
-                case "cord":
-                case "c":
-                    return DonorType.Cord;
-                default:
-                    throw new SearchHttpException($"Could not understand donor type {input}");
             }
         }
     }

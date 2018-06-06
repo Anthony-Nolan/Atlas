@@ -54,11 +54,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return (await donorRepo.GetItemAsync(donorId.ToString())).ToDonorResult();
         }
 
-        public async Task InsertDonor(InputDonor donor)
+        public async Task InsertDonor(RawInputDonor donor)
         {
-            await donorRepo.CreateItemAsync(DonorCosmosDocument.FromInputDonor(donor));
-
-            await UpdateDonorHlaMatches(donor);
+            await donorRepo.CreateItemAsync(DonorCosmosDocument.FromRawInputDonor(donor));
         }
 
         // TODO:NOVA-939 This will be too many donors
@@ -73,10 +71,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return matchRepo.GetItemsAsync(p => p.DonorId == donorId);
         }
 
-        public async Task UpdateDonorWithNewHla(InputDonor donor)
+        public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             // Update the donor itself
-            await donorRepo.UpdateItemAsync(donor.DonorId.ToString(), DonorCosmosDocument.FromInputDonor(donor));
+            await donorRepo.UpdateItemAsync(donor.DonorId.ToString(), DonorCosmosDocument.FromRawInputDonor(donor.ToRawInputDonor()));
             await UpdateDonorHlaMatches(donor);
         }
 

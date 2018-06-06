@@ -5,23 +5,23 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 {
     internal static class DonorExtensions
     {
-        internal static DonorTableEntity ToTableEntity(this InputDonor donor)
+        internal static DonorTableEntity ToTableEntity(this RawInputDonor donor)
         {
             return new DonorTableEntity(donor.RegistryCode.ToString(), donor.DonorId.ToString())
             {
                 DonorId = donor.DonorId,
                 RegistryCode = (int)donor.RegistryCode,
                 DonorType = (int)donor.DonorType,
-                A_1 = donor.MatchingHla?.A_1?.Name,
-                A_2 = donor.MatchingHla?.A_2?.Name,
-                B_1 = donor.MatchingHla?.B_1?.Name,
-                B_2 = donor.MatchingHla?.B_2?.Name,
-                C_1 = donor.MatchingHla?.C_1?.Name,
-                C_2 = donor.MatchingHla?.C_2?.Name,
-                DRB1_1 = donor.MatchingHla?.DRB1_1?.Name,
-                DRB1_2 = donor.MatchingHla?.DRB1_2?.Name,
-                DQB1_1 = donor.MatchingHla?.DQB1_1?.Name,
-                DQB1_2 = donor.MatchingHla?.DQB1_2?.Name
+                A_1 = donor.HlaNames?.A_1,
+                A_2 = donor.HlaNames?.A_2,
+                B_1 = donor.HlaNames?.B_1,
+                B_2 = donor.HlaNames?.B_2,
+                C_1 = donor.HlaNames?.C_1,
+                C_2 = donor.HlaNames?.C_2,
+                DRB1_1 = donor.HlaNames?.DRB1_1,
+                DRB1_2 = donor.HlaNames?.DRB1_2,
+                DQB1_1 = donor.HlaNames?.DQB1_1,
+                DQB1_2 = donor.HlaNames?.DQB1_2
             };
         }
 

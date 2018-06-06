@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Repositories
 {

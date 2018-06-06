@@ -29,8 +29,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                         TableQuery<DonorTableEntity> query = new TableQuery<DonorTableEntity>()
                             .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, rc.ToString()));
 
-                        // Should be in order of row key (within each partition)
-                        return donorTable.ExecuteQuery(query).Take(1).Select(d => d.DonorId).FirstOrDefault();
+                        // Should be in order of row key ascending (within each partition)
+                        return donorTable.ExecuteQuery(query).Reverse().Take(1).Select(d => d.DonorId).FirstOrDefault();
                     })
                 .Max());
         }
@@ -72,12 +72,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             return Task.FromResult(AllMatchesForDonor(donorId).Select(m => m.ToPotentialHlaMatchRelation(0)));
         }
 
-        public async Task InsertDonor(InputDonor donor)
+        public async Task InsertDonor(RawInputDonor donor)
         {
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             await donorTable.ExecuteAsync(insertDonor);
-
-            await UpdateDonorHlaMatches(donor);
         }
 
         // TODO:NOVA-939 This will be too many donors
@@ -88,10 +86,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             return Task.FromResult(donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor()));
         }
 
-        public async Task UpdateDonorWithNewHla(InputDonor donor)
+        public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             // Update the donor itself
-            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToRawInputDonor().ToTableEntity());
             await donorTable.ExecuteAsync(insertDonor);
 
             await UpdateDonorHlaMatches(donor);

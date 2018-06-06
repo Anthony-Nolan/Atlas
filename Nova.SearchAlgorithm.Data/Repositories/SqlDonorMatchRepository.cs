@@ -18,6 +18,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     public interface IDonorImportRepository
     {
         /// <summary>
+        /// Insert a donor into the database.
+        /// This does _not_ refresh the hla matches.
+        /// </summary>
+        Task InsertDonor(RawInputDonor donor);
+
+        /// <summary>
         /// If a donor with the given DonorId already exists, update the HLA and refresh the pre-processed matching groups.
         /// Otherwise, insert the donor and generate the matching groups.
         /// </summary>
@@ -58,6 +64,15 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public async Task<DonorResult> GetDonor(int donorId)
         {
             return (await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donorId))?.ToRawDonor();
+        }
+
+        public Task InsertDonor(RawInputDonor donor)
+        {
+            return Task.Run(async () =>
+            {
+                context.Donors.Add(donor.ToDonorEntity());
+                await context.SaveChangesAsync();
+            });
         }
 
         public async Task AddOrUpdateDonor(InputDonor donor)

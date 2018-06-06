@@ -54,23 +54,23 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             };
         }
 
-        public static DonorCosmosDocument FromInputDonor(InputDonor input)
+        public static DonorCosmosDocument FromRawInputDonor(RawInputDonor input)
         {
             return new DonorCosmosDocument
             {
                 Id = input.DonorId.ToString(),
                 RegistryCode = input.RegistryCode,
                 DonorType = input.DonorType,
-                A_1 = input.MatchingHla?.A_1?.Name,
-                A_2 = input.MatchingHla?.A_2?.Name,
-                B_1 = input.MatchingHla?.B_1?.Name,
-                B_2 = input.MatchingHla?.B_2?.Name,
-                C_1 = input.MatchingHla?.C_1?.Name,
-                C_2 = input.MatchingHla?.C_2?.Name,
-                Drb1_1 = input.MatchingHla?.DRB1_1?.Name,
-                Drb1_2 = input.MatchingHla?.DRB1_2?.Name,
-                Dqb1_1 = input.MatchingHla?.DQB1_1?.Name,
-                Dqb1_2 = input.MatchingHla?.DQB1_2?.Name,
+                A_1 = input.HlaNames?.A_1,
+                A_2 = input.HlaNames?.A_2,
+                B_1 = input.HlaNames?.B_1,
+                B_2 = input.HlaNames?.B_2,
+                C_1 = input.HlaNames?.C_1,
+                C_2 = input.HlaNames?.C_2,
+                Drb1_1 = input.HlaNames?.DRB1_1,
+                Drb1_2 = input.HlaNames?.DRB1_2,
+                Dqb1_1 = input.HlaNames?.DQB1_1,
+                Dqb1_2 = input.HlaNames?.DQB1_2
             };
         }
     }
