@@ -51,24 +51,23 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task ContinueDonorImport(int lastId)
         {
-            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {lastId} onwards", LogLevel.Trace);
+            var nextId = lastId;
 
-            var page = await donorServiceClient.GetDonors(DonorPageSize, lastId);
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+            var page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
 
-            if (page.Donors.Any())
+            while (page.Donors.Any())
             {
                 // TODO:NOVA-1170: Insert in batches for efficiency
                 // TODO:NOVA-1170: Log exceptions and continue to other donors
                 await Task.WhenAll(page.Donors.Select(InsertRawDonor));
 
-                var nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
+                logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+                nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
+                page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
+            }
 
-                await ContinueDonorImport(nextId);
-            }
-            else
-            {
-                logger.SendTrace("Donor import complete", LogLevel.Info);
-            }
+            logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
 
         private async Task InsertRawDonor(Donor donor)

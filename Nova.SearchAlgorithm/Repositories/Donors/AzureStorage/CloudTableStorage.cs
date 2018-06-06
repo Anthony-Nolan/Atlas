@@ -1,15 +1,10 @@
 ﻿using System;
-using AutoMapper;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Client.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 {
@@ -19,13 +14,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public const string MatchTableReference = "Matches";
         private readonly CloudTable donorTable;
         private readonly CloudTable matchTable;
-        private readonly IMapper mapper;
 
-        public CloudTableStorage(IMapper mapper, ICloudTableFactory cloudTableFactory)
+        public CloudTableStorage(ICloudTableFactory cloudTableFactory)
         {
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
             matchTable = cloudTableFactory.GetTable(MatchTableReference);
-            this.mapper = mapper;
         }
 
         public Task<int> HighestDonorId()
@@ -71,7 +64,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public Task<DonorResult> GetDonor(int donorId)
         {
             var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
-            return Task.Run(() => donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor(mapper)).FirstOrDefault());
+            return Task.Run(() => donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor()).FirstOrDefault());
         }
 
         public Task<IEnumerable<PotentialHlaMatchRelation>> GetMatchesForDonor(int donorId)
@@ -81,7 +74,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public async Task InsertDonor(InputDonor donor)
         {
-            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             await donorTable.ExecuteAsync(insertDonor);
 
             await UpdateDonorHlaMatches(donor);
@@ -92,13 +85,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public Task<IEnumerable<DonorResult>> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
-            return Task.FromResult(donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor(mapper)));
+            return Task.FromResult(donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor()));
         }
 
         public async Task UpdateDonorWithNewHla(InputDonor donor)
         {
             // Update the donor itself
-            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             await donorTable.ExecuteAsync(insertDonor);
 
             await UpdateDonorHlaMatches(donor);
