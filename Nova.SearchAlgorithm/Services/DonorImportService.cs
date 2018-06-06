@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.DonorService.Client;
@@ -66,7 +67,18 @@ namespace Nova.SearchAlgorithm.Services
 
         private async Task InsertDonor(Donor donor)
         {
-            await donorImportRepository.InsertDonor(donor.ToRawImportDonor());
+            try
+            {
+                await donorImportRepository.InsertDonor(donor.ToRawImportDonor());
+            }
+            catch (Exception e)
+            {
+                // Log the error clearly so we can grep them out and import... manually?
+                var message = $"Failed to import donor {donor.DonorId} with reason {e.Message}";
+                Trace.WriteLine(message);
+                logger.SendTrace(message, LogLevel.Error);
+                throw new DonorImportException(message, e);
+            }
         }
     }
 }
