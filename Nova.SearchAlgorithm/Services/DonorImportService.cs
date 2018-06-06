@@ -57,29 +57,25 @@ namespace Nova.SearchAlgorithm.Services
         public async Task ContinueDonorImport(int lastId)
         {
             var nextId = lastId;
-            while (true)
+
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+            var page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
+
+            while (page.Donors.Any())
             {
-                logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {lastId} onwards", LogLevel.Trace);
-
-                var page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
-
-                if (page.Donors.Any())
+                // TODO:NOVA-1170: Insert in batches for efficiency
+                // TODO:NOVA-1170: Log exceptions and continue to other donors
+                foreach (var donor in page.Donors)
                 {
-                    // TODO:NOVA-1170: Insert in batches for efficiency
-                    // TODO:NOVA-1170: Log exceptions and continue to other donors
-                    foreach (var donor in page.Donors)
-                    {
-                        await InsertRawDonor(donor);
-                    }
+                    await InsertRawDonor(donor);
+                }
 
-                    nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
-                }
-                else
-                {
-                    logger.SendTrace("Donor import complete", LogLevel.Info);
-                    break;
-                }
+                logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+                nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
+                page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
             }
+
+            logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
 
         private async Task InsertRawDonor(Donor donor)
