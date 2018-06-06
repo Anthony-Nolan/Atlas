@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 
 namespace Nova.SearchAlgorithm.Test.Integration

@@ -2,6 +2,7 @@
 using System.Linq;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Test.Builders;

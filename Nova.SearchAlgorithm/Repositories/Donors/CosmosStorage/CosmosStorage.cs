@@ -1,8 +1,7 @@
-﻿using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Client.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
 
@@ -53,11 +52,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         public async Task<DonorResult> GetDonor(int donorId)
         {
             return (await donorRepo.GetItemAsync(donorId.ToString())).ToDonorResult();
-        }
-
-        public async Task<IEnumerable<PotentialHlaMatchRelation>> GetMatchesForDonor(int donorId)
-        {
-            return (await AllMatchesForDonor(donorId)).Select(m => m.ToPotentialHlaMatchRelation(0));
         }
 
         public async Task InsertDonor(InputDonor donor)

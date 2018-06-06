@@ -1,6 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
 

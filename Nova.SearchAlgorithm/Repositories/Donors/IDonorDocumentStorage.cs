@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Models;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors
 {
