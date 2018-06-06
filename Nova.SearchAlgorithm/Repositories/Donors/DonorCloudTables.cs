@@ -56,13 +56,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         public const string MatchTableReference = "Matches";
         private readonly CloudTable donorTable;
         private readonly CloudTable matchTable;
-        private readonly IMapper mapper;
 
         public DonorCloudTables(IMapper mapper, ICloudTableFactory cloudTableFactory)
         {
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
             matchTable = cloudTableFactory.GetTable(MatchTableReference);
-            this.mapper = mapper;
         }
 
         public int HighestDonorId()
@@ -107,7 +105,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         public DonorResult GetDonor(int donorId)
         {
             var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
-            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor(mapper)).FirstOrDefault();
+            return donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor()).FirstOrDefault();
         }
 
         public IEnumerable<PotentialHlaMatchRelation> GetMatchesForDonor(int donorId)
@@ -117,7 +115,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public void InsertDonor(InputDonor donor)
         {
-            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             donorTable.Execute(insertDonor);
 
             UpdateDonorHlaMatches(donor);
@@ -128,13 +126,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         public IEnumerable<DonorResult> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
-            return donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor(mapper));
+            return donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor());
         }
 
         public void UpdateDonorWithNewHla(InputDonor donor)
         {
             // Update the donor itself
-            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity(mapper));
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             donorTable.Execute(insertDonor);
             UpdateDonorHlaMatches(donor);
         }

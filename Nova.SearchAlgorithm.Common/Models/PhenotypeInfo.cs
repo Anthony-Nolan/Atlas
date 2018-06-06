@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Common.Models
             return new PhenotypeInfo<R>
             {
                 A_1 = mapping(Locus.A, TypePositions.One, A_1),
-                A_2 = mapping(Locus.A, TypePositions.Two, A_1),
+                A_2 = mapping(Locus.A, TypePositions.Two, A_2),
                 B_1 = mapping(Locus.B, TypePositions.One, B_1),
                 B_2 = mapping(Locus.B, TypePositions.Two, B_2),
                 C_1 = mapping(Locus.C, TypePositions.One, C_1),
