@@ -9,30 +9,34 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public class CloudStorageDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
     {
-        private readonly IDonorCloudTables donorBlobRepository;
+        private readonly IDonorDocumentStorage donorDocumentRepository;
 
-        public CloudStorageDonorSearchRepository(IDonorCloudTables donorBlobRepository)
+        public CloudStorageDonorSearchRepository(IDonorDocumentStorage donorDocumentRepository)
         {
-            this.donorBlobRepository = donorBlobRepository;
+            this.donorDocumentRepository = donorDocumentRepository;
         }
 
         public Task<int> HighestDonorId()
         {
-            return Task.FromResult(donorBlobRepository.HighestDonorId());
+            return donorDocumentRepository.HighestDonorId();
         }
 
-        public IEnumerable<PotentialSearchResult> Search(DonorMatchCriteria matchRequest)
+        public async Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest)
         {
-            var matchesAtA = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA);
-            var matchesAtB = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.B, matchRequest.LocusMismatchB);
-            var matchesAtDrb1 = FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.Drb1, matchRequest.LocusMismatchDRB1);
+            var results = await Task.WhenAll(
+                FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA),
+                FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.B, matchRequest.LocusMismatchB),
+                FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.Drb1, matchRequest.LocusMismatchDRB1));
 
-            var matches = matchesAtA.Union(matchesAtB).Union(matchesAtDrb1)
+            var matchesAtA = results[0];
+            var matchesAtB = results[1];
+            var matchesAtDrb1 = results[2];
+
+            var matches = await Task.WhenAll(matchesAtA.Union(matchesAtB).Union(matchesAtDrb1)
                 .GroupBy(m => m.Key)
                 .Select(g => new PotentialSearchResult
                 {
-                    // TODO: can this extra query per donor be sped up?
-                    Donor = GetDonor(g.Key),
+                    Donor = new DonorResult { DonorId = g.Key },
                     TotalMatchCount = g.Sum(m => m.Value.MatchCount ?? 0),
                     MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key] : new LocusMatchDetails { MatchCount = 0 },
@@ -41,12 +45,20 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCount)
                 .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
                 .Where(m => m.MatchDetailsAtLocusB.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount)
-                .Where(m => m.MatchDetailsAtLocusDrb1.MatchCount >= 2 - matchRequest.LocusMismatchDRB1.MismatchCount);
+                .Where(m => m.MatchDetailsAtLocusDrb1.MatchCount >= 2 - matchRequest.LocusMismatchDRB1.MismatchCount)
+                .Select(async m =>
+                {
+                    // Augment each match with registry and other data from GetDonor(id)
+                    // Performance could be improved here, but at least it happens in parallel,
+                    // and only after filtering match results, not before.
+                    m.Donor = await GetDonor(m.Donor.DonorId);
+                    return m;
+                }));
             
             return matches;
         }
 
-        private IDictionary<int, LocusMatchDetails> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, DonorLocusMatchCriteria criteria)
+        private async Task<IDictionary<int, LocusMatchDetails>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, DonorLocusMatchCriteria criteria)
         {
             LocusSearchCriteria repoCriteria = new LocusSearchCriteria
             {
@@ -56,7 +68,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 HlaNamesToMatchInPositionTwo = criteria.HlaNamesToMatchInPositionTwo,
             };
 
-            var matches = donorBlobRepository.GetDonorMatchesAtLocus(locus, repoCriteria)
+            var matches = (await donorDocumentRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, LocusMatchFromGroup);
 
@@ -83,28 +95,26 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             };
         }
 
-        public DonorResult GetDonor(int donorId)
+        public Task<DonorResult> GetDonor(int donorId)
         {
-            return donorBlobRepository.GetDonor(donorId);
+            return donorDocumentRepository.GetDonor(donorId);
         }
 
         public Task AddOrUpdateDonor(InputDonor donor)
         {
-            donorBlobRepository.InsertDonor(donor);
-            return Task.CompletedTask;
+            return donorDocumentRepository.InsertDonor(donor);
         }
 
         // TODO:NOVA-937 This will be too many donors
         // Can we stream them in batches with IEnumerable?
-        public IEnumerable<DonorResult> AllDonors()
+        public Task<IEnumerable<DonorResult>> AllDonors()
         {
-            return donorBlobRepository.AllDonors();
+            return donorDocumentRepository.AllDonors();
         }
 
         public Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
-            donorBlobRepository.UpdateDonorWithNewHla(donor);
-            return Task.CompletedTask;
+            return donorDocumentRepository.UpdateDonorWithNewHla(donor);
         }
     }
 }

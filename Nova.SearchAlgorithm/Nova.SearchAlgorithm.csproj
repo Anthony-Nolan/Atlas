@@ -104,6 +104,9 @@
     <Reference Include="Microsoft.AspNet.TelemetryCorrelation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.TelemetryCorrelation.1.0.0\lib\net45\Microsoft.AspNet.TelemetryCorrelation.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.22.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.22.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
     </Reference>
@@ -252,6 +255,7 @@
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
+    <Compile Include="Exceptions\CloudStorageException.cs" />
     <Compile Include="Exceptions\DonorImportHttpException.cs" />
     <Compile Include="Exceptions\DonorImportException.cs" />
     <Compile Include="Exceptions\SearchHttpException.cs" />
@@ -259,20 +263,34 @@
     <Compile Include="MatchingDictionaryConversions\MatchLocusExtensions.cs" />
     <Compile Include="MatchingDictionaryConversions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
+    <Compile Include="Repositories\Donors\CosmosStorage\CosmosStorage.cs" />
+    <Compile Include="Repositories\Donors\CosmosStorage\DocumentDBRepository.cs" />
+    <Compile Include="Repositories\Donors\CosmosStorage\DonorCosmosDocument.cs" />
+    <Compile Include="Repositories\Donors\CosmosStorage\PotentialHlaMatchRelationCosmosDocument.cs" />
+    <Compile Include="Repositories\Donors\MatchingHlaExtensions.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\TableQueryExtensions.cs" />
+    <Compile Include="Repositories\Donors\IDonorDocumentStorage.cs" />
     <Compile Include="Repositories\Donors\PotentialHlaMatchRelation.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />
     <Compile Include="Repositories\Donors\CloudStorageDonorSearchRepository.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
-    <Compile Include="Repositories\Donors\DonorCloudTables.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\CloudTableStorage.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\PotentialHlaMatchRelationTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
+    <Compile Include="Repositories\ICloudTableFactory.cs" />
+    <Compile Include="Repositories\ISolarDonorRepository.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
+    <Compile Include="Services\ITestDataService.cs" />
     <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Scoring\CalculateScore.cs" />
+    <Compile Include="Services\DonorExtensions.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />
+    <Compile Include="Services\IDonorImportService.cs" />
+    <Compile Include="Services\IHlaUpdateService.cs" />
+    <Compile Include="Services\ISearchService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImportService.cs" />
     <Compile Include="Startup.cs" />
@@ -346,7 +364,9 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets'))" />
   </Target>
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

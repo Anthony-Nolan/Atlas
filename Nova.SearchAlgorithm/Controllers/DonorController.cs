@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public DonorResult GetDonor(int id)
+        public Task<DonorResult> GetDonor(int id)
         {
             var donor = donorRepository.GetDonor(id);
             if (donor == null)

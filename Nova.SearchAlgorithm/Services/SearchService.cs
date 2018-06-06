@@ -11,11 +11,6 @@ using Nova.SearchAlgorithm.Scoring;
 
 namespace Nova.SearchAlgorithm.Services
 {
-    public interface ISearchService
-    {
-        Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest);
-    }
-
     public class SearchService : ISearchService
     {
         private readonly IDonorSearchRepository donorRepository;
@@ -31,19 +26,26 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest)
         {
-            DonorMatchCriteria criteria = new DonorMatchCriteria
+            var criteriaMappings = await Task.WhenAll(
+                MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
+                MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
+                MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
+                MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
+                MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1));
+
+            var criteria = new DonorMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
-                LocusMismatchA = await MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
-                LocusMismatchB = await MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
-                LocusMismatchC = await MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
-                LocusMismatchDRB1 = await MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
-                LocusMismatchDQB1 = await MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1),
+                LocusMismatchA = criteriaMappings[0],
+                LocusMismatchB = criteriaMappings[1],
+                LocusMismatchC = criteriaMappings[2],
+                LocusMismatchDRB1 = criteriaMappings[3],
+                LocusMismatchDQB1 = criteriaMappings[4]
             };
 
-            var threeLociMatches = donorRepository.Search(criteria);
+            var threeLociMatches = await donorRepository.Search(criteria);
 
             var fiveLociMatches = threeLociMatches.Select(AddMatchCounts(criteria)).Where(FilterByMismatchCriteria(criteria));
 
@@ -59,14 +61,15 @@ namespace Nova.SearchAlgorithm.Services
                 return null;
             }
 
-            var hla1 = lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1);
-            var hla2 = lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2);
+            var lookupResult = await Task.WhenAll(
+                lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1),
+                lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2));
 
             return new DonorLocusMatchCriteria
             {
                 MismatchCount = mismatch.MismatchCount,
-                HlaNamesToMatchInPositionOne = (await hla1).MatchingPGroups,
-                HlaNamesToMatchInPositionTwo = (await hla2).MatchingPGroups,
+                HlaNamesToMatchInPositionOne = lookupResult[0].MatchingPGroups,
+                HlaNamesToMatchInPositionTwo = lookupResult[1].MatchingPGroups,
             };
         }
 

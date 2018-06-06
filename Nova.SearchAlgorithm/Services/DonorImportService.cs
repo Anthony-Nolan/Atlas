@@ -12,11 +12,6 @@ using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
-    public interface IDonorImportService
-    {
-        Task StartDonorImport();
-    }
-
     public class DonorImportService : IDonorImportService
     {
         // TODO:NOVA-1170 for now just import 10. Increase batch size later.
@@ -65,10 +60,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 // TODO:NOVA-1170: Insert in batches for efficiency
                 // TODO:NOVA-1170: Log exceptions and continue to other donors
-                foreach (var donor in page.Donors)
-                {
-                    await InsertRawDonor(donor);
-                }
+                await Task.WhenAll(page.Donors.Select(InsertRawDonor));
 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
                 nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
@@ -104,7 +96,7 @@ namespace Nova.SearchAlgorithm.Services
                 DRB1_2 = donor.DRB1_2
             };
 
-            return donorHla.WhenAll(LookupMatchingHla);
+            return donorHla.WhenAllPositions((l, p, h) => LookupMatchingHla(l, h));
         }
 
         private async Task<ExpandedHla> LookupMatchingHla(Locus locus, string hla)

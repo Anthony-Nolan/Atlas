@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Autofac;
 using FluentAssertions;
@@ -23,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         }
         
         [Test]
-        public void ImportThenRetrieveDonor()
+        public async Task ImportThenRetrieveDonor()
         {
             const int donorId = 231;
             InputDonor original = new InputDonor
@@ -42,9 +43,9 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 }
             };
 
-            importRepo.AddOrUpdateDonor(original).Wait();
+            await importRepo.AddOrUpdateDonor(original);
 
-            DonorResult result = inspectionRepo.GetDonor(donorId);
+            DonorResult result = await inspectionRepo.GetDonor(donorId);
 
             result.DonorId.Should().Be(donorId);
             result.DonorType.Should().Be(original.DonorType);

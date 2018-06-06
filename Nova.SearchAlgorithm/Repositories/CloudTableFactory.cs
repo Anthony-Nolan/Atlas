@@ -4,11 +4,6 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Nova.SearchAlgorithm.Repositories
 {
-    public interface ICloudTableFactory
-    {
-        CloudTable GetTable(string tableReferenceString);
-    }
-
     public class CloudTableFactory : ICloudTableFactory
     {
         public CloudTable GetTable(string tableReferenceString)

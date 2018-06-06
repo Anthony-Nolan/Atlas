@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Repositories.Donors;
+using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
@@ -12,8 +12,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
     {
         private readonly string StorageEmulatorLocation = ConfigurationManager.AppSettings["emulatorLocation"];
 
-        private readonly Lazy<CloudTable> donorTable = new Lazy<CloudTable>(() => GetTable(DonorCloudTables.DonorTableReference));
-        private readonly Lazy<CloudTable> matchTable = new Lazy<CloudTable>(() => GetTable(DonorCloudTables.MatchTableReference));
+        private readonly Lazy<CloudTable> donorTable = new Lazy<CloudTable>(() => GetTable(CloudTableStorage.DonorTableReference));
+        private readonly Lazy<CloudTable> matchTable = new Lazy<CloudTable>(() => GetTable(CloudTableStorage.MatchTableReference));
 
         public void Start()
         {
