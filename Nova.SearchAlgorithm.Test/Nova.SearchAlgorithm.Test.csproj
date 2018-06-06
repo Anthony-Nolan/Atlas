@@ -299,6 +299,7 @@
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryLookup.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\RawMatchingHla.cs" />
+    <Compile Include="Integration\DonorStorageTests.cs" />
     <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\StorageSetup.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
