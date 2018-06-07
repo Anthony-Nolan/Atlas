@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         /// </summary>
         Task RefreshMatchingGroupsForExistingDonor(InputDonor donor);
         Task<DonorResult> GetDonor(int donorId);
-        Task<IEnumerable<DonorResult>> AllDonors();
+        IBatchQueryAsync<DonorResult> AllDonors();
         Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria);
         Task<int> HighestDonorId();
     }

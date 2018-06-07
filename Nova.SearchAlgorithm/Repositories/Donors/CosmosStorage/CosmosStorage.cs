@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Documents.Linq;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
@@ -9,12 +13,34 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
 {
     public class CosmosStorage : IDonorDocumentStorage
     {
-        private DocumentDBRepository<PotentialHlaMatchRelationCosmosDocument> matchRepo = new DocumentDBRepository<PotentialHlaMatchRelationCosmosDocument>();
-        private DocumentDBRepository<DonorCosmosDocument> donorRepo = new DocumentDBRepository<DonorCosmosDocument>();
+        private readonly string DatabaseId = ConfigurationManager.AppSettings["cosmos.database"];
+        private readonly DocumentClient client;
+
+        public CosmosStorage()
+        {
+            client = new DocumentClient(new Uri(ConfigurationManager.AppSettings["cosmos.endpoint"]), ConfigurationManager.AppSettings["cosmos.authKey"]);
+            client.CreateDatabaseIfNotExistsAsync().Wait();
+            client.CreateCollectionIfNotExistsAsync<DonorCosmosDocument>().Wait();
+            client.CreateCollectionIfNotExistsAsync<PotentialHlaMatchRelationCosmosDocument>().Wait();
+        }
 
         public async Task<int> HighestDonorId()
         {
-            var stringId = await donorRepo.GetHighestValueOfProperty(d => d.Id);
+            var query = client.CreateDocumentQuery<DonorCosmosDocument>(
+                    UriFactory.CreateDocumentCollectionUri(DatabaseId, client.CollectionId<DonorCosmosDocument>()),
+                    new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true })
+                .OrderByDescending(d => d.Id)
+                .Take(1)
+                .AsDocumentQuery();
+
+            if (!query.HasMoreResults)
+            {
+                return 0;
+            }
+
+            var firstResults = await query.ExecuteNextAsync<DonorCosmosDocument>();
+            var stringId = firstResults.First().Id;
+
             if (int.TryParse(stringId, out var donorIdResult))
             {
                 return donorIdResult;
@@ -45,36 +71,39 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 return Enumerable.Empty<PotentialHlaMatchRelationCosmosDocument>();
             }
 
-            return await matchRepo.GetItemsAsync(p =>
+            return await client.GetItemsAsync<PotentialHlaMatchRelationCosmosDocument>(p =>
                 p.Locus == locus && namesToMatchList.Contains(p.Name));
         }
 
         public async Task<DonorResult> GetDonor(int donorId)
         {
-            return (await donorRepo.GetItemAsync(donorId.ToString())).ToDonorResult();
+            return (await client.GetItemAsync<DonorCosmosDocument>(donorId.ToString())).ToDonorResult();
         }
 
         public async Task InsertDonor(RawInputDonor donor)
         {
-            await donorRepo.CreateItemAsync(DonorCosmosDocument.FromRawInputDonor(donor));
+            await client.CreateItemAsync(DonorCosmosDocument.FromRawInputDonor(donor));
         }
 
-        // TODO:NOVA-939 This will be too many donors
-        // Can we stream them in batches with IEnumerable?
-        public async Task<IEnumerable<DonorResult>> AllDonors()
+        public IBatchQueryAsync<DonorResult> AllDonors()
         {
-            return (await donorRepo.GetItemsAsync(d => true)).Select(d => d.ToDonorResult());
+            IDocumentQuery<DonorCosmosDocument> query = client.CreateDocumentQuery<DonorCosmosDocument>(
+                    UriFactory.CreateDocumentCollectionUri(DatabaseId, client.CollectionId<DonorCosmosDocument>()),
+                    new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true,  })
+                .AsDocumentQuery();
+
+            return new CosmosDonorResultBatchQueryAsync(query);
         }
 
         private Task<IEnumerable<PotentialHlaMatchRelationCosmosDocument>> AllMatchesForDonor(int donorId)
         {
-            return matchRepo.GetItemsAsync(p => p.DonorId == donorId);
+            return client.GetItemsAsync<PotentialHlaMatchRelationCosmosDocument>(p => p.DonorId == donorId);
         }
 
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             // Update the donor itself
-            await donorRepo.UpdateItemAsync(donor.DonorId.ToString(), DonorCosmosDocument.FromRawInputDonor(donor.ToRawInputDonor()));
+            await client.UpdateItemAsync(donor.DonorId.ToString(), DonorCosmosDocument.FromRawInputDonor(donor.ToRawInputDonor()));
             await UpdateDonorHlaMatches(donor);
         }
 
@@ -83,7 +112,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             // First delete all the old matches
             var matches = await AllMatchesForDonor(donor.DonorId);
             await Task.WhenAll(matches.Select(m =>
-                matchRepo.DeleteItemAsync(m.Id)));
+                client.DeleteItemAsync<PotentialHlaMatchRelationCosmosDocument>(m.Id)));
 
             // Add back the new matches
             await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
@@ -112,7 +141,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                     typePositions |= TypePositions.Two;
                 }
                 
-                return matchRepo.CreateItemAsync(
+                return client.CreateItemAsync(
                     new PotentialHlaMatchRelationCosmosDocument
                     {
                         DonorId = donorId,

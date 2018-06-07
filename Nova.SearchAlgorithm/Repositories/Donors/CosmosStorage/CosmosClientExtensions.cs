@@ -10,25 +10,24 @@ using Microsoft.Azure.Documents.Linq;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
 {
-    public class DocumentDBRepository<T> where T : class
+    /// <summary>
+    /// Useful, generic extensions that capture common cosmos operations.
+    /// </summary>
+    public static class CosmosClientExtensions
     {
-        private readonly string DatabaseId = ConfigurationManager.AppSettings["cosmos.database"];
-        private readonly string CollectionId = typeof(T).FullName;
-        private readonly DocumentClient client;
+        private static string DatabaseId = ConfigurationManager.AppSettings["cosmos.database"];
 
-        public DocumentDBRepository()
+        public static string CollectionId<T>(this DocumentClient client)
         {
-            client = new DocumentClient(new Uri(ConfigurationManager.AppSettings["cosmos.endpoint"]), ConfigurationManager.AppSettings["cosmos.authKey"]);
-            CreateDatabaseIfNotExistsAsync().Wait();
-            CreateCollectionIfNotExistsAsync().Wait();
+            return typeof(T).FullName;
         }
 
-        public async Task<T> GetItemAsync(string id)
+        public static async Task<T> GetItemAsync<T>(this DocumentClient client, string id) where T : class
         {
             try
             {
                 Document document =
-                    await client.ReadDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id));
+                    await client.ReadDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, client.CollectionId<T>(), id));
                 return (T)(dynamic)document;
             }
             catch (DocumentClientException e)
@@ -44,10 +43,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             }
         }
 
-        public async Task<IEnumerable<T>> GetItemsAsync(Expression<Func<T, bool>> predicate)
+        public static async Task<IEnumerable<T>> GetItemsAsync<T>(this DocumentClient client, Expression<Func<T, bool>> predicate) where T : class
         {
             IDocumentQuery<T> query = client.CreateDocumentQuery<T>(
-                UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId),
+                UriFactory.CreateDocumentCollectionUri(DatabaseId, client.CollectionId<T>()),
                 new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true })
                 .Where(predicate)
                 .AsDocumentQuery();
@@ -61,40 +60,22 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return results;
         }
 
-        public async Task<Document> CreateItemAsync(T item)
+        public static async Task<Document> CreateItemAsync<T>(this DocumentClient client, T item) where T : class
         {
-            return await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId), item);
+            return await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseId, client.CollectionId<T>()), item);
         }
 
-        public async Task<Document> UpdateItemAsync(string id, T item)
+        public static async Task<Document> UpdateItemAsync<T>(this DocumentClient client, string id, T item) where T : class
         {
-            return await client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id), item);
+            return await client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, client.CollectionId<T>(), id), item);
         }
 
-        public async Task DeleteItemAsync(string id)
+        public static async Task DeleteItemAsync<T>(this DocumentClient client, string id) where T : class
         {
-            await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id));
+            await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, client.CollectionId<T>(), id));
         }
 
-        public async Task<R> GetHighestValueOfProperty<R>(Expression<Func<T, R>> property)
-        {
-            IDocumentQuery<T> query = client.CreateDocumentQuery<T>(
-                    UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId),
-                    new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true })
-                .OrderByDescending(property)
-                .Take(1)
-                .AsDocumentQuery();
-
-            List<T> results = new List<T>();
-            while (query.HasMoreResults)
-            {
-                results.AddRange(await query.ExecuteNextAsync<T>());
-            }
-
-            return results.AsQueryable().Select(property).FirstOrDefault();
-        }
-
-        private async Task CreateDatabaseIfNotExistsAsync()
+        public static async Task CreateDatabaseIfNotExistsAsync(this DocumentClient client)
         {
             try
             {
@@ -113,8 +94,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             }
         }
 
-        private async Task CreateCollectionIfNotExistsAsync()
+        public static async Task CreateCollectionIfNotExistsAsync<T>(this DocumentClient client) where T : class
         {
+            var CollectionId = client.CollectionId<T>();
             try
             {
                 await client.ReadDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId));

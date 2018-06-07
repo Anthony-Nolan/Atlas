@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Scoring
 {
     public interface ICalculateScore
     {
-        Task<PotentialSearchResult> Score(DonorMatchCriteria searchCriteria, PotentialSearchResult potentialMatch);
+        Task<PotentialSearchResult> Score(AlleleLevelMatchCriteria searchCriteria, PotentialSearchResult potentialMatch);
     }
 
     public class CalculateScore : ICalculateScore
@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Scoring
         {
         }
 
-        public Task<PotentialSearchResult> Score(DonorMatchCriteria searchCriteria, PotentialSearchResult potentialMatch)
+        public Task<PotentialSearchResult> Score(AlleleLevelMatchCriteria searchCriteria, PotentialSearchResult potentialMatch)
         {
             // TODO:NOVA-930 (write tests and) implement
             return Task.FromResult(potentialMatch);

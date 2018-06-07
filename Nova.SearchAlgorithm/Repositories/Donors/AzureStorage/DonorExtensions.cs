@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             };
         }
 
-        internal static DonorResult ToRawDonor(this DonorTableEntity result)
+        internal static DonorResult ToDonorResult(this DonorTableEntity result)
         {
             var donorResult = new DonorResult
             {

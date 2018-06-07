@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
 {
     public class MatchingTests : IntegrationTestBase
     {
-        private DonorMatchCriteria searchCriteria;
+        private AlleleLevelMatchCriteria searchCriteria;
 
         private IDonorSearchRepository searchRepo;
 
@@ -134,24 +134,24 @@ namespace Nova.SearchAlgorithm.Test.Integration
         [SetUp]
         public void ResetSearchCriteria()
         {
-            searchCriteria = new DonorMatchCriteria
+            searchCriteria = new AlleleLevelMatchCriteria
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
                 DonorMismatchCount = 0,
-                LocusMismatchA = new DonorLocusMatchCriteria
+                LocusMismatchA = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
                     HlaNamesToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
                     HlaNamesToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
                 },
-                LocusMismatchB = new DonorLocusMatchCriteria
+                LocusMismatchB = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
                     HlaNamesToMatchInPositionOne = new List<string> { "07:02P" },
                     HlaNamesToMatchInPositionTwo = new List<string> { "08:01P" }
                 },
-                LocusMismatchDRB1 = new DonorLocusMatchCriteria
+                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
                     HlaNamesToMatchInPositionOne = new List<string> { "01:11P" },
@@ -160,7 +160,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             };
         }
 
-        private List<PotentialSearchResult> Search(DonorMatchCriteria criteria)
+        private List<PotentialSearchResult> Search(AlleleLevelMatchCriteria criteria)
         {
             var task = searchRepo.Search(criteria);
             task.Wait();

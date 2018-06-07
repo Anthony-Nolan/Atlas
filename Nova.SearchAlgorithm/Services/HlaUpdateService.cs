@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
@@ -21,18 +22,28 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task UpdateDonorHla()
         {
-            await Task.WhenAll((await donorInspectionRepository.AllDonors()).Select(donor =>
+            var batch = donorInspectionRepository.AllDonors();
+
+            while (batch.HasMoreResults)
             {
-                var update = new InputDonor
-                {
-                    DonorId = donor.DonorId,
-                    DonorType = donor.DonorType,
-                    RegistryCode = donor.RegistryCode,
-                    MatchingHla = donor.HlaNames.Map((l, p, n) =>
-                        n == null ? null : lookupService.GetMatchingHla(l.ToMatchLocus(), n).Result.ToExpandedHla())
-                };
-                return donorImportRepository.RefreshMatchingGroupsForExistingDonor(update);
-            }));
+                var results = await batch.RequestNextAsync();
+
+                await Task.WhenAll(results.Select(UpdateSingleDonorHlaAsync));
+            }
+        }
+
+        private async Task UpdateSingleDonorHlaAsync(DonorResult donor)
+        {
+            var update = new InputDonor
+            {
+                DonorId = donor.DonorId,
+                DonorType = donor.DonorType,
+                RegistryCode = donor.RegistryCode,
+                MatchingHla = (await donor.HlaNames
+                                  .WhenAllPositions((l, p, n) => n == null ? null : lookupService.GetMatchingHla(l.ToMatchLocus(), n))
+                              ).Map((l, p, n) => n.ToExpandedHla())
+            };
+            await donorImportRepository.RefreshMatchingGroupsForExistingDonor(update);
         }
     }
 }

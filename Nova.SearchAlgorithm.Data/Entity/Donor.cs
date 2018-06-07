@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
         public string DQB1_1 { get; set; }
         public string DQB1_2 { get; set; }
 
-        public DonorResult ToRawDonor()
+        public DonorResult ToDonorResult()
         {
             return new DonorResult
             {

@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     public interface IDonorInspectionRepository
     {
         Task<int> HighestDonorId();
-        Task<IEnumerable<DonorResult>> AllDonors();
+        IBatchQueryAsync<DonorResult> AllDonors();
         Task<DonorResult> GetDonor(int donorId);
     }
 
@@ -56,14 +56,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<DonorResult>> AllDonors()
+        public IBatchQueryAsync<DonorResult> AllDonors()
         {
-            return (await context.Donors.ToListAsync()).Select(d => d.ToRawDonor());
+            return new SqlDonorBatchQueryAsync(context.Donors);
         }
 
         public async Task<DonorResult> GetDonor(int donorId)
         {
-            return (await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donorId))?.ToRawDonor();
+            return (await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donorId))?.ToDonorResult();
         }
 
         public Task InsertDonor(RawInputDonor donor)

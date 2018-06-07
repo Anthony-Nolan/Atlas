@@ -12,8 +12,7 @@ namespace Nova.SearchAlgorithm.Services
 {
     public class DonorImportService : IDonorImportService
     {
-        // TODO:NOVA-1170 for now just import 10. Increase batch size later.
-        private const int DonorPageSize = 10;
+        private const int DonorPageSize = 200;
 
         private readonly IDonorInspectionRepository donorInspectionRespository;
         private readonly IDonorImportRepository donorImportRepository;
@@ -40,7 +39,7 @@ namespace Nova.SearchAlgorithm.Services
             }
             catch (Exception ex)
             {
-                throw new DonorImportHttpException("Unable to complete donor import.", ex);
+                throw new DonorImportHttpException("Unable to complete donor import: " + ex.Message, ex);
             }
         }
 
@@ -53,8 +52,6 @@ namespace Nova.SearchAlgorithm.Services
 
             while (page.Donors.Any())
             {
-                // TODO:NOVA-1170: Insert in batches for efficiency
-                // TODO:NOVA-1170: Log exceptions and continue to other donors
                 await Task.WhenAll(page.Donors.Select(InsertDonor));
 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);

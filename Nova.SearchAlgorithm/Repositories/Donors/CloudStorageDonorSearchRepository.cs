@@ -111,9 +111,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             await donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
 
-        // TODO:NOVA-937 This will be too many donors
-        // Can we stream them in batches with IEnumerable?
-        public Task<IEnumerable<DonorResult>> AllDonors()
+        public IBatchQueryAsync<DonorResult> AllDonors()
         {
             return donorDocumentRepository.AllDonors();
         }
