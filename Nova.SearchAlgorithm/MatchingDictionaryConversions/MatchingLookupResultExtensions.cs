@@ -1,10 +1,7 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.MatchingDictionaryConversions
 {
     public static class MatchingLookupResultExtensions
     {

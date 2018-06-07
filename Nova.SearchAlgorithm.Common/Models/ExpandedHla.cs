@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Data.Models
+namespace Nova.SearchAlgorithm.Common.Models
 {
     public class ExpandedHla
     {

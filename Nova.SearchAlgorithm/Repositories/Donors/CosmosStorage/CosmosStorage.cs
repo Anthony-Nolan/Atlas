@@ -103,7 +103,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             // Update the donor itself
-            await client.UpdateItemAsync(donor.DonorId.ToString(), DonorCosmosDocument.FromRawInputDonor(donor.ToRawInputDonor()));
+            await client.UpdateItemAsync(donor.DonorId.ToString(), DonorCosmosDocument.FromInputDonor(donor));
             await UpdateDonorHlaMatches(donor);
         }
 

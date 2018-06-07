@@ -10,5 +10,7 @@
         public RegistryCode RegistryCode { get; set; }
 
         public PhenotypeInfo<string> HlaNames { get; set; }
+
+        public PhenotypeInfo<ExpandedHla> MatchingHla { get; set; }
     }
 }

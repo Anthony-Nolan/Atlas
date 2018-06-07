@@ -279,7 +279,7 @@
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\CloudTableStorage.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\PotentialHlaMatchRelationTableEntity.cs" />
-    <Compile Include="Repositories\Donors\AzureStorage\DonorExtensions.cs" />
+    <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntityExtensions.cs" />
     <Compile Include="Repositories\ICloudTableFactory.cs" />
     <Compile Include="Repositories\ISolarDonorRepository.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />

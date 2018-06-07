@@ -30,7 +30,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 DonorId = donorId,
                 DonorType = DonorType,
                 RegistryCode = RegistryCode,
-                HlaNames = HlaNames
+                HlaNames = HlaNames,
+                MatchingHla = MatchingHla
             };
         }
 
