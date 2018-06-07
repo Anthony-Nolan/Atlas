@@ -90,7 +90,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             };
         }
 
-        private List<PotentialSearchResult> Search(DonorMatchCriteria criteria)
+        private List<PotentialSearchResult> Search(AlleleLevelMatchCriteria criteria)
         {
             var task = repositoryUnderTest.Search(criteria);
             task.Wait();

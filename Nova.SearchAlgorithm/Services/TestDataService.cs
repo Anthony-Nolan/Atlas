@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -70,7 +69,6 @@ namespace Nova.SearchAlgorithm.Services
             });
         }
 
-        // TODO:NOVA-919 extract to a spreadsheet-backed repository if this stays
         private string SpreadsheetContents()
         {
             Assembly assem = this.GetType().Assembly;
@@ -109,7 +107,6 @@ namespace Nova.SearchAlgorithm.Services
                     }
                 });
 
-            // TODO:NOVA-919 batch import
             foreach (RawInputDonor donor in spreadsheetDonors)
             {
                 InsertSingleRawDonor(donor);

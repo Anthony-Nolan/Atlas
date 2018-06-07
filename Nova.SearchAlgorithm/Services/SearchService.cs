@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Services
                 MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
                 MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1));
 
-            var criteria = new DonorMatchCriteria
+            var criteria = new AlleleLevelMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Services
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }
 
-        private async Task<DonorLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
+        private async Task<AlleleLevelLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
         {
             if (mismatch == null)
             {
@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Services
                 lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1),
                 lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2));
 
-            return new DonorLocusMatchCriteria
+            return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatch.MismatchCount,
                 HlaNamesToMatchInPositionOne = lookupResult[0].MatchingPGroups,
@@ -73,13 +73,13 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(DonorMatchCriteria criteria)
+        private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(AlleleLevelMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
             return m => m;
         }
 
-        private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(DonorMatchCriteria criteria)
+        private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(AlleleLevelMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
             return m => true;

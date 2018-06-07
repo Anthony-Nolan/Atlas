@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
 {
     public class DonorMatchCriteriaBuilder
     {
-        private DonorMatchCriteria request = new DonorMatchCriteria()
+        private AlleleLevelMatchCriteria request = new AlleleLevelMatchCriteria()
         {
             RegistriesToSearch = new List<RegistryCode> {
                 RegistryCode.AN, RegistryCode.DKMS, RegistryCode.FRANCE, RegistryCode.NHSBT, RegistryCode.NMDP, RegistryCode.WBS
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
 
         public DonorMatchCriteriaBuilder WithLocusMismatchA(IEnumerable<string> hla1, IEnumerable<string> hla2, int mismatchCount)
         {
-            request.LocusMismatchA = new DonorLocusMatchCriteria
+            request.LocusMismatchA = new AlleleLevelLocusMatchCriteria
             {
                 HlaNamesToMatchInPositionOne = hla1,
                 HlaNamesToMatchInPositionTwo = hla2,
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
         }
         public DonorMatchCriteriaBuilder WithLocusMismatchB(IEnumerable<string> hla1, IEnumerable<string> hla2, int mismatchCount)
         {
-            request.LocusMismatchB = new DonorLocusMatchCriteria
+            request.LocusMismatchB = new AlleleLevelLocusMatchCriteria
             {
                 HlaNamesToMatchInPositionOne = hla1,
                 HlaNamesToMatchInPositionTwo = hla2,
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
 
         public DonorMatchCriteriaBuilder WithLocusMismatchDRB1(IEnumerable<string> hla1, IEnumerable<string> hla2, int mismatchCount)
         {
-            request.LocusMismatchDRB1 = new DonorLocusMatchCriteria
+            request.LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
             {
                 HlaNamesToMatchInPositionOne = hla1,
                 HlaNamesToMatchInPositionTwo = hla2,
@@ -69,7 +69,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
             return this;
         }
 
-        public DonorMatchCriteria Build()
+        public AlleleLevelMatchCriteria Build()
         {
             return request;
         }

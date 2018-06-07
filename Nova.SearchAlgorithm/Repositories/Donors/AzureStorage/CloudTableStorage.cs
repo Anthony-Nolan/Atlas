@@ -73,8 +73,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             await donorTable.ExecuteAsync(insertDonor);
         }
 
-        // TODO:NOVA-939 This will be too many donors
-        // Can we stream them in batches with IEnumerable?
         public IBatchQueryAsync<DonorResult> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
