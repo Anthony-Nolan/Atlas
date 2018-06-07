@@ -24,9 +24,15 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             // TODO:NOVA-1151 remove any dependency on Solar
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             if (ConfigurationManager.AppSettings["backend.implementation"] == "table")
             {
                 builder.RegisterType<Repositories.Donors.AzureStorage.CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            }
+            else if (ConfigurationManager.AppSettings["backend.implementation"] == "cosmos")
+            {
+                builder.RegisterType<Repositories.Donors.CosmosStorage.CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
                 builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
 
