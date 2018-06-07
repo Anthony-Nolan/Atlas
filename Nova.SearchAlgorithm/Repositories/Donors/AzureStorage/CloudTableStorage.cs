@@ -64,12 +64,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public Task<DonorResult> GetDonor(int donorId)
         {
             var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
-            return Task.Run(() => donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToRawDonor()).FirstOrDefault());
-        }
-
-        public Task<IEnumerable<PotentialHlaMatchRelation>> GetMatchesForDonor(int donorId)
-        {
-            return Task.FromResult(AllMatchesForDonor(donorId).Select(m => m.ToPotentialHlaMatchRelation(0)));
+            return Task.Run(() => donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToDonorResult()).FirstOrDefault());
         }
 
         public async Task InsertDonor(RawInputDonor donor)
@@ -80,10 +75,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         // TODO:NOVA-939 This will be too many donors
         // Can we stream them in batches with IEnumerable?
-        public Task<IEnumerable<DonorResult>> AllDonors()
+        public IBatchQueryAsync<DonorResult> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
-            return Task.FromResult(donorTable.ExecuteQuery(query).Select(dte => dte.ToRawDonor()));
+            return new CloudTableDonorBatchQueryAsync(query, donorTable);
         }
 
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)

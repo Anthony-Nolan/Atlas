@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Services
     public class DonorImportService : IDonorImportService
     {
         // TODO:NOVA-1170 for now just import 10. Increase batch size later.
-        private const int DonorPageSize = 10;
+        private const int DonorPageSize = 200;
 
         private readonly IDonorInspectionRepository donorInspectionRespository;
         private readonly IDonorImportRepository donorImportRepository;
