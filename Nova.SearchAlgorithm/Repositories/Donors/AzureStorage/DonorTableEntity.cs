@@ -20,6 +20,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public string DRB1_1 { get; set; }
         public string DRB1_2 { get; set; }
 
+        // We expand these into individual fields, as the hla names can be long,
+        // and table columns have a 64kb limit.
         public string ExpandedA_1 { get; set; }
         public string ExpandedA_2 { get; set; }
         public string ExpandedB_1 { get; set; }
