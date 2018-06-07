@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.HighestDonorId();
         }
 
-        public async Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest)
+        public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest)
         {
             var results = await Task.WhenAll(
                 FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA),
@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return matches;
         }
 
-        private async Task<IDictionary<int, LocusMatchDetails>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, DonorLocusMatchCriteria criteria)
+        private async Task<IDictionary<int, LocusMatchDetails>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
         {
             LocusSearchCriteria repoCriteria = new LocusSearchCriteria
             {

@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public interface IDonorSearchRepository
     {
-        Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest);
+        Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest);
     }
 
     public interface IDonorImportRepository
@@ -138,7 +138,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return newPGroup;
         }
 
-        public Task<IEnumerable<PotentialSearchResult>> Search(DonorMatchCriteria matchRequest)
+        public Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest)
         {
             string sql = $@"SELECT DonorId, SUM(MatchCount) AS TotalMatchCount
 FROM (
@@ -180,7 +180,7 @@ ORDER BY TotalMatchCount DESC";
                 context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult()));
         }
 
-        private string SelectForLocus(Locus locus, DonorLocusMatchCriteria mismatch, TypePositions typePosition)
+        private string SelectForLocus(Locus locus, AlleleLevelLocusMatchCriteria mismatch, TypePositions typePosition)
         {
             var names = typePosition.Equals(TypePositions.One) ? mismatch.HlaNamesToMatchInPositionOne : mismatch.HlaNamesToMatchInPositionTwo;
             return $@"SELECT d.DonorId, '{locus.ToString().ToUpper()}' as Locus, d.TypePosition AS GvH, {(int)typePosition} AS HvG
