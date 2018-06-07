@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Services
             }
             catch (Exception ex)
             {
-                throw new DonorImportHttpException("Unable to complete donor import.", ex);
+                throw new DonorImportHttpException("Unable to complete donor import: " + ex.Message, ex);
             }
         }
 
