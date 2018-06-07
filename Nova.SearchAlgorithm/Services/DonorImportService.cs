@@ -1,13 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
@@ -19,20 +17,17 @@ namespace Nova.SearchAlgorithm.Services
 
         private readonly IDonorInspectionRepository donorInspectionRespository;
         private readonly IDonorImportRepository donorImportRepository;
-        private readonly IMatchingDictionaryLookupService lookupService;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImportService(
             IDonorInspectionRepository donorInspectionRespository,
             IDonorImportRepository donorImportRepository,
-            IMatchingDictionaryLookupService lookupService,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
             this.donorInspectionRespository = donorInspectionRespository;
             this.donorImportRepository = donorImportRepository;
-            this.lookupService = lookupService;
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
         }
@@ -60,7 +55,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 // TODO:NOVA-1170: Insert in batches for efficiency
                 // TODO:NOVA-1170: Log exceptions and continue to other donors
-                await Task.WhenAll(page.Donors.Select(InsertRawDonor));
+                await Task.WhenAll(page.Donors.Select(InsertDonor));
 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
                 nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
@@ -70,67 +65,19 @@ namespace Nova.SearchAlgorithm.Services
             logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
 
-        private async Task InsertRawDonor(Donor donor)
+        private async Task InsertDonor(Donor donor)
         {
-            await donorImportRepository.AddOrUpdateDonor(new InputDonor
+            try
             {
-                RegistryCode = RegistryCodeFromString(donor.RegistryCode),
-                DonorType = DonorTypeFromString(donor.DonorType),
-                DonorId = donor.DonorId,
-                MatchingHla = await LookupDonorHla(donor)
-            });
-        }
-        private Task<PhenotypeInfo<ExpandedHla>> LookupDonorHla(Donor donor)
-        {
-            var donorHla = new PhenotypeInfo<string>
-            {
-                A_1 = donor.A_1,
-                A_2 = donor.A_2,
-                B_1 = donor.B_1,
-                B_2 = donor.B_2,
-                C_1 = donor.C_1,
-                C_2 = donor.C_2,
-                DQB1_1 = donor.DQB1_1,
-                DQB1_2 = donor.DQB1_2,
-                DRB1_1 = donor.DRB1_1,
-                DRB1_2 = donor.DRB1_2
-            };
-
-            return donorHla.WhenAllPositions((l, p, h) => LookupMatchingHla(l, h));
-        }
-
-        private async Task<ExpandedHla> LookupMatchingHla(Locus locus, string hla)
-        {
-            if (string.IsNullOrEmpty(hla))
-            {
-                return null;
+                await donorImportRepository.InsertDonor(donor.ToRawImportDonor());
             }
-
-            var matchingResult = await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla);
-            return matchingResult.ToExpandedHla();
-        }
-
-        private static RegistryCode RegistryCodeFromString(string input)
-        {
-            if (Enum.TryParse(input, out RegistryCode code))
+            catch (Exception e)
             {
-                return code;
-            }
-            throw new DonorImportException($"Could not understand registry code {input}");
-        }
-
-        private static DonorType DonorTypeFromString(string input)
-        {
-            switch (input.ToLower())
-            {
-                case "adult":
-                case "a":
-                    return DonorType.Adult;
-                case "cord":
-                case "c":
-                    return DonorType.Cord;
-                default:
-                    throw new DonorImportException($"Could not understand donor type {input}");
+                // Log the error clearly so we can grep them out and import... manually?
+                var message = $"Failed to import donor {donor.DonorId} with reason {e.Message}";
+                Trace.WriteLine(message);
+                logger.SendTrace(message, LogLevel.Error);
+                throw new DonorImportException(message, e);
             }
         }
     }

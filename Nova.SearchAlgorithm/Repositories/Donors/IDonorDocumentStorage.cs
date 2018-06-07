@@ -7,8 +7,15 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 {
     public interface IDonorDocumentStorage
     {
-        Task InsertDonor(InputDonor donor);
-        Task UpdateDonorWithNewHla(InputDonor donor);
+        /// <summary>
+        /// Inserts the raw donor but does not insert any match data
+        /// </summary>
+        Task InsertDonor(RawInputDonor donor);
+        /// <summary>
+        /// Refreshes or creates the match data based on the donor's (new)
+        /// expanded HLA information.
+        /// </summary>
+        Task RefreshMatchingGroupsForExistingDonor(InputDonor donor);
         Task<DonorResult> GetDonor(int donorId);
         Task<IEnumerable<DonorResult>> AllDonors();
         Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria);
