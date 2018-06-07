@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
                 .Select(g => new PotentialSearchResult
                 {
                     Donor = new DonorResult { DonorId = g.Key },
-                    TotalMatchCount = g.Sum(m => m.Value.MatchCount ?? 0),
+                    TotalMatchCount = g.Sum(m => m.Value.MatchCount),
                     MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key] : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusDrb1 = matchesAtDrb1.ContainsKey(g.Key) ? matchesAtDrb1[g.Key] : new LocusMatchDetails { MatchCount = 0 },

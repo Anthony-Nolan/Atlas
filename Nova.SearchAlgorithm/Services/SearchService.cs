@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Scoring;
 
 namespace Nova.SearchAlgorithm.Services
@@ -76,13 +77,84 @@ namespace Nova.SearchAlgorithm.Services
         private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(AlleleLevelMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
-            return m => m;
+            // TODO:NOVA-1289 implement typed loci booleans and counts
+
+            return potentialSearchResult =>
+            {
+                // TODO:NOVA-1289 This sketch logic does not take into account some edge cases, like one patient position matching both donor positions,
+                // which should count as only one match
+                var donorHla = potentialSearchResult.Donor.MatchingHla;
+
+                if (criteria.LocusMismatchC == null || donorHla.C_1 == null)
+                {
+                    // potentially this is a match at C
+                    potentialSearchResult.MatchDetailsAtLocusC.MatchCount = 2;
+                }
+                else
+                {
+                    if (criteria.LocusMismatchC.HlaNamesToMatchInPositionOne.Any(name =>
+                        donorHla.C_1.PGroups.Union(donorHla.C_2.PGroups).Contains(name)))
+                    {
+                        potentialSearchResult.MatchDetailsAtLocusC.MatchCount += 1;
+                    }
+
+                    if (criteria.LocusMismatchC.HlaNamesToMatchInPositionTwo.Any(name =>
+                        donorHla.C_1.PGroups.Union(donorHla.C_2.PGroups).Contains(name)))
+                    {
+                        potentialSearchResult.MatchDetailsAtLocusC.MatchCount += 1;
+                    }
+                }
+
+                if (criteria.LocusMismatchDQB1 == null || donorHla.DQB1_1 == null)
+                {
+                    // potentially this is a match at C
+                    potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount = 2;
+                }
+                else
+                {
+                    if (criteria.LocusMismatchDQB1.HlaNamesToMatchInPositionOne.Any(name =>
+                        donorHla.DQB1_1.PGroups.Union(donorHla.DQB1_2.PGroups).Contains(name)))
+                    {
+                        potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount += 1;
+                    }
+
+                    if (criteria.LocusMismatchDQB1.HlaNamesToMatchInPositionTwo.Any(name =>
+                        donorHla.DQB1_1.PGroups.Union(donorHla.DQB1_2.PGroups).Contains(name)))
+                    {
+                        potentialSearchResult.MatchDetailsAtLocusC.MatchCount += 1;
+                    }
+                }
+
+                potentialSearchResult.TotalMatchCount += potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount;
+                potentialSearchResult.TotalMatchCount += potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount;
+                
+                return potentialSearchResult;
+            };
         }
 
         private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(AlleleLevelMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
-            return m => true;
+            return potentialSearchResult =>
+            {
+                if (potentialSearchResult.MatchDetailsAtLocusC.MatchCount < criteria.LocusMismatchC.MismatchCount)
+                {
+                    return false;
+                }
+
+                if (potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount < criteria.LocusMismatchDQB1.MismatchCount)
+                {
+                    return false;
+                }
+
+                // TODO:NOVA-1289 take into account cord or adult search differences
+                if (potentialSearchResult.TotalMatchCount < criteria.DonorMismatchCount)
+                {
+                    return false;
+                }
+
+                return true;
+            };
         }
 
         private PotentialMatch MapSearchResultToApiObject(PotentialSearchResult result)

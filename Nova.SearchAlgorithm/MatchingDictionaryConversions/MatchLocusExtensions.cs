@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.MatchingDictionaryConversions
 {
     static class MatchLocusExtensions
     {

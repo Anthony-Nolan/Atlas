@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             // Update the donor itself
-            var insertDonor = TableOperation.InsertOrReplace(donor.ToRawInputDonor().ToTableEntity());
+            var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             await donorTable.ExecuteAsync(insertDonor);
 
             await UpdateDonorHlaMatches(donor);
