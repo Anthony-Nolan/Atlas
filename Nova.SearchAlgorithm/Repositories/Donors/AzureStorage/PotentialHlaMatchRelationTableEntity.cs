@@ -26,10 +26,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             DonorId = donorId;
         }
 
-        public PotentialHlaMatchRelationTableEntity(PotentialHlaMatchRelation match) : this(match.Locus, match.MatchingTypePositions, match.Name, match.DonorId)
-        {
-        }
-
         public PotentialHlaMatchRelation ToPotentialHlaMatchRelation(TypePositions searchTypePosition)
         {
             return new PotentialHlaMatchRelation()
@@ -44,7 +40,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public static string GeneratePartitionKey(Locus locus, string matchName)
         {
-            return string.Format("{0}_{1}", locus.ToString().ToUpper(), matchName);
+            return $"{locus.ToString().ToUpper()}_{matchName}";
         }
     }
 }

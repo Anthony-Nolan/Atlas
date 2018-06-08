@@ -13,5 +13,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         public string Name { get; set; }
 
         public int DonorId { get; set; }
+
+        public DonorResult Donor { get; set; }
     }
 }

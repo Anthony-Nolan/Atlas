@@ -115,10 +115,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 client.DeleteItemAsync<PotentialHlaMatchRelationCosmosDocument>(m.Id)));
 
             // Add back the new matches
-            await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
+            await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor));
         }
 
-        private Task InsertLocusMatch(Locus locus, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
+        private Task InsertLocusMatch(Locus locus, ExpandedHla matchingHla1, ExpandedHla matchingHla2, InputDonor donor)
         {
             if (matchingHla1 == null)
             {
@@ -144,9 +144,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 return client.CreateItemAsync(
                     new PotentialHlaMatchRelationCosmosDocument
                     {
-                        DonorId = donorId,
+                        DonorId = donor.DonorId,
                         Locus = locus,
                         MatchingTypePositions = typePositions,
+                        Donor = DonorCosmosDocument.FromInputDonor(donor),
                         Name = matchName
                     });
             }));

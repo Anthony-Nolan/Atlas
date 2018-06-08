@@ -34,6 +34,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                     })
                 .Max());
         }
+
         public Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);

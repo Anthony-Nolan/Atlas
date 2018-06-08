@@ -11,6 +11,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         public Locus Locus { get; set; }
         public TypePositions MatchingTypePositions { get; set; }
         public string Name { get; set; }
+        public DonorCosmosDocument Donor { get; set; }
 
         public int DonorId { get; set; }
 
@@ -22,7 +23,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
                 SearchTypePosition = searchPosition,
                 MatchingTypePositions = MatchingTypePositions,
                 Name = Name,
-                DonorId = DonorId
+                DonorId = DonorId,
+                Donor = Donor.ToDonorResult()
             };
         }
     }
