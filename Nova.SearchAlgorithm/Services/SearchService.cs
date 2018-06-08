@@ -48,7 +48,9 @@ namespace Nova.SearchAlgorithm.Services
 
             var threeLociMatches = await donorRepository.Search(criteria);
 
-            var fiveLociMatches = threeLociMatches.Select(AddMatchCounts(criteria)).Where(FilterByMismatchCriteria(criteria));
+            var fiveLociMatches = threeLociMatches
+                .Select(AddMatchCounts(criteria))
+                .Where(FilterByMismatchCriteria(criteria));
 
             var scoredMatches = await Task.WhenAll(fiveLociMatches.Select(m => calculateScore.Score(criteria, m)));
 
@@ -78,52 +80,15 @@ namespace Nova.SearchAlgorithm.Services
         {
             // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
             // TODO:NOVA-1289 implement typed loci booleans and counts
-
             return potentialSearchResult =>
             {
-                // TODO:NOVA-1289 This sketch logic does not take into account some edge cases, like one patient position matching both donor positions,
-                // which should count as only one match
                 var donorHla = potentialSearchResult.Donor.MatchingHla;
 
-                if (criteria.LocusMismatchC == null || donorHla.C_1 == null)
-                {
-                    // potentially this is a match at C
-                    potentialSearchResult.MatchDetailsAtLocusC.MatchCount = 2;
-                }
-                else
-                {
-                    if (criteria.LocusMismatchC.HlaNamesToMatchInPositionOne.Any(name =>
-                        donorHla.C_1.PGroups.Union(donorHla.C_2.PGroups).Contains(name)))
-                    {
-                        potentialSearchResult.MatchDetailsAtLocusC.MatchCount += 1;
-                    }
+                potentialSearchResult.MatchDetailsAtLocusC =
+                    MatchDetails(criteria.LocusMismatchC, donorHla?.C_1, donorHla?.C_2);
 
-                    if (criteria.LocusMismatchC.HlaNamesToMatchInPositionTwo.Any(name =>
-                        donorHla.C_1.PGroups.Union(donorHla.C_2.PGroups).Contains(name)))
-                    {
-                        potentialSearchResult.MatchDetailsAtLocusC.MatchCount += 1;
-                    }
-                }
-
-                if (criteria.LocusMismatchDQB1 == null || donorHla.DQB1_1 == null)
-                {
-                    // potentially this is a match at C
-                    potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount = 2;
-                }
-                else
-                {
-                    if (criteria.LocusMismatchDQB1.HlaNamesToMatchInPositionOne.Any(name =>
-                        donorHla.DQB1_1.PGroups.Union(donorHla.DQB1_2.PGroups).Contains(name)))
-                    {
-                        potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount += 1;
-                    }
-
-                    if (criteria.LocusMismatchDQB1.HlaNamesToMatchInPositionTwo.Any(name =>
-                        donorHla.DQB1_1.PGroups.Union(donorHla.DQB1_2.PGroups).Contains(name)))
-                    {
-                        potentialSearchResult.MatchDetailsAtLocusC.MatchCount += 1;
-                    }
-                }
+                potentialSearchResult.MatchDetailsAtLocusDqb1 =
+                    MatchDetails(criteria.LocusMismatchC, donorHla?.DQB1_1, donorHla?.DQB1_2);
 
                 potentialSearchResult.TotalMatchCount += potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount;
                 potentialSearchResult.TotalMatchCount += potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount;
@@ -132,17 +97,52 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
+        private LocusMatchDetails MatchDetails(AlleleLevelLocusMatchCriteria criteria, ExpandedHla hla1, ExpandedHla hla2)
+        {
+            var matchDetails = new LocusMatchDetails
+            {
+                MatchCount = 2, // Assume a match until we know otherwise
+                IsLocusTyped = hla1 != null && hla2 != null,
+            };
+
+            if (criteria != null && hla1 != null && hla2 != null)
+            {
+                // We have typed search and donor hla to compare
+                matchDetails.MatchCount = 0;
+
+                // TODO:NOVA-1289 This sketch logic does not take into account some edge cases, like one patient position matching both donor positions,
+                // which should count as only one match
+                if (criteria.HlaNamesToMatchInPositionOne.Any(name =>
+                    hla1.PGroups.Union(hla2.PGroups).Contains(name)))
+                {
+                    matchDetails.MatchCount += 1;
+                }
+
+                if (criteria.HlaNamesToMatchInPositionTwo.Any(name =>
+                    hla1.PGroups.Union(hla2.PGroups).Contains(name)))
+                {
+                    matchDetails.MatchCount += 1;
+                }
+            }
+
+            return matchDetails;
+        }
+
         private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(AlleleLevelMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
             return potentialSearchResult =>
             {
-                if (potentialSearchResult.MatchDetailsAtLocusC.MatchCount < criteria.LocusMismatchC.MismatchCount)
+                if (potentialSearchResult.MatchDetailsAtLocusC != null &&
+                    criteria.LocusMismatchC != null &&
+                    potentialSearchResult.MatchDetailsAtLocusC.MatchCount < criteria.LocusMismatchC.MismatchCount)
                 {
                     return false;
                 }
 
-                if (potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount < criteria.LocusMismatchDQB1.MismatchCount)
+                if (potentialSearchResult.MatchDetailsAtLocusDqb1 != null &&
+                    criteria.LocusMismatchDQB1 != null &&
+                    potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount < criteria.LocusMismatchDQB1.MismatchCount)
                 {
                     return false;
                 }
