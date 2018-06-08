@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
@@ -18,9 +19,11 @@ namespace Nova.SearchAlgorithm.Repositories
             this.factory = factory;
         }
 
-        public IEnumerable<RawInputDonor> SomeDonors(int maxResults)
+        public async Task<IEnumerable<RawInputDonor>> SomeDonors(int maxResults, int lastId = 0)
         {
-            const string sql = @"SELECT 
+            const string sql = @"SELECT FROM
+                                 (
+                                 SELECT 
                                    d.donor_id, birth_date, blood_group_type, rh_type, donor_type, donor_status_type, donor_state_type,
                                    reason_unavailable_type, unavailable_from_date, unavailable_to_date, reserved_patient_id,
                                    ethnic_group_type, gender_type, weight, cmv_antibody_type, cmv_tested_date, last_contact_date,
@@ -48,16 +51,19 @@ namespace Nova.SearchAlgorithm.Repositories
                                FROM
                                    dr_donors d, dr_definitive_hla_type_v dhv
                                WHERE
-                                   ROWNUM <= :max_rows
+                                   d.donor_id > :last_id
                                AND
                                    d.donor_id = dhv.donor_patient_id
                                AND
                                    d.donor_status_type = 'Active'
+                               )
+                               WHERE
+                                   ROWNUM <= :max_rows
                             ";
 
             using (var connection = factory.GetConnection())
             {
-                var results = connection.Query(sql, new { max_rows = maxResults });
+                var results = await connection.QueryAsync(sql, new { max_rows = maxResults, last_id = lastId });
                 return results.Select(RawDonorMap);
             }
         }

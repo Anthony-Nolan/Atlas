@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
@@ -51,11 +52,28 @@ namespace Nova.SearchAlgorithm.Services
             });
         }
 
-        public void ImportSolarDonors()
+        public async Task ImportSolarDonors()
         {
-            foreach (RawInputDonor donor in solarRepository.SomeDonors(1000))
+            foreach (RawInputDonor donor in await solarRepository.SomeDonors(1000))
             {
                 InsertSingleRawDonor(donor);
+            }
+        }
+
+        public async Task ImportAllDonorsFromSolar()
+        {
+            var batchSize = 400;
+            var lastId = 0;
+
+            var batch = (await solarRepository.SomeDonors(batchSize)).ToList();
+
+            while (batch.Any())
+            {
+                await Task.WhenAll(batch.Select(donorRepository.InsertDonor));
+
+                lastId = batch.OrderByDescending(d => d.DonorId).First().DonorId;
+
+                batch = (await solarRepository.SomeDonors(batchSize, lastId)).ToList();
             }
         }
 

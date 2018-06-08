@@ -1,4 +1,5 @@
-﻿using System.Web.Http;
+﻿using System.Threading.Tasks;
+using System.Web.Http;
 using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Controllers
@@ -27,10 +28,16 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("insert-solar-donors")]
-        public IHttpActionResult InsertSolarDonors()
+        public Task InsertSolarDonors()
         {
-            testDataService.ImportSolarDonors();
-            return Ok();
+            return  testDataService.ImportSolarDonors();
+        }
+
+        [HttpPost]
+        [Route("insert-all-solar-donors")]
+        public Task InsertAllSolarDonors()
+        {
+            return testDataService.ImportAllDonorsFromSolar();
         }
 
         [HttpPost]

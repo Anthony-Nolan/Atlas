@@ -1,4 +1,6 @@
-﻿namespace Nova.SearchAlgorithm.Services
+﻿using System.Threading.Tasks;
+
+namespace Nova.SearchAlgorithm.Services
 {
     /// <summary>
     /// A service for inserting test data for the convenience of developers.
@@ -7,7 +9,8 @@
     public interface ITestDataService
     {
         void ImportSingleTestDonor();
-        void ImportSolarDonors();
+        Task ImportSolarDonors();
+        Task ImportAllDonorsFromSolar();
         void ImportDummyData();
     }
 }
