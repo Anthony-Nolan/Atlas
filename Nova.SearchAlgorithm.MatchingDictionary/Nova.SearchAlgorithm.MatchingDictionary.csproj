@@ -187,6 +187,8 @@
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
+    <Compile Include="Services\MatchingDictionary\Lookups\MultipleAllelesLookup.cs" />
+    <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\XxCodeLookup.cs" />

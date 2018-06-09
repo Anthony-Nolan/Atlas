@@ -10,6 +10,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         CompleteAllele = 1,
         TwoFieldAllele = 2,
         FirstFieldAllele = 3,
-        NmdpCode = 4
+        MultipleAlleles = 4
     }
 }

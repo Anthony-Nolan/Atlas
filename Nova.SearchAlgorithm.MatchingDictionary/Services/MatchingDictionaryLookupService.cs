@@ -56,6 +56,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     case HlaTypingCategory.NmdpCode:
                         lookup = new NmdpCodeLookup(dictionaryRepository, hlaServiceClient);
                         break;
+                    case HlaTypingCategory.AlleleString:
+                        lookup = new AlleleStringLookup(dictionaryRepository);
+                        break;
                     default:
                         throw new ArgumentException($"Dictionary lookup cannot be performed for HLA typing category: {category}.");
                 }
