@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                         lookup = new AlleleLookup(dictionaryRepository);
                         break;
                     case HlaTypingCategory.XxCode:
-                        lookup = new XxCodeLookup(dictionaryRepository) ;
+                        lookup = new XxCodeLookup(dictionaryRepository);
                         break;
                     case HlaTypingCategory.Serology:
                         lookup = new SerologyLookup(dictionaryRepository);
@@ -56,8 +56,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     case HlaTypingCategory.NmdpCode:
                         lookup = new NmdpCodeLookup(dictionaryRepository, hlaServiceClient);
                         break;
-                    case HlaTypingCategory.AlleleString:
-                        lookup = new AlleleStringLookup(dictionaryRepository);
+                    case HlaTypingCategory.AlleleStringOfNames:
+                    case HlaTypingCategory.AlleleStringOfSubtypes:
+                        lookup = new AlleleStringLookup(dictionaryRepository, hlaServiceClient);
                         break;
                     default:
                         throw new ArgumentException($"Dictionary lookup cannot be performed for HLA typing category: {category}.");

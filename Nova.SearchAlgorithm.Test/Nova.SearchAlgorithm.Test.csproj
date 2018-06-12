@@ -149,8 +149,8 @@
     <Reference Include="Newtonsoft.Json.Schema, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.Schema.3.0.2\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.HLAService.Client, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.HLAService.Client.1.2.1\lib\net462\Nova.HLAService.Client.dll</HintPath>
+    <Reference Include="Nova.HLAService.Client, Version=1.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nova.HLAService.Client.1.3.2\lib\net462\Nova.HLAService.Client.dll</HintPath>
     </Reference>
     <Reference Include="Nova.Utils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.Utils.3.3.2\lib\net462\Nova.Utils.dll</HintPath>

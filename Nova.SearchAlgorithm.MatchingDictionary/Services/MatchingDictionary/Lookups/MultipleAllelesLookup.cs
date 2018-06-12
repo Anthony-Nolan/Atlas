@@ -4,13 +4,17 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.HLAService.Client;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
     internal abstract class MultipleAllelesLookup : MatchingDictionaryLookup
     {
-        protected MultipleAllelesLookup(IMatchingDictionaryRepository dictionaryRepository) : base(dictionaryRepository)
+        protected readonly IHlaServiceClient HlaServiceClient;
+
+        protected MultipleAllelesLookup(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient) : base(dictionaryRepository)
         {
+            HlaServiceClient = hlaServiceClient;
         }
 
         public override async Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
