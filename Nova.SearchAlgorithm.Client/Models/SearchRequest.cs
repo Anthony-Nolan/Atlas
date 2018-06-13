@@ -28,8 +28,7 @@ namespace Nova.SearchAlgorithm.Client.Models
     {
         public SearchRequestValidator()
         {
-            RuleFor(x => x.SearchType).NotEmpty();
-            RuleFor(x => x.SearchType).IsInEnum();
+            RuleFor(x => x.SearchType).NotEmpty().IsInEnum();
             RuleFor(x => x.MatchCriteria).NotEmpty();
             RuleFor(x => x.RegistriesToSearch).NotEmpty();
             RuleForEach(x => x.RegistriesToSearch).IsInEnum();
