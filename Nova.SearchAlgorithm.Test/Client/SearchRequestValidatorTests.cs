@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FluentAssertions;
 using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -9,18 +10,53 @@ namespace Nova.SearchAlgorithm.Test.Client
     [TestFixture]
     public class SearchRequestsValidatorTests
     {
-        [Test]
-        public void ShouldHaveValidationErrorFor_MissingMatchCriteria()
+        private SearchRequestValidator validator;
+
+        [SetUp]
+        public void SetUp()
         {
-            var validator = new SearchRequestValidator();
-            validator.ShouldHaveValidationErrorFor(x => x.MatchCriteria, (MismatchCriteria)null);
+            validator = new SearchRequestValidator();
         }
 
         [Test]
-        public void ShouldHaveValidationErrorFor_MissingRegistries()
+        public void Validator_WhenMatchCriteriaMissing_ShouldHaveValidationError()
         {
-            var validator = new SearchRequestValidator();
-            validator.ShouldHaveValidationErrorFor(x => x.RegistriesToSearch, (IEnumerable<RegistryCode>)null);
+            validator.ShouldHaveValidationErrorFor(x => x.MatchCriteria, (MismatchCriteria) null);
+        }
+
+        [Test]
+        public void Validator_WhenMatchRegistriesMissing_ShouldHaveValidationError()
+        {
+            validator.ShouldHaveValidationErrorFor(x => x.RegistriesToSearch, (IEnumerable<RegistryCode>) null);
+        }
+
+        [Test]
+        public void Validator_WhenAnyRegistryInvalid_ShouldHaveValidationError()
+        {
+            var result = validator.Validate(new SearchRequest
+            {
+                SearchType = DonorType.Adult,
+                MatchCriteria = new MismatchCriteria(),
+                RegistriesToSearch = new[] { RegistryCode.AN, (RegistryCode) 999 }
+            });
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validator_WhenSearchTypeMissing_ShouldHaveValidationError()
+        {
+            var result = validator.Validate(new SearchRequest
+            {
+                MatchCriteria = new MismatchCriteria(),
+                RegistriesToSearch = new []{ RegistryCode.AN }
+            });
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validator_WithInvalidSearchType_ShouldHaveValidationError()
+        {
+            validator.ShouldHaveValidationErrorFor(x => x.SearchType, (DonorType) 999);
         }
     }
 }
