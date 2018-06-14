@@ -23,9 +23,9 @@ namespace Nova.SearchAlgorithm.Test.Client
         }
 
         [Test]
-        public void Validator_WhenMismatchCountGreaterThanTwo_ShouldHaveValidationError()
+        public void Validator_WhenMismatchCountGreaterThanFour_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.MismatchCount, 3);
+            validator.ShouldHaveValidationErrorFor(x => x.MismatchCount, 5);
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Client
         }
 
         [Test]
-        public void Validator_WhenOneHlaStringProvided_ShouldNotHaveValidationError()
+        public void Validator_WhenOneHlaStringProvided_ShouldHaveValidationError()
         {
             var locusMismatchCriteria = new LocusMismatchCriteria
             {
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Client
                 SearchHla2 = "hla-string"
             };
             var result = validator.Validate(locusMismatchCriteria);
-            result.IsValid.Should().BeTrue();
+            result.IsValid.Should().BeFalse();
         }
 
         [Test]

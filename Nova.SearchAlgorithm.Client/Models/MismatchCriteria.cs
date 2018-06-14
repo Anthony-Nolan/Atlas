@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Client.Models
             RuleFor(x => x.LocusMismatchA).NotNull();
             RuleFor(x => x.LocusMismatchB).NotNull();
             RuleFor(x => x.LocusMismatchDRB1).NotNull();
-            RuleFor(x => x.DonorMismatchCount).NotNull().GreaterThanOrEqualTo(0).LessThanOrEqualTo(2);
+            RuleFor(x => x.DonorMismatchCount).NotNull().GreaterThanOrEqualTo(0).LessThanOrEqualTo(4);
         }
     }
 }
