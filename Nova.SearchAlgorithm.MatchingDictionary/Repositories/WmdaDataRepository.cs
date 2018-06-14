@@ -14,6 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; }
         IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; }
         IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; }
+        IEnumerable<AlleleStatus> AlleleStatuses { get; }
     }
 
     public class WmdaDataRepository : IWmdaDataRepository
@@ -25,6 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; private set; }
         public IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; private set; }
         public IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; private set; }
+        public IEnumerable<AlleleStatus> AlleleStatuses { get; private set; }
 
         private readonly IWmdaFileReader wmdaFileReader;
 
@@ -43,6 +45,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor());
             AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor());
             ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor());
+            AlleleStatuses = GetWmdaData(new AlleleStatusExtractor());
         }
 
         private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor)
