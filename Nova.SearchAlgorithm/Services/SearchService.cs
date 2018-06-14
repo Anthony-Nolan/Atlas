@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services
             {
                 SearchType = searchRequest.SearchType,
                 RegistriesToSearch = searchRequest.RegistriesToSearch,
-                DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
+                DonorMismatchCount = (int) searchRequest.MatchCriteria.DonorMismatchCount,
                 LocusMismatchA = criteriaMappings[0],
                 LocusMismatchB = criteriaMappings[1],
                 LocusMismatchC = criteriaMappings[2],

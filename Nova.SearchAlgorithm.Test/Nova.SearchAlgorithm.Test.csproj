@@ -295,7 +295,9 @@
   <ItemGroup>
     <Compile Include="Builders\DonorMatchCriteriaBuilder.cs" />
     <Compile Include="Builders\SearchRequestBuilder.cs" />
-    <Compile Include="Client\SearchRequestValidatorTests.cs" />
+    <Compile Include="Client\Validators\LocusMismatchCriteriaValidatorTests.cs" />
+    <Compile Include="Client\Validators\MismatchCriteriaValidatorTests.cs" />
+    <Compile Include="Client\Validators\SearchRequestValidatorTests.cs" />
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryLookup.cs" />
