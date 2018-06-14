@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Client
         [Test]
         public void Validator_WhenMismatchCountGreaterThanFour_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.MismatchCount, 5);
+            validator.ShouldHaveValidationErrorFor(x => x.MismatchCount, 3);
         }
 
         [Test]

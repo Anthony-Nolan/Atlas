@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         public string SearchHla2 { get; set; }
 
         /// <summary>
-        /// Total number of mismatches permitted
+        /// Total number of mismatches permitted, either 0, 1 or 2.
         /// </summary>
         public int MismatchCount { get; set; }
     }
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Client.Models
     {
         public LocusMismatchCriteriaValidator()
         {
-            RuleFor(x => x.MismatchCount).GreaterThanOrEqualTo(0).LessThanOrEqualTo(4);
+            RuleFor(x => x.MismatchCount).GreaterThanOrEqualTo(0).LessThanOrEqualTo(2);
             RuleFor(x => x.SearchHla1).NotEmpty();
             RuleFor(x => x.SearchHla2).NotEmpty();
         }
