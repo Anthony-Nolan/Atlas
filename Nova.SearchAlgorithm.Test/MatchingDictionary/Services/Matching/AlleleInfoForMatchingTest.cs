@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void ValidAlleleTypingsHaveExpectedNumberOfPGroups()
+        public void MatchedAlleles_WhereAlleleTypingIsValid_ExpectedNumberOfPGroupsPerAllele()
         {
             var pGroupCounts = MatchingTypings
                 .Where(m => !m.HlaTyping.IsDeleted)
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void ValidAlleleTypingsHaveOnlyOneGGroupEach()
+        public void MatchedAlleles_WhereAlleleTypingIsValid_OnlyOneGGroupPerAllele()
         {
             var gGroupCounts = MatchingTypings
                 .Where(m => !m.HlaTyping.IsDeleted)
@@ -47,90 +47,90 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         }
 
         [Test]
-        public void ExpressedAllelesHaveCorrectMatchingInfo()
+        public void MatchedAlleles_ForAllAlleles_AlleleStatusOnlyUnknownForDeletedTypings()
         {
-            var normalAllele = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "01:01:01:01"), 
-                new AlleleTyping("A*", "01:01:01:01"), 
-                new List<string> { "01:01P" }, 
-                new List<string>{ "01:01:01G" });
+            var typingStatus = MatchingTypings
+                .Select(m => (AlleleTyping)m.HlaTyping)
+                .Select(m => new
+                {
+                    IsAlleleDeleted = m.IsDeleted,
+                    IsSequenceStatusUnknown = m.Status.SequenceStatus == SequenceStatus.Unknown,
+                    IsDnaCategoryUnknown = m.Status.DnaCategory == DnaCategory.Unknown
+                })
+                .ToList();
 
-            var lowAllele = new AlleleInfoForMatching(
-                new AlleleTyping("B*", "39:01:01:02L"), 
-                new AlleleTyping("B*", "39:01:01:02L"), 
-                new List<string> { "39:01P" },
-                new List<string> { "39:01:01G" });
+            var validTypingsWhereStatusIsUnknown = typingStatus.Where(allele =>
+                !allele.IsAlleleDeleted && (allele.IsSequenceStatusUnknown || allele.IsDnaCategoryUnknown));
 
-            var questionableAllele = new AlleleInfoForMatching(
-                new AlleleTyping("C*", "07:01:01:14Q"), 
-                new AlleleTyping("C*", "07:01:01:14Q"), 
-                new List<string> { "07:01P" },
-                new List<string> { "07:01:01G" });
+            var deletedTypingsWhereStatusIsKnown = typingStatus.Where(allele =>
+                allele.IsAlleleDeleted && (!allele.IsSequenceStatusUnknown || !allele.IsDnaCategoryUnknown));
 
-            var secretedAllele = new AlleleInfoForMatching(
-                new AlleleTyping("B*", "44:02:01:02S"), 
-                new AlleleTyping("B*", "44:02:01:02S"), 
-                new List<string> { "44:02P" },
-                new List<string> { "44:02:01G" });
-            
-            Assert.AreEqual(normalAllele, GetSingleMatchingTyping(MatchLocus.A, "01:01:01:01"));
-            Assert.AreEqual(lowAllele, GetSingleMatchingTyping(MatchLocus.B, "39:01:01:02L"));
-            Assert.AreEqual(questionableAllele, GetSingleMatchingTyping(MatchLocus.C, "07:01:01:14Q"));
-            Assert.AreEqual(secretedAllele, GetSingleMatchingTyping(MatchLocus.B, "44:02:01:02S"));
+            Assert.Multiple(() =>
+            {
+                Assert.IsFalse(validTypingsWhereStatusIsUnknown.Any());
+                Assert.IsFalse(deletedTypingsWhereStatusIsKnown.Any());
+            });
+        }
+
+        [TestCase("A*", MatchLocus.A, "01:01:01:01", "01:01P", "01:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Normal Allele")]
+        [TestCase("B*", MatchLocus.B, "39:01:01:02L", "39:01P", "39:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "L-Allele")]
+        [TestCase("C*", MatchLocus.C, "07:01:01:14Q", "07:01P", "07:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Q-Allele")]
+        [TestCase("B*", MatchLocus.B, "44:02:01:02S", "44:02P", "44:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "S-Allele")]
+        [TestCase("A*", MatchLocus.A, "29:01:01:02N", null, "29:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Null Allele")]
+        public void MatchedAlleles_ForVaryingExpressionStatuses_CorrectMatchingInfoAssigned(
+            string locus,
+            MatchLocus matchLocus,
+            string alleleName,
+            string pGroup,
+            string gGroup,
+            SequenceStatus sequenceStatus,
+            DnaCategory dnaCategory)
+        {
+            var actual = GetSingleMatchingTyping(matchLocus, alleleName);
+
+            var status = new AlleleTypingStatus(sequenceStatus, dnaCategory);
+            var expected = new AlleleInfoForMatching(
+                new AlleleTyping(locus, alleleName, status),
+                new AlleleTyping(locus, alleleName, status),
+                pGroup == null ? new List<string>() : new List<string> { pGroup },
+                new List<string> { gGroup });
+
+            Assert.AreEqual(actual, expected);
+        }
+
+        [TestCase("A*", MatchLocus.A, "11:53", "11:02:01", "11:02P", "11:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele & Identical Hla are expressing")]
+        [TestCase("A*", MatchLocus.A, "01:34N", "01:01:38L", "01:01P", "01:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele is null; Identical Hla is expressing")]
+        [TestCase("A*", MatchLocus.A, "03:260", "03:284N", null, "03:284N", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele is expressing; Identical Hla is null")]
+        [TestCase("A*", MatchLocus.A, "02:100", "02:100", null, null, SequenceStatus.Unknown, DnaCategory.Unknown, Description = "Deleted Allele has no Identical Hla")]
+        public void MatchedAlleles_WhenDeletedAllele_IdenticalHlaUsedToAssignMatchingInfo(
+            string locus,
+            MatchLocus matchLocus,
+            string alleleName,
+            string alleleNameUsedInMatching,
+            string pGroup,
+            string gGroup,
+            SequenceStatus sequenceStatus,
+            DnaCategory dnaCategory)
+        {
+            var actual = GetSingleMatchingTyping(matchLocus, alleleName);
+
+            var alleleTypingStatus = new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown);
+            var alleleTyping = new AlleleTyping(locus, alleleName, alleleTypingStatus, true);
+
+            var usedInMatchingStatus = new AlleleTypingStatus(sequenceStatus, dnaCategory);
+            var usedInMatching = new AlleleTyping(locus, alleleNameUsedInMatching, usedInMatchingStatus, alleleNameUsedInMatching.Equals(alleleName));
+
+            var expected = new AlleleInfoForMatching(
+                alleleTyping,
+                usedInMatching,
+                pGroup == null ? new List<string>() : new List<string> { pGroup },
+                gGroup == null ? new List<string>() : new List<string> { gGroup });
+
+            Assert.AreEqual(actual, expected);
         }
 
         [Test]
-        public void NullAlleleHasCorrectMatchingInfo()
-        {
-            var nullAllele = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "29:01:01:02N"), 
-                new AlleleTyping("A*", "29:01:01:02N"), 
-                new List<string>(),
-                new List<string> { "29:01:01G" });
-
-            Assert.AreEqual(nullAllele, GetSingleMatchingTyping(MatchLocus.A, "29:01:01:02N"));
-        }
-
-        [Test]
-        public void IdenticalHlaUsedToFindMatchingInfoForDeletedAlleles()
-        {
-            var deletedWithIdentical = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "11:53", true), 
-                new AlleleTyping("A*", "11:02:01"), 
-                new List<string> { "11:02P" },
-                new List<string> { "11:02:01G" });
-
-            var deletedIsNullIdenticalIsExpressing = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "01:34N", true), 
-                new AlleleTyping("A*", "01:01:38L"), 
-                new List<string> { "01:01P" },
-                new List<string> { "01:01:01G" });
-
-            var deletedIsExpressingIdenticalIsNull = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "03:260", true), 
-                new AlleleTyping("A*", "03:284N"), 
-                new List<string>(),
-                new List<string> { "03:284N" });
-
-            Assert.AreEqual(deletedWithIdentical, GetSingleMatchingTyping(MatchLocus.A, "11:53"));
-            Assert.AreEqual(deletedIsNullIdenticalIsExpressing, GetSingleMatchingTyping(MatchLocus.A, "01:34N"));
-            Assert.AreEqual(deletedIsExpressingIdenticalIsNull, GetSingleMatchingTyping(MatchLocus.A, "03:260"));
-        }
-
-        [Test]
-        public void DeletedAlleleWithNoIdenticalHlaHasNoMatchingInfo()
-        {
-            var deletedNoIdentical = new AlleleInfoForMatching(
-                new AlleleTyping("A*", "02:100", true), 
-                new AlleleTyping("A*", "02:100", true), 
-                new List<string>(),
-                new List<string>());
-
-            Assert.AreEqual(deletedNoIdentical, GetSingleMatchingTyping(MatchLocus.A, "02:100"));
-        }
-
-        [Test]
-        public void ConfidentialAllelesAreExcludedFromMatchingAllelesList()
+        public void MatchedAlleles_WhenAlleleIsConfidential_TypingIsExcluded()
         {
             var confidentialAlleles = new List<HlaTyping>
             {

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
@@ -10,20 +11,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
+        public AlleleTypingStatus Status { get; }
 
         private static readonly string[] NullExpressionSuffixes = { "N" };
 
-    public AlleleTyping(string locus, string name, bool isDeleted = false) 
-            : base(TypingMethod.Molecular, locus, name, isDeleted)
+        public AlleleTyping(string locus, string name, AlleleTypingStatus status, bool isDeleted = false)
+                : base(TypingMethod.Molecular, locus, name, isDeleted)
         {
+            Status = status;
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
             Fields = GetFields(name, ExpressionSuffix);
             TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
 
-        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.Locus, alleleTyping.Name, alleleTyping.IsDeleted)
-        {
+        /// <summary>
+        /// Use this constructor to make an allele typing of unknown status
+        /// </summary>
+        public AlleleTyping(string locus, string name, bool isDeleted = false)
+            :this(locus, name, new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown), isDeleted)
+        {            
         }
 
         private static string GetExpressionSuffix(string name)
