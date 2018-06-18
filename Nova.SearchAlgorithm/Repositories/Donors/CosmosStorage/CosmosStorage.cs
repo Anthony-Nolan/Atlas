@@ -19,9 +19,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         public CosmosStorage()
         {
             client = new DocumentClient(new Uri(ConfigurationManager.AppSettings["cosmos.endpoint"]), ConfigurationManager.AppSettings["cosmos.authKey"]);
-            client.CreateDatabaseIfNotExistsAsync().Wait();
-            client.CreateCollectionIfNotExistsAsync<DonorCosmosDocument>().Wait();
-            client.CreateCollectionIfNotExistsAsync<PotentialHlaMatchRelationCosmosDocument>().Wait();
+            Task.Run(() => client.CreateDatabaseIfNotExistsAsync()).Wait();
+            Task.Run(() => client.CreateCollectionIfNotExistsAsync<DonorCosmosDocument>()).Wait();
+            Task.Run(() => client.CreateCollectionIfNotExistsAsync<PotentialHlaMatchRelationCosmosDocument>()).Wait();
         }
 
         public async Task<int> HighestDonorId()
