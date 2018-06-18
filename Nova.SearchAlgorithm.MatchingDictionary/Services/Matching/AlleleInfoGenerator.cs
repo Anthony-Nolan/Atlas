@@ -16,24 +16,31 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
         public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(IWmdaDataRepository dataRepository)
         {
             var confidentialAllelesList = dataRepository.ConfidentialAlleles.ToList();
+            var pGroupsList = dataRepository.PGroups.ToList();
+            var gGroupList = dataRepository.GGroups.ToList();
+            var alleleStatusList = dataRepository.AlleleStatuses.ToList();
 
             var alleleInfo = dataRepository.Alleles
                 .Where(allele => !confidentialAllelesList.Contains(allele as IWmdaHlaTyping))
-                .Select(allele => GetInfoForSingleAllele(allele, dataRepository));
+                .Select(allele => GetInfoForSingleAllele(allele, pGroupsList, gGroupList, alleleStatusList));
 
             return alleleInfo;
         }
 
-        private static IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom alleleHlaNom, IWmdaDataRepository dataRepository)
+        private static IAlleleInfoForMatching GetInfoForSingleAllele(
+            HlaNom alleleHlaNom,
+            IEnumerable<HlaNomP> allPGroups,
+            IEnumerable<HlaNomG> allGGroups,
+            IReadOnlyCollection<AlleleStatus> alleleStatuses)
         {
-            var alleleStatus = GetAlleleTypingStatus(dataRepository.AlleleStatuses, alleleHlaNom);
+            var alleleStatus = GetAlleleTypingStatus(alleleStatuses, alleleHlaNom);
             var allele = new AlleleTyping(alleleHlaNom.Locus, alleleHlaNom.Name, alleleStatus, alleleHlaNom.IsDeleted);
 
             var usedInMatching = alleleHlaNom.IdenticalHla.Equals("")
                 ? allele
-                : GetUsedInMatchingValueFromIdenticalHla(alleleHlaNom, dataRepository.AlleleStatuses);
-            var pGroup = GetAlleleGroup(dataRepository.PGroups, usedInMatching);
-            var gGroup = GetAlleleGroup(dataRepository.GGroups, usedInMatching);
+                : GetUsedInMatchingValueFromIdenticalHla(alleleHlaNom, alleleStatuses);
+            var pGroup = GetAlleleGroup(allPGroups, usedInMatching);
+            var gGroup = GetAlleleGroup(allGGroups, usedInMatching);
 
             return new AlleleInfoForMatching(allele, usedInMatching, pGroup, gGroup);
         }
