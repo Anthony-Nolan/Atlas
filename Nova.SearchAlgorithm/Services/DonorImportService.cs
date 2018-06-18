@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Services
 {
     public class DonorImportService : IDonorImportService
     {
-        private const int DonorPageSize = 200;
+        private const int DonorPageSize = 500;
 
         private readonly IDonorInspectionRepository donorInspectionRespository;
         private readonly IDonorImportRepository donorImportRepository;
