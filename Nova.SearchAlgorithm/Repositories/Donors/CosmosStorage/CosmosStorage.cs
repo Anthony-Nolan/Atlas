@@ -39,20 +39,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             }
 
             var firstResults = await query.ExecuteNextAsync<DonorCosmosDocument>();
-            var stringId = firstResults.FirstOrDefault()?.Id;
 
-            if (string.IsNullOrEmpty(stringId))
-            {
-                // This should mean there are no donors in the database yet.
-                return 0;
-            }
-
-            if (int.TryParse(stringId, out var donorIdResult))
-            {
-                return donorIdResult;
-            }
-
-            throw new CloudStorageException("A donor in CosmosDB seems to have a non-integer ID: " + stringId);
+            // If there are no donors in the database yet, return 0.
+            return firstResults.Any() ? firstResults.First().DuplicateIdForOrdering : 0;
         }
 
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
