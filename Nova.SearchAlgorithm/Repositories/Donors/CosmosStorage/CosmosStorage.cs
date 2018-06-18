@@ -39,7 +39,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             }
 
             var firstResults = await query.ExecuteNextAsync<DonorCosmosDocument>();
-            var stringId = firstResults.First().Id;
+            var stringId = firstResults.FirstOrDefault()?.Id;
+
+            if (string.IsNullOrEmpty(stringId))
+            {
+                // This should mean there are no donors in the database yet.
+                return 0;
+            }
 
             if (int.TryParse(stringId, out var donorIdResult))
             {
