@@ -12,6 +12,15 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
     {
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
+
+        /// <summary>
+        /// During the donor import we need to know how far we've got;
+        /// the way to do this is to determine the highest donor ID that was inserted so far.
+        /// Cosmos can't order by primary key so we duplicate the id here.
+        /// https://stackoverflow.com/questions/48710600/azure-cosmosdb-how-to-order-by-id
+        /// </summary>
+        public int DuplicateIdForOrdering { get; set; }
+
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
 
@@ -40,6 +49,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return new DonorCosmosDocument
             {
                 Id = input.DonorId.ToString(),
+                DuplicateIdForOrdering = input.DonorId,
                 RegistryCode = input.RegistryCode,
                 DonorType = input.DonorType,
                 HlaNames = input.HlaNames
@@ -51,6 +61,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return new DonorCosmosDocument
             {
                 Id = input.DonorId.ToString(),
+                DuplicateIdForOrdering = input.DonorId,
                 RegistryCode = input.RegistryCode,
                 DonorType = input.DonorType,
                 HlaNames = input.ToRawInputDonor().HlaNames,

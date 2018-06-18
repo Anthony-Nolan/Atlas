@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             var query = client.CreateDocumentQuery<DonorCosmosDocument>(
                     UriFactory.CreateDocumentCollectionUri(DatabaseId, client.CollectionId<DonorCosmosDocument>()),
                     new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true })
-                .OrderByDescending(d => d.Id)
+                .OrderByDescending(d => d.DuplicateIdForOrdering)
                 .Take(1)
                 .AsDocumentQuery();
 
