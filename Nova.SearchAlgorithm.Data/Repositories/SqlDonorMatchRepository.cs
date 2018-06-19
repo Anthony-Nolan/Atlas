@@ -20,8 +20,15 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         /// <summary>
         /// Insert a donor into the database.
         /// This does _not_ refresh the hla matches.
+        /// Deprecated: use InsertBatchOfDonors instead
         /// </summary>
         Task InsertDonor(RawInputDonor donor);
+
+        /// <summary>
+        /// Insert a donor into the database.
+        /// This does _not_ refresh the hla matches.
+        /// </summary>
+        Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
 
         /// <summary>
         /// If a donor with the given DonorId already exists, update the HLA and refresh the pre-processed matching groups.
@@ -73,6 +80,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 context.Donors.Add(donor.ToDonorEntity());
                 await context.SaveChangesAsync();
             });
+        }
+
+        public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
+        {
+            return Task.WhenAll(donors.Select(InsertDonor));
         }
 
         public async Task AddOrUpdateDonor(InputDonor donor)

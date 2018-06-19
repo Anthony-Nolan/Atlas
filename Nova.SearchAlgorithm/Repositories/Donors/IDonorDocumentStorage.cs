@@ -11,6 +11,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         /// Inserts the raw donor but does not insert any match data
         /// </summary>
         Task InsertDonor(RawInputDonor donor);
+        Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
         /// <summary>
         /// Refreshes or creates the match data based on the donor's (new)
         /// expanded HLA information.
