@@ -111,6 +111,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.InsertDonor(donor);
         }
 
+        public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
+        {
+            return donorDocumentRepository.InsertBatchOfDonors(donors);
+        }
+
         public async Task AddOrUpdateDonor(InputDonor donor)
         {
             await donorDocumentRepository.InsertDonor(donor.ToRawInputDonor());

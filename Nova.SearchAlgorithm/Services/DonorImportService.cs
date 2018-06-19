@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Services
 
             while (page.Donors.Any())
             {
-                await Task.WhenAll(page.Donors.Select(InsertDonor));
+                await donorImportRepository.InsertBatchOfDonors(page.Donors.Select(d => d.ToRawImportDonor()));
 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
                 nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
@@ -60,22 +60,6 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             logger.SendTrace("Donor import is complete", LogLevel.Info);
-        }
-
-        private async Task InsertDonor(Donor donor)
-        {
-            try
-            {
-                await donorImportRepository.InsertDonor(donor.ToRawImportDonor());
-            }
-            catch (Exception e)
-            {
-                // Log the error clearly so we can grep them out and import... manually?
-                var message = $"Failed to import donor {donor.DonorId} with reason {e.Message}";
-                Trace.WriteLine(message);
-                logger.SendTrace(message, LogLevel.Error);
-                throw new DonorImportException(message, e);
-            }
         }
     }
 }
