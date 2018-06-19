@@ -39,12 +39,7 @@ namespace Nova.SearchAlgorithm.Services
                 stopwatch.Start();
                 var results = await batch.RequestNextAsync();
 
-                
-                // TODO: NOVA-1295 Find out if this works with Task.WhenAll() 
-                foreach (var donor in results)
-                {
-                    await UpdateSingleDonorHlaAsync(donor);
-                }
+                await Task.WhenAll(results.Select(UpdateSingleDonorHlaAsync));
 
                 stopwatch.Stop();
                 totalUpdated += results.Count();
