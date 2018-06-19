@@ -76,7 +76,9 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
-            return Task.WhenAll(Enum.GetValues(typeof(RegistryCode)).Cast<RegistryCode>()
+            var allRegistryCodes = Enum.GetValues(typeof(RegistryCode)).Cast<RegistryCode>();
+            return Task.WhenAll(allRegistryCodes
+                .Where(rc => donors.Any(d => d.RegistryCode == rc))
                 .Select(rc =>
                 {
                     var batchOperation = new TableBatchOperation();

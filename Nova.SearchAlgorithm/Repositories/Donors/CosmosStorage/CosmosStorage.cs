@@ -80,6 +80,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             await client.CreateItemAsync(DonorCosmosDocument.FromRawInputDonor(donor));
         }
 
+        public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
+        {
+            throw new NotImplementedException();
+        }
+
         public IBatchQueryAsync<DonorResult> AllDonors()
         {
             IDocumentQuery<DonorCosmosDocument> query = client.CreateDocumentQuery<DonorCosmosDocument>(

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,18 +48,31 @@ namespace Nova.SearchAlgorithm.Services
         {
             var nextId = lastId;
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
             var page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
 
+            
             while (page.Donors.Any())
             {
                 await donorImportRepository.InsertBatchOfDonors(page.Donors.Select(d => d.ToRawImportDonor()));
 
+                stopwatch.Stop();
+                logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
+                {
+                    { "BatchSize", DonorPageSize.ToString() },
+                    { "BatchImportTime", stopwatch.ElapsedMilliseconds.ToString() },
+                });           
+                stopwatch.Reset();
+                stopwatch.Start();
+                
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
                 nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
                 page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
             }
-
+            
             logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
     }

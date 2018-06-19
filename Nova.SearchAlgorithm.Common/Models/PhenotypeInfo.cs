@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Common.Models
@@ -35,6 +37,11 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DRB1_1 = mapping(Locus.Drb1, TypePositions.One, DRB1_1),
                 DRB1_2 = mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
             };
+        }
+
+        public IEnumerable<T> ToEnumerable()
+        {
+            return new List<T>{ A_1, A_2, B_1, B_2, C_1, C_2, DRB1_1, DRB1_2, DQB1_1, DQB1_2 };
         }
 
         public void EachPosition(Action<Locus, TypePositions, T> action)
