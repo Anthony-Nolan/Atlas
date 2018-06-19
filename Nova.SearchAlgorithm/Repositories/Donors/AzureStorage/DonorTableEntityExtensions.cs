@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         private static ExpandedHla DeserializeHlaDetails(string serialisedHlaDetails)
         {
-            return JsonConvert.DeserializeObject<ExpandedHla>(serialisedHlaDetails);
+            return serialisedHlaDetails == null ? null : JsonConvert.DeserializeObject<ExpandedHla>(serialisedHlaDetails);
         }
 
         private static string SerialiseHlaDetails(ExpandedHla hlaDetails)

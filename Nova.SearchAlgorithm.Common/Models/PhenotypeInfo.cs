@@ -39,6 +39,19 @@ namespace Nova.SearchAlgorithm.Common.Models
             };
         }
 
+        // Aggregates each locus alongside its two values
+        public IEnumerable<R> FlatMap<R>(Func<Locus, T, T, R> mapping)
+        {
+            return new List<R>
+            {
+                mapping(Locus.A, A_1, A_2),
+                mapping(Locus.B, B_1, B_2),
+                mapping(Locus.C, C_1, C_2),
+                mapping(Locus.Drb1, DRB1_1, DRB1_2),
+                mapping(Locus.Dqb1, DQB1_1, DQB1_2)
+            };
+        }
+
         public IEnumerable<T> ToEnumerable()
         {
             return new List<T>{ A_1, A_2, B_1, B_2, C_1, C_2, DRB1_1, DRB1_2, DQB1_1, DQB1_2 };

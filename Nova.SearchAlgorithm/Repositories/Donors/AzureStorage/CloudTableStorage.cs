@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>();
             foreach (string name in namesToMatchList)
             {
-                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GeneratePartitionKey(locus, name)));
+                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GenerateRowKey(locus, name)));
             }
 
             return matchTable.ExecuteQuery(matchesQuery);
@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public Task<DonorResult> GetDonor(int donorId)
         {
-            var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
+            var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GeneratePartitionKey(donorId)));
             return Task.Run(() => donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToDonorResult()).FirstOrDefault());
         }
 
@@ -109,21 +109,39 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         {
             // First delete all the old matches
             var matches = AllMatchesForDonor(donor.DonorId).ToList();
-            // We can't batch delete if all the partition keys are different
-            await Task.WhenAll(matches.Select(m => matchTable.ExecuteAsync(TableOperation.Delete(m))));
-            
+            var deleteBatchOperation = new TableBatchOperation();
+            foreach (var match in matches)
+            {
+                deleteBatchOperation.Delete(match);
+            }
+
+            if (deleteBatchOperation.Count != 0)
+            {
+                await matchTable.ExecuteBatchAsync(deleteBatchOperation);                
+            }
+
             // Add back the new matches
-            await donor.MatchingHla.WhenAllLoci((locusName, matchingHla1, matchingHla2) => InsertLocusMatch(locusName, matchingHla1, matchingHla2, donor.DonorId));
+            var insertBatchOperation = new TableBatchOperation();
+            var entities = donor.MatchingHla.FlatMap((locusName, matchingHla1, matchingHla2) => ConvertToPotentialHlaMatchRelationTableEntities(locusName, matchingHla1, matchingHla2, donor.DonorId));
+            foreach (var entity in entities.SelectMany(x => x))
+            {
+                insertBatchOperation.Insert(entity);
+            }
+
+            if (insertBatchOperation.Count != 0)
+            {
+                await matchTable.ExecuteBatchAsync(insertBatchOperation);                
+            }
         }
 
         private IEnumerable<PotentialHlaMatchRelationTableEntity> AllMatchesForDonor(int donorId)
         { 
-            var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>().Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
+            var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GeneratePartitionKey(donorId)));
 
             return matchTable.ExecuteQuery(matchesQuery);
         }
 
-        private Task InsertLocusMatch(Locus locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
+        private IEnumerable<PotentialHlaMatchRelationTableEntity> ConvertToPotentialHlaMatchRelationTableEntities(Locus locusName, ExpandedHla matchingHla1, ExpandedHla matchingHla2, int donorId)
         {
             var list1 = (matchingHla1?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
             var list2 = (matchingHla2?.AllMatchingHlaNames() ?? Enumerable.Empty<string>()).ToList();
@@ -132,13 +150,12 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
             if (!combinedList.Any())
             {
-                return Task.CompletedTask;
+                return new List<PotentialHlaMatchRelationTableEntity>();
             }
 
-            // Can't batch the inserts since the partition names differ
-            return Task.WhenAll(combinedList.Select(matchName =>
+            return combinedList.Select(matchName =>
             {
-                TypePositions typePositions = (TypePositions.None);
+                var typePositions = (TypePositions.None);
                 if (list1.Contains(matchName))
                 {
                     typePositions |= TypePositions.One;
@@ -149,12 +166,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                     typePositions |= TypePositions.Two;
                 }
 
-                var insertMatch =
-                    TableOperation.InsertOrMerge(
-                        new PotentialHlaMatchRelationTableEntity(locusName, typePositions, matchName, donorId));
-
-                return matchTable.ExecuteAsync(insertMatch);
-            }));
+                return new PotentialHlaMatchRelationTableEntity(locusName, typePositions, matchName, donorId);
+            });
         }
     }
 }

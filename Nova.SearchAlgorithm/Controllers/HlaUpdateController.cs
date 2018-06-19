@@ -1,10 +1,5 @@
-﻿using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Http;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Controllers
