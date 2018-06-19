@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Exceptions;
@@ -19,10 +20,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("trigger-donor-hla-update")]
-        public IHttpActionResult TriggerSingleImport()
+        public async Task TriggerSingleImport()
         {
-            hlaUpdateService.UpdateDonorHla();
-            return Ok();
+            await hlaUpdateService.UpdateDonorHla();
         }
     }
 }
