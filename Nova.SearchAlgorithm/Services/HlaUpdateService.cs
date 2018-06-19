@@ -41,8 +41,8 @@ namespace Nova.SearchAlgorithm.Services
                 DonorType = donor.DonorType,
                 RegistryCode = donor.RegistryCode,
                 MatchingHla = (await donor.HlaNames
-                                  .WhenAllPositions((l, p, n) => n == null ? null : lookupService.GetMatchingHla(l.ToMatchLocus(), n))
-                              ).Map((l, p, n) => n.ToExpandedHla())
+                                  .WhenAllPositions((l, p, n) => n == null ? Task.FromResult((IMatchingHlaLookupResult) null) : lookupService.GetMatchingHla(l.ToMatchLocus(), n))
+                              ).Map((l, p, n) => n?.ToExpandedHla())
             };
             await donorImportRepository.RefreshMatchingGroupsForExistingDonor(update);
         }
