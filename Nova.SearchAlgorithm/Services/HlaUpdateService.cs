@@ -75,14 +75,15 @@ namespace Nova.SearchAlgorithm.Services
             await donorImportRepository.RefreshMatchingGroupsForExistingDonor(update);
 
             var totalTime = stopwatch.ElapsedMilliseconds;
-            logger.SendTrace("Refreshed Donor Hla Matching Groups", LogLevel.Info, new Dictionary<string, string>
+            var metrics = new Dictionary<string, string>
             {
                 { "DonorId", donor.DonorId.ToString() },
                 { "NumberOfHla", donor.HlaNames.ToEnumerable().Count(hla => hla != null).ToString() },
                 { "TotalTime", totalTime.ToString() },
                 { "HlaFetchTime", timeForHlaFetch.ToString() },
                 { "RefreshTime",  (totalTime - timeForHlaFetch).ToString() },
-            });
+            };
+            logger.SendTrace("Refreshed Donor Hla Matching Groups", LogLevel.Info, metrics);
         }
     }
 }
