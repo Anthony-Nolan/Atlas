@@ -69,8 +69,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public Task<DonorResult> GetDonor(int donorId)
         {
-            var donorQuery = new TableQuery<DonorTableEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey",
-                QueryComparisons.Equal, PotentialHlaMatchRelationTableEntity.GeneratePartitionKey(donorId)));
+            var donorQuery = new TableQuery<DonorTableEntity>().Where(
+                TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, donorId.ToString()));
             return Task.Run(() =>
                 donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToDonorResult()).FirstOrDefault());
         }
