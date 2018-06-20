@@ -62,21 +62,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetMatchingHla(MatchedLocus, hlaName));
         }
 
-        [TestCase("*99:99", "99:99")]
-        [TestCase("99:99", "99:99")]
-        [TestCase("99:99N", "99:99N")]
-        [TestCase("99:99:99", "99:99")]
-        [TestCase("99:99:99L", "99:99L")]
-        [TestCase("99:99:99:99", "99:99")]
-        [TestCase("99:99:99:99Q", "99:99Q")]
-        public async Task GetMatchingHla_WhenAllele_LookupTheTwoFieldName(string hlaName, string twoFieldName)
-        {
-            hlaServiceClient.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Allele);
-            await lookupService.GetMatchingHla(MatchedLocus, hlaName);
-
-            await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, twoFieldName, TypingMethod.Molecular);
-        }
-
         [Test]
         public async Task GetMatchingHla_WhenNmdpCode_LookupTheExpandedAlleleList()
         {
@@ -119,15 +104,16 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, firstField, TypingMethod.Molecular);
         }
 
-        [Test]
-        public async Task GetMatchingHla_WhenSerology_LookupTheUnchangedSerology()
+        [TestCase("*AlleleName", "AlleleName", HlaTypingCategory.Allele, TypingMethod.Molecular)]
+        [TestCase("AlleleName", "AlleleName", HlaTypingCategory.Allele, TypingMethod.Molecular)]
+        [TestCase("SerologyName", "SerologyName", HlaTypingCategory.Serology, TypingMethod.Serology)]
+        public async Task GetMatchingHla_WhenAlleleOrSerology_LookupTheHlaName(
+            string hlaName, string lookupName, HlaTypingCategory category, TypingMethod typingMethod)
         {
-            const string hlaName = "SEROLOGY";
-
-            hlaServiceClient.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Serology);
+            hlaServiceClient.GetHlaTypingCategory(hlaName).Returns(category);
             await lookupService.GetMatchingHla(MatchedLocus, hlaName);
 
-            await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, hlaName, TypingMethod.Serology);
+            await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, lookupName, typingMethod);
         }
 
         [Test]

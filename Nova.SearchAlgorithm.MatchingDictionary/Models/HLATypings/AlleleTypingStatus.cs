@@ -27,6 +27,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             DnaCategory = dnaCategory;
         }
 
+        private AlleleTypingStatus() : this(SequenceStatus.Unknown, DnaCategory.Unknown)
+        {
+        }
+
+        public static AlleleTypingStatus GetDefaultStatus()
+        {
+            return new AlleleTypingStatus();
+        }
+
         public bool Equals(AlleleTypingStatus other)
         {
             if (ReferenceEquals(null, other)) return false;

@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         {
             if (alleleStatus == null)
             {
-                return new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown);
+                return AlleleTypingStatus.GetDefaultStatus();
             }
 
             if (!Enum.TryParse(alleleStatus.SequenceStatus, true, out SequenceStatus sequenceStatus))

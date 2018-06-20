@@ -24,11 +24,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
 
-        /// <summary>
-        /// Use this constructor to make an allele typing of unknown status
-        /// </summary>
         public AlleleTyping(string locus, string name, bool isDeleted = false)
-            :this(locus, name, new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown), isDeleted)
+            :this(locus, name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
         {            
         }
 
