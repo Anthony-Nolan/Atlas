@@ -159,7 +159,7 @@
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
-    <Compile Include="Models\MatchingTypings\AlleleTypingStatus.cs" />
+    <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />

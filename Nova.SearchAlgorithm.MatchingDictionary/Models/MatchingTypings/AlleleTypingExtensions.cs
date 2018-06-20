@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {

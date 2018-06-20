@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
     public enum SequenceStatus
     {
