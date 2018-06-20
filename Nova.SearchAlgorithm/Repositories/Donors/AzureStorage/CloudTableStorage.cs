@@ -130,6 +130,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            // First delete all the old matches
             var matches = AllMatchesForDonor(donor.DonorId).ToList();
 
             logger.SendTrace("Fetched existing matches", LogLevel.Info, new Dictionary<string, string>
@@ -142,23 +144,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             stopwatch.Reset();
             stopwatch.Start();
             
-            // First delete all the old matches
-            var deleteBatchNumber = 0;
-            const int batchSize = 100;
-            while (matches.Skip(deleteBatchNumber * batchSize).Any())
-            {
-                var deleteBatchOperation = new TableBatchOperation();
-                var matchesToBatch = matches.Skip(deleteBatchNumber * batchSize).Take(batchSize);
-                foreach (var match in matchesToBatch)
-                {
-                    deleteBatchOperation.Delete(match);
-                }
+            await ExecuteMatchOperationsInBatches(matches, (batchOp, match) => batchOp.Delete(match));
 
-                await matchTable.ExecuteBatchAsync(deleteBatchOperation);
-
-                deleteBatchNumber++;
-            }
-            
             logger.SendTrace("Deleted existing matches", LogLevel.Info, new Dictionary<string, string>
             {
                 { "Time", stopwatch.ElapsedMilliseconds.ToString() },
@@ -187,20 +174,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             stopwatch.Reset();
             stopwatch.Start();
 
-            var insertBatchNumber = 0;
-            while (newMatches.Skip(insertBatchNumber * batchSize).Any())
-            {
-                var insertBatchOperation = new TableBatchOperation();
-                var matchesToBatch = newMatches.Skip(insertBatchNumber * batchSize).Take(batchSize);
-                foreach (var match in matchesToBatch)
-                {
-                    insertBatchOperation.Insert(match);
-                }
-
-                await matchTable.ExecuteBatchAsync(insertBatchOperation);
-
-                insertBatchNumber++;
-            }
+            await ExecuteMatchOperationsInBatches(newMatches, (batchOp, match) => batchOp.Insert(match));
             
             logger.SendTrace("Updated new matches", LogLevel.Info, new Dictionary<string, string>
             {
@@ -208,6 +182,27 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 { "DonorId", donor.DonorId.ToString() },
                 { "Matches", newMatches.Count().ToString() },
             });
+        }
+
+        private async Task ExecuteMatchOperationsInBatches(
+            List<PotentialHlaMatchRelationTableEntity> matches,
+            Action<TableBatchOperation, PotentialHlaMatchRelationTableEntity> addOperation)
+        {
+            var batchNumber = 0;
+            const int batchSize = 100;
+            while (matches.Skip(batchNumber * batchSize).Any())
+            {
+                var batchOperation = new TableBatchOperation();
+                var matchesToBatch = matches.Skip(batchNumber * batchSize).Take(batchSize);
+                foreach (var match in matchesToBatch)
+                {
+                    addOperation(batchOperation, match);
+                }
+
+                await matchTable.ExecuteBatchAsync(batchOperation);
+
+                batchNumber++;
+            }
         }
 
         private IEnumerable<PotentialHlaMatchRelationTableEntity> AllMatchesForDonor(int donorId)
