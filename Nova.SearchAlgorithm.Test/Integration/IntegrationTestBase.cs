@@ -34,19 +34,19 @@ namespace Nova.SearchAlgorithm.Test.Integration
         [OneTimeSetUp]
         public void Setup()
         {
+            // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
+            tableStorageEmulator.Clear();
+
+            // Starting the cosmos emulator is currently a manual step.
+            cosmosDatabase.Clear();
+
             container = CreateContainer();
 
             if (container.TryResolve(out SearchAlgorithmContext context))
             {
                 context.Database.Delete();
             }
-
-            // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
-            tableStorageEmulator.Clear();
-
-            // Starting the cosmos emulator is currently a manual step.
-            cosmosDatabase.Clear();
-    }
+        }
 
         // This is almost a duplicate of the container in 
         // Nova.SearchAlgorithm.Config.Modules.ServiceModule

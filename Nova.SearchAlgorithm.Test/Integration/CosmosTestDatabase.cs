@@ -15,8 +15,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
         public void Clear()
         {
             Task.WhenAll(
-                DeleteCollectionIfExists(typeof(DonorCosmosDocument).FullName),
-                DeleteCollectionIfExists(typeof(PotentialHlaMatchRelationCosmosDocument).FullName)
+                DeleteCollectionIfExists(client.CollectionId<DonorCosmosDocument>()),
+                DeleteCollectionIfExists(client.CollectionId<PotentialHlaMatchRelationCosmosDocument>())
                 ).Wait();
         }
 
@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             }
             catch (DocumentClientException)
             {
-                // NOP: either the DB or the collection does not exist
+                // NO-OP: either the DB or the collection does not exist
             }
         }
     }
