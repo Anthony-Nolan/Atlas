@@ -13,60 +13,86 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     /// </summary>
     internal class AlleleInfoGenerator
     {
-        public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(IWmdaDataRepository dataRepository)
-        {
-            var confidentialAllelesList = dataRepository.ConfidentialAlleles.ToList();
-            var pGroupsList = dataRepository.PGroups.ToList();
-            var gGroupList = dataRepository.GGroups.ToList();
-            var alleleStatusList = dataRepository.AlleleStatuses.ToList();
+        private readonly List<HlaNom> alleles;
+        private readonly List<ConfidentialAllele> confidentialAlleles;
+        private readonly List<AlleleStatus> alleleStatuses;
+        private readonly List<HlaNomP> pGroups;
+        private readonly List<HlaNomG> gGroups;
 
-            var alleleInfo = dataRepository.Alleles
-                .Where(allele => !confidentialAllelesList.Contains(allele as IWmdaHlaTyping))
-                .Select(allele => GetInfoForSingleAllele(allele, pGroupsList, gGroupList, alleleStatusList));
+        public AlleleInfoGenerator(IWmdaDataRepository dataRepository)
+        {
+            // enumerating data collections once here, as they are accessed thousands of times
+            alleles = dataRepository.Alleles.ToList();
+            confidentialAlleles = dataRepository.ConfidentialAlleles.ToList();
+            alleleStatuses = dataRepository.AlleleStatuses.ToList();
+            pGroups = dataRepository.PGroups.ToList();
+            gGroups = dataRepository.GGroups.ToList();
+        }
+
+        public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching()
+        {           
+            var alleleInfo = alleles
+                .Where(AlleleIsNotConfidential)
+                .Select(GetInfoForSingleAllele);
 
             return alleleInfo;
         }
 
-        private static IAlleleInfoForMatching GetInfoForSingleAllele(
-            HlaNom alleleHlaNom,
-            IEnumerable<HlaNomP> allPGroups,
-            IEnumerable<HlaNomG> allGGroups,
-            IReadOnlyCollection<AlleleStatus> alleleStatuses)
+        private bool AlleleIsNotConfidential(IWmdaHlaTyping allele)
         {
-            var alleleStatus = GetAlleleTypingStatus(alleleStatuses, alleleHlaNom);
-            var allele = new AlleleTyping(alleleHlaNom.Locus, alleleHlaNom.Name, alleleStatus, alleleHlaNom.IsDeleted);
-
-            var usedInMatching = alleleHlaNom.IdenticalHla.Equals("")
-                ? allele
-                : GetUsedInMatchingValueFromIdenticalHla(alleleHlaNom, alleleStatuses);
-            var pGroup = GetAlleleGroup(allPGroups, usedInMatching);
-            var gGroup = GetAlleleGroup(allGGroups, usedInMatching);
-
-            return new AlleleInfoForMatching(allele, usedInMatching, pGroup, gGroup);
+            return !confidentialAlleles.Contains(allele);
         }
 
-        private static AlleleTypingStatus GetAlleleTypingStatus(IEnumerable<AlleleStatus> alleleStatuses, IWmdaHlaTyping allele)
+        private IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom allele)
+        {
+            var alleleTyping = GetAlleleTyping(allele);
+
+            var usedInMatching = allele.IdenticalHla.Equals("")
+                ? alleleTyping
+                : GetAlleleTypingFromIdenticalHla(allele);
+
+            var pGroup = GetPGroup(usedInMatching);
+            var gGroup = GetGGroup(usedInMatching);
+
+            return new AlleleInfoForMatching(alleleTyping, usedInMatching, pGroup, gGroup);
+        }
+
+        private AlleleTyping GetAlleleTypingFromIdenticalHla(HlaNom allele)
+        {
+            var identicalHla = new HlaNom(TypingMethod.Molecular, allele.Locus, allele.IdenticalHla);
+            return GetAlleleTyping(identicalHla);
+        }
+
+        private AlleleTyping GetAlleleTyping(HlaNom allele)
+        {
+            var alleleStatus = GetAlleleTypingStatus(allele);
+            return new AlleleTyping(allele.Locus, allele.Name, alleleStatus, allele.IsDeleted);
+        }
+
+        private AlleleTypingStatus GetAlleleTypingStatus(IWmdaHlaTyping allele)
         {
             var alleleStatus = alleleStatuses
-                .FirstOrDefault(status =>
-                    status.Locus.Equals(allele.Locus) && status.Name.Equals(allele.Name));
+                .FirstOrDefault(status => status.TypingEquals(allele));
 
             return alleleStatus.ToAlleleTypingStatus();
         }
 
-        private static AlleleTyping GetUsedInMatchingValueFromIdenticalHla(HlaNom alleleHlaNom, IEnumerable<AlleleStatus> alleleStatuses)
+        private IEnumerable<string> GetPGroup(IWmdaHlaTyping allele)
         {
-            var identicalHla = new HlaNom(TypingMethod.Molecular, alleleHlaNom.Locus, alleleHlaNom.IdenticalHla);
-            var typingStatusOfIdenticalHla = GetAlleleTypingStatus(alleleStatuses, identicalHla);
-            return new AlleleTyping(identicalHla.Locus, identicalHla.Name, typingStatusOfIdenticalHla);
+            return GetAlleleGroup(pGroups, allele);
         }
 
-        private static IEnumerable<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> allAlleleGroups, IWmdaHlaTyping allele)
+        private IEnumerable<string> GetGGroup(IWmdaHlaTyping allele)
         {
-            var alleleGroup = allAlleleGroups
-                .SingleOrDefault(group =>
-                    group.Locus.Equals(allele.Locus) && group.Alleles.Contains(allele.Name)
-                )?.Name;
+            return GetAlleleGroup(gGroups, allele);
+        }
+
+        private static IEnumerable<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> alleleGroups, IWmdaHlaTyping allele)
+        {
+            var alleleGroup = alleleGroups
+                .Where(group => group.LocusEquals(allele))
+                .SingleOrDefault(group => group.Alleles.Contains(allele.Name))
+                ?.Name;
 
             return alleleGroup != null ? new List<string> { alleleGroup } : new List<string>();
         }
