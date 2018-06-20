@@ -15,15 +15,12 @@ namespace Nova.SearchAlgorithm.Test.Integration
         private readonly Lazy<CloudTable> donorTable = new Lazy<CloudTable>(() => GetTable(CloudTableStorage.DonorTableReference));
         private readonly Lazy<CloudTable> matchTable = new Lazy<CloudTable>(() => GetTable(CloudTableStorage.MatchTableReference));
 
-        private bool wasRunning = false;
+        private bool wasRunning;
 
         public void Start()
         {
-            if (IsRunning())
-            {
-                wasRunning = true;
-            }
-            else
+            wasRunning = IsRunning();
+            if (!wasRunning)
             {
                 ExecuteCommandOnEmulator("start");
             }
@@ -39,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
 
         private bool IsRunning()
         {
-            string output = ExecuteCommandOnEmulator("status");
+            var output = ExecuteCommandOnEmulator("status");
             return output.Contains("IsRunning: True");
         }
 
