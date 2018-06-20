@@ -73,18 +73,24 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return (await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donorId))?.ToDonorResult();
         }
 
-        public Task InsertDonor(RawInputDonor donor)
+        public async Task InsertDonor(RawInputDonor donor)
         {
-            return Task.Run(async () =>
-            {
-                context.Donors.Add(donor.ToDonorEntity());
-                await context.SaveChangesAsync();
-            });
+            context.Donors.Add(donor.ToDonorEntity());
+            await context.SaveChangesAsync();
         }
 
-        public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
+        public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
-            return Task.WhenAll(donors.Select(InsertDonor));
+            var rawInputDonors = donors.ToList();
+
+            if (!rawInputDonors.Any())
+            {
+                return;
+            }
+
+            context.Donors.AddRange(rawInputDonors.Select(d => d.ToDonorEntity()));
+
+            await context.SaveChangesAsync();
         }
 
         public async Task AddOrUpdateDonor(InputDonor donor)
@@ -97,8 +103,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             else
             {
                 result.CopyRawHlaFrom(donor);
-                await context.SaveChangesAsync();
-                await RefreshMatchingGroupsForExistingDonor(donor);
             }
 
             await RefreshMatchingGroupsForExistingDonor(donor);
