@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
@@ -188,20 +189,14 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             List<PotentialHlaMatchRelationTableEntity> matches,
             Action<TableBatchOperation, PotentialHlaMatchRelationTableEntity> addOperation)
         {
-            var batchNumber = 0;
-            const int batchSize = 100;
-            while (matches.Skip(batchNumber * batchSize).Any())
+            foreach (var batch in matches.Batch(100))
             {
                 var batchOperation = new TableBatchOperation();
-                var matchesToBatch = matches.Skip(batchNumber * batchSize).Take(batchSize);
-                foreach (var match in matchesToBatch)
+                foreach (var match in batch)
                 {
                     addOperation(batchOperation, match);
                 }
-
                 await matchTable.ExecuteBatchAsync(batchOperation);
-
-                batchNumber++;
             }
         }
 
