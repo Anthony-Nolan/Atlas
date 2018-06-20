@@ -1,22 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 {
     public class CloudTableStorage : IDonorDocumentStorage
     {
+        private readonly ILogger logger;
         public const string DonorTableReference = "Donors";
         public const string MatchTableReference = "Matches";
         private readonly CloudTable donorTable;
         private readonly CloudTable matchTable;
 
-        public CloudTableStorage(ICloudTableFactory cloudTableFactory)
+        public CloudTableStorage(ICloudTableFactory cloudTableFactory, ILogger logger)
         {
+            this.logger = logger;
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
             matchTable = cloudTableFactory.GetTable(MatchTableReference);
         }
@@ -106,18 +110,39 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             // Update the donor itself
             var insertDonor = TableOperation.InsertOrReplace(donor.ToTableEntity());
             await donorTable.ExecuteAsync(insertDonor);
+            
+            logger.SendTrace("Updated donor", LogLevel.Info, new Dictionary<string, string>
+            {
+                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
+                { "DonorId", donor.DonorId.ToString() }
+            });
 
             await UpdateDonorHlaMatches(donor);
         }
 
         private async Task UpdateDonorHlaMatches(InputDonor donor)
         {
-            // First delete all the old matches
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var matches = AllMatchesForDonor(donor.DonorId).ToList();
 
+            logger.SendTrace("Fetched existing matches", LogLevel.Info, new Dictionary<string, string>
+            {
+                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
+                { "DonorId", donor.DonorId.ToString() },
+                { "Matches", matches.Count().ToString() },
+            });
+            
+            stopwatch.Reset();
+            stopwatch.Start();
+            
+            // First delete all the old matches
             var deleteBatchNumber = 0;
             const int batchSize = 100;
             while (matches.Skip(deleteBatchNumber * batchSize).Any())
@@ -133,6 +158,16 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
                 deleteBatchNumber++;
             }
+            
+            logger.SendTrace("Deleted existing matches", LogLevel.Info, new Dictionary<string, string>
+            {
+                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
+                { "DonorId", donor.DonorId.ToString() },
+                { "Matches", matches.Count().ToString() },
+            });
+            
+            stopwatch.Reset();
+            stopwatch.Start();
 
             // Add back the new matches
             var newMatches = donor.MatchingHla
@@ -141,6 +176,17 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                         donor.DonorId))
                 .SelectMany(x => x)
                 .ToList();
+            
+            logger.SendTrace("Fetched new matches", LogLevel.Info, new Dictionary<string, string>
+            {
+                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
+                { "DonorId", donor.DonorId.ToString() },
+                { "Matches", newMatches.Count().ToString() },
+            });
+            
+            stopwatch.Reset();
+            stopwatch.Start();
+
             var insertBatchNumber = 0;
             while (newMatches.Skip(insertBatchNumber * batchSize).Any())
             {
@@ -155,6 +201,13 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 
                 insertBatchNumber++;
             }
+            
+            logger.SendTrace("Updated new matches", LogLevel.Info, new Dictionary<string, string>
+            {
+                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
+                { "DonorId", donor.DonorId.ToString() },
+                { "Matches", newMatches.Count().ToString() },
+            });
         }
 
         private IEnumerable<PotentialHlaMatchRelationTableEntity> AllMatchesForDonor(int donorId)

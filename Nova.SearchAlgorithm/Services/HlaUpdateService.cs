@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,9 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
 
-        public HlaUpdateService(IMatchingDictionaryLookupService lookupService, IDonorInspectionRepository donorInspectionRepository, IDonorImportRepository donorImportRepository, ILogger logger)
+        public HlaUpdateService(IMatchingDictionaryLookupService lookupService,
+            IDonorInspectionRepository donorInspectionRepository, IDonorImportRepository donorImportRepository,
+            ILogger logger)
         {
             this.lookupService = lookupService;
             this.donorInspectionRepository = donorInspectionRepository;
@@ -37,18 +40,31 @@ namespace Nova.SearchAlgorithm.Services
             {
                 stopwatch.Reset();
                 stopwatch.Start();
-                var results = await batch.RequestNextAsync();
+                var results = (await batch.RequestNextAsync()).ToList();
 
-                await Task.WhenAll(results.Select(UpdateSingleDonorHlaAsync));
-
-                stopwatch.Stop();
-                totalUpdated += results.Count();
-                logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
+                // The outer batch size is set by the storage implementation, and is 1000 for Azure Tables
+                // The inner batch is currently necessary to get insights within a reasonable timeframe
+                const int parallelBatchSize = 5;
+                var parallelBatchNumber = 0;
+                while (results.Skip(parallelBatchNumber * parallelBatchSize).Any())
                 {
-                    { "NumberOfDonors", totalUpdated.ToString() },
-                    { "UpdateTime", stopwatch.ElapsedMilliseconds.ToString() }
-                });
+                    await Task.WhenAll(
+                        results
+                            .Skip(parallelBatchNumber * parallelBatchSize)
+                            .Take(parallelBatchSize)
+                            .Select(UpdateSingleDonorHlaAsync)
+                    ).ConfigureAwait(false);
+                    
+                    parallelBatchNumber++;
 
+                    stopwatch.Stop();
+                    totalUpdated += parallelBatchNumber * parallelBatchSize;
+                    logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
+                    {
+                        {"NumberOfDonors", totalUpdated.ToString()},
+                        {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
+                    });
+                }
             }
         }
 
@@ -62,22 +78,32 @@ namespace Nova.SearchAlgorithm.Services
                 DonorType = donor.DonorType,
                 RegistryCode = donor.RegistryCode,
                 MatchingHla = (await donor.HlaNames
-                                  .WhenAllPositions((l, p, n) => n == null ? Task.FromResult((IMatchingHlaLookupResult) null) : lookupService.GetMatchingHla(l.ToMatchLocus(), n))
-                              ).Map((l, p, n) => n?.ToExpandedHla())
+                        .WhenAllPositions((l, p, n) =>
+                            n == null
+                                ? Task.FromResult((IMatchingHlaLookupResult) null)
+                                : lookupService.GetMatchingHla(l.ToMatchLocus(), n))
+                    ).Map((l, p, n) => n?.ToExpandedHla())
             };
             var timeForHlaFetch = stopwatch.ElapsedMilliseconds;
+
+            logger.SendTrace("Fetched Hla Data", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"DonorId", donor.DonorId.ToString()},
+                {"HlaFetchTime", timeForHlaFetch.ToString()},
+            });
 
             await donorImportRepository.RefreshMatchingGroupsForExistingDonor(update);
 
             var totalTime = stopwatch.ElapsedMilliseconds;
             var metrics = new Dictionary<string, string>
             {
-                { "DonorId", donor.DonorId.ToString() },
-                { "NumberOfHla", donor.HlaNames.ToEnumerable().Count(hla => hla != null).ToString() },
-                { "TotalTime", totalTime.ToString() },
-                { "HlaFetchTime", timeForHlaFetch.ToString() },
-                { "RefreshTime",  (totalTime - timeForHlaFetch).ToString() },
+                {"DonorId", donor.DonorId.ToString()},
+                {"NumberOfHla", donor.HlaNames.ToEnumerable().Count(hla => hla != null).ToString()},
+                {"TotalTime", totalTime.ToString()},
+                {"HlaFetchTime", timeForHlaFetch.ToString()},
+                {"RefreshTime", (totalTime - timeForHlaFetch).ToString()},
             };
+
             logger.SendTrace("Refreshed Donor Hla Matching Groups", LogLevel.Info, metrics);
         }
     }
