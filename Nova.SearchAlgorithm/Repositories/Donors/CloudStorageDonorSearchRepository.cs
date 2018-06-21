@@ -118,7 +118,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public async Task AddOrUpdateDonor(InputDonor donor)
         {
-            await donorDocumentRepository.InsertDonor(donor.ToRawInputDonor());
             await donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
 
