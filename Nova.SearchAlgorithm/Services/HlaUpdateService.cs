@@ -72,12 +72,7 @@ namespace Nova.SearchAlgorithm.Services
                 DonorId = donor.DonorId,
                 DonorType = donor.DonorType,
                 RegistryCode = donor.RegistryCode,
-                MatchingHla = (await donor.HlaNames
-                        .WhenAllPositions((l, p, n) =>
-                            n == null
-                                ? Task.FromResult((IMatchingHlaLookupResult) null)
-                                : lookupService.GetMatchingHla(l.ToMatchLocus(), n))
-                    ).Map((l, p, n) => n?.ToExpandedHla())
+                MatchingHla = await donor.HlaNames.WhenAllPositions((l, p, n) => Lookup(l, n))
             };
             var timeForHlaFetch = stopwatch.ElapsedMilliseconds;
 
@@ -100,6 +95,13 @@ namespace Nova.SearchAlgorithm.Services
             };
 
             logger.SendTrace("Refreshed Donor Hla Matching Groups", LogLevel.Info, metrics);
+        }
+
+        private async Task<ExpandedHla> Lookup(Locus locus, string hla)
+        {
+            return hla == null 
+                ? null
+                : (await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
         }
     }
 }

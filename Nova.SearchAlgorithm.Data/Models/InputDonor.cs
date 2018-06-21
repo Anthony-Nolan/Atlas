@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Data.Models
                 DonorId = DonorId,
                 RegistryCode = RegistryCode,
                 DonorType = DonorType,
-                HlaNames = MatchingHla.Map((l, p, expandedHla) => expandedHla?.Name)
+                HlaNames = MatchingHla.Map((l, p, expandedHla) => expandedHla?.OriginalName)
             };
         }
     }
