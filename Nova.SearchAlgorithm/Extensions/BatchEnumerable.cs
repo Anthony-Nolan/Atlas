@@ -1,35 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace Nova.SearchAlgorithm.Extensions
 {
     public static class BatchEnumerable
     {
-        public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> source, int size)
+        /// <summary>
+        /// Splits an IEnumerable into multiple batches of the given batchSize, for any sort of processing
+        /// which requires fixed size batches.
+        /// </summary>
+        /// <returns>
+        /// An IEnumerable of IEnumerables, all of which have size batchSize except possibly the last.
+        /// Between then they contain exactly the elemets of the original source IEnumerable.
+        /// </returns>
+        public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> source, int batchSize)
         {
             T[] bucket = null;
             var count = 0;
 
             foreach (var item in source)
             {
-                // Only create the bucket if there are items to put into it
                 if (bucket == null)
                 {
-                    bucket = new T[size];
+                    bucket = new T[batchSize];
                 }
 
                 bucket[count++] = item;
 
-                if (count != size)
+                if (count != batchSize)
                 {
                     continue;
                 }
 
                 yield return bucket.Select(x => x);
 
-                bucket = new T[size];
+                // Null in case there are no more items (see null check below)
+                bucket = null;
                 count = 0;
             }
 
