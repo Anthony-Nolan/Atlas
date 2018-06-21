@@ -3,10 +3,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
@@ -19,19 +19,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     public class MatchingDictionaryRepository : IMatchingDictionaryRepository
     {       
         private readonly ICloudTableFactory tableFactory;
-        private readonly ITableReferenceRepository tableReferenceRepository;
+        private readonly IMatchingDictionaryTableReferenceRepository matchingDictionaryTableReferenceRepository;
 
-        public MatchingDictionaryRepository(ICloudTableFactory factory, ITableReferenceRepository tableReferenceRepository)
+        public MatchingDictionaryRepository(ICloudTableFactory factory, IMatchingDictionaryTableReferenceRepository matchingDictionaryTableReferenceRepository)
         {
             tableFactory = factory;
-            this.tableReferenceRepository = tableReferenceRepository;
+            this.matchingDictionaryTableReferenceRepository = matchingDictionaryTableReferenceRepository;
         }
 
         public async Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
         {
             var newDataTable = CreateNewDataTable();
             InsertMatchingDictionaryEntriesIntoDataTable(dictionaryContents, newDataTable);
-            await tableReferenceRepository.UpdateMatchingDictionaryTableReference(newDataTable.Name);
+            await matchingDictionaryTableReferenceRepository.UpdateMatchingDictionaryTableReference(newDataTable.Name);
         }
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
@@ -46,14 +46,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private CloudTable CreateNewDataTable()
         {
-            var dataTableReference = tableReferenceRepository.GetNewMatchingDictionaryTableReference();
-            return tableFactory.GetOrCreateTable(dataTableReference);
+            var dataTableReference = matchingDictionaryTableReferenceRepository.GetNewMatchingDictionaryTableReference();
+            return tableFactory.GetTable(dataTableReference);
         }
 
         private async Task<CloudTable> GetCurrentDataTable()
         {
-            var dataTableReference = await tableReferenceRepository.GetCurrentMatchingDictionaryTableReference();
-            return tableFactory.GetOrCreateTable(dataTableReference);
+            var dataTableReference = await matchingDictionaryTableReferenceRepository.GetCurrentMatchingDictionaryTableReference();
+            return tableFactory.GetTable(dataTableReference);
         }
 
         private static void InsertMatchingDictionaryEntriesIntoDataTable(IEnumerable<MatchingDictionaryEntry> contents, CloudTable dataTable)
