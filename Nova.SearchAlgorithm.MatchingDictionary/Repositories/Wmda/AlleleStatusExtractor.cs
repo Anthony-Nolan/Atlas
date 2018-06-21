@@ -17,7 +17,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             var regex = new Regex(RegexPattern);
 
             if (!regex.IsMatch(line))
+            {
                 return null;
+            }
 
             var extractedData = regex.Match(line).Groups;
 
