@@ -53,6 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary
                 TypingMethod.Molecular, // Arbitrary, not used in tests
                 MolecularSubtype.CompleteAllele, // Arbitrary, not used in tests
                 SerologySubtype.Associated, // Arbitrary, not used in tests
+                AlleleTypingStatus.GetDefaultStatus(), // Default, not used in tests
                 raw.MatchingPGroups,
                 raw.MatchingGGroups,
                 new List<SerologyEntry>() // Empty, not used in tests
