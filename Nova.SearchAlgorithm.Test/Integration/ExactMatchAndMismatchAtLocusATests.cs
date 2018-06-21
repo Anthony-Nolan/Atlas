@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     B_2 = "14:47",
                     DRB1_1 = "13:03:01",
                     DRB1_2 = "13:02:01:03",
-                }).Map((l, p, h) => lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla())
+                }).Map((l, p, h) => lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
             }).Wait();
         }
 
