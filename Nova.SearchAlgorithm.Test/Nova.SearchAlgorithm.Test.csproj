@@ -365,7 +365,7 @@
     <Compile Include="MatchingDictionary\Repositories\Wmda\SerologyToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdRepositoryTestBase.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTest.cs" />
-    <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingModelTest.cs" />
+    <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\AlleleToSerologyMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedHlaTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\ReciprocalMatchingTest.cs" />
