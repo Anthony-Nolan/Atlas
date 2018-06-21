@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             var lookupService = container.Resolve<IMatchingDictionaryLookupService>();
             var donorRepository = container.Resolve<IDonorImportRepository>();
-            donorRepository.AddOrUpdateDonor(new InputDonor
+            donorRepository.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,

@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 }
             };
 
-            await importRepo.AddOrUpdateDonor(original);
+            await importRepo.AddOrUpdateDonorWithHla(original);
 
             DonorResult result = await inspectionRepo.GetDonor(donorId);
 

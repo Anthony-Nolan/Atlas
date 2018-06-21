@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.InsertBatchOfDonors(donors);
         }
 
-        public async Task AddOrUpdateDonor(InputDonor donor)
+        public async Task AddOrUpdateDonorWithHla(InputDonor donor)
         {
             await donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
