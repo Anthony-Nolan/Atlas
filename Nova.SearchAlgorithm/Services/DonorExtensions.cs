@@ -29,6 +29,8 @@ namespace Nova.SearchAlgorithm.Services
                 B_2 = donor.B_2,
                 C_1 = donor.C_1,
                 C_2 = donor.C_2,
+                DPB1_1 = donor.DPB1_1,
+                DPB1_2 = donor.DPB1_2,
                 DQB1_1 = donor.DQB1_1,
                 DQB1_2 = donor.DQB1_2,
                 DRB1_1 = donor.DRB1_1,

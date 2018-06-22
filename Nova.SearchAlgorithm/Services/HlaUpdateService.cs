@@ -99,6 +99,12 @@ namespace Nova.SearchAlgorithm.Services
 
         private async Task<ExpandedHla> Lookup(Locus locus, string hla)
         {
+            if (locus.Equals(Locus.Dpb1))
+            {
+                // TODO:NOVA-1300 figure out how best to lookup matches for Dpb1
+                return null;
+            }
+
             return hla == null 
                 ? null
                 : (await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
