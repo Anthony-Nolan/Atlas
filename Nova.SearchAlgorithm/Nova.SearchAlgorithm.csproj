@@ -260,6 +260,7 @@
     <Compile Include="Exceptions\DonorImportException.cs" />
     <Compile Include="Exceptions\SearchHttpException.cs" />
     <Compile Include="Config\ClientConfig.cs" />
+    <Compile Include="Extensions\BatchEnumerable.cs" />
     <Compile Include="MatchingDictionaryConversions\MatchLocusExtensions.cs" />
     <Compile Include="MatchingDictionaryConversions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\CloudTableDonorBatchQueryAsync.cs" />

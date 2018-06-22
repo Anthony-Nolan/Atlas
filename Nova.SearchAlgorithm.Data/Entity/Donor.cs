@@ -46,16 +46,16 @@ namespace Nova.SearchAlgorithm.Data.Entity
 
         public void CopyRawHlaFrom(InputDonor donor)
         {
-            A_1 = donor.MatchingHla.A_1.Name;
-            A_2 = donor.MatchingHla.A_2.Name;
-            B_1 = donor.MatchingHla.B_1.Name;
-            B_2 = donor.MatchingHla.B_2.Name;
-            C_1 = donor.MatchingHla.C_1.Name;
-            C_2 = donor.MatchingHla.C_2.Name;
-            DRB1_1 = donor.MatchingHla.DRB1_1.Name;
-            DRB1_2 = donor.MatchingHla.DRB1_2.Name;
-            DQB1_1 = donor.MatchingHla.DQB1_1.Name;
-            DQB1_2 = donor.MatchingHla.DQB1_2.Name;
+            A_1 = donor.MatchingHla.A_1.OriginalName;
+            A_2 = donor.MatchingHla.A_2.OriginalName;
+            B_1 = donor.MatchingHla.B_1.OriginalName;
+            B_2 = donor.MatchingHla.B_2.OriginalName;
+            C_1 = donor.MatchingHla.C_1.OriginalName;
+            C_2 = donor.MatchingHla.C_2.OriginalName;
+            DRB1_1 = donor.MatchingHla.DRB1_1.OriginalName;
+            DRB1_2 = donor.MatchingHla.DRB1_2.OriginalName;
+            DQB1_1 = donor.MatchingHla.DQB1_1.OriginalName;
+            DQB1_2 = donor.MatchingHla.DQB1_2.OriginalName;
         }
     }
 }

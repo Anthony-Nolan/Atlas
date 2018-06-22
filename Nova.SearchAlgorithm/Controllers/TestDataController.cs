@@ -20,10 +20,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("insert-single-donor")]
-        public IHttpActionResult InsertSingleDonor()
+        public Task InsertSingleDonor()
         {
-            testDataService.ImportSingleTestDonor();
-            return Ok();
+            return testDataService.ImportSingleTestDonor();
         }
 
         [HttpPost]
@@ -42,10 +41,9 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpPost]
         [Route("insert-dummy-donors")]
-        public IHttpActionResult InsertDummyDonors()
+        public Task InsertDummyDonors()
         {
-            testDataService.ImportDummyData();
-            return Ok();
+            return testDataService.ImportDummyData();
         }
     }
 }

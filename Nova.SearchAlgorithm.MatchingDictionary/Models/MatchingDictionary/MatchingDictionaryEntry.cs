@@ -17,18 +17,29 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
         public TypingMethod TypingMethod { get; }
         public MolecularSubtype MolecularSubtype { get; }
         public SerologySubtype SerologySubtype { get; }
+        public AlleleTypingStatus AlleleTypingStatus { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         [JsonConstructor]
-        public MatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod, MolecularSubtype molecularSubtype, SerologySubtype serologySubtype, IEnumerable<string> matchingPGroups, IEnumerable<string> matchingGGroups, IEnumerable<SerologyEntry> matchingSerologies)
+        public MatchingDictionaryEntry(
+            MatchLocus matchLocus, 
+            string lookupName, 
+            TypingMethod typingMethod, 
+            MolecularSubtype molecularSubtype, 
+            SerologySubtype serologySubtype,
+            AlleleTypingStatus alleleTypingStatus,
+            IEnumerable<string> matchingPGroups,
+            IEnumerable<string> matchingGGroups, 
+            IEnumerable<SerologyEntry> matchingSerologies)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             MolecularSubtype = molecularSubtype;
             SerologySubtype = serologySubtype;
+            AlleleTypingStatus = alleleTypingStatus;
             MatchingPGroups = matchingPGroups;
             MatchingGGroups = matchingGGroups;
             MatchingSerologies = matchingSerologies;
@@ -50,9 +61,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
         {
             MatchLocus = alleleSource.TypingForMatchingDictionary.MatchLocus;
             LookupName = lookupName;
+
             TypingMethod = TypingMethod.Molecular;
             MolecularSubtype = molecularSubtype;
             SerologySubtype = SerologySubtype.NotSerologyTyping;
+
+            AlleleTypingStatus = molecularSubtype == MolecularSubtype.CompleteAllele
+                ? alleleSource.TypingForMatchingDictionary.Status
+                : AlleleTypingStatus.GetDefaultStatus();
+
             MatchingPGroups = alleleSource.MatchingPGroups;
             MatchingGGroups = alleleSource.MatchingGGroups;
             MatchingSerologies = alleleSource.MatchingSerologies.ToSerologyEntries();
@@ -67,6 +84,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             TypingMethod = TypingMethod.Molecular;
             MolecularSubtype = molecularSubtype;
             SerologySubtype = SerologySubtype.NotSerologyTyping;
+            AlleleTypingStatus = AlleleTypingStatus.GetDefaultStatus();
             MatchingPGroups = entriesList.SelectMany(p => p.MatchingPGroups).Distinct();
             MatchingGGroups = entriesList.SelectMany(g => g.MatchingGGroups).Distinct();
             MatchingSerologies = entriesList.SelectMany(s => s.MatchingSerologies).Distinct();
@@ -82,6 +100,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
                 TypingMethod == other.TypingMethod &&
                 MolecularSubtype == other.MolecularSubtype &&
                 SerologySubtype == other.SerologySubtype &&
+                AlleleTypingStatus.Equals(other.AlleleTypingStatus) &&
                 MatchingPGroups.SequenceEqual(other.MatchingPGroups) &&
                 MatchingGGroups.SequenceEqual(other.MatchingGGroups) &&
                 MatchingSerologies.SequenceEqual(other.MatchingSerologies);
@@ -104,6 +123,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
                 hashCode = (hashCode * 397) ^ (int) TypingMethod;
                 hashCode = (hashCode * 397) ^ (int) MolecularSubtype;
                 hashCode = (hashCode * 397) ^ (int) SerologySubtype;
+                hashCode = (hashCode * 397) ^ AlleleTypingStatus.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingPGroups.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingGGroups.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingSerologies.GetHashCode();

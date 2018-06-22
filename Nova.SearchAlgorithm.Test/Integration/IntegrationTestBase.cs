@@ -1,5 +1,4 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using Microsoft.ApplicationInsights;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
@@ -8,18 +7,20 @@ using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Test.FileBackedMatchingDictionary;
 using NUnit.Framework;
 using Autofac;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.HLAService.Client;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
+using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
+using NSubstitute;
 
 namespace Nova.SearchAlgorithm.Test.Integration
 {
     [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]
-    [TestFixture(DonorStorageImplementation.Cosmos)]
+    //[TestFixture(DonorStorageImplementation.Cosmos)]
     public abstract class IntegrationTestBase
     {
         private readonly StorageEmulator tableStorageEmulator = new StorageEmulator();
@@ -29,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
 
         protected IntegrationTestBase(DonorStorageImplementation input)
         {
-            this.donorStorageImplementation = input;
+            donorStorageImplementation = input;
         }
 
         [OneTimeSetUp]
@@ -76,15 +77,28 @@ namespace Nova.SearchAlgorithm.Test.Integration
                 builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
 
-            builder.RegisterType<FileBackedMatchingDictionaryLookup>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Scoring.CalculateScore>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
+
+            builder.RegisterInstance(Substitute.For<IHlaServiceClient>()).AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
+            builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+
+            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
 
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();

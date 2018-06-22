@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         {
             var lookupService = container.Resolve<IMatchingDictionaryLookupService>();
             var donorRepository = container.Resolve<IDonorImportRepository>();
-            donorRepository.AddOrUpdateDonor(new InputDonor
+            donorRepository.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
                     B_2 = "14:47",
                     DRB1_1 = "13:03:01",
                     DRB1_2 = "13:02:01:03",
-                }).Map((l, p, h) => lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla())
+                }).Map((l, p, h) => h == null ? null : lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
             }).Wait();
         }
 

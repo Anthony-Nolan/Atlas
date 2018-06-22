@@ -29,9 +29,9 @@ namespace Nova.SearchAlgorithm.Services
             this.lookupService = lookupService;
         }
 
-        public void ImportSingleTestDonor()
+        public Task ImportSingleTestDonor()
         {
-            donorRepository.AddOrUpdateDonor(new InputDonor
+            return donorRepository.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             foreach (RawInputDonor donor in await solarRepository.SomeDonors(1000))
             {
-                InsertSingleRawDonor(donor);
+                await InsertSingleRawDonor(donor);
             }
         }
 
@@ -77,14 +77,14 @@ namespace Nova.SearchAlgorithm.Services
             }
         }
 
-        private void InsertSingleRawDonor(RawInputDonor donor)
+        private Task InsertSingleRawDonor(RawInputDonor donor)
         {
-            donorRepository.AddOrUpdateDonor(new InputDonor
+            return donorRepository.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = donor.RegistryCode,
                 DonorType = donor.DonorType,
                 DonorId = donor.DonorId,
-                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
+                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla(hla))
             });
         }
 
@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.Services
             }
         }
 
-        public void ImportDummyData()
+        public async Task ImportDummyData()
         {
             var spreadsheetDonors = Regex.Split(SpreadsheetContents(), "\r\n|\r|\n")
                 .Skip(1) // Header row
@@ -128,7 +128,7 @@ namespace Nova.SearchAlgorithm.Services
 
             foreach (RawInputDonor donor in spreadsheetDonors)
             {
-                InsertSingleRawDonor(donor);
+                await InsertSingleRawDonor(donor);
             }
         }
     }
