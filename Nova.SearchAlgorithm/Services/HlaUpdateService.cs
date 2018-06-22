@@ -46,7 +46,6 @@ namespace Nova.SearchAlgorithm.Services
 
             while (batchedQuery.HasMoreResults)
             {
-                stopwatch.Reset();
                 stopwatch.Start();
                 var resultsBatch = (await batchedQuery.RequestNextAsync()).ToList();
 
@@ -55,6 +54,7 @@ namespace Nova.SearchAlgorithm.Services
                 const int parallelBatchSize = 5;
                 foreach (var subBatch in resultsBatch.Batch(parallelBatchSize))
                 {
+                    stopwatch.Restart();
                     await Task.WhenAll(
                         subBatch.Select(UpdateSingleDonorHlaAsync)
                     ).ConfigureAwait(false);

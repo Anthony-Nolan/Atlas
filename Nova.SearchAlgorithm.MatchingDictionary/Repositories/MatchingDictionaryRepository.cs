@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
@@ -18,15 +21,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     }
 
     public class MatchingDictionaryRepository : IMatchingDictionaryRepository
-    {       
+    {
+        private const string CacheKeyMatchingDictionary = "MatchingDictionary";
+        
         private readonly ICloudTableFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
+        private readonly IMemoryCache memoryCache;
         private CloudTable cloudTable;
 
-        public MatchingDictionaryRepository(ICloudTableFactory factory, ITableReferenceRepository tableReferenceRepository)
+        public MatchingDictionaryRepository(ICloudTableFactory factory, ITableReferenceRepository tableReferenceRepository, IMemoryCache memoryCache)
         {
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
+            this.memoryCache = memoryCache;
         }
 
         public async Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
@@ -34,16 +41,35 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             var newDataTable = CreateNewDataTable();
             InsertMatchingDictionaryEntriesIntoDataTable(dictionaryContents, newDataTable);
             await tableReferenceRepository.UpdateMatchingDictionaryTableReference(newDataTable.Name);
+            cloudTable = null;
         }
 
         public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-        {            
+        {
+            if (memoryCache.TryGetValue(CacheKeyMatchingDictionary,
+                out Dictionary<string, MatchingDictionaryTableEntity> matchingDictionary))
+            {
+                var matchingDictionaryEntryFromCache = GetMatchingDictionaryEntryFromCache(matchLocus, lookupName, typingMethod, matchingDictionary);
+                return matchingDictionaryEntryFromCache;
+            }
+            
+            await LoadMatchingDictionaryIntoMemory();
+            if (memoryCache.TryGetValue(CacheKeyMatchingDictionary, out matchingDictionary))
+            {
+                return GetMatchingDictionaryEntryFromCache(matchLocus, lookupName, typingMethod, matchingDictionary);
+            }
+
+            throw new MatchingDictionaryException("Failed to load matching dictionary into cache");
+        }
+
+        private static MatchingDictionaryEntry GetMatchingDictionaryEntryFromCache(MatchLocus matchLocus, string lookupName,
+            TypingMethod typingMethod, IReadOnlyDictionary<string, MatchingDictionaryTableEntity> matchingDictionary)
+        {
             var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
             var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
-            var dataTable = await GetCurrentDataTable();
-            var result = await dataTable.GetEntityByPartitionAndRowKey<MatchingDictionaryTableEntity>(partition, rowKey);
 
-            return result?.ToMatchingDictionaryEntry();
+            matchingDictionary.TryGetValue(partition + rowKey, out var tableEntity);
+            return tableEntity?.ToMatchingDictionaryEntry();
         }
 
         /// <summary>
@@ -54,6 +80,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public async Task ConnectToCloudTable()
         {
             await GetCurrentDataTable();
+            await LoadMatchingDictionaryIntoMemory();
+        }
+        
+        private async Task LoadMatchingDictionaryIntoMemory()
+        {
+            var currentDataTable = await GetCurrentDataTable();
+
+            var tableResults = new CloudTableBatchQueryAsync(new TableQuery<MatchingDictionaryTableEntity>(), currentDataTable);
+
+            var matchingDictionary = new Dictionary<string, MatchingDictionaryTableEntity>();
+            
+            while (tableResults.HasMoreResults)
+            {
+                var results = await tableResults.RequestNextAsync();
+                foreach (var result in results)
+                {
+                    matchingDictionary.Add(result.PartitionKey + result.RowKey, result);
+                }
+            }
+
+            memoryCache.Set(CacheKeyMatchingDictionary, matchingDictionary);
         }
 
         private CloudTable CreateNewDataTable()
@@ -86,4 +133,41 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             }
         }        
     }
+
+    internal class CloudTableBatchQueryAsync
+    {
+        private readonly TableQuery<MatchingDictionaryTableEntity> query;
+        private readonly CloudTable table;
+
+        private TableContinuationToken continuationToken = null;
+
+        public CloudTableBatchQueryAsync(TableQuery<MatchingDictionaryTableEntity> query, CloudTable table)
+        {
+            this.query = query;
+            this.table = table;
+        }
+        
+        public bool HasMoreResults { get; private set; } = true;
+
+        public async Task<IEnumerable<MatchingDictionaryTableEntity>> RequestNextAsync()
+        {
+            if (!HasMoreResults)
+            {
+                throw new Exception("More matching dictionary results were requested even though no more results are available. Check HasMoreResults before calling RequestNextAsync.");
+            }
+
+            TableQuerySegment<MatchingDictionaryTableEntity> tableQueryResult =
+                await table.ExecuteQuerySegmentedAsync(query, continuationToken);
+
+            continuationToken = tableQueryResult.ContinuationToken;
+
+            if (continuationToken == null)
+            {
+                HasMoreResults = false;
+            }
+
+            return tableQueryResult.Results;
+        }
+    }
+
 }
