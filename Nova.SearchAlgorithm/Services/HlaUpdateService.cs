@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.Utils.ApplicationInsights;
@@ -20,15 +21,19 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
+        private readonly IMatchingDictionaryRepository matchingDictionaryRepository;
 
         public HlaUpdateService(IMatchingDictionaryLookupService lookupService,
-            IDonorInspectionRepository donorInspectionRepository, IDonorImportRepository donorImportRepository,
-            ILogger logger)
+            IDonorInspectionRepository donorInspectionRepository,
+            IDonorImportRepository donorImportRepository,
+            ILogger logger,
+            IMatchingDictionaryRepository matchingDictionaryRepository)
         {
             this.lookupService = lookupService;
             this.donorInspectionRepository = donorInspectionRepository;
             this.donorImportRepository = donorImportRepository;
             this.logger = logger;
+            this.matchingDictionaryRepository = matchingDictionaryRepository;
         }
 
         public async Task UpdateDonorHla()
@@ -36,6 +41,8 @@ namespace Nova.SearchAlgorithm.Services
             var batchedQuery = donorInspectionRepository.AllDonors();
             var totalUpdated = 0;
             var stopwatch = new Stopwatch();
+
+            await matchingDictionaryRepository.ConnectToCloudTable();
 
             while (batchedQuery.HasMoreResults)
             {
