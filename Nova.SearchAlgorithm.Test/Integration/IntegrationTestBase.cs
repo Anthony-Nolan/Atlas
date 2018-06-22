@@ -93,7 +93,6 @@ namespace Nova.SearchAlgorithm.Test.Integration
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
