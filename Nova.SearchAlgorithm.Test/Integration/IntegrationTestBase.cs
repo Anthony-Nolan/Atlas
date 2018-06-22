@@ -86,6 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterInstance(Substitute.For<IHlaServiceClient>()).AsImplementedInterfaces().SingleInstance();
