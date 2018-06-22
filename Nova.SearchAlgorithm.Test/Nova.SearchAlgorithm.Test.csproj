@@ -437,7 +437,7 @@
     <Content Include="MatchingDictionary\Data\wmda-v3310\version_report.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.Serologies_ContainsAllExpectedSerology.approved.txt">
+    <Content Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.AssociatedWithBroadGGroupsAreCorrect.approved.txt" />

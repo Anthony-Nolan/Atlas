@@ -17,26 +17,32 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        [Test]
-        public void Serologies_SuccessfullyCaptured()
+        [TestCase("DQ", "1")]
+        [TestCase("A", "29")]
+        [TestCase("B", "703")]
+        [TestCase("DR", "1404")]
+        public void WmdaDataRepository_WhenValidSerology_SuccessfullyCaptured(string locus, string serologyName)
         {
-            var oneDigit = new HlaNom(TypingMethod.Serology, "DQ", "1");
-            var twoDigit = new HlaNom(TypingMethod.Serology, "A", "29");
-            var threeDigit = new HlaNom(TypingMethod.Serology, "B", "703");
-            var fourDigit = new HlaNom(TypingMethod.Serology, "DR", "1404");
-            var deletedWithIdentical = new HlaNom(TypingMethod.Serology, "Cw", "11", true, "1");
+            var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);
+            var expectedSerology = new HlaNom(TypingMethod.Serology, locus, serologyName);
 
-            Assert.AreEqual(oneDigit, GetSingleWmdaHlaTyping("DQ", "1"));
-            Assert.AreEqual(twoDigit, GetSingleWmdaHlaTyping("A", "29"));
-            Assert.AreEqual(threeDigit, GetSingleWmdaHlaTyping("B", "703"));
-            Assert.AreEqual(fourDigit, GetSingleWmdaHlaTyping("DR", "1404"));
-            Assert.AreEqual(deletedWithIdentical, GetSingleWmdaHlaTyping("Cw", "11"));
+            Assert.AreEqual(expectedSerology, actualSerology);
+        }
+
+        [TestCase("Cw", "11", "1")]
+        public void WmdaDataRepository_WhenDeletedSerology_SuccessfullyCaptured(
+            string locus, string serologyName, string identicalHla)
+        {
+            var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);
+            var expectedSerology = new HlaNom(TypingMethod.Serology, locus, serologyName, true, identicalHla);
+
+            Assert.AreEqual(expectedSerology, actualSerology);
         }
 
         [Test]
-        public void Serologies_ContainsAllExpectedSerology()
+        public void WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies()
         {
-            var str = string.Join("\r\n", HlaTypings
+            var str = string.Join("\r\n", WmdaHlaTypings
                 .OrderBy(s => s.Locus)
                 .ThenBy(s => int.Parse(s.Name))
                 .Select(s => $"{s.Locus}\t{s.Name}")

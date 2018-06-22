@@ -12,66 +12,44 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        [Test]
-        public void AlleleToSerologyRelationships_SuccessfullyCaptured()
+        [TestCase("A*", "01:01:01:01", new[] { "1" }, new[] { Assignment.Unambiguous })]
+        [TestCase("B*", "07:31", new[] { "42", "7" }, new[] { Assignment.Possible, Assignment.Possible })]
+        [TestCase("C*", "04:04:01:01", new[] { "4" }, new[] { Assignment.Assumed })]
+        [TestCase("C*", "14:02:01:01", new[] { "1" }, new[] { Assignment.Expert })]
+        [TestCase("A*", "02:55", new[] { "2", "28" }, new[] { Assignment.Assumed, Assignment.Expert })]
+        [TestCase("B*", "39:01:01:02L", new[] { "3901" }, new[] { Assignment.Possible })]
+        [TestCase("C*", "07:121Q", new[] { "7" }, new[] { Assignment.Assumed })]
+        [TestCase("B*", "44:02:01:02S", new[] { "44" }, new[] { Assignment.Expert })]
+        public void WmdaDataRepository_WhenAlleleHasRelatedSerology_RelationshipsSuccessfullyCaptured(
+            string molecularLocus,
+            string alleleName,
+            string[] expectedSerologyNames,
+            Assignment[] expectedAssignments)
         {
-            var alleleWithUnambiguous = new RelDnaSer("A*", "01:01:01:01", new List<SerologyAssignment>
+            var serologyAssignments = new List<SerologyAssignment>();
+            for (var i = 0; i < expectedSerologyNames.Length; i++)
             {
-                new SerologyAssignment("1", Assignment.Unambiguous)
-            });
+                var serologyName = expectedSerologyNames[i];
+                var assignment = expectedAssignments[i];
+                serologyAssignments.Add(new SerologyAssignment(serologyName, assignment));
+            }
 
-            var alleleWithPossible = new RelDnaSer("B*", "07:31", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("42", Assignment.Possible),
-                new SerologyAssignment("7", Assignment.Possible)
-            });
+            var expectedRelationship = new RelDnaSer(molecularLocus, alleleName, serologyAssignments);
+            var actualRelationship = GetSingleWmdaHlaTyping(molecularLocus, alleleName);
 
-            var alleleWithAssumed = new RelDnaSer("C*", "04:04:01:01", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("4", Assignment.Assumed)
-            });
+            Assert.AreEqual(expectedRelationship, actualRelationship);
+        }
 
-            var alleleWithExpert = new RelDnaSer("C*", "14:02:01:01", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("1", Assignment.Expert)
-            });
+        [TestCase("B*", "83:01")]
+        [TestCase("DQB1*", "02:18N")]
+        public void WmdaDataRepository_WhenAlleleHasNoRelatedSerology_RelationshipsSuccessfullyCaptured(
+            string molecularLocus,
+            string alleleName)
+        {
+            var expectedRelationship = new RelDnaSer(molecularLocus, alleleName, new List<SerologyAssignment>());
+            var actualRelationship = GetSingleWmdaHlaTyping(molecularLocus, alleleName);
 
-            var alleleWithMultiple = new RelDnaSer("A*", "02:55", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("2", Assignment.Assumed),
-                new SerologyAssignment("28", Assignment.Expert)
-            });
-
-            var alleleWithNone = new RelDnaSer("B*", "83:01", new List<SerologyAssignment>());
-
-            var nullAllele = new RelDnaSer("DQB1*", "02:18N", new List<SerologyAssignment>());
-
-            var lowAllele = new RelDnaSer("B*", "39:01:01:02L", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("3901", Assignment.Possible)
-            });
-
-            var questionableAllele = new RelDnaSer("C*", "07:121Q", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("7", Assignment.Assumed)
-            });
-
-            var secretedAllele = new RelDnaSer("B*", "44:02:01:02S", new List<SerologyAssignment>
-            {
-                new SerologyAssignment("44", Assignment.Expert)
-            });
-
-            Assert.AreEqual(alleleWithUnambiguous, GetSingleWmdaHlaTyping("A*", "01:01:01:01"));
-            Assert.AreEqual(alleleWithPossible, GetSingleWmdaHlaTyping("B*", "07:31"));
-            Assert.AreEqual(alleleWithAssumed, GetSingleWmdaHlaTyping("C*", "04:04:01:01"));
-            Assert.AreEqual(alleleWithExpert, GetSingleWmdaHlaTyping("C*", "14:02:01:01"));
-            Assert.AreEqual(alleleWithMultiple, GetSingleWmdaHlaTyping("A*", "02:55"));
-            Assert.AreEqual(alleleWithNone, GetSingleWmdaHlaTyping("B*", "83:01"));
-
-            Assert.AreEqual(nullAllele, GetSingleWmdaHlaTyping("DQB1*", "02:18N"));
-            Assert.AreEqual(lowAllele, GetSingleWmdaHlaTyping("B*", "39:01:01:02L"));
-            Assert.AreEqual(questionableAllele, GetSingleWmdaHlaTyping("C*", "07:121Q"));
-            Assert.AreEqual(secretedAllele, GetSingleWmdaHlaTyping("B*", "44:02:01:02S"));
+            Assert.AreEqual(expectedRelationship, actualRelationship);
         }
     }
 }

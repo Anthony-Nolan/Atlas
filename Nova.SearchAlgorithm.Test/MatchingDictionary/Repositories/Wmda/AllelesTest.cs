@@ -13,32 +13,36 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        [Test]
-        public void Alleles_SuccessfullyCaptured()
+        [TestCase("A*", "01:26")]
+        [TestCase("A*", "01:27N")]
+        [TestCase("B*", "07:05:06")]
+        [TestCase("C*", "07:491:01N")]
+        [TestCase("DQB1*", "03:01:01:07")]
+        [TestCase("C*", "07:01:01:14Q")]
+        public void WmdaDataRepository_WhenValidAllele_SuccessfullyCaptured(string locus, string alleleName)
         {
-            var twoField = new HlaNom(TypingMethod.Molecular, "A*", "01:26");
-            var twoFieldSuffix = new HlaNom(TypingMethod.Molecular, "A*", "01:27N");
+            var expectedAllele = GetSingleWmdaHlaTyping(locus, alleleName);
+            var actualAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName);
 
-            var threeField = new HlaNom(TypingMethod.Molecular, "B*", "07:05:06");
-            var threeFieldSuffix = new HlaNom(TypingMethod.Molecular, "C*", "07:491:01N");
+            Assert.AreEqual(expectedAllele, actualAllele);
+        }
 
-            var fourField = new HlaNom(TypingMethod.Molecular, "DQB1*", "03:01:01:07");
-            var fourFieldSuffix = new HlaNom(TypingMethod.Molecular, "C*", "07:01:01:14Q");
+        [TestCase("C*", "07:295", true)]
+        public void WmdaDataRepository_WhenDeletedAlleleNoIdenticalHla_SuccessfullyCaptured(string locus, string alleleName, bool isDeleted)
+        {
+            var expectedAllele = GetSingleWmdaHlaTyping(locus, alleleName);
+            var actualAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted);
 
-            var deletedWithIdentical = new HlaNom(TypingMethod.Molecular, "DRB1*", "08:01:03", true, "08:01:01");
-            var deletedNoIdentical = new HlaNom(TypingMethod.Molecular, "C*", "07:295", true);
+            Assert.AreEqual(expectedAllele, actualAllele);
+        }
 
-            Assert.AreEqual(twoField, GetSingleWmdaHlaTyping("A*", "01:26"));
-            Assert.AreEqual(twoFieldSuffix, GetSingleWmdaHlaTyping("A*", "01:27N"));
+        [TestCase("DRB1*", "08:01:03", true, "08:01:01")]
+        public void WmdaDataRepository_WhenDeletedAlleleWithIdenticalHla_SuccessfullyCaptured(string locus, string alleleName, bool isDeleted, string identicalHla)
+        {
+            var expectedAllele = GetSingleWmdaHlaTyping(locus, alleleName);
+            var actualAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted, identicalHla);
 
-            Assert.AreEqual(threeField, GetSingleWmdaHlaTyping("B*", "07:05:06"));
-            Assert.AreEqual(threeFieldSuffix, GetSingleWmdaHlaTyping("C*", "07:491:01N"));
-
-            Assert.AreEqual(fourField, GetSingleWmdaHlaTyping("DQB1*", "03:01:01:07"));
-            Assert.AreEqual(fourFieldSuffix, GetSingleWmdaHlaTyping("C*", "07:01:01:14Q"));
-
-            Assert.AreEqual(deletedWithIdentical, GetSingleWmdaHlaTyping("DRB1*", "08:01:03"));
-            Assert.AreEqual(deletedNoIdentical, GetSingleWmdaHlaTyping("C*", "07:295"));
+            Assert.AreEqual(expectedAllele, actualAllele);
         }
     }
 }

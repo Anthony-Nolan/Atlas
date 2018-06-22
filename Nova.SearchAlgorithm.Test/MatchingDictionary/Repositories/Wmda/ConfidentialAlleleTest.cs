@@ -1,7 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using FluentAssertions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -14,9 +14,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         }
 
         [Test]
-        public void ConfidentialAlleles_SuccessfullyCaptured()
+        public void WmdaDataRepository_ConfidentialAlleles_SuccessfullyCaptured()
         {
-            var confidentialAlleles = new List<ConfidentialAllele>
+            var expectedConfidentialAlleles = new List<ConfidentialAllele>
             {
                 new ConfidentialAllele("A*", "02:01:01:28"),
                 new ConfidentialAllele("B*", "18:37:02"),
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
                 new ConfidentialAllele("DQB1*", "03:23:03")
             };
 
-            Assert.IsTrue(confidentialAlleles.SequenceEqual(HlaTypings));
+            WmdaHlaTypings.ShouldAllBeEquivalentTo(expectedConfidentialAlleles);
         }
     }
 }

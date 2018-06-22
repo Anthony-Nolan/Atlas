@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
             var actualAlleleStatus = GetSingleWmdaHlaTyping(locus, alleleName);
             var expectedAlleleStatus = new AlleleStatus(locus, alleleName, sequenceStatus, dnaCategory);
-            Assert.AreEqual(actualAlleleStatus, expectedAlleleStatus);
+            Assert.AreEqual(expectedAlleleStatus, actualAlleleStatus);
         }
     }
 }
