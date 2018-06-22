@@ -16,10 +16,12 @@ namespace Nova.SearchAlgorithm.Data.Entity
         public string B_2 { get; set; }
         public string C_1 { get; set; }
         public string C_2 { get; set; }
-        public string DRB1_1 { get; set; }
-        public string DRB1_2 { get; set; }
+        public string DPB1_1 { get; set; }
+        public string DPB1_2 { get; set; }
         public string DQB1_1 { get; set; }
         public string DQB1_2 { get; set; }
+        public string DRB1_1 { get; set; }
+        public string DRB1_2 { get; set; }
 
         public DonorResult ToDonorResult()
         {
@@ -36,6 +38,8 @@ namespace Nova.SearchAlgorithm.Data.Entity
                     B_2 = B_2,
                     C_1 = C_1,
                     C_2 = C_2,
+                    DPB1_1 = DPB1_1,
+                    DPB1_2 = DPB1_2,
                     DQB1_1 = DQB1_1,
                     DQB1_2 = DQB1_2,
                     DRB1_1 = DRB1_1,
