@@ -275,13 +275,11 @@
     <Compile Include="Repositories\Donors\PotentialHlaMatchRelation.cs" />
     <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\CloudTableFactory.cs" />
     <Compile Include="Repositories\Donors\CloudStorageDonorSearchRepository.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\CloudTableStorage.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\PotentialHlaMatchRelationTableEntity.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntityExtensions.cs" />
-    <Compile Include="Repositories\ICloudTableFactory.cs" />
     <Compile Include="Repositories\ISolarDonorRepository.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\ITestDataService.cs" />
