@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
 
     public class TableReferenceRepository : ITableReferenceRepository
     {
-        private const string CloudTableReference = "TableReferences";
+        public const string CloudTableReference = "TableReferences";
         private readonly CloudTable table;
 
         public TableReferenceRepository(ICloudTableFactory factory)

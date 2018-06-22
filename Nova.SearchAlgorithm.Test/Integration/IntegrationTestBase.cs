@@ -99,6 +99,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();
