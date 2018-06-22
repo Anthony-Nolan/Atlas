@@ -85,6 +85,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             throw new NotImplementedException();
         }
 
+        public void SetupForHlaRefresh()
+        {
+            // Do Nothing
+        }
+
         public IBatchQueryAsync<DonorResult> AllDonors()
         {
             IDocumentQuery<DonorCosmosDocument> query = client.CreateDocumentQuery<DonorCosmosDocument>(

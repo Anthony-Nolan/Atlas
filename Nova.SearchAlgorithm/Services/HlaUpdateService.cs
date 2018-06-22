@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.Utils.ApplicationInsights;
@@ -20,15 +21,19 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
+        private readonly IMatchingDictionaryRepository matchingDictionaryRepository;
 
         public HlaUpdateService(IMatchingDictionaryLookupService lookupService,
-            IDonorInspectionRepository donorInspectionRepository, IDonorImportRepository donorImportRepository,
-            ILogger logger)
+            IDonorInspectionRepository donorInspectionRepository,
+            IDonorImportRepository donorImportRepository,
+            ILogger logger,
+            IMatchingDictionaryRepository matchingDictionaryRepository)
         {
             this.lookupService = lookupService;
             this.donorInspectionRepository = donorInspectionRepository;
             this.donorImportRepository = donorImportRepository;
             this.logger = logger;
+            this.matchingDictionaryRepository = matchingDictionaryRepository;
         }
 
         public async Task UpdateDonorHla()
@@ -37,17 +42,22 @@ namespace Nova.SearchAlgorithm.Services
             var totalUpdated = 0;
             var stopwatch = new Stopwatch();
 
+            // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
+            await matchingDictionaryRepository.ConnectToCloudTable();
+            // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
+            donorImportRepository.SetupForHlaRefresh();
+
             while (batchedQuery.HasMoreResults)
             {
-                stopwatch.Reset();
                 stopwatch.Start();
                 var resultsBatch = (await batchedQuery.RequestNextAsync()).ToList();
 
                 // The outer batch size is set by the storage implementation, and is 1000 for Azure Tables
                 // The inner batch is currently necessary to get insights within a reasonable timeframe
-                const int parallelBatchSize = 5;
+                const int parallelBatchSize = 100;
                 foreach (var subBatch in resultsBatch.Batch(parallelBatchSize))
                 {
+                    stopwatch.Restart();
                     await Task.WhenAll(
                         subBatch.Select(UpdateSingleDonorHlaAsync)
                     ).ConfigureAwait(false);

@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
         {
             var alleles = await GetAlleles(matchLocus, lookupName);
             var tasks = alleles.Select(allele => GetMatchingDictionaryEntry(matchLocus, allele, TypingMethod.Molecular));
-            var entries = await Task.WhenAll(tasks);
+            var entries = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return new MatchingDictionaryEntry(matchLocus, lookupName, MolecularSubtype.MultipleAlleles, entries);
         }

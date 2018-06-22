@@ -1,9 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using Autofac;
 using Autofac.Integration.WebApi;
+using Microsoft.WindowsAzure.Storage;
 using Nova.Utils.Filters;
 using Nova.Utils.Pagination;
 using Nova.Utils.WebApi.Controllers;
@@ -22,7 +25,17 @@ namespace Nova.SearchAlgorithm.Config
             var config = CreateConfig(container);
             app.UseAutofacWebApi(config);
             app.UseWebApi(config);
+            ConfigureServicePoint();
             return app;
+        }
+
+        private static void ConfigureServicePoint()
+        {
+            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString);
+            var servicePoint = ServicePointManager.FindServicePoint(storageAccount.TableEndpoint);
+            servicePoint.UseNagleAlgorithm = false;
+            servicePoint.Expect100Continue = false;
+            servicePoint.ConnectionLimit = 1000;
         }
 
         public static HttpConfiguration CreateConfig(IContainer container)

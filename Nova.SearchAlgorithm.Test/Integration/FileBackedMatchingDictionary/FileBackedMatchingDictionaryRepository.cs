@@ -61,5 +61,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary
             
             return Task.FromResult(lookupResult);
         }
+
+        public Task ConnectToCloudTable()
+        {
+            return Task.CompletedTask;
+        }
     }
 }

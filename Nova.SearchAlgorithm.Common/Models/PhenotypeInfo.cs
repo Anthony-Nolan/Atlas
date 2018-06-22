@@ -96,7 +96,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                 action(Locus.C, C_1, C_2),
                 action(Locus.Dpb1, DPB1_1, DPB1_2),
                 action(Locus.Dqb1, DQB1_1, DQB1_2),
-                action(Locus.Drb1, DRB1_1, DRB1_2)); 
+                action(Locus.Drb1, DRB1_1, DRB1_2)).ConfigureAwait(false); 
         }
 
         public async Task<PhenotypeInfo<R>> WhenAllPositions<R>(Func<Locus, TypePositions, T, Task<R>> action)
@@ -113,7 +113,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                 action(Locus.Dqb1, TypePositions.One, DQB1_1),
                 action(Locus.Dqb1, TypePositions.Two, DQB1_2),
                 action(Locus.Drb1, TypePositions.One, DRB1_1),
-                action(Locus.Drb1, TypePositions.Two, DRB1_2));
+                action(Locus.Drb1, TypePositions.Two, DRB1_2)).ConfigureAwait(false);
 
             return new PhenotypeInfo<R>
             {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
@@ -22,11 +23,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     {
         private readonly IMatchingDictionaryRepository dictionaryRepository;
         private readonly IHlaServiceClient hlaServiceClient;
+        private readonly IHlaCategorisationService hlaCategorisationService;
 
-        public MatchingDictionaryLookupService(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient)
+        public MatchingDictionaryLookupService(
+            IMatchingDictionaryRepository dictionaryRepository,
+            IHlaServiceClient hlaServiceClient,
+            IHlaCategorisationService hlaCategorisationService
+        )
         {
             this.dictionaryRepository = dictionaryRepository;
             this.hlaServiceClient = hlaServiceClient;
+            this.hlaCategorisationService = hlaCategorisationService;
         }
 
         public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
@@ -39,7 +46,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             try
             {
                 var lookupName = hlaName.Trim().TrimStart('*');
-                var category = await hlaServiceClient.GetHlaTypingCategory(lookupName);
+                var category = hlaCategorisationService.GetHlaTypingCategory(lookupName);
 
                 MatchingDictionaryLookup lookup;
                 switch (category)
@@ -61,7 +68,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                         lookup = new AlleleStringLookup(dictionaryRepository, hlaServiceClient);
                         break;
                     default:
-                        throw new ArgumentException($"Dictionary lookup cannot be performed for HLA typing category: {category}.");
+                        throw new ArgumentException(
+                            $"Dictionary lookup cannot be performed for HLA typing category: {category}.");
                 }
 
                 return await lookup.PerformLookupAsync(matchLocus, lookupName);
