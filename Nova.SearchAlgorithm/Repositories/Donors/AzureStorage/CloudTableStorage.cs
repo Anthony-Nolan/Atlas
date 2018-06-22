@@ -14,17 +14,23 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
 {
     public class CloudTableStorage : IDonorDocumentStorage
     {
+        private readonly ICloudTableFactory cloudTableFactory;
         private readonly ILogger logger;
+        private readonly ITableReferenceRepository tableReferenceRepository;
         public const string DonorTableReference = "Donors";
         public const string MatchTableReference = "Matches";
         private readonly CloudTable donorTable;
-        private readonly CloudTable matchTable;
+        private CloudTable matchTable;
 
-        public CloudTableStorage(ICloudTableFactory cloudTableFactory, ILogger logger)
+        public CloudTableStorage(ICloudTableFactory cloudTableFactory, ILogger logger, ITableReferenceRepository tableReferenceRepository)
         {
+            this.cloudTableFactory = cloudTableFactory;
             this.logger = logger;
+            this.tableReferenceRepository = tableReferenceRepository;
             donorTable = cloudTableFactory.GetTable(DonorTableReference);
-            matchTable = cloudTableFactory.GetTable(MatchTableReference);
+            var currentTableReferenceTask = Task.Run(() => tableReferenceRepository.GetCurrentTableReference(MatchTableReference));
+            currentTableReferenceTask.Wait();
+            matchTable = cloudTableFactory.GetTable(currentTableReferenceTask.Result);
         }
 
         public Task<int> HighestDonorId()
@@ -104,6 +110,12 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 }));
         }
 
+        public void SetupForHlaRefresh()
+        {
+            var newTableReference = tableReferenceRepository.GetNewTableReference(MatchTableReference);
+            matchTable = cloudTableFactory.GetTable(newTableReference);
+        }
+
         public IBatchQueryAsync<DonorResult> AllDonors()
         {
             var query = new TableQuery<DonorTableEntity>();
@@ -133,31 +145,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // First delete all the old matches
-            var matches = AllMatchesForDonor(donor.DonorId).ToList();
-
-            logger.SendTrace("Fetched existing matches", LogLevel.Info, new Dictionary<string, string>
-            {
-                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
-                { "DonorId", donor.DonorId.ToString() },
-                { "Matches", matches.Count().ToString() },
-            });
-            
-            stopwatch.Reset();
-            stopwatch.Start();
-            
-            await ExecuteMatchOperationsInBatches(matches, (batchOp, match) => batchOp.Delete(match));
-
-            logger.SendTrace("Deleted existing matches", LogLevel.Info, new Dictionary<string, string>
-            {
-                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
-                { "DonorId", donor.DonorId.ToString() },
-                { "Matches", matches.Count().ToString() },
-            });
-            
-            stopwatch.Reset();
-            stopwatch.Start();
-
             // Add back the new matches
             var newMatches = donor.MatchingHla
                 .FlatMap((locusName, matchingHla1, matchingHla2) =>
@@ -165,16 +152,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                         donor.DonorId))
                 .SelectMany(x => x)
                 .ToList();
-            
-            logger.SendTrace("Fetched new matches", LogLevel.Info, new Dictionary<string, string>
-            {
-                { "Time", stopwatch.ElapsedMilliseconds.ToString() },
-                { "DonorId", donor.DonorId.ToString() },
-                { "Matches", newMatches.Count().ToString() },
-            });
-            
-            stopwatch.Reset();
-            stopwatch.Start();
 
             await ExecuteMatchOperationsInBatches(newMatches, (batchOp, match) => batchOp.Insert(match));
             

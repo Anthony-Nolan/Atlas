@@ -15,32 +15,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest);
     }
 
-    public interface IDonorImportRepository
-    {
-        /// <summary>
-        /// Insert a donor into the database.
-        /// This does _not_ refresh or create the hla matches.
-        /// </summary>
-        Task InsertDonor(RawInputDonor donor);
-
-        /// <summary>
-        /// Insert a donor into the database.
-        /// This does _not_ refresh or create the hla matches.
-        /// </summary>
-        Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
-
-        /// <summary>
-        /// If a donor with the given DonorId already exists, update the HLA and refresh the pre-processed matching groups.
-        /// Otherwise, insert the donor and generate the matching groups.
-        /// </summary>
-        Task AddOrUpdateDonorWithHla(InputDonor donor);
-
-        /// <summary>
-        /// Refreshes the pre-processed matching groups for a single donor, for example if the HLA matching dictionary has been updated.
-        /// </summary>
-        Task RefreshMatchingGroupsForExistingDonor(InputDonor donor);
-    }
-
     public interface IDonorInspectionRepository
     {
         Task<int> HighestDonorId();
@@ -107,6 +81,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await RefreshMatchingGroupsForExistingDonor(donor);
 
             await context.SaveChangesAsync();
+        }
+
+        public void SetupForHlaRefresh()
+        {
+            // Do nothing
         }
 
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)

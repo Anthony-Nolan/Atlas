@@ -121,6 +121,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             await donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
 
+        public void SetupForHlaRefresh()
+        {
+            donorDocumentRepository.SetupForHlaRefresh();
+        }
+
         public IBatchQueryAsync<DonorResult> AllDonors()
         {
             return donorDocumentRepository.AllDonors();

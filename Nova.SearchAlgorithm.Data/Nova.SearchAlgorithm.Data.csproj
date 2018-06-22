@@ -153,6 +153,7 @@
     <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Models\InputDonor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\IDonorImportRepository.cs" />
     <Compile Include="Repositories\SqlDonorBatchQueryAsync.cs" />
     <Compile Include="Repositories\SqlDonorMatchRepository.cs" />
     <Compile Include="SearchAlgorithmContext.cs" />

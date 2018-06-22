@@ -42,7 +42,10 @@ namespace Nova.SearchAlgorithm.Services
             var totalUpdated = 0;
             var stopwatch = new Stopwatch();
 
+            // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
             await matchingDictionaryRepository.ConnectToCloudTable();
+            // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
+            donorImportRepository.SetupForHlaRefresh();
 
             while (batchedQuery.HasMoreResults)
             {
@@ -51,7 +54,7 @@ namespace Nova.SearchAlgorithm.Services
 
                 // The outer batch size is set by the storage implementation, and is 1000 for Azure Tables
                 // The inner batch is currently necessary to get insights within a reasonable timeframe
-                const int parallelBatchSize = 5;
+                const int parallelBatchSize = 100;
                 foreach (var subBatch in resultsBatch.Batch(parallelBatchSize))
                 {
                     stopwatch.Restart();
