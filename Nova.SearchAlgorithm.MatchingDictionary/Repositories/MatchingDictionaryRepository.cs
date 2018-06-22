@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Nova.SearchAlgorithm.Common.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
@@ -25,14 +26,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         private const string CacheKeyMatchingDictionary = "MatchingDictionary";
         
         private readonly ICloudTableFactory tableFactory;
-        private readonly ITableReferenceRepository tableReferenceRepository;
+        private readonly IMatchingDictionaryTableReferenceRepository matchingDictionaryTableReferenceRepository;
         private readonly IMemoryCache memoryCache;
         private CloudTable cloudTable;
 
-        public MatchingDictionaryRepository(ICloudTableFactory factory, ITableReferenceRepository tableReferenceRepository, IMemoryCache memoryCache)
+        public MatchingDictionaryRepository(ICloudTableFactory factory, IMatchingDictionaryTableReferenceRepository matchingDictionaryTableReferenceRepository, IMemoryCache memoryCache)
         {
             tableFactory = factory;
-            this.tableReferenceRepository = tableReferenceRepository;
+            this.matchingDictionaryTableReferenceRepository = matchingDictionaryTableReferenceRepository;
             this.memoryCache = memoryCache;
         }
 
@@ -40,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             var newDataTable = CreateNewDataTable();
             InsertMatchingDictionaryEntriesIntoDataTable(dictionaryContents, newDataTable);
-            await tableReferenceRepository.UpdateMatchingDictionaryTableReference(newDataTable.Name);
+            await matchingDictionaryTableReferenceRepository.UpdateMatchingDictionaryTableReference(newDataTable.Name);
             cloudTable = null;
         }
 
@@ -105,16 +106,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         private CloudTable CreateNewDataTable()
         {
-            var dataTableReference = tableReferenceRepository.GetNewMatchingDictionaryTableReference();
-            return tableFactory.GetOrCreateTable(dataTableReference);
+            var dataTableReference = matchingDictionaryTableReferenceRepository.GetNewMatchingDictionaryTableReference();
+            return tableFactory.GetTable(dataTableReference);
         }
 
         private async Task<CloudTable> GetCurrentDataTable()
         {
             if (cloudTable == null)
             {
-                var dataTableReference = await tableReferenceRepository.GetCurrentMatchingDictionaryTableReference();
-                cloudTable = tableFactory.GetOrCreateTable(dataTableReference);
+                var dataTableReference = await matchingDictionaryTableReferenceRepository.GetCurrentMatchingDictionaryTableReference();
+                cloudTable = tableFactory.GetTable(dataTableReference);
             }
             return cloudTable;
         }

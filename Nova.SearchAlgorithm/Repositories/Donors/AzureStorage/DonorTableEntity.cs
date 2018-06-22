@@ -15,6 +15,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public string B_2 { get; set; }
         public string C_1 { get; set; }
         public string C_2 { get; set; }
+        public string DPB1_1 { get; set; }
+        public string DPB1_2 { get; set; }
         public string DQB1_1 { get; set; }
         public string DQB1_2 { get; set; }
         public string DRB1_1 { get; set; }
@@ -28,6 +30,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public string ExpandedB_2 { get; set; }
         public string ExpandedC_1 { get; set; }
         public string ExpandedC_2 { get; set; }
+        public string ExpandedDPB1_1 { get; set; }
+        public string ExpandedDPB1_2 { get; set; }
         public string ExpandedDQB1_1 { get; set; }
         public string ExpandedDQB1_2 { get; set; }
         public string ExpandedDRB1_1 { get; set; }

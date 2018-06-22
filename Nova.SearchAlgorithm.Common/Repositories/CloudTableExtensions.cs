@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
+namespace Nova.SearchAlgorithm.Common.Repositories
 {
-    internal static class CloudTableExtensions
+    public static class CloudTableExtensions
     {
         private const int BatchSize = 100;
 

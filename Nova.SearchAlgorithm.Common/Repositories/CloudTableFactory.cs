@@ -2,8 +2,13 @@
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Nova.SearchAlgorithm.Repositories
+namespace Nova.SearchAlgorithm.Common.Repositories
 {
+    public interface ICloudTableFactory
+    {
+        CloudTable GetTable(string tableReferenceString);
+    }
+
     public class CloudTableFactory : ICloudTableFactory
     {
         public CloudTable GetTable(string tableReferenceString)

@@ -203,9 +203,7 @@
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Repositories\AzureStorage\CloudTableExtensions.cs" />
-    <Compile Include="Repositories\AzureStorage\TableReferenceTableEntity.cs" />
-    <Compile Include="Repositories\TableReferenceRepository.cs" />
+    <Compile Include="Repositories\MatchingDictionaryTableReferenceRepository.cs" />
     <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
@@ -264,7 +262,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AzureStorage\MatchingDictionaryTableEntity.cs" />
     <Compile Include="Repositories\AzureStorage\MatchingDictionaryEntityExtensions.cs" />
-    <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\MatchingDictionaryRepository.cs" />
     <Compile Include="Repositories\WmdaDataRepository.cs" />
     <Compile Include="Services\ManageMatchingDictionaryService.cs" />
@@ -292,6 +289,11 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
+      <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
+      <Name>Nova.SearchAlgorithm.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -8,9 +8,9 @@ namespace Nova.SearchAlgorithm.Services
     /// </summary>
     public interface ITestDataService
     {
-        void ImportSingleTestDonor();
+        Task ImportSingleTestDonor();
         Task ImportSolarDonors();
         Task ImportAllDonorsFromSolar();
-        void ImportDummyData();
+        Task ImportDummyData();
     }
 }

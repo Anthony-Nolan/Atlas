@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             IDonorImportRepository importRepo = container.Resolve<IDonorImportRepository>();
 
             // potential 2/2 homozygous match at locus A
-            importRepo.AddOrUpdateDonor(new InputDonor
+            importRepo.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             }).Wait();
 
             // potential 2/2 heterozygous match at locus A
-            importRepo.AddOrUpdateDonor(new InputDonor
+            importRepo.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             }).Wait();
 
             // potential 1/2 match at locus A - 1/2 in HvG direction, 2/2 in GvH direction
-            importRepo.AddOrUpdateDonor(new InputDonor
+            importRepo.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             }).Wait();
 
             // potential 1/2 match at locus A - 1/2 in both directions
-            importRepo.AddOrUpdateDonor(new InputDonor
+            importRepo.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             }).Wait();
 
             // 0/2 at locus A
-            importRepo.AddOrUpdateDonor(new InputDonor
+            importRepo.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -114,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
             }).Wait();
 
             // 0/2 at locus A, 1/2 at locus B
-            importRepo.AddOrUpdateDonor(new InputDonor
+            importRepo.AddOrUpdateDonorWithHla(new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -279,7 +279,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
         }
 
         [Test]
-        public void HalfMatchAtLocusaReturnedBySearchWithThreeMismatches()
+        public void HalfMatchAtLocusAReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;

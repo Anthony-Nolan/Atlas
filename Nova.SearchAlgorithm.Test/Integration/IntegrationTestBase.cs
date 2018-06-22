@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using NUnit.Framework;
 using Autofac;
+using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.HLAService.Client;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
@@ -92,7 +93,6 @@ namespace Nova.SearchAlgorithm.Test.Integration
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage.CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();

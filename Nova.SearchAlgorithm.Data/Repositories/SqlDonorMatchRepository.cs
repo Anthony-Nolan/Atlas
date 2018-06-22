@@ -19,14 +19,13 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     {
         /// <summary>
         /// Insert a donor into the database.
-        /// This does _not_ refresh the hla matches.
-        /// Deprecated: use InsertBatchOfDonors instead
+        /// This does _not_ refresh or create the hla matches.
         /// </summary>
         Task InsertDonor(RawInputDonor donor);
 
         /// <summary>
         /// Insert a donor into the database.
-        /// This does _not_ refresh the hla matches.
+        /// This does _not_ refresh or create the hla matches.
         /// </summary>
         Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
 
@@ -34,7 +33,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         /// If a donor with the given DonorId already exists, update the HLA and refresh the pre-processed matching groups.
         /// Otherwise, insert the donor and generate the matching groups.
         /// </summary>
-        Task AddOrUpdateDonor(InputDonor donor);
+        Task AddOrUpdateDonorWithHla(InputDonor donor);
 
         /// <summary>
         /// Refreshes the pre-processed matching groups for a single donor, for example if the HLA matching dictionary has been updated.
@@ -93,7 +92,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task AddOrUpdateDonor(InputDonor donor)
+        public async Task AddOrUpdateDonorWithHla(InputDonor donor)
         {
             var result = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
             if (result == null)
@@ -114,6 +113,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         {
             foreach (Locus locus in Enum.GetValues(typeof(Locus)).Cast<Locus>())
             {
+                if (locus.Equals(Locus.Dpb1))
+                {
+                    // TODO:NOVA-1300 figure out how best to pre-process matches for Dpb1
+                    continue;
+                }
+
                 context.Database.ExecuteSqlCommand(
                     $@"DELETE FROM MatchingHlaAt{locus.ToString().ToUpper()} WHERE DonorId = {donor.DonorId}");
             }
@@ -125,6 +130,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public void InsertPGroupMatches(int donorId, Locus locus, TypePositions position, ExpandedHla hla)
         {
+            if (locus.Equals(Locus.Dpb1))
+            {
+                // TODO:NOVA-1300 figure out how best to pre-process matches for Dpb1
+                return;
+            }
+
             var table = context.MatchingHlasAtLocus(locus);
             if (hla?.PGroups != null)
             {
