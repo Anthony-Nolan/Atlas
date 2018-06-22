@@ -32,5 +32,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public static object[] ConfidentialAllelesTestArgs = {
             new object[] { Repo.ConfidentialAlleles, MolecularLoci }
         };
+        public static object[] AllelesStatusesTestArgs = {
+            new object[] { Repo.AlleleStatuses, MolecularLoci }
+        };
     }
 }

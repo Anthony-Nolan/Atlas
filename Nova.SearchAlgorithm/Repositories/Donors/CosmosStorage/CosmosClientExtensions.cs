@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
 
         public static string CollectionId<T>(this DocumentClient client)
         {
-            return typeof(T).FullName;
+            return typeof(T).Name;
         }
 
         public static async Task<T> GetItemAsync<T>(this DocumentClient client, string id) where T : class

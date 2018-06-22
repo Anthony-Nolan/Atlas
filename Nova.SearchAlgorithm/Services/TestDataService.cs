@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.Services
                 RegistryCode = donor.RegistryCode,
                 DonorType = donor.DonorType,
                 DonorId = donor.DonorId,
-                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla())
+                MatchingHla = donor.HlaNames.Map((locus, position, hla) => lookupService.GetMatchingHla(locus.ToMatchLocus(), hla).Result.ToExpandedHla(hla))
             });
         }
 

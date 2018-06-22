@@ -159,12 +159,16 @@
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
+    <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
+    <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
+    <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\CloudTableExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\TableReferenceTableEntity.cs" />
     <Compile Include="Repositories\TableReferenceRepository.cs" />
+    <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\GGroupExtractor.cs" />

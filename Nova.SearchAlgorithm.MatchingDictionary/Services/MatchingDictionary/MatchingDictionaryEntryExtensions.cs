@@ -40,6 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary
                     TypingMethod.Molecular,
                     e.Select(m => m.MolecularSubtype).OrderBy(m => m).First(),
                     SerologySubtype.NotSerologyTyping,
+                    e.Select(m => m.AlleleTypingStatus).First(),
                     e.SelectMany(p => p.MatchingPGroups).Distinct(),
                     e.SelectMany(g => g.MatchingGGroups).Distinct(),
                     e.SelectMany(s => s.MatchingSerologies).Distinct()

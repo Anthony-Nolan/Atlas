@@ -10,20 +10,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
+        public AlleleTypingStatus Status { get; }
 
         private static readonly string[] NullExpressionSuffixes = { "N" };
 
-    public AlleleTyping(string locus, string name, bool isDeleted = false) 
-            : base(TypingMethod.Molecular, locus, name, isDeleted)
+        public AlleleTyping(string locus, string name, AlleleTypingStatus status, bool isDeleted = false)
+                : base(TypingMethod.Molecular, locus, name, isDeleted)
         {
+            Status = status;
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
             Fields = GetFields(name, ExpressionSuffix);
             TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
         }
 
-        public AlleleTyping(AlleleTyping alleleTyping) : this(alleleTyping.Locus, alleleTyping.Name, alleleTyping.IsDeleted)
-        {
+        public AlleleTyping(string locus, string name, bool isDeleted = false)
+            :this(locus, name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
+        {            
         }
 
         private static string GetExpressionSuffix(string name)
