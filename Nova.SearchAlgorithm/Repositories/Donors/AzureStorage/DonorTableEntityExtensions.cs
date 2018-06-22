@@ -19,10 +19,12 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 B_2 = donor.HlaNames?.B_2,
                 C_1 = donor.HlaNames?.C_1,
                 C_2 = donor.HlaNames?.C_2,
+                DPB1_1 = donor.HlaNames?.DPB1_1,
+                DPB1_2 = donor.HlaNames?.DPB1_2,
+                DQB1_1 = donor.HlaNames?.DQB1_1,
+                DQB1_2 = donor.HlaNames?.DQB1_2,
                 DRB1_1 = donor.HlaNames?.DRB1_1,
                 DRB1_2 = donor.HlaNames?.DRB1_2,
-                DQB1_1 = donor.HlaNames?.DQB1_1,
-                DQB1_2 = donor.HlaNames?.DQB1_2
             };
         }
 
@@ -41,20 +43,24 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 B_2 = hlaNames.B_2,
                 C_1 = hlaNames.C_1,
                 C_2 = hlaNames.C_2,
-                DRB1_1 = hlaNames.DRB1_1,
-                DRB1_2 = hlaNames.DRB1_2,
+                DPB1_1 = hlaNames.DPB1_1,
+                DPB1_2 = hlaNames.DPB1_2,
                 DQB1_1 = hlaNames.DQB1_1,
                 DQB1_2 = hlaNames.DQB1_2,
+                DRB1_1 = hlaNames.DRB1_1,
+                DRB1_2 = hlaNames.DRB1_2,
                 ExpandedA_1 = SerialiseHlaDetails(donor.MatchingHla?.A_1),
                 ExpandedA_2 = SerialiseHlaDetails(donor.MatchingHla?.A_2),
                 ExpandedB_1 = SerialiseHlaDetails(donor.MatchingHla?.B_1),
                 ExpandedB_2 = SerialiseHlaDetails(donor.MatchingHla?.B_2),
                 ExpandedC_1 = SerialiseHlaDetails(donor.MatchingHla?.C_1),
                 ExpandedC_2 = SerialiseHlaDetails(donor.MatchingHla?.C_2),
+                ExpandedDPB1_1 = SerialiseHlaDetails(donor.MatchingHla?.DPB1_1),
+                ExpandedDPB1_2 = SerialiseHlaDetails(donor.MatchingHla?.DPB1_2),
+                ExpandedDQB1_1 = SerialiseHlaDetails(donor.MatchingHla?.DQB1_1),
+                ExpandedDQB1_2 = SerialiseHlaDetails(donor.MatchingHla?.DQB1_2),
                 ExpandedDRB1_1 = SerialiseHlaDetails(donor.MatchingHla?.DRB1_1),
                 ExpandedDRB1_2 = SerialiseHlaDetails(donor.MatchingHla?.DRB1_2),
-                ExpandedDQB1_1 = SerialiseHlaDetails(donor.MatchingHla?.DQB1_1),
-                ExpandedDQB1_2 = SerialiseHlaDetails(donor.MatchingHla?.DQB1_2)
             };
         }
 
@@ -73,10 +79,12 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                     B_2 = result.B_2,
                     C_1 = result.C_1,
                     C_2 = result.C_2,
+                    DPB1_1 = result.DPB1_1,
+                    DPB1_2 = result.DPB1_2,
+                    DQB1_1 = result.DQB1_1,
+                    DQB1_2 = result.DQB1_2,
                     DRB1_1 = result.DRB1_1,
                     DRB1_2 = result.DRB1_2,
-                    DQB1_1 = result.DQB1_1,
-                    DQB1_2 = result.DQB1_2
                 },
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
@@ -86,10 +94,12 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                     B_2 = DeserializeHlaDetails(result.ExpandedB_2),
                     C_1 = DeserializeHlaDetails(result.ExpandedC_1),
                     C_2 = DeserializeHlaDetails(result.ExpandedC_2),
+                    DPB1_1 = DeserializeHlaDetails(result.ExpandedDPB1_1),
+                    DPB1_2 = DeserializeHlaDetails(result.ExpandedDPB1_2),
+                    DQB1_1 = DeserializeHlaDetails(result.ExpandedDQB1_1),
+                    DQB1_2 = DeserializeHlaDetails(result.ExpandedDQB1_2),
                     DRB1_1 = DeserializeHlaDetails(result.ExpandedDRB1_1),
                     DRB1_2 = DeserializeHlaDetails(result.ExpandedDRB1_2),
-                    DQB1_1 = DeserializeHlaDetails(result.ExpandedDQB1_1),
-                    DQB1_2 = DeserializeHlaDetails(result.ExpandedDQB1_2)
                 }
             };
             return donorResult;

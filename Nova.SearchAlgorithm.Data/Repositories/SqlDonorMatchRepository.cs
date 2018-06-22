@@ -113,6 +113,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         {
             foreach (Locus locus in Enum.GetValues(typeof(Locus)).Cast<Locus>())
             {
+                if (locus.Equals(Locus.Dpb1))
+                {
+                    // TODO:NOVA-1300 figure out how best to pre-process matches for Dpb1
+                    continue;
+                }
+
                 context.Database.ExecuteSqlCommand(
                     $@"DELETE FROM MatchingHlaAt{locus.ToString().ToUpper()} WHERE DonorId = {donor.DonorId}");
             }
@@ -124,6 +130,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public void InsertPGroupMatches(int donorId, Locus locus, TypePositions position, ExpandedHla hla)
         {
+            if (locus.Equals(Locus.Dpb1))
+            {
+                // TODO:NOVA-1300 figure out how best to pre-process matches for Dpb1
+                return;
+            }
+
             var table = context.MatchingHlasAtLocus(locus);
             if (hla?.PGroups != null)
             {
