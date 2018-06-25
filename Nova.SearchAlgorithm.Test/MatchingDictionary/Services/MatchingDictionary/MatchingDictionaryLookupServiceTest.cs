@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nova.HLAService.Client;
+﻿using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
@@ -11,12 +8,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NSubstitute.ReturnsExtensions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
@@ -118,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         public async Task GetMatchingHla_WhenAllele_LookupTheSubmittedHlaName(
             string hlaName, string lookupName)
         {
-            hlaServiceClient.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Allele);
+            hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Allele);
 
             await lookupService.GetMatchingHla(MatchedLocus, hlaName);
 
@@ -132,7 +129,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         public async Task GetMatchingHla_WhenSubmittedAlleleNameNotFound_LookupTheTwoFieldNameVariant(
             string submittedAlleleName, string expectedTwoFieldName)
         {
-            hlaServiceClient.GetHlaTypingCategory(submittedAlleleName)
+            hlaCategorisationService.GetHlaTypingCategory(submittedAlleleName)
                 .Returns(HlaTypingCategory.Allele);
 
             // return null on submitted name to emulate scenario that requires a two-field-name lookup
@@ -157,7 +154,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         public async Task GetMatchingHla_WhenSubmittedAlleleNameIsFound_DoNotLookupTheTwoFieldNameVariant(
             string submittedLookupName, string expectedTwoFieldName)
         {
-            hlaServiceClient.GetHlaTypingCategory(submittedLookupName)
+            hlaCategorisationService.GetHlaTypingCategory(submittedLookupName)
                 .Returns(HlaTypingCategory.Allele);
 
             var entryBasedOnLookupName = BuildAlleleDictionaryEntry(submittedLookupName);
@@ -174,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         public async Task GetMatchingHla_WhenSerology_LookupTheSubmittedHlaName()
         {
             const string hlaName = "SerologyName";
-            hlaServiceClient.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Serology);
+            hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Serology);
 
             await lookupService.GetMatchingHla(MatchedLocus, hlaName);
 
