@@ -8,19 +8,30 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 {
     internal abstract class MatchingDictionaryLookup
     {
-        protected readonly IMatchingDictionaryRepository DictionaryRepository;
+        private readonly IMatchingDictionaryRepository dictionaryRepository;
 
         protected MatchingDictionaryLookup(IMatchingDictionaryRepository dictionaryRepository)
         {
-            DictionaryRepository = dictionaryRepository;
+            this.dictionaryRepository = dictionaryRepository;
         }
 
         public abstract Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName);
 
-        protected virtual async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        protected async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            var entry = await DictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
+            var entry = await GetEntryFromMatchingDictionaryRepository(matchLocus, lookupName, typingMethod);
             return entry ?? throw new InvalidHlaException(matchLocus, lookupName);
+        }
+
+        protected bool TryGetMatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod, out MatchingDictionaryEntry entry)
+        {
+            entry = GetEntryFromMatchingDictionaryRepository(matchLocus, lookupName, typingMethod).Result;
+            return entry != null;
+        }
+
+        private async Task<MatchingDictionaryEntry> GetEntryFromMatchingDictionaryRepository(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        {
+            return await dictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
         }
     }
 }
