@@ -25,6 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 
         protected bool TryGetMatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod, out MatchingDictionaryEntry entry)
         {
+            // Note: use of Task.Result means that any exceptions raised will be wrapped in an AggregateException
             entry = GetEntryFromMatchingDictionaryRepository(matchLocus, lookupName, typingMethod).Result;
             return entry != null;
         }
