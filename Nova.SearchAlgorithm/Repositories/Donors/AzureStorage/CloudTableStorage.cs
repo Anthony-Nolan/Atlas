@@ -58,9 +58,10 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 .Union(matchesFromPositionTwo.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two))));
         }
 
-        private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(Locus locus,
-            IEnumerable<string> namesToMatch)
+        private IEnumerable<PotentialHlaMatchRelationTableEntity> GetMatches(Locus locus, IEnumerable<string> namesToMatch)
         {
+            const int filterClauseLimit = 20;
+
             // Enumerate once
             var namesToMatchList = namesToMatch.ToList();
 
@@ -69,14 +70,22 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 return Enumerable.Empty<PotentialHlaMatchRelationTableEntity>();
             }
 
-            var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>();
-            foreach (string name in namesToMatchList)
+            
+            var results = namesToMatchList.Batch(filterClauseLimit).AsParallel().Select(batch =>
             {
-                matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal,
-                    PotentialHlaMatchRelationTableEntity.GenerateRowKey(locus, name)));
-            }
+                var matchesQuery = new TableQuery<PotentialHlaMatchRelationTableEntity>();
+                foreach (string name in batch)
+                {
+                    matchesQuery = matchesQuery.OrWhere(TableQuery.GenerateFilterCondition("RowKey",
+                        QueryComparisons.Equal,
+                        PotentialHlaMatchRelationTableEntity.GenerateRowKey(locus, name)));
+                }
 
-            return matchTable.ExecuteQuery(matchesQuery);
+                return matchTable.ExecuteQuery(matchesQuery);
+            });
+
+            // De-duplicate
+            return results.SelectMany(x => x).Distinct();
         }
 
         public Task<DonorResult> GetDonor(int donorId)
