@@ -1,5 +1,4 @@
-﻿using System;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
@@ -16,31 +15,32 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 
         public override async Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            try
+            if(!GetEntryByLookupNameIfExists(matchLocus, lookupName, out var entry))
             {
-                return await GetEntryByLookupNameIfExists(matchLocus, lookupName);
+                entry = await GetEntryByTwoFieldVariantOfLookupNameIfExists(matchLocus, lookupName);
             }
-            catch (InvalidHlaException)
-            {
-                return await GetEntryByTwoFieldVariantOfLookupNameIfExists(matchLocus, lookupName);
-            }          
+
+            return entry ?? throw new InvalidHlaException(matchLocus, lookupName);
         }
 
-        private Task<MatchingDictionaryEntry> GetEntryByLookupNameIfExists(MatchLocus matchLocus, string lookupName)
+        private bool GetEntryByLookupNameIfExists(MatchLocus matchLocus, string lookupName, out MatchingDictionaryEntry entry)
         {
-            return GetAlleleEntryIfExists(matchLocus, lookupName);
+            entry = GetMatchingDictionaryEntryIfExists(matchLocus, lookupName).Result;
+            return entry != null;
         }
 
-        private Task<MatchingDictionaryEntry> GetEntryByTwoFieldVariantOfLookupNameIfExists(MatchLocus matchLocus, string lookupName)
+        private async Task<MatchingDictionaryEntry> GetEntryByTwoFieldVariantOfLookupNameIfExists(MatchLocus matchLocus, string lookupName)
         {
             var molecularLocus = PermittedLocusNames.GetMolecularLocusNameFromMatchIfExists(matchLocus);
             var alleleTypingFromLookupName = new AlleleTyping(molecularLocus, lookupName);
-            return GetAlleleEntryIfExists(matchLocus, alleleTypingFromLookupName.TwoFieldName);
+
+            return await GetMatchingDictionaryEntryIfExists(matchLocus, alleleTypingFromLookupName.TwoFieldName);
         }
 
-        private Task<MatchingDictionaryEntry> GetAlleleEntryIfExists(MatchLocus matchLocus, string alleleName)
+        protected override async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(
+            MatchLocus matchLocus, string lookupName, TypingMethod typingMethod = TypingMethod.Molecular)
         {
-            return GetMatchingDictionaryEntryIfExists(matchLocus, alleleName, TypingMethod.Molecular);
+            return await DictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
         }
     }
 }

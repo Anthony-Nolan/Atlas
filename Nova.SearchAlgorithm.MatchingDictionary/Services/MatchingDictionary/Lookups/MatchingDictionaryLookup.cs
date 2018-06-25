@@ -8,19 +8,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 {
     internal abstract class MatchingDictionaryLookup
     {
-        private readonly IMatchingDictionaryRepository dictionaryRepository;
+        protected readonly IMatchingDictionaryRepository DictionaryRepository;
 
         protected MatchingDictionaryLookup(IMatchingDictionaryRepository dictionaryRepository)
         {
-            this.dictionaryRepository = dictionaryRepository;
+            DictionaryRepository = dictionaryRepository;
         }
 
         public abstract Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName);
 
-        protected async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        protected virtual async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            var entry = await dictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
-            return entry ?? throw new InvalidHlaException(matchLocus.ToString(), lookupName);
+            var entry = await DictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
+            return entry ?? throw new InvalidHlaException(matchLocus, lookupName);
         }
     }
 }
