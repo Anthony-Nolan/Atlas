@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Services
                     stopwatch.Restart();
                     await Task.WhenAll(
                         subBatch.Select(UpdateSingleDonorHlaAsync)
-                    ).ConfigureAwait(false);
+                    );
                     
                     stopwatch.Stop();
                     totalUpdated += parallelBatchSize;
