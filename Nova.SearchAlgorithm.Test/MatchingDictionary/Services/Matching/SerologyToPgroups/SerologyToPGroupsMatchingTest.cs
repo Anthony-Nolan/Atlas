@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void ValidSerologyHaveAtLeastOnePGroup()
         {
-            var pGroupCounts = MatchingTypings
+            var pGroupCounts = MatchedHlaTypings
                 .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is SerologyTyping)
                 .Select(m => new { HlaType = m.HlaTyping, PGroupCount = m.MatchingPGroups.Count() })
                 .ToList();
