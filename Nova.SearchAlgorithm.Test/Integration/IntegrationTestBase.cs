@@ -40,7 +40,10 @@ namespace Nova.SearchAlgorithm.Test.Integration
             tableStorageEmulator.Clear();
 
             // Starting the cosmos emulator is currently a manual step.
-            cosmosDatabase.Clear();
+            if (DonorStorageImplementation.Cosmos.Equals(donorStorageImplementation))
+            {
+                cosmosDatabase.Clear();
+            }
 
             container = CreateContainer();
 
