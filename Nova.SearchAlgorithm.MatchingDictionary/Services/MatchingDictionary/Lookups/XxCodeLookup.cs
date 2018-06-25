@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
         public override Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var firstField = lookupName.Split(':')[0];
-            return GetMatchingDictionaryEntry(matchLocus, firstField, TypingMethod.Molecular);
+            return GetMatchingDictionaryEntryIfExists(matchLocus, firstField, TypingMethod.Molecular);
         }
     }
 }

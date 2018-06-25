@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
         public override async Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var alleles = await GetAlleles(matchLocus, lookupName);
-            var tasks = alleles.Select(allele => GetMatchingDictionaryEntry(matchLocus, allele, TypingMethod.Molecular));
+            var tasks = alleles.Select(allele => GetMatchingDictionaryEntryIfExists(matchLocus, allele, TypingMethod.Molecular));
             var entries = await Task.WhenAll(tasks);
 
             return new MatchingDictionaryEntry(matchLocus, lookupName, MolecularSubtype.MultipleAlleles, entries);

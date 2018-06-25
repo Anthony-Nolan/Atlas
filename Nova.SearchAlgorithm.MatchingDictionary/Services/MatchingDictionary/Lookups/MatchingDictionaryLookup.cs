@@ -17,10 +17,24 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 
         public abstract Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName);
 
-        protected async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        protected async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            var entry = await dictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
-            return entry ?? throw new InvalidHlaException(matchLocus.ToString(), lookupName);
+            var entry = await GetEntryFromMatchingDictionaryRepository(matchLocus, lookupName, typingMethod);
+            return entry ?? throw new InvalidHlaException(matchLocus, lookupName);
+        }
+
+        protected bool TryGetMatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod, out MatchingDictionaryEntry entry)
+        {
+            var task = Task.Run(() =>
+                GetEntryFromMatchingDictionaryRepository(matchLocus, lookupName, typingMethod));
+            // Note: use of Task.Result means that any exceptions raised will be wrapped in an AggregateException
+            entry = task.Result;
+            return entry != null;
+        }
+
+        private async Task<MatchingDictionaryEntry> GetEntryFromMatchingDictionaryRepository(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        {
+            return await dictionaryRepository.GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, typingMethod);
         }
     }
 }
