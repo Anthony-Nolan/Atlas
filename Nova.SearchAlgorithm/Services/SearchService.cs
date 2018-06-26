@@ -52,6 +52,7 @@ namespace Nova.SearchAlgorithm.Services
                 .Select(AddMatchCounts(criteria))
                 .Where(FilterByMismatchCriteria(criteria));
 
+            // TODO:NOVA-930 this won't update total match grade and confidence, only per-locus
             var scoredMatches = await Task.WhenAll(fiveLociMatches.Select(m => calculateScore.Score(criteria, m)));
 
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
