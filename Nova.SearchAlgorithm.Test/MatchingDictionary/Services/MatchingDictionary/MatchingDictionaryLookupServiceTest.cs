@@ -1,4 +1,8 @@
-﻿using Nova.HLAService.Client;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
@@ -6,14 +10,11 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
@@ -24,6 +25,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private IMatchingDictionaryRepository repository;
         private IHlaServiceClient hlaServiceClient;
         private IHlaCategorisationService hlaCategorisationService;
+        private IAlleleStringSplitterService alleleStringSplitterService;
+        private IMemoryCache memoryCache;
+        private ILogger logger;
         private const MolecularLocusType MolecularLocus = MolecularLocusType.A;
         private const MatchLocus MatchedLocus = MatchLocus.A;
         private const string TypingLocus = "A";
@@ -34,8 +38,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             repository = Substitute.For<IMatchingDictionaryRepository>();
             hlaServiceClient = Substitute.For<IHlaServiceClient>();
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
+            alleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
+            memoryCache = Substitute.For<IMemoryCache>();
+            logger = Substitute.For<ILogger>();
             
-            lookupService = new MatchingDictionaryLookupService(repository, hlaServiceClient, hlaCategorisationService);
+            lookupService = new MatchingDictionaryLookupService(repository, hlaServiceClient, hlaCategorisationService, alleleStringSplitterService, memoryCache, logger);
         }
 
         [SetUp]

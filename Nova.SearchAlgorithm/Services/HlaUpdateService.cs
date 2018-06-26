@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
@@ -22,18 +26,22 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
         private readonly IMatchingDictionaryRepository matchingDictionaryRepository;
+        private readonly IAntigenCachingService antigenCachingService;
 
         public HlaUpdateService(IMatchingDictionaryLookupService lookupService,
             IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             ILogger logger,
-            IMatchingDictionaryRepository matchingDictionaryRepository)
+            IMatchingDictionaryRepository matchingDictionaryRepository,
+            IAntigenCachingService antigenCachingService
+            )
         {
             this.lookupService = lookupService;
             this.donorInspectionRepository = donorInspectionRepository;
             this.donorImportRepository = donorImportRepository;
             this.logger = logger;
             this.matchingDictionaryRepository = matchingDictionaryRepository;
+            this.antigenCachingService = antigenCachingService;
         }
 
         public async Task UpdateDonorHla()
@@ -42,13 +50,11 @@ namespace Nova.SearchAlgorithm.Services
             var totalUpdated = 0;
             var stopwatch = new Stopwatch();
 
-            // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await matchingDictionaryRepository.ConnectToCloudTable();
-            // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
-            donorImportRepository.SetupForHlaRefresh();
+            await PerformUpfrontSetup();
 
             var pGroups = matchingDictionaryRepository.GetAllPGroups();
             donorImportRepository.InsertPGroups(pGroups);
+            
             while (batchedQuery.HasMoreResults)
             {
                 stopwatch.Start();
@@ -73,6 +79,18 @@ namespace Nova.SearchAlgorithm.Services
                     });
                 }
             }
+        }
+
+        private async Task PerformUpfrontSetup()
+        {
+            // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
+            await matchingDictionaryRepository.ConnectToCloudTable();
+            
+            // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
+            donorImportRepository.SetupForHlaRefresh();
+            
+            // All antigens are fetched from the HLA service. We use our cache for nmdp lookups to avoid too much load on the hla service
+            await antigenCachingService.GenerateAntigenCache();
         }
 
         private async Task<InputDonor> FetchDonorHlaData(DonorResult donor)
