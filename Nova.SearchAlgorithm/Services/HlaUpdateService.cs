@@ -47,6 +47,8 @@ namespace Nova.SearchAlgorithm.Services
             // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
             donorImportRepository.SetupForHlaRefresh();
 
+            var pGroups = matchingDictionaryRepository.GetAllPGroups();
+            donorImportRepository.InsertPGroups(pGroups);
             while (batchedQuery.HasMoreResults)
             {
                 stopwatch.Start();

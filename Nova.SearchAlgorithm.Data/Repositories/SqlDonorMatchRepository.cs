@@ -32,6 +32,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString;
 
+        private Dictionary<string, PGroupName> pGroupDictionary;
+
         public SqlDonorSearchRepository(SearchAlgorithmContext context)
         {
             this.context = context;
@@ -109,12 +111,45 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
             }
 
+        public void InsertPGroups(IEnumerable<string> pGroups)
+        {
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                
+                var existingPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames").Select(p => p.Name);
+                
+                var dt = new DataTable();
+                dt.Columns.Add("Id");
+                dt.Columns.Add("Name");
 
+                foreach (var pg in pGroups.Distinct().Except(existingPGroups)) 
+                {
+                    dt.Rows.Add(0, pg);
+                }
+                
+                var tran = conn.BeginTransaction();
+                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, tran))
+                {
+                    sqlBulk.BatchSize = 10000;
+                    sqlBulk.DestinationTableName = "PGroupNames";
+                    sqlBulk.WriteToServer(dt);
+                }
+                tran.Commit();
+                conn.Close();
+            }
+
+            CachePGroupDictionary();
         }
 
+        private void CachePGroupDictionary()
         {
+            using (var conn = new SqlConnection(connectionString))
             {
+                var innerPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames");
+                pGroupDictionary = innerPGroups.Distinct(new DistinctPGroupNameComparer()).ToDictionary(p => p.Name);
             }
+        }
 
         private async Task InsertPGroupMatches(int donorId, PhenotypeInfo<ExpandedHla> allHla)
         {
@@ -155,16 +190,19 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         private PGroupName FindOrCreatePGroup(string pGroupName)
         {
-            var existing = context.PGroupNames.FirstOrDefault(pg => pg.Name == pGroupName);
+            if (pGroupDictionary == null)
+            {
+                CachePGroupDictionary();
+            }
+
+            pGroupDictionary.TryGetValue(pGroupName, out var existing);
 
             if (existing != null)
             {
                 return existing;
             }
 
-            var newPGroup = context.PGroupNames.Add(new PGroupName { Name = pGroupName });
-            context.SaveChanges();
-            return newPGroup;
+            return context.PGroupNames.Add(new PGroupName {Name = pGroupName});
         }
 
         public Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest)
@@ -221,6 +259,19 @@ SELECT DonorId, SUM(MatchCount) AS TotalMatchCount
                       WHERE [Name] IN('{string.Join("', '", names)}')
                       AND d.LocusCode = {(int) locus} 
                       GROUP BY d.DonorId, d.TypePosition";
+        }
+    }
+
+    class DistinctPGroupNameComparer : IEqualityComparer<PGroupName>
+    {
+        public bool Equals(PGroupName x, PGroupName y)
+        {
+            return x.Name == y.Name;
+        }
+
+        public int GetHashCode(PGroupName obj)
+        {
+            return obj.Name.GetHashCode();
         }
     }
 }

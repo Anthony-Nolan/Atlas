@@ -135,6 +135,11 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
         {
             return donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }
+
+        public void InsertPGroups(IEnumerable<string> pGroups)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     internal class DonorAndMatch

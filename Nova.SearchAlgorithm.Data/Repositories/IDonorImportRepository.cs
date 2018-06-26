@@ -34,5 +34,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         /// Refreshes the pre-processed matching groups for a single donor, for example if the HLA matching dictionary has been updated.
         /// </summary>
         Task RefreshMatchingGroupsForExistingDonor(InputDonor donor);
+
+        void InsertPGroups(IEnumerable<string> pGroups);
     }
 }
