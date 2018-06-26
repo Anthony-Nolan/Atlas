@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyToGgroups
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerology))]
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerologies))]
     [UseReporter(typeof(NUnitReporter))]
     public class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {

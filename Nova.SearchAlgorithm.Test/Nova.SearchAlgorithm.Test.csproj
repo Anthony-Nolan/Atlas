@@ -472,7 +472,7 @@
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
