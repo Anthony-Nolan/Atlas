@@ -69,9 +69,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 return;
             }
 
-            context.Donors.AddRange(rawInputDonors.Select(d => d.ToDonorEntity()));
+            using (var conn = new SqlConnection(connectionString))
+            {
+                const string sql =
+                    "INSERT INTO Donors (DonorId,  DonorType,  RegistryCode,  A_1,  A_2,  B_1,  B_2,  C_1,  C_2,  DPB1_1,  DPB1_2,  DQB1_1,  DQB1_2,  DRB1_1,  DRB1_2) " +
+                    "VALUES             (@DonorId, @DonorType, @RegistryCode, @A_1, @A_2, @B_1, @B_2, @C_1, @C_2, @DPB1_1, @DPB1_2, @DQB1_1, @DQB1_2, @DRB1_1, @DRB1_2)";
 
-            await context.SaveChangesAsync();
+                await conn.ExecuteAsync(sql, rawInputDonors.Select(d => d.ToDonorEntity()));
+            }
         }
 
         public async Task AddOrUpdateDonorWithHla(InputDonor donor)
