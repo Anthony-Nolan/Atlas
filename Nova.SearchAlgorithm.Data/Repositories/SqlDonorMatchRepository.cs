@@ -98,18 +98,65 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
+            // TODO: We should think about wrapping the DELETE + INSERTS in a transaction, so we don't lose data if inserts fail?
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Execute($@"DELETE FROM MatchingHlas WHERE DonorId = {donor.DonorId}");
             }
 
-            await InsertPGroupMatches(donor.DonorId, donor.MatchingHla);
+            await InsertPGroupMatchesForSingleDonor(donor.DonorId, donor.MatchingHla);
         }
+
+        public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors)
+        {
+            // TODO: We should think about wrapping the DELETE + INSERTS in a transaction, so we don't lose data if inserts fail?
+            using (var conn = new SqlConnection(connectionString))
             {
+                conn.Execute($@"DELETE FROM MatchingHlas WHERE DonorId IN('{string.Join("', '", donors.Select(d => d.DonorId))}')");
+            }
+            
+            await InsertPGroupMatchesForDonorBatch(donors);
+        }
+
+        private async Task InsertPGroupMatchesForDonorBatch(IEnumerable<InputDonor> donors)
+        {
+            var dtTask = Task.Run(() =>
+            {
+                var dt = new DataTable();
+                dt.Columns.Add("Id");
+                dt.Columns.Add("DonorId");
+                dt.Columns.Add("TypePosition");
+                dt.Columns.Add("LocusCode");
+                dt.Columns.Add("PGroup_Id");
+
+                foreach (var donor in donors)
                 {
+                    donor.MatchingHla.EachPosition((l, p, h) =>
+                    {
+                        if (h == null)
+                        {
+                            return;
+                        }
+
+                        foreach (var pGroup in h.PGroups)
+                        {
+                            dt.Rows.Add(0, donor.DonorId, (int) p, (int) l, FindOrCreatePGroup(pGroup).Id);
+                        }
+                    });
                 }
 
+                return dt;
+            });
+
+            var dataTable = await dtTask;
+
+            using (var sqlBulk = new SqlBulkCopy(connectionString))
+            {
+                sqlBulk.BatchSize = 10000;
+                sqlBulk.DestinationTableName = "MatchingHlas";
+                sqlBulk.WriteToServer(dataTable);
             }
+        }
 
         public void InsertPGroups(IEnumerable<string> pGroups)
         {
@@ -151,7 +198,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        private async Task InsertPGroupMatches(int donorId, PhenotypeInfo<ExpandedHla> allHla)
+        private async Task InsertPGroupMatchesForSingleDonor(int donorId, PhenotypeInfo<ExpandedHla> allHla)
         {
             var dataTableCreationTask = Task.Run(() =>
             {
