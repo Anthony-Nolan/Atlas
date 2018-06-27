@@ -131,9 +131,19 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.AllDonors();
         }
 
-        public Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
+        private Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             return donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
+        }
+
+        public Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors)
+        {
+            return Task.WhenAll(donors.Select(RefreshMatchingGroupsForExistingDonor));
+        }
+
+        public void InsertPGroups(IEnumerable<string> pGroups)
+        {
+            // This is not necessary in non-relational databases, as the PGroups are stored as strings on the match entities
         }
     }
 

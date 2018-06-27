@@ -15,6 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 
         protected override async Task<IEnumerable<string>> GetAlleles(MatchLocus matchLocus, string lookupName)
         {
+            // TODO: Use library version of string splitter, not via HTTP
             return await HlaServiceClient.GetAlleleNamesFromAlleleString(lookupName);
         }
     }

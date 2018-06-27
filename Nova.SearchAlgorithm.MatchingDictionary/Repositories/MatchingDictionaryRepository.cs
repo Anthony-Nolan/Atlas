@@ -19,6 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
         Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
         Task ConnectToCloudTable();
+        IEnumerable<string> GetAllPGroups();
     }
 
     public class MatchingDictionaryRepository : IMatchingDictionaryRepository
@@ -61,6 +62,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             }
 
             throw new MatchingDictionaryException("Failed to load matching dictionary into cache");
+        }
+
+        public IEnumerable<string> GetAllPGroups()
+        {
+            if (memoryCache.TryGetValue(CacheKeyMatchingDictionary, out Dictionary<string, MatchingDictionaryTableEntity> matchingDictionary))
+            {
+                return matchingDictionary.Values.SelectMany(v => v.ToMatchingDictionaryEntry().MatchingPGroups);
+            }
+            throw new Exception("Matching Dictionary not cached!");
         }
 
         private static MatchingDictionaryEntry GetMatchingDictionaryEntryFromCache(MatchLocus matchLocus, string lookupName,

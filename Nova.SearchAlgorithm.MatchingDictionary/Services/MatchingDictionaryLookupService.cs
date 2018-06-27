@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
@@ -8,6 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -24,16 +26,25 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IMatchingDictionaryRepository dictionaryRepository;
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly IHlaCategorisationService hlaCategorisationService;
+        private readonly IAlleleStringSplitterService alleleSplitter;
+        private readonly IMemoryCache memoryCache;
+        private readonly ILogger logger;
 
         public MatchingDictionaryLookupService(
             IMatchingDictionaryRepository dictionaryRepository,
             IHlaServiceClient hlaServiceClient,
-            IHlaCategorisationService hlaCategorisationService
+            IHlaCategorisationService hlaCategorisationService,
+            IAlleleStringSplitterService alleleSplitter,
+            IMemoryCache memoryCache,
+            ILogger logger
         )
         {
             this.dictionaryRepository = dictionaryRepository;
             this.hlaServiceClient = hlaServiceClient;
             this.hlaCategorisationService = hlaCategorisationService;
+            this.alleleSplitter = alleleSplitter;
+            this.memoryCache = memoryCache;
+            this.logger = logger;
         }
 
         public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
@@ -61,7 +72,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                         lookup = new SerologyLookup(dictionaryRepository);
                         break;
                     case HlaTypingCategory.NmdpCode:
-                        lookup = new NmdpCodeLookup(dictionaryRepository, hlaServiceClient);
+                        lookup = new NmdpCodeLookup(dictionaryRepository, memoryCache, hlaServiceClient, alleleSplitter, logger);
                         break;
                     case HlaTypingCategory.AlleleStringOfNames:
                     case HlaTypingCategory.AlleleStringOfSubtypes:

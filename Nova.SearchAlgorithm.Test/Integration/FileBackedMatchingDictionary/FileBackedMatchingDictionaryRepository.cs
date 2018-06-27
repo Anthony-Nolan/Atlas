@@ -66,5 +66,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary
         {
             return Task.CompletedTask;
         }
+
+        public IEnumerable<string> GetAllPGroups()
+        {
+            return rawMatchingData.SelectMany(hla => hla.MatchingPGroups);
+        }
     }
 }

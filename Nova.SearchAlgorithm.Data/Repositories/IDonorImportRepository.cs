@@ -31,8 +31,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         void SetupForHlaRefresh();
         
         /// <summary>
-        /// Refreshes the pre-processed matching groups for a single donor, for example if the HLA matching dictionary has been updated.
+        /// Refreshes the pre-processed matching groups for a batch of donors, for example if the HLA matching dictionary has been updated.
         /// </summary>
-        Task RefreshMatchingGroupsForExistingDonor(InputDonor donor);
+        Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors);
+
+        /// <summary>
+        /// Inserts a batch of p groups into storage.
+        /// This is only relevant for relational databases (i.e. SQL), where the PGroups are stored separately to the match data.
+        /// </summary>
+        void InsertPGroups(IEnumerable<string> pGroups);
     }
 }

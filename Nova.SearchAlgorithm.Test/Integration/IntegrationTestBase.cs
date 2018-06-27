@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 using Microsoft.ApplicationInsights;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
@@ -9,8 +10,10 @@ using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using NUnit.Framework;
 using Autofac;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
@@ -87,12 +90,15 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterInstance(Substitute.For<IHlaServiceClient>()).AsImplementedInterfaces().SingleInstance();
+            var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
+            mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
+            builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SearchAlgorithm.MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -105,6 +111,8 @@ namespace Nova.SearchAlgorithm.Test.Integration
             builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
+            
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();
             builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();
