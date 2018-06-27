@@ -1,0 +1,22 @@
+﻿{
+  "SearchType": "Adult",
+  "MatchCriteria": {
+    "donorMismatchCount": 0,
+    "locusMismatchA": {
+      "searchHLA1": "80:01:01:02",
+      "searchHLA2": "210",
+      "mismatchCount": 0
+    },
+    "locusMismatchB": {
+      "searchHLA1": "12",
+      "searchHLA2": "12",
+      "mismatchCount": 0
+    },
+    "locusMismatchDRB1": {
+      "searchHLA1": "13:01:05",
+      "searchHLA2": "04:94:01N",
+      "mismatchCount": 0
+    }
+  },
+  "registriesToSearch": [ "AN", "NHSBT", "WBS", "DKMS" ]
+}
