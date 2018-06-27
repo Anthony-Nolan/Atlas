@@ -35,6 +35,10 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         /// </summary>
         Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors);
 
+        /// <summary>
+        /// Inserts a batch of p groups into storage.
+        /// This is only relevant for relational databases (i.e. SQL), where the PGroups are stored separately to the match data.
+        /// </summary>
         void InsertPGroups(IEnumerable<string> pGroups);
     }
 }
