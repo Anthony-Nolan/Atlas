@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
 
         public void InsertPGroups(IEnumerable<string> pGroups)
         {
-            throw new System.NotImplementedException();
+            // This is not necessary in non-relational databases, as the PGroups are stored as strings on the match entities
         }
     }
 
