@@ -145,7 +145,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
                         foreach (var pGroup in h.PGroups)
                         {
-                            dt.Rows.Add(0, donor.DonorId, (int) p, (int) l, FindOrCreatePGroup(pGroup).Id);
+                            dt.Rows.Add(0, donor.DonorId, (int) p, (int) l, FindOrCreatePGroup(pGroup));
                         }
                     });
                 }
@@ -223,7 +223,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
                     foreach (var pGroup in hla.PGroups)
                     {
-                        dt.Rows.Add(0, donorId, (int) position, (int) locus, FindOrCreatePGroup(pGroup).Id);
+                        dt.Rows.Add(0, donorId, (int) position, (int) locus, FindOrCreatePGroup(pGroup));
                     }
                 });
 
@@ -240,7 +240,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        private PGroupName FindOrCreatePGroup(string pGroupName)
+        private int FindOrCreatePGroup(string pGroupName)
         {
             if (pGroupDictionary == null)
             {
@@ -251,10 +251,17 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
             if (existing != null)
             {
-                return existing;
+                return existing.Id;
             }
+            
+            string sql = @"
+INSERT INTO PGroupNames (Name) VALUES (@PGroupName);
+SELECT CAST(SCOPE_IDENTITY() as int)";
 
-            return context.PGroupNames.Add(new PGroupName {Name = pGroupName});
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return conn.Query<int>(sql, new { PGroupName = pGroupName }).Single();
+            }
         }
 
         public Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest)
