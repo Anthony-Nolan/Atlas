@@ -238,10 +238,15 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 INSERT INTO PGroupNames (Name) VALUES (@PGroupName);
 SELECT CAST(SCOPE_IDENTITY() as int)";
 
+            int newId;
+            
             using (var conn = new SqlConnection(connectionString))
             {
-                return conn.Query<int>(sql, new { PGroupName = pGroupName }).Single();
+                newId = conn.Query<int>(sql, new { PGroupName = pGroupName }).Single();
             }
+
+            CachePGroupDictionary();
+            return newId;
         }
 
         public Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest)
