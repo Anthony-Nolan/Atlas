@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.Data.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = true;
+            AutomaticMigrationsEnabled = false;
             ContextKey = "Nova.SearchAlgorithm.Data.SearchAlgorithmContext";
         }
 

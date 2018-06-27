@@ -47,6 +47,17 @@ node('windows') {
     stage('Package') {
         bat "${msBuild} ${projectFile} /v:minimal /p:DeployOnBuild=true /p:PublishProfile=\"${env.PUBLISH_PROFILE}\" /p:PackageLocation=\"${env.WORKSPACE}/build/${projectName}.zip\""
     }
+    stage('Run migrations') {
+        def dataProjectName = "${projectName}.Data"
+        withCredentials([usernamePassword(credentialsId: env.DATABASE_ADMIN_CREDENTIALS_ID, usernameVariable: 'dbUsername', passwordVariable: 'dbPassword')]) {
+            def connectionString = "Server=${env.DATABASE_SERVER};Initial Catalog=${env.DATABASE_NAME};Persist Security Info=False;User ID=${dbUsername};Password=${dbPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+            bat """pushd \"${env.WORKSPACE}/${dataProjectName}/bin/Debug\"
+            copy ${migrate} .
+            migrate.exe ${dataProjectName}.dll /connectionProviderName=\"System.Data.SqlClient\" /connectionString=\"${connectionString}\"
+            popd
+            exit /b %errorlevel%"""
+        }
+    }
     stage('Publish') {
         withCredentials([usernamePassword(credentialsId: env.DEPLOY_CREDENTIALS_ID, passwordVariable: 'password', usernameVariable: 'username')]) {
             // TODO: Move this to a powershell script

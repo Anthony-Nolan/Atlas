@@ -138,6 +138,10 @@
   <ItemGroup>
     <Compile Include="Config\SearchDataModule.cs" />
     <Compile Include="Exceptions\DataHttpException.cs" />
+    <Compile Include="Migrations\201806271340159_InitialCreate.cs" />
+    <Compile Include="Migrations\201806271340159_InitialCreate.Designer.cs">
+      <DependentUpon>201806271340159_InitialCreate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
     <Compile Include="Entity\MatchingHla.cs" />
     <Compile Include="Entity\HlaName.cs" />
@@ -165,6 +169,11 @@
       <Project>{FB453E02-3CE1-42E7-BDC4-13899B993F2A}</Project>
       <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201806271340159_InitialCreate.resx">
+      <DependentUpon>201806271340159_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
