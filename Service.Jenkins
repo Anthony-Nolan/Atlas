@@ -34,18 +34,6 @@ node('windows') {
     stage('Build for tests and migrations') {
         bat "${msBuild} ${solutionFile} /p:Configuration=Debug /v:minimal"
     }
-    stage('Run Tests') {
-        def testOutput = 'TestResult.xml'
-
-        // Get a list of all of the test assembly paths
-        def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.dll')
-
-        //Run the tests
-        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --where=\"class !~ Nova.SearchAlgorithm.Test.Integration\" --noheader"
-
-        // Generate reports
-        nunit testResultsPattern: testOutput
-    }
     stage('Package') {
         bat "${msBuild} ${projectFile} /v:minimal /p:DeployOnBuild=true /p:PublishProfile=\"${env.PUBLISH_PROFILE}\" /p:PackageLocation=\"${env.WORKSPACE}/build/${projectName}.zip\""
     }
