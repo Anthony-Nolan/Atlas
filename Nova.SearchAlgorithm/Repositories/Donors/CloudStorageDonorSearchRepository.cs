@@ -131,7 +131,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.AllDonors();
         }
 
-        public Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
+        private Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
         {
             return donorDocumentRepository.RefreshMatchingGroupsForExistingDonor(donor);
         }

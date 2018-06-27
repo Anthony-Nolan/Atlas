@@ -91,7 +91,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 result.CopyRawHlaFrom(donor);
             }
 
-            await RefreshMatchingGroupsForExistingDonor(donor);
+            await RefreshMatchingGroupsForExistingDonorBatch(new List<InputDonor>{ donor });
 
             await context.SaveChangesAsync();
         }
@@ -99,17 +99,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public void SetupForHlaRefresh()
         {
             // Do nothing
-        }
-
-        public async Task RefreshMatchingGroupsForExistingDonor(InputDonor donor)
-        {
-            // TODO: We should think about wrapping the DELETE + INSERTS in a transaction, so we don't lose data if inserts fail?
-            using (var conn = new SqlConnection(connectionString))
-            {
-                conn.Execute($@"DELETE FROM MatchingHlas WHERE DonorId = {donor.DonorId}");
-            }
-
-            await InsertPGroupMatchesForSingleDonor(donor.DonorId, donor.MatchingHla);
         }
 
         public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors)
@@ -200,43 +189,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             {
                 var innerPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames");
                 pGroupDictionary = innerPGroups.Distinct(new DistinctPGroupNameComparer()).ToDictionary(p => p.Name);
-            }
-        }
-
-        private async Task InsertPGroupMatchesForSingleDonor(int donorId, PhenotypeInfo<ExpandedHla> allHla)
-        {
-            var dataTableCreationTask = Task.Run(() =>
-            {
-                var dt = new DataTable();
-                dt.Columns.Add("Id");
-                dt.Columns.Add("DonorId");
-                dt.Columns.Add("TypePosition");
-                dt.Columns.Add("LocusCode");
-                dt.Columns.Add("PGroup_Id");
-
-                allHla.EachPosition((locus, position, hla) =>
-                {
-                    if (hla == null)
-                    {
-                        return;
-                    }
-
-                    foreach (var pGroup in hla.PGroups)
-                    {
-                        dt.Rows.Add(0, donorId, (int) position, (int) locus, FindOrCreatePGroup(pGroup));
-                    }
-                });
-
-                return dt;
-            });
-
-            var dataTable = await dataTableCreationTask;
-
-            using (var sqlBulk = new SqlBulkCopy(connectionString))
-            {
-                sqlBulk.BatchSize = 10000;
-                sqlBulk.DestinationTableName = "MatchingHlas";
-                sqlBulk.WriteToServer(dataTable);
             }
         }
 
