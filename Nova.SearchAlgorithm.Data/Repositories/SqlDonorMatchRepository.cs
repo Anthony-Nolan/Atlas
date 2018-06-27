@@ -133,52 +133,50 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors)
         {
-            // TODO: We should think about wrapping the DELETE + INSERTS in a transaction, so we don't lose data if inserts fail?
             using (var conn = new SqlConnection(connectionString))
             {
-                conn.Execute($@"DELETE FROM MatchingHlas WHERE DonorId IN('{string.Join("', '", donors.Select(d => d.DonorId))}')");
-            }
-            
-            await InsertPGroupMatchesForDonorBatch(donors);
-        }
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+                conn.Execute($@"DELETE FROM MatchingHlas WHERE DonorId IN('{string.Join("', '", donors.Select(d => d.DonorId))}')", null, transaction);
 
-        private async Task InsertPGroupMatchesForDonorBatch(IEnumerable<InputDonor> donors)
-        {
-            var dtTask = Task.Run(() =>
-            {
-                var dt = new DataTable();
-                dt.Columns.Add("Id");
-                dt.Columns.Add("DonorId");
-                dt.Columns.Add("TypePosition");
-                dt.Columns.Add("LocusCode");
-                dt.Columns.Add("PGroup_Id");
-
-                foreach (var donor in donors)
+                var dataTableGenerationTask = Task.Run(() =>
                 {
-                    donor.MatchingHla.EachPosition((l, p, h) =>
+                    var dt = new DataTable();
+                    dt.Columns.Add("Id");
+                    dt.Columns.Add("DonorId");
+                    dt.Columns.Add("TypePosition");
+                    dt.Columns.Add("LocusCode");
+                    dt.Columns.Add("PGroup_Id");
+
+                    foreach (var donor in donors)
                     {
-                        if (h == null)
+                        donor.MatchingHla.EachPosition((l, p, h) =>
                         {
-                            return;
-                        }
+                            if (h == null)
+                            {
+                                return;
+                            }
 
-                        foreach (var pGroup in h.PGroups)
-                        {
-                            dt.Rows.Add(0, donor.DonorId, (int) p, (int) l, FindOrCreatePGroup(pGroup));
-                        }
-                    });
+                            foreach (var pGroup in h.PGroups)
+                            {
+                                dt.Rows.Add(0, donor.DonorId, (int) p, (int) l, FindOrCreatePGroup(pGroup));
+                            }
+                        });
+                    }
+
+                    return dt;
+                });
+
+                var dataTable = await dataTableGenerationTask;
+
+                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
+                {
+                    sqlBulk.BatchSize = 10000;
+                    sqlBulk.DestinationTableName = "MatchingHlas";
+                    sqlBulk.WriteToServer(dataTable);
                 }
-
-                return dt;
-            });
-
-            var dataTable = await dtTask;
-
-            using (var sqlBulk = new SqlBulkCopy(connectionString))
-            {
-                sqlBulk.BatchSize = 10000;
-                sqlBulk.DestinationTableName = "MatchingHlas";
-                sqlBulk.WriteToServer(dataTable);
+                transaction.Commit();
+                conn.Close();
             }
         }
 
@@ -199,14 +197,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                     dt.Rows.Add(0, pg);
                 }
                 
-                var tran = conn.BeginTransaction();
-                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, tran))
+                var transaction = conn.BeginTransaction();
+                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                 {
                     sqlBulk.BatchSize = 10000;
                     sqlBulk.DestinationTableName = "PGroupNames";
                     sqlBulk.WriteToServer(dt);
                 }
-                tran.Commit();
+                transaction.Commit();
                 conn.Close();
             }
 
