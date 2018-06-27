@@ -51,9 +51,6 @@ namespace Nova.SearchAlgorithm.Services
             var stopwatch = new Stopwatch();
 
             await PerformUpfrontSetup();
-
-            var pGroups = matchingDictionaryRepository.GetAllPGroups();
-            donorImportRepository.InsertPGroups(pGroups);
             
             while (batchedQuery.HasMoreResults)
             {
@@ -91,6 +88,10 @@ namespace Nova.SearchAlgorithm.Services
             
             // All antigens are fetched from the HLA service. We use our cache for nmdp lookups to avoid too much load on the hla service
             await antigenCachingService.GenerateAntigenCache();
+            
+            // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
+            var pGroups = matchingDictionaryRepository.GetAllPGroups();
+            donorImportRepository.InsertPGroups(pGroups);
         }
 
         private async Task<InputDonor> FetchDonorHlaData(DonorResult donor)
