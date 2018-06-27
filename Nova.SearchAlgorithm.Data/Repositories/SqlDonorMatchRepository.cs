@@ -69,13 +69,43 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 return;
             }
 
-            using (var conn = new SqlConnection(connectionString))
-            {
-                const string sql =
-                    "INSERT INTO Donors (DonorId,  DonorType,  RegistryCode,  A_1,  A_2,  B_1,  B_2,  C_1,  C_2,  DPB1_1,  DPB1_2,  DQB1_1,  DQB1_2,  DRB1_1,  DRB1_2) " +
-                    "VALUES             (@DonorId, @DonorType, @RegistryCode, @A_1, @A_2, @B_1, @B_2, @C_1, @C_2, @DPB1_1, @DPB1_2, @DQB1_1, @DQB1_2, @DRB1_1, @DRB1_2)";
+            var dt = new DataTable();
+            dt.Columns.Add("Id");
+            dt.Columns.Add("DonorId");
+            dt.Columns.Add("DonorType");
+            dt.Columns.Add("RegistryCode");
+            dt.Columns.Add("A_1");
+            dt.Columns.Add("A_2");
+            dt.Columns.Add("B_1");
+            dt.Columns.Add("B_2");
+            dt.Columns.Add("C_1");
+            dt.Columns.Add("C_2");
+            dt.Columns.Add("DPB1_1");
+            dt.Columns.Add("DPB1_2");
+            dt.Columns.Add("DQB1_1");
+            dt.Columns.Add("DQB1_2");
+            dt.Columns.Add("DRB1_1");
+            dt.Columns.Add("DRB1_2");
 
-                await conn.ExecuteAsync(sql, rawInputDonors.Select(d => d.ToDonorEntity()));
+            foreach (var donor in rawInputDonors)
+            {
+                dt.Rows.Add(0,
+                    donor.DonorId,
+                    (int) donor.DonorType,
+                    (int) donor.RegistryCode,
+                    donor.HlaNames.A_1, donor.HlaNames.A_2, 
+                    donor.HlaNames.B_1, donor.HlaNames.B_2, 
+                    donor.HlaNames.C_1, donor.HlaNames.C_2,
+                    donor.HlaNames.DPB1_1, donor.HlaNames.DPB1_2, 
+                    donor.HlaNames.DQB1_1, donor.HlaNames.DQB1_2,
+                    donor.HlaNames.DRB1_1, donor.HlaNames.DRB1_2);
+            }
+            
+            using (var sqlBulk = new SqlBulkCopy(connectionString))
+            {
+                sqlBulk.BatchSize = 10000;
+                sqlBulk.DestinationTableName = "Donors";
+                sqlBulk.WriteToServer(dt);
             }
         }
 
