@@ -339,6 +339,7 @@
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
@@ -408,6 +409,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MatchingDictionary\Data\wmda-v3-31-0\Allelelist_history.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MatchingDictionary\Data\wmda-v3-31-0\Allele_status.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

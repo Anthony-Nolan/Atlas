@@ -28,11 +28,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
             return
                 from line in wmdaFileContents
-                select MapLineOfFileToWmdaHlaTypingElseNull(line) into typing
+                select MapLineOfFileContentsToWmdaHlaTypingElseNull(line) into typing
                 where typing != null && typing.IsPermittedLocusTyping()
                 select typing;
         }
 
-        protected abstract TWmdaHlaTyping MapLineOfFileToWmdaHlaTypingElseNull(string line);
+        protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTypingElseNull(string line);
     }
 }

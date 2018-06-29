@@ -201,9 +201,12 @@
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
+    <Compile Include="Models\Wmda\VersionedAlleleName.cs" />
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
+    <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\MatchingDictionaryTableReferenceRepository.cs" />
+    <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />
     <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />

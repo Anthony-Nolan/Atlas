@@ -35,5 +35,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public static object[] AllelesStatusesTestArgs = {
             new object[] { Repo.AlleleStatuses, MolecularLoci }
         };
+        public static object[] AllelesNameHistoriesTestArgs = {
+            new object[] { Repo.AlleleNameHistories, MolecularLoci }
+        };
     }
 }
