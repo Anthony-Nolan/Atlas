@@ -49,7 +49,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             var hlaId = lineSplitByColumnDelimiter[0];
             var versionedAlleleNames = GetVersionedAlleleNames(lineSplitByColumnDelimiter);
 
-            return new AlleleNameHistory(locus, hlaId, versionedAlleleNames);
+            // exclude entries that don't have any allele names listed on or after v3.0.0
+            return versionedAlleleNames.Any() 
+                ? new AlleleNameHistory(locus, hlaId, versionedAlleleNames) 
+                : null;
         }
 
         private static IEnumerable<string> SplitAlleleHistoryLine(string line)

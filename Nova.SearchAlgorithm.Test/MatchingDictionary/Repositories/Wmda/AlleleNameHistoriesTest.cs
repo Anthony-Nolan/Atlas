@@ -47,6 +47,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
             var actualAlleleNameHistory = GetSingleWmdaHlaTyping(locus, hlaId);
 
             expectedAlleleNameHistory.ShouldBeEquivalentTo(actualAlleleNameHistory);
+            expectedAlleleNameHistory.CurrentAlleleName.Should().Be(alleleNames[0]);
+            expectedAlleleNameHistory.DistinctAlleleNames.ShouldAllBeEquivalentTo(alleleNames.Where(name => !string.IsNullOrEmpty(name)));
         }
 
         private static IEnumerable<VersionedAlleleName> GetExpectedVersionedAlleleNames(

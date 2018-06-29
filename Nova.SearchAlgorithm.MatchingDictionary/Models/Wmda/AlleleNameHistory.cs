@@ -10,13 +10,29 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string Locus { get; set; }
         public string Name { get; set; }
-        public IEnumerable<VersionedAlleleName> VersionedAlleleNames { get; }
+        public IEnumerable<VersionedAlleleName> VersionedAlleleNames { get; private set; }
+        public string CurrentAlleleName { get; private set; }
+        public IEnumerable<string> DistinctAlleleNames { get; private set; }
 
         public AlleleNameHistory(string locus, string hlaId, IEnumerable<VersionedAlleleName> versionedAlleleNames)
         {
             Locus = locus;
             Name = hlaId;
-            VersionedAlleleNames = versionedAlleleNames;
+            SetAlleleNameProperties(versionedAlleleNames);
+        }
+
+        private void SetAlleleNameProperties(IEnumerable<VersionedAlleleName> versionedAlleleNames)
+        {
+            var alleleNamesQuery = versionedAlleleNames.AsQueryable();
+
+            VersionedAlleleNames = alleleNamesQuery;
+
+            CurrentAlleleName = alleleNamesQuery.FirstOrDefault()?.AlleleName;
+
+            DistinctAlleleNames = alleleNamesQuery
+                .Select(allele => allele.AlleleName)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct();
         }
 
         public override string ToString()
