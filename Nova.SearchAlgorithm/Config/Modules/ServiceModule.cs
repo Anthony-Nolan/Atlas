@@ -86,7 +86,10 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             builder.RegisterType<MatchingDictionary.Repositories.MatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.MatchingDictionaryMatchingDictionaryTableReferenceRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
+                .AsImplementedInterfaces()
+                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
+                .InstancePerLifetimeScope();
 
             builder.RegisterType<MatchingDictionary.Services.HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();

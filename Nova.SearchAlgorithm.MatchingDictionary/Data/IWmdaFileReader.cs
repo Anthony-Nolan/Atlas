@@ -4,6 +4,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data
 {
     public interface IWmdaFileReader
     {
-        IEnumerable<string> GetFileContentsWithoutHeader(string fileName);
+        IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName);
     }
 }

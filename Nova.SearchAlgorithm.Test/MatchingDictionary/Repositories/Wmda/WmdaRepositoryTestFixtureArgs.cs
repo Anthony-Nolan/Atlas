@@ -6,8 +6,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     public class WmdaRepositoryTestFixtureArgs
     {
+        private const string HlaDatabaseVersionToTest = "3310";
         private static readonly IWmdaFileReader TestFileReader = new WmdaTestFileImporter();
-        private static readonly IWmdaDataRepository Repo = new WmdaDataRepository(TestFileReader);
+        private static readonly IWmdaDataRepository Repo = new WmdaDataRepository(TestFileReader, HlaDatabaseVersionToTest);
         private static readonly string[] MolecularLoci =  { "A*", "B*", "C*", "DQB1*", "DRB1*" };
         private static readonly string[] SerologyLoci = { "A", "B", "Cw", "DQ", "DR" };
 

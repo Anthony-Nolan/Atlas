@@ -12,10 +12,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data
         private static readonly string TestDir = TestContext.CurrentContext.TestDirectory;
         private static readonly string FilePath = ConfigurationManager.ConnectionStrings["TestWmdaFilePath"].ConnectionString;
 
-        public IEnumerable<string> GetFileContentsWithoutHeader(string fileName)
+        public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {           
             return File
-                .ReadAllLines($"{TestDir}{FilePath}{fileName}.txt")
+                .ReadAllLines($"{TestDir}{FilePath}{hlaDatabaseVersion}\\{fileName}.txt")
                 .SkipWhile(line => line.StartsWith("#"));
         }
     }

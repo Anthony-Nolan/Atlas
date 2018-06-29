@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         private HlaMatchingServiceTestData()
         {
             var testFileImporter = new WmdaTestFileImporter();
-            var repo = new WmdaDataRepository(testFileImporter);
+            var repo = new WmdaDataRepository(testFileImporter, "3310");
             MatchedHla = new HlaMatchingService(repo).GetMatchedHla();
         }
     }
