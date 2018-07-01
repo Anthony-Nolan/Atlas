@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;

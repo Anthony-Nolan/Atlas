@@ -1,7 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames
 {
     public class AlleleNameEntry
     {
