@@ -1,7 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Test.MatchingDictionary.Data;
+using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda;
 using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
@@ -14,9 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 
         private HlaMatchingServiceTestData()
         {
-            var testFileImporter = new WmdaTestFileImporter();
-            var repo = new WmdaDataRepository(testFileImporter, "3310");
-            MatchedHla = new HlaMatchingService(repo).GetMatchedHla();
+            MatchedHla = new HlaMatchingService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository).GetMatchedHla();
         }
     }
 }
