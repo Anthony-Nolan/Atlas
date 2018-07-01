@@ -343,6 +343,7 @@
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
+    <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\AlleleInfoForMatchingTest.cs" />

@@ -198,6 +198,7 @@
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
+    <Compile Include="Models\MatchingDictionary\AlleleNameEntry.cs" />
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
@@ -229,6 +230,8 @@
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNameHistoryExtensions.cs" />
+    <Compile Include="Services\AlleleNamesService.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\MultipleAllelesLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
