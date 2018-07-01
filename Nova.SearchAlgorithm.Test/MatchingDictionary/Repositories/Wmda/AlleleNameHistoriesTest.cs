@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -41,14 +42,19 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public void WmdaDataRepository_WhenAssignedAlleleName_AlleleNameHistoriesSuccessfullyCaptured(
             string locus, string hlaId, string[] versionsWhenAlleleNameChanged, string[] alleleNames)
         {
-            var expectedVersionedAlleleNames = GetExpectedVersionedAlleleNames(versionsWhenAlleleNameChanged, alleleNames);
-            var expectedAlleleNameHistory = new AlleleNameHistory(locus, hlaId, expectedVersionedAlleleNames);
-
             var actualAlleleNameHistory = GetSingleWmdaHlaTyping(locus, hlaId);
+            var expectedVersionedAlleleNames = GetExpectedVersionedAlleleNames(versionsWhenAlleleNameChanged, alleleNames);
+            var expectedCurrentAlleleName = alleleNames[0];
+            var expectedDistinctAlleleNames = alleleNames.Where(name => !string.IsNullOrEmpty(name));
+            var expectedMostRecentAlleleName = expectedDistinctAlleleNames.First();
 
-            expectedAlleleNameHistory.ShouldBeEquivalentTo(actualAlleleNameHistory);
-            expectedAlleleNameHistory.CurrentAlleleName.Should().Be(alleleNames[0]);
-            expectedAlleleNameHistory.DistinctAlleleNames.ShouldAllBeEquivalentTo(alleleNames.Where(name => !string.IsNullOrEmpty(name)));
+            actualAlleleNameHistory.TypingMethod.Should().Be(TypingMethod.Molecular);
+            actualAlleleNameHistory.Locus.Should().Be(locus);
+            actualAlleleNameHistory.Name.Should().Be(hlaId);
+            actualAlleleNameHistory.VersionedAlleleNames.ShouldBeEquivalentTo(expectedVersionedAlleleNames);
+            actualAlleleNameHistory.CurrentAlleleName.Should().Be(expectedCurrentAlleleName);
+            actualAlleleNameHistory.DistinctAlleleNames.ShouldBeEquivalentTo(expectedDistinctAlleleNames);
+            actualAlleleNameHistory.MostRecentAlleleName.Should().Be(expectedMostRecentAlleleName);
         }
 
         private static IEnumerable<VersionedAlleleName> GetExpectedVersionedAlleleNames(
