@@ -384,7 +384,6 @@
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badRegistry.json" />
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badType.json" />
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\validCordSearchRequest.json" />
-    <EmbeddedResource Include="Resources\MatchingDictionary\matching_hla.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
