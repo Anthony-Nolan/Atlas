@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
@@ -64,11 +59,11 @@ namespace Nova.SearchAlgorithm.Services
                 {
                     stopwatch.Restart();
 
-                    var inputDonors = await Task.WhenAll(subBatch.Select(FetchDonorHlaData));
+                    var inputDonors = (await Task.WhenAll(subBatch.Select(FetchDonorHlaData))).Where(x => x != null);
                     await donorImportRepository.RefreshMatchingGroupsForExistingDonorBatch(inputDonors);
                     
                     stopwatch.Stop();
-                    totalUpdated += parallelBatchSize;
+                    totalUpdated += inputDonors.Count();
                     logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
                     {
                         {"NumberOfDonors", totalUpdated.ToString()},
@@ -96,13 +91,26 @@ namespace Nova.SearchAlgorithm.Services
 
         private async Task<InputDonor> FetchDonorHlaData(DonorResult donor)
         {
-            return new InputDonor
+            try
             {
-                DonorId = donor.DonorId,
-                DonorType = donor.DonorType,
-                RegistryCode = donor.RegistryCode,
-                MatchingHla = await donor.HlaNames.WhenAllPositions((l, p, n) => Lookup(l, n))
-            };
+                return new InputDonor
+                {
+                    DonorId = donor.DonorId,
+                    DonorType = donor.DonorType,
+                    RegistryCode = donor.RegistryCode,
+                    MatchingHla = await donor.HlaNames.WhenAllPositions((l, p, n) => Lookup(l, n))
+                };
+            }
+            catch (MatchingDictionaryException e)
+            {
+                logger.SendTrace("Donor Hla Update Failed", LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "Reason", "Failed to fetch hla from matching dictionary"},
+                    { "DonorId", donor.DonorId.ToString()},
+                    { "Exception", e.ToString()},
+                });
+                return null;
+            }
         }
         
         private async Task<ExpandedHla> Lookup(Locus locus, string hla)
