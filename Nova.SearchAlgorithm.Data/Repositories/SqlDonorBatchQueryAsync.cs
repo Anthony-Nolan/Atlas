@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         // Note that giving this class an IQueryable rather than IEnumerable will leave an open db connection through EF
         // No other IO can be performed by Entity Framework while this is the case - may be worth investigating using IEnumerable instead
-        public SqlDonorBatchQueryAsync(IQueryable<Donor> donors)
+        public SqlDonorBatchQueryAsync(IEnumerable<Donor> donors)
         {
             enumerator = donors.GetEnumerator();
             HasMoreResults = enumerator.MoveNext();

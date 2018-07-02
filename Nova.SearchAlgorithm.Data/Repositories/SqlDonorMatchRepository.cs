@@ -46,7 +46,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public IBatchQueryAsync<DonorResult> AllDonors()
         {
-            return new SqlDonorBatchQueryAsync(context.Donors);
+            using (var conn = new SqlConnection(connectionString))
+            {
+                var donors = conn.Query<Donor>("SELECT * FROM donors");
+                return new SqlDonorBatchQueryAsync(donors);
+            }
         }
 
         public async Task<DonorResult> GetDonor(int donorId)
