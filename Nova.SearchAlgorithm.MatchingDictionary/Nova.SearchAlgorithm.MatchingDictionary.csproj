@@ -235,7 +235,7 @@
     <Compile Include="Services\AlleleNames\AlleleNamesExtractorArgs.cs" />
     <Compile Include="Services\AlleleNames\AlleleNamesExtractorBase.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameVariantsExtractor.cs" />
-    <Compile Include="Services\AlleleNames\MaintainedAlleleNamesExtractor.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNamesFromHistoriesExtractor.cs" />
     <Compile Include="Services\AlleleNames\ReservedAlleleNamesExtractor.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\MultipleAllelesLookup.cs" />

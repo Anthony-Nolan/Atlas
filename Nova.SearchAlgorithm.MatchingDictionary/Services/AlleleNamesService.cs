@@ -24,16 +24,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants()
         {
-            var maintainedNames = GetMaintainedAlleleNames().ToList();
-            var nameVariants = GetAlleleNameVariants(maintainedNames);
+            var alleleNamesFromHistories = GetAlleleNamesFromHistories().ToList();
+            var nameVariants = GetAlleleNameVariants(alleleNamesFromHistories);
             var reservedNames = GetReservedAlleleNames();
 
-            return maintainedNames.Concat(nameVariants).Concat(reservedNames);
+            return alleleNamesFromHistories.Concat(nameVariants).Concat(reservedNames);
         }
 
-        private IEnumerable<AlleleNameEntry> GetMaintainedAlleleNames()
+        private IEnumerable<AlleleNameEntry> GetAlleleNamesFromHistories()
         {
-            return new MaintainedAlleleNamesExtractor(extractorArgs).GetAlleleNames();
+            return new AlleleNamesFromHistoriesExtractor(extractorArgs).GetAlleleNames();
         }
 
         private IEnumerable<AlleleNameEntry> GetAlleleNameVariants(IEnumerable<AlleleNameEntry> originalAlleleNames)

@@ -6,9 +6,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
-    internal class MaintainedAlleleNamesExtractor : AlleleNamesExtractorBase
+    internal class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase
     {
-        public MaintainedAlleleNamesExtractor(AlleleNamesExtractorArgs extractorArgs) : base(extractorArgs)
+        public AlleleNamesFromHistoriesExtractor(AlleleNamesExtractorArgs extractorArgs) : base(extractorArgs)
         {
         }
 
@@ -27,10 +27,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 
         private string GetCurrentAlleleName(AlleleNameHistory history)
         {
-            return history.CurrentAlleleName ?? GetCurrentAlleleNameFromIdenticalToProperty(history);
+            return history.CurrentAlleleName ?? GetIdenticalToAlleleName(history);
         }
 
-        private string GetCurrentAlleleNameFromIdenticalToProperty(AlleleNameHistory history)
+        private string GetIdenticalToAlleleName(AlleleNameHistory history)
         {
             var mostRecentNameAsTyping = new HlaNom(
                 TypingMethod.Molecular, history.Locus, history.MostRecentAlleleName);
