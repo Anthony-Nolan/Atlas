@@ -347,17 +347,12 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="Resources\Controllers\SearchRequests\validAdultSearchRequest.json" />
     <None Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-empty.json" />
-    <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badRegistry.json" />
-    <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badType.json" />
-    <EmbeddedResource Include="Resources\Controllers\SearchRequests\validCordSearchRequest.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
