@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     {
         private readonly List<AlleleNameHistory> histories;
         private readonly List<HlaNom> allelesInCurrentVersionOfHlaNom;
-        private readonly List<HlaNom> allHistoricalNamesAsAlleleTypings;
+        private readonly List<HlaNom> allHistoricalNamesAsTypings;
 
         public AlleleNamesService(IWmdaDataRepository dataRepository)
         {
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             histories = dataRepository.AlleleNameHistories.ToList();
             allelesInCurrentVersionOfHlaNom = dataRepository.Alleles.ToList();
 
-            allHistoricalNamesAsAlleleTypings = (
+            allHistoricalNamesAsTypings = (
                 from history in histories
                 from historicalName in history.DistinctAlleleNames
                 select new HlaNom(TypingMethod.Molecular, history.Locus, historicalName)
@@ -35,9 +35,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         public IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants()
         {
             var alleleNamesFromHistories = histories.SelectMany(GetAlleleNamesFromSingleHistory).ToList();
-            var alleleNameVariants = GetUniqueAlleleNameVariantsNotFoundInHistories(alleleNamesFromHistories);
+            var variantsOfAlleleNames = GetUniqueAlleleNameVariantsNotFoundInHistories(alleleNamesFromHistories);
+            var deletedExcludedAlleles = GetDeletedAlleleNamesExcludedFromHistories();
 
-            return alleleNamesFromHistories.Concat(alleleNameVariants);
+            return alleleNamesFromHistories
+                .Concat(variantsOfAlleleNames)
+                .Concat(deletedExcludedAlleles);
         }
 
         private IEnumerable<AlleleNameEntry> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
@@ -73,23 +76,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private IEnumerable<AlleleNameEntry> GetAlleleNameVariantsNotFoundInHistories(AlleleNameEntry alleleName)
         {
-            var alleleTypingFromCurrentName = new AlleleTyping(
-                alleleName.MatchLocus, 
+            var typingFromCurrentName = new AlleleTyping(
+                alleleName.MatchLocus,
                 alleleName.CurrentAlleleNames.First());
 
-            return alleleTypingFromCurrentName
-                .NameVariantsTruncatedByFieldAndExpressionSuffix
-                .Where(nameVariant => !AlleleNameVariantInHistories(alleleTypingFromCurrentName.Locus, nameVariant))
+            return typingFromCurrentName
+                .NameVariantsTruncatedByFieldAndOrExpressionSuffix
+                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.Locus, nameVariant))
                 .Select(nameVariant => new AlleleNameEntry(
-                    alleleName.MatchLocus, 
-                    nameVariant, 
+                    alleleName.MatchLocus,
+                    nameVariant,
                     alleleName.CurrentAlleleNames));
-        }
-
-        private bool AlleleNameVariantInHistories(string locus, string nameVariant)
-        {
-            return allHistoricalNamesAsAlleleTypings.Any(historicalTyping => 
-                historicalTyping.Locus.Equals(locus) && historicalTyping.Name.Equals(nameVariant));
         }
 
         private static IEnumerable<AlleleNameEntry> GroupAlleleNamesByLocusAndLookupName(IEnumerable<AlleleNameEntry> alleleNameVariants)
@@ -103,6 +100,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 ));
 
             return groupedEntries;
+        }
+
+        private IEnumerable<AlleleNameEntry> GetDeletedAlleleNamesExcludedFromHistories()
+        {
+            return allelesInCurrentVersionOfHlaNom
+                .Where(allele => allele.IsDeleted && AlleleNameIsNotInHistories(allele.Locus, allele.Name))
+                .Select(allele => new AlleleNameEntry(allele.Locus, allele.Name, allele.Name));
+        }
+
+        private bool AlleleNameIsNotInHistories(string locus, string alleleName)
+        {
+            return !allHistoricalNamesAsTypings.Any(historicalTyping =>
+                historicalTyping.Locus.Equals(locus) && historicalTyping.Name.Equals(alleleName));
         }
     }
 }

@@ -28,6 +28,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [TestCase(MatchLocus.B, "07:44", new[] { "07:44N" }, Description = "Addition of expression suffix")]
         [TestCase(MatchLocus.B, "13:08Q", new[] { "13:08" }, Description = "Removal of expression suffix")]
         [TestCase(MatchLocus.A, "23:19Q", new[] { "23:19N" }, Description = "Change in expression suffix")]
+        [TestCase(MatchLocus.A, "26:03:02", new[] { "26:111" }, Description = "Allele sequence renamed")]
+        [TestCase(MatchLocus.Dqb1, "04:02:01:02", new[] { "04:02:01:01" }, Description = "Allele sequence identical to existing sequence")]
+        [TestCase(MatchLocus.A, "02:100", new[] { "02:100" }, Description = "Reserved allele name")]
         public void AlleleNamesService_WhenExactAlleleNameHasBeenInHlaNom_CurrentAlleleNameIsAsExpected(
             MatchLocus matchLocus, string lookupName, IEnumerable<string> expectedCurrentAlleleName)
         {
