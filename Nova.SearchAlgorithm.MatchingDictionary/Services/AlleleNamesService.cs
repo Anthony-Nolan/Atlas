@@ -1,6 +1,4 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using System.Collections.Generic;
@@ -15,104 +13,37 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
     public class AlleleNamesService : IAlleleNamesService
     {
-        private readonly List<AlleleNameHistory> histories;
-        private readonly List<HlaNom> allelesInCurrentVersionOfHlaNom;
-        private readonly List<HlaNom> allHistoricalNamesAsTypings;
+        private readonly AlleleNamesExtractorArgs extractorArgs;
 
         public AlleleNamesService(IWmdaDataRepository dataRepository)
         {
-            // enumerate collections here as they will be queried thousands of times
-            histories = dataRepository.AlleleNameHistories.ToList();
-            allelesInCurrentVersionOfHlaNom = dataRepository.Alleles.ToList();
-
-            allHistoricalNamesAsTypings = (
-                from history in histories
-                from historicalName in history.DistinctAlleleNames
-                select new HlaNom(TypingMethod.Molecular, history.Locus, historicalName)
-                ).ToList();
+            extractorArgs = new AlleleNamesExtractorArgs(
+                dataRepository.AlleleNameHistories,
+                dataRepository.Alleles);
         }
 
         public IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants()
         {
-            var alleleNamesFromHistories = histories.SelectMany(GetAlleleNamesFromSingleHistory).ToList();
-            var variantsOfAlleleNames = GetUniqueAlleleNameVariantsNotFoundInHistories(alleleNamesFromHistories);
-            var deletedExcludedAlleles = GetDeletedAlleleNamesExcludedFromHistories();
+            var maintainedNames = GetMaintainedAlleleNames().ToList();
+            var nameVariants = GetAlleleNameVariants(maintainedNames);
+            var reservedNames = GetReservedAlleleNames();
 
-            return alleleNamesFromHistories
-                .Concat(variantsOfAlleleNames)
-                .Concat(deletedExcludedAlleles);
+            return maintainedNames.Concat(nameVariants).Concat(reservedNames);
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
+        private IEnumerable<AlleleNameEntry> GetMaintainedAlleleNames()
         {
-            return history.TryToAlleleNameEntries(out var entries)
-                ? entries
-                : GetAlleleNameEntriesUsingIdenticalToAlleleName(history);
+            return new MaintainedAlleleNamesExtractor(extractorArgs).GetAlleleNames();
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNameEntriesUsingIdenticalToAlleleName(AlleleNameHistory history)
+        private IEnumerable<AlleleNameEntry> GetAlleleNameVariants(IEnumerable<AlleleNameEntry> originalAlleleNames)
         {
-            var identicalToAlleleName = GetAlleleNameFromIdenticalToProperty(history);
-            return history.ToAlleleNameEntries(identicalToAlleleName);
+            return new AlleleNameVariantsExtractor(extractorArgs, originalAlleleNames).GetAlleleNames();
         }
 
-        private string GetAlleleNameFromIdenticalToProperty(AlleleNameHistory history)
+        private IEnumerable<AlleleNameEntry> GetReservedAlleleNames()
         {
-            var mostRecentNameAsAllele = new HlaNom(
-                TypingMethod.Molecular, history.Locus, history.MostRecentAlleleName);
-
-            var identicalToAlleleName = allelesInCurrentVersionOfHlaNom
-                .First(allele => allele.TypingEquals(mostRecentNameAsAllele))
-                .IdenticalHla;
-
-            return identicalToAlleleName;
-        }
-
-        private IEnumerable<AlleleNameEntry> GetUniqueAlleleNameVariantsNotFoundInHistories(IEnumerable<AlleleNameEntry> alleleNames)
-        {
-            var variantsNotFoundInHistories = alleleNames.SelectMany(GetAlleleNameVariantsNotFoundInHistories); ;
-            return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
-        }
-
-        private IEnumerable<AlleleNameEntry> GetAlleleNameVariantsNotFoundInHistories(AlleleNameEntry alleleName)
-        {
-            var typingFromCurrentName = new AlleleTyping(
-                alleleName.MatchLocus,
-                alleleName.CurrentAlleleNames.First());
-
-            return typingFromCurrentName
-                .NameVariantsTruncatedByFieldAndOrExpressionSuffix
-                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.Locus, nameVariant))
-                .Select(nameVariant => new AlleleNameEntry(
-                    alleleName.MatchLocus,
-                    nameVariant,
-                    alleleName.CurrentAlleleNames));
-        }
-
-        private static IEnumerable<AlleleNameEntry> GroupAlleleNamesByLocusAndLookupName(IEnumerable<AlleleNameEntry> alleleNameVariants)
-        {
-            var groupedEntries = alleleNameVariants
-                .GroupBy(e => new { e.MatchLocus, e.LookupName })
-                .Select(e => new AlleleNameEntry(
-                    e.Key.MatchLocus,
-                    e.Key.LookupName,
-                    e.SelectMany(x => x.CurrentAlleleNames).Distinct()
-                ));
-
-            return groupedEntries;
-        }
-
-        private IEnumerable<AlleleNameEntry> GetDeletedAlleleNamesExcludedFromHistories()
-        {
-            return allelesInCurrentVersionOfHlaNom
-                .Where(allele => allele.IsDeleted && AlleleNameIsNotInHistories(allele.Locus, allele.Name))
-                .Select(allele => new AlleleNameEntry(allele.Locus, allele.Name, allele.Name));
-        }
-
-        private bool AlleleNameIsNotInHistories(string locus, string alleleName)
-        {
-            return !allHistoricalNamesAsTypings.Any(historicalTyping =>
-                historicalTyping.Locus.Equals(locus) && historicalTyping.Name.Equals(alleleName));
+            return new ReservedAlleleNamesExtractor(extractorArgs).GetAlleleNames();
         }
     }
 }

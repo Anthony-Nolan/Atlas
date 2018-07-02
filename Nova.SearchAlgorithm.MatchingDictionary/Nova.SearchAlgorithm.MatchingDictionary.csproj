@@ -232,6 +232,11 @@
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoryExtensions.cs" />
     <Compile Include="Services\AlleleNamesService.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNamesExtractorArgs.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNamesExtractorBase.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNameVariantsExtractor.cs" />
+    <Compile Include="Services\AlleleNames\MaintainedAlleleNamesExtractor.cs" />
+    <Compile Include="Services\AlleleNames\ReservedAlleleNamesExtractor.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\MultipleAllelesLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />

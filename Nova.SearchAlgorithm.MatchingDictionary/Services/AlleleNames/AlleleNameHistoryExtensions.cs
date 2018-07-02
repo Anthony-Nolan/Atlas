@@ -14,17 +14,5 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
                 .DistinctAlleleNames
                 .Select(name => new AlleleNameEntry(alleleNameHistory.Locus, name, currentAlleleName));
         }
-
-        public static bool TryToAlleleNameEntries(
-            this AlleleNameHistory alleleNameHistory, out IEnumerable<AlleleNameEntry> entries)
-        {
-            var currentNameIsNotNull = alleleNameHistory.CurrentAlleleName != null;
-
-            entries = currentNameIsNotNull
-                ? alleleNameHistory.ToAlleleNameEntries(alleleNameHistory.CurrentAlleleName)
-                : new List<AlleleNameEntry>();
-
-            return currentNameIsNotNull;
-        }
     }
 }
