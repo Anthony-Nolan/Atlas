@@ -29,8 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 
         private async Task<MatchingDictionaryEntry> GetEntryByTwoFieldVariantOfLookupNameIfExists(MatchLocus matchLocus, string lookupName)
         {
-            var molecularLocus = PermittedLocusNames.GetMolecularLocusNameFromMatchIfExists(matchLocus);
-            var alleleTypingFromLookupName = new AlleleTyping(molecularLocus, lookupName);
+            var alleleTypingFromLookupName = new AlleleTyping(matchLocus, lookupName);
             return await GetMatchingDictionaryEntryIfExists(matchLocus, alleleTypingFromLookupName.TwoFieldName, TypingMethod.Molecular);
         }
     }
