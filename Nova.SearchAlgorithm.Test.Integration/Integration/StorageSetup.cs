@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
     [SetUpFixture]
     public class StorageSetup

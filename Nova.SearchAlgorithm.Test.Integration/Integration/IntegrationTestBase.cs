@@ -1,25 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
+using Autofac;
 using Microsoft.ApplicationInsights;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Solar;
-using Nova.Utils.WebApi.ApplicationInsights;
+using Microsoft.Extensions.Caching.Memory;
+using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
-using NUnit.Framework;
-using Autofac;
-using Microsoft.Extensions.Caching.Memory;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Solar;
+using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
+using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
     [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]

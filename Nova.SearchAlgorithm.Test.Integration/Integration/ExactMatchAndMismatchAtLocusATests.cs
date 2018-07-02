@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
-using NUnit.Framework;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services;
+using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
     public class ExactMatchAndMismatchAtLocusATests : IntegrationTestBase
     {

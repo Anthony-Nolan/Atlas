@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Services;
+using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
     public class DonorImportTests : IntegrationTestBase
     {
