@@ -68,10 +68,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
 
         private static MatchedAllele BuildTestObjectFromAlleleName(string alleleName)
         {
-            const string locus = "A*";
+            const MatchLocus matchLocus = MatchLocus.A;
 
             var infoForMatching = Substitute.For<IAlleleInfoForMatching>();
-            infoForMatching.HlaTyping.Returns(new AlleleTyping(locus, alleleName));
+            infoForMatching.HlaTyping.Returns(new AlleleTyping(matchLocus, alleleName));
 
             return new MatchedAllele(infoForMatching, new List<SerologyMappingForAllele>());
         }

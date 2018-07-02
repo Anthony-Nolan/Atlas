@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 
@@ -11,14 +12,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         {
             new object[]
             {
-                new AlleleTyping("DQB1*", "03:01:01:01"),
-                new AlleleTyping("A*", "24:02:01:02L"),
-                new AlleleTyping("B*", "27:05:02:04Q"),
-                new AlleleTyping("B*", "44:02:01:02S"),
+                new AlleleTyping(MatchLocus.Dqb1, "03:01:01:01"),
+                new AlleleTyping(MatchLocus.A, "24:02:01:02L"),
+                new AlleleTyping(MatchLocus.B, "27:05:02:04Q"),
+                new AlleleTyping(MatchLocus.B, "44:02:01:02S"),
                 // Note: made-up alleles, as no "A" or "C" alleles have yet been found
-                new AlleleTyping("DRB1*", "01:01:01:01A"),
-                new AlleleTyping("DRB1*", "01:01:01:01C"),
-                new AlleleTyping("A*", "29:01:01:02N")
+                new AlleleTyping(MatchLocus.Drb1, "01:01:01:01A"),
+                new AlleleTyping(MatchLocus.Drb1, "01:01:01:01C"),
+                new AlleleTyping(MatchLocus.A, "29:01:01:02N")
             }
         };
 
@@ -91,11 +92,30 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         {
             Assert.AreEqual(normalAllele.TwoFieldName, "03:01");
             Assert.AreEqual(lowAllele.TwoFieldName, "24:02L");
-            Assert.AreEqual(questionableAllele.TwoFieldName, "27:05Q" );
-            Assert.AreEqual(secretedAllele.TwoFieldName, "44:02S" );
-            Assert.AreEqual(aberrantAllele.TwoFieldName, "01:01A" );
-            Assert.AreEqual(cytoplasmAllele.TwoFieldName, "01:01C" );
-            Assert.AreEqual(nullAllele.TwoFieldName, "29:01N" );
+            Assert.AreEqual(questionableAllele.TwoFieldName, "27:05Q");
+            Assert.AreEqual(secretedAllele.TwoFieldName, "44:02S");
+            Assert.AreEqual(aberrantAllele.TwoFieldName, "01:01A");
+            Assert.AreEqual(cytoplasmAllele.TwoFieldName, "01:01C");
+            Assert.AreEqual(nullAllele.TwoFieldName, "29:01N");
+        }
+
+        [TestCaseSource(nameof(_alleles))]
+        public void TruncatedNameVariantsCorrectlyConstructed(
+            AlleleTyping normalAllele,
+            AlleleTyping lowAllele,
+            AlleleTyping questionableAllele,
+            AlleleTyping secretedAllele,
+            AlleleTyping aberrantAllele,
+            AlleleTyping cytoplasmAllele,
+            AlleleTyping nullAllele)
+        {
+            normalAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "03:01", "03:01:01" });
+            lowAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "24:02", "24:02:01", "24:02L", "24:02:01L" });
+            questionableAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "27:05", "27:05:02", "27:05Q", "27:05:02Q" });
+            secretedAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "44:02", "44:02:01", "44:02S", "44:02:01S" });
+            aberrantAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "01:01", "01:01:01", "01:01A", "01:01:01A" });
+            cytoplasmAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "01:01", "01:01:01", "01:01C", "01:01:01C" });
+            nullAllele.NameVariantsTruncatedByFieldAndExpressionSuffix.ShouldBeEquivalentTo(new[] { "29:01", "29:01:01", "29:01N", "29:01:01N" });
         }
     }
 }

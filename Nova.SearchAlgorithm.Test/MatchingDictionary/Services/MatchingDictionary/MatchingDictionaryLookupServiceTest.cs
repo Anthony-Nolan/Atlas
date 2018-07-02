@@ -30,7 +30,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private ILogger logger;
         private const MolecularLocusType MolecularLocus = MolecularLocusType.A;
         private const MatchLocus MatchedLocus = MatchLocus.A;
-        private const string TypingLocus = "A";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -272,10 +271,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         private static MatchingDictionaryEntry BuildAlleleDictionaryEntry(string hlaName)
         {
             var matchedAllele = Substitute.For<IMatchingDictionarySource<AlleleTyping>>();
-            matchedAllele.TypingForMatchingDictionary.Returns(new AlleleTyping(TypingLocus + "*", hlaName));
+            matchedAllele.TypingForMatchingDictionary.Returns(new AlleleTyping(MatchedLocus, hlaName));
             matchedAllele.MatchingPGroups.Returns(new List<string> { hlaName });
             matchedAllele.MatchingGGroups.Returns(new List<string> { hlaName });
-            matchedAllele.MatchingSerologies.Returns(new List<SerologyTyping> { new SerologyTyping(TypingLocus, "SEROLOGY", SerologySubtype.NotSplit) });
+            matchedAllele.MatchingSerologies.Returns(new List<SerologyTyping> { new SerologyTyping(MatchedLocus.ToString(), "SEROLOGY", SerologySubtype.NotSplit) });
 
             return new MatchingDictionaryEntry(matchedAllele, hlaName, MolecularSubtype.TwoFieldAllele);
         }

@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             var alleleNamesQuery = versionedAlleleNames
                 .OrderByDescending(x => x.HlaDatabaseVersion)
-                .AsQueryable();
+                .ToList();
 
             VersionedAlleleNames = alleleNamesQuery;
 

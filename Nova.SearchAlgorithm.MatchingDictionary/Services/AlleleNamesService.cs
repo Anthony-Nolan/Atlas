@@ -10,29 +10,40 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IAlleleNamesService
     {
-        IEnumerable<AlleleNameEntry> GetAlleleNames();
+        IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants();
     }
 
     public class AlleleNamesService : IAlleleNamesService
     {
-        private readonly List<AlleleNameHistory> alleleNameHistories;
-        private readonly IQueryable<HlaNom> allelesListedInCurrentVersionOfHlaNom;
+        private readonly List<AlleleNameHistory> histories;
+        private readonly List<HlaNom> allelesInCurrentVersionOfHlaNom;
+        private readonly List<HlaNom> allHistoricalNamesAsAlleleTypings;
 
         public AlleleNamesService(IWmdaDataRepository dataRepository)
         {
-            alleleNameHistories = dataRepository.AlleleNameHistories.ToList();
-            allelesListedInCurrentVersionOfHlaNom = dataRepository.Alleles.AsQueryable();
+            // enumerate collections here as they will be queried thousands of times
+            histories = dataRepository.AlleleNameHistories.ToList();
+            allelesInCurrentVersionOfHlaNom = dataRepository.Alleles.ToList();
+
+            allHistoricalNamesAsAlleleTypings = (
+                from history in histories
+                from historicalName in history.DistinctAlleleNames
+                select new HlaNom(TypingMethod.Molecular, history.Locus, historicalName)
+                ).ToList();
         }
 
-        public IEnumerable<AlleleNameEntry> GetAlleleNames()
+        public IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants()
         {
-            return alleleNameHistories.SelectMany(GetAlleleNamesFromHistory);
+            var alleleNamesFromHistories = histories.SelectMany(GetAlleleNamesFromSingleHistory).ToList();
+            var alleleNameVariants = GetUniqueAlleleNameVariantsNotFoundInHistories(alleleNamesFromHistories);
+
+            return alleleNamesFromHistories.Concat(alleleNameVariants);
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNamesFromHistory(AlleleNameHistory history)
+        private IEnumerable<AlleleNameEntry> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
         {
-            return history.TryToAlleleNameEntries(out var entries) 
-                ? entries 
+            return history.TryToAlleleNameEntries(out var entries)
+                ? entries
                 : GetAlleleNameEntriesUsingIdenticalToAlleleName(history);
         }
 
@@ -46,12 +57,53 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             var mostRecentNameAsAllele = new HlaNom(
                 TypingMethod.Molecular, history.Locus, history.MostRecentAlleleName);
-            
-            var identicalToAlleleName = allelesListedInCurrentVersionOfHlaNom
+
+            var identicalToAlleleName = allelesInCurrentVersionOfHlaNom
                 .First(allele => allele.TypingEquals(mostRecentNameAsAllele))
                 .IdenticalHla;
 
             return identicalToAlleleName;
         }
+
+        private IEnumerable<AlleleNameEntry> GetUniqueAlleleNameVariantsNotFoundInHistories(IEnumerable<AlleleNameEntry> alleleNames)
+        {
+            var variantsNotFoundInHistories = alleleNames.SelectMany(GetAlleleNameVariantsNotFoundInHistories); ;
+            return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
+        }
+
+        private IEnumerable<AlleleNameEntry> GetAlleleNameVariantsNotFoundInHistories(AlleleNameEntry alleleName)
+        {
+            var alleleTypingFromCurrentName = new AlleleTyping(
+                alleleName.MatchLocus, 
+                alleleName.CurrentAlleleNames.First());
+
+            return alleleTypingFromCurrentName
+                .NameVariantsTruncatedByFieldAndExpressionSuffix
+                .Where(nameVariant => !AlleleNameVariantInHistories(alleleTypingFromCurrentName.Locus, nameVariant))
+                .Select(nameVariant => new AlleleNameEntry(
+                    alleleName.MatchLocus, 
+                    nameVariant, 
+                    alleleName.CurrentAlleleNames));
+        }
+
+        private bool AlleleNameVariantInHistories(string locus, string nameVariant)
+        {
+            return allHistoricalNamesAsAlleleTypings.Any(historicalTyping => 
+                historicalTyping.Locus.Equals(locus) && historicalTyping.Name.Equals(nameVariant));
+        }
+
+        private static IEnumerable<AlleleNameEntry> GroupAlleleNamesByLocusAndLookupName(IEnumerable<AlleleNameEntry> alleleNameVariants)
+        {
+            var groupedEntries = alleleNameVariants
+                .GroupBy(e => new { e.MatchLocus, e.LookupName })
+                .Select(e => new AlleleNameEntry(
+                    e.Key.MatchLocus,
+                    e.Key.LookupName,
+                    e.SelectMany(x => x.CurrentAlleleNames).Distinct()
+                ));
+
+            return groupedEntries;
+        }
     }
 }
+
