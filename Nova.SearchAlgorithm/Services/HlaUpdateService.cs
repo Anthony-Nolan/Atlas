@@ -76,8 +76,8 @@ namespace Nova.SearchAlgorithm.Services
         private async Task PerformUpfrontSetup()
         {
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await matchingDictionaryRepository.ConnectToCloudTable();
-
+            await matchingDictionaryRepository.LoadMatchingDictionaryIntoMemory();
+            
             // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
             donorImportRepository.SetupForHlaRefresh();
 
