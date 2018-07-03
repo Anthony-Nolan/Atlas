@@ -3,6 +3,7 @@ using System.Linq;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using NUnit.Framework;

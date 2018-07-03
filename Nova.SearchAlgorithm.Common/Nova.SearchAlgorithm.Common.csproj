@@ -91,19 +91,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\AlleleLevelMatchCriteria.cs" />
     <Compile Include="Models\DonorResult.cs" />
     <Compile Include="Models\DonorType.cs" />
     <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\IBatchQueryAsync.cs" />
+    <Compile Include="Models\InputDonor.cs" />
     <Compile Include="Models\Locus.cs" />
     <Compile Include="Models\LocusMatchDetails.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialSearchResult.cs" />
+    <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Models\RegistryCode.cs" />
     <Compile Include="Models\TypePositions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\CloudTableExtensions.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />
+    <Compile Include="Repositories\IDonorImportRepository.cs" />
+    <Compile Include="Repositories\IDonorInspectionRepository.cs" />
+    <Compile Include="Repositories\IDonorSearchRepository.cs" />
     <Compile Include="Repositories\TableReferenceRepository.cs" />
     <Compile Include="Repositories\TableReferenceTableEntity.cs" />
   </ItemGroup>

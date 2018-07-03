@@ -8,24 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
 using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
-    public interface IDonorSearchRepository
-    {
-        Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest);
-    }
-
-    public interface IDonorInspectionRepository
-    {
-        Task<int> HighestDonorId();
-        IBatchQueryAsync<DonorResult> AllDonors();
-        Task<DonorResult> GetDonor(int donorId);
-    }
-
     public class SqlDonorSearchRepository : IDonorSearchRepository, IDonorImportRepository, IDonorInspectionRepository
     {
         private readonly SearchAlgorithmContext context;

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Data.Repositories
+namespace Nova.SearchAlgorithm.Common.Repositories
 {
     public interface IDonorImportRepository
     {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.DonorService.Client;
 using Nova.DonorService.Client.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.Utils.ApplicationInsights;

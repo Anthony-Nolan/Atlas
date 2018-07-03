@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Data.Entity;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Data.Models.Extensions
 {
