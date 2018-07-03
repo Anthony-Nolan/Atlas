@@ -9,6 +9,8 @@ using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.Utils.WebApi.Filters;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -36,6 +38,16 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 builder.RegisterType<Repositories.Donors.CosmosStorage.CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
                 builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
+            else if (ConfigurationManager.AppSettings["backend.implementation"] == "sql")
+            {
+                var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+                builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
+                builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+
+                builder.RegisterType<SqlDonorSearchRepository>()
+                    .AsImplementedInterfaces()
+                    .InstancePerLifetimeScope();
+            }
 
             builder.RegisterType<Scoring.CalculateScore>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
@@ -44,6 +56,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
             builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -61,8 +74,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             };
             builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();
 
-            var logger = new RequestAwareLogger(new TelemetryClient(),
-                ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+            var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
             RegisterMatchingDictionaryTypes(builder);

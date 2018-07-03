@@ -321,6 +321,7 @@
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntityExtensions.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\AntigenCachingService.cs" />
+    <Compile Include="Services\DonorMatchingService.cs" />
     <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Scoring\CalculateScore.cs" />
     <Compile Include="Services\DonorExtensions.cs" />

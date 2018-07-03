@@ -161,7 +161,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config\SearchDataModule.cs" />
     <Compile Include="Exceptions\DataHttpException.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.Designer.cs">
