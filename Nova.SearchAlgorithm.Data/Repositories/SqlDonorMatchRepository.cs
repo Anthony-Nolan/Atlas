@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
 using Nova.SearchAlgorithm.Data.Entity;
-using Dapper;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
@@ -130,18 +130,31 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> inputDonors)
+        {
+            var loci = Enum.GetValues(typeof(Locus)).Cast<Locus>();
+            await Task.WhenAll(loci.Select(l => RefreshMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+        }
+
         public void SetupForHlaRefresh()
         {
             // Do nothing
         }
 
-        public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors)
+        private async Task RefreshMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonor> donors, Locus locus)
         {
+            if (locus == Locus.Dpb1)
+            {
+                return;
+            }
+            
+            var tableName = MatchingTableName(locus);
+            
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
-                conn.Execute($@"DELETE FROM MatchingHlas WHERE DonorId IN('{string.Join("', '", donors.Select(d => d.DonorId))}')", null, transaction);
+                conn.Execute($@"DELETE FROM {tableName} WHERE DonorId IN('{string.Join("', '", donors.Select(d => d.DonorId))}')", null, transaction);
 
                 var dataTableGenerationTask = Task.Run(() =>
                 {
@@ -149,21 +162,20 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                     dt.Columns.Add("Id");
                     dt.Columns.Add("DonorId");
                     dt.Columns.Add("TypePosition");
-                    dt.Columns.Add("LocusCode");
                     dt.Columns.Add("PGroup_Id");
 
                     foreach (var donor in donors)
                     {
                         donor.MatchingHla.EachPosition((l, p, h) =>
                         {
-                            if (h == null)
+                            if (h == null || l != locus)
                             {
                                 return;
                             }
 
                             foreach (var pGroup in h.PGroups)
                             {
-                                dt.Rows.Add(0, donor.DonorId, (int) p, (int) l, FindOrCreatePGroup(pGroup));
+                                dt.Rows.Add(0, donor.DonorId, (int) p, FindOrCreatePGroup(pGroup));
                             }
                         });
                     }
@@ -176,7 +188,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
                 {
                     sqlBulk.BatchSize = 10000;
-                    sqlBulk.DestinationTableName = "MatchingHlas";
+                    sqlBulk.DestinationTableName = tableName;
                     sqlBulk.WriteToServer(dataTable);
                 }
                 transaction.Commit();
@@ -184,6 +196,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
+        private string MatchingTableName(Locus locus)
+        {
+            return "MatchingHlaAt" + locus;
+        }
+        
         public void InsertPGroups(IEnumerable<string> pGroups)
         {
             using (var conn = new SqlConnection(connectionString))
@@ -255,57 +272,53 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
 
         public Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria matchRequest)
         {
-            string sql = $@"
-SELECT DonorId, SUM(MatchCount) AS TotalMatchCount
+            string sql = $@"SELECT DonorId, SUM(MatchCount) AS TotalMatchCount
+FROM (
+    -- get overall match count by Locus
+    SELECT DonorId, Locus, MIN(MatchCount) AS MatchCount
     FROM (
-        -- get overall match count by Locus
-        SELECT DonorId, Locus, MIN(MatchCount) AS MatchCount
-        FROM (
-            -- count number of matches in each direction
-            SELECT DonorId, MatchingDirection, Locus, count(*) AS MatchCount
-            FROM(
-                -- get DISTINCT list of matches between search and donor type by Locus and position
-                SELECT DISTINCT DonorId, MatchingDirection, Locus, TypePosition
-                FROM (
-                    -- Select search and donor directional match lists by Locus & matching hla name
-                    -- First from type position 1 in the search hla
-                    {SelectForLocus(Locus.A, matchRequest.LocusMismatchA, TypePositions.One)}
-                    UNION
-                    {SelectForLocus(Locus.B, matchRequest.LocusMismatchB, TypePositions.One)}
-                    UNION
-                    {SelectForLocus(Locus.Drb1, matchRequest.LocusMismatchDRB1, TypePositions.One)}
-                    UNION
-                    -- Next from type position 2 in the search hla
-                    {SelectForLocus(Locus.A, matchRequest.LocusMismatchA, TypePositions.Two)}
-                    UNION
-                    {SelectForLocus(Locus.B, matchRequest.LocusMismatchB, TypePositions.Two)}
-                    UNION
-                    {SelectForLocus(Locus.Drb1, matchRequest.LocusMismatchDRB1, TypePositions.Two)}
-                    ) AS source
-                UNPIVOT (TypePosition FOR MatchingDirection IN (GvH, HvG)) AS unpivoted
-                ) ByDirection
-            GROUP BY DonorId, MatchingDirection, Locus
-            ) ByLocus
-        GROUP BY DonorId, Locus
-        ) ByDonor
-    GROUP BY DonorId
-    HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
-    ORDER BY TotalMatchCount DESC";
-
+        -- count number of matches in each direction
+        SELECT DonorId, MatchingDirection, Locus, count(*) AS MatchCount
+        FROM(
+            -- get DISTINCT list of matches between search and donor type by Locus and position
+            SELECT DISTINCT DonorId, MatchingDirection, Locus, TypePosition
+            FROM (
+                -- Select search and donor directional match lists by Locus & matching hla name
+                -- First from type position 1 in the search hla
+				{SelectForLocus(Locus.A, matchRequest.LocusMismatchA, TypePositions.One)}
+                UNION
+				{SelectForLocus(Locus.B, matchRequest.LocusMismatchB, TypePositions.One)}
+                UNION
+				{SelectForLocus(Locus.Drb1, matchRequest.LocusMismatchDRB1, TypePositions.One)}
+                UNION
+                -- Next from type position 2 in the search hla
+				{SelectForLocus(Locus.A, matchRequest.LocusMismatchA, TypePositions.Two)}
+                UNION
+				{SelectForLocus(Locus.B, matchRequest.LocusMismatchB, TypePositions.Two)}
+                UNION
+				{SelectForLocus(Locus.Drb1, matchRequest.LocusMismatchDRB1, TypePositions.Two)}
+                ) AS source
+            UNPIVOT (TypePosition FOR MatchingDirection IN (GvH, HvG)) AS unpivoted
+            ) ByDirection
+        GROUP BY DonorId, MatchingDirection, Locus
+        ) ByLocus
+    GROUP BY DonorId, Locus
+    ) ByDonor
+GROUP BY DonorId
+HAVING SUM(MatchCount) >= {6 - matchRequest.DonorMismatchCount}
+ORDER BY TotalMatchCount DESC";
+        
             return Task.Run(() =>
                 context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult()));
         }
 
         private string SelectForLocus(Locus locus, AlleleLevelLocusMatchCriteria mismatch, TypePositions typePosition)
         {
-            var names = typePosition.Equals(TypePositions.One)
-                ? mismatch.HlaNamesToMatchInPositionOne
-                : mismatch.HlaNamesToMatchInPositionTwo;
-            return $@"SELECT d.DonorId, '{locus.ToString().ToUpper()}' as Locus, d.TypePosition AS GvH, {(int) typePosition} AS HvG
-                      FROM MatchingHlas d
+            var names = typePosition.Equals(TypePositions.One) ? mismatch.HlaNamesToMatchInPositionOne : mismatch.HlaNamesToMatchInPositionTwo;
+            return $@"SELECT d.DonorId, '{locus.ToString().ToUpper()}' as Locus, d.TypePosition AS GvH, {(int)typePosition} AS HvG
+                      FROM MatchingHlaAt{locus.ToString().ToUpper()} d
                       JOIN dbo.PGroupNames p ON p.Id = d.PGroup_Id 
                       WHERE [Name] IN('{string.Join("', '", names)}')
-                      AND d.LocusCode = {(int) locus} 
                       GROUP BY d.DonorId, d.TypePosition";
         }
     }

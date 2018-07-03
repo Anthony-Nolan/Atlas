@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Services
             ILogger logger,
             IMatchingDictionaryRepository matchingDictionaryRepository,
             IAntigenCachingService antigenCachingService
-            )
+        )
         {
             this.lookupService = lookupService;
             this.donorInspectionRepository = donorInspectionRepository;
@@ -46,30 +46,24 @@ namespace Nova.SearchAlgorithm.Services
             var stopwatch = new Stopwatch();
 
             await PerformUpfrontSetup();
-            
+
             while (batchedQuery.HasMoreResults)
             {
                 stopwatch.Start();
                 var resultsBatch = (await batchedQuery.RequestNextAsync()).ToList();
 
-                // The outer batch size is set by the storage implementation, and is 1000 for Azure Tables
-                // The inner batch is currently necessary to get insights within a reasonable timeframe
-                const int parallelBatchSize = 100;
-                foreach (var subBatch in resultsBatch.Batch(parallelBatchSize))
-                {
-                    stopwatch.Restart();
+                stopwatch.Restart();
 
-                    var inputDonors = (await Task.WhenAll(subBatch.Select(FetchDonorHlaData))).Where(x => x != null);
-                    await donorImportRepository.RefreshMatchingGroupsForExistingDonorBatch(inputDonors);
-                    
-                    stopwatch.Stop();
-                    totalUpdated += inputDonors.Count();
-                    logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
-                    {
-                        {"NumberOfDonors", totalUpdated.ToString()},
-                        {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
-                    });
-                }
+                var inputDonors = (await Task.WhenAll(resultsBatch.Select(FetchDonorHlaData))).Where(x => x != null);
+                await donorImportRepository.RefreshMatchingGroupsForExistingDonorBatch(inputDonors);
+
+                stopwatch.Stop();
+                totalUpdated += inputDonors.Count();
+                logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
+                {
+                    {"NumberOfDonors", totalUpdated.ToString()},
+                    {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
+                });
             }
         }
 
@@ -77,13 +71,13 @@ namespace Nova.SearchAlgorithm.Services
         {
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
             await matchingDictionaryRepository.ConnectToCloudTable();
-            
+
             // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
             donorImportRepository.SetupForHlaRefresh();
-            
+
             // All antigens are fetched from the HLA service. We use our cache for nmdp lookups to avoid too much load on the hla service
             await antigenCachingService.GenerateAntigenCache();
-            
+
             // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
             var pGroups = matchingDictionaryRepository.GetAllPGroups();
             donorImportRepository.InsertPGroups(pGroups);
@@ -105,14 +99,14 @@ namespace Nova.SearchAlgorithm.Services
             {
                 logger.SendTrace("Donor Hla Update Failed", LogLevel.Error, new Dictionary<string, string>
                 {
-                    { "Reason", "Failed to fetch hla from matching dictionary"},
-                    { "DonorId", donor.DonorId.ToString()},
-                    { "Exception", e.ToString()},
+                    {"Reason", "Failed to fetch hla from matching dictionary"},
+                    {"DonorId", donor.DonorId.ToString()},
+                    {"Exception", e.ToString()},
                 });
                 return null;
             }
         }
-        
+
         private async Task<ExpandedHla> Lookup(Locus locus, string hla)
         {
             if (locus.Equals(Locus.Dpb1))
@@ -121,7 +115,7 @@ namespace Nova.SearchAlgorithm.Services
                 return null;
             }
 
-            return hla == null 
+            return hla == null
                 ? null
                 : (await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
         }

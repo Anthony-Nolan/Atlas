@@ -13,7 +13,12 @@ namespace Nova.SearchAlgorithm.Data
     {
         DbSet<Donor> Donors { get; set; }
         DbSet<PGroupName> PGroupNames { get; set; }
-        DbSet<MatchingHla> MatchingHla { get; set; }
+        DbSet<MatchingHlaAtA> MatchingHlaAtA { get; set; }
+        DbSet<MatchingHlaAtB> MatchingHlaAtB { get; set; }
+        DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
+        DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
+        DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+        DbSet MatchingHlasAtLocus(Locus locus);
     }
 
     public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
@@ -43,6 +48,29 @@ namespace Nova.SearchAlgorithm.Data
 
         public DbSet<Donor> Donors { get; set; }
         public DbSet<PGroupName> PGroupNames { get; set; }
-        public DbSet<MatchingHla> MatchingHla { get; set; }
+        public DbSet<MatchingHlaAtA> MatchingHlaAtA { get; set; }
+        public DbSet<MatchingHlaAtB> MatchingHlaAtB { get; set; }
+        public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
+        public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
+        public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+
+        public DbSet MatchingHlasAtLocus(Locus locus)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    return MatchingHlaAtA;
+                case Locus.B:
+                    return MatchingHlaAtB;
+                case Locus.C:
+                    return MatchingHlaAtC;
+                case Locus.Dqb1:
+                    return MatchingHlaAtDqb1;
+                case Locus.Drb1:
+                    return MatchingHlaAtDrb1;
+                default:
+                    throw new DataHttpException($"Could not select DBSet for unknown locus {locus}");
+            }
+        }
     }
 }
