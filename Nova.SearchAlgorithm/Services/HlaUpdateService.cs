@@ -14,6 +14,11 @@ using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
+    public interface IHlaUpdateService
+    {
+        Task UpdateDonorHla();
+    }
+
     public class HlaUpdateService : IHlaUpdateService
     {
         private readonly IMatchingDictionaryLookupService lookupService;

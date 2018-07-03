@@ -12,6 +12,11 @@ using Nova.SearchAlgorithm.Scoring;
 
 namespace Nova.SearchAlgorithm.Services
 {
+    public interface ISearchService
+    {
+        Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest);
+    }
+
     public class SearchService : ISearchService
     {
         private readonly IDonorSearchRepository donorRepository;

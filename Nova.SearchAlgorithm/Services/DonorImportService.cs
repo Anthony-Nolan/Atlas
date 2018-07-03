@@ -11,6 +11,11 @@ using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services
 {
+    public interface IDonorImportService
+    {
+        Task StartDonorImport();
+    }
+
     public class DonorImportService : IDonorImportService
     {
         private const int DonorPageSize = 100;

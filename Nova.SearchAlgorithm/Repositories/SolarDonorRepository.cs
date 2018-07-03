@@ -10,6 +10,11 @@ using Nova.Utils.Solar;
 
 namespace Nova.SearchAlgorithm.Repositories
 {
+    public interface ISolarDonorRepository
+    {
+        Task<IEnumerable<RawInputDonor>> SomeDonors(int maxResults, int lastId = 0);
+    }
+
     public class SolarDonorRepository : ISolarDonorRepository
     {
         private readonly ISolarConnectionFactory factory;
