@@ -99,7 +99,9 @@
     <Compile Include="Models\InputDonor.cs" />
     <Compile Include="Models\Locus.cs" />
     <Compile Include="Models\LocusMatchDetails.cs" />
+    <Compile Include="Models\LocusSearchCriteria.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
+    <Compile Include="Models\PotentialHlaMatchRelation.cs" />
     <Compile Include="Models\PotentialSearchResult.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Models\RegistryCode.cs" />

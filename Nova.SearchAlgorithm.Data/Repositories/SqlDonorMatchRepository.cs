@@ -12,6 +12,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
@@ -299,6 +300,11 @@ ORDER BY TotalMatchCount DESC";
         
             return Task.Run(() =>
                 context.Database.SqlQuery<FlatSearchQueryResult>(sql).Select(fr => fr.ToPotentialSearchResult()));
+        }
+
+        public Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
+        {
+            throw new NotImplementedException();
         }
 
         private string SelectForLocus(Locus locus, AlleleLevelLocusMatchCriteria mismatch, TypePositions typePosition)

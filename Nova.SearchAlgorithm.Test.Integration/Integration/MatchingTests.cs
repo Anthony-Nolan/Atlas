@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Services;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Integration
@@ -15,6 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private AlleleLevelMatchCriteria searchCriteria;
 
         private IDonorSearchRepository searchRepo;
+        private IDonorMatchingService matchingService;
 
         public MatchingTests(DonorStorageImplementation param) : base(param) { }
 
@@ -22,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         public void ResolveSearchRepo()
         {
             searchRepo = container.Resolve<IDonorSearchRepository>();
+            matchingService = container.Resolve<IDonorMatchingService>();
         }
         
         [OneTimeSetUp]
@@ -163,7 +166,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
 
         private List<PotentialSearchResult> Search(AlleleLevelMatchCriteria criteria)
         {
-            var task = searchRepo.Search(criteria);
+            var task = matchingService.Search(criteria);
             task.Wait();
             return task.Result.ToList();
         }

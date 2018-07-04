@@ -311,8 +311,6 @@
     <Compile Include="Repositories\Donors\MatchingHlaExtensions.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\TableQueryExtensions.cs" />
     <Compile Include="Repositories\Donors\IDonorDocumentStorage.cs" />
-    <Compile Include="Repositories\Donors\PotentialHlaMatchRelation.cs" />
-    <Compile Include="Repositories\Donors\LocusSearchCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\Donors\CloudStorageDonorSearchRepository.cs" />
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntity.cs" />

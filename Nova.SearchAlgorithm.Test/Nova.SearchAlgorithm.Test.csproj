@@ -347,7 +347,7 @@
     <Compile Include="MatchingDictionary\Services\Matching\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
-    <Compile Include="Repositories\DonorRepositoryTests.cs" />
+    <Compile Include="Services\DonorMatchingServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -468,7 +468,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Repositories" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
