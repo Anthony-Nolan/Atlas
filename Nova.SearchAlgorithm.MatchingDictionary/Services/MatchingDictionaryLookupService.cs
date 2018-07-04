@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public class MatchingDictionaryLookupService : IMatchingDictionaryLookupService
     {
         private readonly IMatchingDictionaryRepository dictionaryRepository;
+        private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAlleleStringSplitterService alleleSplitter;
@@ -32,6 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public MatchingDictionaryLookupService(
             IMatchingDictionaryRepository dictionaryRepository,
+            IAlleleNamesLookupService alleleNamesLookupService,
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
@@ -40,6 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         )
         {
             this.dictionaryRepository = dictionaryRepository;
+            this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaServiceClient = hlaServiceClient;
             this.hlaCategorisationService = hlaCategorisationService;
             this.alleleSplitter = alleleSplitter;
@@ -63,7 +66,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 switch (category)
                 {
                     case HlaTypingCategory.Allele:
-                        lookup = new AlleleLookup(dictionaryRepository);
+                        lookup = new AlleleLookup(dictionaryRepository, alleleNamesLookupService);
                         break;
                     case HlaTypingCategory.XxCode:
                         lookup = new XxCodeLookup(dictionaryRepository);
@@ -72,11 +75,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                         lookup = new SerologyLookup(dictionaryRepository);
                         break;
                     case HlaTypingCategory.NmdpCode:
-                        lookup = new NmdpCodeLookup(dictionaryRepository, memoryCache, hlaServiceClient, alleleSplitter, logger);
+                        lookup = new NmdpCodeLookup(
+                            dictionaryRepository, 
+                            alleleNamesLookupService, 
+                            memoryCache, hlaServiceClient, 
+                            alleleSplitter, 
+                            logger);
                         break;
                     case HlaTypingCategory.AlleleStringOfNames:
                     case HlaTypingCategory.AlleleStringOfSubtypes:
-                        lookup = new AlleleStringLookup(dictionaryRepository, hlaServiceClient);
+                        lookup = new AlleleStringLookup(dictionaryRepository, alleleNamesLookupService, alleleSplitter);
                         break;
                     default:
                         throw new ArgumentException(

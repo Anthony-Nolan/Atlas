@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
@@ -15,6 +12,9 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictionary
 {
@@ -23,6 +23,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
     {
         private IMatchingDictionaryLookupService lookupService;
         private IMatchingDictionaryRepository repository;
+        private IAlleleNamesLookupService alleleNamesLookupService;
         private IHlaServiceClient hlaServiceClient;
         private IHlaCategorisationService hlaCategorisationService;
         private IAlleleStringSplitterService alleleStringSplitterService;
@@ -36,12 +37,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         {
             repository = Substitute.For<IMatchingDictionaryRepository>();
             hlaServiceClient = Substitute.For<IHlaServiceClient>();
+            alleleNamesLookupService = Substitute.For<IAlleleNamesLookupService>();
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             alleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
             memoryCache = Substitute.For<IMemoryCache>();
             logger = Substitute.For<ILogger>();
-            
-            lookupService = new MatchingDictionaryLookupService(repository, hlaServiceClient, hlaCategorisationService, alleleStringSplitterService, memoryCache, logger);
+
+            lookupService = new MatchingDictionaryLookupService(
+                repository,
+                alleleNamesLookupService,
+                hlaServiceClient,
+                hlaCategorisationService,
+                alleleStringSplitterService,
+                memoryCache,
+                logger);
         }
 
         [SetUp]
@@ -50,6 +59,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             repository.ClearReceivedCalls();
 
             var fakeResultToPreventInvalidHlaExceptionBeingRaised = BuildAlleleDictionaryEntry("hlaName");
+
             repository
                 .GetMatchingDictionaryEntryIfExists(MatchedLocus, Arg.Any<string>(), Arg.Any<TypingMethod>())
                 .Returns(fakeResultToPreventInvalidHlaExceptionBeingRaised);
@@ -96,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             HlaTypingCategory typingCategory, string hlaName, string firstAllele, string secondAllele)
         {
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(typingCategory);
-            hlaServiceClient.GetAlleleNamesFromAlleleString(hlaName).Returns(new List<string> { firstAllele, secondAllele });
+            alleleStringSplitterService.GetAlleleNamesFromAlleleString(hlaName).Returns(new List<string> { firstAllele, secondAllele });
 
             await lookupService.GetMatchingHla(MatchedLocus, hlaName);
 
@@ -128,49 +138,53 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, lookupName, TypingMethod.Molecular);
         }
 
-        [TestCase("99:99:99", "99:99")]
-        [TestCase("99:99:99L", "99:99L")]
-        [TestCase("99:99:99:99", "99:99")]
-        [TestCase("99:99:99:99Q", "99:99Q")]
-        public async Task GetMatchingHla_WhenSubmittedAlleleNameNotFound_LookupTheTwoFieldNameVariant(
-            string submittedAlleleName, string expectedTwoFieldName)
+        [Test]
+        public async Task GetMatchingHla_WhenSubmittedAlleleNameNotFound_LookupTheCurrentName()
         {
+            const string submittedAlleleName = "SUBMITTED-NAME";
+            const string currentAlleleName = "CURRENT-NAME";
+
             hlaCategorisationService.GetHlaTypingCategory(submittedAlleleName)
                 .Returns(HlaTypingCategory.Allele);
+
+            alleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, submittedAlleleName)
+                .Returns(Task.FromResult((IEnumerable<string>)new[] { currentAlleleName }));
 
             // return null on submitted name to emulate scenario that requires a two-field-name lookup
             repository
                 .GetMatchingDictionaryEntryIfExists(MatchedLocus, submittedAlleleName, TypingMethod.Molecular)
                 .ReturnsNull();
-            // return fake entry on two field name to prevent invalid hla exception
-            var entryFromTwoFieldName = BuildAlleleDictionaryEntry(expectedTwoFieldName);
+            // return fake entry for current name to prevent invalid hla exception
+            var entryFromCurrentName = BuildAlleleDictionaryEntry(currentAlleleName);
             repository
-                .GetMatchingDictionaryEntryIfExists(MatchedLocus, expectedTwoFieldName, TypingMethod.Molecular)
-                .Returns(entryFromTwoFieldName);
+                .GetMatchingDictionaryEntryIfExists(MatchedLocus, currentAlleleName, TypingMethod.Molecular)
+                .Returns(entryFromCurrentName);
 
             await lookupService.GetMatchingHla(MatchedLocus, submittedAlleleName);
 
-            await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, expectedTwoFieldName, TypingMethod.Molecular);
+            await repository.Received().GetMatchingDictionaryEntryIfExists(MatchedLocus, currentAlleleName, TypingMethod.Molecular);
         }
 
-        [TestCase("99:99:99", "99:99")]
-        [TestCase("99:99:99L", "99:99L")]
-        [TestCase("99:99:99:99", "99:99")]
-        [TestCase("99:99:99:99Q", "99:99Q")]
-        public async Task GetMatchingHla_WhenSubmittedAlleleNameIsFound_DoNotLookupTheTwoFieldNameVariant(
-            string submittedLookupName, string expectedTwoFieldName)
+        [Test]
+        public async Task GetMatchingHla_WhenSubmittedAlleleNameIsFound_DoNotLookupTheCurrentName()
         {
-            hlaCategorisationService.GetHlaTypingCategory(submittedLookupName)
+            const string submittedAlleleName = "SUBMITTED-NAME";
+            const string currentAlleleName = "CURRENT-NAME";
+
+            hlaCategorisationService.GetHlaTypingCategory(submittedAlleleName)
                 .Returns(HlaTypingCategory.Allele);
 
-            var entryBasedOnLookupName = BuildAlleleDictionaryEntry(submittedLookupName);
+            alleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, submittedAlleleName)
+                .Returns(Task.FromResult((IEnumerable<string>)new[] { currentAlleleName }));
+
+            var entryBasedOnLookupName = BuildAlleleDictionaryEntry(submittedAlleleName);
             repository
-                .GetMatchingDictionaryEntryIfExists(MatchedLocus, submittedLookupName, TypingMethod.Molecular)
+                .GetMatchingDictionaryEntryIfExists(MatchedLocus, submittedAlleleName, TypingMethod.Molecular)
                 .Returns(entryBasedOnLookupName);
 
-            await lookupService.GetMatchingHla(MatchedLocus, submittedLookupName);
+            await lookupService.GetMatchingHla(MatchedLocus, submittedAlleleName);
 
-            await repository.DidNotReceive().GetMatchingDictionaryEntryIfExists(MatchedLocus, expectedTwoFieldName, TypingMethod.Molecular);
+            await repository.DidNotReceive().GetMatchingDictionaryEntryIfExists(MatchedLocus, currentAlleleName, TypingMethod.Molecular);
         }
 
         [Test]
@@ -230,6 +244,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.NmdpCode);
             hlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, hlaName).Returns(new List<string> { alleleInRepo, alleleNotInRepo });
 
+            alleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, alleleInRepo)
+                .Returns(Task.FromResult((IEnumerable<string>)new[] { alleleInRepo }));
+            alleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, alleleNotInRepo)
+                .Returns(Task.FromResult((IEnumerable<string>)new[] { alleleNotInRepo }));
+
             repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, alleleInRepo, TypingMethod.Molecular).Returns(entry);
             repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, alleleNotInRepo, TypingMethod.Molecular).ReturnsNull();
 
@@ -261,13 +280,25 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         {
             var entry = BuildAlleleDictionaryEntry(hlaName);
 
-            hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(category);
-            repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, alleleInRepo, TypingMethod.Molecular).Returns(entry);
-            repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, alleleNotInRepo, TypingMethod.Molecular).ReturnsNull();
+            hlaCategorisationService.GetHlaTypingCategory(hlaName)
+                .Returns(category);
+
+            alleleStringSplitterService.GetAlleleNamesFromAlleleString(hlaName)
+                .Returns(new List<string> { alleleInRepo, alleleNotInRepo });
+
+            alleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, alleleInRepo)
+                .Returns(Task.FromResult((IEnumerable<string>)new[] { alleleInRepo }));
+            alleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, alleleNotInRepo)
+                .Returns(Task.FromResult((IEnumerable<string>)new[] { alleleNotInRepo }));
+
+            repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, alleleInRepo, TypingMethod.Molecular)
+                .Returns(entry);
+            repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, alleleNotInRepo, TypingMethod.Molecular)
+                .ReturnsNull();
 
             Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetMatchingHla(MatchedLocus, hlaName));
         }
-        
+
         private static MatchingDictionaryEntry BuildAlleleDictionaryEntry(string hlaName)
         {
             var matchedAllele = Substitute.For<IMatchingDictionarySource<AlleleTyping>>();

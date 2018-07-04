@@ -1,4 +1,4 @@
-﻿using Nova.HLAService.Client;
+﻿using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
@@ -6,17 +6,22 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal class AlleleStringLookup : MultipleAllelesLookup
+    internal class AlleleStringLookup : AlleleNameBasedLookup
     {
-        public AlleleStringLookup(IMatchingDictionaryRepository dictionaryRepository, IHlaServiceClient hlaServiceClient) 
-        : base(dictionaryRepository, hlaServiceClient)
+        private readonly IAlleleStringSplitterService alleleSplitter;
+        
+        public AlleleStringLookup(
+            IMatchingDictionaryRepository dictionaryRepository,
+            IAlleleNamesLookupService alleleNamesLookupService,
+            IAlleleStringSplitterService alleleSplitter)
+            : base(dictionaryRepository, alleleNamesLookupService)
         {
+            this.alleleSplitter = alleleSplitter;
         }
 
-        protected override async Task<IEnumerable<string>> GetAlleles(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<string>> GetAllelesNames(MatchLocus matchLocus, string lookupName)
         {
-            // TODO: Use library version of string splitter, not via HTTP
-            return await HlaServiceClient.GetAlleleNamesFromAlleleString(lookupName);
+            return await Task.Run(() => alleleSplitter.GetAlleleNamesFromAlleleString(lookupName));
         }
     }
 }

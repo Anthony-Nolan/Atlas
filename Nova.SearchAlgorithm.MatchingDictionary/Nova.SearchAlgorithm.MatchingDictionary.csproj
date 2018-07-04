@@ -241,7 +241,7 @@
     <Compile Include="Services\AlleleNames\ReservedAlleleNamesExtractor.cs" />
     <Compile Include="Services\AlleleNamesLookupService.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\MultipleAllelesLookup.cs" />
+    <Compile Include="Services\MatchingDictionary\Lookups\AlleleNameBasedLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
