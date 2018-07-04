@@ -46,10 +46,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         private IEnumerable<string> GetTruncatedVariantsOfAlleleName()
         {
-            var threeFieldVariants = GetAlleleNameVariantsOfSpecifiedFieldCount(3);
-            var twoFieldVariants = GetAlleleNameVariantsOfSpecifiedFieldCount(2);
+            var alleleNameFieldCounts = new[] { 2, 3, 4 };
 
-            return twoFieldVariants.Union(threeFieldVariants);
+            return alleleNameFieldCounts
+                .SelectMany(GetAlleleNameVariantsOfSpecifiedFieldCount)
+                .Where(variant => !variant.Equals(Name))
+                .Distinct();
         }
 
         private IEnumerable<string> GetAlleleNameVariantsOfSpecifiedFieldCount(int truncatedFieldCount)

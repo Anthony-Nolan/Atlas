@@ -65,6 +65,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [TestCase(MatchLocus.B, "39:01:01L",
             new[] { "39:01:01:02L" },
             Description = "Lookup name with expression suffix should only return names with same suffix")]
+        [TestCase(MatchLocus.A, "02:01:01:02",
+            new[]{ "02:01:01:02L" },
+            Description = "Four field lookup name without suffix returns same allele name with suffix")]
         public void AlleleNamesService_WhenExactAlleleNameHasNeverBeenInHlaNom_ReturnAllPossibleCurrentNames(
             MatchLocus matchLocus, string lookupName, IEnumerable<string> expectedCurrentAlleleNames)
         {

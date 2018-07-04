@@ -110,12 +110,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             AlleleTyping nullAllele)
         {
             normalAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "03:01", "03:01:01" });
-            lowAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "24:02", "24:02:01", "24:02L", "24:02:01L" });
-            questionableAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "27:05", "27:05:02", "27:05Q", "27:05:02Q" });
-            secretedAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "44:02", "44:02:01", "44:02S", "44:02:01S" });
-            aberrantAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "01:01", "01:01:01", "01:01A", "01:01:01A" });
-            cytoplasmAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "01:01", "01:01:01", "01:01C", "01:01:01C" });
-            nullAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "29:01", "29:01:01", "29:01N", "29:01:01N" });
+            lowAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "24:02", "24:02:01", "24:02L", "24:02:01L", "24:02:01:02" });
+            questionableAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "27:05", "27:05:02", "27:05Q", "27:05:02Q", "27:05:02:04" });
+            secretedAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "44:02", "44:02:01", "44:02S", "44:02:01S", "44:02:01:02" });
+            aberrantAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "01:01", "01:01:01", "01:01A", "01:01:01A", "01:01:01:01" });
+            cytoplasmAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "01:01", "01:01:01", "01:01C", "01:01:01C", "01:01:01:01" });
+            nullAllele.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(new[] { "29:01", "29:01:01", "29:01N", "29:01:01N", "29:01:01:02" });
         }
     }
 }
