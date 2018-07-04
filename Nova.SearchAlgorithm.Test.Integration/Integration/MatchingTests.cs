@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
@@ -164,31 +165,30 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             };
         }
 
-        private List<PotentialSearchResult> Search(AlleleLevelMatchCriteria criteria)
+        private async Task<List<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
-            var task = matchingService.Search(criteria);
-            task.Wait();
-            return task.Result.ToList();
+            var results = await matchingService.Search(criteria);
+            return results.ToList();
         }
 
         [Test]
-        public void TwoOfTwoHomozygousMatchAtLocusA()
+        public async Task TwoOfTwoHomozygousMatchAtLocusA()
         {
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 1);
         }
 
         [Test]
-        public void TwoOfTwoHeterozygousMatchAtLocusA()
+        public async Task TwoOfTwoHeterozygousMatchAtLocusA()
         {
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
-        public void OneHalfMatchesNotPresentInExactSearchResults()
+        public async Task OneHalfMatchesNotPresentInExactSearchResults()
         {
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == 3);
             results.Should().NotContain(d => d.Donor.DonorId == 4);
             results.Should().NotContain(d => d.Donor.DonorId == 5);
@@ -196,120 +196,120 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         }
 
         [Test]
-        public void ExactMatchIsReturnedBySearchWithOneMismatch()
+        public async Task ExactMatchIsReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 1);
             results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
-        public void OneOfTwoHvGAtLocusAReturnedBySearchWithOneMismatch()
+        public async Task OneOfTwoHvGAtLocusAReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 3);
         }
 
         [Test]
-        public void OneOfTwoBothDirectionsAtLocusAReturnedBySearchWithOneMismatch()
+        public async Task OneOfTwoBothDirectionsAtLocusAReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 4);
         }
 
         [Test]
-        public void NoMatchAtLocusANotReturnedBySearchWithOneMismatch()
+        public async Task NoMatchAtLocusANotReturnedBySearchWithOneMismatch()
         {
             searchCriteria.DonorMismatchCount = 1;
             searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == 5);
             results.Should().NotContain(d => d.Donor.DonorId == 6);
         }
 
         [Test]
-        public void NoMatchAtLocusAReturnedBySearchWithTwoMismatches()
+        public async Task NoMatchAtLocusAReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 5);
         }
 
         [Test]
-        public void NoMatchAtLocusAHalfAtLocusBNotReturnedBySearchWithTwoMismatches()
+        public async Task NoMatchAtLocusAHalfAtLocusBNotReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == 6);
         }
 
         [Test]
-        public void ExactMatchIsReturnedBySearchWithTwoMismatches()
+        public async Task ExactMatchIsReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 1);
             results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
-        public void HalfMatchAtLocusAReturnedBySearchWithTwoMismatches()
+        public async Task HalfMatchAtLocusAReturnedBySearchWithTwoMismatches()
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 3);
             results.Should().Contain(d => d.Donor.DonorId == 4);
         }
 
         [Test]
-        public void ExactMatchIsReturnedBySearchWithThreeMismatches()
+        public async Task ExactMatchIsReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 1);
             results.Should().Contain(d => d.Donor.DonorId == 2);
         }
 
         [Test]
-        public void HalfMatchAtLocusAReturnedBySearchWithThreeMismatches()
+        public async Task HalfMatchAtLocusAReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 3);
             results.Should().Contain(d => d.Donor.DonorId == 4);
         }
 
         [Test]
-        public void NoMatchAtLocusABReturnedBySearchWithThreeMismatches()
+        public async Task NoMatchAtLocusABReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 5);
         }
 
         [Test]
-        public void NoMatchAtLocusAHalfAtLocusBReturnedBySearchWithThreeMismatches()
+        public async Task NoMatchAtLocusAHalfAtLocusBReturnedBySearchWithThreeMismatches()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = Search(searchCriteria);
+            var results = await Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == 6);
         }
     }

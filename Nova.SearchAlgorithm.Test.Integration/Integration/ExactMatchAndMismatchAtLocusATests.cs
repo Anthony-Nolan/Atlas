@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
@@ -48,9 +49,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         }
 
         [Test]
-        public void SixOfSixSingleDonorExactMatch()
+        public async Task SixOfSixSingleDonorExactMatch()
         {
-            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
+            var results = await searchService.Search(new SearchRequest
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
@@ -76,15 +77,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                         SearchHla2 = "13:02:01:03"
                     }
                 }
-            }).Result;
+            });
 
             results.Should().Contain(d => d.DonorId == 1);
         }
 
         [Test]
-        public void SixOfSixSingleDonorMismatchAtLocusA()
+        public async Task SixOfSixSingleDonorMismatchAtLocusA()
         {
-            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
+            var results = await searchService.Search(new SearchRequest
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
@@ -110,15 +111,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                         SearchHla2 = "13:02:01:03"
                     }
                 }
-            }).Result;
+            });
 
             results.Should().BeEmpty();
         }
 
         [Test]
-        public void SixOfSixSingleDonorMismatchAtLocusB()
+        public async Task SixOfSixSingleDonorMismatchAtLocusB()
         {
-            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
+            var results = await searchService.Search(new SearchRequest
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
@@ -144,15 +145,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                         SearchHla2 = "13:02:01:03"
                     }
                 }
-            }).Result;
+            });
 
             results.Should().BeEmpty();
         }
 
         [Test]
-        public void SixOfSixSingleDonorMismatchAtLocusDrb1()
+        public async Task SixOfSixSingleDonorMismatchAtLocusDrb1()
         {
-            IEnumerable<PotentialMatch> results = searchService.Search(new SearchRequest
+            var results = await searchService.Search(new SearchRequest
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
@@ -178,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                         SearchHla2 = "14:190"
                     }
                 }
-            }).Result;
+            });
 
             results.Should().BeEmpty();
         }
