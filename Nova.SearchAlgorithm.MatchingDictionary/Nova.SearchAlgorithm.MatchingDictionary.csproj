@@ -191,6 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
+    <Compile Include="Exceptions\MatchingDictionaryHttpException.cs" />
     <Compile Include="Exceptions\PermittedLocusException.cs" />
     <Compile Include="HlaTypingInfo\AlleleNamesSpecialCases.cs" />
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
@@ -205,7 +206,9 @@
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Repositories\MatchingDictionaryTableReferenceRepository.cs" />
+    <Compile Include="Repositories\AzureStorage\AlleleNameTableEntity.cs" />
+    <Compile Include="Repositories\AzureStorage\AlleleNameEntityExtensions.cs" />
+    <Compile Include="Repositories\AlleleNamesRepository.cs" />
     <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />
     <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />

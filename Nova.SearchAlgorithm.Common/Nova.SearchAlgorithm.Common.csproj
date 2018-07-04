@@ -118,6 +118,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\CloudTableBatchInsertException.cs" />
     <Compile Include="Exceptions\MemoryCacheException.cs" />
     <Compile Include="Models\AlleleLevelMatchCriteria.cs" />
     <Compile Include="Models\DonorResult.cs" />

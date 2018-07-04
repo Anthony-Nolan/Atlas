@@ -8,6 +8,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string Locus { get; set; }
+        /// <summary>
+        /// HLA sequence ID
+        /// </summary>
         public string Name { get; set; }
         public IEnumerable<VersionedAlleleName> VersionedAlleleNames { get; private set; }
         public string CurrentAlleleName { get; private set; }

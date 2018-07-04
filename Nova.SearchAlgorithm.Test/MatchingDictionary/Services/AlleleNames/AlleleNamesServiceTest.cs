@@ -6,6 +6,8 @@ using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using NSubstitute;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
@@ -16,7 +18,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            alleleNameEntries = new AlleleNamesService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository)
+            var alleleNamesRepository = Substitute.For<IAlleleNamesRepository>();
+
+            alleleNameEntries = new AlleleNamesService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository, alleleNamesRepository)
                 .GetAlleleNamesAndTheirVariants()
                 .ToList();
         }

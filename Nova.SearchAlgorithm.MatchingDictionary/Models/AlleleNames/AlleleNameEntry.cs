@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames
 {
-    public class AlleleNameEntry : IEquatable<AlleleNameEntry>
+    public class AlleleNameEntry : IStorableInCloudTable<AlleleNameTableEntity>, IEquatable<AlleleNameEntry>
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
@@ -25,6 +27,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames
                   lookupName,
                   new[] { currentAlleleName })
         {
+        }
+
+        public AlleleNameTableEntity ConvertToTableEntity()
+        {
+            return this.ToTableEntity();
         }
 
         public bool Equals(AlleleNameEntry other)
