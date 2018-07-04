@@ -181,7 +181,6 @@
     <Compile Include="Entity\MatchingHlaAtA.cs" />
     <Compile Include="Entity\Donor.cs" />
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Models\FlatSearchQueryResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\SqlDonorBatchQueryAsync.cs" />
     <Compile Include="Repositories\SqlDonorMatchRepository.cs" />
