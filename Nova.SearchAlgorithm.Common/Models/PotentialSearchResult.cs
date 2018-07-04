@@ -1,9 +1,26 @@
-﻿namespace Nova.SearchAlgorithm.Common.Models
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace Nova.SearchAlgorithm.Common.Models
 {
     public class PotentialSearchResult
     {
         public DonorResult Donor { get; set; }
-        public int TotalMatchCount { get; set; }
+
+        public int TotalMatchCount
+        {
+            get { return LocusMatchDetails.Where(m => m != null).Select(m => m.MatchCount).Sum(); }
+        }
+
+        private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>
+        {
+            MatchDetailsAtLocusA,
+            MatchDetailsAtLocusB,
+            MatchDetailsAtLocusC,
+            MatchDetailsAtLocusDqb1,
+            MatchDetailsAtLocusDrb1
+        };
+
         public int TypedLociCount { get; set; }
         public int MatchRank { get; set; }
         public int TotalMatchGrade { get; set; }

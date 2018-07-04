@@ -51,7 +51,6 @@ namespace Nova.SearchAlgorithm.Services
                 .Select(g => new PotentialSearchResult
                 {
                     Donor = g.First().Value.Donor ?? new DonorResult() { DonorId = g.Key },
-                    TotalMatchCount = g.Sum(m => m.Value.Match.MatchCount),
                     MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key].Match : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key].Match : new LocusMatchDetails { MatchCount = 0 },
                     MatchDetailsAtLocusDrb1 = matchesAtDrb1.ContainsKey(g.Key) ? matchesAtDrb1[g.Key].Match : new LocusMatchDetails { MatchCount = 0 },
@@ -70,7 +69,6 @@ namespace Nova.SearchAlgorithm.Services
                     return m;
                 })
             );
-            
             return matches;
         }
         
@@ -129,9 +127,6 @@ namespace Nova.SearchAlgorithm.Services
                 potentialSearchResult.MatchDetailsAtLocusDqb1 =
                     MatchDetails(criteria.LocusMismatchC, donorHla?.DQB1_1, donorHla?.DQB1_2);
 
-                potentialSearchResult.TotalMatchCount += potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount;
-                potentialSearchResult.TotalMatchCount += potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount;
-                
                 return potentialSearchResult;
             };
         }
