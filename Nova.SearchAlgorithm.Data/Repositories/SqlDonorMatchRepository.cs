@@ -31,22 +31,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
-            using (var conn = new SqlConnection(connectionString))
-            {
-                var sql1 = GetAllDonorsForPGroupsAtLocusQuery(locus, criteria.HlaNamesToMatchInPositionOne);
-                var sql2 = GetAllDonorsForPGroupsAtLocusQuery(locus, criteria.HlaNamesToMatchInPositionTwo);
-                
-                var flatResults1 = await conn.QueryAsync<DonorMatch>(sql1);
-                var flatResults2 = await conn.QueryAsync<DonorMatch>(sql2);
+            var results = await Task.WhenAll(
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.HlaNamesToMatchInPositionOne),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.HlaNamesToMatchInPositionTwo)
+            );
 
-                return flatResults1.Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
-                    .Concat(flatResults2.Select(r => r.ToPotentialHlaMatchRelation(TypePositions.Two, locus)));
-            }
+            return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
+                .Concat(results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.Two, locus)));
         }
 
-        private string GetAllDonorsForPGroupsAtLocusQuery(Locus locus, IEnumerable<string> pGroups)
+        private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(Locus locus, IEnumerable<string> pGroups)
         {
-            return $@"
+            var sql = $@"
 SELECT DonorId, TypePosition FROM {MatchingTableName(locus)} m
 JOIN PGroupNames p 
 ON m.PGroup_Id = p.Id
@@ -57,6 +53,11 @@ INNER JOIN (
 AS temp 
 ON p.Name = temp.val
 GROUP BY DonorId, TypePosition";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<DonorMatch>(sql);
+            }
         }
 
         public Task<int> HighestDonorId()
@@ -121,14 +122,14 @@ GROUP BY DonorId, TypePosition";
                     donor.DonorId,
                     (int) donor.DonorType,
                     (int) donor.RegistryCode,
-                    donor.HlaNames.A_1, donor.HlaNames.A_2, 
-                    donor.HlaNames.B_1, donor.HlaNames.B_2, 
+                    donor.HlaNames.A_1, donor.HlaNames.A_2,
+                    donor.HlaNames.B_1, donor.HlaNames.B_2,
                     donor.HlaNames.C_1, donor.HlaNames.C_2,
-                    donor.HlaNames.DPB1_1, donor.HlaNames.DPB1_2, 
+                    donor.HlaNames.DPB1_1, donor.HlaNames.DPB1_2,
                     donor.HlaNames.DQB1_1, donor.HlaNames.DQB1_2,
                     donor.HlaNames.DRB1_1, donor.HlaNames.DRB1_2);
             }
-            
+
             using (var sqlBulk = new SqlBulkCopy(connectionString))
             {
                 sqlBulk.BatchSize = 10000;
@@ -149,7 +150,7 @@ GROUP BY DonorId, TypePosition";
                 result.CopyRawHlaFrom(donor);
             }
 
-            await RefreshMatchingGroupsForExistingDonorBatch(new List<InputDonor>{ donor });
+            await RefreshMatchingGroupsForExistingDonorBatch(new List<InputDonor> {donor});
 
             await context.SaveChangesAsync();
         }
@@ -171,9 +172,9 @@ GROUP BY DonorId, TypePosition";
             {
                 return;
             }
-            
+
             var tableName = MatchingTableName(locus);
-            
+
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
@@ -215,6 +216,7 @@ GROUP BY DonorId, TypePosition";
                     sqlBulk.DestinationTableName = tableName;
                     sqlBulk.WriteToServer(dataTable);
                 }
+
                 transaction.Commit();
                 conn.Close();
             }
@@ -224,24 +226,24 @@ GROUP BY DonorId, TypePosition";
         {
             return "MatchingHlaAt" + locus;
         }
-        
+
         public void InsertPGroups(IEnumerable<string> pGroups)
         {
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                
+
                 var existingPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames").Select(p => p.Name);
-                
+
                 var dt = new DataTable();
                 dt.Columns.Add("Id");
                 dt.Columns.Add("Name");
 
-                foreach (var pg in pGroups.Distinct().Except(existingPGroups)) 
+                foreach (var pg in pGroups.Distinct().Except(existingPGroups))
                 {
                     dt.Rows.Add(0, pg);
                 }
-                
+
                 var transaction = conn.BeginTransaction();
                 using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                 {
@@ -249,6 +251,7 @@ GROUP BY DonorId, TypePosition";
                     sqlBulk.DestinationTableName = "PGroupNames";
                     sqlBulk.WriteToServer(dt);
                 }
+
                 transaction.Commit();
                 conn.Close();
             }
@@ -278,16 +281,16 @@ GROUP BY DonorId, TypePosition";
             {
                 return existing.Id;
             }
-            
+
             string sql = @"
 INSERT INTO PGroupNames (Name) VALUES (@PGroupName);
 SELECT CAST(SCOPE_IDENTITY() as int)";
 
             int newId;
-            
+
             using (var conn = new SqlConnection(connectionString))
             {
-                newId = conn.Query<int>(sql, new { PGroupName = pGroupName }).Single();
+                newId = conn.Query<int>(sql, new {PGroupName = pGroupName}).Single();
             }
 
             CachePGroupDictionary();
