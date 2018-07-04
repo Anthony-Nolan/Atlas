@@ -100,11 +100,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             return this.ToTableEntity();
         }
 
-        public bool BelongsToTablePartition(string partition)
-        {
-            return partition.Equals(MatchingDictionaryTableEntity.GetPartition(MatchLocus));
-        }
-
         public bool Equals(MatchingDictionaryEntry other)
         {
             if (ReferenceEquals(null, other)) return false;

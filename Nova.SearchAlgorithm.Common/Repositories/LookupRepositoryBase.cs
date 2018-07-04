@@ -107,15 +107,16 @@ namespace Nova.SearchAlgorithm.Common.Repositories
 
         private static void InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
         {
-            var contentsList = contents.ToList();
+            var entities = contents
+                .Select(data => data.ConvertToTableEntity())
+                .ToList();
 
             foreach (var partition in partitions)
             {
-                var partitionEntities = contentsList
-                    .Where(data => data.BelongsToTablePartition(partition))
-                    .Select(data => data.ConvertToTableEntity());
-
-                dataTable.BatchInsert(partitionEntities);
+                var partitionedEntities = entities
+                    .Where(entity => entity.PartitionKey.Equals(partition));
+                
+                dataTable.BatchInsert(partitionedEntities);
             }
         }
     }
