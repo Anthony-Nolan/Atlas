@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
@@ -22,7 +22,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         private IEnumerable<AlleleNameEntry> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
         {
             var currentAlleleName = GetCurrentAlleleName(history);
-            return history.ToAlleleNameEntries(currentAlleleName);
+
+            return !string.IsNullOrEmpty(currentAlleleName)
+                ? history.ToAlleleNameEntries(currentAlleleName)
+                : new List<AlleleNameEntry>();
         }
 
         private string GetCurrentAlleleName(AlleleNameHistory history)

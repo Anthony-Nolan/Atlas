@@ -28,7 +28,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             var nameVariants = GetAlleleNameVariants(alleleNamesFromHistories);
             var reservedNames = GetReservedAlleleNames();
 
-            return alleleNamesFromHistories.Concat(nameVariants).Concat(reservedNames);
+            var mergedCollectionOfAlleleNames = alleleNamesFromHistories
+                .Concat(nameVariants)
+                .Concat(reservedNames)
+                .ToList();
+
+            // TODO: NOVA-1385 - several alleles are causing duplicate entry errors
+            // Need further input on how these edge cases should be handled
+            // Removing the offending alleles from the collection in the mean time
+            mergedCollectionOfAlleleNames
+                .RemoveAll(AlleleNamesSpecialCases.RemoveSpecifiedAlleleNames);
+
+            return mergedCollectionOfAlleleNames;
         }
 
         private IEnumerable<AlleleNameEntry> GetAlleleNamesFromHistories()

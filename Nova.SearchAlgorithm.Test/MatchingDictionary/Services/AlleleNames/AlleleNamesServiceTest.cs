@@ -21,6 +21,16 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
                 .ToList();
         }
 
+        [Test]
+        public void AlleleNamesService_GetAlleleNamesAndTheirVariants_DoesNotGenerateDuplicateAlleleNames()
+        {
+            var nonUniqueAlleleNames = alleleNameEntries
+                .GroupBy(alleleName => new {alleleName.MatchLocus, alleleName.LookupName})
+                .Where(group => group.Count() > 1);
+
+            Assert.IsEmpty(nonUniqueAlleleNames);
+        }
+
         [TestCase(MatchLocus.A, "01:01:01:01", new[] { "01:01:01:01" }, Description = "Lookup name equals current name")]
         [TestCase(MatchLocus.A, "02:30", new[] { "02:30:01" }, Description = "2 field to 3 field")]
         [TestCase(MatchLocus.C, "07:06", new[] { "07:06:01:01" }, Description = "2 field to 4 field")]
