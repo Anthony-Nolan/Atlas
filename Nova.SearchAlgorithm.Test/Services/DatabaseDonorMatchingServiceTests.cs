@@ -6,7 +6,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
 using NUnit.Framework;
@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
 {
     // TODO NOVA-1289: The tests as written are just for the three loci search. Now that the five loci part is in the same service layer, the tests will fail with five loci enabled.
     [TestFixture]
-    public class DonorMatchingServiceTests : TestBase<DonorMatchingService>
+    public class DatabaseDonorMatchingServiceTests : TestBase<DatabaseDonorDonorMatchingService>
     {
         private const string PGroupA1 = "p1";
         private const string PGroupA1_alternative = "p1a";
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         private readonly DonorResult bothGroupsMatchPositionOne =
             new DonorResult {DonorId = 3, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
-        private IDonorMatchingService matchingService;
+        private IDatabaseDonorMatchingService donorMatchingService;
 
         private DonorMatchCriteriaBuilder criteriaBuilder;
 
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var donorSearchRepository = GetFake<IDonorSearchRepository>();
             var donorInspectionRepository = GetFake<IDonorInspectionRepository>();
             var lookupService = GetFake<IMatchingDictionaryLookupService>();
-            matchingService = new DonorMatchingService(donorSearchRepository, donorInspectionRepository, lookupService);
+            donorMatchingService = new DatabaseDonorDonorMatchingService(donorSearchRepository, donorInspectionRepository, lookupService);
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
 
         private async Task<List<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
-            var results = await matchingService.Search(criteria);
+            var results = await donorMatchingService.FindMatchesForLoci(criteria, new List<Locus> {Locus.A, Locus.B, Locus.Drb1});
             return results.ToList();
         }
 

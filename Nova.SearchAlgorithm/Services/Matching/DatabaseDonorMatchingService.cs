@@ -8,33 +8,34 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.Services.Matching
 {
-    public interface IDonorMatchingService
+    public interface IDatabaseDonorMatchingService
     {
-        Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria);
+        
+        /// <summary>
+        /// Searches the pre-processed matching data for matches at the specified loci
+        /// </summary>
+        /// <returns>
+        /// A PotentialSearchResult object, with donor details populated. MatchDetails will be populated only for the specified loci
+        /// </returns>
+        Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci);
     }
-
-    public class DonorMatchingService : IDonorMatchingService
+    
+    public class DatabaseDonorDonorMatchingService: IDatabaseDonorMatchingService
     {
+        private readonly IMatchingDictionaryLookupService lookupService;
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
-        private readonly IMatchingDictionaryLookupService lookupService;
 
-        public DonorMatchingService(IDonorSearchRepository donorSearchRepository, IDonorInspectionRepository donorInspectionRepository, IMatchingDictionaryLookupService lookupService)
+        public DatabaseDonorDonorMatchingService(IDonorSearchRepository donorSearchRepository, IDonorInspectionRepository donorInspectionRepository, IMatchingDictionaryLookupService lookupService)
         {
             this.donorSearchRepository = donorSearchRepository;
             this.donorInspectionRepository = donorInspectionRepository;
             this.lookupService = lookupService;
         }
-
-        public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
-        {
-            var threeLociMatches = await SearchDatabaseForLoci(criteria, new List<Locus> {Locus.A, Locus.B, Locus.Drb1});
-            return threeLociMatches;
-        }
-
-        private async Task<IEnumerable<PotentialSearchResult>> SearchDatabaseForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci)
+        
+        public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci)
         {
             var results = await Task.WhenAll(loci.Select(l => FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l))));
 
@@ -73,6 +74,7 @@ namespace Nova.SearchAlgorithm.Services
             return matchesWithDonorInfoExpanded;
         }
 
+
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
         {
             var repoCriteria = new LocusSearchCriteria
@@ -89,12 +91,12 @@ namespace Nova.SearchAlgorithm.Services
 
             return matches;
         }
-
+        
         private DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
         {
             return new DonorAndMatchForLocus
             {
-                Donor = group.First()?.Donor,
+                Donor = group.First()?.Donor ?? new DonorResult {DonorId = group.Key},
                 Match = new LocusMatchDetails
                 {
                     MatchCount = DirectMatch(group) || CrossMatch(group) ? 2 : 1
@@ -113,84 +115,6 @@ namespace Nova.SearchAlgorithm.Services
         {
             return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.Two))
                    && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One));
-        }
-
-        private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(AlleleLevelMatchCriteria criteria)
-        {
-            // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
-            // TODO:NOVA-1289 implement typed loci booleans and counts
-            return potentialSearchResult =>
-            {
-                var donorHla = potentialSearchResult.Donor.MatchingHla;
-
-                potentialSearchResult.MatchDetailsAtLocusC =
-                    MatchDetails(criteria.LocusMismatchC, donorHla?.C_1, donorHla?.C_2);
-
-                potentialSearchResult.MatchDetailsAtLocusDqb1 =
-                    MatchDetails(criteria.LocusMismatchC, donorHla?.DQB1_1, donorHla?.DQB1_2);
-
-                return potentialSearchResult;
-            };
-        }
-
-        private LocusMatchDetails MatchDetails(AlleleLevelLocusMatchCriteria criteria, ExpandedHla hla1, ExpandedHla hla2)
-        {
-            var matchDetails = new LocusMatchDetails
-            {
-                MatchCount = 2, // Assume a match until we know otherwise
-                IsLocusTyped = hla1 != null && hla2 != null,
-            };
-
-            if (criteria != null && hla1 != null && hla2 != null)
-            {
-                // We have typed search and donor hla to compare
-                matchDetails.MatchCount = 0;
-
-                // TODO:NOVA-1289 This sketch logic does not take into account some edge cases, like one patient position matching both donor positions,
-                // which should count as only one match
-                if (criteria.HlaNamesToMatchInPositionOne.Any(name =>
-                    hla1.PGroups.Union(hla2.PGroups).Contains(name)))
-                {
-                    matchDetails.MatchCount += 1;
-                }
-
-                if (criteria.HlaNamesToMatchInPositionTwo.Any(name =>
-                    hla1.PGroups.Union(hla2.PGroups).Contains(name)))
-                {
-                    matchDetails.MatchCount += 1;
-                }
-            }
-
-            return matchDetails;
-        }
-
-        private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(AlleleLevelMatchCriteria criteria)
-        {
-            // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
-            return potentialSearchResult =>
-            {
-                if (potentialSearchResult.MatchDetailsAtLocusC != null &&
-                    criteria.LocusMismatchC != null &&
-                    potentialSearchResult.MatchDetailsAtLocusC.MatchCount < criteria.LocusMismatchC.MismatchCount)
-                {
-                    return false;
-                }
-
-                if (potentialSearchResult.MatchDetailsAtLocusDqb1 != null &&
-                    criteria.LocusMismatchDQB1 != null &&
-                    potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount < criteria.LocusMismatchDQB1.MismatchCount)
-                {
-                    return false;
-                }
-
-                // TODO:NOVA-1289 take into account cord or adult search differences
-                if (potentialSearchResult.TotalMatchCount < criteria.DonorMismatchCount)
-                {
-                    return false;
-                }
-
-                return true;
-            };
         }
 
         private async Task<ExpandedHla> Lookup(Locus locus, string hla)
