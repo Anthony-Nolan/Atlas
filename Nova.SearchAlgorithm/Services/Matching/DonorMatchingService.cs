@@ -24,25 +24,14 @@ namespace Nova.SearchAlgorithm.Services
         public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
             var threeLociMatches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, new List<Locus> {Locus.A, Locus.B, Locus.Drb1});
-            return threeLociMatches;
-        }
-
-        private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(AlleleLevelMatchCriteria criteria)
-        {
-            // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
-            // TODO:NOVA-1289 implement typed loci booleans and counts
-            return potentialSearchResult =>
+            var fiveLociMatches = threeLociMatches.Select(m =>
             {
-                var donorHla = potentialSearchResult.Donor.MatchingHla;
-
-                potentialSearchResult.MatchDetailsAtLocusC =
-                    MatchDetails(criteria.LocusMismatchC, donorHla?.C_1, donorHla?.C_2);
-
-                potentialSearchResult.MatchDetailsAtLocusDqb1 =
-                    MatchDetails(criteria.LocusMismatchC, donorHla?.DQB1_1, donorHla?.DQB1_2);
-
-                return potentialSearchResult;
-            };
+                m.SetMatchDetailsForLocus(Locus.C, new LocusMatchDetails {MatchCount = 0});
+                m.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 0});
+                m.SetMatchDetailsForLocus(Locus.Dqb1, new LocusMatchDetails {MatchCount = 0});
+                return m;
+            });
+            return fiveLociMatches;
         }
 
         private LocusMatchDetails MatchDetails(AlleleLevelLocusMatchCriteria criteria, ExpandedHla hla1, ExpandedHla hla2)
@@ -74,35 +63,6 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             return matchDetails;
-        }
-
-        private Func<PotentialSearchResult, bool> FilterByMismatchCriteria(AlleleLevelMatchCriteria criteria)
-        {
-            // TODO:NOVA-1289 (create tests and) filter based on total match count and all 5 loci match counts
-            return potentialSearchResult =>
-            {
-                if (potentialSearchResult.MatchDetailsAtLocusC != null &&
-                    criteria.LocusMismatchC != null &&
-                    potentialSearchResult.MatchDetailsAtLocusC.MatchCount < criteria.LocusMismatchC.MismatchCount)
-                {
-                    return false;
-                }
-
-                if (potentialSearchResult.MatchDetailsAtLocusDqb1 != null &&
-                    criteria.LocusMismatchDQB1 != null &&
-                    potentialSearchResult.MatchDetailsAtLocusDqb1.MatchCount < criteria.LocusMismatchDQB1.MismatchCount)
-                {
-                    return false;
-                }
-
-                // TODO:NOVA-1289 take into account cord or adult search differences
-                if (potentialSearchResult.TotalMatchCount < criteria.DonorMismatchCount)
-                {
-                    return false;
-                }
-
-                return true;
-            };
         }
 
         private Func<PotentialSearchResult, bool> FilterResultsByLocus(Locus locus, AlleleLevelMatchCriteria criteria)

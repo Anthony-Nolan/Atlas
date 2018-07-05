@@ -26,29 +26,44 @@ namespace Nova.SearchAlgorithm.Common.Models
         public int MatchRank { get; set; }
         public int TotalMatchGrade { get; set; }
         public int TotalMatchConfidence { get; set; }
-        public LocusMatchDetails MatchDetailsAtLocusA { get; set; }
-        public LocusMatchDetails MatchDetailsAtLocusB { get; set; }
-        public LocusMatchDetails MatchDetailsAtLocusC { get; set; }
-        public LocusMatchDetails MatchDetailsAtLocusDrb1 { get; set; }
-        public LocusMatchDetails MatchDetailsAtLocusDqb1 { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusA { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusB { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusC { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusDrb1 { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusDqb1 { get; set; }
 
         public LocusMatchDetails MatchDetailsForLocus(Locus locus)
         {
+            LocusMatchDetails matchDetails;
             switch (locus)
             {
                 case Locus.A:
-                    return MatchDetailsAtLocusA;
+                    matchDetails = MatchDetailsAtLocusA;
+                    break;
                 case Locus.B:
-                    return MatchDetailsAtLocusB;
+                    matchDetails = MatchDetailsAtLocusB;
+                    break;
                 case Locus.C:
-                    return MatchDetailsAtLocusC;
+                    matchDetails = MatchDetailsAtLocusC;
+                    break;
                 case Locus.Dqb1:
-                    return MatchDetailsAtLocusDqb1;
+                    matchDetails = MatchDetailsAtLocusDqb1;
+                    break;
                 case Locus.Drb1:
-                    return MatchDetailsAtLocusDrb1;
-                default:
+                    matchDetails = MatchDetailsAtLocusDrb1;
+                    break;
+                case Locus.Dpb1:
                     throw new NotImplementedException();
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+
+            if (matchDetails == null)
+            {
+                throw new Exception($"Attempted to access match details for locus {locus} before they were generated");
+            }
+
+            return matchDetails;
         }
         
         public void SetMatchDetailsForLocus(Locus locus, LocusMatchDetails locusMatchDetails)
@@ -70,8 +85,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                 case Locus.Drb1:
                     MatchDetailsAtLocusDrb1 = locusMatchDetails;
                     break;
-                default:
+                case Locus.Dpb1:
                     throw new NotImplementedException();
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

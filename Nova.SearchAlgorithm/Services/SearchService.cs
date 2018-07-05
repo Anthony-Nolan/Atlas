@@ -95,11 +95,11 @@ namespace Nova.SearchAlgorithm.Services
                 TotalMatchGrade = result.TotalMatchGrade,
                 TotalMatchCount = result.TotalMatchCount,
                 TypedLociCount = result.TypedLociCount,
-                MatchDetailsAtLocusA = result.MatchDetailsAtLocusA,
-                MatchDetailsAtLocusB = result.MatchDetailsAtLocusB,
-                MatchDetailsAtLocusC = result.MatchDetailsAtLocusC,
-                MatchDetailsAtLocusDQB1 = result.MatchDetailsAtLocusDqb1,
-                MatchDetailsAtLocusDRB1 = result.MatchDetailsAtLocusDrb1
+                MatchDetailsAtLocusA = result.MatchDetailsForLocus(Locus.A),
+                MatchDetailsAtLocusB = result.MatchDetailsForLocus(Locus.B),
+                MatchDetailsAtLocusC = result.MatchDetailsForLocus(Locus.C),
+                MatchDetailsAtLocusDQB1 = result.MatchDetailsForLocus(Locus.Dqb1),
+                MatchDetailsAtLocusDRB1 = result.MatchDetailsForLocus(Locus.Drb1)
             };
         }
     }

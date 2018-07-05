@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == exactMatch.DonorId);
-            results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
+            results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(2);
             results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(6);
         }
 
@@ -155,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId);
-            results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(1);
             results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
 
@@ -167,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId);
-            results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(1);
             results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
 
@@ -179,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == exactMatch.DonorId);
-            results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
+            results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(2);
             results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(6);
         }
 
@@ -191,7 +191,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId);
-            results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(1);
             results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
 
@@ -203,7 +203,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId);
-            results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
+            results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(1);
             results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().TotalMatchCount.Should().Be(5);
         }
     }
