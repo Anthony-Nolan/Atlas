@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Common.Models
 {
@@ -14,6 +15,25 @@ namespace Nova.SearchAlgorithm.Common.Models
         public AlleleLevelLocusMatchCriteria LocusMismatchC { get; set; }
         public AlleleLevelLocusMatchCriteria LocusMismatchDQB1 { get; set; }
         public AlleleLevelLocusMatchCriteria LocusMismatchDRB1 { get; set; }
+        
+        public AlleleLevelLocusMatchCriteria MatchCriteriaForLocus(Locus locus)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    return LocusMismatchA;
+                case Locus.B:
+                    return LocusMismatchB;
+                case Locus.C:
+                    return LocusMismatchC;
+                case Locus.Dqb1:
+                    return LocusMismatchDQB1;
+                case Locus.Drb1:
+                    return LocusMismatchDRB1;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
     }
 
     public class AlleleLevelLocusMatchCriteria

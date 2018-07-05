@@ -131,5 +131,26 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DRB1_2 = results[11]
             };
         }
+
+        public Tuple<T, T> DataAtLocus(Locus locus)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    return new Tuple<T, T>(A_1, A_2);
+                case Locus.B:
+                    return new Tuple<T, T>(B_1, B_2);
+                case Locus.C:
+                    return new Tuple<T, T>(C_1, C_2);
+                case Locus.Dpb1:
+                    return new Tuple<T, T>(DPB1_1, DPB1_2);
+                case Locus.Dqb1:
+                    return new Tuple<T, T>(DQB1_1, DQB1_2);
+                case Locus.Drb1:
+                    return new Tuple<T, T>(DRB1_1, DRB1_2);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+            }
+        }
     }
 }
