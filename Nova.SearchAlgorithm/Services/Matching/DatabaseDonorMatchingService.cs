@@ -37,6 +37,13 @@ namespace Nova.SearchAlgorithm.Services.Matching
         
         public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci)
         {
+            if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
+            {
+                // Currently the logic here will not suffice for these loci
+                // Donors with no typing for the locus should count as potential matches, but will not be returned by a search of the matching table
+                throw new NotImplementedException();
+            }
+            
             var results = await Task.WhenAll(loci.Select(l => FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l))));
 
             var matches = results
