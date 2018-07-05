@@ -321,6 +321,7 @@
     <Compile Include="Services\AntigenCachingService.cs" />
     <Compile Include="Services\Matching\DonorMatchingService.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingService.cs" />
+    <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
     <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Scoring\CalculateScore.cs" />
     <Compile Include="Services\DonorExtensions.cs" />

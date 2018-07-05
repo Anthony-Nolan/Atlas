@@ -4,16 +4,14 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Repositories
+namespace Nova.SearchAlgorithm.Test.Services
 {
-    // TODO NOVA-1289: The tests as written are just for the three loci search. Now that the five loci part is in the same service layer, the tests will fail with five loci enabled.
     [TestFixture]
     public class DatabaseDonorMatchingServiceTests : TestBase<DatabaseDonorDonorMatchingService>
     {

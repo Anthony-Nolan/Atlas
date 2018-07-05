@@ -14,9 +14,10 @@ namespace Nova.SearchAlgorithm.Services.Matching
         
         /// <summary>
         /// Searches the pre-processed matching data for matches at the specified loci
+        /// Performs filtering against loci and total mismatch counts
         /// </summary>
         /// <returns>
-        /// A PotentialSearchResult object, with donor details populated. MatchDetails will be populated only for the specified loci
+        /// A collection of PotentialSearchResults, with donor id populated. MatchDetails will be populated only for the specified loci
         /// </returns>
         Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci);
     }
@@ -59,13 +60,11 @@ namespace Nova.SearchAlgorithm.Services.Matching
                     }
                     return result;
                 })
-                .Where(m => m.TotalMatchCount >= 6 - criteria.DonorMismatchCount)
+                .Where(m => m.TotalMatchCount >= (loci.Count * 2) - criteria.DonorMismatchCount)
                 .Where(m => loci.All(l => m.MatchDetailsForLocus(l).MatchCount >= 2 - criteria.MatchCriteriaForLocus(l).MismatchCount));
             
-
             return matches;
         }
-
 
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
         {

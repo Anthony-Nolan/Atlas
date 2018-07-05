@@ -348,6 +348,7 @@
     <Compile Include="MatchingDictionary\Services\Matching\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
     <Compile Include="Services\DatabaseDonorMatchingServiceTests.cs" />
+    <Compile Include="Services\DonorMatchCalculatorTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
