@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Repositories
 {
-    // TODO: The tests as written are just for the three loci search. Now that the five loci part is in the same service layer, the tests will fail with five loci enabled.
+    // TODO NOVA-1289: The tests as written are just for the three loci search. Now that the five loci part is in the same service layer, the tests will fail with five loci enabled.
     [TestFixture]
     public class DonorMatchingServiceTests : TestBase<DonorMatchingService>
     {
