@@ -76,10 +76,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                         break;
                     case HlaTypingCategory.NmdpCode:
                         lookup = new NmdpCodeLookup(
-                            dictionaryRepository, 
-                            alleleNamesLookupService, 
-                            memoryCache, hlaServiceClient, 
-                            alleleSplitter, 
+                            dictionaryRepository,
+                            alleleNamesLookupService,
+                            memoryCache,
+                            hlaServiceClient,
+                            alleleSplitter,
                             logger);
                         break;
                     case HlaTypingCategory.AlleleStringOfNames:

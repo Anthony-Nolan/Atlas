@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         private IEnumerable<string> GetAlleleNameVariantsOfSpecifiedFieldCount(int truncatedFieldCount)
         {
             if (Fields.Count() < truncatedFieldCount ||
-                Fields.Count() == truncatedFieldCount && string.IsNullOrEmpty(ExpressionSuffix))
+                (Fields.Count() == truncatedFieldCount && string.IsNullOrEmpty(ExpressionSuffix)))
             {
                 return new List<string>();
             }

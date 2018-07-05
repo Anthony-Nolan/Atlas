@@ -47,10 +47,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             return entity?.ToAlleleNameEntry();
         }
 
-        /// <summary>
-        /// The connection to the current data table is cached so we don't open unnecessary connections
-        /// If you plan to use this repository with multiple async operations, this method should be called first
-        /// </summary>
         public async Task LoadAlleleNamesIntoMemory()
         {
             await LoadDataIntoMemory();

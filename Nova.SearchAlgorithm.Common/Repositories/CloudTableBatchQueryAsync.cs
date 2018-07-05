@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
 {
-    public class CloudTableBatchQueryAsync<TTableEntity> where TTableEntity : TableEntity, new()
+    public class CloudTableBatchQueryAsync<TTableEntity> : IBatchQueryAsync<TTableEntity> 
+        where TTableEntity : TableEntity, new()
     {
         private readonly TableQuery<TTableEntity> query;
         private readonly CloudTable table;

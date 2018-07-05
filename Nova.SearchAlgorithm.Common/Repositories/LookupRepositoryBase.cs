@@ -61,7 +61,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         }
 
         /// <summary>
-        /// The connection to the current data table is cached so we don't open unnecessary connections
         /// If you plan to use this repository with multiple async operations, this method should be called first
         /// </summary>
         protected async Task LoadDataIntoMemory()
@@ -82,6 +81,9 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             MemoryCache.Set(cacheKey, dataToLoad);
         }
 
+        /// <summary>
+        /// The connection to the current data table is cached so we don't open unnecessary connections
+        /// </summary>
         private async Task<CloudTable> GetCurrentDataTable()
         {
             if (cloudTable == null)

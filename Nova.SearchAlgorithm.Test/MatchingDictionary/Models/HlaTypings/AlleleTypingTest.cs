@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
     [TestFixture]
-    public class AlleleModelTest
+    public class AlleleTypingTest
     {
         private static object[] _alleles =
         {

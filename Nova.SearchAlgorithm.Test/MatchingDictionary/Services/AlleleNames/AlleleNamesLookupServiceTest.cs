@@ -40,13 +40,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
         [TestCase(null)]
         [TestCase("")]
-        public void AlleleNamesLookupService_GetCurrentAlleleNames_ExceptionIsThrownWhenStringNullOrEmpty(string nullOrEmptyString)
+        public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
         {
             Assert.ThrowsAsync<MatchingDictionaryHttpException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString));
         }
 
-        public void AlleleNamesLookupService_GetCurrentAlleleNames_ExceptionIsThrownWhenNotAlleleTyping()
+        public void GetCurrentAlleleNames_WhenNotAlleleTyping_ThrowsException()
         {
             const string notAlleleName = "NOT-AN-ALLELE";
             const HlaTypingCategory notAlleleTypingCategory = HlaTypingCategory.Serology;
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
         [TestCase("*AlleleName", "AlleleName")]
         [TestCase("AlleleName", "AlleleName")]
-        public async Task AlleleNamesLookupService_GetCurrentAlleleNames_LookupTheTrimmedAlleleName(
+        public async Task GetCurrentAlleleNames_WhenAlleleTyping_LooksUpTheTrimmedAlleleName(
             string submittedLookupName, string trimmedLookupName)
         {
             hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);

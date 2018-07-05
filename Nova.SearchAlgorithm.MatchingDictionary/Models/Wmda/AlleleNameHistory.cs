@@ -8,13 +8,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string Locus { get; set; }
+
         /// <summary>
-        /// HLA sequence ID
+        /// HLA Accession ID
         /// </summary>
         public string Name { get; set; }
         public IEnumerable<VersionedAlleleName> VersionedAlleleNames { get; private set; }
         public string CurrentAlleleName { get; private set; }
         public IEnumerable<string> DistinctAlleleNames { get; private set; }
+
         /// <summary>
         /// This property is useful for deleted alleles that have been shown to be identical to another allele.
         /// They will have no current name, but will have had a name assigned to them in the past.
