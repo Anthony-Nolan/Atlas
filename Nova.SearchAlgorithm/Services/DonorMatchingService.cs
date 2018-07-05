@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Services
@@ -12,66 +14,71 @@ namespace Nova.SearchAlgorithm.Services
     {
         Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria);
     }
-    
-    public class DonorMatchingService: IDonorMatchingService
+
+    public class DonorMatchingService : IDonorMatchingService
     {
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IMatchingDictionaryLookupService lookupService;
 
-        public DonorMatchingService(IDonorSearchRepository donorSearchRepository, IDonorInspectionRepository donorInspectionRepository)
+        public DonorMatchingService(IDonorSearchRepository donorSearchRepository, IDonorInspectionRepository donorInspectionRepository, IMatchingDictionaryLookupService lookupService)
         {
             this.donorSearchRepository = donorSearchRepository;
             this.donorInspectionRepository = donorInspectionRepository;
+            this.lookupService = lookupService;
         }
-        
+
         public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
-            var threeLociMatches = await ThreeLociSearch(criteria);
-
-            var fiveLociMatches = threeLociMatches;
-//                .Select(AddMatchCounts(criteria))
-//                .Where(FilterByMismatchCriteria(criteria));
-
-            return fiveLociMatches;
+            var threeLociMatches = await SearchDatabaseForLoci(criteria, new List<Locus> {Locus.A, Locus.B, Locus.Drb1});
+            return threeLociMatches;
         }
 
-        private async Task<IEnumerable<PotentialSearchResult>> ThreeLociSearch(AlleleLevelMatchCriteria matchRequest)
+        private async Task<IEnumerable<PotentialSearchResult>> SearchDatabaseForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci)
         {
-            var results = await Task.WhenAll(
-                FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.A, matchRequest.LocusMismatchA),
-                FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.B, matchRequest.LocusMismatchB),
-                FindMatchesAtLocus(matchRequest.SearchType, matchRequest.RegistriesToSearch, Locus.Drb1, matchRequest.LocusMismatchDRB1));
+            var results = await Task.WhenAll(loci.Select(async l =>
+                new Tuple<Locus, IDictionary<int, DonorAndMatch>>(l,
+                    await FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l)))));
 
-            var matchesAtA = results[0];
-            var matchesAtB = results[1];
-            var matchesAtDrb1 = results[2];
-
-            var matches = await Task.WhenAll(matchesAtA.Union(matchesAtB).Union(matchesAtDrb1)
+            var matches = results
+                .Select(r => r.Item2)
+                .SelectMany(r => r)
                 .GroupBy(m => m.Key)
-                .Select(g => new PotentialSearchResult
+                .Select(g =>
                 {
-                    Donor = g.First().Value.Donor ?? new DonorResult() { DonorId = g.Key },
-                    MatchDetailsAtLocusA = matchesAtA.ContainsKey(g.Key) ? matchesAtA[g.Key].Match : new LocusMatchDetails { MatchCount = 0 },
-                    MatchDetailsAtLocusB = matchesAtB.ContainsKey(g.Key) ? matchesAtB[g.Key].Match : new LocusMatchDetails { MatchCount = 0 },
-                    MatchDetailsAtLocusDrb1 = matchesAtDrb1.ContainsKey(g.Key) ? matchesAtDrb1[g.Key].Match : new LocusMatchDetails { MatchCount = 0 },
+                    var donorId = g.Key;
+                    var result = new PotentialSearchResult
+                    {
+                        Donor = g.First().Value.Donor ?? new DonorResult {DonorId = donorId},
+                    };
+                    foreach (var lociResults in results)
+                    {
+                        var locus = lociResults.Item1;
+                        var matchesAtLocus = lociResults.Item2;
+                        
+                        var locusMatchDetails = matchesAtLocus.ContainsKey(donorId) ? matchesAtLocus[donorId].Match : new LocusMatchDetails { MatchCount = 0 };
+                        result.SetMatchDetailsForLocus(locus, locusMatchDetails);
+                    }
+
+                    return result;
                 })
-                .Where(m => m.TotalMatchCount >= 6 - matchRequest.DonorMismatchCount)
-                .Where(m => m.MatchDetailsAtLocusA.MatchCount >= 2 - matchRequest.LocusMismatchA.MismatchCount)
-                .Where(m => m.MatchDetailsAtLocusB.MatchCount >= 2 - matchRequest.LocusMismatchB.MismatchCount)
-                .Where(m => m.MatchDetailsAtLocusDrb1.MatchCount >= 2 - matchRequest.LocusMismatchDRB1.MismatchCount)
-                .Select(async m =>
-                {
-                    // Augment each match with registry and other data from GetDonor(id)
-                    // Performance could be improved here, but at least it happens in parallel,
-                    // and only after filtering match results, not before.
-                    // In the cosmos case this is already populated, so we don't bother if the donor hla isn't null.
-                    m.Donor = m.Donor.MatchingHla != null ? m.Donor : await donorInspectionRepository.GetDonor(m.Donor.DonorId);
-                    return m;
-                })
-            );
-            return matches;
+                .Where(m => m.TotalMatchCount >= 6 - criteria.DonorMismatchCount)
+                .Where(m => loci.All(l => m.MatchDetailsForLocus(l).MatchCount >= 2 - criteria.MatchCriteriaForLocus(l).MismatchCount));
+            
+            var matchesWithDonorInfoExpanded = await Task.WhenAll(matches.Select(async m =>
+            {
+                // Augment each match with registry and other data from GetDonor(id)
+                // Performance could be improved here, but at least it happens in parallel,
+                // and only after filtering match results, not before.
+                // In the cosmos case this is already populated, so we don't bother if the donor hla isn't null.
+                m.Donor = m.Donor.MatchingHla != null ? m.Donor : await donorInspectionRepository.GetDonor(m.Donor.DonorId);
+                m.Donor.MatchingHla = await m.Donor.HlaNames.WhenAllPositions((l, p, n) => Lookup(l, n));
+                return m;
+            }));
+
+            return matchesWithDonorInfoExpanded;
         }
-        
+
         private async Task<IDictionary<int, DonorAndMatch>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
         {
             LocusSearchCriteria repoCriteria = new LocusSearchCriteria
