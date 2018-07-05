@@ -50,6 +50,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
                 .FirstOrDefault();
         }
 
+        public bool DistinctAlleleNamesContain(IWmdaHlaTyping allele)
+        {
+            return Locus.Equals(allele.Locus) && DistinctAlleleNames.Contains(allele.Name);
+        }
+
         public override string ToString()
         {
             return $"locus: {Locus}, hlaId: {Name}";

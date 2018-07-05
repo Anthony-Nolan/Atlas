@@ -193,7 +193,6 @@
     <Compile Include="Data\IWmdaFileReader.cs" />
     <Compile Include="Exceptions\MatchingDictionaryHttpException.cs" />
     <Compile Include="Exceptions\PermittedLocusException.cs" />
-    <Compile Include="HlaTypingInfo\AlleleNamesSpecialCases.cs" />
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />

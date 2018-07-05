@@ -4,7 +4,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -61,12 +60,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 .Concat(nameVariants)
                 .Concat(reservedNames)
                 .ToList();
-
-            // TODO: NOVA-1385 - several alleles are causing duplicate entry errors
-            // Need further input on how these edge cases should be handled
-            // Removing the offending alleles from the collection in the mean time
-            mergedCollectionOfAlleleNames
-                .RemoveAll(AlleleNamesSpecialCases.RemoveSpecifiedAlleleNames);
 
             return mergedCollectionOfAlleleNames;
         }

@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             }
             catch (Exception ex)
             {
-                var msg = $"Failed to get matching HLA for {alleleLookupName} at locus {matchLocus}.";
+                var msg = $"Failed to lookup the allele name {alleleLookupName} at locus {matchLocus}.";
                 throw new MatchingDictionaryHttpException(msg, ex);
             }
         }
