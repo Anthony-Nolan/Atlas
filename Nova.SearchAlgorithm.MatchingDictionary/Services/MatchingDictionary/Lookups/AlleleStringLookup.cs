@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal class AlleleStringLookup : AlleleNameBasedLookup
+    internal class AlleleStringLookup : AlleleNamesLookupBase
     {
         private readonly IAlleleStringSplitterService alleleSplitter;
         
@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
             this.alleleSplitter = alleleSplitter;
         }
 
-        protected override async Task<IEnumerable<string>> GetAllelesNames(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName)
         {
             return await Task.Run(() => alleleSplitter.GetAlleleNamesFromAlleleString(lookupName));
         }

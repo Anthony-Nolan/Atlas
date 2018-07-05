@@ -11,7 +11,7 @@ using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal class NmdpCodeLookup : AlleleNameBasedLookup
+    internal class NmdpCodeLookup : AlleleNamesLookupBase
     {
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly IMemoryCache memoryCache;
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
             this.logger = logger;
         }
 
-        protected override async Task<IEnumerable<string>> GetAllelesNames(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName)
         {
             if (memoryCache.TryGetValue($"Antigens_{matchLocus}", out Dictionary<string, string> antigenDictionary)
                 && antigenDictionary.TryGetValue("*" + lookupName, out var alleleString))

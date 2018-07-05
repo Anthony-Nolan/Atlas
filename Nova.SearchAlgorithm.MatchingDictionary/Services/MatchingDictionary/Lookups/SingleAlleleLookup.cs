@@ -5,18 +5,19 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal class AlleleLookup : AlleleNameBasedLookup
+    internal class SingleAlleleLookup : AlleleNamesLookupBase
     {
-        public AlleleLookup(
+        public SingleAlleleLookup(
             IMatchingDictionaryRepository dictionaryRepository,
             IAlleleNamesLookupService alleleNamesLookupService)
             : base(dictionaryRepository, alleleNamesLookupService)
         {
         }
 
-        protected override async Task<IEnumerable<string>> GetAllelesNames(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName)
         {
-            return await Task.FromResult((IEnumerable<string>)new[] { lookupName });
+            return await Task.FromResult(
+                (IEnumerable<string>)new[] { lookupName });
         }
     }
 }

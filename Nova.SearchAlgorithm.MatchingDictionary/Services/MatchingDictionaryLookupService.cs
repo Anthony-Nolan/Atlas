@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 switch (category)
                 {
                     case HlaTypingCategory.Allele:
-                        lookup = new AlleleLookup(dictionaryRepository, alleleNamesLookupService);
+                        lookup = new SingleAlleleLookup(dictionaryRepository, alleleNamesLookupService);
                         break;
                     case HlaTypingCategory.XxCode:
                         lookup = new XxCodeLookup(dictionaryRepository);

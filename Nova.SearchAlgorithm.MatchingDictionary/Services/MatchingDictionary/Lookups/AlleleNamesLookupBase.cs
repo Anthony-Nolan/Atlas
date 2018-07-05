@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal abstract class AlleleNameBasedLookup : MatchingDictionaryLookup
+    /// <summary>
+    /// Base class for all lookups that involve searching the Matching Dictionary
+    /// with one or more allele lookup names.
+    /// </summary>
+    internal abstract class AlleleNamesLookupBase : MatchingDictionaryLookup
     {
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
 
-        protected AlleleNameBasedLookup(
+        protected AlleleNamesLookupBase(
             IMatchingDictionaryRepository dictionaryRepository, IAlleleNamesLookupService alleleNamesLookupService)
                 : base(dictionaryRepository)
         {
@@ -20,18 +24,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
 
         public override async Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            var alleleNamesToLookup = await GetAllelesNames(matchLocus, lookupName);
+            var alleleNamesToLookup = await GetAlleleLookupNames(matchLocus, lookupName);
             var matchingDictionaryEntries = await GetMatchingDictionaryEntries(matchLocus, alleleNamesToLookup);
             var molecularSubtype = GetMolecularSubtype(matchingDictionaryEntries);
 
             return new MatchingDictionaryEntry(matchLocus, lookupName, molecularSubtype, matchingDictionaryEntries);
         }
 
-        protected abstract Task<IEnumerable<string>> GetAllelesNames(MatchLocus matchLocus, string lookupName);
+        protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName);
 
         private async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntries(MatchLocus matchLocus, IEnumerable<string> alleleNamesToLookup)
         {
-            var lookupTasks = alleleNamesToLookup.Select(name => GetEntryForAlleleNameIfExists(matchLocus, name));
+            var lookupTasks = alleleNamesToLookup.Select(name => GetMatchingDictionaryEntryForAlleleNameIfExists(matchLocus, name));
             var lookupResults = await Task.WhenAll(lookupTasks);
             var matchingDictionaryEntries = lookupResults.SelectMany(result => result);
 
@@ -39,26 +43,29 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
         }
 
         /// <summary>
-        /// Query matching dictionary using the submitted allele name.
+        /// Query matching dictionary using the allele lookup name.
         /// If nothing is found, try again using the current version(s) of the allele name.
         /// Else an invalid HLA exception will be thrown.
         /// </summary>
-        private async Task<IEnumerable<MatchingDictionaryEntry>> GetEntryForAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
+        private async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntryForAlleleNameIfExists(
+            MatchLocus matchLocus, string lookupName)
         {
-            if (TryGetEntryByLookupName(matchLocus, lookupName, out var entry))
+            if (TryGetMatchingDictionaryEntryByAlleleLookupName(matchLocus, lookupName, out var entry))
             {
                 return new List<MatchingDictionaryEntry> { entry };
             }
 
-            return await GetEntriesByCurrentNamesIfExists(matchLocus, lookupName);
+            return await GetMatchingDictionaryEntriesByCurrentAlleleNamesIfExists(matchLocus, lookupName);
         }
 
-        private bool TryGetEntryByLookupName(MatchLocus matchLocus, string lookupName, out MatchingDictionaryEntry entry)
+        private bool TryGetMatchingDictionaryEntryByAlleleLookupName(
+            MatchLocus matchLocus, string lookupName, out MatchingDictionaryEntry entry)
         {
             return TryGetMatchingDictionaryEntry(matchLocus, lookupName, TypingMethod.Molecular, out entry);
         }
 
-        private async Task<IEnumerable<MatchingDictionaryEntry>> GetEntriesByCurrentNamesIfExists(MatchLocus matchLocus, string lookupName)
+        private async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntriesByCurrentAlleleNamesIfExists(
+            MatchLocus matchLocus, string lookupName)
         {
             var currentNames = await alleleNamesLookupService.GetCurrentAlleleNames(matchLocus, lookupName);
             var lookupTasks = currentNames.Select(name => GetMatchingDictionaryEntryIfExists(matchLocus, name, TypingMethod.Molecular));
