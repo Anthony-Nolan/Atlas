@@ -8,22 +8,14 @@ namespace Nova.SearchAlgorithm.Common.Exceptions
     public class CloudTableBatchInsertException : Exception
     {
         public CloudTableBatchInsertException(IEnumerable<TableEntity> tableEntities, Exception inner)
-            : base(TableEntitiesToString(tableEntities), inner)
+            : base(GetErrorMessage(tableEntities), inner)
         {
         }
 
-        private static string TableEntitiesToString(IEnumerable<TableEntity> entities)
+        private static string GetErrorMessage(IEnumerable<TableEntity> entities)
         {
-            var entitiesCollection = entities.ToList();
-            var message = "Failed to insert batch: [";
-
-            for (var i = 0; i < entitiesCollection.Count; i++)
-            {
-                var entity = entitiesCollection[i];
-                message += $"{i}: {entity.PartitionKey}, {entity.RowKey}; ";
-            }
-
-            return message + "]";
+            var entitiesAsStrings = entities.Select((entity, i) => $"{i}: {entity.PartitionKey}, {entity.RowKey}");
+            return $"Failed to insert batch: [{string.Join(";", entitiesAsStrings)}]";
         }
     }
 }
