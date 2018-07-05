@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Builders;
@@ -21,9 +23,14 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         private const string PGroupB = "14";
         private const string PGroupDRB1 = "pgDRB1";
 
-        private readonly DonorResult exactMatch = new DonorResult { DonorId = 1 };
-        private readonly DonorResult bothPositionsMatchGroupOne = new DonorResult { DonorId = 2 };
-        private readonly DonorResult bothGroupsMatchPositionOne = new DonorResult { DonorId = 3 };
+        private readonly DonorResult exactMatch =
+            new DonorResult {DonorId = 1, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+
+        private readonly DonorResult bothPositionsMatchGroupOne =
+            new DonorResult {DonorId = 2, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+
+        private readonly DonorResult bothGroupsMatchPositionOne =
+            new DonorResult {DonorId = 3, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
         private IDonorMatchingService matchingService;
 
@@ -34,7 +41,8 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         {
             var donorSearchRepository = GetFake<IDonorSearchRepository>();
             var donorInspectionRepository = GetFake<IDonorInspectionRepository>();
-            matchingService = new DonorMatchingService(donorSearchRepository, donorInspectionRepository);
+            var lookupService = GetFake<IMatchingDictionaryLookupService>();
+            matchingService = new DonorMatchingService(donorSearchRepository, donorInspectionRepository, lookupService);
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
@@ -42,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Repositories
                 HlaMatchFor(Locus.A, TypePositions.Two, TypePositions.Two, exactMatch, PGroupA2),
 
                 HlaMatchFor(Locus.A, TypePositions.One, TypePositions.Both, bothPositionsMatchGroupOne, PGroupA1),
-                
+
                 HlaMatchFor(Locus.A, TypePositions.One, TypePositions.One, bothGroupsMatchPositionOne, PGroupA1),
                 HlaMatchFor(Locus.A, TypePositions.Two, TypePositions.One, bothGroupsMatchPositionOne, PGroupA2),
             });
@@ -77,7 +85,8 @@ namespace Nova.SearchAlgorithm.Test.Repositories
                 .WithLocusMismatchDRB1(PGroupDRB1, PGroupDRB1, 2);
         }
 
-        private PotentialHlaMatchRelation HlaMatchFor(Locus locus, TypePositions searchPosition, TypePositions matchPosition, DonorResult donor, string hlaMatchName)
+        private PotentialHlaMatchRelation HlaMatchFor(Locus locus, TypePositions searchPosition, TypePositions matchPosition, DonorResult donor,
+            string hlaMatchName)
         {
             return new PotentialHlaMatchRelation
             {
@@ -89,50 +98,49 @@ namespace Nova.SearchAlgorithm.Test.Repositories
             };
         }
 
-        private List<PotentialSearchResult> Search(AlleleLevelMatchCriteria criteria)
+        private async Task<List<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
-            var task = matchingService.Search(criteria);
-            task.Wait();
-            return task.Result.ToList();
+            var results = await matchingService.Search(criteria);
+            return results.ToList();
         }
 
         [Test]
-        public void ExactMatchDonorIsReturnedWhenTwoMatchesRequired()
+        public async Task ExactMatchDonorIsReturnedWhenTwoMatchesRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == exactMatch.DonorId);
             results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().TotalMatchCount.Should().Be(6);
         }
 
         [Test]
-        public void SingleMatchDonorOnSearchSideIsNotReturnedWhenTwoMatchesRequired()
+        public async Task SingleMatchDonorOnSearchSideIsNotReturnedWhenTwoMatchesRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().NotContain(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId);
         }
 
         [Test]
-        public void SingleMatchDonorOnMatchSideIsNotReturnedWhenTwoMatchesRequired()
+        public async Task SingleMatchDonorOnMatchSideIsNotReturnedWhenTwoMatchesRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().NotContain(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId);
         }
 
         [Test]
-        public void ExactMatchDonorIsReturnedWhenOneMatchRequired()
+        public async Task ExactMatchDonorIsReturnedWhenOneMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == exactMatch.DonorId);
             results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
@@ -140,11 +148,11 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         }
 
         [Test]
-        public void SingleMatchDonorOnSearchSideIsReturnedWhenOneMatchRequired()
+        public async Task SingleMatchDonorOnSearchSideIsReturnedWhenOneMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId);
             results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
@@ -152,11 +160,11 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         }
 
         [Test]
-        public void SingleMatchDonorOnMatchSideIsReturnedWhenOneMatchRequired()
+        public async Task SingleMatchDonorOnMatchSideIsReturnedWhenOneMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId);
             results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
@@ -164,11 +172,11 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         }
 
         [Test]
-        public void ExactMatchDonorIsReturnedWhenNoMatchRequired()
+        public async Task ExactMatchDonorIsReturnedWhenNoMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == exactMatch.DonorId);
             results.Where(d => d.Donor.DonorId == exactMatch.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(2);
@@ -176,11 +184,11 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         }
 
         [Test]
-        public void SingleMatchDonorOnSearchSideIsReturnedWhenNoMatchRequired()
+        public async Task SingleMatchDonorOnSearchSideIsReturnedWhenNoMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId);
             results.Where(d => d.Donor.DonorId == bothPositionsMatchGroupOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
@@ -188,11 +196,11 @@ namespace Nova.SearchAlgorithm.Test.Repositories
         }
 
         [Test]
-        public void SingleMatchDonorOnMatchSideIsReturnedWhenNoMatchRequired()
+        public async Task SingleMatchDonorOnMatchSideIsReturnedWhenNoMatchRequired()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = Search(criteria);
+            var results = await Search(criteria);
 
             results.Should().Contain(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId);
             results.Where(d => d.Donor.DonorId == bothGroupsMatchPositionOne.DonorId).First().MatchDetailsAtLocusA.MatchCount.Should().Be(1);
