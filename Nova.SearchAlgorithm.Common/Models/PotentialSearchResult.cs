@@ -6,7 +6,25 @@ namespace Nova.SearchAlgorithm.Common.Models
 {
     public class PotentialSearchResult
     {
-        public DonorResult Donor { get; set; }
+        private DonorResult donor;
+
+        // Stored separately from the donors, as the lookup in the matches table only returns the id
+        // We don't want to populate the full donor object until some filtering has been applied on those results
+        public int DonorId { get; set; }
+
+        public DonorResult Donor
+        {
+            get
+            {
+                if (donor == null)
+                {
+                    throw new Exception("Attempted to access expanded donor information before it was populated");
+                }
+
+                return donor;
+            }
+            set => donor = value;
+        }
 
         public int TotalMatchCount
         {

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {
@@ -14,16 +17,24 @@ namespace Nova.SearchAlgorithm.Services.Matching
     public class DonorMatchingService : IDonorMatchingService
     {
         private readonly IDatabaseDonorMatchingService databaseDonorMatchingService;
+        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IMatchingDictionaryLookupService lookupService;
 
-        public DonorMatchingService(IDatabaseDonorMatchingService databaseDonorMatchingService)
+        public DonorMatchingService(IDatabaseDonorMatchingService databaseDonorMatchingService, IDonorInspectionRepository donorInspectionRepository,
+            IMatchingDictionaryLookupService lookupService)
         {
             this.databaseDonorMatchingService = databaseDonorMatchingService;
+            this.donorInspectionRepository = donorInspectionRepository;
+            this.lookupService = lookupService;
         }
 
         public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
             var threeLociMatches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, new List<Locus> {Locus.A, Locus.B, Locus.Drb1});
-            var fiveLociMatches = threeLociMatches.Select(m =>
+
+            var matchesWithDonorInfoPopulated = await Task.WhenAll(threeLociMatches.Select(PopulateDonorDataForMatch));
+
+            var fiveLociMatches = matchesWithDonorInfoPopulated.Select(m =>
             {
                 m.SetMatchDetailsForLocus(Locus.C, new LocusMatchDetails {MatchCount = 0});
                 m.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 0});
@@ -31,6 +42,16 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 return m;
             });
             return fiveLociMatches;
+        }
+
+        private async Task<PotentialSearchResult> PopulateDonorDataForMatch(PotentialSearchResult potentialSearchResult)
+        {
+            // Augment each match with registry and other data from GetDonor(id)
+            // Performance could be improved here, but at least it happens in parallel,
+            // and only after filtering match results, not before.
+            potentialSearchResult.Donor = await donorInspectionRepository.GetDonor(potentialSearchResult.DonorId);
+            potentialSearchResult.Donor.MatchingHla = await potentialSearchResult.Donor.HlaNames.WhenAllPositions((l, p, n) => Lookup(l, n));
+            return potentialSearchResult;
         }
 
         private LocusMatchDetails MatchDetails(AlleleLevelLocusMatchCriteria criteria, ExpandedHla hla1, ExpandedHla hla2)
@@ -79,6 +100,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
                 return matchDetails.MatchCount >= 2 - locusCriteria.MismatchCount;
             };
+        }
+
+        private async Task<ExpandedHla> Lookup(Locus locus, string hla)
+        {
+            if (locus.Equals(Locus.Dpb1))
+            {
+                // TODO:NOVA-1300 figure out how best to lookup matches for Dpb1
+                return null;
+            }
+
+            return hla == null
+                ? null
+                : (await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
         }
     }
 }
