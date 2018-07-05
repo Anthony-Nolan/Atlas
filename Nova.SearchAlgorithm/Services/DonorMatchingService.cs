@@ -36,30 +36,24 @@ namespace Nova.SearchAlgorithm.Services
 
         private async Task<IEnumerable<PotentialSearchResult>> SearchDatabaseForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci)
         {
-            var results = await Task.WhenAll(loci.Select(async l =>
-                new Tuple<Locus, IDictionary<int, DonorAndMatch>>(l,
-                    await FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l)))));
+            var results = await Task.WhenAll(loci.Select(l => FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l))));
 
             var matches = results
-                .Select(r => r.Item2)
                 .SelectMany(r => r)
                 .GroupBy(m => m.Key)
-                .Select(g =>
+                .Select(matchesForDonor =>
                 {
-                    var donorId = g.Key;
+                    var donorId = matchesForDonor.Key;
                     var result = new PotentialSearchResult
                     {
-                        Donor = g.First().Value.Donor ?? new DonorResult {DonorId = donorId},
+                        Donor = matchesForDonor.First().Value.Donor ?? new DonorResult {DonorId = donorId},
                     };
-                    foreach (var lociResults in results)
+                    foreach (var locus in loci)
                     {
-                        var locus = lociResults.Item1;
-                        var matchesAtLocus = lociResults.Item2;
-                        
-                        var locusMatchDetails = matchesAtLocus.ContainsKey(donorId) ? matchesAtLocus[donorId].Match : new LocusMatchDetails { MatchCount = 0 };
+                        var matchesAtLocus = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
+                        var locusMatchDetails = matchesAtLocus.Value != null ? matchesAtLocus.Value.Match : new LocusMatchDetails { MatchCount = 0 };
                         result.SetMatchDetailsForLocus(locus, locusMatchDetails);
                     }
-
                     return result;
                 })
                 .Where(m => m.TotalMatchCount >= 6 - criteria.DonorMismatchCount)
@@ -79,9 +73,9 @@ namespace Nova.SearchAlgorithm.Services
             return matchesWithDonorInfoExpanded;
         }
 
-        private async Task<IDictionary<int, DonorAndMatch>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
+        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
         {
-            LocusSearchCriteria repoCriteria = new LocusSearchCriteria
+            var repoCriteria = new LocusSearchCriteria
             {
                 SearchType = searchType,
                 Registries = registriesToSearch,
@@ -91,20 +85,21 @@ namespace Nova.SearchAlgorithm.Services
 
             var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
                 .GroupBy(m => m.DonorId)
-                .ToDictionary(g => g.Key, DonorAndMatchFromGroup);
+                .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 
             return matches;
         }
 
-        private DonorAndMatch DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group)
+        private DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
         {
-            return new DonorAndMatch
+            return new DonorAndMatchForLocus
             {
                 Donor = group.First()?.Donor,
                 Match = new LocusMatchDetails
                 {
                     MatchCount = DirectMatch(group) || CrossMatch(group) ? 2 : 1
-                }
+                },
+                Locus = locus
             };
         }
 
@@ -119,7 +114,7 @@ namespace Nova.SearchAlgorithm.Services
             return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.Two))
                    && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One));
         }
-        
+
         private Func<PotentialSearchResult, PotentialSearchResult> AddMatchCounts(AlleleLevelMatchCriteria criteria)
         {
             // TODO:NOVA-1289 (create tests and) add match counts based on C and DBQR
@@ -198,10 +193,11 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private class DonorAndMatch
+        private class DonorAndMatchForLocus
         {
             public LocusMatchDetails Match { get; set; }
             public DonorResult Donor { get; set; }
+            public Locus Locus { get; set; }
         }
     }
 }
