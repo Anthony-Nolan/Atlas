@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 .Where(m => m.TotalMatchCount >= (loci.Count() * 2) - criteria.DonorMismatchCount)
                 .Where(m => loci.All(l => m.MatchDetailsForLocus(l).MatchCount >= 2 - criteria.MatchCriteriaForLocus(l).MismatchCount));
             
-            return matches;
+            return matches.ToList();
         }
 
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
