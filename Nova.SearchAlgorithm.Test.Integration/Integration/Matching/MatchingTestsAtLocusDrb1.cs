@@ -198,7 +198,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
         }
 
         [Test]
-        public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtA()
+        public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocusDrb1()
         {
             var results = await matchingService.Search(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusDrb1.DonorId);
