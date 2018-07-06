@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using Autofac;
 using Microsoft.ApplicationInsights;
@@ -12,7 +13,6 @@ using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
 using Nova.Utils.ApplicationInsights;
@@ -41,21 +41,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         [OneTimeSetUp]
         public void Setup()
         {
-            // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
-            tableStorageEmulator.Clear();
-
-            // Starting the cosmos emulator is currently a manual step.
-            if (DonorStorageImplementation.Cosmos.Equals(donorStorageImplementation))
-            {
-                cosmosDatabase.Clear();
-            }
-
             container = CreateContainer();
-
-            if (container.TryResolve(out SearchAlgorithmContext context))
-            {
-                context.Database.Delete();
-            }
+            ClearDatabase();
         }
 
         // This is almost a duplicate of the container in 
@@ -127,6 +114,32 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
             return builder.Build();
+        }
+
+        /// <summary>
+        /// Clears the test database. Can be accessed by fixtures to run after each fixture, but not after each test.
+        /// </summary>
+        protected void ClearDatabase()
+        {
+            switch (donorStorageImplementation)
+            {
+                case DonorStorageImplementation.CloudTable:
+                    // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
+                    tableStorageEmulator.Clear();
+                    break;
+                // Starting the cosmos emulator is currently a manual step.
+                case DonorStorageImplementation.Cosmos:
+                    cosmosDatabase.Clear();
+                    break;
+                case DonorStorageImplementation.SQL:
+                    if (container.TryResolve(out SearchAlgorithmContext context))
+                    {
+                        context.Database.Delete();
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 
