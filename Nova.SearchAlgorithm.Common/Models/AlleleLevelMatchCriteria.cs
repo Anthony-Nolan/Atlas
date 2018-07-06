@@ -34,6 +34,33 @@ namespace Nova.SearchAlgorithm.Common.Models
                     throw new NotImplementedException();
             }
         }
+
+        public IEnumerable<Locus> LociWithCriteriaSpecified()
+        {
+            var loci = new List<Locus>();
+            if (LocusMismatchA != null)
+            {
+                loci.Add(Locus.A);
+            }
+            if (LocusMismatchB != null)
+            {
+                loci.Add(Locus.B);
+            }
+            if (LocusMismatchC != null)
+            {
+                loci.Add(Locus.C);
+            }
+            if (LocusMismatchDRB1 != null)
+            {
+                loci.Add(Locus.Drb1);
+            }
+            if (LocusMismatchDQB1 != null)
+            {
+                loci.Add(Locus.Dpb1);
+            }
+
+            return loci;
+        }
     }
 
     public class AlleleLevelLocusMatchCriteria

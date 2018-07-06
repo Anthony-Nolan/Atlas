@@ -36,34 +36,41 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
-            var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, new List<Locus> {Locus.B, Locus.Drb1});
+            var allLoci = new List<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
+            var lociToSearch = criteria.LociWithCriteriaSpecified().ToList();
+            
+            // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
+            var lociToMatchInDatabase = new List<Locus> {Locus.A, Locus.B, Locus.Drb1}.Intersect(lociToSearch);
+            var lociToMatchInMemory = new List<Locus> {Locus.C, Locus.Dqb1}.Intersect(lociToSearch);
+
+            var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, lociToMatchInDatabase);
 
             var matchesWithDonorInfoPopulated = await Task.WhenAll(matches.Select(PopulateDonorDataForMatch));
 
-            var lociToMatchInMemory = new List<Locus> {Locus.A};
             foreach (var locus in lociToMatchInMemory)
             {
+                var locusCriteria = criteria.MatchCriteriaForLocus(locus);
                 foreach (var match in matchesWithDonorInfoPopulated)
                 {
-                    var matchDetails = donorMatchCalculator
-                        .CalculateMatchDetailsForDonorHla(criteria.MatchCriteriaForLocus(locus), match.Donor.MatchingHla.DataAtLocus(locus));
+                    var donorDataAtLocus = match.Donor.MatchingHla.DataAtLocus(locus);
+                    var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(locusCriteria, donorDataAtLocus);
                     match.SetMatchDetailsForLocus(locus, matchDetails);
                 }
+
                 matchesWithDonorInfoPopulated = matchesWithDonorInfoPopulated
-                        // TODO: Commonise filtering logic, used here and in database matching layer. Wants to be done after each locus to reduce number of results for next calculation
-                    .Where(m => lociToMatchInMemory.All(l => m.MatchDetailsForLocus(l).MatchCount >= 2 - criteria.MatchCriteriaForLocus(l).MismatchCount))
+                    // TODO: Commonise filtering logic, used here and in database matching layer. Wants to be done after each locus to reduce number of results for next calculation
+                    .Where(m => m.MatchDetailsForLocus(locus).MatchCount >= 2 - locusCriteria.MismatchCount)
                     .ToArray();
             }
 
-            var fiveLociMatches = matchesWithDonorInfoPopulated.Select(m =>
+            // TODO: Figure out if this is the best way to handle loci with no patient data specified
+            foreach (var locus in allLoci.Except(lociToSearch))
             {
-                m.SetMatchDetailsForLocus(Locus.C, new LocusMatchDetails {MatchCount = 0});
-                m.SetMatchDetailsForLocus(Locus.Dqb1, new LocusMatchDetails {MatchCount = 0});
-                return m;
-            });
-            
+                matchesWithDonorInfoPopulated.ToList().ForEach(m => m.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0}));
+            }
+
             // TODO: Commonise with total score in databse matching, use number of populated loci? 
-            return fiveLociMatches.Where(m => m.TotalMatchCount >= 6 - criteria.DonorMismatchCount);
+            return matchesWithDonorInfoPopulated.Where(m => m.TotalMatchCount >= 6 - criteria.DonorMismatchCount);
         }
 
         // TODO: NOVA-1289: Lookup PGroups from matches table, rather than fetching donor and performing lookup again - with an index on DonorId it should be faster. (We will still need to fetch donor type + registry later)

@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// <returns>
         /// A collection of PotentialSearchResults, with donor id populated. MatchDetails will be populated only for the specified loci
         /// </returns>
-        Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci);
+        Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IEnumerable<Locus> loci);
     }
     
     public class DatabaseDonorDonorMatchingService: IDatabaseDonorMatchingService
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             this.donorSearchRepository = donorSearchRepository;
         }
         
-        public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IReadOnlyList<Locus> loci)
+        public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IEnumerable<Locus> loci)
         {
             if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
             {
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                     }
                     return result;
                 })
-                .Where(m => m.TotalMatchCount >= (loci.Count * 2) - criteria.DonorMismatchCount)
+                .Where(m => m.TotalMatchCount >= (loci.Count() * 2) - criteria.DonorMismatchCount)
                 .Where(m => loci.All(l => m.MatchDetailsForLocus(l).MatchCount >= 2 - criteria.MatchCriteriaForLocus(l).MismatchCount));
             
             return matches;
