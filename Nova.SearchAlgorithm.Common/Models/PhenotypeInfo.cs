@@ -152,5 +152,74 @@ namespace Nova.SearchAlgorithm.Common.Models
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
         }
+
+        public void SetAtLocus(Locus locus, TypePositions positions, T value)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    {
+                        A_1 = value;
+                    }
+                    if (positions == TypePositions.Two || positions == TypePositions.Both)
+                    {
+                        A_2 = value;
+                    }
+                    break;
+                case Locus.B:
+                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    {
+                        B_1 = value;
+                    }
+                    if (positions == TypePositions.Two || positions == TypePositions.Both)
+                    {
+                        B_2 = value;
+                    }
+                    break;
+                case Locus.C:
+                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    {
+                        C_1 = value;
+                    }
+                    if (positions == TypePositions.Two || positions == TypePositions.Both)
+                    {
+                        C_2 = value;
+                    }
+                    break;
+                case Locus.Dpb1:
+                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    {
+                        DPB1_1 = value;
+                    }
+                    if (positions == TypePositions.Two || positions == TypePositions.Both)
+                    {
+                        DPB1_2 = value;
+                    }
+                    break;
+                case Locus.Dqb1:
+                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    {
+                        DQB1_1 = value;
+                    }
+                    if (positions == TypePositions.Two || positions == TypePositions.Both)
+                    {
+                        DQB1_2 = value;
+                    }
+                    break;
+                case Locus.Drb1:
+                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    {
+                        DRB1_1 = value;
+                    }
+                    if (positions == TypePositions.Two || positions == TypePositions.Both)
+                    {
+                        DRB1_2 = value;
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+            }
+        }
     }
 }

@@ -171,6 +171,7 @@
       <DependentUpon>201807031238594_Separate-Matches-By-Locus.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\DonorMatch.cs" />
+    <Compile Include="Models\DonorMatchWithName.cs" />
     <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
     <Compile Include="Entity\MatchingHla.cs" />
     <Compile Include="Entity\MatchingHlaAtDqb1.cs" />

@@ -8,5 +8,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         Task<int> HighestDonorId();
         IBatchQueryAsync<DonorResult> AllDonors();
         Task<DonorResult> GetDonor(int donorId);
+        Task<PhenotypeInfo<ExpandedHla>> GetExpandedHlaForDonor(int donorId);
     }
 }

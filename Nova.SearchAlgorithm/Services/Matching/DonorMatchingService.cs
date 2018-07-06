@@ -19,19 +19,16 @@ namespace Nova.SearchAlgorithm.Services.Matching
         private readonly IDatabaseDonorMatchingService databaseDonorMatchingService;
         private readonly IDonorMatchCalculator donorMatchCalculator;
         private readonly IDonorInspectionRepository donorInspectionRepository;
-        private readonly IMatchingDictionaryLookupService lookupService;
 
         public DonorMatchingService(
             IDatabaseDonorMatchingService databaseDonorMatchingService,
             IDonorMatchCalculator donorMatchCalculator,
-            IDonorInspectionRepository donorInspectionRepository,
-            IMatchingDictionaryLookupService lookupService
+            IDonorInspectionRepository donorInspectionRepository
         )
         {
             this.databaseDonorMatchingService = databaseDonorMatchingService;
             this.donorMatchCalculator = donorMatchCalculator;
             this.donorInspectionRepository = donorInspectionRepository;
-            this.lookupService = lookupService;
         }
 
         public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
@@ -41,8 +38,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
             // Need to consider the 2 mismatch case for a locus - the database search will assume at least one match, so is not suitable for two mismatch loci
-            var lociToMatchInDatabase = new List<Locus> {Locus.A, Locus.B, Locus.Drb1}.Intersect(lociToSearch).ToList();
-            var lociToMatchInMemory = new List<Locus> {Locus.C, Locus.Dqb1}.Intersect(lociToSearch);
+            var lociToMatchInDatabase = new List<Locus> {Locus.B, Locus.Drb1}.Intersect(lociToSearch).ToList();
+            var lociToMatchInMemory = new List<Locus> {Locus.A, Locus.C, Locus.Dqb1}.Intersect(lociToSearch);
 
             var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, lociToMatchInDatabase);
 
@@ -95,21 +92,13 @@ namespace Nova.SearchAlgorithm.Services.Matching
             // Performance could be improved here, but at least it happens in parallel,
             // and only after filtering match results, not before.
             potentialSearchResult.Donor = await donorInspectionRepository.GetDonor(potentialSearchResult.DonorId);
-            potentialSearchResult.Donor.MatchingHla = await potentialSearchResult.Donor.HlaNames.WhenAllPositions((l, p, n) => Lookup(l, n));
+
+            // Note that this will only populate PGroups in the expanded HLA object returned. This should be enough for matching, but is not ideal
+            // TODO: Just fetch p-groups and filter on p-groups, only expand donro once all filtering finished
+            var expandedHla = await donorInspectionRepository.GetExpandedHlaForDonor(potentialSearchResult.DonorId);
+            
+            potentialSearchResult.Donor.MatchingHla = expandedHla;
             return potentialSearchResult;
-        }
-
-        private async Task<ExpandedHla> Lookup(Locus locus, string hla)
-        {
-            if (locus.Equals(Locus.Dpb1))
-            {
-                // TODO:NOVA-1300 figure out how best to lookup matches for Dpb1
-                return null;
-            }
-
-            return hla == null
-                ? null
-                : (await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
         }
     }
 }

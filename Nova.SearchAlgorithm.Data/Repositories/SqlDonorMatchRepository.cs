@@ -83,6 +83,31 @@ GROUP BY DonorId, TypePosition";
             }
         }
 
+        public async Task<PhenotypeInfo<ExpandedHla>> GetExpandedHlaForDonor(int donorId)
+        {
+            var result = new PhenotypeInfo<ExpandedHla>();
+            using (var conn = new SqlConnection(connectionString))
+            {
+                // TODO: Extension method, this is done in a few places
+                var allLoci = Enum.GetValues(typeof(Locus)).Cast<Locus>();
+                foreach (var locus in allLoci.Except(new[] {Locus.Dpb1}))
+                {
+                    var pGroups = await conn.QueryAsync<DonorMatchWithName>($@"
+SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableName(locus)} m
+JOIN PGroupNames p 
+ON m.PGroup_Id = p.Id
+WHERE DonorId = {donorId}
+");
+                    foreach (var pGroupGroup in pGroups.GroupBy(p => (TypePositions) p.TypePosition))
+                    {
+                        result.SetAtLocus(locus, pGroupGroup.Key, new ExpandedHla{ PGroups = pGroupGroup.Select(p => p.PGroupName) });
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public async Task InsertDonor(RawInputDonor donor)
         {
             context.Donors.Add(donor.ToDonorEntity());
