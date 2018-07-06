@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matchDetails;
         }
 
-        private bool DirectMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
+        private static bool DirectMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;
@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                    locusMatchCriteria.HlaNamesToMatchInPositionTwo.Any(pg => hla2.PGroups.Contains(pg));
         }
 
-        private bool CrossMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
+        private static bool CrossMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;

@@ -96,13 +96,13 @@ namespace Nova.SearchAlgorithm.Services.Matching
             };
         }
 
-        private bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
+        private static bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
         {
             return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.One))
                    && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.Two));
         }
 
-        private bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
+        private static bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
         {
             return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.Two))
                    && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One));
