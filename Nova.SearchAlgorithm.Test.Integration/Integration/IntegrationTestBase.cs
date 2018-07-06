@@ -15,6 +15,7 @@ using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
+using Nova.SearchAlgorithm.Test.Integration.Integration.Storage;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
@@ -43,6 +44,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         {
             container = CreateContainer();
             ClearDatabase();
+            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            {
+                tableStorageEmulator.Start();
+            }
+        }
+        
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            {
+                tableStorageEmulator.Stop();
+            }
         }
 
         // This is almost a duplicate of the container in 

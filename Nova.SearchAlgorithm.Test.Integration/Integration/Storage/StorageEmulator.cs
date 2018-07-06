@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.Integration.Storage
 {
     public class StorageEmulator
     {
