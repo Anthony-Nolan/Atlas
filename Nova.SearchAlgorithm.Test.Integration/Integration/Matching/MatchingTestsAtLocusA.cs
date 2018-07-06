@@ -23,6 +23,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
         
         private readonly List<string> pGroupsAtB = new List<string> { "07:02P" };
         private readonly List<string> pGroupsAtDrb = new List<string> { "01:11P" };
+        
+        private const string PatientPGroupAtBothPositions = "01:01P";
+        private const string PatientPGroupAtPositionOne = "01:02";
+        private const string PatientPGroupAtPositionTwo = "02:01";
 
         public MatchingTestsAtLocusA(DonorStorageImplementation param) : base(param) { }
 
@@ -47,8 +51,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 DonorId = 1,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "01:02" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
+                    A_1 = new ExpandedHla { PGroups = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionOne } },
+                    A_2 = new ExpandedHla { PGroups = new List<string> { PatientPGroupAtBothPositions, "30:02P" } },
                     B_1 = new ExpandedHla { PGroups = pGroupsAtB },
                     B_2 = new ExpandedHla { PGroups = pGroupsAtB },
                     DRB1_1 = new ExpandedHla { PGroups = pGroupsAtDrb },
@@ -64,8 +68,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 DonorId = 2,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "02:01", "30:02P" } },
+                    A_1 = new ExpandedHla { PGroups = new List<string> { PatientPGroupAtBothPositions, "30:02P" } },
+                    A_2 = new ExpandedHla { PGroups = new List<string> { PatientPGroupAtPositionTwo, "30:02P" } },
                     B_1 = new ExpandedHla { PGroups = pGroupsAtB },
                     B_2 = new ExpandedHla { PGroups = pGroupsAtB },
                     DRB1_1 = new ExpandedHla { PGroups = pGroupsAtDrb },
@@ -81,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 DonorId = 3,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
+                    A_1 = new ExpandedHla { PGroups = new List<string> { PatientPGroupAtBothPositions, "30:02P" } },
                     A_2 = new ExpandedHla { PGroups = new List<string> { "26:04", "30:02P" } },
                     B_1 = new ExpandedHla { PGroups = pGroupsAtB },
                     B_2 = new ExpandedHla { PGroups = pGroupsAtB },
@@ -98,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 DonorId = 4,
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:02", "02:01" } },
+                    A_1 = new ExpandedHla { PGroups = new List<string> { PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo } },
                     A_2 = new ExpandedHla { PGroups = new List<string> { "26:04", "30:02P" } },
                     B_1 = new ExpandedHla { PGroups = pGroupsAtB },
                     B_2 = new ExpandedHla { PGroups = pGroupsAtB },
@@ -137,8 +141,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 LocusMismatchA = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
+                    HlaNamesToMatchInPositionOne = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionOne },
+                    HlaNamesToMatchInPositionTwo = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionTwo }
                 },
                 LocusMismatchB = new AlleleLevelLocusMatchCriteria
                 {
