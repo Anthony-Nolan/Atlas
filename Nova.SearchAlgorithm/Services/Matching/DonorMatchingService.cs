@@ -40,6 +40,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             var lociToSearch = criteria.LociWithCriteriaSpecified().ToList();
 
             // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
+            // Need to consider the 2 mismatch case for a locus - the database search will assume at least one match, so is not suitable for two mismatch loci
             var lociToMatchInDatabase = new List<Locus> {Locus.A, Locus.B, Locus.Drb1}.Intersect(lociToSearch).ToList();
             var lociToMatchInMemory = new List<Locus> {Locus.C, Locus.Dqb1}.Intersect(lociToSearch);
 
