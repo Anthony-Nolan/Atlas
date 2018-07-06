@@ -22,11 +22,11 @@ namespace Nova.SearchAlgorithm.Services.Matching
         Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci);
     }
     
-    public class DatabaseDonorDonorMatchingService: IDatabaseDonorMatchingService
+    public class DatabaseDonorMatchingService: IDatabaseDonorMatchingService
     {
         private readonly IDonorSearchRepository donorSearchRepository;
 
-        public DatabaseDonorDonorMatchingService(IDonorSearchRepository donorSearchRepository)
+        public DatabaseDonorMatchingService(IDonorSearchRepository donorSearchRepository)
         {
             this.donorSearchRepository = donorSearchRepository;
         }

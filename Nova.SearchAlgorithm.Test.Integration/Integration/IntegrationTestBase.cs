@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DatabaseDonorDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();

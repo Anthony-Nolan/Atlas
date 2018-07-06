@@ -12,12 +12,18 @@ namespace Nova.SearchAlgorithm.Test.Services
     {
         private IDonorMatchCalculator donorMatchCalculator;
 
+        // ReSharper disable once InconsistentNaming
         private const string PatientPGroup1_1 = "p-group1-1";
+        // ReSharper disable once InconsistentNaming
         private const string PatientPGroup1_2 = "p-group1-2";
 
         private const string PatientPGroup2 = "p-group2";
 
+        private const string NonMatchingPGroup = "p-group-that-does-not-match-either-patient-p-group";
+        private const string ArbitraryPGroup = "arbitrary-p-group";
+
         // Use constant patient hla data to make tests shorter
+
         private readonly AlleleLevelLocusMatchCriteria defaultCriteria = new AlleleLevelLocusMatchCriteria()
         {
             HlaNamesToMatchInPositionOne = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
@@ -35,7 +41,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public void CalculateMatchesForDonors_WhenNoPGroupsMatch_ReturnsMatchCountOfZero()
         {
-            var donorPGroups = new ExpandedHla {PGroups = new List<string>{"DOES NOT MATCH"}};
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups, donorPGroups);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
@@ -44,21 +50,9 @@ namespace Nova.SearchAlgorithm.Test.Services
         }
 
         [Test]
-        public void CalculateMatchesForDonors_WhenBothExpandedHlaNull_ReturnsMatchCountOfTwo()
+        public void CalculateMatchesForDonors_WhenDonorNotTypedAtLocus_ReturnsMatchCountOfTwo()
         {
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(null, null);
-
-            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
-
-            matchDetails.MatchCount.Should().Be(2);
-        }
-        
-        // This should never happen, but if either hla data at a locus is missing, we will assume it is untyped
-        [Test]
-        public void CalculateMatchesForDonors_WhenOneExpandedHlaNullAndOtherDoesNotMatch_ReturnsMatchCountOfTwo()
-        {
-            var donorPGroups = new ExpandedHla {PGroups = new List<string>{"DOES NOT MATCH"}};
-            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(null, donorPGroups);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -93,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         public void CalculateMatchesForDonors_ForSingleDirectMatchAtPositionOne_ReturnsMatchCountOfOne()
         {
             var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{PatientPGroup1_1}};
-            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{"NOT A MATCH"}};
+            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
@@ -104,7 +98,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public void CalculateMatchesForDonors_ForSingleDirectMatchAtPositionTwo_ReturnsMatchCountOfOne()
         {
-            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{"NOT A MATCH"}};
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{PatientPGroup2}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
 
@@ -117,7 +111,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         public void CalculateMatchesForDonors_WhenDonorPositionOneMatchesPatientPositionTwo_ReturnsMatchCountOfOne()
         {
             var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{PatientPGroup2}};
-            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
@@ -128,7 +122,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public void CalculateMatchesForDonors_WhenDonorPositionTwoMatchesPatientPositionOne_ReturnsMatchCountOfOne()
         {
-            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{PatientPGroup1_2}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
 
@@ -140,7 +134,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public void CalculateMatchesForDonors_WhenOneDonorPositionMatchesBothPatientPositions_ReturnsMatchCountOfOne()
         {
-            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{PatientPGroup1_2, PatientPGroup2}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
 
@@ -164,7 +158,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public void CalculateMatchesForDonors_WhenMultiplePGroupsMatchForASinglePosition_ReturnsMatchCountOfOne()
         {
-            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
             var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{PatientPGroup1_1, PatientPGroup1_2}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
 
@@ -180,38 +174,14 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public void CalculateMatchesForDonors_WhenBothDonorPositionsHaveData_ReturnsIsLocusTypedTrue()
         {
-            var donorPGroups = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{ArbitraryPGroup}};
             var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups, donorPGroups);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
             matchDetails.IsLocusTyped.Should().BeTrue();
         }        
-        
-        [Test]
-        public void CalculateMatchesForDonors_WhenDonorPositionOneNull_ReturnsIsLocusTypedFalse()
-        {
-            var donorPGroups = new ExpandedHla {PGroups = new List<string>{""}};
-            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(null, donorPGroups);
 
-            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
-
-            matchDetails.IsLocusTyped.Should().BeFalse();
-        }
-              
-        
-        [Test]
-        public void CalculateMatchesForDonors_WhenDonorPositionTwoNull_ReturnsIsLocusTypedFalse()
-        {
-            var donorPGroups = new ExpandedHla {PGroups = new List<string>{""}};
-            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups, null);
-
-            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
-
-            matchDetails.IsLocusTyped.Should().BeFalse();
-        }
-              
-        
         [Test]
         public void CalculateMatchesForDonors_WhenBothDonorPositionsNull_ReturnsIsLocusTypedFalse()
         {
@@ -223,5 +193,24 @@ namespace Nova.SearchAlgorithm.Test.Services
         }
         
         #endregion
+        
+        [Test]
+        public void CalculateMatchesForDonors_WhenOnlyDonorPositionOneNull_ThrowsException()
+        {
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{ArbitraryPGroup}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(null, donorPGroups);
+
+            Assert.Throws<ArgumentException>(() =>donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla));
+        }
+              
+        
+        [Test]
+        public void CalculateMatchesForDonors_WhenOnlyDonorPositionTwoNull_ThrowsException()
+        {
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{ArbitraryPGroup}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups, null);
+
+            Assert.Throws<ArgumentException>(() =>donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla));
+        }
     }
 }

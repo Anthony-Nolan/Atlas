@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Common.Models
             }
             if (LocusMismatchDQB1 != null)
             {
-                loci.Add(Locus.Dpb1);
+                loci.Add(Locus.Dqb1);
             }
 
             return loci;

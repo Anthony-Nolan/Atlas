@@ -18,6 +18,11 @@ namespace Nova.SearchAlgorithm.Services.Matching
             Tuple<ExpandedHla, ExpandedHla> expandedHla
         )
         {
+            if (expandedHla.Item1 == null ^ expandedHla.Item2 == null)
+            {
+                throw new ArgumentException("Locus cannot be partially typed. Either both positions should have data, or both should be null - check the validity of the matching data.");
+            }
+            
             return new LocusMatchDetails
             {
                 MatchCount = CalculateMatchCount(locusMatchCriteria, expandedHla),

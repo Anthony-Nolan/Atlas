@@ -71,6 +71,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                     matchDetails = MatchDetailsAtLocusDrb1;
                     break;
                 case Locus.Dpb1:
+                    // TODO: NOVA-1300 implement matching for Dpb1
                     throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException();

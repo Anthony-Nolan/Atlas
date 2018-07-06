@@ -13,7 +13,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Services
 {
     [TestFixture]
-    public class DatabaseDonorMatchingServiceTests : TestBase<DatabaseDonorDonorMatchingService>
+    public class DatabaseDonorMatchingServiceTests : TestBase<DatabaseDonorMatchingService>
     {
         private const string PGroupA1 = "p1";
         private const string PGroupA1_alternative = "p1a";
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         public void SetUp()
         {
             var donorSearchRepository = GetFake<IDonorSearchRepository>();
-            donorMatchingService = new DatabaseDonorDonorMatchingService(donorSearchRepository);
+            donorMatchingService = new DatabaseDonorMatchingService(donorSearchRepository);
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
             {
