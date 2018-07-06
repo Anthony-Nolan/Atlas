@@ -30,6 +30,8 @@ namespace Nova.SearchAlgorithm.Test.Services
             donorMatchCalculator = new DonorMatchCalculator();
         }
 
+        #region MatchCount Tests
+        
         [Test]
         public void CalculateMatchesForDonors_WhenNoPGroupsMatch_ReturnsMatchCountOfZero()
         {
@@ -170,5 +172,56 @@ namespace Nova.SearchAlgorithm.Test.Services
 
             matchDetails.MatchCount.Should().Be(1);
         }
+
+        #endregion
+        
+        #region IsLocusTyped Tests
+        
+        [Test]
+        public void CalculateMatchesForDonors_WhenBothDonorPositionsHaveData_ReturnsIsLocusTypedTrue()
+        {
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups, donorPGroups);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
+
+            matchDetails.IsLocusTyped.Should().BeTrue();
+        }        
+        
+        [Test]
+        public void CalculateMatchesForDonors_WhenDonorPositionOneNull_ReturnsIsLocusTypedFalse()
+        {
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(null, donorPGroups);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
+
+            matchDetails.IsLocusTyped.Should().BeFalse();
+        }
+              
+        
+        [Test]
+        public void CalculateMatchesForDonors_WhenDonorPositionTwoNull_ReturnsIsLocusTypedFalse()
+        {
+            var donorPGroups = new ExpandedHla {PGroups = new List<string>{""}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups, null);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
+
+            matchDetails.IsLocusTyped.Should().BeFalse();
+        }
+              
+        
+        [Test]
+        public void CalculateMatchesForDonors_WhenBothDonorPositionsNull_ReturnsIsLocusTypedFalse()
+        {
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(null, null);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
+
+            matchDetails.IsLocusTyped.Should().BeFalse();
+        }
+        
+        #endregion
     }
 }
