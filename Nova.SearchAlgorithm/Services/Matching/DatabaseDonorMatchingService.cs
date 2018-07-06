@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// <returns>
         /// A collection of PotentialSearchResults, with donor id populated. MatchDetails will be populated only for the specified loci
         /// </returns>
-        Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IEnumerable<Locus> loci);
+        Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci);
     }
     
     public class DatabaseDonorDonorMatchingService: IDatabaseDonorMatchingService
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             this.donorSearchRepository = donorSearchRepository;
         }
         
-        public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IEnumerable<Locus> loci)
+        public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
         {
             if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
             {
@@ -90,19 +90,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 DonorId = group.Key,
                 Match = new LocusMatchDetails
                 {
-                    MatchCount = DirectMatch(group) || CrossMatch(group) ? 2 : 1
+                    MatchCount = DirectMatch(group.ToList()) || CrossMatch(group.ToList()) ? 2 : 1
                 },
                 Locus = locus
             };
         }
 
-        private bool DirectMatch(IEnumerable<PotentialHlaMatchRelation> matches)
+        private bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
         {
             return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.One))
                    && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.Two));
         }
 
-        private bool CrossMatch(IEnumerable<PotentialHlaMatchRelation> matches)
+        private bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
         {
             return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.Two))
                    && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One));
