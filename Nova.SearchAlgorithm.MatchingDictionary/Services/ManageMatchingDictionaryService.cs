@@ -35,11 +35,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             try
             {
-                var allMatchedHla = matchingService.GetMatchedHla();
-                var entries = allMatchedHla.ToMatchingDictionaryEntries();
-
-                await RecreateAlleleNames();
-                await dictionaryRepository.RecreateMatchingDictionaryTable(entries);
+                // Matching dictionary lookups require an up-to-date collection of allele names,
+                // so both collections must be recreated together; the order of execution is not important.
+                await Task.WhenAll(
+                    RecreateAlleleNames(),
+                    RecreateMatchingDictionaryEntries()
+                    );
             }
             catch (Exception ex)
             {
@@ -47,14 +48,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             }
         }
 
-        /// <summary>
-        /// The Allele Names collection must be recreated at the same time as the matching dictionary,
-        /// so that lookups will have access to an up-to-date collection of Allele Names.
-        /// </summary>
-        /// <returns></returns>
         private async Task RecreateAlleleNames()
         {
             await alleleNamesService.RecreateAlleleNames();
+        }
+
+        private async Task RecreateMatchingDictionaryEntries()
+        {
+            var allMatchedHla = matchingService.GetMatchedHla();
+            var entries = allMatchedHla.ToMatchingDictionaryEntries();
+            await dictionaryRepository.RecreateMatchingDictionaryTable(entries);
         }
     }
 }

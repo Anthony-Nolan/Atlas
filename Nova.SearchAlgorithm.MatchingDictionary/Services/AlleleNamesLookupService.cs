@@ -29,12 +29,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             try
             {
-                if (!TryPrepareAlleleNameForLookup(alleleLookupName, out var preparedLookupName))
+                if (!AlleleNameIsValid(alleleLookupName))
                 {
                     throw new ArgumentException($"{alleleLookupName} is not an allele name.");
                 }
 
-                return await PerformAlleleNameLookup(matchLocus, preparedLookupName);
+                var formattedLookupName = FormatAlleleLookupName(alleleLookupName);
+
+                return await PerformAlleleNameLookup(matchLocus, formattedLookupName);
             }
             catch (Exception ex)
             {
@@ -43,17 +45,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             }
         }
 
-        private bool TryPrepareAlleleNameForLookup(string submittedLookupName, out string preparedLookupName)
+        private bool AlleleNameIsValid(string alleleLookupName)
         {
-            if (string.IsNullOrEmpty(submittedLookupName) ||
-                    hlaCategorisationService.GetHlaTypingCategory(submittedLookupName) != HlaTypingCategory.Allele)
-            {
-                preparedLookupName = submittedLookupName;
-                return false;
-            }
+            return !string.IsNullOrEmpty(alleleLookupName) && 
+                hlaCategorisationService.GetHlaTypingCategory(alleleLookupName) == HlaTypingCategory.Allele;
+        }
 
-            preparedLookupName = submittedLookupName.Trim().TrimStart('*');
-            return true;
+        private static string FormatAlleleLookupName(string alleleLookupName)
+        {
+            return alleleLookupName.Trim().TrimStart('*');
         }
 
         private async Task<IEnumerable<string>> PerformAlleleNameLookup(MatchLocus matchLocus, string alleleLookupName)
