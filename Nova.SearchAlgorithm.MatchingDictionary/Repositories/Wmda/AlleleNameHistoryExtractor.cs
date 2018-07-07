@@ -10,14 +10,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     {
         private const string FileName = "Allelelist_history";
         private const string ColumnDelimiter = ",";
+        private const string OldestHlaDatabaseVersionToImport = "3000";
         private const string ColumnNamesRegexPattern =
-            "^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}3000";
+            "^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaDatabaseVersionToImport;
         private const string AlleleHistoryRegexPattern = @"^HLA\d+,.+$";
         private const string NoAlleleNamePlaceHolder = "NA";
         private const string MolecularPrefix = "*";
         private const string AlleleNameRegexPattern = @"\" + MolecularPrefix + @"([\w:]+)";
 
-        private bool hlaDatabaseVersionsHaveBeenExtracted;
         private IEnumerable<string> hlaDatabaseVersions;
 
         public AlleleHistoryExtractor() : base(FileName)
@@ -26,13 +26,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         protected override AlleleNameHistory MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
-            if (hlaDatabaseVersionsHaveBeenExtracted)
+            if (hlaDatabaseVersions != null)
             {
                 return GetAlleleNameHistory(line);
             }
 
             // HLA database versions are listed as column names in first line of file contents
-            ExtractHlaDatabaseVersionsFromLineElseRaiseException(line);
+            ExtractHlaDatabaseVersionsFromLine(line);
             return null;
         }
 
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             var hlaId = lineSplitByColumnDelimiter[0];
             var versionedAlleleNames = GetVersionedAlleleNames(lineSplitByColumnDelimiter);
 
-            // exclude entries that don't have any allele names listed on or after v3.0.0
+            // exclude entries that don't have any allele names listed on or after oldest version of interest
             return versionedAlleleNames.Any() 
                 ? new AlleleNameHistory(locus, hlaId, versionedAlleleNames) 
                 : null;
@@ -120,14 +120,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             return regex.Match(input).Groups[1].Value;
         }
 
-        private void ExtractHlaDatabaseVersionsFromLineElseRaiseException(string line)
+        private void ExtractHlaDatabaseVersionsFromLine(string line)
         {
-            hlaDatabaseVersionsHaveBeenExtracted = TryExtractHlaDatabaseVersions(line, out hlaDatabaseVersions);
-
-            if (!hlaDatabaseVersionsHaveBeenExtracted)
+            if (!TryExtractHlaDatabaseVersions(line, out hlaDatabaseVersions))
             {
                 throw new ArgumentException(
-                    $"Could not extract HLA database version from {FileName} file.");
+                    $"Could not extract HLA database versions from {FileName} file.");
             }
         }
 

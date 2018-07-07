@@ -26,11 +26,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForPermittedLociFromFileContents(IEnumerable<string> wmdaFileContents)
         {
-            return
-                from line in wmdaFileContents
-                select MapLineOfFileContentsToWmdaHlaTypingElseNull(line) into typing
-                where typing != null && typing.IsPermittedLocusTyping()
-                select typing;
+            return 
+                wmdaFileContents
+                .Select(MapLineOfFileContentsToWmdaHlaTypingElseNull)
+                .Where(typing => typing != null && typing.IsPermittedLocusTyping());
         }
 
         protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTypingElseNull(string line);
