@@ -3,19 +3,30 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
-    internal class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase
+    public interface IAlleleNamesFromHistoriesExtractor
     {
-        public AlleleNamesFromHistoriesExtractor(AlleleNamesExtractorArgs extractorArgs) : base(extractorArgs)
+        IEnumerable<AlleleNameEntry> GetAlleleNames();
+    }
+
+    public class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
+    {
+        private readonly List<AlleleNameHistory> consolidatedAlleleNameHistories;
+
+        public AlleleNamesFromHistoriesExtractor(
+            IAlleleNameHistoriesConsolidator historiesConsolidator,
+            IWmdaDataRepository dataRepository) 
+            : base(dataRepository)
         {
+            consolidatedAlleleNameHistories = historiesConsolidator.GetConsolidatedAlleleNameHistories().ToList();
         }
 
-        public override IEnumerable<AlleleNameEntry> GetAlleleNames()
+        public IEnumerable<AlleleNameEntry> GetAlleleNames()
         {
-            return ExtractorArgs
-                .AlleleNameHistories
+            return consolidatedAlleleNameHistories
                 .SelectMany(GetAlleleNamesFromSingleHistory);
         }
 
@@ -38,8 +49,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
             var mostRecentNameAsTyping = new HlaNom(
                 TypingMethod.Molecular, history.Locus, history.MostRecentAlleleName);
 
-            var identicalToAlleleName = ExtractorArgs
-                .AllelesInCurrentVersionOfHlaNom
+            var identicalToAlleleName = AllelesInCurrentVersionOfHlaNom
                 .First(allele => allele.TypingEquals(mostRecentNameAsTyping))
                 .IdenticalHla;
 

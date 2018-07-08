@@ -1,13 +1,14 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda;
+using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using NSubstitute;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
@@ -18,9 +19,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
+            var dataRepository = WmdaRepositoryTestFixtureArgs.WmdaDataRepository;
+            var historiesConsolidator = new AlleleNameHistoriesConsolidator(dataRepository);
+            var fromExtractorExtractor = new AlleleNamesFromHistoriesExtractor(historiesConsolidator, dataRepository);
+            var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
+            var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
             var alleleNamesRepository = Substitute.For<IAlleleNamesRepository>();
 
-            alleleNameEntries = new AlleleNamesService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository, alleleNamesRepository)
+            alleleNameEntries = new AlleleNamesService(
+                    fromExtractorExtractor, variantsExtractor, reservedNamesExtractor, alleleNamesRepository)
                 .GetAlleleNamesAndTheirVariants()
                 .ToList();
         }
@@ -29,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         public void AlleleNamesService_GetAlleleNamesAndTheirVariants_DoesNotGenerateDuplicateAlleleNames()
         {
             var nonUniqueAlleleNames = alleleNameEntries
-                .GroupBy(alleleName => new {alleleName.MatchLocus, alleleName.LookupName})
+                .GroupBy(alleleName => new { alleleName.MatchLocus, alleleName.LookupName })
                 .Where(group => group.Count() > 1);
 
             Assert.IsEmpty(nonUniqueAlleleNames);
@@ -66,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             new[] { "39:01:01:02L" },
             Description = "Lookup name with expression suffix should only return names with same suffix")]
         [TestCase(MatchLocus.A, "02:01:01:02",
-            new[]{ "02:01:01:02L" },
+            new[] { "02:01:01:02L" },
             Description = "Four field lookup name without suffix returns same allele name with suffix")]
         public void AlleleNamesService_WhenExactAlleleNameHasNeverBeenInHlaNom_ReturnAllPossibleCurrentNames(
             MatchLocus matchLocus, string lookupName, IEnumerable<string> expectedCurrentAlleleNames)

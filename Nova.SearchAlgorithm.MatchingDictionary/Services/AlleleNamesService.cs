@@ -32,15 +32,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public class AlleleNamesService : IAlleleNamesService
     {
-        private readonly AlleleNamesExtractorArgs extractorArgs;
+        private readonly IAlleleNamesFromHistoriesExtractor alleleNamesFromHistoriesExtractor;
+        private readonly IAlleleNameVariantsExtractor alleleNameVariantsExtractor;
+        private readonly IReservedAlleleNamesExtractor reservedAlleleNamesExtractor;
         private readonly IAlleleNamesRepository alleleNamesRepository;
-
-        public AlleleNamesService(IWmdaDataRepository dataRepository, IAlleleNamesRepository alleleNamesRepository)
+        
+        public AlleleNamesService(
+            IAlleleNamesFromHistoriesExtractor alleleNamesFromHistoriesExtractor,
+            IAlleleNameVariantsExtractor alleleNameVariantsExtractor,
+            IReservedAlleleNamesExtractor reservedAlleleNamesExtractor,
+            IAlleleNamesRepository alleleNamesRepository)
         {
-            extractorArgs = new AlleleNamesExtractorArgs(
-                dataRepository.AlleleNameHistories,
-                dataRepository.Alleles);
-
+            this.alleleNamesFromHistoriesExtractor = alleleNamesFromHistoriesExtractor;
+            this.alleleNameVariantsExtractor = alleleNameVariantsExtractor;
+            this.reservedAlleleNamesExtractor = reservedAlleleNamesExtractor;
             this.alleleNamesRepository = alleleNamesRepository;
         }
 
@@ -66,17 +71,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private IEnumerable<AlleleNameEntry> GetAlleleNamesFromHistories()
         {
-            return new AlleleNamesFromHistoriesExtractor(extractorArgs).GetAlleleNames();
+            return alleleNamesFromHistoriesExtractor.GetAlleleNames();
         }
 
         private IEnumerable<AlleleNameEntry> GetAlleleNameVariants(IEnumerable<AlleleNameEntry> originalAlleleNames)
         {
-            return new AlleleNameVariantsExtractor(extractorArgs, originalAlleleNames).GetAlleleNames();
+            return alleleNameVariantsExtractor.GetAlleleNames(originalAlleleNames);
         }
 
         private IEnumerable<AlleleNameEntry> GetReservedAlleleNames()
         {
-            return new ReservedAlleleNamesExtractor(extractorArgs).GetAlleleNames();
+            return reservedAlleleNamesExtractor.GetAlleleNames();
         }
     }
 }

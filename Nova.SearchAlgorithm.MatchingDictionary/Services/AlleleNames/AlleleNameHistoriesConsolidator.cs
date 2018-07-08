@@ -2,33 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
-    internal class AlleleNamesExtractorArgs
+    public interface IAlleleNameHistoriesConsolidator
     {
-        public List<AlleleNameHistory> AlleleNameHistories { get; }
-        public List<HlaNom> AllelesInCurrentVersionOfHlaNom { get; }
-        public List<HlaNom> HistoricalNamesAsTypings { get; }
+        IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories();
+    }
 
-        public AlleleNamesExtractorArgs(
-            IEnumerable<AlleleNameHistory> alleleNameHistories,
-            IEnumerable<HlaNom> allelesInCurrentVersionOfHlaNom)
+    public class AlleleNameHistoriesConsolidator : IAlleleNameHistoriesConsolidator
+    {
+        private readonly List<AlleleNameHistory> alleleNameHistories;
+
+        public AlleleNameHistoriesConsolidator(IWmdaDataRepository dataRepository)
         {
-            // enumerate collections here as they will be queried thousands of times
-            AlleleNameHistories = alleleNameHistories.ToList();
-            AllelesInCurrentVersionOfHlaNom = allelesInCurrentVersionOfHlaNom.ToList();
-
-            HistoricalNamesAsTypings = (
-                from history in AlleleNameHistories
-                from historicalName in history.DistinctAlleleNames
-                select new HlaNom(TypingMethod.Molecular, history.Locus, historicalName)
-                ).ToList();
-
-            HandleAlleleNamesListedInMultipleHistories();
+            alleleNameHistories = dataRepository.AlleleNameHistories.ToList();
         }
 
-        private void HandleAlleleNamesListedInMultipleHistories()
+        public IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories()
+        {
+            ConsolidateAlleleNameHistories();
+            return alleleNameHistories;
+        }
+
+        private void ConsolidateAlleleNameHistories()
         {
             var alleleNamesListedInMultipleHistories = GetAlleleNamesListedInMultipleHistories().ToList();
             alleleNamesListedInMultipleHistories.ForEach(RetainCurrentHistoryAndRemoveAdditionalHistories);
@@ -36,7 +34,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 
         private IEnumerable<IWmdaHlaTyping> GetAlleleNamesListedInMultipleHistories()
         {
-            var alleleNamesListedMoreThanOnce = AlleleNameHistories
+            var alleleNamesListedMoreThanOnce = alleleNameHistories
                 .SelectMany(
                     history => history.DistinctAlleleNames,
                     (history, alleleName) => new { history.Locus, HlaId = history.Name, AlleleName = alleleName })
@@ -54,14 +52,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 
             if (currentHistory != null)
             {
-                AlleleNameHistories.RemoveAll(history => history.DistinctAlleleNamesContain(allele));
-                AlleleNameHistories.Add(currentHistory);
+                alleleNameHistories.RemoveAll(history => history.DistinctAlleleNamesContain(allele));
+                alleleNameHistories.Add(currentHistory);
             }
         }
 
         private AlleleNameHistory GetFirstHistoryWhereCurrentNameIsNotNull(IWmdaHlaTyping alleleTyping)
         {
-            return AlleleNameHistories
+            return alleleNameHistories
                 .FirstOrDefault(history =>
                     history.DistinctAlleleNamesContain(alleleTyping) &&
                     !string.IsNullOrEmpty(history.CurrentAlleleName));

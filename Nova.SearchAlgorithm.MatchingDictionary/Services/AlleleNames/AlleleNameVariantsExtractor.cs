@@ -2,21 +2,23 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
-    internal class AlleleNameVariantsExtractor : AlleleNamesExtractorBase
+    public interface IAlleleNameVariantsExtractor
     {
-        private readonly IEnumerable<AlleleNameEntry> originalAlleleNames;
+        IEnumerable<AlleleNameEntry> GetAlleleNames(IEnumerable<AlleleNameEntry> originalAlleleNames);
+    }
 
-        public AlleleNameVariantsExtractor(
-            AlleleNamesExtractorArgs extractorArgs, IEnumerable<AlleleNameEntry> originalAlleleNames)
-                : base(extractorArgs)
+    public class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
+    {
+        public AlleleNameVariantsExtractor(IWmdaDataRepository dataRepository)
+            : base(dataRepository)
         {
-            this.originalAlleleNames = originalAlleleNames;
         }
 
-        public override IEnumerable<AlleleNameEntry> GetAlleleNames()
+        public IEnumerable<AlleleNameEntry> GetAlleleNames(IEnumerable<AlleleNameEntry> originalAlleleNames)
         {
             var variantsNotFoundInHistories = originalAlleleNames.SelectMany(GetAlleleNameVariantsNotFoundInHistories);
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);

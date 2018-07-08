@@ -2,19 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
-    internal class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase
+    public interface IReservedAlleleNamesExtractor
     {
-        public ReservedAlleleNamesExtractor(AlleleNamesExtractorArgs extractorArgs) : base(extractorArgs)
+        IEnumerable<AlleleNameEntry> GetAlleleNames();
+    }
+
+    public class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase, IReservedAlleleNamesExtractor
+    {
+        public ReservedAlleleNamesExtractor(IWmdaDataRepository dataRepository)
+            : base(dataRepository)
         {
         }
 
-        public override IEnumerable<AlleleNameEntry> GetAlleleNames()
+        public IEnumerable<AlleleNameEntry> GetAlleleNames()
         {
-            return ExtractorArgs
-                .AllelesInCurrentVersionOfHlaNom
+            return AllelesInCurrentVersionOfHlaNom
                 .Where(AlleleNameIsReserved)
                 .Select(allele => new AlleleNameEntry(allele.Locus, allele.Name, allele.Name));
         }

@@ -1,24 +1,32 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
-    internal abstract class AlleleNamesExtractorBase
+    public abstract class AlleleNamesExtractorBase
     {
-        protected readonly AlleleNamesExtractorArgs ExtractorArgs;
+        protected readonly List<HlaNom> AllelesInCurrentVersionOfHlaNom;
+        private readonly List<HlaNom> historicalNamesAsTypings;
 
-        protected AlleleNamesExtractorBase(AlleleNamesExtractorArgs extractorArgs)
+        protected AlleleNamesExtractorBase(IWmdaDataRepository dataRepository)
         {
-            ExtractorArgs = extractorArgs;
-        }
+            AllelesInCurrentVersionOfHlaNom = dataRepository.Alleles.ToList();
 
-        public abstract IEnumerable<AlleleNameEntry> GetAlleleNames();
+            historicalNamesAsTypings = dataRepository
+                .AlleleNameHistories
+                .SelectMany(history =>
+                    history.DistinctAlleleNames, (history, historicalName) =>
+                    new HlaNom(TypingMethod.Molecular, history.Locus, historicalName))
+                .Distinct()
+                .ToList();
+        }
 
         protected bool AlleleNameIsNotInHistories(string locus, string alleleName)
         {
-            return !ExtractorArgs
-                .HistoricalNamesAsTypings
+            return !historicalNamesAsTypings
                 .Any(historicalTyping =>
                     historicalTyping.Locus.Equals(locus) && 
                     historicalTyping.Name.Equals(alleleName));
