@@ -9,10 +9,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data
     {
         private static readonly string WmdaFileUri = ConfigurationManager.ConnectionStrings["WmdaFileUri"].ConnectionString;
 
-        public IEnumerable<string> GetFileContentsWithoutHeader(string fileName)
+        public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {
             return new WebClient()
-                .DownloadString($"{WmdaFileUri}{fileName}.txt")
+                .DownloadString($"{WmdaFileUri}{hlaDatabaseVersion}/{fileName}.txt")
                 .Split('\n')
                 .SkipWhile(line => line.StartsWith("#"));
         }

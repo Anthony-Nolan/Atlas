@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
@@ -10,40 +11,74 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
         public string TwoFieldName { get; }
+        public IEnumerable<string> NameVariantsTruncatedByFieldAndOrExpressionSuffix { get; }
         public AlleleTypingStatus Status { get; }
 
+        private const char FieldDelimiter = ':';
         private static readonly string[] NullExpressionSuffixes = { "N" };
 
         public AlleleTyping(string locus, string name, AlleleTypingStatus status, bool isDeleted = false)
                 : base(TypingMethod.Molecular, locus, name, isDeleted)
         {
             Status = status;
-            ExpressionSuffix = GetExpressionSuffix(name);
+            ExpressionSuffix = GetExpressionSuffix();
             IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
-            Fields = GetFields(name, ExpressionSuffix);
-            TwoFieldName = GetTwoFieldName(Fields, ExpressionSuffix, name);
+            Fields = GetFields();
+            TwoFieldName = BuildAlleleNameAndAddExpressionSuffix(2);
+            NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
         }
 
-        public AlleleTyping(string locus, string name, bool isDeleted = false)
-            :this(locus, name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
-        {            
-        }
-
-        private static string GetExpressionSuffix(string name)
+        public AlleleTyping(MatchLocus matchLocus, string name, bool isDeleted = false)
+            : this(matchLocus.ToMolecularLocusNameIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
         {
-            return new Regex(@"[A-Z]$").Match(name).Value;
         }
 
-        private static IEnumerable<string> GetFields(string name, string expressionSuffix)
+        private string GetExpressionSuffix()
         {
-            var trimmedName = name.TrimEnd(expressionSuffix.ToCharArray());
-            return trimmedName.Split(':');
+            return new Regex(@"[A-Z]$").Match(Name).Value;
         }
 
-        private static string GetTwoFieldName(IEnumerable<string> fields, string expressionSuffix, string name)
+        private IEnumerable<string> GetFields()
         {
-            var fieldsList = fields.ToList();
-            return fieldsList.Count >= 2 ? $"{fieldsList[0]}:{fieldsList[1]}{expressionSuffix}" : name;
+            var trimmedName = Name.TrimEnd(ExpressionSuffix.ToCharArray());
+            return trimmedName.Split(FieldDelimiter);
+        }
+
+        private IEnumerable<string> GetTruncatedVariantsOfAlleleName()
+        {
+            var alleleNameFieldCounts = new[] { 2, 3, 4 };
+
+            return alleleNameFieldCounts
+                .SelectMany(GetAlleleNameVariantsOfSpecifiedFieldCount)
+                .Where(variant => !variant.Equals(Name))
+                .Distinct();
+        }
+
+        private IEnumerable<string> GetAlleleNameVariantsOfSpecifiedFieldCount(int truncatedFieldCount)
+        {
+            if (Fields.Count() < truncatedFieldCount ||
+                (Fields.Count() == truncatedFieldCount && string.IsNullOrEmpty(ExpressionSuffix)))
+            {
+                return new List<string>();
+            }
+
+            var variants = new List<string>
+            {
+                BuildAlleleNameWithoutExpressionSuffix(truncatedFieldCount),
+                BuildAlleleNameAndAddExpressionSuffix(truncatedFieldCount)
+            };
+
+            return variants.Distinct();
+        }
+
+        private string BuildAlleleNameAndAddExpressionSuffix(int fieldCount)
+        {
+            return BuildAlleleNameWithoutExpressionSuffix(fieldCount) + ExpressionSuffix;
+        }
+
+        private string BuildAlleleNameWithoutExpressionSuffix(int fieldCount)
+        {
+            return string.Join(FieldDelimiter.ToString(), Fields.Take(fieldCount));
         }
     }
 }

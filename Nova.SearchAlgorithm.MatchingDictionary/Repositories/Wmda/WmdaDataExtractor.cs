@@ -16,9 +16,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             this.fileName = fileName;
         }
 
-        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForPermittedLoci(IWmdaFileReader fileReader)
+        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForPermittedLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
         {
-            var fileContents = fileReader.GetFileContentsWithoutHeader(fileName);
+            var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName);
             var data = ExtractWmdaHlaTypingsForPermittedLociFromFileContents(fileContents);
 
             return data;
@@ -26,13 +26,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForPermittedLociFromFileContents(IEnumerable<string> wmdaFileContents)
         {
-            return
-                from line in wmdaFileContents
-                select MapLineOfFileToWmdaHlaTypingElseNull(line) into typing
-                where typing != null && typing.IsPermittedLocusTyping()
-                select typing;
+            return 
+                wmdaFileContents
+                .Select(MapLineOfFileContentsToWmdaHlaTypingElseNull)
+                .Where(typing => typing != null && typing.IsPermittedLocusTyping());
         }
 
-        protected abstract TWmdaHlaTyping MapLineOfFileToWmdaHlaTypingElseNull(string line);
+        protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTypingElseNull(string line);
     }
 }

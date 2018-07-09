@@ -88,13 +88,11 @@
     <Reference Include="Microsoft.Data.Services.Client, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Data.Services.Client.5.8.2\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Caching.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Caching.Abstractions.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
-      <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Caching.Memory.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Caching.Memory.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.1.1\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
@@ -193,17 +191,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
+    <Compile Include="Exceptions\MatchingDictionaryHttpException.cs" />
     <Compile Include="Exceptions\PermittedLocusException.cs" />
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
+    <Compile Include="Models\AlleleNames\AlleleNameEntry.cs" />
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
+    <Compile Include="Models\Wmda\VersionedAlleleName.cs" />
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
+    <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Repositories\MatchingDictionaryTableReferenceRepository.cs" />
+    <Compile Include="Repositories\AzureStorage\AlleleNameTableEntity.cs" />
+    <Compile Include="Repositories\AzureStorage\AlleleNameEntityExtensions.cs" />
+    <Compile Include="Repositories\AlleleNamesRepository.cs" />
+    <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />
     <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
@@ -226,13 +231,21 @@
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNameHistoriesConsolidator.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNameHistoryExtensions.cs" />
+    <Compile Include="Services\AlleleNamesService.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNamesExtractorBase.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNameVariantsExtractor.cs" />
+    <Compile Include="Services\AlleleNames\AlleleNamesFromHistoriesExtractor.cs" />
+    <Compile Include="Services\AlleleNames\ReservedAlleleNamesExtractor.cs" />
+    <Compile Include="Services\AlleleNamesLookupService.cs" />
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\MultipleAllelesLookup.cs" />
+    <Compile Include="Services\MatchingDictionary\Lookups\AlleleNamesLookupBase.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\XxCodeLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\AlleleLookup.cs" />
+    <Compile Include="Services\MatchingDictionary\Lookups\SingleAlleleLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\MatchingDictionaryLookup.cs" />
     <Compile Include="Services\MatchingDictionary\MatchingDictionaryEntryExtensions.cs" />
     <Compile Include="Models\MatchingDictionary\SerologyEntry.cs" />

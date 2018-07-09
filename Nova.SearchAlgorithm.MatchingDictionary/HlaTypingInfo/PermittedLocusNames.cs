@@ -76,7 +76,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             return permittedLocus.Serology;
         }
 
-        public static string GetMolecularLocusNameFromMatchIfExists(MatchLocus matchLocusName)
+        public static string ToMolecularLocusNameIfExists(this MatchLocus matchLocusName)
         {
             var permittedLocus = NamesOfPermittedLoci.First(l => l.Match.Equals(matchLocusName));
 

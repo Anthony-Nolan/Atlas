@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.Common.Exceptions;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
 {
@@ -9,7 +11,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
     {
         private const int BatchSize = 100;
 
-        public static async Task<TEntity> GetEntityByPartitionAndRowKey<TEntity>(this CloudTable table, string partition, string rowKey) 
+        public static async Task<TEntity> GetEntityByPartitionAndRowKey<TEntity>(this CloudTable table, string partition, string rowKey)
             where TEntity : TableEntity
         {
             var retrieveOperation = TableOperation.Retrieve<TEntity>(partition, rowKey);
@@ -26,7 +28,15 @@ namespace Nova.SearchAlgorithm.Common.Repositories
                 var batchToInsert = entitiesList.Skip(i).Take(BatchSize).ToList();
                 var batchOperation = new TableBatchOperation();
                 batchToInsert.ForEach(entity => batchOperation.Insert(entity));
-                table.ExecuteBatch(batchOperation);
+
+                try
+                {
+                    table.ExecuteBatch(batchOperation);
+                }
+                catch (Exception ex)
+                {
+                    throw new CloudTableBatchInsertException(batchToInsert, ex);
+                }
             }
         }
     }

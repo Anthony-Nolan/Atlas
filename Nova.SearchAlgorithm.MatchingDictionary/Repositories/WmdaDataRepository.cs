@@ -7,6 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IWmdaDataRepository
     {
+        string HlaDatabaseVersion { get; }
         IEnumerable<HlaNom> Serologies { get; }
         IEnumerable<HlaNom> Alleles { get; }
         IEnumerable<HlaNomP> PGroups { get; }
@@ -15,10 +16,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; }
         IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; }
         IEnumerable<AlleleStatus> AlleleStatuses { get; }
+        IEnumerable<AlleleNameHistory> AlleleNameHistories { get; }
     }
 
     public class WmdaDataRepository : IWmdaDataRepository
     {
+        public string HlaDatabaseVersion { get; }
         public IEnumerable<HlaNom> Serologies { get; private set; }
         public IEnumerable<HlaNom> Alleles { get; private set; }
         public IEnumerable<HlaNomP> PGroups { get; private set; }
@@ -27,12 +30,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; private set; }
         public IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; private set; }
         public IEnumerable<AlleleStatus> AlleleStatuses { get; private set; }
+        public IEnumerable<AlleleNameHistory> AlleleNameHistories { get; private set; }
 
         private readonly IWmdaFileReader wmdaFileReader;
 
-        public WmdaDataRepository(IWmdaFileReader wmdaFileReader)
+        public WmdaDataRepository(IWmdaFileReader wmdaFileReader, string hlaDatabaseVersion)
         {
             this.wmdaFileReader = wmdaFileReader;
+            HlaDatabaseVersion = hlaDatabaseVersion;
             PopulateWmdaDataCollections();
         }
 
@@ -46,12 +51,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor());
             ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor());
             AlleleStatuses = GetWmdaData(new AlleleStatusExtractor());
+            AlleleNameHistories = GetWmdaData(new AlleleHistoryExtractor());
         }
 
         private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor)
             where TWmdaHlaTyping : IWmdaHlaTyping
         {
-            return extractor.GetWmdaHlaTypingsForPermittedLoci(wmdaFileReader);
+            return extractor.GetWmdaHlaTypingsForPermittedLoci(wmdaFileReader, HlaDatabaseVersion);
         }
     }
 }

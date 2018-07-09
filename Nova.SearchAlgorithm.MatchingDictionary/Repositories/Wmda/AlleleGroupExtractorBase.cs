@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        protected override TWmdaAlleleGroup MapLineOfFileToWmdaHlaTypingElseNull(string line)
+        protected override TWmdaAlleleGroup MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
             var regex = new Regex(RegexPattern);
 
