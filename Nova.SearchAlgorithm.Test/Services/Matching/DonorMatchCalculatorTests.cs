@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Services.Matching;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Services
+namespace Nova.SearchAlgorithm.Test.Services.Matching
 {
     [TestFixture]
     public class DonorMatchCalculatorTests : TestBase<DonorMatchCalculator>

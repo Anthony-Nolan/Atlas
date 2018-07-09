@@ -44,6 +44,8 @@ namespace Nova.SearchAlgorithm.Common.Models
 
         public int TypedLociCount => LocusMatchDetails.Count(m => m != null && m.IsLocusTyped);
 
+        public int PopulatedLociCount => LocusMatchDetails.Count(m => m != null);
+        
         #region Scoring Data
         
         public int MatchRank { get; set; }

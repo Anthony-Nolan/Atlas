@@ -10,7 +10,7 @@ using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Services
+namespace Nova.SearchAlgorithm.Test.Services.Matching
 {
     [TestFixture]
     public class DatabaseDonorMatchingServiceTests : TestBase<DatabaseDonorMatchingService>
