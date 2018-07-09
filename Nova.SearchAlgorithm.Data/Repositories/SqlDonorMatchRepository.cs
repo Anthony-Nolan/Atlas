@@ -88,10 +88,8 @@ GROUP BY DonorId, TypePosition";
             var result = new PhenotypeInfo<IEnumerable<string>>();
             using (var conn = new SqlConnection(connectionString))
             {
-                // TODO: Extension method, this is done in a few places
-                var allLoci = Enum.GetValues(typeof(Locus)).Cast<Locus>();
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
-                foreach (var locus in allLoci.Except(new[] {Locus.Dpb1}))
+                foreach (var locus in LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1}))
                 {
                     var pGroups = await conn.QueryAsync<DonorMatchWithName>($@"
 SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableName(locus)} m
