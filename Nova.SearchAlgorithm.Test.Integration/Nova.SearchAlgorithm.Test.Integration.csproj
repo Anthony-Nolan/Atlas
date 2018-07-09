@@ -331,6 +331,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Integration\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
+    <Compile Include="Integration\Builders\InputDonorBuilder.cs" />
     <Compile Include="Integration\DonorStorageTests.cs" />
     <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryRepository.cs" />
@@ -338,10 +340,7 @@
     <Compile Include="Integration\DonorImportTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\Matching\MatchingTests.cs" />
-    <Compile Include="Integration\Matching\MatchingTestsAtLocusA.cs" />
-    <Compile Include="Integration\Matching\MatchingTestsAtLocusB.cs" />
-    <Compile Include="Integration\Matching\MatchingTestsAtLocusC.cs" />
-    <Compile Include="Integration\Matching\MatchingTestsAtLocusDrb1.cs" />
+    <Compile Include="Integration\Matching\MatchingTestsAtASingleLocus.cs" />
     <Compile Include="Integration\Storage\CosmosTestDatabase.cs" />
     <Compile Include="Integration\Storage\StorageEmulator.cs" />
   </ItemGroup>

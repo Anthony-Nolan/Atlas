@@ -72,8 +72,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
             {
                 SearchType = searchType,
                 Registries = registriesToSearch,
-                HlaNamesToMatchInPositionOne = criteria.HlaNamesToMatchInPositionOne,
-                HlaNamesToMatchInPositionTwo = criteria.HlaNamesToMatchInPositionTwo,
+                PGroupsToMatchInPositionOne = criteria.PGroupsToMatchInPositionOne,
+                PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
             };
 
             var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria))

@@ -32,8 +32,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.HlaNamesToMatchInPositionOne),
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.HlaNamesToMatchInPositionTwo)
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionOne),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionTwo)
             );
 
             return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))

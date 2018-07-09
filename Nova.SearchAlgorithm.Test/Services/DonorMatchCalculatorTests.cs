@@ -26,8 +26,8 @@ namespace Nova.SearchAlgorithm.Test.Services
 
         private readonly AlleleLevelLocusMatchCriteria defaultCriteria = new AlleleLevelLocusMatchCriteria()
         {
-            HlaNamesToMatchInPositionOne = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
-            HlaNamesToMatchInPositionTwo = new List<string> {PatientPGroup2},
+            PGroupsToMatchInPositionOne = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
+            PGroupsToMatchInPositionTwo = new List<string> {PatientPGroup2},
         };
         
         private readonly AlleleLevelLocusMatchCriteria homozygousPatientCriteria = new AlleleLevelLocusMatchCriteria()

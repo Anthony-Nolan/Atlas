@@ -148,20 +148,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 LocusMismatchA = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
+                    PGroupsToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
+                    PGroupsToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
                 },
                 LocusMismatchB = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "07:02P" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "08:01P" }
+                    PGroupsToMatchInPositionOne = new List<string> { "07:02P" },
+                    PGroupsToMatchInPositionTwo = new List<string> { "08:01P" }
                 },
                 LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "01:11P" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "03:41P" }
+                    PGroupsToMatchInPositionOne = new List<string> { "01:11P" },
+                    PGroupsToMatchInPositionTwo = new List<string> { "03:41P" }
                 }
             };
         }

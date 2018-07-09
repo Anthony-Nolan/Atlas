@@ -51,8 +51,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
         public Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus,
             LocusSearchCriteria criteria)
         {
-            var matchesFromPositionOne = GetMatches(locus, criteria.HlaNamesToMatchInPositionOne);
-            var matchesFromPositionTwo = GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo);
+            var matchesFromPositionOne = GetMatches(locus, criteria.PGroupsToMatchInPositionOne);
+            var matchesFromPositionTwo = GetMatches(locus, criteria.PGroupsToMatchInPositionTwo);
 
             return Task.FromResult(matchesFromPositionOne.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.One))
                 .Union(matchesFromPositionTwo.Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two))));
