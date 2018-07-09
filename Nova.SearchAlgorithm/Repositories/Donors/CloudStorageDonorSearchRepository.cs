@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             return donorDocumentRepository.GetDonor(donorId);
         }
 
-        public Task<PhenotypeInfo<ExpandedHla>> GetExpandedHlaForDonor(int donorId)
+        public Task<PhenotypeInfo<IEnumerable<string>>> GetPGroupsForDonor(int donorId)
         {
             throw new System.NotImplementedException();
         }

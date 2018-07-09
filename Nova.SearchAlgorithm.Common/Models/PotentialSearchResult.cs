@@ -11,6 +11,8 @@ namespace Nova.SearchAlgorithm.Common.Models
         // Stored separately from the donors, as the lookup in the matches table only returns the id
         // We don't want to populate the full donor object until some filtering has been applied on those results
         public int DonorId { get; set; }
+        // Stored separately from the Donor object as we don't want to populate all donor data until we're done filtering
+        public PhenotypeInfo<IEnumerable<string>> DonorPGroups { get; set; }
 
         public DonorResult Donor
         {

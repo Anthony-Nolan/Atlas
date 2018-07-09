@@ -43,36 +43,37 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, lociToMatchInDatabase);
 
-            var matchesWithDonorInfoPopulated = await Task.WhenAll(matches.Select(PopulateDonorDataForMatch));
-
-            matchesWithDonorInfoPopulated = MatchInMemory(criteria, lociToMatchInMemory, matchesWithDonorInfoPopulated);
+            var matchesWithPGroupsPopulated = (await Task.WhenAll(matches.Select(PopulatePGroupsForMatch))).AsEnumerable();
+            
+            matchesWithPGroupsPopulated = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
 
             // TODO: Figure out if this is the best way to handle loci with no patient data specified
             foreach (var locus in allLoci.Except(lociToSearch))
             {
-                matchesWithDonorInfoPopulated.ToList().ForEach(m => m.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0}));
+                matchesWithPGroupsPopulated.ToList().ForEach(m => m.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0}));
             }
 
             // TODO: Commonise with total score in databse matching, use number of populated loci? 
-            return matchesWithDonorInfoPopulated.Where(m => m.TotalMatchCount >= (lociToSearch.Count * 2) - criteria.DonorMismatchCount);
+            matchesWithPGroupsPopulated = matchesWithPGroupsPopulated.Where(m => m.TotalMatchCount >= (lociToSearch.Count * 2) - criteria.DonorMismatchCount);
+            return await Task.WhenAll(matchesWithPGroupsPopulated.Select(PopulateDonorDataForMatch));
         }
 
         /// <summary>
         /// Calculates match details for specified loci, and filters based on individual locus mismatch criteria
         /// </summary>
         /// <returns>A list of filtered search results, with the newly searched loci match information populated</returns>
-        private PotentialSearchResult[] MatchInMemory(
+        private IEnumerable<PotentialSearchResult> MatchInMemory(
             AlleleLevelMatchCriteria criteria,
             IEnumerable<Locus> lociToMatchInMemory,
-            PotentialSearchResult[] matches)
+            IEnumerable<PotentialSearchResult> matches)
         {
             foreach (var locus in lociToMatchInMemory)
             {
                 var locusCriteria = criteria.MatchCriteriaForLocus(locus);
                 foreach (var match in matches)
                 {
-                    var donorDataAtLocus = match.Donor.MatchingHla.DataAtLocus(locus);
-                    var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(locusCriteria, donorDataAtLocus);
+                    var pGroupsAtLocus = match.DonorPGroups.DataAtLocus(locus);
+                    var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(locusCriteria, pGroupsAtLocus);
                     match.SetMatchDetailsForLocus(locus, matchDetails);
                 }
 
@@ -85,19 +86,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matches;
         }
 
-        // TODO: NOVA-1289: Lookup PGroups from matches table, rather than fetching donor and performing lookup again - with an index on DonorId it should be faster. (We will still need to fetch donor type + registry later)
+        private async Task<PotentialSearchResult> PopulatePGroupsForMatch(PotentialSearchResult potentialSearchResult)
+        {
+            var pGroups = await donorInspectionRepository.GetPGroupsForDonor(potentialSearchResult.DonorId);
+            potentialSearchResult.DonorPGroups = pGroups;
+            return potentialSearchResult;
+        }
+
         private async Task<PotentialSearchResult> PopulateDonorDataForMatch(PotentialSearchResult potentialSearchResult)
         {
             // Augment each match with registry and other data from GetDonor(id)
             // Performance could be improved here, but at least it happens in parallel,
             // and only after filtering match results, not before.
             potentialSearchResult.Donor = await donorInspectionRepository.GetDonor(potentialSearchResult.DonorId);
-
-            // Note that this will only populate PGroups in the expanded HLA object returned. This should be enough for matching, but is not ideal
-            // TODO: Just fetch p-groups and filter on p-groups, only expand donro once all filtering finished
-            var expandedHla = await donorInspectionRepository.GetExpandedHlaForDonor(potentialSearchResult.DonorId);
-            
-            potentialSearchResult.Donor.MatchingHla = expandedHla;
             return potentialSearchResult;
         }
     }

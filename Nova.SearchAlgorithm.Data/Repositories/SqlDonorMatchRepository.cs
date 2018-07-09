@@ -83,13 +83,14 @@ GROUP BY DonorId, TypePosition";
             }
         }
 
-        public async Task<PhenotypeInfo<ExpandedHla>> GetExpandedHlaForDonor(int donorId)
+        public async Task<PhenotypeInfo<IEnumerable<string>>> GetPGroupsForDonor(int donorId)
         {
-            var result = new PhenotypeInfo<ExpandedHla>();
+            var result = new PhenotypeInfo<IEnumerable<string>>();
             using (var conn = new SqlConnection(connectionString))
             {
                 // TODO: Extension method, this is done in a few places
                 var allLoci = Enum.GetValues(typeof(Locus)).Cast<Locus>();
+                // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
                 foreach (var locus in allLoci.Except(new[] {Locus.Dpb1}))
                 {
                     var pGroups = await conn.QueryAsync<DonorMatchWithName>($@"
@@ -100,7 +101,7 @@ WHERE DonorId = {donorId}
 ");
                     foreach (var pGroupGroup in pGroups.GroupBy(p => (TypePositions) p.TypePosition))
                     {
-                        result.SetAtLocus(locus, pGroupGroup.Key, new ExpandedHla{ PGroups = pGroupGroup.Select(p => p.PGroupName) });
+                        result.SetAtLocus(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
                     }
                 }
             }

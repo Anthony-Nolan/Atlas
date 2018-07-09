@@ -25,9 +25,9 @@ using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
-    [TestFixture(DonorStorageImplementation.CloudTable)]
+//    [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]
-    //[TestFixture(DonorStorageImplementation.Cosmos)]
+//    [TestFixture(DonorStorageImplementation.Cosmos)]
     public abstract class IntegrationTestBase
     {
         private readonly StorageEmulator tableStorageEmulator = new StorageEmulator();
