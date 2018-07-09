@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             }
 
             // TODO: Commonise with total score in databse matching, use number of populated loci? 
-            return matchesWithDonorInfoPopulated.Where(m => m.TotalMatchCount >= 6 - criteria.DonorMismatchCount);
+            return matchesWithDonorInfoPopulated.Where(m => m.TotalMatchCount >= (lociToSearch.Count * 2) - criteria.DonorMismatchCount);
         }
 
         /// <summary>
