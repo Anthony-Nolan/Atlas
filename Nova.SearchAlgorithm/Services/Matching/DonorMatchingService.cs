@@ -20,21 +20,23 @@ namespace Nova.SearchAlgorithm.Services.Matching
         private readonly IDatabaseDonorMatchingService databaseDonorMatchingService;
         private readonly IDonorMatchCalculator donorMatchCalculator;
         private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IMatchFilteringService matchFilteringService;
 
         public DonorMatchingService(
             IDatabaseDonorMatchingService databaseDonorMatchingService,
             IDonorMatchCalculator donorMatchCalculator,
-            IDonorInspectionRepository donorInspectionRepository
+            IDonorInspectionRepository donorInspectionRepository,
+            IMatchFilteringService matchFilteringService
         )
         {
             this.databaseDonorMatchingService = databaseDonorMatchingService;
             this.donorMatchCalculator = donorMatchCalculator;
             this.donorInspectionRepository = donorInspectionRepository;
+            this.matchFilteringService = matchFilteringService;
         }
 
         public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
-            var allLoci = new List<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
             var lociToSearch = criteria.LociWithCriteriaSpecified().ToList();
 
             // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
@@ -48,8 +50,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             
             matchesWithPGroupsPopulated = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
 
-            // TODO: Commonise with total score in databse matching, use number of populated loci? 
-            matchesWithPGroupsPopulated = matchesWithPGroupsPopulated.Where(m => m.TotalMatchCount >= (lociToSearch.Count * 2) - criteria.DonorMismatchCount);
+            matchesWithPGroupsPopulated = matchesWithPGroupsPopulated.Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
             var matchesWithDonorInfoPopulated = await Task.WhenAll(matchesWithPGroupsPopulated.Select(PopulateDonorDataForMatch));
             
             // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
@@ -77,8 +78,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 }
 
                 matches = matches
-                    // TODO: Commonise filtering logic, used here and in database matching layer. Wants to be done after each locus to reduce number of results for next calculation
-                    .Where(m => m.MatchDetailsForLocus(locus).MatchCount >= 2 - locusCriteria.MismatchCount)
+                    .Where(m => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, locus))
                     .ToArray();
             }
 

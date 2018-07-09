@@ -25,10 +25,12 @@ namespace Nova.SearchAlgorithm.Services.Matching
     public class DatabaseDonorMatchingService: IDatabaseDonorMatchingService
     {
         private readonly IDonorSearchRepository donorSearchRepository;
+        private readonly IMatchFilteringService matchFilteringService;
 
-        public DatabaseDonorMatchingService(IDonorSearchRepository donorSearchRepository)
+        public DatabaseDonorMatchingService(IDonorSearchRepository donorSearchRepository, IMatchFilteringService matchFilteringService)
         {
             this.donorSearchRepository = donorSearchRepository;
+            this.matchFilteringService = matchFilteringService;
         }
         
         public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
@@ -55,13 +57,14 @@ namespace Nova.SearchAlgorithm.Services.Matching
                     foreach (var locus in loci)
                     {
                         var matchesAtLocus = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
-                        var locusMatchDetails = matchesAtLocus.Value != null ? matchesAtLocus.Value.Match : new LocusMatchDetails { MatchCount = 0 };
+                        var locusMatchDetails = matchesAtLocus.Value != null ? matchesAtLocus.Value.Match : new LocusMatchDetails {MatchCount = 0};
                         result.SetMatchDetailsForLocus(locus, locusMatchDetails);
                     }
+
                     return result;
                 })
-                .Where(m => m.TotalMatchCount >= (loci.Count() * 2) - criteria.DonorMismatchCount)
-                .Where(m => loci.All(l => m.MatchDetailsForLocus(l).MatchCount >= 2 - criteria.MatchCriteriaForLocus(l).MismatchCount));
+                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
+                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)));
             
             return matches.ToList();
         }
