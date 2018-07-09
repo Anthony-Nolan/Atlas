@@ -21,6 +21,7 @@ using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
+using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
@@ -118,6 +119,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
+
+            builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
+                .AsImplementedInterfaces()
+                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
+                .InstancePerLifetimeScope();
+
+            
+            builder.RegisterType<MatchingDictionary.Services.AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();
