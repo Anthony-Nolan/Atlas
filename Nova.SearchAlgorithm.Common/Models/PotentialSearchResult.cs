@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.Common.Models
@@ -8,12 +9,16 @@ namespace Nova.SearchAlgorithm.Common.Models
     {
         private DonorResult donor;
 
+        #region Partial donor information used in matching
+        
         // Stored separately from the donors, as the lookup in the matches table only returns the id
         // We don't want to populate the full donor object until some filtering has been applied on those results
         public int DonorId { get; set; }
         // Stored separately from the Donor object as we don't want to populate all donor data until we're done filtering
         public PhenotypeInfo<IEnumerable<string>> DonorPGroups { get; set; }
 
+        #endregion
+        
         public DonorResult Donor
         {
             get
@@ -25,14 +30,30 @@ namespace Nova.SearchAlgorithm.Common.Models
 
                 return donor;
             }
-            set => donor = value;
+            set
+            {
+                if (isMatchingDataFullyPopulated)
+                {
+                    throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
+                }
+                donor = value;
+            }
         }
 
-        public int TotalMatchCount
-        {
-            get { return LocusMatchDetails.Where(m => m != null).Select(m => m.MatchCount).Sum(); }
-        }
+        public int TotalMatchCount => LocusMatchDetails.Where(m => m != null).Select(m => m.MatchCount).Sum();
 
+        public int TypedLociCount => LocusMatchDetails.Count(m => m != null && m.IsLocusTyped);
+
+        #region Scoring Data
+        
+        public int MatchRank { get; set; }
+
+        public int TotalMatchGrade { get; set; }
+
+        public int TotalMatchConfidence { get; set; }
+
+        #endregion
+        
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>
         {
             MatchDetailsAtLocusA,
@@ -42,15 +63,15 @@ namespace Nova.SearchAlgorithm.Common.Models
             MatchDetailsAtLocusDrb1
         };
 
-        public int TypedLociCount { get; set; }
-        public int MatchRank { get; set; }
-        public int TotalMatchGrade { get; set; }
-        public int TotalMatchConfidence { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusA { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusB { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusC { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusDrb1 { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusDqb1 { get; set; }
+
+        // As this class is populated gradually over time, this is used to indicate when we've populated all matching data we plan to
+        // Until then, accessing certain null values will throw exceptions, on the assumption they are not yet populated
+        private bool isMatchingDataFullyPopulated;
 
         public LocusMatchDetails MatchDetailsForLocus(Locus locus)
         {
@@ -79,7 +100,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (matchDetails == null)
+            if (matchDetails == null && !isMatchingDataFullyPopulated)
             {
                 throw new Exception($"Attempted to access match details for locus {locus} before they were generated");
             }
@@ -89,6 +110,11 @@ namespace Nova.SearchAlgorithm.Common.Models
         
         public void SetMatchDetailsForLocus(Locus locus, LocusMatchDetails locusMatchDetails)
         {
+            if (isMatchingDataFullyPopulated)
+            {
+                throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
+            }
+            
             switch (locus)
             {
                 case Locus.A:
@@ -111,6 +137,11 @@ namespace Nova.SearchAlgorithm.Common.Models
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        public void MarkMatchingDataFullyPopulated()
+        {
+            isMatchingDataFullyPopulated = true;
         }
     }
 }

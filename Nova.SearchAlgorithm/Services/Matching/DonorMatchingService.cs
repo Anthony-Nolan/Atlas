@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -47,15 +48,13 @@ namespace Nova.SearchAlgorithm.Services.Matching
             
             matchesWithPGroupsPopulated = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
 
-            // TODO: Figure out if this is the best way to handle loci with no patient data specified
-            foreach (var locus in allLoci.Except(lociToSearch))
-            {
-                matchesWithPGroupsPopulated.ToList().ForEach(m => m.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0}));
-            }
-
             // TODO: Commonise with total score in databse matching, use number of populated loci? 
             matchesWithPGroupsPopulated = matchesWithPGroupsPopulated.Where(m => m.TotalMatchCount >= (lociToSearch.Count * 2) - criteria.DonorMismatchCount);
-            return await Task.WhenAll(matchesWithPGroupsPopulated.Select(PopulateDonorDataForMatch));
+            var matchesWithDonorInfoPopulated = await Task.WhenAll(matchesWithPGroupsPopulated.Select(PopulateDonorDataForMatch));
+            
+            // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
+            matchesWithDonorInfoPopulated.ToList().ForEach(m => m.MarkMatchingDataFullyPopulated());
+            return matchesWithDonorInfoPopulated;
         }
 
         /// <summary>
