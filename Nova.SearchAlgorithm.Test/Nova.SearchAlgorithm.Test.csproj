@@ -339,6 +339,7 @@
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
+    <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
