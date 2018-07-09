@@ -15,6 +15,7 @@ using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
+using Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;

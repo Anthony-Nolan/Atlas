@@ -1,14 +1,15 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
-using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
 
-namespace Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary
+namespace Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary
 {
     /// <summary>
     /// An implementation of the matching dictionary lookup which loads the data from a file,
@@ -62,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary
             return Task.FromResult(lookupResult);
         }
 
-        public Task ConnectToCloudTable()
+        public Task LoadMatchingDictionaryIntoMemory()
         {
             return Task.CompletedTask;
         }
