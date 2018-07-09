@@ -16,8 +16,8 @@ namespace Nova.SearchAlgorithm.Test.Services
         private const string PatientPGroup1_1 = "p-group1-1";
         // ReSharper disable once InconsistentNaming
         private const string PatientPGroup1_2 = "p-group1-2";
-
         private const string PatientPGroup2 = "p-group2";
+        private const string PatientPGroupHomozygous = "p-group-shared";
 
         private const string NonMatchingPGroup = "p-group-that-does-not-match-either-patient-p-group";
         private const string ArbitraryPGroup = "arbitrary-p-group";
@@ -28,6 +28,12 @@ namespace Nova.SearchAlgorithm.Test.Services
         {
             HlaNamesToMatchInPositionOne = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
             HlaNamesToMatchInPositionTwo = new List<string> {PatientPGroup2},
+        };
+        
+        private readonly AlleleLevelLocusMatchCriteria homozygousPatientCriteria = new AlleleLevelLocusMatchCriteria()
+        {
+            HlaNamesToMatchInPositionOne = new List<string> {PatientPGroupHomozygous},
+            HlaNamesToMatchInPositionTwo = new List<string> {PatientPGroupHomozygous},
         };
 
         [SetUp]
@@ -167,6 +173,54 @@ namespace Nova.SearchAlgorithm.Test.Services
             matchDetails.MatchCount.Should().Be(1);
         }
 
+        [Test]
+        public void CalculateMatchesForDonors_ForHomozygousPatientMatchingNeitherPosition_ReturnsMatchCountOfZero()
+        {
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
+            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
+
+            matchDetails.MatchCount.Should().Be(0);
+        }
+        
+        [Test]
+        public void CalculateMatchesForDonors_ForHomozygousPatientMatchingPositionOne_ReturnsMatchCountOfOne()
+        {
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{PatientPGroupHomozygous}};
+            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
+
+            matchDetails.MatchCount.Should().Be(1);
+        }
+        
+        [Test]
+        public void CalculateMatchesForDonors_ForHomozygousPatientMatchingPositionTwo_ReturnsMatchCountOfOne()
+        {
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{NonMatchingPGroup}};
+            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{PatientPGroupHomozygous}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
+
+            matchDetails.MatchCount.Should().Be(1);
+        }
+        
+        [Test]
+        public void CalculateMatchesForDonors_ForHomozygousPatientMatchingBothPositions_ReturnsMatchCountOfTwo()
+        {
+            var donorPGroups1 = new ExpandedHla {PGroups = new List<string>{PatientPGroupHomozygous}};
+            var donorPGroups2 = new ExpandedHla {PGroups = new List<string>{PatientPGroupHomozygous}};
+            var donorHla = new Tuple<ExpandedHla, ExpandedHla>(donorPGroups1, donorPGroups2);
+
+            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
+
+            matchDetails.MatchCount.Should().Be(2);
+        }
+        
         #endregion
         
         #region IsLocusTyped Tests
