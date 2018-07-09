@@ -84,7 +84,7 @@ def findMigrate() {
 
 def findSingleFile(String glob) {
     def files = findFilePaths(glob)
-    if (files.empty) {
+    if (files.size() == 0) {
         error("Cannot find file for pattern ${glob}")
     }
     if (files.size() > 1) {
