@@ -320,7 +320,9 @@
     <Compile Include="Repositories\Donors\AzureStorage\DonorTableEntityExtensions.cs" />
     <Compile Include="Repositories\SolarDonorRepository.cs" />
     <Compile Include="Services\AntigenCachingService.cs" />
-    <Compile Include="Services\DonorMatchingService.cs" />
+    <Compile Include="Services\Matching\DonorMatchingService.cs" />
+    <Compile Include="Services\Matching\DatabaseDonorMatchingService.cs" />
+    <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
     <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Scoring\CalculateScore.cs" />
     <Compile Include="Services\DonorExtensions.cs" />
@@ -351,7 +353,6 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
       <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>

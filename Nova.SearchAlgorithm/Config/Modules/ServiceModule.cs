@@ -11,6 +11,8 @@ using Nova.Utils.WebApi.Filters;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.Matching;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -56,7 +58,9 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
             builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();

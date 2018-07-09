@@ -351,7 +351,8 @@
     <Compile Include="MatchingDictionary\Services\Matching\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
-    <Compile Include="Services\DonorMatchingServiceTests.cs" />
+    <Compile Include="Services\DatabaseDonorMatchingServiceTests.cs" />
+    <Compile Include="Services\DonorMatchCalculatorTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -474,9 +475,6 @@
     <Content Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Repositories" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

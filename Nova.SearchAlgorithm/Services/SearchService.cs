@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Scoring;
+using Nova.SearchAlgorithm.Services.Matching;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -95,11 +92,11 @@ namespace Nova.SearchAlgorithm.Services
                 TotalMatchGrade = result.TotalMatchGrade,
                 TotalMatchCount = result.TotalMatchCount,
                 TypedLociCount = result.TypedLociCount,
-                MatchDetailsAtLocusA = result.MatchDetailsAtLocusA,
-                MatchDetailsAtLocusB = result.MatchDetailsAtLocusB,
-                MatchDetailsAtLocusC = result.MatchDetailsAtLocusC,
-                MatchDetailsAtLocusDQB1 = result.MatchDetailsAtLocusDqb1,
-                MatchDetailsAtLocusDRB1 = result.MatchDetailsAtLocusDrb1
+                MatchDetailsAtLocusA = result.MatchDetailsForLocus(Locus.A),
+                MatchDetailsAtLocusB = result.MatchDetailsForLocus(Locus.B),
+                MatchDetailsAtLocusC = result.MatchDetailsForLocus(Locus.C),
+                MatchDetailsAtLocusDQB1 = result.MatchDetailsForLocus(Locus.Dqb1),
+                MatchDetailsAtLocusDRB1 = result.MatchDetailsForLocus(Locus.Drb1)
             };
         }
     }

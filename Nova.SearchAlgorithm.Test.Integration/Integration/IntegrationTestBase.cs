@@ -12,6 +12,8 @@ using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
+using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
@@ -91,7 +93,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
