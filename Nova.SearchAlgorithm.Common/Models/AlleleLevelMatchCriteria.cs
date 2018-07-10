@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Common.Models
     public class AlleleLevelLocusMatchCriteria
     {
         public int MismatchCount { get; set; }
-        public IEnumerable<string> HlaNamesToMatchInPositionOne { get; set; }
-        public IEnumerable<string> HlaNamesToMatchInPositionTwo { get; set; }
+        public IEnumerable<string> PGroupsToMatchInPositionOne { get; set; }
+        public IEnumerable<string> PGroupsToMatchInPositionTwo { get; set; }
     }
 }

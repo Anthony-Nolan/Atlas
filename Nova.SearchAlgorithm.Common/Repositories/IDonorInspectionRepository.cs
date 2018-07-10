@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
@@ -8,5 +9,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         Task<int> HighestDonorId();
         IBatchQueryAsync<DonorResult> AllDonors();
         Task<DonorResult> GetDonor(int donorId);
+        Task<PhenotypeInfo<IEnumerable<string>>> GetPGroupsForDonor(int donorId);
     }
 }

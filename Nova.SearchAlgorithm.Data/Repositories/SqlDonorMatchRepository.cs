@@ -32,8 +32,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.HlaNamesToMatchInPositionOne),
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.HlaNamesToMatchInPositionTwo)
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionOne),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionTwo)
             );
 
             return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
@@ -81,6 +81,30 @@ GROUP BY DonorId, TypePosition";
                 var donor = await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE DonorId = {donorId}");
                 return donor?.ToDonorResult();
             }
+        }
+
+        public async Task<PhenotypeInfo<IEnumerable<string>>> GetPGroupsForDonor(int donorId)
+        {
+            var result = new PhenotypeInfo<IEnumerable<string>>();
+            using (var conn = new SqlConnection(connectionString))
+            {
+                // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
+                foreach (var locus in LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1}))
+                {
+                    var pGroups = await conn.QueryAsync<DonorMatchWithName>($@"
+SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableName(locus)} m
+JOIN PGroupNames p 
+ON m.PGroup_Id = p.Id
+WHERE DonorId = {donorId}
+");
+                    foreach (var pGroupGroup in pGroups.GroupBy(p => (TypePositions) p.TypePosition))
+                    {
+                        result.SetAtLocus(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
+                    }
+                }
+            }
+
+            return result;
         }
 
         public async Task InsertDonor(RawInputDonor donor)

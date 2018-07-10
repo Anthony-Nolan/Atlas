@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using Autofac;
 using Microsoft.ApplicationInsights;
@@ -12,21 +13,22 @@ using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
 using Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary;
+using Nova.SearchAlgorithm.Test.Integration.Integration.Storage;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
+using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
-    [TestFixture(DonorStorageImplementation.CloudTable)]
+//    [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]
-    //[TestFixture(DonorStorageImplementation.Cosmos)]
+//    [TestFixture(DonorStorageImplementation.Cosmos)]
     public abstract class IntegrationTestBase
     {
         private readonly StorageEmulator tableStorageEmulator = new StorageEmulator();
@@ -42,20 +44,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         [OneTimeSetUp]
         public void Setup()
         {
-            // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
-            tableStorageEmulator.Clear();
-
-            // Starting the cosmos emulator is currently a manual step.
-            if (DonorStorageImplementation.Cosmos.Equals(donorStorageImplementation))
-            {
-                cosmosDatabase.Clear();
-            }
-
             container = CreateContainer();
-
-            if (container.TryResolve(out SearchAlgorithmContext context))
+            ClearDatabase();
+            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
             {
-                context.Database.Delete();
+                tableStorageEmulator.Start();
+            }
+        }
+        
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            {
+                tableStorageEmulator.Stop();
             }
         }
 
@@ -97,7 +99,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
+            builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
@@ -118,6 +121,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
+
+            builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
+                .AsImplementedInterfaces()
+                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
+                .InstancePerLifetimeScope();
+
+            
+            builder.RegisterType<MatchingDictionary.Services.AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();
@@ -128,6 +147,32 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
             return builder.Build();
+        }
+
+        /// <summary>
+        /// Clears the test database. Can be accessed by fixtures to run after each fixture, but not after each test.
+        /// </summary>
+        protected void ClearDatabase()
+        {
+            switch (donorStorageImplementation)
+            {
+                case DonorStorageImplementation.CloudTable:
+                    // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
+                    tableStorageEmulator.Clear();
+                    break;
+                // Starting the cosmos emulator is currently a manual step.
+                case DonorStorageImplementation.Cosmos:
+                    cosmosDatabase.Clear();
+                    break;
+                case DonorStorageImplementation.SQL:
+                    if (container.TryResolve(out SearchAlgorithmContext context))
+                    {
+                        context.Database.Delete();
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 

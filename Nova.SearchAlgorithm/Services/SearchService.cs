@@ -75,8 +75,8 @@ namespace Nova.SearchAlgorithm.Services
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatch.MismatchCount,
-                HlaNamesToMatchInPositionOne = lookupResult[0].MatchingPGroups,
-                HlaNamesToMatchInPositionTwo = lookupResult[1].MatchingPGroups,
+                PGroupsToMatchInPositionOne = lookupResult[0].MatchingPGroups,
+                PGroupsToMatchInPositionTwo = lookupResult[1].MatchingPGroups,
             };
         }
 

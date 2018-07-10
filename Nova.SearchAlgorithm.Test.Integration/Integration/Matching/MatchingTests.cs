@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
@@ -8,31 +7,34 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
 {
     public class MatchingTests : IntegrationTestBase
     {
         private AlleleLevelMatchCriteria searchCriteria;
 
-        private IDonorSearchRepository searchRepo;
         private IDonorMatchingService matchingService;
+        private InputDonor donorWithFullHomozygousMatchAtLocusA;
+        private InputDonor donorWithFullHeterozygousMatchAtLocusA;
+        private InputDonor donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA;
+        private InputDonor donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
+        private InputDonor donorWithNoMatchAtLocusAAndExactMatchAtB;
+        private InputDonor donorWithNoMatchAtLocusAAndHalfMatchAtB;
 
         public MatchingTests(DonorStorageImplementation param) : base(param) { }
 
         [SetUp]
         public void ResolveSearchRepo()
         {
-            searchRepo = container.Resolve<IDonorSearchRepository>();
             matchingService = container.Resolve<IDonorMatchingService>();
         }
         
         [OneTimeSetUp]
-        public void ImportTestDonor()
+        public void ImportTestDonors()
         {
-            IDonorImportRepository importRepo = container.Resolve<IDonorImportRepository>();
+            var importRepo = container.Resolve<IDonorImportRepository>();
 
-            // potential 2/2 homozygous match at locus A
-            importRepo.AddOrUpdateDonorWithHla(new InputDonor
+            donorWithFullHomozygousMatchAtLocusA = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -46,10 +48,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            }).Wait();
+            };
+            importRepo.AddOrUpdateDonorWithHla(donorWithFullHomozygousMatchAtLocusA).Wait();
 
-            // potential 2/2 heterozygous match at locus A
-            importRepo.AddOrUpdateDonorWithHla(new InputDonor
+            donorWithFullHeterozygousMatchAtLocusA = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -63,10 +65,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            }).Wait();
+            };
+            importRepo.AddOrUpdateDonorWithHla(donorWithFullHeterozygousMatchAtLocusA).Wait();
 
-            // potential 1/2 match at locus A - 1/2 in HvG direction, 2/2 in GvH direction
-            importRepo.AddOrUpdateDonorWithHla(new InputDonor
+            donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -80,10 +82,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            }).Wait();
+            };
+            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA).Wait();
 
-            // potential 1/2 match at locus A - 1/2 in both directions
-            importRepo.AddOrUpdateDonorWithHla(new InputDonor
+            donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -97,10 +99,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            }).Wait();
+            };
+            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA).Wait();
 
-            // 0/2 at locus A
-            importRepo.AddOrUpdateDonorWithHla(new InputDonor
+            donorWithNoMatchAtLocusAAndExactMatchAtB = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -114,10 +116,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            }).Wait();
+            };
+            importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocusAAndExactMatchAtB).Wait();
 
-            // 0/2 at locus A, 1/2 at locus B
-            importRepo.AddOrUpdateDonorWithHla(new InputDonor
+            donorWithNoMatchAtLocusAAndHalfMatchAtB = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -131,7 +133,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
                     DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
                 }
-            }).Wait();
+            };
+            importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocusAAndHalfMatchAtB).Wait();
         }
 
         [SetUp]
@@ -145,170 +148,73 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                 LocusMismatchA = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
+                    PGroupsToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
+                    PGroupsToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
                 },
                 LocusMismatchB = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "07:02P" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "08:01P" }
+                    PGroupsToMatchInPositionOne = new List<string> { "07:02P" },
+                    PGroupsToMatchInPositionTwo = new List<string> { "08:01P" }
                 },
                 LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    HlaNamesToMatchInPositionOne = new List<string> { "01:11P" },
-                    HlaNamesToMatchInPositionTwo = new List<string> { "03:41P" }
+                    PGroupsToMatchInPositionOne = new List<string> { "01:11P" },
+                    PGroupsToMatchInPositionTwo = new List<string> { "03:41P" }
                 }
             };
         }
 
-        private async Task<List<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
-        {
-            var results = await matchingService.Search(criteria);
-            return results.ToList();
-        }
-
         [Test]
-        public async Task TwoOfTwoHomozygousMatchAtLocusA()
-        {
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 1);
-        }
-
-        [Test]
-        public async Task TwoOfTwoHeterozygousMatchAtLocusA()
-        {
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 2);
-        }
-
-        [Test]
-        public async Task OneHalfMatchesNotPresentInExactSearchResults()
-        {
-            var results = await Search(searchCriteria);
-            results.Should().NotContain(d => d.Donor.DonorId == 3);
-            results.Should().NotContain(d => d.Donor.DonorId == 4);
-            results.Should().NotContain(d => d.Donor.DonorId == 5);
-            results.Should().NotContain(d => d.Donor.DonorId == 6);
-        }
-
-        [Test]
-        public async Task ExactMatchIsReturnedBySearchWithOneMismatch()
-        {
-            searchCriteria.DonorMismatchCount = 1;
-            searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 1);
-            results.Should().Contain(d => d.Donor.DonorId == 2);
-        }
-
-        [Test]
-        public async Task OneOfTwoHvGAtLocusAReturnedBySearchWithOneMismatch()
-        {
-            searchCriteria.DonorMismatchCount = 1;
-            searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 3);
-        }
-
-        [Test]
-        public async Task OneOfTwoBothDirectionsAtLocusAReturnedBySearchWithOneMismatch()
-        {
-            searchCriteria.DonorMismatchCount = 1;
-            searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 4);
-        }
-
-        [Test]
-        public async Task NoMatchAtLocusANotReturnedBySearchWithOneMismatch()
-        {
-            searchCriteria.DonorMismatchCount = 1;
-            searchCriteria.LocusMismatchA.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().NotContain(d => d.Donor.DonorId == 5);
-            results.Should().NotContain(d => d.Donor.DonorId == 6);
-        }
-
-        [Test]
-        public async Task NoMatchAtLocusAReturnedBySearchWithTwoMismatches()
+        public async Task Search_WithTwoAllowedMismatchesAtA_DoesNotMatchDonorWithNoMatchAtLocusAAndHalfMatchAtLocusB()
         {
             searchCriteria.DonorMismatchCount = 2;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 5);
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == donorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
         }
 
         [Test]
-        public async Task NoMatchAtLocusAHalfAtLocusBNotReturnedBySearchWithTwoMismatches()
-        {
-            searchCriteria.DonorMismatchCount = 2;
-            searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = await Search(searchCriteria);
-            results.Should().NotContain(d => d.Donor.DonorId == 6);
-        }
-
-        [Test]
-        public async Task ExactMatchIsReturnedBySearchWithTwoMismatches()
-        {
-            searchCriteria.DonorMismatchCount = 2;
-            searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 1);
-            results.Should().Contain(d => d.Donor.DonorId == 2);
-        }
-
-        [Test]
-        public async Task HalfMatchAtLocusAReturnedBySearchWithTwoMismatches()
-        {
-            searchCriteria.DonorMismatchCount = 2;
-            searchCriteria.LocusMismatchA.MismatchCount = 2;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 3);
-            results.Should().Contain(d => d.Donor.DonorId == 4);
-        }
-
-        [Test]
-        public async Task ExactMatchIsReturnedBySearchWithThreeMismatches()
+        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_MatchesDonorsWithExactMatchAtAAndB()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 1);
-            results.Should().Contain(d => d.Donor.DonorId == 2);
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithFullHeterozygousMatchAtLocusA.DonorId);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocusA.DonorId);
         }
 
         [Test]
-        public async Task HalfMatchAtLocusAReturnedBySearchWithThreeMismatches()
+        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_MatchesDonorsWithSingleMatchAtAAndCompleteMatchAtB()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 3);
-            results.Should().Contain(d => d.Donor.DonorId == 4);
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA.DonorId);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA.DonorId);
         }
 
         [Test]
-        public async Task NoMatchAtLocusABReturnedBySearchWithThreeMismatches()
+        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_ReturnsDonorsWithNoMatchAtLocusA()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 5);
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithNoMatchAtLocusAAndExactMatchAtB.DonorId);
         }
 
         [Test]
-        public async Task NoMatchAtLocusAHalfAtLocusBReturnedBySearchWithThreeMismatches()
+        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_MatchesDonorWithNoMatchAtLocusAAndHalfMatchAtLocusB()
         {
             searchCriteria.DonorMismatchCount = 3;
             searchCriteria.LocusMismatchA.MismatchCount = 2;
             searchCriteria.LocusMismatchB.MismatchCount = 1;
-            var results = await Search(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == 6);
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
         }
     }
 }

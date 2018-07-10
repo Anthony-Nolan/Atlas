@@ -41,8 +41,8 @@ namespace Nova.SearchAlgorithm.Test.Builders
         {
             request.LocusMismatchA = new AlleleLevelLocusMatchCriteria
             {
-                HlaNamesToMatchInPositionOne = hla1,
-                HlaNamesToMatchInPositionTwo = hla2,
+                PGroupsToMatchInPositionOne = hla1,
+                PGroupsToMatchInPositionTwo = hla2,
                 MismatchCount = mismatchCount,
             };
             return this;
@@ -51,8 +51,8 @@ namespace Nova.SearchAlgorithm.Test.Builders
         {
             request.LocusMismatchB = new AlleleLevelLocusMatchCriteria
             {
-                HlaNamesToMatchInPositionOne = hla1,
-                HlaNamesToMatchInPositionTwo = hla2,
+                PGroupsToMatchInPositionOne = hla1,
+                PGroupsToMatchInPositionTwo = hla2,
                 MismatchCount = mismatchCount,
             };
             return this;
@@ -62,8 +62,8 @@ namespace Nova.SearchAlgorithm.Test.Builders
         {
             request.LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
             {
-                HlaNamesToMatchInPositionOne = hla1,
-                HlaNamesToMatchInPositionTwo = hla2,
+                PGroupsToMatchInPositionOne = hla1,
+                PGroupsToMatchInPositionTwo = hla2,
                 MismatchCount = mismatchCount,
             };
             return this;

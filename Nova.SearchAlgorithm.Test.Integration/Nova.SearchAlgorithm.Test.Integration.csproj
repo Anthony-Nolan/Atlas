@@ -331,16 +331,18 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Integration\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
+    <Compile Include="Integration\Builders\InputDonorBuilder.cs" />
     <Compile Include="Integration\DonorStorageTests.cs" />
+    <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryRepository.cs" />
     <Compile Include="Integration\FileBackedMatchingDictionary\RawMatchingHla.cs" />
     <Compile Include="Integration\DonorImportTests.cs" />
-    <Compile Include="Integration\MatchingTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
-    <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
+    <Compile Include="Integration\Matching\MatchingTests.cs" />
+    <Compile Include="Integration\Matching\MatchingTestsAtASingleLocus.cs" />
     <Compile Include="Integration\Storage\CosmosTestDatabase.cs" />
     <Compile Include="Integration\Storage\StorageEmulator.cs" />
-    <Compile Include="Integration\Storage\StorageSetup.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\MatchingDictionary\matching_hla.json" />

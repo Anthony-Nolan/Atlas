@@ -47,8 +47,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
         {
             var result = await Task.WhenAll(
-                GetMatches(locus, criteria.HlaNamesToMatchInPositionOne),
-                GetMatches(locus, criteria.HlaNamesToMatchInPositionTwo));
+                GetMatches(locus, criteria.PGroupsToMatchInPositionOne),
+                GetMatches(locus, criteria.PGroupsToMatchInPositionTwo));
 
             var matchesFromPositionOne = result[0].Select(m => m.ToPotentialHlaMatchRelation(TypePositions.One));
             var matchesFromPositionTwo = result[1].Select(m => m.ToPotentialHlaMatchRelation(TypePositions.Two));

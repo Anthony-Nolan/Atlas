@@ -1,18 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {
     public interface IDonorMatchCalculator
     {
-        LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria,
-            Tuple<ExpandedHla, ExpandedHla> expandedHla);
+        LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla);
+        LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<IEnumerable<string>, IEnumerable<string>> pGroups);
     }
 
     public class DonorMatchCalculator : IDonorMatchCalculator
     {
+        public LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<IEnumerable<string>, IEnumerable<string>> pGroups)
+        {
+            var hla1 = new ExpandedHla{PGroups = pGroups.Item1.IsNullOrEmpty() ? null : pGroups.Item1 };
+            var hla2 = new ExpandedHla{PGroups = pGroups.Item1.IsNullOrEmpty() ? null : pGroups.Item2 };
+            return CalculateMatchDetailsForDonorHla(locusMatchCriteria, new Tuple<ExpandedHla, ExpandedHla>(hla1, hla2));
+        }
+
         public LocusMatchDetails CalculateMatchDetailsForDonorHla(
             AlleleLevelLocusMatchCriteria locusMatchCriteria,
             Tuple<ExpandedHla, ExpandedHla> expandedHla
@@ -47,8 +55,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 // We have typed search and donor hla to compare
                 matchCount = 0;
 
-                var atLeastOneMatch = locusMatchCriteria.HlaNamesToMatchInPositionOne.Any(pg => hla1.PGroups.Union(hla2.PGroups).Contains(pg)) ||
-                                      locusMatchCriteria.HlaNamesToMatchInPositionTwo.Any(pg => hla1.PGroups.Union(hla2.PGroups).Contains(pg));
+                var atLeastOneMatch = locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla1.PGroups.Union(hla2.PGroups).Contains(pg)) ||
+                                      locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla1.PGroups.Union(hla2.PGroups).Contains(pg));
 
                 if (atLeastOneMatch)
                 {
@@ -69,16 +77,16 @@ namespace Nova.SearchAlgorithm.Services.Matching
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;
-            return locusMatchCriteria.HlaNamesToMatchInPositionOne.Any(pg => hla1.PGroups.Contains(pg)) &&
-                   locusMatchCriteria.HlaNamesToMatchInPositionTwo.Any(pg => hla2.PGroups.Contains(pg));
+            return locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla1.PGroups.Contains(pg)) &&
+                   locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla2.PGroups.Contains(pg));
         }
 
         private static bool CrossMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;
-            return locusMatchCriteria.HlaNamesToMatchInPositionOne.Any(pg => hla2.PGroups.Contains(pg)) &&
-                   locusMatchCriteria.HlaNamesToMatchInPositionTwo.Any(pg => hla1.PGroups.Contains(pg));
+            return locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla2.PGroups.Contains(pg)) &&
+                   locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla1.PGroups.Contains(pg));
         }
     }
 }

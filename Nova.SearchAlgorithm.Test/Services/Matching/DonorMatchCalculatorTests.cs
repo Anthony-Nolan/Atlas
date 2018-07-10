@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Services.Matching;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Services
+namespace Nova.SearchAlgorithm.Test.Services.Matching
 {
     [TestFixture]
     public class DonorMatchCalculatorTests : TestBase<DonorMatchCalculator>
@@ -26,14 +26,14 @@ namespace Nova.SearchAlgorithm.Test.Services
 
         private readonly AlleleLevelLocusMatchCriteria defaultCriteria = new AlleleLevelLocusMatchCriteria()
         {
-            HlaNamesToMatchInPositionOne = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
-            HlaNamesToMatchInPositionTwo = new List<string> {PatientPGroup2},
+            PGroupsToMatchInPositionOne = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
+            PGroupsToMatchInPositionTwo = new List<string> {PatientPGroup2},
         };
         
         private readonly AlleleLevelLocusMatchCriteria homozygousPatientCriteria = new AlleleLevelLocusMatchCriteria()
         {
-            HlaNamesToMatchInPositionOne = new List<string> {PatientPGroupHomozygous},
-            HlaNamesToMatchInPositionTwo = new List<string> {PatientPGroupHomozygous},
+            PGroupsToMatchInPositionOne = new List<string> {PatientPGroupHomozygous},
+            PGroupsToMatchInPositionTwo = new List<string> {PatientPGroupHomozygous},
         };
 
         [SetUp]
