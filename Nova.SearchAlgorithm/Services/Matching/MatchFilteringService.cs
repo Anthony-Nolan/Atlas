@@ -12,17 +12,18 @@ namespace Nova.SearchAlgorithm.Services.Matching
     
     public class MatchFilteringService: IMatchFilteringService
     {
+        private const int MaximumMatchCountPerLocus = 2;
+
         public bool FulfilsPerLocusMatchCriteria(PotentialSearchResult match, AlleleLevelMatchCriteria criteria, Locus locus)
         {
             var locusMatchDetails = match.MatchDetailsForLocus(locus);
             var locusCriteria = criteria.MatchCriteriaForLocus(locus);
-            const int maximumMatchCount = 2;
-            return locusMatchDetails.MatchCount >= maximumMatchCount - locusCriteria.MismatchCount;
+            return locusMatchDetails.MatchCount >= MaximumMatchCountPerLocus - locusCriteria.MismatchCount;
         }
 
         public bool FulfilsTotalMatchCriteria(PotentialSearchResult match, AlleleLevelMatchCriteria criteria)
         {
-            return match.TotalMatchCount >= (match.PopulatedLociCount * 2) - criteria.DonorMismatchCount;
+            return match.TotalMatchCount >= (match.PopulatedLociCount * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
         }
 
         public bool FulfilsSearchTypeCriteria(PotentialSearchResult match, AlleleLevelMatchCriteria criteria)
