@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.Test.Integration.Integration
+﻿namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
 {
     public interface IDonorIdGenerator
     {

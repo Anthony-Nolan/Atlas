@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
-using Nova.SearchAlgorithm.Test.Integration.Integration.Builders;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
     [TestFixture(DonorStorageImplementation.SQL, Locus.A)]
     [TestFixture(DonorStorageImplementation.SQL, Locus.B)]

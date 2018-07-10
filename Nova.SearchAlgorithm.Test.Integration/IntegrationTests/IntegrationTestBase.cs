@@ -14,9 +14,9 @@ using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 using Nova.SearchAlgorithm.Services.Matching;
-using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
-using Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary;
-using Nova.SearchAlgorithm.Test.Integration.Integration.Storage;
+using Nova.SearchAlgorithm.Test.Integration.Storage;
+using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
@@ -24,7 +24,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {
 //    [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]

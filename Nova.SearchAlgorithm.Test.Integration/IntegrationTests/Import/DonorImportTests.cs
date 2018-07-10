@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
     public class DonorImportTests : IntegrationTestBase
     {

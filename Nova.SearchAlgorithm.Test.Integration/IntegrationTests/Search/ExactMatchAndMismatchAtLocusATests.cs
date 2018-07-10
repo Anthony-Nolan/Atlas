@@ -10,7 +10,7 @@ using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 {
     public class ExactMatchAndMismatchAtLocusATests : IntegrationTestBase
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.Builders
+namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
     public class InputDonorBuilder
     {

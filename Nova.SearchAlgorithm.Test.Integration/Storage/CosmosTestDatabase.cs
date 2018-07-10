@@ -5,7 +5,7 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.Storage
+namespace Nova.SearchAlgorithm.Test.Integration.Storage
 {
     public class CosmosTestDatabase
     {
