@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithMismatchAt(Locus.A)
+                .WithSingleMismatchAt(Locus.A)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -93,7 +93,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithMismatchAt(Locus.B)
+                .WithSingleMismatchAt(Locus.B)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -106,14 +106,29 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithMismatchAt(Locus.Drb1)
+                .WithSingleMismatchAt(Locus.Drb1)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
         }
+        
+        [Test]
+        public async Task Search_SixOutOfSix_MismatchAtMultipleLoci_DoesNotReturnDonor()
+        {
+            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .WithSingleMismatchAt(Locus.A)
+                .WithSingleMismatchAt(Locus.B)
+                .WithSingleMismatchAt(Locus.Drb1)
+                .Build();
+            
+            var results = await searchService.Search(searchRequest);
 
+            results.Should().BeEmpty();
+        }
+        
         private class SingleDonorSearchRequestBuilder
         {
             private readonly PhenotypeInfo<string> nonMatchingHlas;
@@ -153,10 +168,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 return this;
             }
 
-            public SingleDonorSearchRequestBuilder WithMismatchAt(Locus locus)
+            public SingleDonorSearchRequestBuilder WithSingleMismatchAt(Locus locus)
             {
                 searchRequestBuilder = searchRequestBuilder
-                    .WithLocusMatchHla(locus, TypePositions.Both, nonMatchingHlas.DataAtLocus(locus).Item1);
+                    .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);
                 return this;
             }
 
