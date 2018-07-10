@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
@@ -15,7 +16,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
         private IHlaUpdateService updateService;
-        private int nextDonorId = 0;
+        private int nextDonorId;
+        
+        // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
+        private readonly Tuple<string, int> AHlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 207);
+
 
         public DonorImportTests(DonorStorageImplementation param) : base(param)
         {
@@ -41,6 +46,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor2, inputDonors.Single(d => d.DonorId == inputDonors.Last().DonorId));
         }
 
+        #region UpdateDonorHla
+        
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
@@ -53,6 +60,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
         }
 
+        [Test]
+        public async Task UpdateDonorHla_ForPatientHlaMatchingMultiplePGroups_InsertsMatchRowForEachPGroup()
+        {
+            var inputDonor = NextDonor();
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+
+            await updateService.UpdateDonorHla();
+
+            var pGroups = await inspectionRepo.GetPGroupsForDonor(inputDonor.DonorId);
+            pGroups.A_1.Count().Should().Be(AHlaWithKnownPGroups1.Item2);
+        }
+        
+        #endregion
+        
         private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, RawInputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);
@@ -61,7 +82,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             donorActual.HlaNames.ShouldBeEquivalentTo(donorExpected.HlaNames);
         }
 
-        private static RawInputDonor DonorWithId(int id)
+        private RawInputDonor DonorWithId(int id)
         {
             return new RawInputDonor
             {
@@ -70,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                 DonorId = id,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A_1 = "01:02",
+                    A_1 = AHlaWithKnownPGroups1.Item1,
                     A_2 = "30:02:01:01",
                     B_1 = "07:02",
                     B_2 = "08:01",
