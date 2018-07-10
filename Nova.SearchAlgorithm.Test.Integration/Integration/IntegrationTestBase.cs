@@ -36,6 +36,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private readonly DonorStorageImplementation donorStorageImplementation;
         protected IContainer container;
 
+        protected IDonorIdGenerator DonorIdGenerator
+        {
+            get
+            {
+                if (container == null)
+                {
+                    throw new Exception("Cannot access injected property before DI container setup");
+                }
+
+                return container.Resolve<IDonorIdGenerator>();
+            }
+        }
+
         protected IntegrationTestBase(DonorStorageImplementation input)
         {
             donorStorageImplementation = input;
@@ -152,6 +165,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
             
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();

@@ -55,57 +55,60 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         }
 
         [Test]
-        public async Task AddOrUpdateThenRetrieveAlleleDonor()
+        public async Task AddOrUpdateDonorWithHla_ForDonorWithAlleles_InsertsDonorInfoCorrectly()
         {
-            await AddOrUpdateThenRetrieveDonor(11, donorWithAlleles);
-        }
-
-        [Test]
-        public async Task AddOrUpdateThenRetrieveXxCodeDonor()
-        {
-            await AddOrUpdateThenRetrieveDonor(12, donorWithXxCodes);
-        }
-
-        private async Task AddOrUpdateThenRetrieveDonor(int donorId, InputDonor donor)
-        {
-            donor.DonorId = donorId;
-
+            var donor = donorWithAlleles;
+            donor.DonorId = DonorIdGenerator.NextId();
             await importRepo.AddOrUpdateDonorWithHla(donor);
 
-            var result = await inspectionRepo.GetDonor(donorId);
+            var result = await inspectionRepo.GetDonor(donor.DonorId);
 
-            result.DonorId.Should().Be(donorId);
-            result.DonorType.Should().Be(donor.DonorType);
-            result.RegistryCode.Should().Be(donor.RegistryCode);
-
-            result.HlaNames.ShouldBeEquivalentTo(donor.MatchingHla.Map((l, p, hla) => hla?.OriginalName));
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(donor, result);
         }
 
         [Test]
-        public async Task InsertThenRetrieveAlleleDonor()
+        public async Task AddOrUpdateDonorWithHla_ForDonorWithXXCodes_InsertsDonorInfoCorrectly()
         {
-            await InsertThenRetrieveDonor(13, donorWithAlleles);
+            var donor = donorWithXxCodes;
+            donor.DonorId = DonorIdGenerator.NextId();
+            await importRepo.AddOrUpdateDonorWithHla(donor);
+
+            var result = await inspectionRepo.GetDonor(donor.DonorId);
+
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(donor, result);
         }
 
         [Test]
-        public async Task InsertThenRetrieveXxCodeDonor()
+        public async Task InsertBatchOfDonors_ForDonorWithAlleles_InsertsDonorInfoCorrectly()
         {
-            await InsertThenRetrieveDonor(14, donorWithXxCodes);
-        }
-
-        private async Task InsertThenRetrieveDonor(int donorId, InputDonor donor)
-        {
-            donor.DonorId = donorId;
-
+            var donor = donorWithAlleles;
+            donor.DonorId = DonorIdGenerator.NextId();
             await importRepo.InsertBatchOfDonors(new List<RawInputDonor>{donor.ToRawInputDonor()});
 
-            var result = await inspectionRepo.GetDonor(donorId);
+            var result = await inspectionRepo.GetDonor(donor.DonorId);
 
-            result.DonorId.Should().Be(donorId);
-            result.DonorType.Should().Be(donor.DonorType);
-            result.RegistryCode.Should().Be(donor.RegistryCode);
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(donorWithAlleles, result);
+        }
 
-            result.HlaNames.ShouldBeEquivalentTo(donor.MatchingHla.Map((l, p, hla) => hla?.OriginalName));
+        [Test]
+        public async Task InsertBatchOfDonors_ForDonorWithXXCodes_InsertsDonorInfoCorrectly()
+        {
+            var donor = donorWithXxCodes;
+            donor.DonorId = DonorIdGenerator.NextId();
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor>{donor.ToRawInputDonor()});
+
+            var result = await inspectionRepo.GetDonor(donor.DonorId);
+
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(donorWithXxCodes, result);
+        }
+        
+        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(InputDonor expectedDonor, DonorResult actualDonor)
+        {
+            actualDonor.DonorId.Should().Be(expectedDonor.DonorId);
+            actualDonor.DonorType.Should().Be(expectedDonor.DonorType);
+            actualDonor.RegistryCode.Should().Be(expectedDonor.RegistryCode);
+
+            actualDonor.HlaNames.ShouldBeEquivalentTo(expectedDonor.MatchingHla.Map((l, p, hla) => hla?.OriginalName));
         }
     }
 }

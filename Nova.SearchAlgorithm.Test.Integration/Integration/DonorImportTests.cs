@@ -16,11 +16,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
         private IHlaUpdateService updateService;
-        private int nextDonorId;
         
         // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
         private readonly Tuple<string, int> AHlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 207);
-
 
         public DonorImportTests(DonorStorageImplementation param) : base(param)
         {
@@ -104,8 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         /// <returns> Donor with default information, and an auto-incremented donorId to avoid duplicates in the test DB</returns>
         private RawInputDonor NextDonor()
         {
-            var donor = DonorWithId(nextDonorId);
-            nextDonorId++;
+            var donor = DonorWithId(DonorIdGenerator.NextId());
             return donor;
         }
     }
