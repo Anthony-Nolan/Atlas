@@ -107,12 +107,6 @@ WHERE DonorId = {donorId}
             return result;
         }
 
-        public async Task InsertDonor(RawInputDonor donor)
-        {
-            context.Donors.Add(donor.ToDonorEntity());
-            await context.SaveChangesAsync();
-        }
-
         public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
             var rawInputDonors = donors.ToList();

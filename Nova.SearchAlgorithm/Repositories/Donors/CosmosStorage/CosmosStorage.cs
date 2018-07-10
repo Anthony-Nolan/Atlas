@@ -75,14 +75,17 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage
             return (await client.GetItemAsync<DonorCosmosDocument>(donorId.ToString())).ToDonorResult();
         }
 
-        public async Task InsertDonor(RawInputDonor donor)
+        private async Task InsertDonor(RawInputDonor donor)
         {
             await client.CreateItemAsync(DonorCosmosDocument.FromRawInputDonor(donor));
         }
 
-        public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
+        public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
-            throw new NotImplementedException();
+            foreach (var donor in donors)
+            {
+                await InsertDonor(donor);
+            }
         }
 
         public void SetupForHlaRefresh()

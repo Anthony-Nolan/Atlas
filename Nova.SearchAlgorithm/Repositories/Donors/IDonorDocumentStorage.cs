@@ -8,9 +8,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     public interface IDonorDocumentStorage
     {
         /// <summary>
-        /// Inserts the raw donor but does not insert any match data
+        /// Inserts the raw donors but does not insert any match data
         /// </summary>
-        Task InsertDonor(RawInputDonor donor);
         Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
         
         /// <summary>

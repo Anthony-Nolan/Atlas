@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         {
             donor.DonorId = donorId;
 
-            await importRepo.InsertDonor(donor.ToRawInputDonor());
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor>{donor.ToRawInputDonor()});
 
             var result = await inspectionRepo.GetDonor(donorId);
 

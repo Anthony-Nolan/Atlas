@@ -17,7 +17,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private IHlaUpdateService updateService;
         private int nextDonorId = 0;
 
-        public DonorImportTests(DonorStorageImplementation param) : base(param) { }
+        public DonorImportTests(DonorStorageImplementation param) : base(param)
+        {
+        }
 
         [SetUp]
         public void ResolveSearchRepo()
@@ -26,21 +28,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             inspectionRepo = container.Resolve<IDonorInspectionRepository>();
             updateService = container.Resolve<IHlaUpdateService>();
         }
-        
-        [Test]
-        public async Task InsertDonor_InsertsCorrectDonorData()
-        {
-            var inputDonor = NextDonor();
-            await importRepo.InsertDonor(inputDonor);
 
-            var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
-        }
-        
         [Test]
         public async Task InsertBatchOfDonors_InsertsCorrectDonorData()
         {
-            var inputDonors = new List<RawInputDonor>{NextDonor(), NextDonor()};
+            var inputDonors = new List<RawInputDonor> {NextDonor(), NextDonor()};
             await importRepo.InsertBatchOfDonors(inputDonors);
 
             var storedDonor1 = await inspectionRepo.GetDonor(inputDonors.First().DonorId);
@@ -48,13 +40,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor1, inputDonors.Single(d => d.DonorId == inputDonors.First().DonorId));
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor2, inputDonors.Single(d => d.DonorId == inputDonors.Last().DonorId));
         }
-        
+
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
             var inputDonor = NextDonor();
-            await importRepo.InsertDonor(inputDonor);
-            
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+
             await updateService.UpdateDonorHla();
 
             var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);

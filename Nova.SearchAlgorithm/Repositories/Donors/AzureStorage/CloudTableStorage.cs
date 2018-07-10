@@ -96,12 +96,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors.AzureStorage
                 donorTable.ExecuteQuery(donorQuery).Select(dte => dte.ToDonorResult()).FirstOrDefault());
         }
 
-        public async Task InsertDonor(RawInputDonor donor)
-        {
-            var insertDonor = TableOperation.Insert(donor.ToTableEntity());
-            await donorTable.ExecuteAsync(insertDonor);
-        }
-
         public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
             var allRegistryCodes = Enum.GetValues(typeof(RegistryCode)).Cast<RegistryCode>();
