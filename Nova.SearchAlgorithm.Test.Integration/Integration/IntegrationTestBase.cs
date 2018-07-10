@@ -46,12 +46,26 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         {
             container = CreateContainer();
             ClearDatabase();
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            SetupDatabase();
+        }
+
+        private void SetupDatabase()
+        {
+            switch (donorStorageImplementation)
             {
-                tableStorageEmulator.Start();
+                case DonorStorageImplementation.SQL when container.TryResolve(out SearchAlgorithmContext context):
+                    context.Database.CreateIfNotExists();
+                    break;
+                case DonorStorageImplementation.CloudTable:
+                    tableStorageEmulator.Start();
+                    break;
+                case DonorStorageImplementation.Cosmos:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         [OneTimeTearDown]
         public void TearDown()
         {
@@ -71,21 +85,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            // Switch between testing different implementations
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            switch (donorStorageImplementation)
             {
-                builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else if (donorStorageImplementation == DonorStorageImplementation.Cosmos)
-            {
-                builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else
-            {
-                builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-                builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                // Switch between testing different implementations
+                case DonorStorageImplementation.CloudTable:
+                    builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    break;
+                case DonorStorageImplementation.Cosmos:
+                    builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    break;
+                case DonorStorageImplementation.SQL:
+                default:
+                    builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+                    builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    break;
             }
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
