@@ -5,8 +5,6 @@ using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Services;
 using NUnit.Framework;
 
@@ -17,6 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
         private IHlaUpdateService updateService;
+        private int nextDonorId = 0;
 
         public DonorImportTests(DonorStorageImplementation param) : base(param) { }
 
@@ -31,39 +30,34 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         [Test]
         public async Task InsertDonor_InsertsCorrectDonorData()
         {
-            const int donorId = 1;
-            var inputDonor = DonorWithId(donorId);
+            var inputDonor = NextDonor();
             await importRepo.InsertDonor(inputDonor);
 
-            var storedDonor = await inspectionRepo.GetDonor(donorId);
+            var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
         }
         
         [Test]
         public async Task InsertBatchOfDonors_InsertsCorrectDonorData()
         {
-            const int donorId1 = 3;
-            const int donorId2 = 4;
-            var donorIds = new List<int> {donorId1, donorId2};
-            var inputDonors = donorIds.Select(DonorWithId).ToList();
+            var inputDonors = new List<RawInputDonor>{NextDonor(), NextDonor()};
             await importRepo.InsertBatchOfDonors(inputDonors);
 
-            var storedDonor1 = await inspectionRepo.GetDonor(donorId1);
-            var storedDonor2 = await inspectionRepo.GetDonor(donorId2);
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor1, inputDonors.Single(d => d.DonorId == donorId1));
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor2, inputDonors.Single(d => d.DonorId == donorId2));
+            var storedDonor1 = await inspectionRepo.GetDonor(inputDonors.First().DonorId);
+            var storedDonor2 = await inspectionRepo.GetDonor(inputDonors.Last().DonorId);
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor1, inputDonors.Single(d => d.DonorId == inputDonors.First().DonorId));
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor2, inputDonors.Single(d => d.DonorId == inputDonors.Last().DonorId));
         }
         
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
-            const int donorId = 2;
-            var inputDonor = DonorWithId(donorId);
+            var inputDonor = NextDonor();
             await importRepo.InsertDonor(inputDonor);
             
             await updateService.UpdateDonorHla();
 
-            var storedDonor = await inspectionRepo.GetDonor(donorId);
+            var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
         }
 
@@ -77,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
 
         private static RawInputDonor DonorWithId(int id)
         {
-            return  new RawInputDonor
+            return new RawInputDonor
             {
                 RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,
@@ -92,6 +86,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                     DRB1_2 = "03:41",
                 }
             };
+        }
+
+        /// <returns> Donor with default information, and an auto-incremented donorId to avoid duplicates in the test DB</returns>
+        private RawInputDonor NextDonor()
+        {
+            var donor = DonorWithId(nextDonorId);
+            nextDonorId++;
+            return donor;
         }
     }
 }
