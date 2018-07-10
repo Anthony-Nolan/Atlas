@@ -28,13 +28,15 @@ namespace Nova.SearchAlgorithm.Services
         private readonly ILogger logger;
         private readonly IMatchingDictionaryRepository matchingDictionaryRepository;
         private readonly IAntigenCachingService antigenCachingService;
+        private readonly IAlleleNamesRepository alleleNamesRepository;
 
         public HlaUpdateService(IMatchingDictionaryLookupService lookupService,
             IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             ILogger logger,
             IMatchingDictionaryRepository matchingDictionaryRepository,
-            IAntigenCachingService antigenCachingService
+            IAntigenCachingService antigenCachingService,
+            IAlleleNamesRepository alleleNamesRepository
         )
         {
             this.lookupService = lookupService;
@@ -43,6 +45,7 @@ namespace Nova.SearchAlgorithm.Services
             this.logger = logger;
             this.matchingDictionaryRepository = matchingDictionaryRepository;
             this.antigenCachingService = antigenCachingService;
+            this.alleleNamesRepository = alleleNamesRepository;
         }
 
         public async Task UpdateDonorHla()
@@ -77,6 +80,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
             await matchingDictionaryRepository.LoadMatchingDictionaryIntoMemory();
+            await alleleNamesRepository.LoadAlleleNamesIntoMemory();
             
             // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
             donorImportRepository.SetupForHlaRefresh();
