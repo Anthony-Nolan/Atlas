@@ -22,6 +22,7 @@ namespace Nova.SearchAlgorithm
             app.SetUpInstrumentation(ConfigurationManager.AppSettings["insights.instrumentationKey"]);
             var container = app.ConfigureAutofac();
             
+            // TODO: NOVA-1440: Sort out caching in a more sensible way
             HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IAntigenCachingService>().GenerateAntigenCache());
             HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IMatchingDictionaryRepository>().LoadMatchingDictionaryIntoMemory());
             
