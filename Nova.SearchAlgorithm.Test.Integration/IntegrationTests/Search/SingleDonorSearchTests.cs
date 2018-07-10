@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
@@ -17,12 +18,26 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     {
         private ISearchService searchService;
         private InputDonor donor;
-
-        private const string DonorHlaAtA = "01:02";
-        private const string DonorHlaAtB1 = "14:53";
-        private const string DonorHlaAtB2 = "14:47";
-        private const string DonorHlaAtDrb11 = "13:03:01";
-        private const string DonorHlaAtDrb12 = "13:02:01:03";
+        // A selection of valid hla data for the single donor to have
+        private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
+        {
+            A_1 = "01:02",
+            A_2 = "01:02",
+            B_1 = "14:53",
+            B_2 = "14:47",
+            DRB1_1 = "13:03:01",
+            DRB1_2 = "13:02:01:03",
+        };
+        // A selection of valid hla strings that do not match the donor's
+        private PhenotypeInfo<string> nonMatchingHlas= new PhenotypeInfo<string>
+        {
+            A_1 = "01:01:01:02N",
+            A_2 = "01:01:01:02N",
+            B_1 = "07:02:01:01",
+            B_2 = "07:02:13",
+            DRB1_1 = "14:190",
+            DRB1_2 = "14:190",
+        };
 
         public SingleDonorSearchTests(DonorStorageImplementation param) : base(param) { }
 
@@ -31,20 +46,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var lookupService = container.Resolve<IMatchingDictionaryLookupService>();
             var donorRepository = container.Resolve<IDonorImportRepository>();
+            
             donor = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = (new PhenotypeInfo<string>
-                {
-                    A_1 = DonorHlaAtA,
-                    A_2 = DonorHlaAtA,
-                    B_1 = DonorHlaAtB1,
-                    B_2 = DonorHlaAtB2,
-                    DRB1_1 = DonorHlaAtDrb11,
-                    DRB1_2 = DonorHlaAtDrb12,
-                }).Map((l, p, h) => h == null ? null : lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
+                MatchingHla = (donorHlas).Map((l, p, h) => h == null ? null : lookupService.GetMatchingHla(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
             };
             donorRepository.AddOrUpdateDonorWithHla(donor).Wait();
         }
@@ -58,26 +66,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_ExactMatch_ReturnsDonor()
         {
-            var searchRequest = new SearchRequestBuilder()
-                .WithTotalMismatchCount(0)
-                .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtA,
-                    SearchHla2 = DonorHlaAtA
-                })
-                .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtB1,
-                    SearchHla2 = DonorHlaAtB2
-                })
-                .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtDrb11,
-                    SearchHla2 = DonorHlaAtDrb12
-                })
+            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -88,26 +78,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusA_DoesNotReturnDonor()
         {
-            var searchRequest = new SearchRequestBuilder()
-                .WithTotalMismatchCount(0)
-                .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = "01:01:01:02N",
-                    SearchHla2 = "01:01:01:02N"
-                })
-                .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtB1,
-                    SearchHla2 = DonorHlaAtB2
-                })
-                .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtDrb11,
-                    SearchHla2 = DonorHlaAtDrb12
-                })
+            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .WithMismatchAt(Locus.A)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -118,26 +91,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusB_DoesNotReturnDonor()
         {
-            var searchRequest = new SearchRequestBuilder()
-                .WithTotalMismatchCount(0)
-                .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtA,
-                    SearchHla2 = DonorHlaAtA
-                })
-                .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = "07:02:01:01",
-                    SearchHla2 = "07:02:13"
-                })
-                .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtDrb11,
-                    SearchHla2 = DonorHlaAtDrb12
-                })
+            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .WithMismatchAt(Locus.B)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -148,31 +104,66 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusDrb1_DoesNotReturnDonor()
         {
-            var searchRequest = new SearchRequestBuilder()
-                .WithTotalMismatchCount(0)
-                .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtA,
-                    SearchHla2 = DonorHlaAtA
-                })
-                .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = DonorHlaAtB1,
-                    SearchHla2 = DonorHlaAtB2
-                })
-                .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0,
-                    SearchHla1 = "14:190",
-                    SearchHla2 = "14:190"
-                })
+            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .WithMismatchAt(Locus.Drb1)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
+        }
+
+        private class SingleDonorSearchRequestBuilder
+        {
+            private readonly PhenotypeInfo<string> nonMatchingHlas;
+            private SearchRequestBuilder searchRequestBuilder;
+            
+            public SingleDonorSearchRequestBuilder(PhenotypeInfo<string> donorHlas, PhenotypeInfo<string> nonMatchingHlas)
+            {
+                this.nonMatchingHlas = nonMatchingHlas;
+                searchRequestBuilder = new SearchRequestBuilder()
+                    .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = donorHlas.A_1,
+                        SearchHla2 = donorHlas.A_2,
+                    })
+                    .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = donorHlas.B_1,
+                        SearchHla2 = donorHlas.B_2,
+                    })
+                    .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
+                    {
+                        MismatchCount = 0,
+                        SearchHla1 = donorHlas.DRB1_1,
+                        SearchHla2 = donorHlas.DRB1_2,
+                    });
+            }
+
+            public SingleDonorSearchRequestBuilder SixOutOfSix()
+            {
+                searchRequestBuilder = searchRequestBuilder
+                    .WithTotalMismatchCount(0)
+                    .WithLocusMatchCount(Locus.A, 0)
+                    .WithLocusMatchCount(Locus.B, 0)
+                    .WithLocusMatchCount(Locus.Drb1, 0);
+                return this;
+            }
+
+            public SingleDonorSearchRequestBuilder WithMismatchAt(Locus locus)
+            {
+                searchRequestBuilder = searchRequestBuilder
+                    .WithLocusMatchHla(locus, TypePositions.Both, nonMatchingHlas.DataAtLocus(locus).Item1);
+                return this;
+            }
+
+            public SearchRequest Build()
+            {
+                return searchRequestBuilder.Build();
+            }
         }
     }
 }
