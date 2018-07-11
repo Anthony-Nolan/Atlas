@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             var hlaInfo = GetHlaInfoForMatching();
             var hlaMatchers = new List<IHlaMatcher>{ new AlleleMatcher(), new SerologyMatcher() };
-            var matchedHla = CreateMatchedHla(hlaMatchers, hlaInfo);
+            var matchedHla = PreCalculateMatchedHla(hlaMatchers, hlaInfo);
 
             return matchedHla;
         }
@@ -44,9 +44,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return new HlaInfoForMatching(alleleInfoForMatching, serologyInfoForMatching, alleleToSerologyRelationships);
         }
 
-        private static IEnumerable<IMatchedHla> CreateMatchedHla(IEnumerable<IHlaMatcher> hlaMatchers, HlaInfoForMatching hlaInfo)
+        private static IEnumerable<IMatchedHla> PreCalculateMatchedHla(IEnumerable<IHlaMatcher> hlaMatchers, HlaInfoForMatching hlaInfo)
         {
-            return hlaMatchers.SelectMany(matcher => matcher.CreateMatchedHla(hlaInfo));
+            return hlaMatchers.SelectMany(matcher => matcher.PreCalculateMatchedHla(hlaInfo));
         }
     }
 }

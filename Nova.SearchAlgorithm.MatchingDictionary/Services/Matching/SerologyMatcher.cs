@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     /// </summary>
     internal class SerologyMatcher : IHlaMatcher
     {
-        public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
+        public IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo)
         {
             var serologyToAlleleMapper = new SerologyToAlleleMapper();
 
