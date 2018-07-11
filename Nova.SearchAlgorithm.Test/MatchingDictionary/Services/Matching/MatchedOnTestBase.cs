@@ -7,16 +7,16 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
     public class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {
-        protected List<TMatchedOn> MatchingTypings;
+        protected List<TMatchedOn> MatchedHlaTypings;
 
         public MatchedOnTestBase(IEnumerable<TMatchedOn> matchingTypes)
         {
-            MatchingTypings = matchingTypes.ToList();
+            MatchedHlaTypings = matchingTypes.ToList();
         }
 
         protected TMatchedOn GetSingleMatchingTyping(MatchLocus matchLocus, string hlaName)
         {
-            return MatchingTypings.Single(m =>
+            return MatchedHlaTypings.Single(m =>
                 m.HlaTyping.MatchLocus.Equals(matchLocus) && m.HlaTyping.Name.Equals(hlaName));
         }
     }

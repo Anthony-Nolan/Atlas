@@ -25,8 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         {
             return $"{Locus}{Name}";
         }
-
-
+        
         public bool Equals(HlaTyping other)
         {
             if (ReferenceEquals(null, other)) return false;

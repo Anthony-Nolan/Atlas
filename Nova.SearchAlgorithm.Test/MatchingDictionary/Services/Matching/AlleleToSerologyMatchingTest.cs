@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
         [Test]
         public void AllNonExpressedAllelesHaveNoMatchingSerology()
         {
-            var serologyCounts = MatchingTypings
+            var serologyCounts = MatchedHlaTypings
                 .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is AlleleTyping)
                 .Select(m => new
                 {

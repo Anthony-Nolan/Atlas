@@ -201,23 +201,26 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         [Test]
         public async Task GetMatchingHla_WhenNmdpCode_MatchingHlaForAllAllelesIsReturned()
         {
-            const string hlaName = "99:NMDPCODE";
-            const string firstAllele = "99:01";
-            const string secondAllele = "99:50";
-            const string thirdAllele = "99:99";
-            var firstEntry = BuildAlleleDictionaryEntry(firstAllele);
-            var secondEntry = BuildAlleleDictionaryEntry(secondAllele);
-            var thirdEntry = BuildAlleleDictionaryEntry(thirdAllele);
+            const string expectedLookupName = "99:NMDPCODE";
 
-            hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.NmdpCode);
-            hlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, hlaName).Returns(new List<string> { firstAllele, secondAllele, thirdAllele });
+            const string firstAlleleName = "99:01";
+            const string secondAlleleName = "99:50";
+            const string thirdAlleleName = "99:99";
+            var expectedMatchingPGroups = new[] { firstAlleleName, secondAlleleName, thirdAlleleName };
+
+            var firstEntry = BuildAlleleDictionaryEntry(firstAlleleName);
+            var secondEntry = BuildAlleleDictionaryEntry(secondAlleleName);
+            var thirdEntry = BuildAlleleDictionaryEntry(thirdAlleleName);
+            
+            hlaCategorisationService.GetHlaTypingCategory(expectedLookupName).Returns(HlaTypingCategory.NmdpCode);
+            hlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, expectedLookupName).Returns(new List<string> { firstAlleleName, secondAlleleName, thirdAlleleName });
             repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular).Returns(firstEntry, secondEntry, thirdEntry);
 
-            var actualResult = await lookupService.GetMatchingHla(MatchedLocus, hlaName);
+            var actualResult = await lookupService.GetMatchingHla(MatchedLocus, expectedLookupName);
 
-            Assert.AreEqual(actualResult.MatchLocus, MatchedLocus);
-            Assert.AreEqual(actualResult.LookupName, hlaName);
-            Assert.AreEqual(actualResult.MatchingPGroups, new[] { firstAllele, secondAllele, thirdAllele });
+            Assert.AreEqual(MatchedLocus, actualResult.MatchLocus);
+            Assert.AreEqual(expectedLookupName, actualResult.LookupName);
+            Assert.AreEqual(expectedMatchingPGroups, actualResult.MatchingPGroups);
         }
 
         [Test]
@@ -258,19 +261,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]
         [TestCase(HlaTypingCategory.AlleleStringOfNames, "Allele1/Allele2", "Allele1", "Allele2")]
         public async Task GetMatchingHla_WhenAlleleString_MatchingHlaForAllAllelesIsReturned(
-            HlaTypingCategory category, string hlaName, string firstAllele, string secondAllele)
+            HlaTypingCategory category, string expectedLookupName, string firstAlleleName, string secondAlleleName)
         {
-            var firstEntry = BuildAlleleDictionaryEntry(firstAllele);
-            var secondEntry = BuildAlleleDictionaryEntry(secondAllele);
+            var expectedMatchingPGroups = new[] { firstAlleleName, secondAlleleName };
+            var firstEntry = BuildAlleleDictionaryEntry(firstAlleleName);
+            var secondEntry = BuildAlleleDictionaryEntry(secondAlleleName);
 
-            hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(category);
+            hlaCategorisationService.GetHlaTypingCategory(expectedLookupName).Returns(category);
             repository.GetMatchingDictionaryEntryIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular).Returns(firstEntry, secondEntry);
 
-            var actualResult = await lookupService.GetMatchingHla(MatchedLocus, hlaName);
+            var actualResult = await lookupService.GetMatchingHla(MatchedLocus, expectedLookupName);
 
-            Assert.AreEqual(actualResult.MatchLocus, MatchedLocus);
-            Assert.AreEqual(actualResult.LookupName, hlaName);
-            Assert.AreEqual(actualResult.MatchingPGroups, new[] { firstAllele, secondAllele });
+            Assert.AreEqual(MatchedLocus, actualResult.MatchLocus);
+            Assert.AreEqual(expectedLookupName, actualResult.LookupName);
+            Assert.AreEqual(expectedMatchingPGroups , actualResult.MatchingPGroups);
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]

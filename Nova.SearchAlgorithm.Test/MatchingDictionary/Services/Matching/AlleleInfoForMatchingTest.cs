@@ -1,74 +1,81 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
     [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
     public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {
-        public AlleleInfoForMatchingTest(IEnumerable<IAlleleInfoForMatching> matchingAlleles) : base(matchingAlleles)
+        private class MatchedAlleleTestData
         {
+            public AlleleTyping AlleleTyping { get; }
+            public int PGroupCount { get; }
+            public int GGroupCount { get; }
+
+            public MatchedAlleleTestData(AlleleTyping alleleTyping, int pGroupCount, int gGroupCount)
+            {
+                AlleleTyping = alleleTyping;
+                PGroupCount = pGroupCount;
+                GGroupCount = gGroupCount;
+            }
+        }
+
+        private readonly IQueryable<MatchedAlleleTestData> matchedAlleleTestData;
+        private readonly IQueryable<MatchedAlleleTestData> validAllelesFromTestDataset;
+
+        public AlleleInfoForMatchingTest(IEnumerable<IAlleleInfoForMatching> matchedAlleles) : base(matchedAlleles)
+        {
+            matchedAlleleTestData = MatchedHlaTypings.AsQueryable().Select(m =>
+                new MatchedAlleleTestData((AlleleTyping)m.HlaTyping, m.MatchingPGroups.Count(),
+                    m.MatchingGGroups.Count()));
+
+            validAllelesFromTestDataset = matchedAlleleTestData.Where(m => !m.AlleleTyping.IsDeleted);
         }
 
         [Test]
         public void MatchedAlleles_WhereAlleleTypingIsValid_ExpectedNumberOfPGroupsPerAllele()
         {
-            var pGroupCounts = MatchingTypings
-                .Where(m => !m.HlaTyping.IsDeleted)
-                .Select(m => new { Allele = m.HlaTyping as AlleleTyping, PGroupCount = m.MatchingPGroups.Count() })
-                .ToList();
+            var expressedAllelesThatDoNotHavePGroupCountOfOne = validAllelesFromTestDataset
+                .Where(x => !x.AlleleTyping.IsNullExpresser && x.PGroupCount != 1);
 
-            var expressed = pGroupCounts.Where(p =>
-                !p.Allele.IsNullExpresser && p.PGroupCount != 1);
+            var nullAllelesThatDoNotHavePGroupCountOfZero = validAllelesFromTestDataset
+                .Where(x => x.AlleleTyping.IsNullExpresser && x.PGroupCount != 0);
 
-            var notExpressed = pGroupCounts.Where(p =>
-                p.Allele.IsNullExpresser && p.PGroupCount != 0);
-
-            Assert.Multiple(() =>
-            {
-                Assert.IsFalse(expressed.Any());
-                Assert.IsFalse(notExpressed.Any());
-            });
+            Assert.IsEmpty(expressedAllelesThatDoNotHavePGroupCountOfOne);
+            Assert.IsEmpty(nullAllelesThatDoNotHavePGroupCountOfZero);
         }
 
         [Test]
         public void MatchedAlleles_WhereAlleleTypingIsValid_OnlyOneGGroupPerAllele()
         {
-            var gGroupCounts = MatchingTypings
-                .Where(m => !m.HlaTyping.IsDeleted)
-                .Select(m => new { Allele = m.HlaTyping as AlleleTyping, GGroupCount = m.MatchingGGroups.Count() })
-                .ToList();
-
-            var allelesWithIncorrectCounts = gGroupCounts.Where(g => g.GGroupCount != 1);
-            Assert.IsFalse(allelesWithIncorrectCounts.Any());
+            var allelesThatDoNotHaveGGroupCountOfOne = validAllelesFromTestDataset.Where(g => g.GGroupCount != 1);
+            Assert.IsEmpty(allelesThatDoNotHaveGGroupCountOfOne);
         }
 
         [Test]
         public void MatchedAlleles_ForAllAlleles_AlleleStatusOnlyUnknownForDeletedTypings()
         {
-            var typingStatus = MatchingTypings
-                .Select(m => (AlleleTyping)m.HlaTyping)
-                .Select(m => new
+            var typingStatuses = matchedAlleleTestData
+                .Select(x => new
                 {
-                    IsAlleleDeleted = m.IsDeleted,
-                    IsSequenceStatusUnknown = m.Status.SequenceStatus == SequenceStatus.Unknown,
-                    IsDnaCategoryUnknown = m.Status.DnaCategory == DnaCategory.Unknown
-                })
-                .ToList();
+                    IsAlleleDeleted = x.AlleleTyping.IsDeleted,
+                    IsSequenceStatusUnknown = x.AlleleTyping.Status.SequenceStatus == SequenceStatus.Unknown,
+                    IsDnaCategoryUnknown = x.AlleleTyping.Status.DnaCategory == DnaCategory.Unknown
+                });
 
-            var validTypingsWhereStatusIsUnknown = typingStatus.Where(allele =>
+            var validTypingsWhereStatusIsUnknown = typingStatuses.Where(allele =>
                 !allele.IsAlleleDeleted && (allele.IsSequenceStatusUnknown || allele.IsDnaCategoryUnknown));
 
-            var deletedTypingsWhereStatusIsKnown = typingStatus.Where(allele =>
+            var deletedTypingsWhereStatusIsKnown = typingStatuses.Where(allele =>
                 allele.IsAlleleDeleted && (!allele.IsSequenceStatusUnknown || !allele.IsDnaCategoryUnknown));
 
             Assert.Multiple(() =>
             {
-                Assert.IsFalse(validTypingsWhereStatusIsUnknown.Any());
-                Assert.IsFalse(deletedTypingsWhereStatusIsKnown.Any());
+                Assert.IsEmpty(validTypingsWhereStatusIsUnknown);
+                Assert.IsEmpty(deletedTypingsWhereStatusIsKnown);
             });
         }
 
@@ -86,16 +93,16 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
             SequenceStatus sequenceStatus,
             DnaCategory dnaCategory)
         {
+            var status = new AlleleTypingStatus(sequenceStatus, dnaCategory);
+            var expected = BuildAlleleInfoForMatching(
+                new AlleleTyping(locus, alleleName, status),
+                new AlleleTyping(locus, alleleName, status),
+                pGroup,
+                gGroup);
+
             var actual = GetSingleMatchingTyping(matchLocus, alleleName);
 
-            var status = new AlleleTypingStatus(sequenceStatus, dnaCategory);
-            var expected = new AlleleInfoForMatching(
-                new AlleleTyping(locus, alleleName, status),
-                new AlleleTyping(locus, alleleName, status),
-                pGroup == null ? new List<string>() : new List<string> { pGroup },
-                new List<string> { gGroup });
-
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
         }
 
         [TestCase("A*", MatchLocus.A, "11:53", "11:02:01", "11:02P", "11:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele & Identical Hla are expressing")]
@@ -112,21 +119,23 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
             SequenceStatus sequenceStatus,
             DnaCategory dnaCategory)
         {
-            var actual = GetSingleMatchingTyping(matchLocus, alleleName);
-
             var alleleTypingStatus = new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown);
-            var alleleTyping = new AlleleTyping(locus, alleleName, alleleTypingStatus, true);
+            var deletedAlleleTyping = new AlleleTyping(
+                locus, alleleName, alleleTypingStatus, true);
 
             var usedInMatchingStatus = new AlleleTypingStatus(sequenceStatus, dnaCategory);
-            var usedInMatching = new AlleleTyping(locus, alleleNameUsedInMatching, usedInMatchingStatus, alleleNameUsedInMatching.Equals(alleleName));
+            var usedInMatching = new AlleleTyping(
+                locus, alleleNameUsedInMatching, usedInMatchingStatus, alleleNameUsedInMatching.Equals(alleleName));
 
-            var expected = new AlleleInfoForMatching(
-                alleleTyping,
+            var expected = BuildAlleleInfoForMatching(
+                deletedAlleleTyping,
                 usedInMatching,
-                pGroup == null ? new List<string>() : new List<string> { pGroup },
-                gGroup == null ? new List<string>() : new List<string> { gGroup });
+                pGroup,
+                gGroup);
 
-            Assert.AreEqual(actual, expected);
+            var actual = GetSingleMatchingTyping(matchLocus, alleleName);
+
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -142,7 +151,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
                 new HlaTyping(TypingMethod.Molecular, "DQB1*", "03:23:03")
             };
 
-            Assert.IsEmpty(MatchingTypings.Where(m => confidentialAlleles.Contains(m.HlaTyping)));
+            Assert.IsEmpty(matchedAlleleTestData.Where(m => confidentialAlleles.Contains(m.AlleleTyping)));
+        }
+
+        private static IAlleleInfoForMatching BuildAlleleInfoForMatching(
+            AlleleTyping alleleTyping, AlleleTyping typingUsedInMatching, string pGroup, string gGroup)
+        {
+            var alleleInfo = new AlleleInfoForMatching(
+                alleleTyping,
+                typingUsedInMatching, 
+                pGroup == null ? new List<string>() : new List<string> { pGroup },
+                gGroup == null ? new List<string>() : new List<string> { gGroup }
+                );
+
+            return alleleInfo;
         }
     }
 }

@@ -339,6 +339,7 @@
     <Compile Include="Controllers\ControllerTestBase.cs" />
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
+    <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
@@ -366,7 +367,7 @@
     <Compile Include="MatchingDictionary\Repositories\Wmda\SerologyToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdRepositoryTestBase.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTest.cs" />
-    <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingModelTest.cs" />
+    <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\AlleleToSerologyMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedHlaTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\ReciprocalMatchingTest.cs" />
@@ -438,7 +439,7 @@
     <Content Include="MatchingDictionary\Data\wmda-v3310\version_report.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.Serologies_ContainsAllExpectedSerology.approved.txt">
+    <Content Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.AssociatedWithBroadGGroupsAreCorrect.approved.txt" />
@@ -473,7 +474,7 @@
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
     <Content Include="MatchingDictionary\Services\Matching\SerologyToPgroups\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.ServiceReturnsAllExpectedSerology.approved.txt">
+    <Content Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
