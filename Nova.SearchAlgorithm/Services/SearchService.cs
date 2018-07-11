@@ -6,8 +6,8 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
-using Nova.SearchAlgorithm.Scoring;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.SearchAlgorithm.Services.Scoring;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services

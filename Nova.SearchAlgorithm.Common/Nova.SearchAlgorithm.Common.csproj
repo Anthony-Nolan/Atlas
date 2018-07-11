@@ -133,6 +133,9 @@
     <Compile Include="Models\PotentialHlaMatchRelation.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Models\RegistryCode.cs" />
+    <Compile Include="Models\Scoring\MatchGrade.cs" />
+    <Compile Include="Models\Scoring\MatchGradeResult.cs" />
+    <Compile Include="Models\Scoring\MatchOrientation.cs" />
     <Compile Include="Models\SearchResults\LocusMatchDetails.cs" />
     <Compile Include="Models\SearchResults\LocusScoreDetails.cs" />
     <Compile Include="Models\SearchResults\MatchResult.cs" />
