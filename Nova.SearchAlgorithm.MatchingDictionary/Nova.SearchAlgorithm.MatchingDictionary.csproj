@@ -244,6 +244,7 @@
     <Compile Include="Services\MatchingDictionaryLookupService.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\AlleleNamesLookupBase.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
+    <Compile Include="Services\MatchingDictionary\Lookups\MatchingDictionaryLookupFactory.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
     <Compile Include="Services\MatchingDictionary\Lookups\XxCodeLookup.cs" />
