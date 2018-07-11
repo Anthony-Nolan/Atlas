@@ -61,7 +61,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullHomozygousMatchAtLocus).Wait();
 
             donorWithFullExactHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -71,7 +70,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullExactHeterozygousMatchAtLocus).Wait();
 
             donorWithFullCrossHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -81,7 +79,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullCrossHeterozygousMatchAtLocus).Wait();
 
             donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -92,8 +89,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                 .Build();
 
-            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus).Wait();
-
             donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
@@ -102,7 +97,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus).Wait();
 
             donorWithNoMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -112,7 +106,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocus).Wait();
+
+            var allDonors = new List<InputDonor>
+            {
+                donorWithFullHomozygousMatchAtLocus,
+                donorWithFullExactHeterozygousMatchAtLocus,
+                donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
+                donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
+                donorWithNoMatchAtLocus,
+                donorWithFullCrossHeterozygousMatchAtLocus
+            };
+
+            foreach (var donor in allDonors)
+            {
+                Task.Run(() => importRepo.AddOrUpdateDonorWithHla(donor)).Wait();
+            }
         }
 
         [OneTimeTearDown]

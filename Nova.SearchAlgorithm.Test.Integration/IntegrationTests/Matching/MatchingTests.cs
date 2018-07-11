@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
@@ -20,6 +21,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private InputDonor donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
         private InputDonor donorWithNoMatchAtLocusAAndExactMatchAtB;
         private InputDonor donorWithNoMatchAtLocusAAndHalfMatchAtB;
+        
+        // Registries chosen to be different from `DefaultRegistryCode`
+        private InputDonor donorWithFullMatchAtAnthonyNolanRegistry;
+        private InputDonor donorWithFullMatchAtNmdpRegistry;
 
         private const string PatientPGroup_LocusA_BothPositions = "01:01P";
         private const string PatientPGroup_LocusA_PositionOne = "01:02";
@@ -46,7 +51,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var importRepo = container.Resolve<IDonorImportRepository>();
 
             donorWithFullHomozygousMatchAtLocusA = GetDefaultInputDonorBuilder().Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullHomozygousMatchAtLocusA).Wait();
 
             donorWithFullHeterozygousMatchAtLocusA = GetDefaultInputDonorBuilder()
                 .WithHlaAtLocus(
@@ -55,7 +59,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_PositionTwo, "non-matching-pgroup"}}
                 )
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullHeterozygousMatchAtLocusA).Wait();
 
             donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = GetDefaultInputDonorBuilder()
                 .WithHlaAtLocus(
@@ -65,7 +68,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .Build();
                 
-            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA).Wait();
 
             donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = GetDefaultInputDonorBuilder()
                 .WithHlaAtLocus(
@@ -74,7 +76,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } }
                 )
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA).Wait();
 
             donorWithNoMatchAtLocusAAndExactMatchAtB = GetDefaultInputDonorBuilder()
                 .WithHlaAtLocus(
@@ -88,7 +89,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusB_PositionTwo}}
                 )
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocusAAndExactMatchAtB).Wait();
 
             donorWithNoMatchAtLocusAAndHalfMatchAtB = GetDefaultInputDonorBuilder()
                 .WithHlaAtLocus(
@@ -102,7 +102,31 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_PositionOne}}
                 )
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocusAAndHalfMatchAtB).Wait();
+
+            donorWithFullMatchAtAnthonyNolanRegistry = GetDefaultInputDonorBuilder()
+                .WithRegistryCode(RegistryCode.AN)
+                .Build();
+
+            donorWithFullMatchAtNmdpRegistry = GetDefaultInputDonorBuilder()
+                .WithRegistryCode(RegistryCode.NMDP)
+                .Build();
+
+            var allDonors = new List<InputDonor>
+            {
+                donorWithFullHomozygousMatchAtLocusA,
+                donorWithFullHeterozygousMatchAtLocusA,
+                donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA,
+                donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA,
+                donorWithNoMatchAtLocusAAndExactMatchAtB,
+                donorWithNoMatchAtLocusAAndHalfMatchAtB,
+                donorWithFullMatchAtAnthonyNolanRegistry,
+                donorWithFullMatchAtNmdpRegistry
+            };
+
+            foreach (var donor in allDonors)
+            {
+                Task.Run(() => importRepo.AddOrUpdateDonorWithHla(donor)).Wait();
+            }
         }
 
         [Test]
@@ -166,6 +190,28 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             results.Should().Contain(d => d.Donor.DonorId == donorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
         }
 
+        [Test]
+        public async Task Search_ForMultipleSpecifiedRegistries_MatchesDonorsAtAllSpecifiedRegistries()
+        {
+            var searchCriteria = GetDefaultCriteriaBuilder()
+                .WithRegistries(new List<RegistryCode> {RegistryCode.AN, RegistryCode.NMDP})
+                .Build();
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithFullMatchAtAnthonyNolanRegistry.DonorId);
+            results.Should().Contain(d => d.Donor.DonorId == donorWithFullMatchAtNmdpRegistry.DonorId);
+        }
+        
+        [Test]
+        public async Task Search_DoesNotMatchDonorsAtUnspecifiedRegistries()
+        {
+            var searchCriteria = GetDefaultCriteriaBuilder()
+                .WithRegistries(new List<RegistryCode> {DefaultRegistryCode})
+                .Build();
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == donorWithFullMatchAtNmdpRegistry.DonorId);
+            results.Should().NotContain(d => d.Donor.DonorId == donorWithFullMatchAtAnthonyNolanRegistry.DonorId);
+        }
+
         /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
         private InputDonorBuilder GetDefaultInputDonorBuilder()
         {
@@ -190,7 +236,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
         
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
-        private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
+        private static AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
         {
             return new AlleleLevelMatchCriteriaBuilder()
                 .WithSearchType(DefaultDonorType)
