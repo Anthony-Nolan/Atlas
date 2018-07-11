@@ -10,16 +10,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// Creates a complete collection of matched HLA
     /// by orchestrating the generation and compilation of matching info extracted from the WMDA files.
     /// </summary>
-    public interface IHlaMatchingService
+    public interface IHlaMatchingPreCalculationService
     {
         IEnumerable<IMatchedHla> GetMatchedHla();
     }
 
-    public class HlaMatchingService : IHlaMatchingService
+    public class HlaMatchPreCalculationService : IHlaMatchingPreCalculationService
     {
         private readonly IWmdaDataRepository dataRepository;
 
-        public HlaMatchingService(IWmdaDataRepository dataRepository)
+        public HlaMatchPreCalculationService(IWmdaDataRepository dataRepository)
         {
             this.dataRepository = dataRepository;
         }

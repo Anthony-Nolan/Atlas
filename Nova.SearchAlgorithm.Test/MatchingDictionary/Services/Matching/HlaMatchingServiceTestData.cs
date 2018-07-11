@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 
         private HlaMatchingServiceTestData()
         {
-            MatchedHla = new HlaMatchingService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository).GetMatchedHla();
+            MatchedHla = new HlaMatchPreCalculationService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository).GetMatchedHla();
         }
     }
 }

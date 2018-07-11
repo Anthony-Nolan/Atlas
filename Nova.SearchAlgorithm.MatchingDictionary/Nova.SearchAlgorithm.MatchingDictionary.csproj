@@ -283,7 +283,7 @@
     <Compile Include="Services\ManageMatchingDictionaryService.cs" />
     <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />
     <Compile Include="Services\Matching\AlleleMatcher.cs" />
-    <Compile Include="Services\HlaMatchingService.cs" />
+    <Compile Include="Services\HlaMatchPreCalculationService.cs" />
     <Compile Include="Services\Matching\SerologyToAlleleMapper.cs" />
     <Compile Include="Services\Matching\AlleleToSerologyMapper.cs" />
     <Compile Include="Services\Matching\IHlaMatcher.cs" />
