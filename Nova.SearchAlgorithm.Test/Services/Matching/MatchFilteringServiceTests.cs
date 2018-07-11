@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -29,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithAsManyMismatchesAsSpecified_ReturnsTrue()
         {
@@ -42,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithMoreMismatchesThanSpecified_ReturnsFalse()
         {
@@ -55,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeFalse();
         }
-        
+
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAtASingleLocusThanSpecifiedOverall_ReturnsFalse()
         {
@@ -67,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeFalse();
         }
-        
+
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossMultipleLociThanSpecifiedOverall_ReturnsFalse()
         {
@@ -78,16 +79,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var criteria = new AlleleLevelMatchCriteria
             {
                 DonorMismatchCount = 2,
-                LocusMismatchA = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1},
-                LocusMismatchB = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1},
-                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1}
+                LocusMismatchA = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
             };
 
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
 
             result.Should().BeFalse();
         }
-        
+
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossAllLociThanSpecifiedOverall_ReturnsFalse()
         {
@@ -100,18 +101,18 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var criteria = new AlleleLevelMatchCriteria
             {
                 DonorMismatchCount = 2,
-                LocusMismatchA = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1},
-                LocusMismatchB = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1},
-                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1},
-                LocusMismatchC = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1},
-                LocusMismatchDQB1 = new AlleleLevelLocusMatchCriteria{ MismatchCount = 1}
+                LocusMismatchA = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchC = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchDQB1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
             };
 
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
 
             result.Should().BeFalse();
         }
-        
+
         [Test]
         public void FulfilsTotalMatchCriteria_WithFewerTotalMismatchesThanSpecifiedOverall_ReturnsTrue()
         {
@@ -128,7 +129,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsTotalMatchCriteria_WithAsManyTotalMismatchesAsSpecifiedOverall_ReturnsTrue()
         {
@@ -144,6 +145,42 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
 
             result.Should().BeTrue();
+        }
+
+        [Test]
+        public void FulfilsRegistryCriteria_ForMatchAtSpecifiedRegistry_ReturnsTrue()
+        {
+            const RegistryCode specifiedRegistry = RegistryCode.AN;
+            var match = new PotentialSearchResult {Donor = new DonorResult {RegistryCode = specifiedRegistry}};
+            var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {specifiedRegistry}};
+
+            var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+
+        [Test]
+        public void FulfilsRegistryCriteria_ForMatchAtOneOfMultipleSpecifiedRegistries_ReturnsTrue()
+        {
+            const RegistryCode patientRegistry = RegistryCode.DKMS;
+            var match = new PotentialSearchResult {Donor = new DonorResult {RegistryCode = patientRegistry}};
+            var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {patientRegistry, RegistryCode.FRANCE}};
+
+            var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+        
+        [Test]
+        public void FulfilsRegistryCriteria_ForMatchAtUnspecifiedRegistry_ReturnsFalse()
+        {
+            const RegistryCode patientRegistry = RegistryCode.DKMS;
+            var match = new PotentialSearchResult {Donor = new DonorResult {RegistryCode = patientRegistry}};
+            var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {RegistryCode.NMDP, RegistryCode.FRANCE}};
+
+            var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
+
+            result.Should().BeFalse();
         }
     }
 }

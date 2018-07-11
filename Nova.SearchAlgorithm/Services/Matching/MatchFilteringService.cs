@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+using System.Linq;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Services.Matching
@@ -35,8 +36,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public bool FulfilsRegistryCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            // TODO: NOVA-1326: Implement filtering on regitsry
-            throw new System.NotImplementedException();
+            return criteria.RegistriesToSearch.Contains(match.Donor.RegistryCode);
         }
     }
 }
