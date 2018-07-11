@@ -373,7 +373,7 @@
     <Compile Include="MatchingDictionary\Services\Matching\ReciprocalMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\SerologyToGgroups\SerologyToGGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\MatchedHlaTest.cs" />
-    <Compile Include="MatchingDictionary\Services\Matching\HlaMatchingServiceTestData.cs" />
+    <Compile Include="MatchingDictionary\Services\Matching\HlaMatchPreCalculationServiceTestData.cs" />
     <Compile Include="MatchingDictionary\Services\Matching\SerologyToSerology\SerologyToSerologyMatchingTest.cs" />
   </ItemGroup>
   <ItemGroup>

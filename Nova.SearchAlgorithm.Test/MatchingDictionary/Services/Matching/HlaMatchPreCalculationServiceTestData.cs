@@ -5,13 +5,13 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
 {
-    public sealed class HlaMatchingServiceTestData
+    public sealed class HlaMatchPreCalculationServiceTestData
     {
-        public static HlaMatchingServiceTestData Instance { get; } = new HlaMatchingServiceTestData();
+        public static HlaMatchPreCalculationServiceTestData Instance { get; } = new HlaMatchPreCalculationServiceTestData();
 
         public IEnumerable<IMatchedHla> MatchedHla { get; }
 
-        private HlaMatchingServiceTestData()
+        private HlaMatchPreCalculationServiceTestData()
         {
             MatchedHla = new HlaMatchPreCalculationService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository).GetMatchedHla();
         }
