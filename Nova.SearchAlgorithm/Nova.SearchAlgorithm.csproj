@@ -325,7 +325,7 @@
     <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
     <Compile Include="Services\Matching\MatchFilteringService.cs" />
     <Compile Include="Services\TestDataService.cs" />
-    <Compile Include="Scoring\CalculateScore.cs" />
+    <Compile Include="Scoring\DonorScoringService.cs" />
     <Compile Include="Services\DonorExtensions.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />

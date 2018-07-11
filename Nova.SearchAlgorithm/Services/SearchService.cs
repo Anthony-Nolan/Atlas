@@ -3,36 +3,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Scoring;
 using Nova.SearchAlgorithm.Services.Matching;
+using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
 {
     public interface ISearchService
     {
-        Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest);
+        Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest);
     }
 
     public class SearchService : ISearchService
     {
         private readonly IMatchingDictionaryLookupService lookupService;
-        private readonly ICalculateScore calculateScore;
+        private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
 
         public SearchService(
             IMatchingDictionaryLookupService lookupService, 
-            ICalculateScore calculateScore,
+            IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService
             )
         {
             this.lookupService = lookupService;
-            this.calculateScore = calculateScore;
+            this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
         }
 
-        public async Task<IEnumerable<PotentialMatch>> Search(SearchRequest searchRequest)
+        public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
             var criteriaMappings = await Task.WhenAll(
                 MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
@@ -56,7 +58,7 @@ namespace Nova.SearchAlgorithm.Services
             var matches = await donorMatchingService.Search(criteria);
 
             // TODO:NOVA-930 this won't update total match grade and confidence, only per-locus
-            var scoredMatches = await Task.WhenAll(matches.Select(m => calculateScore.Score(criteria, m)));
+            var scoredMatches = await donorScoringService.Score(criteria, matches);
 
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }
@@ -80,23 +82,39 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private PotentialMatch MapSearchResultToApiObject(PotentialSearchResult result)
+        private SearchResult MapSearchResultToApiObject(Common.Models.SearchResults.SearchResult result)
         {
-            return new PotentialMatch
+            return new SearchResult
             {
-                DonorId = result.Donor.DonorId,
-                DonorType = result.Donor.DonorType,
-                Registry = result.Donor.RegistryCode,
-                MatchRank = result.MatchRank,
-                TotalMatchConfidence = result.TotalMatchConfidence,
-                TotalMatchGrade = result.TotalMatchGrade,
-                TotalMatchCount = result.TotalMatchCount,
-                TypedLociCount = result.TypedLociCount,
-                MatchDetailsAtLocusA = result.MatchDetailsForLocus(Locus.A),
-                MatchDetailsAtLocusB = result.MatchDetailsForLocus(Locus.B),
-                MatchDetailsAtLocusC = result.MatchDetailsForLocus(Locus.C),
-                MatchDetailsAtLocusDQB1 = result.MatchDetailsForLocus(Locus.Dqb1),
-                MatchDetailsAtLocusDRB1 = result.MatchDetailsForLocus(Locus.Drb1)
+                DonorId = result.MatchResult.Donor.DonorId,
+                DonorType = result.MatchResult.Donor.DonorType,
+                Registry = result.MatchResult.Donor.RegistryCode,
+                MatchRank = result.ScoreResult.TotalMatchRank,
+                TotalMatchConfidence = result.ScoreResult.TotalMatchConfidence,
+                TotalMatchGrade = result.ScoreResult.TotalMatchGrade,
+                TotalMatchCount = result.MatchResult.TotalMatchCount,
+                TypedLociCount = result.MatchResult.TypedLociCount,
+                SearchResultAtLocusA = ToSearchResultAtLocus(result, Locus.A),
+                SearchResultAtLocusB = ToSearchResultAtLocus(result, Locus.B),
+                SearchResultAtLocusC = ToSearchResultAtLocus(result, Locus.C),
+                SearchResultAtLocusDqb1 = ToSearchResultAtLocus(result, Locus.Dqb1),
+                SearchResultAtLocusDrb1 = ToSearchResultAtLocus(result, Locus.Drb1),
+            };
+        }
+
+        private static LocusSearchResult ToSearchResultAtLocus(Common.Models.SearchResults.SearchResult result, Locus locus)
+        {
+            var matchDetails = result.MatchResult.MatchDetailsForLocus(locus);
+            if (matchDetails == null)
+            {
+                return null;
+            }
+            return new LocusSearchResult
+            {
+                IsLocusTyped = result.MatchResult.MatchDetailsForLocus(locus).IsLocusTyped,
+                MatchCount = result.MatchResult.MatchDetailsForLocus(locus).MatchCount,
+                MatchGrade = result.ScoreResult.ScoreDetailsForLocus(locus).MatchGrade,
+                MatchConfidence = result.ScoreResult.ScoreDetailsForLocus(locus).MatchConfidence
             };
         }
     }

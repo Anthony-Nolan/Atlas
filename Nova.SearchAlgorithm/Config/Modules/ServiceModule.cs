@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
                     .InstancePerLifetimeScope();
             }
 
-            builder.RegisterType<Scoring.CalculateScore>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Scoring.DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.TestDataService>().AsImplementedInterfaces().InstancePerLifetimeScope();

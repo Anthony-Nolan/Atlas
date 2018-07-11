@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -90,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             };
         }
 
-        private async Task<List<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
+        private async Task<List<MatchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
             var results = await donorMatchingService.FindMatchesForLoci(criteria, new List<Locus> {Locus.A, Locus.B, Locus.Drb1});
             return results.ToList();
