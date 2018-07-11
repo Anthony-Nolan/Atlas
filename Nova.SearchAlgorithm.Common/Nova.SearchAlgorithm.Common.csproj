@@ -141,7 +141,7 @@
     <Compile Include="Models\SearchResults\LocusScoreDetails.cs" />
     <Compile Include="Models\SearchResults\MatchResult.cs" />
     <Compile Include="Models\SearchResults\ScoreResult.cs" />
-    <Compile Include="Models\SearchResults\SearchResult.cs" />
+    <Compile Include="Models\SearchResults\MatchAndScoreResult.cs" />
     <Compile Include="Models\TypePositions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\CloudTableBatchQueryAsync.cs" />

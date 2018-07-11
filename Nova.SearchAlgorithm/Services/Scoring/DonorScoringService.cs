@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 {
     public interface IDonorScoringService
     {
-        Task<IEnumerable<SearchResult>> Score(AlleleLevelMatchCriteria searchCriteria, IEnumerable<MatchResult> matchResults);
+        Task<IEnumerable<MatchAndScoreResult>> Score(AlleleLevelMatchCriteria searchCriteria, IEnumerable<MatchResult> matchResults);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             this.matchingDictionaryLookupService = matchingDictionaryLookupService;
         }
 
-        public Task<IEnumerable<SearchResult>> Score(AlleleLevelMatchCriteria searchCriteria, IEnumerable<MatchResult> matchResults)
+        public Task<IEnumerable<MatchAndScoreResult>> Score(AlleleLevelMatchCriteria searchCriteria, IEnumerable<MatchResult> matchResults)
         {
             var matchResultsWithLookupData = matchResults.Select(m => new MatchResultWithMatchingDictionaryEntries(
                 m,

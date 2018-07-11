@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private SearchResult MapSearchResultToApiObject(Common.Models.SearchResults.SearchResult result)
+        private SearchResult MapSearchResultToApiObject(Common.Models.SearchResults.MatchAndScoreResult result)
         {
             return new SearchResult
             {
@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private static LocusSearchResult ToSearchResultAtLocus(Common.Models.SearchResults.SearchResult result, Locus locus)
+        private static LocusSearchResult ToSearchResultAtLocus(Common.Models.SearchResults.MatchAndScoreResult result, Locus locus)
         {
             var matchDetails = result.MatchResult.MatchDetailsForLocus(locus);
             if (matchDetails == null)
