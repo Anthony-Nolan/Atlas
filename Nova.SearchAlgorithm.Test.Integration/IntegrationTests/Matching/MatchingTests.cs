@@ -5,7 +5,9 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+// ReSharper disable InconsistentNaming
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -21,6 +23,17 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private InputDonor donorWithNoMatchAtLocusAAndExactMatchAtB;
         private InputDonor donorWithNoMatchAtLocusAAndHalfMatchAtB;
 
+        private const string PatientPGroup_LocusA_BothPositions = "01:01P";
+        private const string PatientPGroup_LocusA_PositionOne = "01:02";
+        private const string PatientPGroup_LocusA_PositionTwo = "02:01";
+        private const string PatientPGroup_LocusB_PositionOne = "07:02P";
+        private const string PatientPGroup_LocusB_PositionTwo = "08:01P";
+        private const string PatientPGroup_LocusDRB1_PositionOne = "01:11P";
+        private const string PatientPGroup_LocusDRB1_PositionTwo = "03:41P";
+        
+        private const RegistryCode DefaultRegistryCode = RegistryCode.DKMS;
+        private const DonorType DefaultDonorType = DonorType.Adult;
+
         public MatchingTests(DonorStorageImplementation param) : base(param) { }
 
         [SetUp]
@@ -34,106 +47,63 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var importRepo = container.Resolve<IDonorImportRepository>();
 
-            donorWithFullHomozygousMatchAtLocusA = new InputDonor
-            {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "01:02" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
-                    B_1 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    B_2 = new ExpandedHla { PGroups = new List<string> { "08:01P" } },
-                    DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
-                    DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
-                }
-            };
+            donorWithFullHomozygousMatchAtLocusA = GetDefaultInputDonorBuilder().Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithFullHomozygousMatchAtLocusA).Wait();
 
-            donorWithFullHeterozygousMatchAtLocusA = new InputDonor
-            {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "02:01", "30:02P" } },
-                    B_1 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    B_2 = new ExpandedHla { PGroups = new List<string> { "08:01P" } },
-                    DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
-                    DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
-                }
-            };
+            donorWithFullHeterozygousMatchAtLocusA = GetDefaultInputDonorBuilder()
+                .WithHlaAtLocus(
+                    Locus.A,
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_BothPositions, "non-matching-pgroup"}},
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_PositionTwo, "non-matching-pgroup"}}
+                )
+                .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithFullHeterozygousMatchAtLocusA).Wait();
 
-            donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = new InputDonor
-            {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "26:04", "30:02P" } },
-                    B_1 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    B_2 = new ExpandedHla { PGroups = new List<string> { "08:01P" } },
-                    DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
-                    DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
-                }
-            };
+            donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = GetDefaultInputDonorBuilder()
+                .WithHlaAtLocus(
+                    Locus.A,
+                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_BothPositions, "non-matching-pgroup" } },
+                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } }
+                )
+                .Build();
+                
             importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA).Wait();
 
-            donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = new InputDonor
-            {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "01:02", "02:01" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "26:04", "30:02P" } },
-                    B_1 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    B_2 = new ExpandedHla { PGroups = new List<string> { "08:01P" } },
-                    DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
-                    DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
-                }
-            };
+            donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = GetDefaultInputDonorBuilder()
+                .WithHlaAtLocus(
+                    Locus.A,
+                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo } },
+                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } }
+                )
+                .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA).Wait();
 
-            donorWithNoMatchAtLocusAAndExactMatchAtB = new InputDonor
-            {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "11:59", "30:02P" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "26:04", "30:02P" } },
-                    B_1 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    B_2 = new ExpandedHla { PGroups = new List<string> { "08:01P" } },
-                    DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
-                    DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
-                }
-            };
+            donorWithNoMatchAtLocusAAndExactMatchAtB = GetDefaultInputDonorBuilder()
+                .WithHlaAtLocus(
+                    Locus.A,
+                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } },
+                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup-3", "non-matching-pgroup-4" } }
+                )
+                .WithHlaAtLocus(
+                    Locus.B,
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusB_PositionOne}},
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusB_PositionTwo}}
+                )
+                .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocusAAndExactMatchAtB).Wait();
 
-            donorWithNoMatchAtLocusAAndHalfMatchAtB = new InputDonor
-            {
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A_1 = new ExpandedHla { PGroups = new List<string> { "11:59", "30:02P" } },
-                    A_2 = new ExpandedHla { PGroups = new List<string> { "11:59", "30:02P" } },
-                    B_1 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    B_2 = new ExpandedHla { PGroups = new List<string> { "07:02P" } },
-                    DRB1_1 = new ExpandedHla { PGroups = new List<string> { "01:11P" } },
-                    DRB1_2 = new ExpandedHla { PGroups = new List<string> { "03:41P" } }
-                }
-            };
+            donorWithNoMatchAtLocusAAndHalfMatchAtB = GetDefaultInputDonorBuilder()
+                .WithHlaAtLocus(
+                    Locus.A,
+                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } },
+                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup-3", "non-matching-pgroup-4" } }
+                )
+                .WithHlaAtLocus(
+                    Locus.B,
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusB_PositionOne}},
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_PositionOne}}
+                )
+                .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocusAAndHalfMatchAtB).Wait();
         }
 
@@ -143,25 +113,25 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             searchCriteria = new AlleleLevelMatchCriteria
             {
                 SearchType = DonorType.Adult,
-                RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
+                RegistriesToSearch = new List<RegistryCode> { DefaultRegistryCode },
                 DonorMismatchCount = 0,
                 LocusMismatchA = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new List<string> { "01:01P", "01:02" },
-                    PGroupsToMatchInPositionTwo = new List<string> { "01:01P", "02:01" }
+                    PGroupsToMatchInPositionOne = new List<string> { PatientPGroup_LocusA_BothPositions, PatientPGroup_LocusA_PositionOne },
+                    PGroupsToMatchInPositionTwo = new List<string> { PatientPGroup_LocusA_BothPositions, PatientPGroup_LocusA_PositionTwo }
                 },
                 LocusMismatchB = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new List<string> { "07:02P" },
-                    PGroupsToMatchInPositionTwo = new List<string> { "08:01P" }
+                    PGroupsToMatchInPositionOne = new List<string> { PatientPGroup_LocusB_PositionOne },
+                    PGroupsToMatchInPositionTwo = new List<string> { PatientPGroup_LocusB_PositionTwo }
                 },
                 LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new List<string> { "01:11P" },
-                    PGroupsToMatchInPositionTwo = new List<string> { "03:41P" }
+                    PGroupsToMatchInPositionOne = new List<string> { PatientPGroup_LocusDRB1_PositionOne },
+                    PGroupsToMatchInPositionTwo = new List<string> { PatientPGroup_LocusDRB1_PositionTwo }
                 }
             };
         }
@@ -215,6 +185,29 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             searchCriteria.LocusMismatchB.MismatchCount = 1;
             var results = await matchingService.Search(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
+        }
+
+        /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
+        private InputDonorBuilder GetDefaultInputDonorBuilder()
+        {
+            return new InputDonorBuilder(DonorIdGenerator.NextId())
+                .WithRegistryCode(DefaultRegistryCode)
+                .WithDonorType(DefaultDonorType)
+                .WithHlaAtLocus(
+                    Locus.A,
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_PositionOne}},
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusA_PositionTwo}}
+                )
+                .WithHlaAtLocus(
+                    Locus.B,
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusB_PositionOne}},
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusB_PositionTwo}}
+                )
+                .WithHlaAtLocus(
+                    Locus.Drb1,
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusDRB1_PositionOne}},
+                    new ExpandedHla {PGroups = new List<string> {PatientPGroup_LocusDRB1_PositionTwo}}
+                );
         }
     }
 }
