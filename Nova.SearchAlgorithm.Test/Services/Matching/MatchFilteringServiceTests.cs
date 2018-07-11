@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Policy;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
@@ -170,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsRegistryCriteria_ForMatchAtUnspecifiedRegistry_ReturnsFalse()
         {
@@ -182,5 +183,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeFalse();
         }
-    }
+
+        [Test]
+        public void FulfilsSearchTypeCriteria_ForMatchOfSpecifiedType_ReturnsTrue()
+        {
+            const DonorType donorType = DonorType.Cord;
+            var match = new MatchResult {Donor = new DonorResult {DonorType = donorType}};
+            var criteria = new AlleleLevelMatchCriteria {SearchType = donorType};
+
+            var result = matchFilteringService.FulfilsSearchTypeCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+        
+        [Test]
+        public void FulfilsSearchTypeCriteria_ForMatchOfUnSpecifiedType_ReturnsFalse()
+        {
+            const DonorType donorType = DonorType.Cord;
+            const DonorType searchType = DonorType.Adult;
+            var match = new MatchResult {Donor = new DonorResult {DonorType = donorType}};
+            var criteria = new AlleleLevelMatchCriteria {SearchType = searchType};
+
+            var result = matchFilteringService.FulfilsSearchTypeCriteria(match, criteria);
+
+            result.Should().BeFalse();
+        }
+}
 }

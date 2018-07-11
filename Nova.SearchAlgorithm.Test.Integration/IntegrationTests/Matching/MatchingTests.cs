@@ -21,10 +21,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private InputDonor donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
         private InputDonor donorWithNoMatchAtLocusAAndExactMatchAtB;
         private InputDonor donorWithNoMatchAtLocusAAndHalfMatchAtB;
-        
+
         // Registries chosen to be different from `DefaultRegistryCode`
         private InputDonor donorWithFullMatchAtAnthonyNolanRegistry;
         private InputDonor donorWithFullMatchAtNmdpRegistry;
+        
+        private InputDonor cordDonorWithFullMatch;
 
         private const string PatientPGroup_LocusA_BothPositions = "01:01P";
         private const string PatientPGroup_LocusA_PositionOne = "01:02";
@@ -111,6 +113,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithRegistryCode(RegistryCode.NMDP)
                 .Build();
 
+            cordDonorWithFullMatch = GetDefaultInputDonorBuilder()
+                .WithDonorType(DonorType.Cord)
+                .Build();
+            
             var allDonors = new List<InputDonor>
             {
                 donorWithFullHomozygousMatchAtLocusA,
@@ -120,7 +126,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 donorWithNoMatchAtLocusAAndExactMatchAtB,
                 donorWithNoMatchAtLocusAAndHalfMatchAtB,
                 donorWithFullMatchAtAnthonyNolanRegistry,
-                donorWithFullMatchAtNmdpRegistry
+                donorWithFullMatchAtNmdpRegistry,
+                cordDonorWithFullMatch
             };
 
             foreach (var donor in allDonors)
@@ -210,6 +217,37 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var results = await matchingService.Search(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithFullMatchAtNmdpRegistry.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithFullMatchAtAnthonyNolanRegistry.DonorId);
+        } 
+        
+        [Test]
+        public async Task Search_ForAdultDonors_DoesNotMatchCordDonors()
+        {
+            var searchCriteria = GetDefaultCriteriaBuilder()
+                .WithSearchType(DonorType.Adult)
+                .Build();
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithFullMatch.DonorId);
+        }
+        
+        [Test]
+        public async Task Search_ForCordDonors_DoesNotMatchAdultDonors()
+        {
+            var searchCriteria = GetDefaultCriteriaBuilder()
+                .WithSearchType(DonorType.Cord)
+                .Build();
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().NotContain(d => d.Donor.DonorId == donorWithFullHeterozygousMatchAtLocusA.DonorId);
+            results.Should().NotContain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocusA.DonorId);
+        }
+        
+        [Test]
+        public async Task Search_ForCordDonors_MatchesCordDonors()
+        {
+            var searchCriteria = GetDefaultCriteriaBuilder()
+                .WithSearchType(DonorType.Cord)
+                .Build();
+            var results = await matchingService.Search(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullMatch.DonorId);
         }
 
         /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>

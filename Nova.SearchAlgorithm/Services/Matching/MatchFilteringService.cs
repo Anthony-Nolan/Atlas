@@ -30,8 +30,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            // TODO: NOVA-1325: Implement filtering on donor type
-            throw new System.NotImplementedException();
+            return match.Donor.DonorType == criteria.SearchType;
         }
 
         public bool FulfilsRegistryCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
