@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Services.Matching;
 using NUnit.Framework;
 
@@ -19,7 +20,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithFewerMismatchesThanSpecified_ReturnsTrue()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 2});
             var criteria = new AlleleLevelMatchCriteria {LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 0}};
@@ -32,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithAsManyMismatchesAsSpecified_ReturnsTrue()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 1});
             var criteria = new AlleleLevelMatchCriteria {LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}};
@@ -45,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithMoreMismatchesThanSpecified_ReturnsFalse()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 1});
             var criteria = new AlleleLevelMatchCriteria {LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 0}};
@@ -58,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAtASingleLocusThanSpecifiedOverall_ReturnsFalse()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             match.SetMatchDetailsForLocus(Locus.B, new LocusMatchDetails {MatchCount = 1});
             var criteria = new AlleleLevelMatchCriteria {DonorMismatchCount = 0};
 
@@ -70,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossMultipleLociThanSpecifiedOverall_ReturnsFalse()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.B, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 1});
@@ -90,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossAllLociThanSpecifiedOverall_ReturnsFalse()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.B, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 1});
@@ -114,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithFewerTotalMismatchesThanSpecifiedOverall_ReturnsTrue()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.B, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 1});
@@ -131,7 +132,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithAsManyTotalMismatchesAsSpecifiedOverall_ReturnsTrue()
         {
-            var match = new PotentialSearchResult();
+            var match = new MatchResult();
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.B, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 1});

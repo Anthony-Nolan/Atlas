@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Repositories.Donors;
@@ -19,7 +20,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// <returns>
         /// A collection of PotentialSearchResults, with donor id populated. MatchDetails will be populated only for the specified loci
         /// </returns>
-        Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci);
+        Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci);
     }
     
     public class DatabaseDonorMatchingService: IDatabaseDonorMatchingService
@@ -33,7 +34,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             this.matchFilteringService = matchFilteringService;
         }
         
-        public async Task<IEnumerable<PotentialSearchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
+        public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
         {
             if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
             {
@@ -50,7 +51,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 .Select(matchesForDonor =>
                 {
                     var donorId = matchesForDonor.Key;
-                    var result = new PotentialSearchResult
+                    var result = new MatchResult
                     {
                         DonorId = donorId,
                     };

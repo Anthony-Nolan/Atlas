@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyToGgroups
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerology))]
+    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerologies))]
     [UseReporter(typeof(NUnitReporter))]
     public class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.Serolog
         [Test]
         public void ValidSerologyHaveAtLeastOneGGroup()
         {
-            var gGroupCounts = MatchingTypings
+            var gGroupCounts = MatchedHlaTypings
                 .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is SerologyTyping)
                 .Select(m => new { HlaType = m.HlaTyping, GGroupCount = m.MatchingGGroups.Count() })
                 .ToList();

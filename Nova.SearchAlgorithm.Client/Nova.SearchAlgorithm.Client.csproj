@@ -146,7 +146,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\PotentialMatch.cs" />
+    <Compile Include="Models\LocusSearchResult.cs" />
+    <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Models\LocusMismatchCriteria.cs" />
     <Compile Include="Models\MismatchCriteria.cs" />
     <Compile Include="Models\SearchRequest.cs" />
@@ -164,9 +165,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Filters\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls.WebParts;
 using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
@@ -19,6 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public interface IMatchingDictionaryLookupService
     {
         Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName);
+        Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntries(MatchLocus matchLocus, string hlaName);
     }
 
     public class MatchingDictionaryLookupService : IMatchingDictionaryLookupService
@@ -50,6 +53,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.logger = logger;
         }
 
+        /// <summary>
+        ///  Consolidates all hla used in matching for all alleles that map to the hla name
+        /// </summary>
         public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
         {
             if (string.IsNullOrEmpty(hlaName))
@@ -99,6 +105,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 var msg = $"Failed to get matching HLA for {hlaName} at locus {matchLocus}.";
                 throw new MatchingDictionaryException(msg, ex);
             }
+        }
+
+        /// <summary>
+        ///  Expands the hla name into a list of matching dictionary entries
+        /// </summary>
+        /// <returns>A matching dictionary data for each hla typing that maps to the hla name</returns>
+        public async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntries(MatchLocus matchLocus, string hlaName)
+        {
+            // TODO: NOVA-1445: Implement
+            throw new NotImplementedException();
         }
     }
 }

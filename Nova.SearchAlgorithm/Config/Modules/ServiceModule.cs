@@ -13,6 +13,7 @@ using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.SearchAlgorithm.Services.Scoring;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -51,7 +52,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
                     .InstancePerLifetimeScope();
             }
 
-            builder.RegisterType<Scoring.CalculateScore>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();

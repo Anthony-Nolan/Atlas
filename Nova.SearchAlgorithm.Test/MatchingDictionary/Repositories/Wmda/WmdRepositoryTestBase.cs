@@ -2,33 +2,36 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     public class WmdaRepositoryTestBase<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
-        protected List<TWmdaHlaTyping> HlaTypings;
+        protected List<TWmdaHlaTyping> WmdaHlaTypings;
         protected IEnumerable<string> MatchLoci;
 
         public WmdaRepositoryTestBase(IEnumerable<TWmdaHlaTyping> hlaTypings, IEnumerable<string> matchLoci)
         {
-            HlaTypings = hlaTypings.ToList();
+            WmdaHlaTypings = hlaTypings.ToList();
             MatchLoci = matchLoci;
         }
 
         [Test]
-        public void WmdaHlaTypingCollectionOnlyContainsMatchLoci()
+        public void WmdaDataRepository_WmdaHlaTypingCollection_IsNotEmpty()
         {
-            var collectionCopy = new List<TWmdaHlaTyping>(HlaTypings);
-            Assert.IsNotEmpty(collectionCopy);
+            Assert.IsNotEmpty(WmdaHlaTypings);
+        }
 
-            collectionCopy.RemoveAll(m => MatchLoci.Contains(m.Locus));
-            Assert.IsEmpty(collectionCopy);
+        [Test]
+        public void WmdaDataRepository_WmdaHlaTypingCollection_OnlyContainsMatchLoci()
+        {
+            WmdaHlaTypings.Should().OnlyContain(typing => MatchLoci.Contains(typing.Locus));               
         }
 
         protected TWmdaHlaTyping GetSingleWmdaHlaTyping(string wmdaLocus, string name)
         {
-            return HlaTypings.Single(s => s.Locus.Equals(wmdaLocus) && s.Name.Equals(name));
+            return WmdaHlaTypings.Single(s => s.Locus.Equals(wmdaLocus) && s.Name.Equals(name));
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
@@ -12,7 +13,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 {
     public interface IDonorMatchingService
     {
-        Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria);
+        Task<IEnumerable<MatchResult>> Search(AlleleLevelMatchCriteria criteria);
     }
 
     public class DonorMatchingService : IDonorMatchingService
@@ -35,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             this.matchFilteringService = matchFilteringService;
         }
 
-        public async Task<IEnumerable<PotentialSearchResult>> Search(AlleleLevelMatchCriteria criteria)
+        public async Task<IEnumerable<MatchResult>> Search(AlleleLevelMatchCriteria criteria)
         {
             var lociToSearch = criteria.LociWithCriteriaSpecified().ToList();
 
@@ -62,10 +63,10 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// Calculates match details for specified loci, and filters based on individual locus mismatch criteria
         /// </summary>
         /// <returns>A list of filtered search results, with the newly searched loci match information populated</returns>
-        private IEnumerable<PotentialSearchResult> MatchInMemory(
+        private IEnumerable<MatchResult> MatchInMemory(
             AlleleLevelMatchCriteria criteria,
             IEnumerable<Locus> lociToMatchInMemory,
-            IEnumerable<PotentialSearchResult> matches)
+            IEnumerable<MatchResult> matches)
         {
             foreach (var locus in lociToMatchInMemory)
             {
@@ -85,20 +86,20 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matches;
         }
 
-        private async Task<PotentialSearchResult> PopulatePGroupsForMatch(PotentialSearchResult potentialSearchResult)
+        private async Task<MatchResult> PopulatePGroupsForMatch(MatchResult matchResult)
         {
-            var pGroups = await donorInspectionRepository.GetPGroupsForDonor(potentialSearchResult.DonorId);
-            potentialSearchResult.DonorPGroups = pGroups;
-            return potentialSearchResult;
+            var pGroups = await donorInspectionRepository.GetPGroupsForDonor(matchResult.DonorId);
+            matchResult.DonorPGroups = pGroups;
+            return matchResult;
         }
 
-        private async Task<PotentialSearchResult> PopulateDonorDataForMatch(PotentialSearchResult potentialSearchResult)
+        private async Task<MatchResult> PopulateDonorDataForMatch(MatchResult matchResult)
         {
             // Augment each match with registry and other data from GetDonor(id)
             // Performance could be improved here, but at least it happens in parallel,
             // and only after filtering match results, not before.
-            potentialSearchResult.Donor = await donorInspectionRepository.GetDonor(potentialSearchResult.DonorId);
-            return potentialSearchResult;
+            matchResult.Donor = await donorInspectionRepository.GetDonor(matchResult.DonorId);
+            return matchResult;
         }
     }
 }

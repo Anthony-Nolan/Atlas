@@ -12,18 +12,21 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        [Test]
-        public void SerologyToSerologyRelationships_SuccessfullyCaptured()
+        [TestCase("A", "9", new[] { "23", "24" }, new string[] { }, Description = "Broad serology with splits, but no associated")]
+        [TestCase("B", "21", new[] { "49", "50" }, new[] { "4005" }, Description = "Broad serology with splits & associated")]
+        [TestCase("B", "51", new string[] { }, new[] { "5102", "5103" }, Description = "Split serology with associated")]
+        [TestCase("DR", "14", new string[] { }, new[] { "1403", "1404" }, Description = "Not-split serology with associated")]
+        public void WmdaDataRepository_WhenSerologyHasRelatedSerology_RelationshipsSuccessfullyCaptured(
+            string locus,
+            string serologyName,
+            string[] expectedSplits,
+            string[] expectedAssociated)
         {
-            var broadNoAssociated = new RelSerSer("A", "9", new List<string> { "23", "24" }, new List<string>());
-            var broadWithAssociated = new RelSerSer("B", "21", new List<string> { "49", "50" }, new List<string> { "4005" });
-            var splitWithAssociated = new RelSerSer("B", "51", new List<string>(), new List<string> { "5102", "5103" });
-            var notSplitWithAssociated = new RelSerSer("DR", "14", new List<string>(), new List<string> { "1403", "1404" });
+            var expectedRelationship = new RelSerSer(locus, serologyName, expectedSplits, expectedAssociated);
 
-            Assert.AreEqual(broadNoAssociated, GetSingleWmdaHlaTyping("A", "9"));
-            Assert.AreEqual(broadWithAssociated, GetSingleWmdaHlaTyping("B", "21"));
-            Assert.AreEqual(splitWithAssociated, GetSingleWmdaHlaTyping("B", "51"));
-            Assert.AreEqual(notSplitWithAssociated, GetSingleWmdaHlaTyping("DR", "14"));
+            var actualRelationship = GetSingleWmdaHlaTyping(locus, serologyName);
+
+            Assert.AreEqual(expectedRelationship, actualRelationship);
         }
     }
 }

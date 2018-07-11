@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Controllers
         public void SetUp()
         {
             GetFake<ISearchService>().Search(Arg.Any<SearchRequest>())
-                .Returns(Task.FromResult(Enumerable.Empty<PotentialMatch>()));
+                .Returns(Task.FromResult(Enumerable.Empty<SearchResult>()));
         }
 
         [Test]
