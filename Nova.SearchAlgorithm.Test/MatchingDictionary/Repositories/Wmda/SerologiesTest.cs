@@ -23,9 +23,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [TestCase("DR", "1404")]
         public void WmdaDataRepository_WhenValidSerology_SuccessfullyCaptured(string locus, string serologyName)
         {
-            var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);
             var expectedSerology = new HlaNom(TypingMethod.Serology, locus, serologyName);
 
+            var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);
+            
             Assert.AreEqual(expectedSerology, actualSerology);
         }
 
@@ -33,9 +34,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public void WmdaDataRepository_WhenDeletedSerology_SuccessfullyCaptured(
             string locus, string serologyName, string identicalHla)
         {
-            var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);
             var expectedSerology = new HlaNom(TypingMethod.Serology, locus, serologyName, true, identicalHla);
 
+            var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);
+            
             Assert.AreEqual(expectedSerology, actualSerology);
         }
 

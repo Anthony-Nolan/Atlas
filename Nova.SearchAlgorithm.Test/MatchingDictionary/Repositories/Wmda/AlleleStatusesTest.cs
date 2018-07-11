@@ -23,8 +23,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [TestCase("C*", "07:01:01:14Q", "Full", "gDNA")]
         public void WmdaDataRepository_AlleleStatuses_SuccessfullyCaptured(string locus, string alleleName, string sequenceStatus, string dnaCategory)
         {
-            var actualAlleleStatus = GetSingleWmdaHlaTyping(locus, alleleName);
             var expectedAlleleStatus = new AlleleStatus(locus, alleleName, sequenceStatus, dnaCategory);
+
+            var actualAlleleStatus = GetSingleWmdaHlaTyping(locus, alleleName);
+
             Assert.AreEqual(expectedAlleleStatus, actualAlleleStatus);
         }
     }

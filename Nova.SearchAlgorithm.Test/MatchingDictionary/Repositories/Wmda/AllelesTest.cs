@@ -21,27 +21,30 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [TestCase("C*", "07:01:01:14Q")]
         public void WmdaDataRepository_WhenValidAllele_SuccessfullyCaptured(string locus, string alleleName)
         {
-            var expectedAllele = GetSingleWmdaHlaTyping(locus, alleleName);
-            var actualAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName);
+            var expectedAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName);
 
+            var actualAllele = GetSingleWmdaHlaTyping(locus, alleleName);
+            
             Assert.AreEqual(expectedAllele, actualAllele);
         }
 
         [TestCase("C*", "07:295", true)]
         public void WmdaDataRepository_WhenDeletedAlleleNoIdenticalHla_SuccessfullyCaptured(string locus, string alleleName, bool isDeleted)
         {
-            var expectedAllele = GetSingleWmdaHlaTyping(locus, alleleName);
-            var actualAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted);
+            var expectedAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted);
 
+            var actualAllele = GetSingleWmdaHlaTyping(locus, alleleName);
+            
             Assert.AreEqual(expectedAllele, actualAllele);
         }
 
         [TestCase("DRB1*", "08:01:03", true, "08:01:01")]
         public void WmdaDataRepository_WhenDeletedAlleleWithIdenticalHla_SuccessfullyCaptured(string locus, string alleleName, bool isDeleted, string identicalHla)
         {
-            var expectedAllele = GetSingleWmdaHlaTyping(locus, alleleName);
-            var actualAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted, identicalHla);
+            var expectedAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted, identicalHla);
 
+            var actualAllele = GetSingleWmdaHlaTyping(locus, alleleName);
+            
             Assert.AreEqual(expectedAllele, actualAllele);
         }
     }

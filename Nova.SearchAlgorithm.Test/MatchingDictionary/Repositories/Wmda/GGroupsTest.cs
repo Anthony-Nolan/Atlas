@@ -28,6 +28,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public void WmdaDataRepository_GGroups_SuccessfullyCaptured(string locus, string gGroupName, IEnumerable<string> expectedAlleles)
         {
             var expectedGGroup = new HlaNomG(locus, gGroupName, expectedAlleles);
+
             var actualGGroup = GetSingleWmdaHlaTyping(locus, gGroupName);
 
             Assert.AreEqual(expectedGGroup, actualGGroup);

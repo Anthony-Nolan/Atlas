@@ -1,6 +1,8 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -12,44 +14,77 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        [TestCase("A*", "01:01:01:01", new[] { "1" }, new[] { Assignment.Unambiguous })]
-        [TestCase("B*", "07:31", new[] { "42", "7" }, new[] { Assignment.Possible, Assignment.Possible })]
-        [TestCase("C*", "04:04:01:01", new[] { "4" }, new[] { Assignment.Assumed })]
-        [TestCase("C*", "14:02:01:01", new[] { "1" }, new[] { Assignment.Expert })]
-        [TestCase("A*", "02:55", new[] { "2", "28" }, new[] { Assignment.Assumed, Assignment.Expert })]
-        [TestCase("B*", "39:01:01:02L", new[] { "3901" }, new[] { Assignment.Possible })]
-        [TestCase("C*", "07:121Q", new[] { "7" }, new[] { Assignment.Assumed })]
-        [TestCase("B*", "44:02:01:02S", new[] { "44" }, new[] { Assignment.Expert })]
-        public void WmdaDataRepository_WhenAlleleHasRelatedSerology_RelationshipsSuccessfullyCaptured(
+        [TestCase(
+            "A*",
+            "01:01:01:01",
+            new object[] { new object[] { "1", Assignment.Unambiguous } }
+            )]
+        [TestCase(
+            "B*",
+            "07:31",
+            new object[]
+            {
+                new object[] { "42", Assignment.Possible },
+                new object[] { "7", Assignment.Possible }
+            }
+            )]
+        [TestCase(
+            "C*",
+            "04:04:01:01",
+            new object[] { new object[] { "4", Assignment.Assumed } }
+            )]
+        [TestCase(
+            "C*",
+            "14:02:01:01",
+            new object[] { new object[] { "1", Assignment.Expert } }
+            )]
+        [TestCase(
+            "A*",
+            "02:55",
+            new object[]
+            {
+                new object[] { "2", Assignment.Assumed },
+                new object[] { "28", Assignment.Expert }
+            }
+            )]
+        [TestCase(
+            "B*",
+            "39:01:01:02L",
+            new object[] { new object[] { "3901", Assignment.Possible } }
+            )]
+        [TestCase(
+            "C*",
+            "07:121Q",
+            new object[] { new object[] { "7", Assignment.Assumed } }
+            )]
+        [TestCase(
+            "B*",
+            "44:02:01:02S",
+            new object[] { new object[] { "44", Assignment.Expert } }
+            )]
+        public void WmdaDataRepository_WhenAlleleHasRelatedSerology_SerologyAssignmentsSuccessfullyCaptured(
             string molecularLocus,
             string alleleName,
-            string[] expectedSerologyNames,
-            Assignment[] expectedAssignments)
+            object[] expectedSerologyAssignments)
         {
-            var serologyAssignments = new List<SerologyAssignment>();
-            for (var i = 0; i < expectedSerologyNames.Length; i++)
-            {
-                var serologyName = expectedSerologyNames[i];
-                var assignment = expectedAssignments[i];
-                serologyAssignments.Add(new SerologyAssignment(serologyName, assignment));
-            }
-
-            var expectedRelationship = new RelDnaSer(molecularLocus, alleleName, serologyAssignments);
             var actualRelationship = GetSingleWmdaHlaTyping(molecularLocus, alleleName);
 
-            Assert.AreEqual(expectedRelationship, actualRelationship);
+            var expectedAssignments = expectedSerologyAssignments
+                .Select(x => (object[])x)
+                .Select(x => new SerologyAssignment(x[0].ToString(), (Assignment) x[1]));
+
+            actualRelationship.Assignments.ShouldBeEquivalentTo(expectedAssignments);
         }
 
         [TestCase("B*", "83:01")]
         [TestCase("DQB1*", "02:18N")]
-        public void WmdaDataRepository_WhenAlleleHasNoRelatedSerology_RelationshipsSuccessfullyCaptured(
+        public void WmdaDataRepository_WhenAlleleHasNoRelatedSerology_NoSerologyAssignmentsAreCaptured(
             string molecularLocus,
             string alleleName)
         {
-            var expectedRelationship = new RelDnaSer(molecularLocus, alleleName, new List<SerologyAssignment>());
             var actualRelationship = GetSingleWmdaHlaTyping(molecularLocus, alleleName);
 
-            Assert.AreEqual(expectedRelationship, actualRelationship);
+            actualRelationship.Assignments.ShouldBeEquivalentTo(new List<SerologyAssignment>());
         }
     }
 }

@@ -23,6 +23,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
             string[] expectedAssociated)
         {
             var expectedRelationship = new RelSerSer(locus, serologyName, expectedSplits, expectedAssociated);
+
             var actualRelationship = GetSingleWmdaHlaTyping(locus, serologyName);
 
             Assert.AreEqual(expectedRelationship, actualRelationship);
