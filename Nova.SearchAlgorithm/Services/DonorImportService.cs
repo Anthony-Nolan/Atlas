@@ -8,6 +8,7 @@ using Nova.DonorService.Client.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services

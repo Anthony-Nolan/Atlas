@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services;
 using Nova.Utils.Solar;
 
