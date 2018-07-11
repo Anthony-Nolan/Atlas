@@ -232,6 +232,7 @@
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
+    <Compile Include="Services\LookupServiceBase.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoriesConsolidator.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoryExtensions.cs" />
     <Compile Include="Services\AlleleNamesService.cs" />
