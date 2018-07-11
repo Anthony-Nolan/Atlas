@@ -57,9 +57,9 @@ namespace Nova.SearchAlgorithm.Services
 
             var matches = await donorMatchingService.Search(criteria);
 
-            // TODO:NOVA-930 this won't update total match grade and confidence, only per-locus
+            // TODO:NOVA-930 add scoring
             var scoredMatches = await donorScoringService.Score(criteria, matches);
-
+            
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }
 

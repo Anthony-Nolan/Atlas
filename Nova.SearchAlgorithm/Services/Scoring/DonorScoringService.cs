@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
@@ -32,8 +33,19 @@ namespace Nova.SearchAlgorithm.Services.Scoring
                 m.Donor.HlaNames.Map(async (locus, position, name) =>
                     await matchingDictionaryLookupService.GetMatchingDictionaryEntries(locus.ToMatchLocus(), name))));
             
-            // TODO:NOVA-930 (write tests and) implement
-            return null;
+            // TODO: NOVA-1449: (write tests and) implement
+            return Task.FromResult(matchResults.Select(r => new MatchAndScoreResult
+            {
+                MatchResult = r, 
+                ScoreResult = new ScoreResult
+                {
+                    ScoreDetailsAtLocusA = new LocusScoreDetails(),
+                    ScoreDetailsAtLocusB = new LocusScoreDetails(),
+                    ScoreDetailsAtLocusC = new LocusScoreDetails(),
+                    ScoreDetailsAtLocusDqb1 = new LocusScoreDetails(),
+                    ScoreDetailsAtLocusDrb1 = new LocusScoreDetails()
+                }
+            }));
         }
     }
 
