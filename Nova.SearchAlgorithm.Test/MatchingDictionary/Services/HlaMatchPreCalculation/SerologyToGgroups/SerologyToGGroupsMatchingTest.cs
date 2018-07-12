@@ -9,6 +9,7 @@ using System.Linq;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToGgroups
 {
     [UseReporter(typeof(NUnitReporter))]
+    [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
     public class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
         [Test]

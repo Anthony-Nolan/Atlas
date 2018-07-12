@@ -9,6 +9,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
     [UseReporter(typeof(NUnitReporter))]
+    [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
         [TestCase("A", MatchLocus.A, "9", SerologySubtype.Broad,
