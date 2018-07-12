@@ -17,16 +17,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
     public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
     {
-        private readonly IHlaMatchingPreCalculationService matchingPreCalculationService;
+        private readonly IHlaMatchPreCalculationService matchPreCalculationService;
         private readonly IMatchingDictionaryRepository dictionaryRepository;
         private readonly IAlleleNamesService alleleNamesService;
 
         public ManageMatchingDictionaryService(
-            IHlaMatchingPreCalculationService matchingPreCalculationService, 
+            IHlaMatchPreCalculationService matchPreCalculationService, 
             IMatchingDictionaryRepository dictionaryRepository,
             IAlleleNamesService alleleNamesService)
         {
-            this.matchingPreCalculationService = matchingPreCalculationService;
+            this.matchPreCalculationService = matchPreCalculationService;
             this.dictionaryRepository = dictionaryRepository;
             this.alleleNamesService = alleleNamesService;
         }
@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private async Task RecreateMatchingDictionaryEntries()
         {
-            var allMatchedHla = matchingPreCalculationService.GetMatchedHla();
+            var allMatchedHla = matchPreCalculationService.GetMatchedHla();
             var entries = allMatchedHla.ToMatchingDictionaryEntries();
             await dictionaryRepository.RecreateMatchingDictionaryTable(entries);
         }
