@@ -15,14 +15,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
-using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
@@ -77,7 +75,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -91,7 +88,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
 
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
@@ -127,10 +123,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
             
-            // Tests should not use Solar, so don't provide an actual connection string.
-            var solarSettings = new SolarConnectionSettings();
-            builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();
-
             var logger = new RequestAwareLogger(new TelemetryClient(),
                 ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();

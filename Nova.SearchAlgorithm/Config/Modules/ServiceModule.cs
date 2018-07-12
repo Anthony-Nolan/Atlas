@@ -28,9 +28,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            // TODO:NOVA-1151 remove any dependency on Solar
-            builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
             var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
@@ -56,13 +53,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
-
-            var solarSettings = new SolarConnectionSettings
-            {
-                ConnectionString = ConfigurationManager.ConnectionStrings["SolarConnectionString"].ConnectionString
-            };
-            builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();
 
             var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
@@ -74,10 +64,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
         {
             builder.RegisterType<MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Repositories.MatchingDictionaryRepository>().AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesRepository>().AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.MatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
                 .AsImplementedInterfaces()
                 .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
@@ -89,14 +77,10 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<MatchingDictionary.Services.AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameHistoriesConsolidator>()
-                .AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNamesFromHistoriesExtractor>()
-                .AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>()
-                .AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>()
-                .AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }
