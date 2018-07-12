@@ -18,16 +18,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
-        private readonly IMatchingDictionaryRepository dictionaryRepository;
+        private readonly IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository;
         private readonly IAlleleNamesService alleleNamesService;
 
         public ManageMatchingDictionaryService(
             IHlaMatchPreCalculationService matchPreCalculationService, 
-            IMatchingDictionaryRepository dictionaryRepository,
+            IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository,
             IAlleleNamesService alleleNamesService)
         {
             this.matchPreCalculationService = matchPreCalculationService;
-            this.dictionaryRepository = dictionaryRepository;
+            this.preCalculatedHlaMatchRepository = preCalculatedHlaMatchRepository;
             this.alleleNamesService = alleleNamesService;
         }
 
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 // so both collections must be recreated together; the order of execution is not important.
                 await Task.WhenAll(
                     RecreateAlleleNames(),
-                    RecreateMatchingDictionaryEntries()
+                    RecreatePreCalculatedHlaMatchInfo()
                     );
             }
             catch (Exception ex)
@@ -53,11 +53,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             await alleleNamesService.RecreateAlleleNames();
         }
 
-        private async Task RecreateMatchingDictionaryEntries()
+        private async Task RecreatePreCalculatedHlaMatchInfo()
         {
             var allMatchedHla = matchPreCalculationService.GetMatchedHla();
-            var entries = allMatchedHla.ToMatchingDictionaryEntries();
-            await dictionaryRepository.RecreateMatchingDictionaryTable(entries);
+            var entries = allMatchedHla.ToPreCalculatedHlaMatchInfo();
+            await preCalculatedHlaMatchRepository.RecreatePreCalculatedHlaMatchesTable(entries);
         }
     }
 }

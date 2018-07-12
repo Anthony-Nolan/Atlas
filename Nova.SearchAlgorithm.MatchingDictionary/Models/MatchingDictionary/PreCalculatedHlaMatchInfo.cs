@@ -12,10 +12,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
     /// HLA data held within the matching dictionary.
     /// Properties are optimised for dictionary lookups.
     /// </summary>
-    public class MatchingDictionaryEntry : 
+    public class PreCalculatedHlaMatchInfo : 
         IMatchingHlaLookupResult,
         IStorableInCloudTable<MatchingDictionaryTableEntity>,
-        IEquatable<MatchingDictionaryEntry>
+        IEquatable<PreCalculatedHlaMatchInfo>
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         [JsonConstructor]
-        public MatchingDictionaryEntry(
+        public PreCalculatedHlaMatchInfo(
             MatchLocus matchLocus,
             string lookupName,
             TypingMethod typingMethod,
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             MatchingSerologies = matchingSerologies;
         }
 
-        public MatchingDictionaryEntry(IMatchingDictionarySource<SerologyTyping> serologySource)
+        public PreCalculatedHlaMatchInfo(IMatchingDictionarySource<SerologyTyping> serologySource)
         {
             MatchLocus = serologySource.TypingForMatchingDictionary.MatchLocus;
             LookupName = serologySource.TypingForMatchingDictionary.Name;
@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             MatchingSerologies = serologySource.MatchingSerologies.ToSerologyEntries();
         }
 
-        public MatchingDictionaryEntry(IMatchingDictionarySource<AlleleTyping> alleleSource, string lookupName, MolecularSubtype molecularSubtype)
+        public PreCalculatedHlaMatchInfo(IMatchingDictionarySource<AlleleTyping> alleleSource, string lookupName, MolecularSubtype molecularSubtype)
         {
             MatchLocus = alleleSource.TypingForMatchingDictionary.MatchLocus;
             LookupName = lookupName;
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             MatchingSerologies = alleleSource.MatchingSerologies.ToSerologyEntries();
         }
 
-        public MatchingDictionaryEntry(MatchLocus matchLocus, string lookupName, MolecularSubtype molecularSubtype, IEnumerable<MatchingDictionaryEntry> entries)
+        public PreCalculatedHlaMatchInfo(MatchLocus matchLocus, string lookupName, MolecularSubtype molecularSubtype, IEnumerable<PreCalculatedHlaMatchInfo> entries)
         {
             var entriesList = entries.ToList();
 
@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             return this.ToTableEntity();
         }
 
-        public bool Equals(MatchingDictionaryEntry other)
+        public bool Equals(PreCalculatedHlaMatchInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -121,7 +121,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((MatchingDictionaryEntry)obj);
+            return Equals((PreCalculatedHlaMatchInfo)obj);
         }
 
         public override int GetHashCode()

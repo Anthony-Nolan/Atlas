@@ -11,10 +11,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
         private readonly IAlleleStringSplitterService alleleSplitter;
         
         public AlleleStringLookup(
-            IMatchingDictionaryRepository dictionaryRepository,
+            IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
             IAlleleStringSplitterService alleleSplitter)
-            : base(dictionaryRepository, alleleNamesLookupService)
+            : base(preCalculatedHlaMatchRepository, alleleNamesLookupService)
         {
             this.alleleSplitter = alleleSplitter;
         }

@@ -347,7 +347,7 @@
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesLookupServiceTest.cs" />
-    <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryEntryFromMatchedAlleleTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchedAlleleToPreCalculatedHlaMatchInfoTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedOnTestBase.cs" />

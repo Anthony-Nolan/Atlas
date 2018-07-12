@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<PreCalculatedHlaMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<PreCalculatedHlaMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();

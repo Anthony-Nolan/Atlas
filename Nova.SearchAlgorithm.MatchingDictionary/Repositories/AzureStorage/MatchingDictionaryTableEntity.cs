@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class MatchingDictionaryTableEntity : TableEntity
     {
-        public string SerialisedMatchingDictionaryEntry { get; set; }
+        public string SerialisedPreCalculatedHlaMatchInfo { get; set; }
 
         public MatchingDictionaryTableEntity() { }
 

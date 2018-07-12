@@ -5,17 +5,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     internal static class MatchingDictionaryEntityExtensions
     {
-        internal static MatchingDictionaryTableEntity ToTableEntity(this MatchingDictionaryEntry entry)
+        internal static MatchingDictionaryTableEntity ToTableEntity(this PreCalculatedHlaMatchInfo entry)
         {
             return new MatchingDictionaryTableEntity(entry.MatchLocus, entry.LookupName, entry.TypingMethod)
             {
-                SerialisedMatchingDictionaryEntry = JsonConvert.SerializeObject(entry)
+                SerialisedPreCalculatedHlaMatchInfo = JsonConvert.SerializeObject(entry)
             };
         }
 
-        internal static MatchingDictionaryEntry ToMatchingDictionaryEntry(this MatchingDictionaryTableEntity result)
+        internal static PreCalculatedHlaMatchInfo ToPreCalculatedHlaMatchInfo(this MatchingDictionaryTableEntity result)
         {
-            return JsonConvert.DeserializeObject<MatchingDictionaryEntry>(result.SerialisedMatchingDictionaryEntry);
+            return JsonConvert.DeserializeObject<PreCalculatedHlaMatchInfo>(result.SerialisedPreCalculatedHlaMatchInfo);
         }
     }
 }

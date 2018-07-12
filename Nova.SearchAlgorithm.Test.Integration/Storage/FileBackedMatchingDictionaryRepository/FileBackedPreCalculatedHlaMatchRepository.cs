@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
     /// An implementation of the matching dictionary lookup which loads the data from a file,
     /// necessary for testing without an internet dependency.
     /// </summary>
-    public class FileBackedMatchingDictionaryRepository : IMatchingDictionaryRepository
+    public class FileBackedPreCalculatedHlaMatchRepository : IPreCalculatedHlaMatchRepository
     {
         private readonly IEnumerable<RawMatchingHla> rawMatchingData = ReadJsonFromFile();
 
@@ -30,13 +30,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             }
         }
 
-        public Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
+        public Task RecreatePreCalculatedHlaMatchesTable(IEnumerable<PreCalculatedHlaMatchInfo> dictionaryContents)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public Task<PreCalculatedHlaMatchInfo> GetPreCalculatedHlaMatchInfoIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var raw = rawMatchingData.FirstOrDefault(
                     hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase) 
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
                 return null;
             }
 
-            var lookupResult = new MatchingDictionaryEntry(
+            var lookupResult = new PreCalculatedHlaMatchInfo(
                 matchLocus,
                 raw.LookupName,
                 TypingMethod.Molecular, // Arbitrary, not used in tests
@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             return Task.FromResult(lookupResult);
         }
 
-        public Task LoadMatchingDictionaryIntoMemory()
+        public Task LoadPreCalculatedHlaMatchesIntoMemory()
         {
             return Task.CompletedTask;
         }
