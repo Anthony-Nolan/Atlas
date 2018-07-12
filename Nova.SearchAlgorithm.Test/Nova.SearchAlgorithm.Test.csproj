@@ -347,6 +347,7 @@
     <Compile Include="MatchingDictionary\Models\MatchingDictionary\SerologyEntryExtensionsTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SharedTestDataCache.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchedAlleleToPreCalculatedHlaMatchInfoTest.cs" />
     <Compile Include="MatchingDictionary\Services\MatchingDictionary\MatchingDictionaryLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleInfoForMatchingTest.cs" />
@@ -369,11 +370,9 @@
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTest.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleToSerologyMatchingTest.cs" />
-    <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedHlaTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\ReciprocalMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToGgroups\SerologyToGGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedHlaTest.cs" />
-    <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\HlaMatchPreCalculationServiceTestData.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToSerology\SerologyToSerologyMatchingTest.cs" />
   </ItemGroup>
   <ItemGroup>

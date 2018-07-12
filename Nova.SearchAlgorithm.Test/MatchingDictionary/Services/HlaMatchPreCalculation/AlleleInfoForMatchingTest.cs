@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
     public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {
         private class MatchedAlleleTestData
@@ -23,14 +22,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             }
         }
 
-        private readonly IQueryable<MatchedAlleleTestData> matchedAlleleTestData;
-        private readonly IQueryable<MatchedAlleleTestData> validAllelesFromTestDataset;
+        private IQueryable<MatchedAlleleTestData> matchedAlleleTestData;
+        private IQueryable<MatchedAlleleTestData> validAllelesFromTestDataset;
 
-        public AlleleInfoForMatchingTest(IEnumerable<IAlleleInfoForMatching> matchedAlleles) : base(matchedAlleles)
+        [SetUp]
+        public void SetUp()
         {
-            matchedAlleleTestData = MatchedHlaTypings.AsQueryable().Select(m =>
-                new MatchedAlleleTestData((AlleleTyping)m.HlaTyping, m.MatchingPGroups.Count(),
-                    m.MatchingGGroups.Count()));
+            matchedAlleleTestData = SharedTestDataCache
+                .MatchedHla
+                .Where(m => m.GetType() == typeof(AlleleTyping))
+                .AsQueryable()
+                .Select(m => new MatchedAlleleTestData((AlleleTyping) m.HlaTyping, m.MatchingPGroups.Count(), m.MatchingGGroups.Count()));
 
             validAllelesFromTestDataset = matchedAlleleTestData.Where(m => !m.AlleleTyping.IsDeleted);
         }
