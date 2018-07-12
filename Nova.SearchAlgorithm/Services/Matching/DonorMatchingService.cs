@@ -59,6 +59,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
                 .Where(m => matchFilteringService.FulfilsRegistryCriteria(m, criteria))
                 .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m, criteria))
+                .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m, criteria))
                 .ToList();
             
             // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
