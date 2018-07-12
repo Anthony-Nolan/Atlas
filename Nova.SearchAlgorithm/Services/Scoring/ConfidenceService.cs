@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
+using Nova.SearchAlgorithm.MatchingDictionary.Models;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
