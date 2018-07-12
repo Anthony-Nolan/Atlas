@@ -123,7 +123,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedSerologies_CollectionContainsAllExpectedSerology()
         {
-            var str = string.Join("\r\n", MatchedHla
+            var str = string.Join("\r\n", SharedTestDataCache
+                .GetMatchedHla()
+                .OfType<MatchedSerology>()
                 .OrderBy(s => s.HlaTyping.MatchLocus)
                 .ThenBy(s => int.Parse(s.HlaTyping.Name))
                 .Select(s => $"{s.HlaTyping.MatchLocus.ToString().ToUpper()}\t{s.HlaTyping.Name}")
@@ -134,7 +136,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedSerologies_WhereSerologyIsValid_CollectionOnlyContainsValidRelationships()
         {
-            var groupBySubtype = MatchedHla
+            var groupBySubtype = SharedTestDataCache
+                .GetMatchedHla()
+                .OfType<MatchedSerology>()
                 .Where(m => !m.HlaTyping.IsDeleted)
                 .Select(m => new
                 {
