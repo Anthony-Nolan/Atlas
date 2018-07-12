@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Security.Policy;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
@@ -195,7 +194,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsSearchTypeCriteria_ForMatchOfUnSpecifiedType_ReturnsFalse()
         {
@@ -208,5 +207,73 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             result.Should().BeFalse();
         }
-}
+
+        [Test]
+        public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithExactTotalMismatchCount_ReturnsTrue()
+        {
+            const DonorType searchType = DonorType.Adult;
+            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
+            var criteria = new AlleleLevelMatchCriteria
+            {
+                SearchType = searchType,
+                DonorMismatchCount = 1
+            };
+
+            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+        
+        [Test]
+        public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsFalse()
+        {
+            const DonorType searchType = DonorType.Adult;
+            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 0});
+            var criteria = new AlleleLevelMatchCriteria
+            {
+                SearchType = searchType,
+                DonorMismatchCount = 1
+            };
+
+            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
+
+            result.Should().BeFalse();
+        }
+        
+        [Test]
+        public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithExactTotalMismatchCount_ReturnsTrue()
+        {
+            const DonorType searchType = DonorType.Cord;
+            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
+            var criteria = new AlleleLevelMatchCriteria
+            {
+                SearchType = searchType,
+                DonorMismatchCount = 1
+            };
+
+            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+        
+        [Test]
+        public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsTrue()
+        {
+            const DonorType searchType = DonorType.Cord;
+            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 0});
+            var criteria = new AlleleLevelMatchCriteria
+            {
+                SearchType = searchType,
+                DonorMismatchCount = 1
+            };
+
+            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+    }
 }
