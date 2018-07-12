@@ -8,13 +8,12 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.HlaNomSerologiesTestArgs))]
     [UseReporter(typeof(DiffReporter))]
     public class SerologiesTest : WmdaRepositoryTestBase<HlaNom>
     {
-        public SerologiesTest(IEnumerable<HlaNom> hlaNomSerologies, IEnumerable<string> matchLoci)
-            : base(hlaNomSerologies, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.Serologies, SerologyLoci);
         }
 
         [TestCase("DQ", "1")]

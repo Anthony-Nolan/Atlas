@@ -4,14 +4,13 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.AllelesStatusesTestArgs))]
     public class AlleleStatusesTest : WmdaRepositoryTestBase<AlleleStatus>
     {
-        public AlleleStatusesTest(IEnumerable<AlleleStatus> hlaNomAlleleStatuses, IEnumerable<string> matchLoci)
-            : base(hlaNomAlleleStatuses, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.AlleleStatuses, MolecularLoci);
         }
-
+        
         [TestCase("A*", "01:26", "Partial", "cDNA")]
         [TestCase("A*", "01:27N", "Partial", "cDNA")]
         [TestCase("DRB1*", "07:04", "Full", "cDNA")]
