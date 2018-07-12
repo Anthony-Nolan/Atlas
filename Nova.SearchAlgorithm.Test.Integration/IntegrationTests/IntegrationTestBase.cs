@@ -15,9 +15,9 @@ using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
 using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
-using Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary;
-using Nova.SearchAlgorithm.Test.Integration.Integration.Storage;
+using Nova.SearchAlgorithm.Test.Integration.Storage;
+using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
@@ -25,7 +25,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {
 //    [TestFixture(DonorStorageImplementation.CloudTable)]
     [TestFixture(DonorStorageImplementation.SQL)]
@@ -37,6 +37,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private readonly DonorStorageImplementation donorStorageImplementation;
         protected IContainer container;
 
+        protected IDonorIdGenerator DonorIdGenerator
+        {
+            get
+            {
+                if (container == null)
+                {
+                    throw new Exception("Cannot access injected property before DI container setup");
+                }
+
+                return container.Resolve<IDonorIdGenerator>();
+            }
+        }
+
         protected IntegrationTestBase(DonorStorageImplementation input)
         {
             donorStorageImplementation = input;
@@ -47,12 +60,26 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         {
             container = CreateContainer();
             ClearDatabase();
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            SetupDatabase();
+        }
+
+        private void SetupDatabase()
+        {
+            switch (donorStorageImplementation)
             {
-                tableStorageEmulator.Start();
+                case DonorStorageImplementation.SQL when container.TryResolve(out SearchAlgorithmContext context):
+                    context.Database.CreateIfNotExists();
+                    break;
+                case DonorStorageImplementation.CloudTable:
+                    tableStorageEmulator.Start();
+                    break;
+                case DonorStorageImplementation.Cosmos:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         [OneTimeTearDown]
         public void TearDown()
         {
@@ -72,21 +99,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            // Switch between testing different implementations
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
+            switch (donorStorageImplementation)
             {
-                builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else if (donorStorageImplementation == DonorStorageImplementation.Cosmos)
-            {
-                builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else
-            {
-                builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-                builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                // Switch between testing different implementations
+                case DonorStorageImplementation.CloudTable:
+                    builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    break;
+                case DonorStorageImplementation.Cosmos:
+                    builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    break;
+                case DonorStorageImplementation.SQL:
+                default:
+                    builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+                    builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+                    break;
             }
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -138,6 +166,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
             
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();

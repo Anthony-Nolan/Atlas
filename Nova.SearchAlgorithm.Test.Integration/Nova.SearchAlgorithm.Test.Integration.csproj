@@ -331,18 +331,20 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Integration\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
-    <Compile Include="Integration\Builders\InputDonorBuilder.cs" />
-    <Compile Include="Integration\DonorStorageTests.cs" />
-    <Compile Include="Integration\ExactMatchAndMismatchAtLocusATests.cs" />
-    <Compile Include="Integration\FileBackedMatchingDictionary\FileBackedMatchingDictionaryRepository.cs" />
-    <Compile Include="Integration\FileBackedMatchingDictionary\RawMatchingHla.cs" />
-    <Compile Include="Integration\DonorImportTests.cs" />
-    <Compile Include="Integration\IntegrationTestBase.cs" />
-    <Compile Include="Integration\Matching\MatchingTests.cs" />
-    <Compile Include="Integration\Matching\MatchingTestsAtASingleLocus.cs" />
-    <Compile Include="Integration\Storage\CosmosTestDatabase.cs" />
-    <Compile Include="Integration\Storage\StorageEmulator.cs" />
+    <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
+    <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
+    <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
+    <Compile Include="Storage\CosmosTestDatabase.cs" />
+    <Compile Include="Storage\FileBackedMatchingDictionaryRepository\FileBackedMatchingDictionaryRepository.cs" />
+    <Compile Include="Storage\FileBackedMatchingDictionaryRepository\RawMatchingHla.cs" />
+    <Compile Include="Storage\StorageEmulator.cs" />
+    <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\SearchRequestBuilder.cs" />
+    <Compile Include="TestHelpers\DonorIdGenerator.cs" />
+    <Compile Include="IntegrationTests\IntegrationTestBase.cs" />
+    <Compile Include="IntegrationTests\Matching\MatchingTests.cs" />
+    <Compile Include="IntegrationTests\Matching\MatchingTestsAtASingleLocus.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\MatchingDictionary\matching_hla.json" />

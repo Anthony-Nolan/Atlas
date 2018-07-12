@@ -7,7 +7,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
     public class MatchingTests : IntegrationTestBase
     {
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
-                DonorId = 1,
+                DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
                     A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "01:02" } },
@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
-                DonorId = 2,
+                DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
                     A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
-                DonorId = 3,
+                DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
                     A_1 = new ExpandedHla { PGroups = new List<string> { "01:01P", "30:02P" } },
@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
-                DonorId = 4,
+                DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
                     A_1 = new ExpandedHla { PGroups = new List<string> { "01:02", "02:01" } },
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
-                DonorId = 5,
+                DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
                     A_1 = new ExpandedHla { PGroups = new List<string> { "11:59", "30:02P" } },
@@ -123,7 +123,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
-                DonorId = 6,
+                DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = new PhenotypeInfo<ExpandedHla>
                 {
                     A_1 = new ExpandedHla { PGroups = new List<string> { "11:59", "30:02P" } },

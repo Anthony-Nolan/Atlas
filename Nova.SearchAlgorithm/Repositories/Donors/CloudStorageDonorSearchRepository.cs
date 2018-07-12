@@ -37,11 +37,6 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
             throw new System.NotImplementedException();
         }
 
-        public Task InsertDonor(RawInputDonor donor)
-        {
-            return donorDocumentRepository.InsertDonor(donor);
-        }
-
         public Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
             return donorDocumentRepository.InsertBatchOfDonors(donors);

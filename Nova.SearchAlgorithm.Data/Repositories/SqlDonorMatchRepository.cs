@@ -107,12 +107,6 @@ WHERE DonorId = {donorId}
             return result;
         }
 
-        public async Task InsertDonor(RawInputDonor donor)
-        {
-            context.Donors.Add(donor.ToDonorEntity());
-            await context.SaveChangesAsync();
-        }
-
         public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
             var rawInputDonors = donors.ToList();
@@ -181,8 +175,7 @@ WHERE DonorId = {donorId}
 
         public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> inputDonors)
         {
-            var loci = Enum.GetValues(typeof(Locus)).Cast<Locus>();
-            await Task.WhenAll(loci.Select(l => RefreshMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusHelpers.AllLoci().Select(l => RefreshMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
         public void SetupForHlaRefresh()

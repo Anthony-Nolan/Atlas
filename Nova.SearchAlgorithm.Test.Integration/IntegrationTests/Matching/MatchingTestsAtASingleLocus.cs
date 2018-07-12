@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
-using Nova.SearchAlgorithm.Test.Integration.Integration.Builders;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
     [TestFixture(DonorStorageImplementation.SQL, Locus.A)]
     [TestFixture(DonorStorageImplementation.SQL, Locus.B)]
@@ -56,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
         {
             var importRepo = container.Resolve<IDonorImportRepository>();
 
-            donorWithFullHomozygousMatchAtLocus = new InputDonorBuilder(1)
+            donorWithFullHomozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionOne}},
@@ -66,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithFullHomozygousMatchAtLocus).Wait();
 
-            donorWithFullExactHeterozygousMatchAtLocus = new InputDonorBuilder(2)
+            donorWithFullExactHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, "non-matching-pgroup"}},
@@ -76,7 +75,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithFullExactHeterozygousMatchAtLocus).Wait();
 
-            donorWithFullCrossHeterozygousMatchAtLocus = new InputDonorBuilder(3)
+            donorWithFullCrossHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionTwo}},
@@ -87,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
             importRepo.AddOrUpdateDonorWithHla(donorWithFullCrossHeterozygousMatchAtLocus).Wait();
 
 
-            donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new InputDonorBuilder(4)
+            donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, "non-matching-pgroup"}},
@@ -98,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
 
             importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus).Wait();
 
-            donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new InputDonorBuilder(5)
+            donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo}},
@@ -108,7 +107,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration.Matching
                 .Build();
             importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus).Wait();
 
-            donorWithNoMatchAtLocus = new InputDonorBuilder(6)
+            donorWithNoMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}},
