@@ -20,37 +20,30 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
             IMemoryCache memoryCache,
             ILogger logger)
         {
-            MatchingDictionaryLookup lookup;
             switch (category)
             {
                 case HlaTypingCategory.Allele:
-                    lookup = new SingleAlleleLookup(dictionaryRepository, alleleNamesLookupService);
-                    break;
+                    return new SingleAlleleLookup(dictionaryRepository, alleleNamesLookupService);
                 case HlaTypingCategory.XxCode:
-                    lookup = new XxCodeLookup(dictionaryRepository);
-                    break;
+                    return new XxCodeLookup(dictionaryRepository);
                 case HlaTypingCategory.Serology:
-                    lookup = new SerologyLookup(dictionaryRepository);
-                    break;
+                    return new SerologyLookup(dictionaryRepository);                   
                 case HlaTypingCategory.NmdpCode:
-                    lookup = new NmdpCodeLookup(
+                    return new NmdpCodeLookup(
                         dictionaryRepository,
                         alleleNamesLookupService,
                         memoryCache,
                         hlaServiceClient,
                         alleleSplitter,
-                        logger);
-                    break;
+                        logger);                    
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
-                    lookup = new AlleleStringLookup(dictionaryRepository, alleleNamesLookupService, alleleSplitter);
-                    break;
+                    return new AlleleStringLookup(dictionaryRepository, alleleNamesLookupService, alleleSplitter);
+                    
                 default:
                     throw new ArgumentException(
                         $"Dictionary lookup cannot be performed for HLA typing category: {category}.");
             }
-
-            return lookup;
         }
     }
 }
