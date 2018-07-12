@@ -334,10 +334,8 @@
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
     <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
-    <Compile Include="Storage\CosmosTestDatabase.cs" />
     <Compile Include="Storage\FileBackedMatchingDictionaryRepository\FileBackedMatchingDictionaryRepository.cs" />
     <Compile Include="Storage\FileBackedMatchingDictionaryRepository\RawMatchingHla.cs" />
-    <Compile Include="Storage\StorageEmulator.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestBuilder.cs" />

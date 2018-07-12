@@ -20,10 +20,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
         private readonly Tuple<string, int> AHlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 207);
 
-        public DonorImportTests(DonorStorageImplementation param) : base(param)
-        {
-        }
-
         [SetUp]
         public void ResolveSearchRepo()
         {

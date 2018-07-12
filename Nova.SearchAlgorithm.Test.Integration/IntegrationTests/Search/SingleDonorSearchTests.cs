@@ -39,8 +39,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             DRB1_2 = "14:190",
         };
 
-        public SingleDonorSearchTests(DonorStorageImplementation param) : base(param) { }
-
         [OneTimeSetUp]
         public void ImportTestDonor()
         {

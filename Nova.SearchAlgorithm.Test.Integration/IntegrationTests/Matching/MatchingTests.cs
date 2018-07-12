@@ -21,8 +21,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private InputDonor donorWithNoMatchAtLocusAAndExactMatchAtB;
         private InputDonor donorWithNoMatchAtLocusAAndHalfMatchAtB;
 
-        public MatchingTests(DonorStorageImplementation param) : base(param) { }
-
         [SetUp]
         public void ResolveSearchRepo()
         {
