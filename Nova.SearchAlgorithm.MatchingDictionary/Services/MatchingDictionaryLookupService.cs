@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Web.UI.WebControls.WebParts;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups;
 using Nova.Utils.ApplicationInsights;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -20,11 +17,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IMatchingDictionaryLookupService
     {
+        /// <summary>
+        ///  Consolidates all hla used in matching for all alleles that map to the hla name
+        /// </summary>
         Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName);
+
+        /// <summary>
+        ///  Expands the hla name into a list of matching dictionary entries
+        /// </summary>
+        /// <returns>A matching dictionary data for each hla typing that maps to the hla name</returns>
         Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntries(MatchLocus matchLocus, string hlaName);
     }
 
-    public class MatchingDictionaryLookupService : IMatchingDictionaryLookupService
+    public class MatchingDictionaryLookupService : LookupServiceBase<MatchingDictionaryEntry>, IMatchingDictionaryLookupService
     {
         private readonly IMatchingDictionaryRepository dictionaryRepository;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
@@ -53,68 +58,47 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.logger = logger;
         }
 
-        /// <summary>
-        ///  Consolidates all hla used in matching for all alleles that map to the hla name
-        /// </summary>
         public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
         {
-            if (string.IsNullOrEmpty(hlaName))
-            {
-                throw new MatchingDictionaryException($"Cannot lookup null or blank HLA (locus was {matchLocus})");
-            }
-
-            try
-            {
-                var lookupName = hlaName.Trim().TrimStart('*');
-                var category = hlaCategorisationService.GetHlaTypingCategory(lookupName);
-
-                MatchingDictionaryLookup lookup;
-                switch (category)
-                {
-                    case HlaTypingCategory.Allele:
-                        lookup = new SingleAlleleLookup(dictionaryRepository, alleleNamesLookupService);
-                        break;
-                    case HlaTypingCategory.XxCode:
-                        lookup = new XxCodeLookup(dictionaryRepository);
-                        break;
-                    case HlaTypingCategory.Serology:
-                        lookup = new SerologyLookup(dictionaryRepository);
-                        break;
-                    case HlaTypingCategory.NmdpCode:
-                        lookup = new NmdpCodeLookup(
-                            dictionaryRepository,
-                            alleleNamesLookupService,
-                            memoryCache,
-                            hlaServiceClient,
-                            alleleSplitter,
-                            logger);
-                        break;
-                    case HlaTypingCategory.AlleleStringOfNames:
-                    case HlaTypingCategory.AlleleStringOfSubtypes:
-                        lookup = new AlleleStringLookup(dictionaryRepository, alleleNamesLookupService, alleleSplitter);
-                        break;
-                    default:
-                        throw new ArgumentException(
-                            $"Dictionary lookup cannot be performed for HLA typing category: {category}.");
-                }
-
-                return await lookup.PerformLookupAsync(matchLocus, lookupName);
-            }
-            catch (Exception ex)
-            {
-                var msg = $"Failed to get matching HLA for {hlaName} at locus {matchLocus}.";
-                throw new MatchingDictionaryException(msg, ex);
-            }
+            // TODO: NOVA-1445: need to properly consolidate results from GetLookupResults
+            var lookupResults = await GetLookupResults(matchLocus, hlaName);
+            return lookupResults.FirstOrDefault();
         }
 
-        /// <summary>
-        ///  Expands the hla name into a list of matching dictionary entries
-        /// </summary>
-        /// <returns>A matching dictionary data for each hla typing that maps to the hla name</returns>
         public async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntries(MatchLocus matchLocus, string hlaName)
         {
-            // TODO: NOVA-1445: Implement
-            throw new NotImplementedException();
+            return await GetLookupResults(matchLocus, hlaName);
+        }
+
+        protected override bool LookupNameIsValid(string lookupName)
+        {
+            return !string.IsNullOrEmpty(lookupName);
+        }
+
+        protected override async Task<IEnumerable<MatchingDictionaryEntry>> PerformLookup(MatchLocus matchLocus, string lookupName)
+        {
+            var dictionaryLookup = GetMatchingDictionaryLookup(lookupName);
+
+            // TODO: NOVA-1445: lookup should return a list of non-consolidated entries
+            var lookupResult = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
+
+            return new List<MatchingDictionaryEntry> { lookupResult };
+        }
+
+        private MatchingDictionaryLookup GetMatchingDictionaryLookup(string lookupName)
+        {
+            var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
+
+            return MatchingDictionaryLookupFactory
+                .GetMatchingDictionaryLookupByHlaTypingCategory(
+                    hlaTypingCategory,
+                    dictionaryRepository,
+                    alleleNamesLookupService,
+                    hlaServiceClient,
+                    hlaCategorisationService,
+                    alleleSplitter,
+                    memoryCache,
+                    logger);
         }
     }
 }

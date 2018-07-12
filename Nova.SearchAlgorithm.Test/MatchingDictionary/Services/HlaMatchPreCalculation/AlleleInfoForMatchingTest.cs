@@ -4,7 +4,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
     public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>

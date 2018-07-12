@@ -1,8 +1,8 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     /// <summary>
     /// Creates a complete collection of matched serologies
@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
     /// </summary>
     internal class SerologyMatcher : IHlaMatcher
     {
-        public IEnumerable<IMatchedHla> CreateMatchedHla(HlaInfoForMatching hlaInfo)
+        public IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo)
         {
             var serologyToAlleleMapper = new SerologyToAlleleMapper();
 

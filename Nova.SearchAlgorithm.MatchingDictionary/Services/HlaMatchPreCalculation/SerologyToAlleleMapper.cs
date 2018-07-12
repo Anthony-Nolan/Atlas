@@ -1,8 +1,8 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     internal class SerologyToAlleleMapper
     {
