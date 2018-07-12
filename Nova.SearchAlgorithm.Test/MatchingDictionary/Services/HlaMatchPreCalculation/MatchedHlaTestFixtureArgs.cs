@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     public class MatchedHlaTestFixtureArgs
     {

@@ -3,7 +3,7 @@ using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     public class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {

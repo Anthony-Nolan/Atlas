@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using ApprovalTests;
+﻿using ApprovalTests;
 using ApprovalTests.Reporters;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching.SerologyToGgroups
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToGgroups
 {
     [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerologies))]
     [UseReporter(typeof(NUnitReporter))]

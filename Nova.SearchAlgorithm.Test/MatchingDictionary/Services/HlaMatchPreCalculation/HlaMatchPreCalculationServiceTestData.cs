@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
+﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda;
-using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     public sealed class HlaMatchPreCalculationServiceTestData
     {
