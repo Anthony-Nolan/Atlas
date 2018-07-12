@@ -7,9 +7,8 @@ using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary
+namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository
 {
     /// <summary>
     /// An implementation of the matching dictionary lookup which loads the data from a file,

@@ -290,7 +290,6 @@
     <Compile Include="Config\LoggingConfig.cs" />
     <Compile Include="Controllers\DonorController.cs" />
     <Compile Include="Controllers\AlleleNamesController.cs" />
-    <Compile Include="Controllers\TestDataController.cs" />
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
@@ -315,7 +314,6 @@
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
     <Compile Include="Services\Scoring\GradingService.cs" />
     <Compile Include="Services\Scoring\RankingService.cs" />
-    <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Services\DonorExtensions.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />

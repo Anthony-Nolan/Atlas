@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary
+namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository
 {
     public class RawMatchingHla
     {

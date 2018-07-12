@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using Autofac;
 using Microsoft.ApplicationInsights;
@@ -18,7 +19,8 @@ using Nova.SearchAlgorithm.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary;
+using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
@@ -26,17 +28,39 @@ using NSubstitute;
 using NUnit.Framework;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
-namespace Nova.SearchAlgorithm.Test.Integration.Integration
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {
     public abstract class IntegrationTestBase
     {
         protected IContainer container;
+
+        protected IDonorIdGenerator DonorIdGenerator
+        {
+            get
+            {
+                if (container == null)
+                {
+                    throw new Exception("Cannot access injected property before DI container setup");
+                }
+
+                return container.Resolve<IDonorIdGenerator>();
+            }
+        }
 
         [OneTimeSetUp]
         public void Setup()
         {
             container = CreateContainer();
             ClearDatabase();
+            SetupDatabase();
+        }
+
+        private void SetupDatabase()
+        {
+            if (container.TryResolve(out SearchAlgorithmContext context))
+            {
+                context.Database.CreateIfNotExists();
+            }
         }
 
         // This is almost a duplicate of the container in 
@@ -101,6 +125,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             builder.RegisterType<AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
+            
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();
             builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();

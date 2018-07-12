@@ -40,7 +40,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<TestDataService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();

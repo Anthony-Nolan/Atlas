@@ -7,13 +7,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
     public interface IDonorImportRepository
     {
         /// <summary>
-        /// Insert a donor into the database.
-        /// This does _not_ refresh or create the hla matches.
-        /// </summary>
-        Task InsertDonor(RawInputDonor donor);
-
-        /// <summary>
-        /// Insert a donor into the database.
+        /// Insert a batch of donors into the database.
         /// This does _not_ refresh or create the hla matches.
         /// </summary>
         Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
