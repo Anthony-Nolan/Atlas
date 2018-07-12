@@ -1,23 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using Autofac;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Data;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.Repositories;
-using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Repositories.Donors.AzureStorage;
-using Nova.SearchAlgorithm.Repositories.Donors.CosmosStorage;
+using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Test.Integration.FileBackedMatchingDictionary;
 using Nova.SearchAlgorithm.Test.Integration.Integration.FileBackedMatchingDictionary;
-using Nova.SearchAlgorithm.Test.Integration.Integration.Storage;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Solar;
 using Nova.Utils.WebApi.ApplicationInsights;
@@ -27,39 +28,15 @@ using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Integration
 {
-//    [TestFixture(DonorStorageImplementation.CloudTable)]
-    [TestFixture(DonorStorageImplementation.SQL)]
-//    [TestFixture(DonorStorageImplementation.Cosmos)]
     public abstract class IntegrationTestBase
     {
-        private readonly StorageEmulator tableStorageEmulator = new StorageEmulator();
-        private readonly CosmosTestDatabase cosmosDatabase = new CosmosTestDatabase();
-        private readonly DonorStorageImplementation donorStorageImplementation;
         protected IContainer container;
-
-        protected IntegrationTestBase(DonorStorageImplementation input)
-        {
-            donorStorageImplementation = input;
-        }
 
         [OneTimeSetUp]
         public void Setup()
         {
             container = CreateContainer();
             ClearDatabase();
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
-            {
-                tableStorageEmulator.Start();
-            }
-        }
-        
-        [OneTimeTearDown]
-        public void TearDown()
-        {
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
-            {
-                tableStorageEmulator.Stop();
-            }
         }
 
         // This is almost a duplicate of the container in 
@@ -72,36 +49,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
                 .SingleInstance()
                 .AsImplementedInterfaces();
 
-            // Switch between testing different implementations
-            if (donorStorageImplementation == DonorStorageImplementation.CloudTable)
-            {
-                builder.RegisterType<CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else if (donorStorageImplementation == DonorStorageImplementation.Cosmos)
-            {
-                builder.RegisterType<CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else
-            {
-                builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-                builder.RegisterType<Data.Repositories.SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
+            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            
+
             builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SolarConnectionFactory>().AsImplementedInterfaces().SingleInstance();
@@ -109,36 +72,35 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<FileBackedMatchingDictionaryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Repositories.WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<SearchAlgorithm.MatchingDictionary.Services.MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
 
-            builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
+            builder.RegisterType<AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<WmdaDataRepository>()
                 .AsImplementedInterfaces()
                 .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
                 .InstancePerLifetimeScope();
 
-            
-            builder.RegisterType<MatchingDictionary.Services.AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            
+            builder.RegisterType<AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             // Tests should not use Solar, so don't provide an actual connection string.
             var solarSettings = new SolarConnectionSettings();
             builder.RegisterInstance(solarSettings).AsSelf().SingleInstance();
@@ -155,32 +117,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         /// </summary>
         protected void ClearDatabase()
         {
-            switch (donorStorageImplementation)
+            if (container.TryResolve(out SearchAlgorithmContext context))
             {
-                case DonorStorageImplementation.CloudTable:
-                    // Starting and stopping the tableStorageEmulator is managed in the setup fixture StorageSetup.cs
-                    tableStorageEmulator.Clear();
-                    break;
-                // Starting the cosmos emulator is currently a manual step.
-                case DonorStorageImplementation.Cosmos:
-                    cosmosDatabase.Clear();
-                    break;
-                case DonorStorageImplementation.SQL:
-                    if (container.TryResolve(out SearchAlgorithmContext context))
-                    {
-                        context.Database.Delete();
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                context.Database.Delete();
             }
         }
-    }
-
-    public enum DonorStorageImplementation
-    {
-        SQL,
-        CloudTable,
-        Cosmos
     }
 }

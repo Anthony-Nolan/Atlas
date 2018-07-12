@@ -34,8 +34,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
             }
         };
 
-        public DonorImportTests(DonorStorageImplementation param) : base(param) { }
-
         [SetUp]
         public void ResolveSearchRepo()
         {

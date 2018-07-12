@@ -15,8 +15,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.Integration
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
 
-        public DonorStorageTests(DonorStorageImplementation param) : base(param) { }
-
         private readonly InputDonor donorWithAlleles = new InputDonor
         {
             RegistryCode = RegistryCode.DKMS,

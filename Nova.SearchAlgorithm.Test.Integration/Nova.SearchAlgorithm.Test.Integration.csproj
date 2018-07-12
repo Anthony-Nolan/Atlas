@@ -341,8 +341,6 @@
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\Matching\MatchingTests.cs" />
     <Compile Include="Integration\Matching\MatchingTestsAtASingleLocus.cs" />
-    <Compile Include="Integration\Storage\CosmosTestDatabase.cs" />
-    <Compile Include="Integration\Storage\StorageEmulator.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\MatchingDictionary\matching_hla.json" />

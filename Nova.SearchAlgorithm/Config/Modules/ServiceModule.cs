@@ -31,34 +31,19 @@ namespace Nova.SearchAlgorithm.Config.Modules
             // TODO:NOVA-1151 remove any dependency on Solar
             builder.RegisterType<Repositories.SolarDonorRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            if (ConfigurationManager.AppSettings["backend.implementation"] == "table")
-            {
-                builder.RegisterType<Repositories.Donors.AzureStorage.CloudTableStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else if (ConfigurationManager.AppSettings["backend.implementation"] == "cosmos")
-            {
-                builder.RegisterType<Repositories.Donors.CosmosStorage.CosmosStorage>().AsImplementedInterfaces().InstancePerLifetimeScope();
-                builder.RegisterType<Repositories.Donors.CloudStorageDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            }
-            else if (ConfigurationManager.AppSettings["backend.implementation"] == "sql")
-            {
-                var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
-                builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
-                builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
+            builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
 
-                builder.RegisterType<SqlDonorSearchRepository>()
-                    .AsImplementedInterfaces()
-                    .InstancePerLifetimeScope();
-            }
+            builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<Services.SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.TestDataService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Services.AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<TestDataService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
