@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
@@ -28,8 +29,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [SetUp]
         public void SetUp()
         {
-            matchedAlleleTestData = SharedTestDataCache
-                .MatchedHla
+            var matchedHla = SharedTestDataCache.GetMatchedHla();
+            matchedAlleleTestData = matchedHla
                 .Where(m => m.GetType() == typeof(AlleleTyping))
                 .AsQueryable()
                 .Select(m => new MatchedAlleleTestData((AlleleTyping) m.HlaTyping, m.MatchingPGroups.Count(), m.MatchingGGroups.Count()));

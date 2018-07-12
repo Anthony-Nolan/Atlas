@@ -12,16 +12,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
     {
         private static List<IMatchedHla> _matchedHla;
 
-        public static List<IMatchedHla> MatchedHla
+        public static List<IMatchedHla> GetMatchedHla()
         {
-            get
+            if (_matchedHla == null)
             {
-                if (_matchedHla == null)
-                {
-                    _matchedHla = new HlaMatchPreCalculationService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository).GetMatchedHla().ToList();
-                }
-                return _matchedHla;
+                var hlaMatchPreCalculationService = new HlaMatchPreCalculationService(WmdaRepositoryTestFixtureArgs.WmdaDataRepository);
+                _matchedHla = hlaMatchPreCalculationService.GetMatchedHla().ToList();
             }
+
+            return _matchedHla;
         }
     }
 }

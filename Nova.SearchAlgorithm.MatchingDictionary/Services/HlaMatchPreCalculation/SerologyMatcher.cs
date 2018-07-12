@@ -14,12 +14,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
         {
             var serologyToAlleleMapper = new SerologyToAlleleMapper();
 
-            var matchedHlaQuery =
-                from serologyInfo in hlaInfo.SerologyInfoForMatching
-                let allelesInfo = serologyToAlleleMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo)
-                let pGroups = allelesInfo.SelectMany(allele => allele.MatchingPGroups).Distinct()
-                let gGroups = allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()
-                select new MatchedSerology(serologyInfo, pGroups, gGroups);
+            var matchedHlaQuery = hlaInfo.SerologyInfoForMatching
+                .AsParallel()
+                .Select(serologyInfo => new {serologyInfo, allelesInfo = serologyToAlleleMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo)})
+                .Select(t => new {t, pGroups = t.allelesInfo.SelectMany(allele => allele.MatchingPGroups).Distinct()})
+                .Select(t => new {t, gGroups = t.t.allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()})
+                .Select(t => new MatchedSerology(t.t.t.serologyInfo, t.t.pGroups, t.gGroups))
+                .AsEnumerable();
 
             return matchedHlaQuery;
         }

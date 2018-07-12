@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
@@ -8,7 +9,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
 {
     public abstract class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {
-        protected IEnumerable<TMatchedOn> MatchedHla { get; set; }
+        protected List<TMatchedOn> MatchedHla { get; set; }
 
         protected TMatchedOn GetSingleMatchingTyping(MatchLocus matchLocus, string hlaName)
         {
@@ -18,7 +19,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            MatchedHla = SharedTestDataCache.MatchedHla.OfType<TMatchedOn>();
+            var matchedHlaFromCache = SharedTestDataCache.GetMatchedHla();
+            MatchedHla = matchedHlaFromCache.OfType<TMatchedOn>().ToList();
         }
     }
 }
