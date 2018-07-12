@@ -4,9 +4,9 @@ using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
 {
-    public class MatchResultWithPreCalculatedHlaMatchInfo
+    public class MatchResultWithHlaScoringLookupResults
     {
         public MatchResult MatchResult { get; set; }
-        public PhenotypeInfo<IEnumerable<PreCalculatedHlaMatchInfo>> PreCalculatedHlaMatchInfo { get; set; }
+        public PhenotypeInfo<IEnumerable<IHlaScoringLookupResult>> HlaScoringLookupResults { get; set; }
     }
 }

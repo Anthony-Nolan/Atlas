@@ -10,12 +10,14 @@ namespace Nova.SearchAlgorithm.Controllers
     public class MatchingDictionaryController : ApiController
     {
         private readonly IManageMatchingDictionaryService manageMatchingService;
-        private readonly IMatchingDictionaryLookupService lookupService;
+        private readonly IHlaMatchingLookupService hlaMatchingLookupService;
 
-        public MatchingDictionaryController(IManageMatchingDictionaryService manageMatchingService, IMatchingDictionaryLookupService lookupService)
+        public MatchingDictionaryController(
+            IManageMatchingDictionaryService manageMatchingService, 
+            IHlaMatchingLookupService hlaMatchingLookupService)
         {
             this.manageMatchingService = manageMatchingService;
-            this.lookupService = lookupService;
+            this.hlaMatchingLookupService = hlaMatchingLookupService;
         }
 
         [HttpPost]
@@ -26,10 +28,10 @@ namespace Nova.SearchAlgorithm.Controllers
         }
 
         [HttpGet]
-        [Route("lookup")]
-        public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
+        [Route("matching-lookup")]
+        public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(MatchLocus matchLocus, string hlaName)
         {
-            return await lookupService.GetMatchingHla(matchLocus, hlaName);
+            return await hlaMatchingLookupService.GetHlaMatchingLookupResult(matchLocus, hlaName);
         }
     }
 }
