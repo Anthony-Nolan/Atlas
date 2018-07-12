@@ -281,15 +281,15 @@
     <Compile Include="Repositories\MatchingDictionaryRepository.cs" />
     <Compile Include="Repositories\WmdaDataRepository.cs" />
     <Compile Include="Services\ManageMatchingDictionaryService.cs" />
-    <Compile Include="Services\Matching\AlleleInfoGenerator.cs" />
-    <Compile Include="Services\Matching\AlleleMatcher.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\AlleleInfoGenerator.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\AlleleMatcher.cs" />
     <Compile Include="Services\HlaMatchPreCalculationService.cs" />
-    <Compile Include="Services\Matching\SerologyToAlleleMapper.cs" />
-    <Compile Include="Services\Matching\AlleleToSerologyMapper.cs" />
-    <Compile Include="Services\Matching\IHlaMatcher.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyToAlleleMapper.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\AlleleToSerologyMapper.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\IHlaMatcher.cs" />
     <Compile Include="Models\MatchingTypings\HlaInfoForMatching.cs" />
-    <Compile Include="Services\Matching\SerologyInfoGenerator.cs" />
-    <Compile Include="Services\Matching\SerologyMatcher.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyInfoGenerator.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyMatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

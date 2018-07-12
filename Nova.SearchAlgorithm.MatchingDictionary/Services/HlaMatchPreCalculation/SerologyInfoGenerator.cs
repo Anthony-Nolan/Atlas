@@ -1,11 +1,11 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Matching
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     /// <summary>
     /// Pulls together data from different WMDA files
