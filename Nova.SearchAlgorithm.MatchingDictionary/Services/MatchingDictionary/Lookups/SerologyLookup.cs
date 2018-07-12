@@ -5,15 +5,15 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal class SerologyLookup : MatchingDictionaryLookup
+    internal class SerologyLookup : HlaTypingLookupBase
     {
-        public SerologyLookup(IMatchingDictionaryRepository dictionaryRepository) : base(dictionaryRepository)
+        public SerologyLookup(IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository) : base(preCalculatedHlaMatchRepository)
         {
         }
 
-        public override Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
+        public override Task<PreCalculatedHlaMatchInfo> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            return GetMatchingDictionaryEntryIfExists(matchLocus, lookupName, TypingMethod.Serology);
+            return GetPreCalculatedHlaMatchInfoIfExists(matchLocus, lookupName, TypingMethod.Serology);
         }
     }
 }

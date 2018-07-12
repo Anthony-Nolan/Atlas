@@ -11,22 +11,22 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
-    public interface IMatchingDictionaryRepository
+    public interface IPreCalculatedHlaMatchRepository
     {
-        Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents);
-        Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
-        Task LoadMatchingDictionaryIntoMemory();
+        Task RecreatePreCalculatedHlaMatchesTable(IEnumerable<PreCalculatedHlaMatchInfo> dictionaryContents);
+        Task<PreCalculatedHlaMatchInfo> GetPreCalculatedHlaMatchInfoIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
+        Task LoadPreCalculatedHlaMatchesIntoMemory();
         IEnumerable<string> GetAllPGroups();
     }
 
-    public class MatchingDictionaryRepository : 
-        LookupRepositoryBase<MatchingDictionaryEntry, MatchingDictionaryTableEntity>,
-        IMatchingDictionaryRepository
+    public class PreCalculatedHlaMatchRepository : 
+        LookupRepositoryBase<PreCalculatedHlaMatchInfo, MatchingDictionaryTableEntity>,
+        IPreCalculatedHlaMatchRepository
     {
-        private const string DataTableReferencePrefix = "MatchingDictionaryData";
-        private const string CacheKeyMatchingDictionary = "MatchingDictionary";
+        private const string DataTableReferencePrefix = "PreCalculatedHlaMatchInfoData";
+        private const string CacheKeyMatchingDictionary = "PreCalculatedHlaMatchInfo";
 
-        public MatchingDictionaryRepository(
+        public PreCalculatedHlaMatchRepository(
             ICloudTableFactory factory, 
             ITableReferenceRepository tableReferenceRepository,
             IMemoryCache memoryCache)
@@ -34,22 +34,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public async Task RecreateMatchingDictionaryTable(IEnumerable<MatchingDictionaryEntry> dictionaryContents)
+        public async Task RecreatePreCalculatedHlaMatchesTable(IEnumerable<PreCalculatedHlaMatchInfo> dictionaryContents)
         {
             var partitions = GetTablePartitions();
             await RecreateDataTable(dictionaryContents, partitions);
         }
 
-        public async Task<MatchingDictionaryEntry> GetMatchingDictionaryEntryIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<PreCalculatedHlaMatchInfo> GetPreCalculatedHlaMatchInfoIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var partition = MatchingDictionaryTableEntity.GetPartition(matchLocus);
             var rowKey = MatchingDictionaryTableEntity.GetRowKey(lookupName, typingMethod);
             var entity = await GetDataIfExists(partition, rowKey);
 
-            return entity?.ToMatchingDictionaryEntry();
+            return entity?.ToPreCalculatedHlaMatchInfo();
         }
 
-        public async Task LoadMatchingDictionaryIntoMemory()
+        public async Task LoadPreCalculatedHlaMatchesIntoMemory()
         {
             await LoadDataIntoMemory();
         }
@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             if (MemoryCache.TryGetValue(CacheKeyMatchingDictionary, out Dictionary<string, MatchingDictionaryTableEntity> matchingDictionary))
             {
-                return matchingDictionary.Values.SelectMany(v => v.ToMatchingDictionaryEntry().MatchingPGroups);
+                return matchingDictionary.Values.SelectMany(v => v.ToPreCalculatedHlaMatchInfo().MatchingPGroups);
             }
             throw new MemoryCacheException("Matching Dictionary not cached!");
         }

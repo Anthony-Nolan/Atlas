@@ -8,11 +8,11 @@ using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal static class MatchingDictionaryLookupFactory
+    internal static class HlaTypingLookupFactory
     {
-        public static MatchingDictionaryLookup GetMatchingDictionaryLookupByHlaTypingCategory(
+        public static HlaTypingLookupBase GetLookupByHlaTypingCategory(
             HlaTypingCategory category,
-            IMatchingDictionaryRepository dictionaryRepository,
+            IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
@@ -23,14 +23,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
             switch (category)
             {
                 case HlaTypingCategory.Allele:
-                    return new SingleAlleleLookup(dictionaryRepository, alleleNamesLookupService);
+                    return new SingleAlleleLookup(preCalculatedHlaMatchRepository, alleleNamesLookupService);
                 case HlaTypingCategory.XxCode:
-                    return new XxCodeLookup(dictionaryRepository);
+                    return new XxCodeLookup(preCalculatedHlaMatchRepository);
                 case HlaTypingCategory.Serology:
-                    return new SerologyLookup(dictionaryRepository);                   
+                    return new SerologyLookup(preCalculatedHlaMatchRepository);                   
                 case HlaTypingCategory.NmdpCode:
                     return new NmdpCodeLookup(
-                        dictionaryRepository,
+                        preCalculatedHlaMatchRepository,
                         alleleNamesLookupService,
                         memoryCache,
                         hlaServiceClient,
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
                         logger);                    
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
-                    return new AlleleStringLookup(dictionaryRepository, alleleNamesLookupService, alleleSplitter);
+                    return new AlleleStringLookup(preCalculatedHlaMatchRepository, alleleNamesLookupService, alleleSplitter);
                     
                 default:
                     throw new ArgumentException(
