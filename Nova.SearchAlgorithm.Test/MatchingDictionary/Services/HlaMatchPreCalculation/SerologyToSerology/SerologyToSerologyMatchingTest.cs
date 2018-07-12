@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
 {
     [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerologies))]
     [UseReporter(typeof(NUnitReporter))]
+    [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
         public SerologyToSerologyMatchingTest(IEnumerable<ISerologyInfoForMatching> matchingSerology) : base(matchingSerology)
