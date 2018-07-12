@@ -323,12 +323,10 @@
     <Compile Include="Services\Matching\DatabaseDonorMatchingService.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
     <Compile Include="Services\Matching\MatchFilteringService.cs" />
-    <Compile Include="Scoring\CalculateScore.cs" />
     <Compile Include="Services\Scoring\ConfidenceService.cs" />
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
     <Compile Include="Services\Scoring\GradingService.cs" />
     <Compile Include="Services\Scoring\RankingService.cs" />
-    <Compile Include="Services\TestDataService.cs" />
     <Compile Include="Services\DonorExtensions.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="MatchingDictionaryConversions\LocusExtensions.cs" />
