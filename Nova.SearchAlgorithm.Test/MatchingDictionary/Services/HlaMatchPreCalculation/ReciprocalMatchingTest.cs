@@ -6,13 +6,8 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedHla))]
     public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
-        public ReciprocalMatchingTest(IEnumerable<IMatchedHla> matchingTypes) : base(matchingTypes)
-        {
-        }
-
         [Test]
         public void HlaTypingsMatchReciprocally()
         {

@@ -4,12 +4,11 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.HlaNomGTestArgs))]
     public class GGroupsTest : WmdaRepositoryTestBase<HlaNomG>
     {
-        public GGroupsTest(IEnumerable<HlaNomG> hlaNomG, IEnumerable<string> matchLoci)
-            : base(hlaNomG, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.GGroups, MolecularLoci);
         }
 
         [TestCase("C*", "02:14:01G", new[] { "02:14:01", "02:14:02" }, Description = "G group of alleles of same subtype")]

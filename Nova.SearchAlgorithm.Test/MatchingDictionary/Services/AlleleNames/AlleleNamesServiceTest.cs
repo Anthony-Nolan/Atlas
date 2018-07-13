@@ -4,7 +4,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
-using Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var dataRepository = WmdaRepositoryTestFixtureArgs.WmdaDataRepository;
+            var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
             var historiesConsolidator = new AlleleNameHistoriesConsolidator(dataRepository);
             var fromExtractorExtractor = new AlleleNamesFromHistoriesExtractor(historiesConsolidator, dataRepository);
             var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);

@@ -31,11 +31,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
 
         public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching()
         {           
-            var alleleInfo = alleles
-                .Where(AlleleIsNotConfidential)
-                .Select(GetInfoForSingleAllele);
+            var nonConfidentialAlleles = alleles.Where(AlleleIsNotConfidential);
 
-            return alleleInfo;
+            return nonConfidentialAlleles.AsParallel().Select(GetInfoForSingleAllele).ToList();
         }
 
         private bool AlleleIsNotConfidential(IWmdaHlaTyping allele)

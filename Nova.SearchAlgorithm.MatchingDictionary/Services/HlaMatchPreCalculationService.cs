@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -35,10 +36,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private HlaInfoForMatching GetHlaInfoForMatching()
         {
-            var alleleInfoForMatching =
-                new AlleleInfoGenerator(dataRepository).GetAlleleInfoForMatching().ToList();
-            var serologyInfoForMatching =
-                new SerologyInfoGenerator(dataRepository).GetSerologyInfoForMatching().ToList();
+            var alleleInfoGenerator = new AlleleInfoGenerator(dataRepository);
+            var alleleInfoForMatching = alleleInfoGenerator.GetAlleleInfoForMatching().ToList();
+            var serologyInfoForMatching = new SerologyInfoGenerator(dataRepository).GetSerologyInfoForMatching().ToList();
             var alleleToSerologyRelationships = dataRepository.AlleleToSerologyRelationships.ToList();
 
             return new HlaInfoForMatching(alleleInfoForMatching, serologyInfoForMatching, alleleToSerologyRelationships);
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private static IEnumerable<IMatchedHla> PreCalculateMatchedHla(IEnumerable<IHlaMatcher> hlaMatchers, HlaInfoForMatching hlaInfo)
         {
-            return hlaMatchers.SelectMany(matcher => matcher.PreCalculateMatchedHla(hlaInfo));
+            return hlaMatchers.AsParallel().SelectMany(matcher => matcher.PreCalculateMatchedHla(hlaInfo)).ToList();
         }
     }
 }

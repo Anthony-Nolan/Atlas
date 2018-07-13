@@ -7,14 +7,13 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.AllelesNameHistoriesTestArgs))]
     public class AlleleNameHistoriesTest : WmdaRepositoryTestBase<AlleleNameHistory>
     {
-        public AlleleNameHistoriesTest(IEnumerable<AlleleNameHistory> alleleNameHistories, IEnumerable<string> matchLoci)
-            : base(alleleNameHistories, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.AlleleNameHistories, MolecularLoci);
         }
-
+        
         [Test]
         public void WmdaDataRepository_WhenUnassignedAlleleName_NoAlleleNameHistoriesCaptured()
         {

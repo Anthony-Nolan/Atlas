@@ -6,12 +6,12 @@ using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.RelDnaSerTestArgs))]
     public class AlleleToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelDnaSer>
     {
-        public AlleleToSerologyRelationshipsTest(IEnumerable<RelDnaSer> relDnaSer, IEnumerable<string> matchLoci)
-            : base(relDnaSer, matchLoci)
+
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.AlleleToSerologyRelationships, MolecularLoci);
         }
 
         [TestCase(

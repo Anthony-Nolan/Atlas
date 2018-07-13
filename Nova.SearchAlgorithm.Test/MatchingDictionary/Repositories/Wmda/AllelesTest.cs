@@ -5,14 +5,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.HlaNomAllelesTestArgs))]
     public class AllelesTest : WmdaRepositoryTestBase<HlaNom>
     {
-        public AllelesTest(IEnumerable<HlaNom> hlaNomAlleles, IEnumerable<string> matchLoci)
-            : base(hlaNomAlleles, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.Alleles, MolecularLoci);
         }
-
+        
         [TestCase("A*", "01:26")]
         [TestCase("A*", "01:27N")]
         [TestCase("B*", "07:05:06")]
