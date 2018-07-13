@@ -16,7 +16,8 @@ namespace Nova.SearchAlgorithm.Test.Builders
                 RegistryCode.AN, RegistryCode.DKMS, RegistryCode.FRANCE, RegistryCode.NHSBT, RegistryCode.NMDP, RegistryCode.WBS
             },
             SearchType = DonorType.Adult,
-            MatchCriteria = new MismatchCriteria()
+            MatchCriteria = new MismatchCriteria(),
+            SearchHlaData = new SearchHlaData(),
         };
 
         public SearchRequestBuilder WithDonorMismatchCount(int count)
@@ -26,13 +27,16 @@ namespace Nova.SearchAlgorithm.Test.Builders
             return this;
         }
 
-        public SearchRequestBuilder WithLocusMismatchA(string hla1, string hla2, int mismatchCount)
+        public SearchRequestBuilder WithSearchDataAtLocusA(string hla1, string hla2, int mismatchCount)
         {
             request.MatchCriteria.LocusMismatchA = new LocusMismatchCriteria
             {
-                SearchHla1 = hla1,
-                SearchHla2 = hla2,
                 MismatchCount = mismatchCount,
+            };
+            request.SearchHlaData.LocusSearchHlaA = new LocusSearchHla
+            {
+                SearchHla1 = hla1,
+                SearchHla2 = hla2
             };
             return this;
         }

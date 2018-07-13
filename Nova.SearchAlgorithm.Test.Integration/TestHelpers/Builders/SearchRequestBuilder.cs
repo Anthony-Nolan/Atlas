@@ -15,7 +15,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
-                MatchCriteria = new MismatchCriteria()
+                MatchCriteria = new MismatchCriteria(),
+                SearchHlaData = new SearchHlaData
+                {
+                    LocusSearchHlaA = new LocusSearchHla(),
+                    LocusSearchHlaB = new LocusSearchHla(),
+                    LocusSearchHlaC = new LocusSearchHla(),
+                    LocusSearchHlaDqb1 = new LocusSearchHla(),
+                    LocusSearchHlaDrb1 = new LocusSearchHla(),
+                }
             };
         }
         
@@ -41,10 +49,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    searchRequest.MatchCriteria.LocusMismatchDQB1 = locusMatchCriteria;
+                    searchRequest.MatchCriteria.LocusMismatchDqb1 = locusMatchCriteria;
                     break;
                 case Locus.Drb1:
-                    searchRequest.MatchCriteria.LocusMismatchDRB1 = locusMatchCriteria;
+                    searchRequest.MatchCriteria.LocusMismatchDrb1 = locusMatchCriteria;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -69,10 +77,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    searchRequest.MatchCriteria.LocusMismatchDQB1.MismatchCount = locusMatchCount;
+                    searchRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMatchCount;
                     break;
                 case Locus.Drb1:
-                    searchRequest.MatchCriteria.LocusMismatchDRB1.MismatchCount = locusMatchCount;
+                    searchRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = locusMatchCount;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -88,12 +96,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.A:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchA.SearchHla1 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
                     }
 
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchA.SearchHla2 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
 
                     }
 
@@ -101,24 +109,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.B:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchB.SearchHla1 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
                     }
 
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchB.SearchHla2 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
                     }
 
                     break;
                 case Locus.C:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchC.SearchHla1 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
                     }
 
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchC.SearchHla2 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
                     }
 
                     break;
@@ -127,24 +135,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.Dqb1:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchDQB1.SearchHla1 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
                     }
 
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchDQB1.SearchHla2 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
                     }
 
                     break;
                 case Locus.Drb1:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchDRB1.SearchHla1 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
                     }
 
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
-                        searchRequest.MatchCriteria.LocusMismatchDRB1.SearchHla2 = hlaString;
+                        searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
                     }
 
                     break;

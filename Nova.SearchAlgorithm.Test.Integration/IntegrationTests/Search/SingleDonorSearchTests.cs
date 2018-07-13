@@ -137,22 +137,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 searchRequestBuilder = new SearchRequestBuilder()
                     .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
                     {
-                        MismatchCount = 0,
-                        SearchHla1 = donorHlas.A_1,
-                        SearchHla2 = donorHlas.A_2,
+                        MismatchCount = 0
                     })
+                    .WithLocusMatchHla(Locus.A, TypePositions.One, donorHlas.A_1)
+                    .WithLocusMatchHla(Locus.A, TypePositions.Two, donorHlas.A_2)
                     .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
                     {
-                        MismatchCount = 0,
-                        SearchHla1 = donorHlas.B_1,
-                        SearchHla2 = donorHlas.B_2,
+                        MismatchCount = 0
                     })
+                    .WithLocusMatchHla(Locus.B, TypePositions.One, donorHlas.B_1)
+                    .WithLocusMatchHla(Locus.B, TypePositions.Two, donorHlas.B_2)
                     .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
                     {
-                        MismatchCount = 0,
-                        SearchHla1 = donorHlas.DRB1_1,
-                        SearchHla2 = donorHlas.DRB1_2,
-                    });
+                        MismatchCount = 0
+                    })
+                    .WithLocusMatchHla(Locus.Drb1, TypePositions.One, donorHlas.DRB1_1)
+                    .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, donorHlas.DRB1_2);
             }
 
             public SingleDonorSearchRequestBuilder SixOutOfSix()

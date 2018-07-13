@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Client
+namespace Nova.SearchAlgorithm.Test.Client.Validators
 {
     [TestFixture]
     public class SearchRequestsValidatorTests
@@ -57,6 +57,54 @@ namespace Nova.SearchAlgorithm.Test.Client
         public void Validator_WithInvalidSearchType_ShouldHaveValidationError()
         {
             validator.ShouldHaveValidationErrorFor(x => x.SearchType, (DonorType) 999);
+        }
+
+        [Test]
+        public void Validator_WithMatchCriteriaForLocusCAndNoHlaDataAtC_ShouldHaveValidationError()
+        {
+            var result = validator.Validate(new SearchRequest
+            {
+                RegistriesToSearch = new []{ RegistryCode.AN },
+                SearchType = DonorType.Adult,
+                MatchCriteria = new MismatchCriteria
+                {
+                    LocusMismatchA = new LocusMismatchCriteria(),
+                    LocusMismatchB = new LocusMismatchCriteria(),
+                    LocusMismatchDrb1 = new LocusMismatchCriteria(),
+                    LocusMismatchC = new LocusMismatchCriteria(),
+                },
+                SearchHlaData = new SearchHlaData
+                {
+                    LocusSearchHlaA = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaB = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaDrb1 = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                }
+            });
+            result.IsValid.Should().BeFalse();
+        }
+        
+        [Test]
+        public void Validator_WithMatchCriteriaForLocusDqb1AndNoHlaDataAtDqb1_ShouldHaveValidationError()
+        {
+            var result = validator.Validate(new SearchRequest
+            {
+                RegistriesToSearch = new []{ RegistryCode.AN },
+                SearchType = DonorType.Adult,
+                MatchCriteria = new MismatchCriteria
+                {
+                    LocusMismatchA = new LocusMismatchCriteria(),
+                    LocusMismatchB = new LocusMismatchCriteria(),
+                    LocusMismatchDrb1 = new LocusMismatchCriteria(),
+                    LocusMismatchDqb1 = new LocusMismatchCriteria(),
+                },
+                SearchHlaData = new SearchHlaData
+                {
+                    LocusSearchHlaA = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaB = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaDrb1 = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                }
+            });
+            result.IsValid.Should().BeFalse();
         }
     }
 }

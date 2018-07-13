@@ -334,6 +334,8 @@
     <Compile Include="Builders\DonorMatchCriteriaBuilder.cs" />
     <Compile Include="Builders\SearchRequestBuilder.cs" />
     <Compile Include="Client\Validators\LocusMismatchCriteriaValidatorTests.cs" />
+    <Compile Include="Client\Validators\SearchHlaDataValidatorTests.cs" />
+    <Compile Include="Client\Validators\LocusSearchHlaValidatorTests.cs" />
     <Compile Include="Client\Validators\MismatchCriteriaValidatorTests.cs" />
     <Compile Include="Client\Validators\SearchRequestValidatorTests.cs" />
     <Compile Include="Controllers\ControllerTestBase.cs" />

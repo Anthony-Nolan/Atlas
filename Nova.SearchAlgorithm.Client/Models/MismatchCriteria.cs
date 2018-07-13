@@ -12,34 +12,34 @@ namespace Nova.SearchAlgorithm.Client.Models
         public int? DonorMismatchCount { get; set; }
 
         /// <summary>
-        /// Search HLA and mismatch preferences for locus HLA-A.
+        /// Mismatch preferences for HLA at locus A.
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchA { get; set; }
-
+        
         /// <summary>
-        /// Search HLA and mismatch preferences for locus HLA-B.
+        /// Mismatch preferences for HLA at locus B.
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchB { get; set; }
 
         /// <summary>
-        /// Search HLA and mismatch preferences for locus HLA-C.
+        /// Mismatch preferences for HLA at locus C.
         /// Optional.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchC { get; set; }
 
         /// <summary>
-        /// Search HLA and mismatch preferences for locus HLA-DQB1.
+        /// Mismatch preferences for HLA at locus DQB1.
         /// Optional.
         /// </summary>
-        public LocusMismatchCriteria LocusMismatchDQB1 { get; set; }
+        public LocusMismatchCriteria LocusMismatchDqb1 { get; set; }
 
         /// <summary>
-        /// Search HLA and mismatch preferences for locus HLA-DRB1.
+        /// Mismatch preferences for HLA at locus DRB1.
         /// Required.
         /// </summary>
-        public LocusMismatchCriteria LocusMismatchDRB1 { get; set; }
+        public LocusMismatchCriteria LocusMismatchDrb1 { get; set; }
     }
 
     public class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Client.Models
         {
             RuleFor(x => x.LocusMismatchA).NotNull();
             RuleFor(x => x.LocusMismatchB).NotNull();
-            RuleFor(x => x.LocusMismatchDRB1).NotNull();
+            RuleFor(x => x.LocusMismatchDrb1).NotNull();
             RuleFor(x => x.DonorMismatchCount).NotNull().GreaterThanOrEqualTo(0).LessThanOrEqualTo(4);
         }
     }

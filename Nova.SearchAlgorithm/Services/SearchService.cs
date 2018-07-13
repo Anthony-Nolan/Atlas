@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.Services
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
             var criteriaMappings = await Task.WhenAll(
-                MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
-                MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
-                MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
-                MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
-                MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1));
+                MapLocusInformationToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA, searchRequest.SearchHlaData.LocusSearchHlaA),
+                MapLocusInformationToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB, searchRequest.SearchHlaData.LocusSearchHlaB),
+                MapLocusInformationToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC, searchRequest.SearchHlaData.LocusSearchHlaC),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDrb1, searchRequest.SearchHlaData.LocusSearchHlaDrb1),
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDqb1, searchRequest.SearchHlaData.LocusSearchHlaDqb1));
 
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -57,12 +57,28 @@ namespace Nova.SearchAlgorithm.Services
             var matches = await donorMatchingService.Search(criteria);
 
             // TODO:NOVA-930 add scoring
-            var scoredMatches = await donorScoringService.Score(criteria, matches);
+            var patientHla = new PhenotypeInfo<string>
+            {
+                A_1 = searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1,
+                A_2 = searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2,
+                B_1 = searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1,
+                B_2 = searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2,
+                C_1 = searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1,
+                C_2 = searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2,
+                DQB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1,
+                DQB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2,
+                DRB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1,
+                DRB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2
+            };
+            var scoredMatches = await donorScoringService.Score(patientHla, matches);
             
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }
 
-        private async Task<AlleleLevelLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
+        private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(
+            Locus locus, 
+            LocusMismatchCriteria mismatch, 
+            LocusSearchHla searchHla)
         {
             if (mismatch == null)
             {
@@ -70,8 +86,8 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var lookupResult = await Task.WhenAll(
-                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), mismatch.SearchHla1),
-                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), mismatch.SearchHla2));
+                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), searchHla.SearchHla1),
+                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), searchHla.SearchHla2));
 
             return new AlleleLevelLocusMatchCriteria
             {
