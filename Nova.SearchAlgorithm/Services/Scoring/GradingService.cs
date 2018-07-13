@@ -8,16 +8,16 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public interface IGradingService
     {
         PhenotypeInfo<MatchGradeResult> CalculateGrades(
-            PhenotypeInfo<IHlaScoringLookupResult> donorScoringResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientScoringResults
+            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults
         );
     }
 
     public class GradingService : IGradingService
     {
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
-            PhenotypeInfo<IHlaScoringLookupResult> donorScoringResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientScoringResults
+            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults
         )
         {
             // TODO: NOVA-1446: Implement

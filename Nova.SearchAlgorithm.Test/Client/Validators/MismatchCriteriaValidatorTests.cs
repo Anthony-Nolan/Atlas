@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Client
+namespace Nova.SearchAlgorithm.Test.Client.Validators
 {
     [TestFixture]
     public class MismatchCriteriaValidatorTests
