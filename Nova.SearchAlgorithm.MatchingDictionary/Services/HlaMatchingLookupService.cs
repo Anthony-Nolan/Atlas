@@ -12,26 +12,18 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
-    /// <summary>
-    /// Determines and executes the dictionary lookup strategy for submitted HLA types.
-    /// </summary>
-    public interface IMatchingDictionaryLookupService
+    public interface IHlaMatchingLookupService
     {
         /// <summary>
         ///  Consolidates all hla used in matching for all alleles that map to the hla name
         /// </summary>
-        Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName);
-
-        /// <summary>
-        ///  Expands the hla name into a list of matching dictionary entries
-        /// </summary>
-        /// <returns>A matching dictionary data for each hla typing that maps to the hla name</returns>
-        Task<IEnumerable<PreCalculatedHlaMatchInfo>> GetPreCalculatedHlaMatchInfo(MatchLocus matchLocus, string hlaName);
+        Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(MatchLocus matchLocus, string hlaName);
     }
 
-    public class MatchingDictionaryLookupService : LookupServiceBase<PreCalculatedHlaMatchInfo>, IMatchingDictionaryLookupService
+    public class HlaMatchingLookupService : 
+        LookupServiceBase<IHlaMatchingLookupResult>, IHlaMatchingLookupService
     {
-        private readonly IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository;
+        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly IHlaCategorisationService hlaCategorisationService;
@@ -39,8 +31,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IMemoryCache memoryCache;
         private readonly ILogger logger;
 
-        public MatchingDictionaryLookupService(
-            IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository,
+        public HlaMatchingLookupService(
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
@@ -49,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             ILogger logger
         )
         {
-            this.preCalculatedHlaMatchRepository = preCalculatedHlaMatchRepository;
+            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaServiceClient = hlaServiceClient;
             this.hlaCategorisationService = hlaCategorisationService;
@@ -58,16 +50,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.logger = logger;
         }
 
-        public async Task<IMatchingHlaLookupResult> GetMatchingHla(MatchLocus matchLocus, string hlaName)
+        public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(MatchLocus matchLocus, string hlaName)
         {
-            // TODO: NOVA-1445: need to properly consolidate results from GetLookupResults
             var lookupResults = await GetLookupResults(matchLocus, hlaName);
             return lookupResults.FirstOrDefault();
-        }
-
-        public async Task<IEnumerable<PreCalculatedHlaMatchInfo>> GetPreCalculatedHlaMatchInfo(MatchLocus matchLocus, string hlaName)
-        {
-            return await GetLookupResults(matchLocus, hlaName);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -75,24 +61,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override async Task<IEnumerable<PreCalculatedHlaMatchInfo>> PerformLookup(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<IHlaMatchingLookupResult>> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
-            var dictionaryLookup = GetMatchingDictionaryLookup(lookupName);
-
-            // TODO: NOVA-1445: lookup should return a list of non-consolidated entries
+            var dictionaryLookup = GetHlaMatchingLookup(lookupName);
             var lookupResult = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
 
-            return new List<PreCalculatedHlaMatchInfo> { lookupResult };
+            return new List<IHlaMatchingLookupResult> { lookupResult };
         }
 
-        private HlaTypingLookupBase GetMatchingDictionaryLookup(string lookupName)
+        private HlaMatchingLookupBase GetHlaMatchingLookup(string lookupName)
         {
             var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
 
-            return HlaTypingLookupFactory
+            return HlaMatchingLookupFactory
                 .GetLookupByHlaTypingCategory(
                     hlaTypingCategory,
-                    preCalculatedHlaMatchRepository,
+                    hlaMatchingLookupRepository,
                     alleleNamesLookupService,
                     hlaServiceClient,
                     hlaCategorisationService,

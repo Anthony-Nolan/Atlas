@@ -1,19 +1,18 @@
-﻿using System.Configuration;
-using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using Autofac.Integration.WebApi;
 using Microsoft.ApplicationInsights;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Auth;
-using Nova.Utils.Solar;
-using Nova.Utils.WebApi.ApplicationInsights;
-using Nova.Utils.WebApi.Filters;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Auth;
+using Nova.Utils.WebApi.ApplicationInsights;
+using Nova.Utils.WebApi.Filters;
+using System.Configuration;
+using System.Reflection;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -64,7 +63,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
         {
             builder.RegisterType<MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Repositories.PreCalculatedHlaMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
                 .AsImplementedInterfaces()
@@ -73,7 +72,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             builder.RegisterType<MatchingDictionary.Services.HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 

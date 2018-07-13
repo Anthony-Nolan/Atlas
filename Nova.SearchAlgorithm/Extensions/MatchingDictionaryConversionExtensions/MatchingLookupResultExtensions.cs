@@ -1,11 +1,12 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 
-namespace Nova.SearchAlgorithm.MatchingDictionaryConversions
+namespace Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions
 {
     public static class MatchingLookupResultExtensions
     {
-        public static ExpandedHla ToExpandedHla(this IMatchingHlaLookupResult lookupResult, string originalName)
+        public static ExpandedHla ToExpandedHla(this IHlaMatchingLookupResult lookupResult, string originalName)
         {
             return new ExpandedHla
             {
