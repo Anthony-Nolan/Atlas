@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
 {
     public class HlaMatchingLookupResult :
         IHlaMatchingLookupResult,

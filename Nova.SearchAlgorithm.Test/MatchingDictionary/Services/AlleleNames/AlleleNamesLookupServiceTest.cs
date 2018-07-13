@@ -8,7 +8,7 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {

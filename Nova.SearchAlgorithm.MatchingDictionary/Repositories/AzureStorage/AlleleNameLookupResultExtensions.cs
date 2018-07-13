@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {

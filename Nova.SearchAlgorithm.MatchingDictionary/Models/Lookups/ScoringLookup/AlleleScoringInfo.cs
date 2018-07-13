@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.ScoringLookup
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
     public class AlleleScoringInfo : IPreCalculatedScoringInfo
     {

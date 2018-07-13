@@ -1,7 +1,7 @@
 ﻿using System;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
 {
     public class SerologyEntry : IEquatable<SerologyEntry>
     {

@@ -1,12 +1,11 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup
 {
     public class AlleleNameLookupResult : IHlaLookupResult, IEquatable<AlleleNameLookupResult>
     {

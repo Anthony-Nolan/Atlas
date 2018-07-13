@@ -1,6 +1,6 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 

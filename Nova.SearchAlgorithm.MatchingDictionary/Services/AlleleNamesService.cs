@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {

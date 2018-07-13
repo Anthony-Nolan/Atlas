@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
 {
     public static class SerologyEntryExtensions
     {

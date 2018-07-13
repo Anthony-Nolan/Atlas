@@ -1,5 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 
 namespace Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions

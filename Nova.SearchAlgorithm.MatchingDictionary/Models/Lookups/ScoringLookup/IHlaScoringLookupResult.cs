@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.ScoringLookup
+﻿namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
     /// Lookup result with data required to score HLA pairings.

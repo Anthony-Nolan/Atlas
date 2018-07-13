@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
 {
     /// <summary>
     /// Data returned from a HLA lookup.

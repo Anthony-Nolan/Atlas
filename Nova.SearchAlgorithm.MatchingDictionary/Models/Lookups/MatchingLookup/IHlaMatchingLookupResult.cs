@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
 {
     /// <summary>
     /// Lookup result with data required to match HLA pairings.
