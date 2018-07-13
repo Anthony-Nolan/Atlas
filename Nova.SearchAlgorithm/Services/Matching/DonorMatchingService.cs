@@ -49,14 +49,22 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             var matchesWithPGroupsPopulated = (await Task.WhenAll(matches.Select(PopulatePGroupsForMatch))).AsEnumerable();
             
-            matchesWithPGroupsPopulated = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
+            var matchesAtAllLoci = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
 
-            matchesWithPGroupsPopulated = matchesWithPGroupsPopulated.Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
-            var matchesWithDonorInfoPopulated = await Task.WhenAll(matchesWithPGroupsPopulated.Select(PopulateDonorDataForMatch));
+            var filteredMatchesByMatchCriteria = matchesAtAllLoci
+                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
+            
+            var matchesWithDonorInfoPopulated = await Task.WhenAll(filteredMatchesByMatchCriteria.Select(PopulateDonorDataForMatch));
+
+            var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
+                .Where(m => matchFilteringService.FulfilsRegistryCriteria(m, criteria))
+                .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m, criteria))
+                .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m, criteria))
+                .ToList();
             
             // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
-            matchesWithDonorInfoPopulated.ToList().ForEach(m => m.MarkMatchingDataFullyPopulated());
-            return matchesWithDonorInfoPopulated;
+            filteredMatchesByDonorInformation.ForEach(m => m.MarkMatchingDataFullyPopulated());
+            return filteredMatchesByDonorInformation;
         }
 
         /// <summary>

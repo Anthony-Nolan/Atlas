@@ -64,6 +64,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public InputDonorBuilder WithRegistryCode(RegistryCode registryCode)
+        {
+            donor.RegistryCode = registryCode;
+            return this;
+        }
+        
+        public InputDonorBuilder WithDonorType(DonorType donorType)
+        {
+            donor.DonorType = donorType;
+            return this;
+        }
+        
         public InputDonor Build()
         {
             return donor;

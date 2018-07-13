@@ -300,6 +300,7 @@
     <Compile Include="Exceptions\SearchHttpException.cs" />
     <Compile Include="Config\ClientConfig.cs" />
     <Compile Include="Extensions\BatchEnumerable.cs" />
+    <Compile Include="Extensions\DonorExtensions.cs" />
     <Compile Include="Extensions\ExpandedHlaExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\LocusExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchingLookupResultExtensions.cs" />
@@ -314,7 +315,6 @@
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
     <Compile Include="Services\Scoring\GradingService.cs" />
     <Compile Include="Services\Scoring\RankingService.cs" />
-    <Compile Include="Services\DonorExtensions.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImportService.cs" />

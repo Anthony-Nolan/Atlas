@@ -51,6 +51,34 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
         
+        public AlleleLevelMatchCriteriaBuilder WithLocusMismatchCount(Locus locus, int mismatchCount)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    criteria.LocusMismatchA.MismatchCount = mismatchCount;
+                    break;
+                case Locus.B:
+                    criteria.LocusMismatchB.MismatchCount = mismatchCount;
+                    break;
+                case Locus.C:
+                    criteria.LocusMismatchC.MismatchCount = mismatchCount;
+                    break;
+                case Locus.Dpb1:
+                    throw new NotImplementedException();
+                case Locus.Dqb1:
+                    criteria.LocusMismatchDQB1.MismatchCount = mismatchCount;
+                    break;
+                case Locus.Drb1:
+                    criteria.LocusMismatchDRB1.MismatchCount = mismatchCount;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+            }
+
+            return this;
+        }
+        
         // Populates all null required match criteria (A, B, DRB) with given value
         public AlleleLevelMatchCriteriaBuilder WithDefaultLocusMatchCriteria(AlleleLevelLocusMatchCriteria locusMatchCriteria)
         {
@@ -60,6 +88,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public AlleleLevelMatchCriteriaBuilder WithSearchType(DonorType searchType)
+        {
+            criteria.SearchType = searchType;
+            return this;
+        }
+        
+        public AlleleLevelMatchCriteriaBuilder WithRegistries(IEnumerable<RegistryCode> registries)
+        {
+            criteria.RegistriesToSearch = registries;
+            return this;
+        }
+        
+        public AlleleLevelMatchCriteriaBuilder WithDonorMismatchCount(int donorMismatchCount)
+        {
+            criteria.DonorMismatchCount = donorMismatchCount;
+            return this;
+        }
+        
         public AlleleLevelMatchCriteria Build()
         {
             return criteria;

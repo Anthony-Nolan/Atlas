@@ -17,8 +17,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Locus.C)]
     public class MatchingTestsAtASingleLocus : IntegrationTestBase
     {
-        private AlleleLevelMatchCriteriaBuilder defaultSearchCriteriaBuilder;
-
         private IDonorMatchingService matchingService;
         private InputDonor donorWithFullHomozygousMatchAtLocus;
         private InputDonor donorWithFullExactHeterozygousMatchAtLocus;
@@ -27,6 +25,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private InputDonor donorWithNoMatchAtLocus;
         private InputDonor donorWithFullCrossHeterozygousMatchAtLocus;
 
+        private const DonorType DefaultDonorType = DonorType.Cord;
+        
         private readonly List<string> matchingPGroups = new List<string> {"dummy-matching-p-group"};
         private readonly Locus locus;
         private readonly List<string> patientPGroupsAtPositionOne = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionOne};
@@ -62,8 +62,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, "non-matching-pgroup"}}
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDonorType(DefaultDonorType)
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullHomozygousMatchAtLocus).Wait();
 
             donorWithFullExactHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -72,8 +72,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionTwo, "non-matching-pgroup"}}
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDonorType(DefaultDonorType)
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullExactHeterozygousMatchAtLocus).Wait();
 
             donorWithFullCrossHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -82,9 +82,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionOne}}
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDonorType(DefaultDonorType)
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithFullCrossHeterozygousMatchAtLocus).Wait();
-
 
             donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -93,9 +92,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}}
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDonorType(DefaultDonorType)
                 .Build();
-
-            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus).Wait();
 
             donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -104,8 +102,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}}
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDonorType(DefaultDonorType)
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus).Wait();
 
             donorWithNoMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
@@ -114,27 +112,23 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}}
                 )
                 .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDonorType(DefaultDonorType)
                 .Build();
-            importRepo.AddOrUpdateDonorWithHla(donorWithNoMatchAtLocus).Wait();
-        }
 
-        [SetUp]
-        public void ResetSearchCriteria()
-        {
-            defaultSearchCriteriaBuilder = new AlleleLevelMatchCriteriaBuilder()
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo
-                })
-                .WithDefaultLocusMatchCriteria(new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = matchingPGroups,
-                    PGroupsToMatchInPositionTwo = matchingPGroups
-                })
-                .WithTotalMismatchCount(0);
+            var allDonors = new List<InputDonor>
+            {
+                donorWithFullHomozygousMatchAtLocus,
+                donorWithFullExactHeterozygousMatchAtLocus,
+                donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
+                donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
+                donorWithNoMatchAtLocus,
+                donorWithFullCrossHeterozygousMatchAtLocus
+            };
+
+            foreach (var donor in allDonors)
+            {
+                Task.Run(() => importRepo.AddOrUpdateDonorWithHla(donor)).Wait();
+            }
         }
 
         [OneTimeTearDown]
@@ -146,14 +140,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHomozygousMatchesAtLocus()
         {
-            var results = await matchingService.Search(defaultSearchCriteriaBuilder.Build());
+            var results = await matchingService.Search(GetDefaultCriteriaBuilder().Build());
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHeterozygousMatchesAtLocus()
         {
-            var results = await matchingService.Search(defaultSearchCriteriaBuilder.Build());
+            var results = await matchingService.Search(GetDefaultCriteriaBuilder().Build());
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
         }
@@ -161,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
-            var results = await matchingService.Search(defaultSearchCriteriaBuilder.Build());
+            var results = await matchingService.Search(GetDefaultCriteriaBuilder().Build());
             results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
@@ -170,7 +164,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtA_MatchesDonorsWithTwoMatchesAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -188,7 +182,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtA_MatchesDonorWithOneOfTwoHvGAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -204,7 +198,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtA_MatchesDonorWithOneOfTwoBothDirectionsAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -220,7 +214,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtA_DoesNotMatchDonorsWithNoMatchAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -236,7 +230,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithTwoAllowedMismatchesAtA_MatchesDonorWithNoMatchAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(2)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -252,7 +246,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithTwoAllowedMismatchesAtA_MatchesDonorsWithExactMatchAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(2)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -270,7 +264,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithTwoAllowedMismatchesAtA_MatchesDonorsWithSingleMatchAtLocus()
         {
-            var criteria = defaultSearchCriteriaBuilder
+            var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(2)
                 .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
                 {
@@ -282,6 +276,26 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var results = await matchingService.Search(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+        }
+
+        /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
+        private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
+        {
+            return new AlleleLevelMatchCriteriaBuilder()
+                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
+                {
+                    MismatchCount = 0,
+                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
+                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo
+                })
+                .WithDefaultLocusMatchCriteria(new AlleleLevelLocusMatchCriteria
+                {
+                    MismatchCount = 0,
+                    PGroupsToMatchInPositionOne = matchingPGroups,
+                    PGroupsToMatchInPositionTwo = matchingPGroups
+                })
+                .WithSearchType(DefaultDonorType)
+                .WithTotalMismatchCount(0);
         }
     }
 }
