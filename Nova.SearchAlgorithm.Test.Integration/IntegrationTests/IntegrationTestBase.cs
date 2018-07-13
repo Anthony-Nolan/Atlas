@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using Autofac;
+﻿using Autofac;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
@@ -18,12 +15,15 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
@@ -74,8 +74,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<PreCalculatedHlaMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -94,12 +92,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<PreCalculatedHlaMatchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionaryLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();

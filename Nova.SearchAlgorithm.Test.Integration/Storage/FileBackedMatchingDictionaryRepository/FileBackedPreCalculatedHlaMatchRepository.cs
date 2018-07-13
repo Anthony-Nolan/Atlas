@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
     /// An implementation of the matching dictionary lookup which loads the data from a file,
     /// necessary for testing without an internet dependency.
     /// </summary>
-    public class FileBackedPreCalculatedHlaMatchRepository : IPreCalculatedHlaMatchRepository
+    public class FileBackedHlaMatchingLookupRepository : IHlaMatchingLookupRepository
     {
         private readonly IEnumerable<RawMatchingHla> rawMatchingData = ReadJsonFromFile();
 
@@ -30,13 +30,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             }
         }
 
-        public Task RecreatePreCalculatedHlaMatchesTable(IEnumerable<PreCalculatedHlaMatchInfo> dictionaryContents)
+        public Task RecreateHlaMatchingLookupTable(IEnumerable<HlaMatchingLookupResult> dictionaryContents)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task<PreCalculatedHlaMatchInfo> GetPreCalculatedHlaMatchInfoIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var raw = rawMatchingData.FirstOrDefault(
                     hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase) 
@@ -47,22 +47,17 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
                 return null;
             }
 
-            var lookupResult = new PreCalculatedHlaMatchInfo(
+            var lookupResult = new HlaMatchingLookupResult(
                 matchLocus,
                 raw.LookupName,
                 TypingMethod.Molecular, // Arbitrary, not used in tests
-                MolecularSubtype.CompleteAllele, // Arbitrary, not used in tests
-                SerologySubtype.Associated, // Arbitrary, not used in tests
-                AlleleTypingStatus.GetDefaultStatus(), // Default, not used in tests
-                raw.MatchingPGroups,
-                raw.MatchingGGroups,
-                new List<SerologyEntry>() // Empty, not used in tests
+                raw.MatchingPGroups
                 );
             
             return Task.FromResult(lookupResult);
         }
 
-        public Task LoadPreCalculatedHlaMatchesIntoMemory()
+        public Task LoadHlaMatchingLookupTableIntoMemory()
         {
             return Task.CompletedTask;
         }

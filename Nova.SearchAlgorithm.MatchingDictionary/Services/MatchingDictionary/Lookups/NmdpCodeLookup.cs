@@ -19,13 +19,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
         private readonly ILogger logger;
 
         public NmdpCodeLookup(
-            IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository,
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
             IMemoryCache memoryCache,
             IHlaServiceClient hlaServiceClient,
             IAlleleStringSplitterService alleleSplitter,
             ILogger logger)
-            : base(preCalculatedHlaMatchRepository, alleleNamesLookupService)
+            : base(hlaMatchingLookupRepository, alleleNamesLookupService)
         {
             this.hlaServiceClient = hlaServiceClient;
             this.memoryCache = memoryCache;

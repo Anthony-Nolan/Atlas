@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
@@ -19,17 +18,17 @@ namespace Nova.SearchAlgorithm.Services
 
     public class SearchService : ISearchService
     {
-        private readonly IMatchingDictionaryLookupService lookupService;
+        private readonly IHlaMatchingLookupService hlaMatchingLookupService;
         private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
 
         public SearchService(
-            IMatchingDictionaryLookupService lookupService, 
+            IHlaMatchingLookupService hlaMatchingLookupService, 
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService
             )
         {
-            this.lookupService = lookupService;
+            this.hlaMatchingLookupService = hlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
         }
@@ -71,8 +70,8 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var lookupResult = await Task.WhenAll(
-                lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla1),
-                lookupService.GetMatchingHla(locus.ToMatchLocus(), mismatch.SearchHla2));
+                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), mismatch.SearchHla1),
+                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), mismatch.SearchHla2));
 
             return new AlleleLevelLocusMatchCriteria
             {

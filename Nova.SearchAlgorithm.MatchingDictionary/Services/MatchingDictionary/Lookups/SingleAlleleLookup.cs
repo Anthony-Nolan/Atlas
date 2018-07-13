@@ -8,9 +8,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
     internal class SingleAlleleLookup : AlleleNamesLookupBase
     {
         public SingleAlleleLookup(
-            IPreCalculatedHlaMatchRepository preCalculatedHlaMatchRepository,
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService)
-            : base(preCalculatedHlaMatchRepository, alleleNamesLookupService)
+            : base(hlaMatchingLookupRepository, alleleNamesLookupService)
         {
         }
 
