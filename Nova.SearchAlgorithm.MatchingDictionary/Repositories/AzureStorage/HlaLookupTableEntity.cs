@@ -5,6 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class HlaLookupTableEntity : TableEntity
     {
+        // TODO: nova-1445: set MatchLocus & TypingMethod as strings so they can be stored in table
         public MatchLocus MatchLocus { get; set; }
         public TypingMethod TypingMethod { get; set; }
         public string LookupName { get; set; }

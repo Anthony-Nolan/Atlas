@@ -8,8 +8,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public interface IConfidenceService
     {
         PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult<IPreCalculatedScoringInfo>> donorLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult<IPreCalculatedScoringInfo>> patientLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades
         );
     }
@@ -17,8 +17,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public class ConfidenceService : IConfidenceService
     {
         public PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult<IPreCalculatedScoringInfo>> donorLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult<IPreCalculatedScoringInfo>> patientLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades
         )
         {
