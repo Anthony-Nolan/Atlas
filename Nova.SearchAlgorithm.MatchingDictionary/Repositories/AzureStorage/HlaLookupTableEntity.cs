@@ -1,3 +1,4 @@
+using System;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
@@ -5,19 +6,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class HlaLookupTableEntity : TableEntity
     {
-        // TODO: nova-1445: set MatchLocus & TypingMethod as strings so they can be stored in table
-        public MatchLocus MatchLocus { get; set; }
-        public TypingMethod TypingMethod { get; set; }
+        public string MatchLocusAsString { get; set; }
+        public string TypingMethodAsString { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
+        public MatchLocus MatchLocus => ParseStringToEnum<MatchLocus>(MatchLocusAsString);
+        public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
+
         public HlaLookupTableEntity() { }
 
-        public HlaLookupTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod) 
+        public HlaLookupTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
             : base(GetPartition(matchLocus), GetRowKey(lookupName, typingMethod))
         {
-            MatchLocus = matchLocus;
-            TypingMethod = typingMethod;
+            MatchLocusAsString = matchLocus.ToString();
+            TypingMethodAsString = typingMethod.ToString();
             LookupName = lookupName;
         }
 
@@ -29,6 +32,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         public static string GetRowKey(string lookupName, TypingMethod typingMethod)
         {
             return $"{lookupName}-{typingMethod.ToString()}";
+        }
+
+        private static TEnum ParseStringToEnum<TEnum>(string str)
+        {
+            return (TEnum)Enum.Parse(typeof(TEnum), str);
         }
     }
 }
