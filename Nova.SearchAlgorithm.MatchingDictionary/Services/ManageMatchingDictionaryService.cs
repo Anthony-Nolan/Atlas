@@ -17,17 +17,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
     public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
     {
-        private readonly IHlaMatchingService matchingService;
-        private readonly IMatchingDictionaryRepository dictionaryRepository;
+        private readonly IHlaMatchPreCalculationService matchPreCalculationService;
+        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesService alleleNamesService;
 
         public ManageMatchingDictionaryService(
-            IHlaMatchingService matchingService, 
-            IMatchingDictionaryRepository dictionaryRepository,
+            IHlaMatchPreCalculationService matchPreCalculationService, 
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesService alleleNamesService)
         {
-            this.matchingService = matchingService;
-            this.dictionaryRepository = dictionaryRepository;
+            this.matchPreCalculationService = matchPreCalculationService;
+            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesService = alleleNamesService;
         }
 
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 // so both collections must be recreated together; the order of execution is not important.
                 await Task.WhenAll(
                     RecreateAlleleNames(),
-                    RecreateMatchingDictionaryEntries()
+                    RecreateHlaMatchingLookupData()
                     );
             }
             catch (Exception ex)
@@ -53,11 +53,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             await alleleNamesService.RecreateAlleleNames();
         }
 
-        private async Task RecreateMatchingDictionaryEntries()
+        private async Task RecreateHlaMatchingLookupData()
         {
-            var allMatchedHla = matchingService.GetMatchedHla();
-            var entries = allMatchedHla.ToMatchingDictionaryEntries();
-            await dictionaryRepository.RecreateMatchingDictionaryTable(entries);
+            var allMatchedHla = matchPreCalculationService.GetMatchedHla();
+            var entries = allMatchedHla.ToHlaMatchingLookupResult();
+            await hlaMatchingLookupRepository.RecreateHlaMatchingLookupTable(entries);
         }
     }
 }

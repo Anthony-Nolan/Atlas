@@ -10,11 +10,11 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
-    [TestFixture(DonorStorageImplementation.SQL, Locus.A)]
-    [TestFixture(DonorStorageImplementation.SQL, Locus.B)]
-    [TestFixture(DonorStorageImplementation.SQL, Locus.Drb1)]
-    [TestFixture(DonorStorageImplementation.SQL, Locus.Dqb1)]
-    [TestFixture(DonorStorageImplementation.SQL, Locus.C)]
+    [TestFixture(Locus.A)]
+    [TestFixture(Locus.B)]
+    [TestFixture(Locus.Drb1)]
+    [TestFixture(Locus.Dqb1)]
+    [TestFixture(Locus.C)]
     public class MatchingTestsAtASingleLocus : IntegrationTestBase
     {
         private IDonorMatchingService matchingService;
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private const string PatientPGroupAtPositionOne = "patient-p-group-at-position-one";
         private const string PatientPGroupAtPositionTwo = "patient-p-group-at-position-two";
 
-        public MatchingTestsAtASingleLocus(DonorStorageImplementation param, Locus locus) : base(param)
+        public MatchingTestsAtASingleLocus(Locus locus) : base()
         {
             this.locus = locus;
         }

@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm
             
             // TODO: NOVA-1440: Sort out caching in a more sensible way
             HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IAntigenCachingService>().GenerateAntigenCache());
-            HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IMatchingDictionaryRepository>().LoadMatchingDictionaryIntoMemory());
+            HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IHlaMatchingLookupRepository>().LoadHlaMatchingLookupTableIntoMemory());
             
             var logLevel = ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel();
             app.ConfigureNovaMiddleware("search_algorithm", JsonConfig.GlobalSettings, logLevel);

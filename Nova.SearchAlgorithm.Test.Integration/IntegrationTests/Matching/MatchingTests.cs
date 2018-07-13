@@ -39,8 +39,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private const RegistryCode DefaultRegistryCode = RegistryCode.DKMS;
         private const DonorType DefaultDonorType = DonorType.Cord;
 
-        public MatchingTests(DonorStorageImplementation param) : base(param) { }
-
         [SetUp]
         public void ResolveSearchRepo()
         {

@@ -20,19 +20,14 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
             {
                 case Locus.A:
                     return ScoreDetailsAtLocusA;
-                    break;
                 case Locus.B:
                     return ScoreDetailsAtLocusB;
-                    break;
                 case Locus.C:
                     return ScoreDetailsAtLocusC;
-                    break;
                 case Locus.Dqb1:
                     return ScoreDetailsAtLocusDqb1;
-                    break;
                 case Locus.Drb1:
                     return ScoreDetailsAtLocusDrb1;
-                    break;
                 case Locus.Dpb1:
                     // TODO: NOVA-1301 implement scoring for Dpb1
                     throw new NotImplementedException();

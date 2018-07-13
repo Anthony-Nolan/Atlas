@@ -38,6 +38,9 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+# Approval Tests results
+*.received.txt
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/

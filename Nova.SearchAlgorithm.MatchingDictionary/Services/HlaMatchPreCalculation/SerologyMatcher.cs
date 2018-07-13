@@ -1,0 +1,27 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
+
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
+{
+    /// <summary>
+    /// Creates a complete collection of matched serologies
+    /// from the information that was extracted from the WMDA files.
+    /// </summary>
+    internal class SerologyMatcher : IHlaMatcher
+    {
+        public IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo)
+        {
+            var serologyToAlleleMapper = new SerologyToAlleleMapper();
+
+            var matchedHlaQuery =
+                from serologyInfo in hlaInfo.SerologyInfoForMatching
+                let allelesInfo = serologyToAlleleMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo)
+                let pGroups = allelesInfo.SelectMany(allele => allele.MatchingPGroups).Distinct()
+                let gGroups = allelesInfo.SelectMany(allele => allele.MatchingGGroups).Distinct()
+                select new MatchedSerology(serologyInfo, pGroups, gGroups);
+
+            return matchedHlaQuery;
+        }
+    }
+}

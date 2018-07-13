@@ -1,7 +1,7 @@
 # Nova.SearchAlgorithm
 Service for AN's HSC Search Algorithm.
 
-#Terminology
+## Terminology
 
 The following terms are assumed domain knowledge when used in the code:
 

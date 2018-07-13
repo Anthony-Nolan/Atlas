@@ -1,11 +1,10 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+﻿using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -14,12 +13,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         Task<IEnumerable<string>> GetCurrentAlleleNames(MatchLocus matchLocus, string alleleLookupName);
     }
 
-    public class AlleleNamesLookupService : IAlleleNamesLookupService
+    public class AlleleNamesLookupService : LookupServiceBase<string>, IAlleleNamesLookupService
     {
         private readonly IAlleleNamesRepository alleleNamesRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;
 
-        public AlleleNamesLookupService(IAlleleNamesRepository alleleNamesRepository, IHlaCategorisationService hlaCategorisationService)
+        public AlleleNamesLookupService(
+            IAlleleNamesRepository alleleNamesRepository, 
+            IHlaCategorisationService hlaCategorisationService)
         {
             this.alleleNamesRepository = alleleNamesRepository;
             this.hlaCategorisationService = hlaCategorisationService;
@@ -27,42 +28,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(MatchLocus matchLocus, string alleleLookupName)
         {
-            try
-            {
-                if (!AlleleNameIsValid(alleleLookupName))
-                {
-                    throw new ArgumentException($"{alleleLookupName} is not an allele name.");
-                }
-
-                var formattedLookupName = FormatAlleleLookupName(alleleLookupName);
-
-                return await PerformAlleleNameLookup(matchLocus, formattedLookupName);
-            }
-            catch (Exception ex)
-            {
-                var msg = $"Failed to lookup the allele name {alleleLookupName} at locus {matchLocus}.";
-                throw new MatchingDictionaryHttpException(msg, ex);
-            }
+            return await GetLookupResults(matchLocus, alleleLookupName);
         }
 
-        private bool AlleleNameIsValid(string alleleLookupName)
+        protected override bool LookupNameIsValid(string lookupName)
         {
-            return !string.IsNullOrEmpty(alleleLookupName) && 
-                hlaCategorisationService.GetHlaTypingCategory(alleleLookupName) == HlaTypingCategory.Allele;
+            return !string.IsNullOrEmpty(lookupName) &&
+                   hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
         }
 
-        private static string FormatAlleleLookupName(string alleleLookupName)
+        protected override async Task<IEnumerable<string>> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
-            return alleleLookupName.Trim().TrimStart('*');
-        }
-
-        private async Task<IEnumerable<string>> PerformAlleleNameLookup(MatchLocus matchLocus, string alleleLookupName)
-        {
-            var alleleNameEntry = await alleleNamesRepository.GetAlleleNameIfExists(matchLocus, alleleLookupName);
+            var alleleNameEntry = await alleleNamesRepository.GetAlleleNameIfExists(matchLocus, lookupName);
 
             if (alleleNameEntry == null)
             {
-                throw new InvalidHlaException(matchLocus, alleleLookupName);
+                throw new InvalidHlaException(matchLocus, lookupName);
             }
 
             return alleleNameEntry.CurrentAlleleNames;

@@ -5,16 +5,16 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
 {
-    internal class XxCodeLookup : MatchingDictionaryLookup
+    internal class XxCodeLookup : HlaMatchingLookupBase
     {
-        public XxCodeLookup(IMatchingDictionaryRepository dictionaryRepository) : base(dictionaryRepository)
+        public XxCodeLookup(IHlaMatchingLookupRepository hlaMatchingLookupRepository) : base(hlaMatchingLookupRepository)
         {
         }
 
-        public override Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
+        public override Task<HlaMatchingLookupResult> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var firstField = lookupName.Split(':')[0];
-            return GetMatchingDictionaryEntryIfExists(matchLocus, firstField, TypingMethod.Molecular);
+            return GetHlaMatchingLookupResultIfExists(matchLocus, firstField, TypingMethod.Molecular);
         }
     }
 }

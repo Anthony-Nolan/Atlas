@@ -11,72 +11,64 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lo
     /// Base class for all lookups that involve searching the Matching Dictionary
     /// with one or more allele lookup names.
     /// </summary>
-    internal abstract class AlleleNamesLookupBase : MatchingDictionaryLookup
+    internal abstract class AlleleNamesLookupBase : HlaMatchingLookupBase
     {
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
 
         protected AlleleNamesLookupBase(
-            IMatchingDictionaryRepository dictionaryRepository, IAlleleNamesLookupService alleleNamesLookupService)
-                : base(dictionaryRepository)
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository, IAlleleNamesLookupService alleleNamesLookupService)
+                : base(hlaMatchingLookupRepository)
         {
             this.alleleNamesLookupService = alleleNamesLookupService;
         }
 
-        public override async Task<MatchingDictionaryEntry> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
+        public override async Task<HlaMatchingLookupResult> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var alleleNamesToLookup = await GetAlleleLookupNames(matchLocus, lookupName);
-            var matchingDictionaryEntries = await GetMatchingDictionaryEntries(matchLocus, alleleNamesToLookup);
-            var molecularSubtype = GetMolecularSubtype(matchingDictionaryEntries);
+            var lookupResults = await GetHlaMatchingLookupResult(matchLocus, alleleNamesToLookup);
 
-            return new MatchingDictionaryEntry(matchLocus, lookupName, molecularSubtype, matchingDictionaryEntries);
+            return new HlaMatchingLookupResult(matchLocus, lookupName, lookupResults);
         }
 
         protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName);
 
-        private async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntries(MatchLocus matchLocus, IEnumerable<string> alleleNamesToLookup)
+        private async Task<IEnumerable<HlaMatchingLookupResult>> GetHlaMatchingLookupResult(MatchLocus matchLocus, IEnumerable<string> alleleNamesToLookup)
         {
-            var lookupTasks = alleleNamesToLookup.Select(name => GetMatchingDictionaryEntryForAlleleNameIfExists(matchLocus, name));
+            var lookupTasks = alleleNamesToLookup.Select(name => GetHlaMatchingLookupResultsForAlleleNameIfExists(matchLocus, name));
             var lookupResults = await Task.WhenAll(lookupTasks);
-            var matchingDictionaryEntries = lookupResults.SelectMany(result => result);
+            var preCalculatedHlaMatchInfo = lookupResults.SelectMany(result => result);
 
-            return matchingDictionaryEntries;
+            return preCalculatedHlaMatchInfo;
         }
 
         /// <summary>
-        /// Query matching dictionary using the allele lookup name.
+        /// Query matching lookup repository using the allele lookup name.
         /// If nothing is found, try again using the current version(s) of the allele name.
         /// Else an invalid HLA exception will be thrown.
         /// </summary>
-        private async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntryForAlleleNameIfExists(
+        private async Task<IEnumerable<HlaMatchingLookupResult>> GetHlaMatchingLookupResultsForAlleleNameIfExists(
             MatchLocus matchLocus, string lookupName)
         {
-            if (TryGetMatchingDictionaryEntryByAlleleLookupName(matchLocus, lookupName, out var entry))
+            if (TryGetHlaMatchingLookupResultByAlleleLookupName(matchLocus, lookupName, out var lookupResult))
             {
-                return new List<MatchingDictionaryEntry> { entry };
+                return new List<HlaMatchingLookupResult> { lookupResult };
             }
 
-            return await GetMatchingDictionaryEntriesByCurrentAlleleNamesIfExists(matchLocus, lookupName);
+            return await GetHlaMatchingLookupResultByCurrentAlleleNamesIfExists(matchLocus, lookupName);
         }
 
-        private bool TryGetMatchingDictionaryEntryByAlleleLookupName(
-            MatchLocus matchLocus, string lookupName, out MatchingDictionaryEntry entry)
+        private bool TryGetHlaMatchingLookupResultByAlleleLookupName(
+            MatchLocus matchLocus, string lookupName, out HlaMatchingLookupResult lookupResult)
         {
-            return TryGetMatchingDictionaryEntry(matchLocus, lookupName, TypingMethod.Molecular, out entry);
+            return TryGetHlaMatchingLookupResult(matchLocus, lookupName, TypingMethod.Molecular, out lookupResult);
         }
 
-        private async Task<IEnumerable<MatchingDictionaryEntry>> GetMatchingDictionaryEntriesByCurrentAlleleNamesIfExists(
+        private async Task<IEnumerable<HlaMatchingLookupResult>> GetHlaMatchingLookupResultByCurrentAlleleNamesIfExists(
             MatchLocus matchLocus, string lookupName)
         {
             var currentNames = await alleleNamesLookupService.GetCurrentAlleleNames(matchLocus, lookupName);
-            var lookupTasks = currentNames.Select(name => GetMatchingDictionaryEntryIfExists(matchLocus, name, TypingMethod.Molecular));
+            var lookupTasks = currentNames.Select(name => GetHlaMatchingLookupResultIfExists(matchLocus, name, TypingMethod.Molecular));
             return await Task.WhenAll(lookupTasks);
-        }
-
-        private static MolecularSubtype GetMolecularSubtype(IEnumerable<MatchingDictionaryEntry> matchingDictionaryEntries)
-        {
-            return matchingDictionaryEntries.Count() == 1
-                ? MolecularSubtype.CompleteAllele
-                : MolecularSubtype.MultipleAlleles;
         }
     }
 }

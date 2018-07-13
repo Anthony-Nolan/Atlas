@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.Utils.ApplicationInsights;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -22,19 +20,19 @@ namespace Nova.SearchAlgorithm.Services
 
     public class HlaUpdateService : IHlaUpdateService
     {
-        private readonly IMatchingDictionaryLookupService lookupService;
+        private readonly IHlaMatchingLookupService lookupService;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
-        private readonly IMatchingDictionaryRepository matchingDictionaryRepository;
+        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IAlleleNamesRepository alleleNamesRepository;
 
-        public HlaUpdateService(IMatchingDictionaryLookupService lookupService,
+        public HlaUpdateService(IHlaMatchingLookupService lookupService,
             IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             ILogger logger,
-            IMatchingDictionaryRepository matchingDictionaryRepository,
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAntigenCachingService antigenCachingService,
             IAlleleNamesRepository alleleNamesRepository
         )
@@ -43,7 +41,7 @@ namespace Nova.SearchAlgorithm.Services
             this.donorInspectionRepository = donorInspectionRepository;
             this.donorImportRepository = donorImportRepository;
             this.logger = logger;
-            this.matchingDictionaryRepository = matchingDictionaryRepository;
+            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.antigenCachingService = antigenCachingService;
             this.alleleNamesRepository = alleleNamesRepository;
         }
@@ -79,7 +77,7 @@ namespace Nova.SearchAlgorithm.Services
         private async Task PerformUpfrontSetup()
         {
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await matchingDictionaryRepository.LoadMatchingDictionaryIntoMemory();
+            await hlaMatchingLookupRepository.LoadHlaMatchingLookupTableIntoMemory();
             await alleleNamesRepository.LoadAlleleNamesIntoMemory();
             
             // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
@@ -89,7 +87,7 @@ namespace Nova.SearchAlgorithm.Services
             await antigenCachingService.GenerateAntigenCache();
 
             // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
-            var pGroups = matchingDictionaryRepository.GetAllPGroups();
+            var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
             donorImportRepository.InsertPGroups(pGroups);
         }
 
@@ -127,7 +125,7 @@ namespace Nova.SearchAlgorithm.Services
 
             return hla == null
                 ? null
-                : (await lookupService.GetMatchingHla(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
+                : (await lookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
         }
     }
 }
