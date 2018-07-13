@@ -8,15 +8,10 @@ using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerologies))]
     [UseReporter(typeof(NUnitReporter))]
     [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
-        public SerologyToSerologyMatchingTest(IEnumerable<ISerologyInfoForMatching> matchingSerology) : base(matchingSerology)
-        {
-        }
-
         [TestCase("A", MatchLocus.A, "9", SerologySubtype.Broad,
             new[] { "9", "23", "24", "2403" },
             new[] { SerologySubtype.Broad, SerologySubtype.Split, SerologySubtype.Split, SerologySubtype.Associated },
@@ -128,7 +123,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedSerologies_CollectionContainsAllExpectedSerology()
         {
-            var str = string.Join("\r\n", MatchedHlaTypings
+            var str = string.Join("\r\n", SharedTestDataCache
+                .GetMatchedHla()
+                .OfType<MatchedSerology>()
                 .OrderBy(s => s.HlaTyping.MatchLocus)
                 .ThenBy(s => int.Parse(s.HlaTyping.Name))
                 .Select(s => $"{s.HlaTyping.MatchLocus.ToString().ToUpper()}\t{s.HlaTyping.Name}")
@@ -139,7 +136,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedSerologies_WhereSerologyIsValid_CollectionOnlyContainsValidRelationships()
         {
-            var groupBySubtype = MatchedHlaTypings
+            var groupBySubtype = SharedTestDataCache
+                .GetMatchedHla()
+                .OfType<MatchedSerology>()
                 .Where(m => !m.HlaTyping.IsDeleted)
                 .Select(m => new
                 {

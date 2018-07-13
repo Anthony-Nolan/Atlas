@@ -5,14 +5,13 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.ConfidentialAllelesTestArgs))]
     public class ConfidentialAlleleTest : WmdaRepositoryTestBase<ConfidentialAllele>
     {
-        public ConfidentialAlleleTest(IEnumerable<ConfidentialAllele> confidentialAlleles, IEnumerable<string> matchLoci) 
-            : base(confidentialAlleles, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.ConfidentialAlleles, MolecularLoci);
         }
-
+        
         [Test]
         public void WmdaDataRepository_ConfidentialAlleles_SuccessfullyCaptured()
         {

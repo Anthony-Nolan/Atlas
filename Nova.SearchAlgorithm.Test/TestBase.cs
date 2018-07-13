@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using Autofac.Builder;
+using AutoMapper;
+using Nova.SearchAlgorithm.Config;
 using Nova.Utils.Auth;
 using Nova.Utils.WebApi.Filters;
 using NSubstitute;
@@ -75,9 +77,10 @@ namespace Nova.SearchAlgorithm.Test
         {
             var apiKeyProvider = Substitute.For<IApiKeyProvider>();
             var apiKeyAttribute = Substitute.For<ApiKeyRequiredAttribute>(apiKeyProvider);
+            var mapper = AutomapperConfig.CreateMapper();
 
             var containerBuilder = new ContainerBuilder();
-            containerBuilder.RegisterInstance(TestSetup.Mapper).AsImplementedInterfaces().SingleInstance();
+            containerBuilder.RegisterInstance(mapper).AsImplementedInterfaces().SingleInstance();
             containerBuilder.RegisterInstance(apiKeyAttribute).As<ApiKeyRequiredAttribute>().SingleInstance();
             RegisterWithConstructorsAsMocks<TClassUnderTest>(containerBuilder).InstancePerLifetimeScope();
             RegisterDependencies(containerBuilder);

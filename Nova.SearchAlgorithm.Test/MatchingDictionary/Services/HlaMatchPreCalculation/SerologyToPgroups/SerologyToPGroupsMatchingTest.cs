@@ -8,19 +8,14 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedSerologies))]
     [UseReporter(typeof(NUnitReporter))]
     [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
     public class SerologyToPGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
-        public SerologyToPGroupsMatchingTest(IEnumerable<MatchedSerology> matchingTypes) : base(matchingTypes)
-        {
-        }
-
         [Test]
         public void ValidSerologyHaveAtLeastOnePGroup()
         {
-            var pGroupCounts = MatchedHlaTypings
+            var pGroupCounts = MatchedHla
                 .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is SerologyTyping)
                 .Select(m => new { HlaType = m.HlaTyping, PGroupCount = m.MatchingPGroups.Count() })
                 .ToList();

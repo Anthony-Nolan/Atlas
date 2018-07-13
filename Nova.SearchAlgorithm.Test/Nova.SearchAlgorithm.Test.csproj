@@ -352,28 +352,25 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\SharedTestDataCache.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
     <Compile Include="TestBase.cs" />
-    <Compile Include="TestSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AllelesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\PGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\WmdaRepositoryTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\SerologyToSerologyRelationshipsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\WmdRepositoryTestBase.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTest.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\HlaTypingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleToSerologyMatchingTest.cs" />
-    <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedHlaTestFixtureArgs.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\ReciprocalMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToGgroups\SerologyToGGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedHlaTest.cs" />
-    <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\HlaMatchPreCalculationServiceTestData.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToSerology\SerologyToSerologyMatchingTest.cs" />
   </ItemGroup>
   <ItemGroup>

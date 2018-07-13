@@ -4,12 +4,11 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
-    [TestFixtureSource(typeof(WmdaRepositoryTestFixtureArgs), nameof(WmdaRepositoryTestFixtureArgs.RelSerSerTestArgs))]
     public class SerologyToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelSerSer>
     {
-        public SerologyToSerologyRelationshipsTest(IEnumerable<RelSerSer> relSerSer, IEnumerable<string> matchLoci)
-            : base(relSerSer, matchLoci)
+        protected override void SetupTestData()
         {
+            SetTestData(WmdaDataRepository.SerologyToSerologyRelationships, SerologyLoci);
         }
 
         [TestCase("A", "9", new[] { "23", "24" }, new string[] { }, Description = "Broad serology with splits, but no associated")]

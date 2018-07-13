@@ -7,13 +7,8 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
-    [TestFixtureSource(typeof(MatchedHlaTestFixtureArgs), nameof(MatchedHlaTestFixtureArgs.MatchedAlleles))]
     public class AlleleToSerologyMatchingTest : MatchedOnTestBase<MatchedAllele>
     {
-        public AlleleToSerologyMatchingTest(IEnumerable<MatchedAllele> matchingTypes) : base(matchingTypes)
-        {
-        }
-
         [Test]
         public void ExpressedAllelesHaveCorrectMatchingSerology()
         {
@@ -60,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void AllNonExpressedAllelesHaveNoMatchingSerology()
         {
-            var serologyCounts = MatchedHlaTypings
+            var serologyCounts = MatchedHla
                 .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is AlleleTyping)
                 .Select(m => new
                 {
