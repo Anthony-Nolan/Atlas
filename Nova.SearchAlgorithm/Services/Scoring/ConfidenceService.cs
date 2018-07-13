@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
     public interface IConfidenceService
     {
         PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
+            PhenotypeInfo<IEnumerable<IHlaScoringLookupResult>> donorLookupResults,
+            PhenotypeInfo<IEnumerable<IHlaScoringLookupResult>> patientLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades
         );
     }
@@ -17,8 +18,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public class ConfidenceService : IConfidenceService
     {
         public PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
+            PhenotypeInfo<IEnumerable<IHlaScoringLookupResult>> donorLookupResults,
+            PhenotypeInfo<IEnumerable<IHlaScoringLookupResult>> patientLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades
         )
         {

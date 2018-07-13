@@ -1,5 +1,5 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.ScoringLookup;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override async Task<IEnumerable<IHlaScoringLookupResult>> PerformLookup(MatchLocus matchLocus, string lookupName)
+        protected override Task<IEnumerable<IHlaScoringLookupResult>> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
             // TODO: NOVA-1445: lookup should return a list of non-consolidated entries
             throw new System.NotImplementedException();

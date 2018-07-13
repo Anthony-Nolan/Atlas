@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.Common.Exceptions;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             var rowKey = HlaLookupTableEntity.GetRowKey(lookupName, typingMethod);
             var entity = await GetDataIfExists(partition, rowKey);
 
-            return entity?.ToResult<HlaMatchingLookupResult>();
+            return entity?.ToHlaMatchingLookupResult();
         }
 
         public async Task LoadHlaMatchingLookupTableIntoMemory()
@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             if (MemoryCache.TryGetValue(CacheKey, out Dictionary<string, HlaLookupTableEntity> matchingDictionary))
             {
-                return matchingDictionary.Values.SelectMany(v => v.ToResult<HlaMatchingLookupResult>().MatchingPGroups);
+                return matchingDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult().MatchingPGroups);
             }
             throw new MemoryCacheException($"{CacheKey} table not cached!");
         }

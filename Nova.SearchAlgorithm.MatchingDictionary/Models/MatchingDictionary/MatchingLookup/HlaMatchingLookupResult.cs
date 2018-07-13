@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
+namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup
 {
     public class HlaMatchingLookupResult :
         IHlaMatchingLookupResult,
