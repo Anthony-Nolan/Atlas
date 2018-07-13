@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
                 ? GetScoringInfo<AlleleScoringInfo>(entity)
                 : GetScoringInfo<SerologyScoringInfo>(entity);
 
-            return new HlaScoringLookupResult(entity.MatchLocus, entity.LookupName, scoringInfo);
+            return new HlaScoringLookupResult(entity.MatchLocus, entity.LookupName, entity.TypingMethod, scoringInfo);
         }
 
         private static IPreCalculatedScoringInfo GetScoringInfo<TScoringInfo>(HlaLookupTableEntity entity)

@@ -8,18 +8,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.Scor
         IHlaScoringLookupResult,
         IStorableInCloudTable<HlaLookupTableEntity>
     {
-        public MatchLocus MatchLocus { get; set; }
-        public string LookupName { get; set; }
-        public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public IPreCalculatedScoringInfo PreCalculatedHlaInfo { get; set; }       
+        public MatchLocus MatchLocus { get; }
+        public string LookupName { get; }
+        public TypingMethod TypingMethod { get; }
+        public IPreCalculatedScoringInfo PreCalculatedHlaInfo { get; }       
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
+            TypingMethod typingMethod,
             IPreCalculatedScoringInfo preCalculatedHlaInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
+            TypingMethod = typingMethod;
             PreCalculatedHlaInfo = preCalculatedHlaInfo;
         }
 
