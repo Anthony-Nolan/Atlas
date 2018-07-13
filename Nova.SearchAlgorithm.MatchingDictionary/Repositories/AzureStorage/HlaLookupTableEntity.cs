@@ -5,13 +5,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class HlaLookupTableEntity : TableEntity
     {
-        public string SerialisedHlaLookupResult { get; set; }
+        public MatchLocus MatchLocus { get; set; }
+        public TypingMethod TypingMethod { get; set; }
+        public string LookupName { get; set; }
+        public string SerialisedHlaInfo { get; set; }
 
         public HlaLookupTableEntity() { }
 
         public HlaLookupTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod) 
             : base(GetPartition(matchLocus), GetRowKey(lookupName, typingMethod))
         {
+            MatchLocus = matchLocus;
+            TypingMethod = typingMethod;
+            LookupName = lookupName;
         }
 
         public static string GetPartition(MatchLocus matchLocus)
