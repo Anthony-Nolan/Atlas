@@ -57,7 +57,20 @@ namespace Nova.SearchAlgorithm.Services
             var matches = await donorMatchingService.Search(criteria);
 
             // TODO:NOVA-930 add scoring
-            var scoredMatches = await donorScoringService.Score(criteria, matches);
+            var patientHla = new PhenotypeInfo<string>
+            {
+                A_1 = searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1,
+                A_2 = searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2,
+                B_1 = searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1,
+                B_2 = searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2,
+                C_1 = searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1,
+                C_2 = searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2,
+                DQB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1,
+                DQB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2,
+                DRB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1,
+                DRB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2
+            };
+            var scoredMatches = await donorScoringService.Score(patientHla, matches);
             
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }

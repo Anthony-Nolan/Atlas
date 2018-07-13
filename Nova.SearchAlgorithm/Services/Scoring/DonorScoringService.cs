@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 {
     public interface IDonorScoringService
     {
-        Task<IEnumerable<MatchAndScoreResult>> Score(AlleleLevelMatchCriteria searchCriteria, IEnumerable<MatchResult> matchResults);
+        Task<IEnumerable<MatchAndScoreResult>> Score(PhenotypeInfo<string> patientHla, IEnumerable<MatchResult> matchResults);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             this.hlaScoringLookupService = hlaScoringLookupService;
         }
 
-        public Task<IEnumerable<MatchAndScoreResult>> Score(AlleleLevelMatchCriteria searchCriteria, IEnumerable<MatchResult> matchResults)
+        public Task<IEnumerable<MatchAndScoreResult>> Score(PhenotypeInfo<string> patientHla,  IEnumerable<MatchResult> matchResults)
         {
             // TODO: NOVA-1449: (write tests and) implement
             return Task.FromResult(matchResults.Select(r => new MatchAndScoreResult
