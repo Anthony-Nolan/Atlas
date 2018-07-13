@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     public interface IAlleleNameVariantsExtractor
     {
-        IEnumerable<AlleleNameEntry> GetAlleleNames(IEnumerable<AlleleNameEntry> originalAlleleNames);
+        IEnumerable<AlleleNameLookupResult> GetAlleleNames(IEnumerable<AlleleNameLookupResult> originalAlleleNames);
     }
 
     public class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
@@ -18,13 +18,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
         }
 
-        public IEnumerable<AlleleNameEntry> GetAlleleNames(IEnumerable<AlleleNameEntry> originalAlleleNames)
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(IEnumerable<AlleleNameLookupResult> originalAlleleNames)
         {
             var variantsNotFoundInHistories = originalAlleleNames.SelectMany(GetAlleleNameVariantsNotFoundInHistories);
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNameVariantsNotFoundInHistories(AlleleNameEntry alleleName)
+        private IEnumerable<AlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(AlleleNameLookupResult alleleName)
         {
             var typingFromCurrentName = new AlleleTyping(
                 alleleName.MatchLocus,
@@ -33,17 +33,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
             return typingFromCurrentName
                 .NameVariantsTruncatedByFieldAndOrExpressionSuffix
                 .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.Locus, nameVariant))
-                .Select(nameVariant => new AlleleNameEntry(
+                .Select(nameVariant => new AlleleNameLookupResult(
                     alleleName.MatchLocus,
                     nameVariant,
                     alleleName.CurrentAlleleNames));
         }
 
-        private static IEnumerable<AlleleNameEntry> GroupAlleleNamesByLocusAndLookupName(IEnumerable<AlleleNameEntry> alleleNameVariants)
+        private static IEnumerable<AlleleNameLookupResult> GroupAlleleNamesByLocusAndLookupName(IEnumerable<AlleleNameLookupResult> alleleNameVariants)
         {
             var groupedEntries = alleleNameVariants
                 .GroupBy(e => new { e.MatchLocus, e.LookupName })
-                .Select(e => new AlleleNameEntry(
+                .Select(e => new AlleleNameLookupResult(
                     e.Key.MatchLocus,
                     e.Key.LookupName,
                     e.SelectMany(x => x.CurrentAlleleNames).Distinct()

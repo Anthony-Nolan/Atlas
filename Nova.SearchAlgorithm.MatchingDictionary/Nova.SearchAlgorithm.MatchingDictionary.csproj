@@ -197,7 +197,7 @@
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
-    <Compile Include="Models\AlleleNames\AlleleNameEntry.cs" />
+    <Compile Include="Models\AlleleNames\AlleleNameLookupResult.cs" />
     <Compile Include="Models\MatchingDictionary\IPreCalculatedHlaInfo.cs" />
     <Compile Include="Models\MatchingDictionary\IHlaLookupResult.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\AlleleScoringInfo.cs" />
@@ -212,10 +212,10 @@
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Repositories\AzureStorage\AlleleNameTableEntity.cs" />
-    <Compile Include="Repositories\AzureStorage\AlleleNameEntityExtensions.cs" />
+    <Compile Include="Repositories\AzureStorage\AlleleNameLookupResultExtensions.cs" />
     <Compile Include="Repositories\AlleleNamesRepository.cs" />
     <Compile Include="Repositories\AzureStorage\HlaScoringLookupResultExtensions.cs" />
+    <Compile Include="Repositories\HlaLookupRepositoryBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />
     <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />

@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     public interface IAlleleNamesFromHistoriesExtractor
     {
-        IEnumerable<AlleleNameEntry> GetAlleleNames();
+        IEnumerable<AlleleNameLookupResult> GetAlleleNames();
     }
 
     public class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
@@ -24,19 +24,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
             consolidatedAlleleNameHistories = historiesConsolidator.GetConsolidatedAlleleNameHistories().ToList();
         }
 
-        public IEnumerable<AlleleNameEntry> GetAlleleNames()
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNames()
         {
             return consolidatedAlleleNameHistories
                 .SelectMany(GetAlleleNamesFromSingleHistory);
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
+        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
         {
             var currentAlleleName = GetCurrentAlleleName(history);
 
             return !string.IsNullOrEmpty(currentAlleleName)
-                ? history.ToAlleleNameEntries(currentAlleleName)
-                : new List<AlleleNameEntry>();
+                ? history.ToAlleleNameLookupResults(currentAlleleName)
+                : new List<AlleleNameLookupResult>();
         }
 
         private string GetCurrentAlleleName(AlleleNameHistory history)

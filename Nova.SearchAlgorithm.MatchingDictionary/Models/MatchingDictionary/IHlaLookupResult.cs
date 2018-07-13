@@ -1,11 +1,13 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary
 {
     /// <summary>
     /// Data returned from a HLA lookup.
     /// </summary>
-    public interface IHlaLookupResult
+    public interface IHlaLookupResult : IStorableInCloudTable<HlaLookupTableEntity>
     {
         MatchLocus MatchLocus { get; }
 

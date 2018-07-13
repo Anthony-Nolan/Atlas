@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         /// Generates - but does not persist - Allele Names collection.
         /// </summary>
         /// <returns></returns>
-        IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants();
+        IEnumerable<AlleleNameLookupResult> GetAlleleNamesAndTheirVariants();
     }
 
     /// <inheritdoc />
@@ -35,27 +35,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IAlleleNamesFromHistoriesExtractor alleleNamesFromHistoriesExtractor;
         private readonly IAlleleNameVariantsExtractor alleleNameVariantsExtractor;
         private readonly IReservedAlleleNamesExtractor reservedAlleleNamesExtractor;
-        private readonly IAlleleNamesRepository alleleNamesRepository;
+        private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         
         public AlleleNamesService(
             IAlleleNamesFromHistoriesExtractor alleleNamesFromHistoriesExtractor,
             IAlleleNameVariantsExtractor alleleNameVariantsExtractor,
             IReservedAlleleNamesExtractor reservedAlleleNamesExtractor,
-            IAlleleNamesRepository alleleNamesRepository)
+            IAlleleNamesLookupRepository alleleNamesLookupRepository)
         {
             this.alleleNamesFromHistoriesExtractor = alleleNamesFromHistoriesExtractor;
             this.alleleNameVariantsExtractor = alleleNameVariantsExtractor;
             this.reservedAlleleNamesExtractor = reservedAlleleNamesExtractor;
-            this.alleleNamesRepository = alleleNamesRepository;
+            this.alleleNamesLookupRepository = alleleNamesLookupRepository;
         }
 
         public async Task RecreateAlleleNames()
         {
             var alleleNames = GetAlleleNamesAndTheirVariants();
-            await alleleNamesRepository.RecreateAlleleNamesTable(alleleNames);
+            await alleleNamesLookupRepository.RecreateDataTable(alleleNames);
         }
 
-        public IEnumerable<AlleleNameEntry> GetAlleleNamesAndTheirVariants()
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNamesAndTheirVariants()
         {
             var alleleNamesFromHistories = GetAlleleNamesFromHistories().ToList();
             var nameVariants = GetAlleleNameVariants(alleleNamesFromHistories);
@@ -69,17 +69,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return mergedCollectionOfAlleleNames;
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNamesFromHistories()
+        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromHistories()
         {
             return alleleNamesFromHistoriesExtractor.GetAlleleNames();
         }
 
-        private IEnumerable<AlleleNameEntry> GetAlleleNameVariants(IEnumerable<AlleleNameEntry> originalAlleleNames)
+        private IEnumerable<AlleleNameLookupResult> GetAlleleNameVariants(IEnumerable<AlleleNameLookupResult> originalAlleleNames)
         {
             return alleleNameVariantsExtractor.GetAlleleNames(originalAlleleNames);
         }
 
-        private IEnumerable<AlleleNameEntry> GetReservedAlleleNames()
+        private IEnumerable<AlleleNameLookupResult> GetReservedAlleleNames()
         {
             return reservedAlleleNamesExtractor.GetAlleleNames();
         }

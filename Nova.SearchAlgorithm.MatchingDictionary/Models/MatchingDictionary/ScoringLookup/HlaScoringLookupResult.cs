@@ -1,12 +1,9 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.ScoringLookup
 {
-    public class HlaScoringLookupResult : 
-        IHlaScoringLookupResult,
-        IStorableInCloudTable<HlaLookupTableEntity>
+    public class HlaScoringLookupResult : IHlaScoringLookupResult
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }

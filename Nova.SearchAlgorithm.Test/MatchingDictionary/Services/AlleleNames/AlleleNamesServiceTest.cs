@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
     public class AlleleNamesServiceTest
     {
-        private List<AlleleNameEntry> alleleNameEntries;
+        private List<AlleleNameLookupResult> alleleNameLookupResults;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -23,9 +23,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             var fromExtractorExtractor = new AlleleNamesFromHistoriesExtractor(historiesConsolidator, dataRepository);
             var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
             var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
-            var alleleNamesRepository = Substitute.For<IAlleleNamesRepository>();
+            var alleleNamesRepository = Substitute.For<IAlleleNamesLookupRepository>();
 
-            alleleNameEntries = new AlleleNamesService(
+            alleleNameLookupResults = new AlleleNamesService(
                     fromExtractorExtractor, variantsExtractor, reservedNamesExtractor, alleleNamesRepository)
                 .GetAlleleNamesAndTheirVariants()
                 .ToList();
@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [Test]
         public void AlleleNamesService_GetAlleleNamesAndTheirVariants_DoesNotGenerateDuplicateAlleleNames()
         {
-            var nonUniqueAlleleNames = alleleNameEntries
+            var nonUniqueAlleleNames = alleleNameLookupResults
                 .GroupBy(alleleName => new { alleleName.MatchLocus, alleleName.LookupName })
                 .Where(group => group.Count() > 1);
 
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         public void AlleleNamesService_WhenExactAlleleNameHasBeenInHlaNom_CurrentAlleleNameIsAsExpected(
             MatchLocus matchLocus, string lookupName, IEnumerable<string> expectedCurrentAlleleName)
         {
-            var actualAlleleName = GetAlleleNameEntry(matchLocus, lookupName);
+            var actualAlleleName = GetAlleleNameLookupResult(matchLocus, lookupName);
 
             actualAlleleName.CurrentAlleleNames.ShouldBeEquivalentTo(expectedCurrentAlleleName);
         }
@@ -77,14 +77,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         public void AlleleNamesService_WhenExactAlleleNameHasNeverBeenInHlaNom_ReturnAllPossibleCurrentNames(
             MatchLocus matchLocus, string lookupName, IEnumerable<string> expectedCurrentAlleleNames)
         {
-            var actualAlleleName = GetAlleleNameEntry(matchLocus, lookupName);
+            var actualAlleleName = GetAlleleNameLookupResult(matchLocus, lookupName);
 
             actualAlleleName.CurrentAlleleNames.ShouldBeEquivalentTo(expectedCurrentAlleleNames);
         }
 
-        private AlleleNameEntry GetAlleleNameEntry(MatchLocus matchLocus, string lookupName)
+        private AlleleNameLookupResult GetAlleleNameLookupResult(MatchLocus matchLocus, string lookupName)
         {
-            return alleleNameEntries
+            return alleleNameLookupResults
                 .First(alleleName =>
                     alleleName.MatchLocus.Equals(matchLocus) &&
                     alleleName.LookupName.Equals(lookupName));

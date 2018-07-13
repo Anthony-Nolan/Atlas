@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository
 {
@@ -25,21 +26,26 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             {
                 using (StreamReader reader = new StreamReader(stream))
                 {
-                    return JsonConvert.DeserializeObject<IEnumerable<RawMatchingHla>> (reader.ReadToEnd());
+                    return JsonConvert.DeserializeObject<IEnumerable<RawMatchingHla>>(reader.ReadToEnd());
                 }
             }
         }
 
-        public Task RecreateHlaMatchingLookupTable(IEnumerable<HlaMatchingLookupResult> dictionaryContents)
+        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> dictionaryContents)
         {
             // No operation needed
+            return Task.CompletedTask;
+        }
+
+        public Task LoadDataIntoMemory()
+        {
             return Task.CompletedTask;
         }
 
         public Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var raw = rawMatchingData.FirstOrDefault(
-                    hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase) 
+                    hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase)
                            && hla.LookupName == lookupName);
 
             if (raw == null)
@@ -53,13 +59,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
                 TypingMethod.Molecular, // Arbitrary, not used in tests
                 raw.MatchingPGroups
                 );
-            
-            return Task.FromResult(lookupResult);
-        }
 
-        public Task LoadHlaMatchingLookupTableIntoMemory()
-        {
-            return Task.CompletedTask;
+            return Task.FromResult(lookupResult);
         }
 
         public IEnumerable<string> GetAllPGroups()

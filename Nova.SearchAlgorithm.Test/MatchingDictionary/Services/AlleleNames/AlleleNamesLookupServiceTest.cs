@@ -16,26 +16,26 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
     public class AlleleNamesLookupServiceTest
     {
         private IAlleleNamesLookupService lookupService;
-        private IAlleleNamesRepository repository;
+        private IAlleleNamesLookupRepository lookupRepository;
         private IHlaCategorisationService hlaCategorisationService;
         private const MatchLocus MatchedLocus = MatchLocus.A;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            repository = Substitute.For<IAlleleNamesRepository>();
+            lookupRepository = Substitute.For<IAlleleNamesLookupRepository>();
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
-            lookupService = new AlleleNamesLookupService(repository, hlaCategorisationService);
+            lookupService = new AlleleNamesLookupService(lookupRepository, hlaCategorisationService);
         }
 
         [SetUp]
         public void SetupBeforeEachTest()
         {
-            repository.ClearReceivedCalls();
+            lookupRepository.ClearReceivedCalls();
 
-            repository
+            lookupRepository
                 .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>())
-                .Returns(new AlleleNameEntry(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
+                .Returns(new AlleleNameLookupResult(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
         }
 
         [TestCase(null)]
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
             await lookupService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName);
 
-            await repository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName);
+            await lookupRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName);
         }
     }
 }

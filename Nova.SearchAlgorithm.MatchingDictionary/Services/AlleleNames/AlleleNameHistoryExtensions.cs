@@ -7,12 +7,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     internal static class AlleleNameHistoryExtensions
     {
-        public static IEnumerable<AlleleNameEntry> ToAlleleNameEntries(
+        public static IEnumerable<AlleleNameLookupResult> ToAlleleNameLookupResults(
             this AlleleNameHistory alleleNameHistory, string currentAlleleName)
         {
             return alleleNameHistory
                 .DistinctAlleleNames
-                .Select(name => new AlleleNameEntry(alleleNameHistory.Locus, name, currentAlleleName));
+                .Select(name => new AlleleNameLookupResult(alleleNameHistory.Locus, name, currentAlleleName));
         }
     }
 }

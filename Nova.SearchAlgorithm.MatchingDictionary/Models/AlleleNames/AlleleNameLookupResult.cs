@@ -1,40 +1,40 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames
 {
-    public class AlleleNameEntry : IStorableInCloudTable<AlleleNameTableEntity>, IEquatable<AlleleNameEntry>
+    public class AlleleNameLookupResult : IHlaLookupResult, IEquatable<AlleleNameLookupResult>
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
+        public TypingMethod TypingMethod => TypingMethod.Molecular;
         public IEnumerable<string> CurrentAlleleNames { get; }
 
-        public AlleleNameEntry(MatchLocus matchLocus, string lookupName, IEnumerable<string> currentAlleleNames)
+        public AlleleNameLookupResult(MatchLocus matchLocus, string lookupName, IEnumerable<string> currentAlleleNames)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
             CurrentAlleleNames = currentAlleleNames;
         }
 
-        public AlleleNameEntry(string locus, string lookupName, string currentAlleleName)
-            : this(
-                  PermittedLocusNames.GetMatchLocusNameFromTypingLocusIfExists(TypingMethod.Molecular, locus),
-                  lookupName,
-                  new[] { currentAlleleName })
+        public AlleleNameLookupResult(string locus, string lookupName, string currentAlleleName)
         {
+            MatchLocus = PermittedLocusNames.GetMatchLocusNameFromTypingLocusIfExists(TypingMethod.Molecular, locus);
+            LookupName = lookupName;
+            CurrentAlleleNames = new[] {currentAlleleName};
         }
 
-        public AlleleNameTableEntity ConvertToTableEntity()
+        public HlaLookupTableEntity ConvertToTableEntity()
         {
             return this.ToTableEntity();
         }
 
-        public bool Equals(AlleleNameEntry other)
+        public bool Equals(AlleleNameLookupResult other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((AlleleNameEntry) obj);
+            return Equals((AlleleNameLookupResult) obj);
         }
 
         public override int GetHashCode()

@@ -1,30 +1,25 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
-    public interface IAlleleNamesRepository
+    public interface IAlleleNamesLookupRepository : IHlaLookupRepository
     {
-        Task RecreateAlleleNamesTable(IEnumerable<AlleleNameEntry> alleleNames);
-        Task<AlleleNameEntry> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName);
-        Task LoadAlleleNamesIntoMemory();
+        Task<AlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName);
     }
 
-    public class AlleleNamesRepository :
-        LookupRepositoryBase<AlleleNameEntry, AlleleNameTableEntity>,
-        IAlleleNamesRepository
+    public class AlleleNamesLookupRepository : 
+        HlaLookupRepositoryBase,
+        IAlleleNamesLookupRepository
     {
         private const string DataTableReferencePrefix = "AlleleNamesData";
         private const string CacheKeyAlleleNames = "AlleleNames";
 
-        public AlleleNamesRepository(
+        public AlleleNamesLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IMemoryCache memoryCache)
@@ -32,31 +27,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public async Task RecreateAlleleNamesTable(IEnumerable<AlleleNameEntry> alleleNames)
+        public async Task<AlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
         {
-            var partitions = GetTablePartitions();
-            await RecreateDataTable(alleleNames, partitions);
-        }
+            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, TypingMethod.Molecular);
 
-        public async Task<AlleleNameEntry> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
-        {
-            var partition = AlleleNameTableEntity.GetPartition(matchLocus);
-            var rowKey = AlleleNameTableEntity.GetRowKey(lookupName);
-            var entity = await GetDataIfExists(partition, rowKey);
-
-            return entity?.ToAlleleNameEntry();
-        }
-
-        public async Task LoadAlleleNamesIntoMemory()
-        {
-            await LoadDataIntoMemory();
-        }
-
-        protected override IEnumerable<string> GetTablePartitions()
-        {
-            return PermittedLocusNames
-                .GetPermittedMatchLoci()
-                .Select(matchLocus => matchLocus.ToString());
+            return entity?.ToAlleleNameLookupResult();
         }
     }
 }
