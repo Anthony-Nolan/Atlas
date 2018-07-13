@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Test.Client
         [Test]
         public void Validator_WhenMissingLocusMismatchCriteriaDrb1_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.LocusMismatchDRB1, (LocusMismatchCriteria) null);
+            validator.ShouldHaveValidationErrorFor(x => x.LocusMismatchDrb1, (LocusMismatchCriteria) null);
         }
     }
 }

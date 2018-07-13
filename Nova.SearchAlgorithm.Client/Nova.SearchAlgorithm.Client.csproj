@@ -146,6 +146,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\LocusSearchHla.cs" />
+    <Compile Include="Models\SearchHlaData.cs" />
     <Compile Include="Models\LocusSearchResult.cs" />
     <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Models\LocusMismatchCriteria.cs" />

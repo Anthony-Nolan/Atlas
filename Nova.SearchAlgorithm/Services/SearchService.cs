@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.Services
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
             var criteriaMappings = await Task.WhenAll(
-                MapMismatchToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA),
-                MapMismatchToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB),
-                MapMismatchToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC),
-                MapMismatchToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDRB1),
-                MapMismatchToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDQB1));
+                MapLocusInformationToMatchCriteria(Locus.A, searchRequest.MatchCriteria.LocusMismatchA, searchRequest.SearchHlaData.LocusSearchHlaA),
+                MapLocusInformationToMatchCriteria(Locus.B, searchRequest.MatchCriteria.LocusMismatchB, searchRequest.SearchHlaData.LocusSearchHlaB),
+                MapLocusInformationToMatchCriteria(Locus.C, searchRequest.MatchCriteria.LocusMismatchC, searchRequest.SearchHlaData.LocusSearchHlaC),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, searchRequest.MatchCriteria.LocusMismatchDrb1, searchRequest.SearchHlaData.LocusSearchHlaDrb1),
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, searchRequest.MatchCriteria.LocusMismatchDqb1, searchRequest.SearchHlaData.LocusSearchHlaDqb1));
 
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -62,7 +62,10 @@ namespace Nova.SearchAlgorithm.Services
             return scoredMatches.Select(MapSearchResultToApiObject).OrderBy(r => r.MatchRank);
         }
 
-        private async Task<AlleleLevelLocusMatchCriteria> MapMismatchToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch)
+        private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(
+            Locus locus, 
+            LocusMismatchCriteria mismatch, 
+            LocusSearchHla searchHla)
         {
             if (mismatch == null)
             {
@@ -70,8 +73,8 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var lookupResult = await Task.WhenAll(
-                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), mismatch.SearchHla1),
-                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), mismatch.SearchHla2));
+                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), searchHla.SearchHla1),
+                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), searchHla.SearchHla2));
 
             return new AlleleLevelLocusMatchCriteria
             {
