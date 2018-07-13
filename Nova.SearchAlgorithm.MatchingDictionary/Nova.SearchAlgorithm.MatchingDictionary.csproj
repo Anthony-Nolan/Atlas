@@ -204,7 +204,6 @@
     <Compile Include="Models\MatchingDictionary\ScoringLookup\HlaScoringLookupResult.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\IHlaScoringLookupResult.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\IPreCalculatedScoringInfo.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\MatchResultWithHlaScoringLookupResults.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\SerologyScoringInfo.cs" />
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />

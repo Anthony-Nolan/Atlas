@@ -4,20 +4,19 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.ScoringLookup
 {
-    public class HlaScoringLookupResult<TScoringInfo> : 
-        IHlaScoringLookupResult<TScoringInfo>,
+    public class HlaScoringLookupResult : 
+        IHlaScoringLookupResult,
         IStorableInCloudTable<HlaLookupTableEntity>
-        where TScoringInfo : IPreCalculatedScoringInfo
     {
         public MatchLocus MatchLocus { get; set; }
         public string LookupName { get; set; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public TScoringInfo PreCalculatedHlaInfo { get; set; }       
+        public IPreCalculatedScoringInfo PreCalculatedHlaInfo { get; set; }       
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
-            TScoringInfo preCalculatedHlaInfo)
+            IPreCalculatedScoringInfo preCalculatedHlaInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
