@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 
@@ -9,13 +10,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return new HlaLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
             {
-                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult)
+                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.MatchingPGroups)
             };
         }
 
-        internal static HlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity result)
+        internal static HlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity entity)
         {
-            return JsonConvert.DeserializeObject<HlaMatchingLookupResult>(result.SerialisedHlaInfo);
+            var matchingPGroups = JsonConvert.DeserializeObject<IEnumerable<string>>(entity.SerialisedHlaInfo);
+
+            return new HlaMatchingLookupResult(entity.MatchLocus, entity.LookupName, entity.TypingMethod, matchingPGroups);
         }
     }
 }
