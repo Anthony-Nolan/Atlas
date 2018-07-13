@@ -3,7 +3,8 @@
     /// <summary>
     /// Lookup result with data required to score HLA pairings.
     /// </summary>
-    public interface IHlaScoringLookupResult : IHlaLookupResult, IPreCalculatedHlaInfo<IPreCalculatedScoringInfo>
+    public interface IHlaScoringLookupResult : IHlaLookupResult
     {
+        IHlaScoringInfo HlaScoringInfo { get; }
     }
 }

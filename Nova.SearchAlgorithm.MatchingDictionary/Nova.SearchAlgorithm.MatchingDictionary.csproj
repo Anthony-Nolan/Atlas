@@ -198,12 +198,11 @@
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
     <Compile Include="Models\Lookups\AlleleNameLookup\AlleleNameLookupResult.cs" />
-    <Compile Include="Models\Lookups\IPreCalculatedHlaInfo.cs" />
     <Compile Include="Models\Lookups\IHlaLookupResult.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\AlleleScoringInfo.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\HlaScoringLookupResult.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\IHlaScoringLookupResult.cs" />
-    <Compile Include="Models\Lookups\ScoringLookup\IPreCalculatedScoringInfo.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\IHlaScoringInfo.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\SerologyScoringInfo.cs" />
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />

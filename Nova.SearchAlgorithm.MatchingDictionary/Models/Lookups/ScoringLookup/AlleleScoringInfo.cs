@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
-    public class AlleleScoringInfo : IPreCalculatedScoringInfo
+    public class AlleleScoringInfo : IHlaScoringInfo
     {
         public AlleleTypingStatus AlleleTypingStatus { get; }
         public string MatchingPGroup { get; }

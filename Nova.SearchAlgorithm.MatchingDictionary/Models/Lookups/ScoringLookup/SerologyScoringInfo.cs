@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
-    public class SerologyScoringInfo : IPreCalculatedScoringInfo
+    public class SerologyScoringInfo : IHlaScoringInfo
     {
         public SerologySubtype SerologySubtype { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }

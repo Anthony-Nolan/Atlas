@@ -8,23 +8,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
-        public IPreCalculatedScoringInfo PreCalculatedHlaInfo { get; }       
+        public IHlaScoringInfo HlaScoringInfo { get; }
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
             TypingMethod typingMethod,
-            IPreCalculatedScoringInfo preCalculatedHlaInfo)
+            IHlaScoringInfo hlaScoringInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            PreCalculatedHlaInfo = preCalculatedHlaInfo;
+            HlaScoringInfo = hlaScoringInfo;
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
             return this.ToTableEntity();
-        }        
+        }
     }
 }
