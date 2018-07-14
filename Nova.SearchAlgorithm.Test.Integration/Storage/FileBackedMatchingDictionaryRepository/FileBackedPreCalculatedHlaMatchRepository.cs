@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository
 {
@@ -21,10 +22,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
 
         private static IEnumerable<RawMatchingHla> ReadJsonFromFile()
         {
-            System.Reflection.Assembly assem = System.Reflection.Assembly.GetExecutingAssembly();
-            using (Stream stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.matching_hla.json"))
+            var assem = System.Reflection.Assembly.GetExecutingAssembly();
+            using (var stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.matching_hla.json"))
             {
-                using (StreamReader reader = new StreamReader(stream))
+                using (var reader = new StreamReader(stream))
                 {
                     return JsonConvert.DeserializeObject<IEnumerable<RawMatchingHla>>(reader.ReadToEnd());
                 }
@@ -42,6 +43,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             return Task.CompletedTask;
         }
 
+        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        {
+            // Not used by any tests
+            return Task.FromResult(new HlaLookupTableEntity(matchLocus, lookupName, typingMethod));
+        }
+
         public Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var raw = rawMatchingData.FirstOrDefault(
@@ -56,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             var lookupResult = new HlaMatchingLookupResult(
                 matchLocus,
                 raw.LookupName,
-                TypingMethod.Molecular, // Arbitrary, not used in tests
+                typingMethod,
                 raw.MatchingPGroups
                 );
 
