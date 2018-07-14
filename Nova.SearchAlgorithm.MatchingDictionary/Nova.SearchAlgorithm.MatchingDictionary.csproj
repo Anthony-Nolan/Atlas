@@ -249,15 +249,15 @@
     <Compile Include="Services\AlleleNames\ReservedAlleleNamesExtractor.cs" />
     <Compile Include="Services\AlleleNamesLookupService.cs" />
     <Compile Include="Services\HlaMatchingLookupService.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\AlleleNamesLookupBase.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\HlaMatchingLookupFactory.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\XxCodeLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\SingleAlleleLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\HlaMatchingLookupBase.cs" />
-    <Compile Include="Services\MatchingDictionary\MatchedHlaExtensions.cs" />
+    <Compile Include="Services\Lookups\AlleleNamesLookupBase.cs" />
+    <Compile Include="Services\Lookups\AlleleStringLookup.cs" />
+    <Compile Include="Services\Lookups\HlaMatchingLookupFactory.cs" />
+    <Compile Include="Services\Lookups\SerologyLookup.cs" />
+    <Compile Include="Services\Lookups\NmdpCodeLookup.cs" />
+    <Compile Include="Services\Lookups\XxCodeLookup.cs" />
+    <Compile Include="Services\Lookups\SingleAlleleLookup.cs" />
+    <Compile Include="Services\Lookups\HlaMatchingLookupBase.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\MatchedHlaExtensions.cs" />
     <Compile Include="Models\Lookups\SerologyEntry.cs" />
     <Compile Include="Models\Lookups\SerologyEntryExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
@@ -318,5 +318,6 @@
       <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

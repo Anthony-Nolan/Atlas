@@ -4,7 +4,7 @@ using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups;
 using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Linq;

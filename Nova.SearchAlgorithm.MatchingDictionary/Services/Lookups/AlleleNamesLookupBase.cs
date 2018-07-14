@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
     /// <summary>
     /// Base class for all lookups that involve searching the Matching Dictionary

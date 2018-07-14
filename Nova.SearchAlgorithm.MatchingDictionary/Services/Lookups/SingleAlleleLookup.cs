@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
     internal class SingleAlleleLookup : AlleleNamesLookupBase
     {

@@ -1,8 +1,8 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 using System;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {

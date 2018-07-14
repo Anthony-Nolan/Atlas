@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
     internal abstract class HlaMatchingLookupBase
     {

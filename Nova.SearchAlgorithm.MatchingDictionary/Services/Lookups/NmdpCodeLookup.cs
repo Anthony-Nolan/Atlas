@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
     internal class NmdpCodeLookup : AlleleNamesLookupBase
     {
