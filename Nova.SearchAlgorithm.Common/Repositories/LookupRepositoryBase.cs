@@ -45,9 +45,8 @@ namespace Nova.SearchAlgorithm.Common.Repositories
 
         public async Task RecreateDataTable(IEnumerable<TStorable> tableContents)
         {
-            var partitions = GetTablePartitions();
             var newDataTable = CreateNewDataTable();
-            InsertIntoDataTable(tableContents, partitions, newDataTable);
+            InsertIntoDataTable(tableContents, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tableReferencePrefix, newDataTable.Name);
             cloudTable = null;
         }
@@ -73,6 +72,10 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             MemoryCache.Set(cacheKey, dataToLoad);
         }
 
+        /// <summary>
+        /// Each lookup repository implementation should decide how its data is partitioned.
+        /// </summary>
+        /// <returns></returns>
         protected abstract IEnumerable<string> GetTablePartitions();
 
         protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey)
@@ -117,13 +120,13 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             return tableFactory.GetTable(dataTableReference);
         }
 
-        private static void InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
+        private void InsertIntoDataTable(IEnumerable<TStorable> contents, CloudTable dataTable)
         {
             var entities = contents
                 .Select(data => data.ConvertToTableEntity())
                 .ToList();
 
-            foreach (var partition in partitions)
+            foreach (var partition in GetTablePartitions())
             {
                 var partitionedEntities = entities
                     .Where(entity => entity.PartitionKey.Equals(partition));

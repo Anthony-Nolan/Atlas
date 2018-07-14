@@ -12,9 +12,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {
+        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+            MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
-    public abstract class HlaLookupRepositoryBase : 
+    public abstract class HlaLookupRepositoryBase :
         LookupRepositoryBase<IHlaLookupResult, HlaLookupTableEntity>,
         IHlaLookupRepository
     {
@@ -28,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        protected async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var partition = HlaLookupTableEntity.GetPartition(matchLocus);
             var rowKey = HlaLookupTableEntity.GetRowKey(lookupName, typingMethod);
@@ -41,6 +43,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             return PermittedLocusNames
                 .GetPermittedMatchLoci()
                 .Select(matchLocus => matchLocus.ToString());
-        }              
+        }
     }
 }
