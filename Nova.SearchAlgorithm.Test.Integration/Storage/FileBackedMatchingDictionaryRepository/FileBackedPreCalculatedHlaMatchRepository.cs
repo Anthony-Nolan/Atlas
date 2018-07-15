@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             return Task.FromResult(new HlaLookupTableEntity(matchLocus, lookupName, typingMethod));
         }
 
-        public Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public Task<HlaMatchingLookupResult> GetHlaMatchingLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var raw = rawMatchingData.FirstOrDefault(
                     hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase)

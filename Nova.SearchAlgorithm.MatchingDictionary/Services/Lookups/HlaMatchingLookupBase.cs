@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 
         private async Task<HlaMatchingLookupResult> GetLookupResultFromRepository(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            return await hlaMatchingLookupRepository.GetHlaMatchLookupResultIfExists(matchLocus, lookupName, typingMethod);
+            return await hlaMatchingLookupRepository.GetHlaMatchingLookupResultIfExists(matchLocus, lookupName, typingMethod);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaMatchingLookupRepository : IHlaLookupRepository
     {
-        Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
+        Task<HlaMatchingLookupResult> GetHlaMatchingLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
         IEnumerable<string> GetAllPGroups();
     }
 
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public async Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<HlaMatchingLookupResult> GetHlaMatchingLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, typingMethod);
 
