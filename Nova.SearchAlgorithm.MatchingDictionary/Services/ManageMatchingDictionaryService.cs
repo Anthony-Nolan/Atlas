@@ -1,7 +1,9 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -18,29 +20,27 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public class ManageMatchingDictionaryService : IManageMatchingDictionaryService
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
-        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesService alleleNamesService;
+        private readonly IHlaMatchingLookupResultGenerator hlaMatchingLookupResultGenerator;
+        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
 
         public ManageMatchingDictionaryService(
-            IHlaMatchPreCalculationService matchPreCalculationService, 
-            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
-            IAlleleNamesService alleleNamesService)
+            IHlaMatchPreCalculationService matchPreCalculationService,
+            IAlleleNamesService alleleNamesService,
+            IHlaMatchingLookupResultGenerator hlaMatchingLookupResultGenerator,
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository)
         {
             this.matchPreCalculationService = matchPreCalculationService;
-            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesService = alleleNamesService;
+            this.hlaMatchingLookupResultGenerator = hlaMatchingLookupResultGenerator;
+            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
         }
 
         public async Task RecreateMatchingDictionary()
         {
             try
             {
-                // Matching dictionary lookups require an up-to-date collection of allele names,
-                // so both collections must be recreated together; the order of execution is not important.
-                await Task.WhenAll(
-                    RecreateAlleleNames(),
-                    RecreateHlaMatchingLookupData()
-                    );
+                await RecreateHlaLookupData();
             }
             catch (Exception ex)
             {
@@ -48,15 +48,25 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             }
         }
 
+        private async Task RecreateHlaLookupData()
+        {
+            var precalculatedMatchedHla = matchPreCalculationService.GetMatchedHla();
+
+            // Matching dictionary lookups require an up-to-date collection of allele names,
+            // so both collections must be recreated together; the order of execution is not important.
+            await Task.WhenAll(
+                RecreateAlleleNames(),
+                RecreateHlaMatchingLookupData(precalculatedMatchedHla)
+            );
+        }
         private async Task RecreateAlleleNames()
         {
             await alleleNamesService.RecreateAlleleNames();
         }
 
-        private async Task RecreateHlaMatchingLookupData()
+        private async Task RecreateHlaMatchingLookupData(IEnumerable<IMatchedHla> matchedHla)
         {
-            var allMatchedHla = matchPreCalculationService.GetMatchedHla();
-            var entries = allMatchedHla.ToHlaMatchingLookupResult();
+            var entries = hlaMatchingLookupResultGenerator.GetHlaMatchingLookupResults(matchedHla);
             await hlaMatchingLookupRepository.RecreateDataTable(entries);
         }
     }

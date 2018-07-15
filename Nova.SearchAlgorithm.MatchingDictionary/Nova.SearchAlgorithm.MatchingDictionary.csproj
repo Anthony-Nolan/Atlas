@@ -229,7 +229,7 @@
     <Compile Include="Data\WmdaFileDownloader.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
-    <Compile Include="Models\Lookups\IMatchingDictionarySource.cs" />
+    <Compile Include="Models\Lookups\IHlaLookupResultSource.cs" />
     <Compile Include="Models\Lookups\MatchingLookup\IHlaMatchingLookupResult.cs" />
     <Compile Include="Models\Lookups\MatchingLookup\HlaMatchingLookupResult.cs" />
     <Compile Include="Models\HLATypings\HlaTyping.cs" />
@@ -238,6 +238,7 @@
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\HlaLookupResultGeneratorBase.cs" />
     <Compile Include="Services\HlaScoringLookupService.cs" />
     <Compile Include="Services\LookupServiceBase.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoriesConsolidator.cs" />
@@ -257,7 +258,7 @@
     <Compile Include="Services\Lookups\XxCodeLookup.cs" />
     <Compile Include="Services\Lookups\SingleAlleleLookup.cs" />
     <Compile Include="Services\Lookups\HlaMatchingLookupBase.cs" />
-    <Compile Include="Services\HlaMatchPreCalculation\MatchedHlaExtensions.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\HlaMatchingLookupResultGenerator.cs" />
     <Compile Include="Models\Lookups\SerologyEntry.cs" />
     <Compile Include="Models\Lookups\SerologyEntryExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />

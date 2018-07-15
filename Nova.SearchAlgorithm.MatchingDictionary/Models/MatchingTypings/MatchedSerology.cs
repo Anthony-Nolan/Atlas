@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public class MatchedSerology : IMatchedHla, IMatchingDictionarySource<SerologyTyping>
+    public class MatchedSerology : IMatchedHla, IHlaLookupResultSource<SerologyTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }

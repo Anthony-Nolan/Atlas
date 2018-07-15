@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public class MatchedAllele : IMatchedHla, IMatchingDictionarySource<AlleleTyping>
+    public class MatchedAllele : IMatchedHla, IHlaLookupResultSource<AlleleTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }

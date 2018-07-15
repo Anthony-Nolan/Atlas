@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
             MatchingPGroups = matchingPGroups;
         }
 
-        public HlaMatchingLookupResult(IMatchingDictionarySource<SerologyTyping> serologySource)
+        public HlaMatchingLookupResult(IHlaLookupResultSource<SerologyTyping> serologySource)
         {
             MatchLocus = serologySource.TypingForMatchingDictionary.MatchLocus;
             LookupName = serologySource.TypingForMatchingDictionary.Name;
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
             MatchingPGroups = serologySource.MatchingPGroups;
         }
 
-        public HlaMatchingLookupResult(IMatchingDictionarySource<AlleleTyping> alleleSource, string lookupName)
+        public HlaMatchingLookupResult(IHlaLookupResultSource<AlleleTyping> alleleSource, string lookupName)
         {
             MatchLocus = alleleSource.TypingForMatchingDictionary.MatchLocus;
             LookupName = lookupName;

@@ -306,7 +306,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
 
         private static HlaMatchingLookupResult BuildAlleleMatchingLookupResult(string hlaName)
         {
-            var matchedAllele = Substitute.For<IMatchingDictionarySource<AlleleTyping>>();
+            var matchedAllele = Substitute.For<IHlaLookupResultSource<AlleleTyping>>();
             matchedAllele.TypingForMatchingDictionary.Returns(new AlleleTyping(MatchedLocus, hlaName));
             matchedAllele.MatchingPGroups.Returns(new List<string> { hlaName });
             matchedAllele.MatchingGGroups.Returns(new List<string> { hlaName });
