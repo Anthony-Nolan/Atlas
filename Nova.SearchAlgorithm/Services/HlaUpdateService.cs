@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Services
         private readonly ILogger logger;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAntigenCachingService antigenCachingService;
-        private readonly IAlleleNamesRepository alleleNamesRepository;
+        private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
 
         public HlaUpdateService(IHlaMatchingLookupService lookupService,
             IDonorInspectionRepository donorInspectionRepository,
@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Services
             ILogger logger,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAntigenCachingService antigenCachingService,
-            IAlleleNamesRepository alleleNamesRepository
+            IAlleleNamesLookupRepository alleleNamesLookupRepository
         )
         {
             this.lookupService = lookupService;
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Services
             this.logger = logger;
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.antigenCachingService = antigenCachingService;
-            this.alleleNamesRepository = alleleNamesRepository;
+            this.alleleNamesLookupRepository = alleleNamesLookupRepository;
         }
 
         public async Task UpdateDonorHla()
@@ -77,8 +77,8 @@ namespace Nova.SearchAlgorithm.Services
         private async Task PerformUpfrontSetup()
         {
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await hlaMatchingLookupRepository.LoadHlaMatchingLookupTableIntoMemory();
-            await alleleNamesRepository.LoadAlleleNamesIntoMemory();
+            await hlaMatchingLookupRepository.LoadDataIntoMemory();
+            await alleleNamesLookupRepository.LoadDataIntoMemory();
             
             // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
             donorImportRepository.SetupForHlaRefresh();

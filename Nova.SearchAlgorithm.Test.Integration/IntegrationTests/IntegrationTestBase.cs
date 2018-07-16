@@ -105,7 +105,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
 
-            builder.RegisterType<AlleleNamesRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<WmdaDataRepository>()
                 .AsImplementedInterfaces()
                 .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)

@@ -15,14 +15,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
     public class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
     {
-        private readonly IAlleleNamesRepository alleleNamesRepository;
+        private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;
 
         public AlleleNamesLookupService(
-            IAlleleNamesRepository alleleNamesRepository, 
+            IAlleleNamesLookupRepository alleleNamesLookupRepository, 
             IHlaCategorisationService hlaCategorisationService)
         {
-            this.alleleNamesRepository = alleleNamesRepository;
+            this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.hlaCategorisationService = hlaCategorisationService;
         }
 
@@ -39,14 +39,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         protected override async Task<IEnumerable<string>> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
-            var alleleNameEntry = await alleleNamesRepository.GetAlleleNameIfExists(matchLocus, lookupName);
+            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(matchLocus, lookupName);
 
-            if (alleleNameEntry == null)
+            if (alleleNameLookupResult == null)
             {
                 throw new InvalidHlaException(matchLocus, lookupName);
             }
 
-            return alleleNameEntry.CurrentAlleleNames;
+            return alleleNameLookupResult.CurrentAlleleNames;
         }
     }
 }
