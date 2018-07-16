@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             }
         }
 
-        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> dictionaryContents)
+        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, IEnumerable<string> partitions)
         {
             // No operation needed
             return Task.CompletedTask;
@@ -40,6 +40,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
 
         public Task LoadDataIntoMemory()
         {
+            return Task.CompletedTask;
+        }
+
+        public Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults)
+        {
+            // No operation needed
             return Task.CompletedTask;
         }
 

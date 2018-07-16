@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         public string MatchLocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
         
-        // TODO: nova-1445: set enums as strings so they can be stored in table
+        // TODO: nova-1445: set enum as string to store in table
         public HlaTypingCategory HlaTypingCategory { get; set; }
 
         public string LookupName { get; set; }
@@ -22,21 +22,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         public HlaLookupTableEntity() { }
 
         public HlaLookupTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-            : base(GetPartition(matchLocus), GetRowKey(lookupName, typingMethod))
+            : base(HlaLookupTableHelper.GetEntityPartition(matchLocus), 
+                   HlaLookupTableHelper.GetEntityRowKey(lookupName, typingMethod))
         {
             MatchLocusAsString = matchLocus.ToString();
             TypingMethodAsString = typingMethod.ToString();
             LookupName = lookupName;
-        }
-
-        public static string GetPartition(MatchLocus matchLocus)
-        {
-            return matchLocus.ToString();
-        }
-
-        public static string GetRowKey(string lookupName, TypingMethod typingMethod)
-        {
-            return $"{lookupName}-{typingMethod.ToString()}";
         }
 
         private static TEnum ParseStringToEnum<TEnum>(string str)

@@ -56,8 +56,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private async Task RecreateHlaMatchingLookupData()
         {
             var allMatchedHla = matchPreCalculationService.GetMatchedHla();
-            var entries = allMatchedHla.ToHlaMatchingLookupResult();
-            await hlaMatchingLookupRepository.RecreateDataTable(entries);
+            var lookupResults = allMatchedHla.ToHlaMatchingLookupResult();
+            await hlaMatchingLookupRepository.RecreateHlaLookupTable(lookupResults);
         }
     }
 }

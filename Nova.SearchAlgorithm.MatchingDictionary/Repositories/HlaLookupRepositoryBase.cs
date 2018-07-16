@@ -1,17 +1,16 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {
+        Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults);
         Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
             MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
@@ -30,19 +29,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults)
         {
-            var partition = HlaLookupTableEntity.GetPartition(matchLocus);
-            var rowKey = HlaLookupTableEntity.GetRowKey(lookupName, typingMethod);
-
-            return await GetDataIfExists(partition, rowKey);
+            await RecreateDataTable(lookupResults, HlaLookupTableHelper.GetTablePartitions());
         }
 
-        protected override IEnumerable<string> GetTablePartitions()
+        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            return PermittedLocusNames
-                .GetPermittedMatchLoci()
-                .Select(matchLocus => matchLocus.ToString());
+            var partition = HlaLookupTableHelper.GetEntityPartition(matchLocus);
+            var rowKey = HlaLookupTableHelper.GetEntityRowKey(lookupName, typingMethod);
+
+            return await GetDataIfExists(partition, rowKey);
         }
     }
 }

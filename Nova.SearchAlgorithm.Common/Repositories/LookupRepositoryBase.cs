@@ -8,11 +8,17 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
 {
+    /// <summary>
+    /// Generic repository that persists data to a CloudTable
+    /// & also caches it in memory for optimal read-access.
+    /// </summary>
+    /// <typeparam name="TStorable"></typeparam>
+    /// <typeparam name="TTableEntity"></typeparam>
     public interface ILookupRepository<in TStorable, TTableEntity>
         where TTableEntity : TableEntity, new()
         where TStorable : IStorableInCloudTable<TTableEntity>
     {
-        Task RecreateDataTable(IEnumerable<TStorable> dictionaryContents);
+        Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions);
         Task LoadDataIntoMemory();
     }
 
@@ -43,10 +49,10 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             this.cacheKey = cacheKey;
         }
 
-        public async Task RecreateDataTable(IEnumerable<TStorable> tableContents)
+        public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions)
         {
             var newDataTable = CreateNewDataTable();
-            InsertIntoDataTable(tableContents, newDataTable);
+            InsertIntoDataTable(tableContents, partitions, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tableReferencePrefix, newDataTable.Name);
             cloudTable = null;
         }
@@ -71,12 +77,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
 
             MemoryCache.Set(cacheKey, dataToLoad);
         }
-
-        /// <summary>
-        /// Each lookup repository implementation should decide how its data is partitioned.
-        /// </summary>
-        /// <returns></returns>
-        protected abstract IEnumerable<string> GetTablePartitions();
 
         protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey)
         {
@@ -120,13 +120,13 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             return tableFactory.GetTable(dataTableReference);
         }
 
-        private void InsertIntoDataTable(IEnumerable<TStorable> contents, CloudTable dataTable)
+        private static void InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
         {
             var entities = contents
                 .Select(data => data.ConvertToTableEntity())
                 .ToList();
 
-            foreach (var partition in GetTablePartitions())
+            foreach (var partition in partitions)
             {
                 var partitionedEntities = entities
                     .Where(entity => entity.PartitionKey.Equals(partition));

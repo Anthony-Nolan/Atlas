@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         public async Task RecreateAlleleNames()
         {
             var alleleNames = GetAlleleNamesAndTheirVariants();
-            await alleleNamesLookupRepository.RecreateDataTable(alleleNames);
+            await alleleNamesLookupRepository.RecreateHlaLookupTable(alleleNames);
         }
 
         public IEnumerable<AlleleNameLookupResult> GetAlleleNamesAndTheirVariants()
