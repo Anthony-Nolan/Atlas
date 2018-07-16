@@ -215,6 +215,7 @@
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\AlleleNameLookupResultExtensions.cs" />
     <Compile Include="Repositories\AlleleNamesLookupRepository.cs" />
+    <Compile Include="Repositories\AzureStorage\HlaLookupTableEntity.cs" />
     <Compile Include="Repositories\AzureStorage\HlaLookupTableKeyManager.cs" />
     <Compile Include="Repositories\AzureStorage\HlaScoringLookupResultExtensions.cs" />
     <Compile Include="Repositories\HlaLookupRepositoryBase.cs" />
@@ -287,7 +288,7 @@
     <Compile Include="Models\Wmda\RelSerSer.cs" />
     <Compile Include="Models\Wmda\SerologyAssignment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\AzureStorage\HlaLookupTableEntity.cs" />
+    <Compile Include="Repositories\AzureStorage\HlaScoringLookupTableEntity.cs" />
     <Compile Include="Repositories\AzureStorage\HlaMatchingLookupResultExtensions.cs" />
     <Compile Include="Repositories\HlaMatchingLookupRepository.cs" />
     <Compile Include="Repositories\WmdaDataRepository.cs" />

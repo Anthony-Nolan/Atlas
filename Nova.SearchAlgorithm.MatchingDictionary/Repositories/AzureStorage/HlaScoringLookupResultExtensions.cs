@@ -7,16 +7,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     internal static class HlaScoringLookupResultExtensions
     {
-        internal static HlaLookupTableEntity ToTableEntity(this IHlaScoringLookupResult lookupResult)
+        internal static HlaScoringLookupTableEntity ToTableEntity(this IHlaScoringLookupResult lookupResult)
         {
-            return new HlaLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
+            return new HlaScoringLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
             {
-                HlaTypingCategory = lookupResult.HlaTypingCategory,
+                HlaTypingCategoryAsString = lookupResult.HlaTypingCategory.ToString(),
                 SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.HlaScoringInfo)
             };
         }
 
-        internal static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
+        internal static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaScoringLookupTableEntity entity)
         {
             var scoringInfo = GetPreCalculatedScoringInfo(entity);
 
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
                 scoringInfo);
         }
 
-        private static IHlaScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
+        private static IHlaScoringInfo GetPreCalculatedScoringInfo(HlaScoringLookupTableEntity entity)
         {
             switch (entity.HlaTypingCategory)
             {
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             }
         }
 
-        private static IHlaScoringInfo GetScoringInfo<TScoringInfo>(HlaLookupTableEntity entity)
+        private static IHlaScoringInfo GetScoringInfo<TScoringInfo>(HlaScoringLookupTableEntity entity)
             where TScoringInfo : IHlaScoringInfo
         {
             return JsonConvert.DeserializeObject<TScoringInfo>(entity.SerialisedHlaInfo);
