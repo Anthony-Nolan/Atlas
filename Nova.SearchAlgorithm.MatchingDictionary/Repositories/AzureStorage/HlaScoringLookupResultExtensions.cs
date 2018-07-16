@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return new HlaLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
             {
+                HlaTypingCategory = lookupResult.HlaTypingCategory,
                 SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.PreCalculatedHlaInfo)
             };
         }
@@ -20,7 +21,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
                 ? GetScoringInfo<AlleleScoringInfo>(entity)
                 : GetScoringInfo<SerologyScoringInfo>(entity);
 
-            return new HlaScoringLookupResult(entity.MatchLocus, entity.LookupName, entity.TypingMethod, scoringInfo);
+            return new HlaScoringLookupResult(
+                entity.MatchLocus, 
+                entity.LookupName, 
+                entity.TypingMethod, 
+                entity.HlaTypingCategory, 
+                scoringInfo);
         }
 
         private static IPreCalculatedScoringInfo GetScoringInfo<TScoringInfo>(HlaLookupTableEntity entity)

@@ -1,13 +1,15 @@
 using Microsoft.WindowsAzure.Storage.Table;
+using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class HlaLookupTableEntity : TableEntity
     {
-        // TODO: nova-1445: set MatchLocus & TypingMethod as strings so they can be stored in table
+        // TODO: nova-1445: set enums as strings so they can be stored in table
         public MatchLocus MatchLocus { get; set; }
         public TypingMethod TypingMethod { get; set; }
+        public HlaTypingCategory HlaTypingCategory { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
