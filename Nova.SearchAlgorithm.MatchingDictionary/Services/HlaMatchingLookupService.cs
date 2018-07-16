@@ -6,8 +6,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.Matching
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary.Lookups;
 using Nova.Utils.ApplicationInsights;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -52,8 +50,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(MatchLocus matchLocus, string hlaName)
         {
-            var lookupResults = await GetLookupResults(matchLocus, hlaName);
-            return lookupResults.FirstOrDefault();
+            return await GetLookupResults(matchLocus, hlaName);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -61,12 +58,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override async Task<IEnumerable<IHlaMatchingLookupResult>> PerformLookup(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IHlaMatchingLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
             var dictionaryLookup = GetHlaMatchingLookup(lookupName);
-            var lookupResult = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
 
-            return new List<IHlaMatchingLookupResult> { lookupResult };
+            return await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
         }
 
         private HlaMatchingLookupBase GetHlaMatchingLookup(string lookupName)

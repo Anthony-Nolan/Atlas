@@ -1,14 +1,13 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public abstract class LookupServiceBase<T>
     {
-        public async Task<IEnumerable<T>> GetLookupResults(MatchLocus matchLocus, string lookupName)
+        public async Task<T> GetLookupResults(MatchLocus matchLocus, string lookupName)
         {
             try
             {
@@ -30,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         protected abstract bool LookupNameIsValid(string lookupName);
 
-        protected abstract Task<IEnumerable<T>> PerformLookup(MatchLocus matchLocus, string lookupName);
+        protected abstract Task<T> PerformLookup(MatchLocus matchLocus, string lookupName);
 
         private static string FormatLookupName(string lookupName)
         {

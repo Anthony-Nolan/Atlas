@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         Task<IEnumerable<string>> GetCurrentAlleleNames(MatchLocus matchLocus, string alleleLookupName);
     }
 
-    public class AlleleNamesLookupService : LookupServiceBase<string>, IAlleleNamesLookupService
+    public class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
     {
         private readonly IAlleleNamesRepository alleleNamesRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;
