@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     /// <summary>
     /// Only to be used with XX codes where consolidated data is sufficient for scoring.
     /// </summary>
-    public class XxCodeScoringInfo : IPreCalculatedScoringInfo
+    public class XxCodeScoringInfo : IHlaScoringInfo
     {
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }

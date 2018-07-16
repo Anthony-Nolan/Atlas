@@ -1,8 +1,7 @@
 using Newtonsoft.Json;
 using Nova.HLAService.Client.Models;
-using System;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -13,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             return new HlaLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
             {
                 HlaTypingCategory = lookupResult.HlaTypingCategory,
-                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.PreCalculatedHlaInfo)
+                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.HlaScoringInfo)
             };
         }
 
@@ -29,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
                 scoringInfo);
         }
 
-        private static IPreCalculatedScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
+        private static IHlaScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
         {
             switch (entity.HlaTypingCategory)
             {

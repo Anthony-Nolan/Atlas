@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 

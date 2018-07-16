@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     /// <summary>
     /// Data needed to score a single allele typing.
     /// </summary>
-    public class SingleAlleleScoringInfo : IPreCalculatedScoringInfo
+    public class SingleAlleleScoringInfo : IHlaScoringInfo
     {
         public string AlleleName { get; }
         public AlleleTypingStatus AlleleTypingStatus { get; }

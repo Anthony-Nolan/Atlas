@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     /// where info on each individual allele is needed when scoring.
     /// Not to be used with XX codes.
     /// </summary>
-    public class AlleleStringScoringInfo : IPreCalculatedScoringInfo
+    public class AlleleStringScoringInfo : IHlaScoringInfo
     {
         public IEnumerable<SingleAlleleScoringInfo> AlleleScoringInfos { get; set; }
 
