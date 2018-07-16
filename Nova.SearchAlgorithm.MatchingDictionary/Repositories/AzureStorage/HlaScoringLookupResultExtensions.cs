@@ -1,4 +1,6 @@
 using Newtonsoft.Json;
+using Nova.HLAService.Client.Models;
+using System;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
@@ -10,17 +12,40 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return new HlaLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
             {
-                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.HlaScoringInfo)
+                HlaTypingCategory = lookupResult.HlaTypingCategory,
+                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.PreCalculatedHlaInfo)
             };
         }
 
         internal static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
         {
-            var scoringInfo = entity.TypingMethod == TypingMethod.Molecular
-                ? GetScoringInfo<AlleleScoringInfo>(entity)
-                : GetScoringInfo<SerologyScoringInfo>(entity);
+            var scoringInfo = GetPreCalculatedScoringInfo(entity);
 
-            return new HlaScoringLookupResult(entity.MatchLocus, entity.LookupName, entity.TypingMethod, scoringInfo);
+            return new HlaScoringLookupResult(
+                entity.MatchLocus,
+                entity.LookupName,
+                entity.TypingMethod,
+                entity.HlaTypingCategory,
+                scoringInfo);
+        }
+
+        private static IPreCalculatedScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
+        {
+            switch (entity.HlaTypingCategory)
+            {
+                case HlaTypingCategory.Allele:
+                    return GetScoringInfo<SingleAlleleScoringInfo>(entity);
+                case HlaTypingCategory.Serology:
+                    return GetScoringInfo<SerologyScoringInfo>(entity);
+                case HlaTypingCategory.XxCode:
+                    return GetScoringInfo<XxCodeScoringInfo>(entity);
+                case HlaTypingCategory.AlleleStringOfNames:
+                case HlaTypingCategory.AlleleStringOfSubtypes:
+                case HlaTypingCategory.NmdpCode:
+                    return GetScoringInfo<AlleleStringScoringInfo>(entity);
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private static IHlaScoringInfo GetScoringInfo<TScoringInfo>(HlaLookupTableEntity entity)

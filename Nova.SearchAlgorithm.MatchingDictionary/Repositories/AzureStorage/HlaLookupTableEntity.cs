@@ -1,5 +1,6 @@
 using System;
 using Microsoft.WindowsAzure.Storage.Table;
+using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
@@ -8,6 +9,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public string MatchLocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
+        
+        // TODO: nova-1445: set enums as strings so they can be stored in table
+        public HlaTypingCategory HlaTypingCategory { get; set; }
+
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
