@@ -30,28 +30,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
         private static IPreCalculatedScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
         {
-            IPreCalculatedScoringInfo scoringInfo;
-
             switch (entity.HlaTypingCategory)
             {
                 case HlaTypingCategory.Allele:
-                    scoringInfo = GetScoringInfo<SingleAlleleScoringInfo>(entity);
-                    break;
+                    return GetScoringInfo<SingleAlleleScoringInfo>(entity);
                 case HlaTypingCategory.Serology:
-                    scoringInfo = GetScoringInfo<SerologyScoringInfo>(entity);
-                    break;
+                    return GetScoringInfo<SerologyScoringInfo>(entity);
                 case HlaTypingCategory.XxCode:
-                    scoringInfo = GetScoringInfo<XxCodeScoringInfo>(entity);
-                    break;
+                    return GetScoringInfo<XxCodeScoringInfo>(entity);
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                 case HlaTypingCategory.NmdpCode:
-                    scoringInfo = GetScoringInfo<AlleleStringScoringInfo>(entity);
-                    break;
+                    return GetScoringInfo<AlleleStringScoringInfo>(entity);
                 default:
                     throw new NotImplementedException();
             }
-            return scoringInfo;
         }
 
         private static IPreCalculatedScoringInfo GetScoringInfo<TScoringInfo>(HlaLookupTableEntity entity)
