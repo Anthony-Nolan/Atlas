@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
             return this;
         }
 
-        public HlaScoringLookupResultBuilder WithPreCalculatedHlaInfo(IHlaScoringInfo scoringInfo)
+        public HlaScoringLookupResultBuilder WithHlaScoringInfo(IHlaScoringInfo scoringInfo)
         {
             result = new HlaScoringLookupResult(result.MatchLocus, result.LookupName, result.HlaTypingCategory, scoringInfo);
             return this;
