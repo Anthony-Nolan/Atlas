@@ -152,6 +152,87 @@ namespace Nova.SearchAlgorithm.Common.Models
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
         }
+        public T DataAtPosition(Locus locus, TypePositions position)
+        {
+            const string errorMessage = "Can only fetch a sinlge piece of data at a specific position";
+            switch (locus)
+            {
+                case Locus.A:
+                    switch (position)
+                    {
+                        case TypePositions.One:
+                            return A_1;
+                        case TypePositions.Two:
+                            return A_2;
+                        case TypePositions.Both:
+                        case TypePositions.None:
+                        default:
+                            throw new Exception(errorMessage);
+                    }
+                case Locus.B:
+                    switch (position)
+                    {
+                        case TypePositions.One:
+                            return B_1;
+                        case TypePositions.Two:
+                            return B_2;
+                        case TypePositions.Both:
+                        case TypePositions.None:
+                        default:
+                            throw new Exception(errorMessage);
+                    }
+                case Locus.C:
+                    switch (position)
+                    {
+                        case TypePositions.One:
+                            return C_1;
+                        case TypePositions.Two:
+                            return C_2;
+                        case TypePositions.Both:
+                        case TypePositions.None:
+                        default:
+                            throw new Exception(errorMessage);
+                    }
+                case Locus.Dpb1:
+                    switch (position)
+                    {
+                        case TypePositions.One:
+                            return DPB1_1;
+                        case TypePositions.Two:
+                            return DPB1_2;
+                        case TypePositions.Both:
+                        case TypePositions.None:
+                        default:
+                            throw new Exception(errorMessage);
+                    }
+                case Locus.Dqb1:
+                    switch (position)
+                    {
+                        case TypePositions.One:
+                            return DQB1_1;
+                        case TypePositions.Two:
+                            return DQB1_2;
+                        case TypePositions.Both:
+                        case TypePositions.None:
+                        default:
+                            throw new Exception(errorMessage);
+                    }
+                case Locus.Drb1:
+                    switch (position)
+                    {
+                        case TypePositions.One:
+                            return DRB1_1;
+                        case TypePositions.Two:
+                            return DRB1_2;
+                        case TypePositions.Both:
+                        case TypePositions.None:
+                        default:
+                            throw new Exception(errorMessage);
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+            }
+        }
 
         public void SetAtLocus(Locus locus, TypePositions positions, T value)
         {
