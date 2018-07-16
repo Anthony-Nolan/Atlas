@@ -6,13 +6,17 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
 {
-    public interface IHlaMatchingLookupResultGenerator : IHlaLookupResultGenerator
+    /// <summary>
+    /// Optimises pre-calculated Matched HLA for use in HLA Matching lookups.
+    /// </summary>
+    public interface IHlaMatchingDataConverter : IMatchedHlaDataConverterBase
     {
         
     }
 
-    public class HlaMatchingLookupResultGenerator : 
-        HlaLookupResultGeneratorBase<HlaMatchingLookupResult>, IHlaMatchingLookupResultGenerator
+    public class HlaMatchingDataConverter : 
+        MatchedHlaDataConverterBase<HlaMatchingLookupResult>, 
+        IHlaMatchingDataConverter
     {
         protected override IEnumerable<IHlaLookupResult> GetHlaLookupResultsFromMatchedSerologies(
             IEnumerable<IHlaLookupResultSource<SerologyTyping>> matchedSerology)

@@ -6,18 +6,19 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
 {
-    public interface IHlaLookupResultGenerator
+    public interface IMatchedHlaDataConverterBase
     {
-        IEnumerable<IHlaLookupResult> GetHlaMatchingLookupResults(IEnumerable<IMatchedHla> matchedHla);
+        IEnumerable<IHlaLookupResult> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla);
     }
 
     /// <summary>
-    /// Optimises data in matched HLA objects for HLA matching lookups.
+    /// Optimises data in matched HLA objects for HLA lookups.
     /// </summary>
-    public abstract class HlaLookupResultGeneratorBase<TLookupResult> : IHlaLookupResultGenerator
+    public abstract class MatchedHlaDataConverterBase<TLookupResult> : 
+        IMatchedHlaDataConverterBase
         where TLookupResult : IHlaLookupResult
     {
-        public IEnumerable<IHlaLookupResult> GetHlaMatchingLookupResults(IEnumerable<IMatchedHla> matchedHla)
+        public IEnumerable<IHlaLookupResult> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla)
         {
             var matchedHlaList = matchedHla.ToList();
 

@@ -7,14 +7,14 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     [TestFixture]
-    public class HlaMatchingLookupResultGeneratorTest : 
-        HlaLookupResultGeneratorTestBase<HlaMatchingLookupResultGenerator>
+    public class HlaMatchingDataConverterTest : 
+        MatchedHlaDataConverterTestBase<HlaMatchingDataConverter>
     {
         protected override IHlaLookupResult BuildExpectedHlaLookupResult(MatchedAllele matchedAllele, string alleleName)
         {
             return new HlaMatchingLookupResult(matchedAllele, alleleName);
         }
-
-        // All tests run in the base class
+        
+        // All tests are run in the base class
     }
 }

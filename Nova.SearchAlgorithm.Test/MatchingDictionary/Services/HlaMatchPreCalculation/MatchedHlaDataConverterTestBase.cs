@@ -10,8 +10,8 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
-    public abstract class HlaLookupResultGeneratorTestBase<TGenerator>
-        where TGenerator : IHlaLookupResultGenerator, new()
+    public abstract class MatchedHlaDataConverterTestBase<TGenerator>
+        where TGenerator : IMatchedHlaDataConverterBase, new()
     {
         private TGenerator lookupResultGenerator;
         private const MatchLocus MatchedLocus = MatchLocus.A;
@@ -87,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         private void TestGenerationOfHlaLookupResultsFromMatchedAlleles(
             IEnumerable<MatchedAllele> matchedAlleles, IEnumerable<IHlaLookupResult> expected)
         {
-            var actual = lookupResultGenerator.GetHlaMatchingLookupResults(matchedAlleles);
+            var actual = lookupResultGenerator.ConvertToHlaLookupResults(matchedAlleles);
             actual.Should().BeEquivalentTo(expected);
         }
     }

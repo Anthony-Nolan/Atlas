@@ -21,18 +21,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
         private readonly IAlleleNamesService alleleNamesService;
-        private readonly IHlaMatchingLookupResultGenerator hlaMatchingLookupResultGenerator;
+        private readonly IHlaMatchingDataConverter hlaMatchingDataConverter;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
 
         public ManageMatchingDictionaryService(
             IHlaMatchPreCalculationService matchPreCalculationService,
             IAlleleNamesService alleleNamesService,
-            IHlaMatchingLookupResultGenerator hlaMatchingLookupResultGenerator,
+            IHlaMatchingDataConverter hlaMatchingDataConverter,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository)
         {
             this.matchPreCalculationService = matchPreCalculationService;
             this.alleleNamesService = alleleNamesService;
-            this.hlaMatchingLookupResultGenerator = hlaMatchingLookupResultGenerator;
+            this.hlaMatchingDataConverter = hlaMatchingDataConverter;
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
         }
 
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private async Task RecreateHlaMatchingLookupData(IEnumerable<IMatchedHla> matchedHla)
         {
-            var hlaLookupResults = hlaMatchingLookupResultGenerator.GetHlaMatchingLookupResults(matchedHla);
+            var hlaLookupResults = hlaMatchingDataConverter.ConvertToHlaLookupResults(matchedHla);
             await hlaMatchingLookupRepository.RecreateHlaLookupTable(hlaLookupResults);
         }
     }
