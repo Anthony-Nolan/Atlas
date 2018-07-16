@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
