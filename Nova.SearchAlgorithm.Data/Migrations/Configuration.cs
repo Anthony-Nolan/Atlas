@@ -8,6 +8,7 @@ namespace Nova.SearchAlgorithm.Data.Migrations
         {
             AutomaticMigrationsEnabled = false;
             ContextKey = "Nova.SearchAlgorithm.Data.SearchAlgorithmContext";
+            CommandTimeout = 0;
         }
 
         protected override void Seed(SearchAlgorithmContext context)
