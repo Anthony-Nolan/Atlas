@@ -5,16 +5,19 @@ using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
-    internal static class HlaLookupTableHelper
+    /// <summary>
+    /// Manages the partition and row key values to be used with HLA lookup tables.
+    /// </summary>
+    internal static class HlaLookupTableKeyManager
     {
-        public static IEnumerable<string> GetTablePartitions()
+        public static IEnumerable<string> GetTablePartitionKeys()
         {
             return PermittedLocusNames
                 .GetPermittedMatchLoci()
                 .Select(matchLocus => matchLocus.ToString());
         }
 
-        public static string GetEntityPartition(MatchLocus matchLocus)
+        public static string GetEntityPartitionKey(MatchLocus matchLocus)
         {
             return matchLocus.ToString();
         }

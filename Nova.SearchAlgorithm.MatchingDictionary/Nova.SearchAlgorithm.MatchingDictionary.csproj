@@ -215,7 +215,7 @@
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\AlleleNameLookupResultExtensions.cs" />
     <Compile Include="Repositories\AlleleNamesLookupRepository.cs" />
-    <Compile Include="Repositories\AzureStorage\HlaLookupTableHelper.cs" />
+    <Compile Include="Repositories\AzureStorage\HlaLookupTableKeyManager.cs" />
     <Compile Include="Repositories\AzureStorage\HlaScoringLookupResultExtensions.cs" />
     <Compile Include="Repositories\HlaLookupRepositoryBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />

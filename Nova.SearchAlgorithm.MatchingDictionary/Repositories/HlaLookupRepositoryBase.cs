@@ -31,13 +31,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
         public async Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults)
         {
-            await RecreateDataTable(lookupResults, HlaLookupTableHelper.GetTablePartitions());
+            await RecreateDataTable(lookupResults, HlaLookupTableKeyManager.GetTablePartitionKeys());
         }
 
         public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            var partition = HlaLookupTableHelper.GetEntityPartition(matchLocus);
-            var rowKey = HlaLookupTableHelper.GetEntityRowKey(lookupName, typingMethod);
+            var partition = HlaLookupTableKeyManager.GetEntityPartitionKey(matchLocus);
+            var rowKey = HlaLookupTableKeyManager.GetEntityRowKey(lookupName, typingMethod);
 
             return await GetDataIfExists(partition, rowKey);
         }

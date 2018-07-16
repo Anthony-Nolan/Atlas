@@ -22,8 +22,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         public HlaLookupTableEntity() { }
 
         public HlaLookupTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-            : base(HlaLookupTableHelper.GetEntityPartition(matchLocus), 
-                   HlaLookupTableHelper.GetEntityRowKey(lookupName, typingMethod))
+            : base(HlaLookupTableKeyManager.GetEntityPartitionKey(matchLocus), 
+                   HlaLookupTableKeyManager.GetEntityRowKey(lookupName, typingMethod))
         {
             MatchLocusAsString = matchLocus.ToString();
             TypingMethodAsString = typingMethod.ToString();
