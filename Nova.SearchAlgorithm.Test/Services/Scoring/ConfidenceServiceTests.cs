@@ -42,7 +42,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
-
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+            
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
             confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Definite);
@@ -68,7 +69,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
-
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+            
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
             confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Definite);
@@ -94,7 +96,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
-
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+            
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
             confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Exact);
@@ -122,6 +125,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -147,6 +151,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -172,6 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -195,6 +201,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -218,6 +225,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -242,6 +250,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -266,6 +275,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -290,6 +300,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -314,6 +325,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -340,6 +352,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -366,6 +379,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -392,6 +406,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
             
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -417,6 +432,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
             
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -438,6 +454,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
@@ -459,10 +476,123 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
 
             var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
 
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
             confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [Test]
+        public void CalculateMatchConfidences_DonorUntyped_ReturnsPotential()
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Potential);
+        }
+        
+        [Test]
+        public void CalculateMatchConfidences_PatientUntyped_ReturnsPotential()
+        {
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Potential);
+        }
+
+        [Test]
+        public void CalculateMatchConfidences_ReturnsDifferentResultsForDifferentLoci()
+        {
+            const Locus locus1 = Locus.B;
+            const Locus locus2 = Locus.Drb1;
+            
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            donorLookupResults.SetAtLocus(locus1, Position, donorLookupResultAtLocus1);
+            donorLookupResults.SetAtLocus(locus2, Position, null);
+
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            patientLookupResults.SetAtLocus(locus1, Position, patientLookupResultAtLocus1);
+            patientLookupResults.SetAtLocus(locus2, Position, null);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(locus1, Position).Should().NotBeSameAs(confidences.DataAtPosition(locus2, Position));
+        }
+        
+        [Test]
+        public void CalculateMatchConfidences_WhenMultipleOrientationsProvidided_ReturnsBestConfidenceAmongstOrientations()
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResultAtPosition1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            var donorLookupResultAtPosition2 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Serology).Build();
+            donorLookupResults.SetAtLocus(Locus, TypePositions.One, donorLookupResultAtPosition1);
+            donorLookupResults.SetAtLocus(Locus, TypePositions.Two, donorLookupResultAtPosition2);
+
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResultAtPosition1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Serology).Build();
+            var patientLookupResultAtPosition2 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            patientLookupResults.SetAtLocus(Locus, TypePositions.One, patientLookupResultAtPosition1);
+            patientLookupResults.SetAtLocus(Locus, TypePositions.Two, patientLookupResultAtPosition2);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct, MatchOrientation.Cross }});
+
+            // Cross confidence is definite, direct is potential 
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Definite);
+        }
+        
+        [Test]
+        public void CalculateMatchConfidences_WhenOneOrientationProvidided_ReturnsConfidenceForSpecifiedOrientation()
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResultAtPosition1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            var donorLookupResultAtPosition2 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Serology).Build();
+            donorLookupResults.SetAtLocus(Locus, TypePositions.One, donorLookupResultAtPosition1);
+            donorLookupResults.SetAtLocus(Locus, TypePositions.Two, donorLookupResultAtPosition2);
+
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResultAtPosition1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Serology).Build();
+            var patientLookupResultAtPosition2 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            patientLookupResults.SetAtLocus(Locus, TypePositions.One, patientLookupResultAtPosition1);
+            patientLookupResults.SetAtLocus(Locus, TypePositions.Two, patientLookupResultAtPosition2);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
+
+            // Cross confidence is definite, direct is potential 
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Potential);
         }
         
         private static HlaScoringLookupResult BuildScoringLookupResultWithSinglePGroup(Type scoringInfoType, string pGroupName = "single-p-group")
