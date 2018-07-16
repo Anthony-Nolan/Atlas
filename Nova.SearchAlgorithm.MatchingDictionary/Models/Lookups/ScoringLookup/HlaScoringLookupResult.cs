@@ -8,20 +8,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
-        public TypingMethod TypingMethod { get; }
+        public TypingMethod TypingMethod => HlaTypingCategory == HlaTypingCategory.Serology ? TypingMethod.Serology : TypingMethod.Molecular;
         public HlaTypingCategory HlaTypingCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
-            TypingMethod typingMethod,
             HlaTypingCategory hlaTypingCategory,
             IHlaScoringInfo hlaScoringInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
-            TypingMethod = typingMethod;
             HlaTypingCategory = hlaTypingCategory;
             HlaScoringInfo = hlaScoringInfo;
         }
