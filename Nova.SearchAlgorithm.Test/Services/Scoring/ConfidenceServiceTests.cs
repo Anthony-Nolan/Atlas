@@ -180,6 +180,52 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         
         [TestCase(typeof(AlleleStringScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
+        public void CalculateMatchConfidences_PatientSingleAllele_DonorMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType)
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorPGroups = new List<string>{"donor-p-group-1", "donor-p-group-2"};
+            var donorLookupResult = BuildScoringLookupResultWithMultiplePGroups(donorScoringInfoType, donorPGroups);
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup("patient-p-group").Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+        
+        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo))]
+        public void CalculateMatchConfidences_PatientMultiplePGroups_DonorSingleAllele_ButDoNotMatch_ReturnsMismatch(Type patientScoringInfoType)
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup("donor-p-group").Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+            
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientPGroups = new List<string>{"patient-p-group-1", "patient-p-group-2"};
+            var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, patientPGroups);
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+        
+        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateMatchConfidences_PatientSerology_DonorMultiplePGroups_ReturnsPotential(Type donorScoringInfoType)
         {
             var serologyEntries = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
@@ -224,6 +270,199 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
 
             confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Potential);
+        }    
+        
+        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo))]
+        public void CalculateMatchConfidences_PatientSerology_DonorMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType)
+        {
+            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = BuildScoringLookupResultWithMultiplePGroups(donorScoringInfoType, serologyEntries: donorSerologyEntries);
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+        
+        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo))]
+        public void CalculateMatchConfidences_PatientMultiplePGroups_DonorSerology_ButDoNotMatch_ReturnsMismatch(Type patientScoringInfoType)
+        {
+            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+            
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, serologyEntries: patientSerologyEntries);
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+                
+        [Test]
+        public void CalculateMatchConfidences_BothSerology_ReturnsPotential()
+        {
+            var serologyEntries = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(serologyEntries).Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+            
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(serologyEntries).Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+        
+        [Test]
+        public void CalculateMatchConfidences_BothSerology_ButDoNotMatch_ReturnsMismatch()
+        {
+            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+            
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [Test]
+        public void CalculateMatchConfidences_PatientSerology_DonorSingleAllele_ReturnsPotential()
+        {
+            var serologyEntries = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(serologyEntries).Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+            
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(serologyEntries).Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+            
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Potential);
+        }
+        
+        [Test]
+        public void CalculateMatchConfidences_PatientSerology_DonorSingleAllele_ButDoNotMatch_ReturnsMismatch()
+        {
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
+                .Build();
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+            
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
+                .Build();
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+            
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
+        }
+        
+        [TestCase(typeof(AlleleStringScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(AlleleStringScoringInfo), typeof(XxCodeScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo), typeof(XxCodeScoringInfo))]
+        public void CalculateMatchConfidences_BothTypingsMolecularAndMultiplePGroups_ReturnsPotential(Type donorScoringInfoType, Type patientScoringInfoType)
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = BuildScoringLookupResultWithMultiplePGroups(donorScoringInfoType);
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();            
+            var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType);
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Exact);
+        }
+        
+        [TestCase(typeof(AlleleStringScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(AlleleStringScoringInfo), typeof(XxCodeScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo), typeof(XxCodeScoringInfo))]
+        public void CalculateMatchConfidences_BothTypingsMolecularAndMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType, Type patientScoringInfoType)
+        {
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResult = BuildScoringLookupResultWithMultiplePGroups(donorScoringInfoType, new List<string>{"donor-p-group", "donor-p-group-2"});
+            donorLookupResults.SetAtLocus(Locus, Position, donorLookupResult);
+
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, new List<string>{"patient-p-group", "patient-p-group-2"});
+            patientLookupResults.SetAtLocus(Locus, Position, patientLookupResult);
+
+            var gradingResults = new PhenotypeInfo<MatchGradeResult>();
+
+            var confidences = confidenceService.CalculateMatchConfidences(donorLookupResults, patientLookupResults, gradingResults);
+
+            confidences.DataAtPosition(Locus, Position).Should().Be(MatchConfidence.Mismatch);
         }
         
         private static HlaScoringLookupResult BuildScoringLookupResultWithSinglePGroup(Type scoringInfoType, string pGroupName = "single-p-group")
