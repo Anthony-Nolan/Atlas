@@ -200,7 +200,9 @@
     <Compile Include="Models\AlleleNames\AlleleNameEntry.cs" />
     <Compile Include="Models\MatchingDictionary\IPreCalculatedHlaInfo.cs" />
     <Compile Include="Models\MatchingDictionary\IHlaLookupResult.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\AlleleScoringInfo.cs" />
+    <Compile Include="Models\MatchingDictionary\ScoringLookup\AlleleStringScoringInfo.cs" />
+    <Compile Include="Models\MatchingDictionary\ScoringLookup\XxCodeScoringInfo.cs" />
+    <Compile Include="Models\MatchingDictionary\ScoringLookup\SingleAlleleScoringInfo.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\HlaScoringLookupResult.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\IHlaScoringLookupResult.cs" />
     <Compile Include="Models\MatchingDictionary\ScoringLookup\IPreCalculatedScoringInfo.cs" />
