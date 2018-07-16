@@ -9,6 +9,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
     /// </summary>
     public interface IHlaLookupResultSource<out THlaTyping> : IMatchingPGroups, IMatchingGGroups, IMatchingSerologies where THlaTyping : HlaTyping
     {
-        THlaTyping TypingForMatchingDictionary { get; }
+        THlaTyping TypingForHlaLookupResult { get; }
     }
 }

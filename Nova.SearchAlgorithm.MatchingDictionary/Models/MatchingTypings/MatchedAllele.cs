@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<SerologyTyping> MatchingSerologies { get; }
         public IEnumerable<SerologyMappingForAllele> AlleleToSerologyMappings { get; }
-        public AlleleTyping TypingForMatchingDictionary => (AlleleTyping) HlaTyping;
+        public AlleleTyping TypingForHlaLookupResult => (AlleleTyping) HlaTyping;
 
         public MatchedAllele(IAlleleInfoForMatching matchedAllele, IEnumerable<SerologyMappingForAllele> alleleToSerologyMappings)
         {

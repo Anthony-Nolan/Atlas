@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
         public TypingMethod TypingMethod { get; }
         public IEnumerable<string> MatchingPGroups { get; }
 
-        [JsonConstructor]
         public HlaMatchingLookupResult(
             MatchLocus matchLocus,
             string lookupName,
@@ -31,15 +29,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
 
         public HlaMatchingLookupResult(IHlaLookupResultSource<SerologyTyping> serologySource)
         {
-            MatchLocus = serologySource.TypingForMatchingDictionary.MatchLocus;
-            LookupName = serologySource.TypingForMatchingDictionary.Name;
+            MatchLocus = serologySource.TypingForHlaLookupResult.MatchLocus;
+            LookupName = serologySource.TypingForHlaLookupResult.Name;
             TypingMethod = TypingMethod.Serology;
             MatchingPGroups = serologySource.MatchingPGroups;
         }
 
         public HlaMatchingLookupResult(IHlaLookupResultSource<AlleleTyping> alleleSource, string lookupName)
         {
-            MatchLocus = alleleSource.TypingForMatchingDictionary.MatchLocus;
+            MatchLocus = alleleSource.TypingForHlaLookupResult.MatchLocus;
             LookupName = lookupName;
             TypingMethod = TypingMethod.Molecular;
             MatchingPGroups = alleleSource.MatchingPGroups;
