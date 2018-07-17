@@ -1,4 +1,6 @@
-﻿namespace Nova.SearchAlgorithm.Common.Models.SearchResults
+﻿using Nova.SearchAlgorithm.Common.Models.Scoring;
+
+namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
     public class LocusScoreDetails
     {
@@ -6,12 +8,12 @@
         /// The match grade at this locus, according to the scoring algorithm,
         /// for validation and debugging.
         /// </summary>
-        public int MatchGrade { get; set; }
+        public MatchGrade MatchGrade { get; set; }
 
         /// <summary>
         /// The match confidence at this locus, according to the scoring algorithm,
         /// for validation and debugging.
         /// </summary>
-        public int MatchConfidence { get; set; }
+        public MatchConfidence MatchConfidence { get; set; }
     }
 }
