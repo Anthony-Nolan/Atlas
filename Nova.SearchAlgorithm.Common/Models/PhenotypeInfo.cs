@@ -154,7 +154,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         }
         public T DataAtPosition(Locus locus, TypePositions position)
         {
-            const string errorMessage = "Can only fetch a sinlge piece of data at a specific position";
+            const string errorMessage = "Can only fetch a single piece of data at a specific position";
             switch (locus)
             {
                 case Locus.A:

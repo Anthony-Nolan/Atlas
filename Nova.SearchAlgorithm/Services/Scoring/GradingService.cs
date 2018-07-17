@@ -7,17 +7,15 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public interface IGradingService
     {
         PhenotypeInfo<MatchGradeResult> CalculateGrades(
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults
-        );
+            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults);
     }
 
     public class GradingService : IGradingService
     {
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults
-        )
+            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
+            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
             // TODO: NOVA-1446: Implement
             throw new System.NotImplementedException();
