@@ -3,15 +3,15 @@
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
-    /// To be used with NMDP codes & allele strings 
-    /// where info on each individual allele is needed when scoring.
+    /// To be used with NMDP codes, allele strings & allele name variants that map to >1 allele,
+    /// where info on each individual allele represented by the typing is needed for scoring.
     /// Not to be used with XX codes.
     /// </summary>
-    public class AlleleStringScoringInfo : IHlaScoringInfo
+    public class MultipleAlleleScoringInfo : IHlaScoringInfo
     {
         public IEnumerable<SingleAlleleScoringInfo> AlleleScoringInfos { get; set; }
 
-        public AlleleStringScoringInfo(IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos)
+        public MultipleAlleleScoringInfo(IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos)
         {
             AlleleScoringInfos = alleleScoringInfos;
         }

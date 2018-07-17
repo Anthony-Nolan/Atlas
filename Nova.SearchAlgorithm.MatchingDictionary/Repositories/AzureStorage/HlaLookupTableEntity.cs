@@ -1,7 +1,9 @@
 using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using System;
+using Newtonsoft.Json;
 using Nova.HLAService.Client.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -19,13 +21,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
         public HlaLookupTableEntity() { }
 
-        public HlaLookupTableEntity(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-            : base(HlaLookupTableKeyManager.GetEntityPartitionKey(matchLocus), 
-                   HlaLookupTableKeyManager.GetEntityRowKey(lookupName, typingMethod))
+        public HlaLookupTableEntity(
+            IHlaLookupResult lookupResult,
+            object hlaInfo)
+            : base(HlaLookupTableKeyManager.GetEntityPartitionKey(lookupResult.MatchLocus), 
+                   HlaLookupTableKeyManager.GetEntityRowKey(lookupResult.LookupName, lookupResult.TypingMethod))
         {
-            MatchLocusAsString = matchLocus.ToString();
-            TypingMethodAsString = typingMethod.ToString();
-            LookupName = lookupName;
+            MatchLocusAsString = lookupResult.MatchLocus.ToString();
+            TypingMethodAsString = lookupResult.TypingMethod.ToString();
+            LookupName = lookupResult.LookupName;
+            SerialisedHlaInfo = SerialiseHlaInfo(hlaInfo);
+        }
+
+        public T GetHlaInfo<T>()
+        {
+            return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
+        }
+
+        private static string SerialiseHlaInfo(object hlaInfo)
+        {
+            return JsonConvert.SerializeObject(hlaInfo);
         }
 
         private static TEnum ParseStringToEnum<TEnum>(string str)

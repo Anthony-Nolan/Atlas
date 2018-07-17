@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
         public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             // Not used by any tests
-            return Task.FromResult(new HlaLookupTableEntity(matchLocus, lookupName, typingMethod));
+            return Task.FromResult(new HlaLookupTableEntity());
         }
 
         public Task<HlaMatchingLookupResult> GetHlaMatchingLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
