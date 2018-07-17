@@ -33,14 +33,14 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
         {
             var confidenceResults = new PhenotypeInfo<MatchConfidence>();
 
-            patientLookupResults.EachLocus((locus, patientLookupResult1, patinetLookupResult2) =>
+            patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
             {
                 var matchGradesAtLocus = matchGrades.DataAtLocus(locus);
                 var orientations = matchGradesAtLocus.Item1.Orientations;
 
                 var confidences = orientations.Select(o => new Tuple<MatchConfidence, MatchConfidence>(
                     CalculateConfidenceForOrientation(locus, TypePositions.One, patientLookupResult1, donorLookupResults, o),
-                    CalculateConfidenceForOrientation(locus, TypePositions.Two, patinetLookupResult2, donorLookupResults, o)
+                    CalculateConfidenceForOrientation(locus, TypePositions.Two, patientLookupResult2, donorLookupResults, o)
                 ));
 
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
