@@ -363,6 +363,7 @@
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
+    <Compile Include="Services\Scoring\ConfidenceCalculatorTests.cs" />
     <Compile Include="Services\Scoring\ConfidenceServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
