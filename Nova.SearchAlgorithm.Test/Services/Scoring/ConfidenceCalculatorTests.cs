@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [SetUp]
         public void SetUp()
         {
-            confidenceCalculator = new ConfidenceCalculator();;
+            confidenceCalculator = new ConfidenceCalculator();
         }
 
         [Test]

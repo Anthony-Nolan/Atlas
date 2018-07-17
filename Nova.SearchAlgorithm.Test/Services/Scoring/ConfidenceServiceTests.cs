@@ -70,7 +70,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
 
-            confidences.DataAtPosition(locus1, Position).Should().NotBe(confidences.DataAtPosition(locus2, Position));
+            confidences.DataAtPosition(locus1, Position).Should().Be(MatchConfidence.Definite);
+            confidences.DataAtPosition(locus2, Position).Should().Be(MatchConfidence.Potential);
         }
 
         [Test]

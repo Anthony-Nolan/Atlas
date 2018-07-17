@@ -67,21 +67,39 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
             switch (matchOrientation)
             {
                 case MatchOrientation.Direct:
-                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, position));
+                    return CalculateConfidenceForDirectMatch(locus, position, patientLookupResult, donorLookupResults);
                 case MatchOrientation.Cross:
-                    switch (position)
-                    {
-                        case TypePositions.One:
-                            return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.Two));
-                        case TypePositions.Two:
-                            return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.One));
-                        case TypePositions.None:
-                        case TypePositions.Both:
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
+                    return CalculateConfidenceForCrossMatch(locus, position, patientLookupResult, donorLookupResults);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(matchOrientation), matchOrientation, null);
+            }
+        }
+
+        private MatchConfidence CalculateConfidenceForDirectMatch(
+            Locus locus,
+            TypePositions position,
+            IHlaScoringLookupResult patientLookupResult,
+            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
+        {
+            return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, position));
+        }
+
+        private MatchConfidence CalculateConfidenceForCrossMatch(
+            Locus locus,
+            TypePositions position,
+            IHlaScoringLookupResult patientLookupResult,
+            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
+        {
+            switch (position)
+            {
+                case TypePositions.One:
+                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.Two));
+                case TypePositions.Two:
+                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.One));
+                case TypePositions.None:
+                case TypePositions.Both:
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
         }
     }
