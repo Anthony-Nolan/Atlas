@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
             if (MemoryCache.TryGetValue(CacheKey, out Dictionary<string, HlaLookupTableEntity> matchingDictionary))
             {
-                return matchingDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult().MatchingPGroups);
+                return matchingDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult()?.MatchingPGroups);
             }
             throw new MemoryCacheException($"{CacheKey} table not cached!");
         }            
