@@ -46,8 +46,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
                 // We should return the best confidence amongst orientations provided
                 var selectedConfidences = confidences
-                    .OrderByDescending(c => Math.Min((int) c.Item1, (int) c.Item2))
-                    .ThenByDescending(c => (int) c.Item1 + (int) c.Item2)
+                    .OrderByDescending(c => (int) c.Item1 + (int) c.Item2)
                     .First();
 
                 confidenceResults.SetAtLocus(locus, TypePositions.One, selectedConfidences.Item1);

@@ -222,7 +222,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             
-            
             patientLookupResults.SetAtLocus(Locus, TypePositions.One, patientLookupResultSingleAllele);
             patientLookupResults.SetAtLocus(Locus, TypePositions.Two, patientLookupResultSerology);
             donorLookupResults.SetAtLocus(Locus, TypePositions.One, donorLookupResultSerology);
@@ -238,62 +237,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             
             // Cross match has a higher confidence, so should be returned
             confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Definite);
-            confidences.DataAtPosition(Locus, TypePositions.Two).Should().Be(MatchConfidence.Potential);
-        }
-        
-        [Test]
-        public void CalculateMatchConfidences_WhenBothOrientationsProvided_AndOneOrientationHaveDifferentConfidences_ReturnsConfidenceWithBestLowestConfidenceGrade()
-        {
-            var serologyEntry1 = new SerologyEntry("serology-1", SerologySubtype.Associated);
-            var serologyEntry2 = new SerologyEntry("serology-2", SerologySubtype.Associated);
-            
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(
-                    new SingleAlleleScoringInfoBuilder()
-                        .WithMatchingSerologies(new List<SerologyEntry>{ serologyEntry2 })
-                        .Build())
-                .Build();
-            var patientLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
-                .WithHlaScoringInfo(
-                    new SerologyScoringInfoBuilder()
-                        .WithMatchingSerologies(new List<SerologyEntry>{ serologyEntry1 })
-                        .Build())
-                .Build();
-
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
-                .WithHlaScoringInfo(
-                    new SerologyScoringInfoBuilder()
-                        .WithMatchingSerologies(new List<SerologyEntry>{ serologyEntry2 })
-                        .Build())
-                .Build();
-            var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(
-                    new SingleAlleleScoringInfoBuilder()
-                        .WithMatchingSerologies(new List<SerologyEntry>{ serologyEntry1 })
-                        .Build())
-                .Build();
-            
-            
-            patientLookupResults.SetAtLocus(Locus, TypePositions.One, patientLookupResultSingleAllele);
-            patientLookupResults.SetAtLocus(Locus, TypePositions.Two, patientLookupResultSerology);
-            donorLookupResults.SetAtLocus(Locus, TypePositions.One, donorLookupResultSerology);
-            donorLookupResults.SetAtLocus(Locus, TypePositions.Two, donorLookupResultSingleAllele);
-
-            var gradingResults = defaultGradingResults;
-            gradingResults.SetAtLocus(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct, MatchOrientation.Cross }});
-
-            var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
-            
-            // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            // Direct confidence (P2: D2) is Potential, Cross (P2: D1) is Mismatch
-            
-            // Just using the sum of the confidence enum values, or the max confindence across all matches would rate the cross match higher - but it contains a mismatch
-            // The direct match in this case should have a better confidence
-            confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Potential);
             confidences.DataAtPosition(Locus, TypePositions.Two).Should().Be(MatchConfidence.Potential);
         }
     }
