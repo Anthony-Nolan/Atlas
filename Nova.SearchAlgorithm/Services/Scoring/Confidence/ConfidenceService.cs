@@ -25,19 +25,36 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
         {
             this.confidenceCalculator = confidenceCalculator;
         }
-        
+
         public PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades)
         {
-            return patientLookupResults.Map((locus, position, lookupResult) =>
+            var confidenceResults = new PhenotypeInfo<MatchConfidence>();
+
+            patientLookupResults.EachLocus((locus, patientLookupResult1, patinetLookupResult2) =>
             {
-                var matchGradesAtPosition = matchGrades.DataAtPosition(locus, position);
-                var confidences = matchGradesAtPosition.Orientations.Select(o =>
-                    CalculateConfidenceForOrientation(locus, position, lookupResult, donorLookupResults, o));
-                return confidences.Max();
+                var matchGradesAtLocus = matchGrades.DataAtLocus(locus);
+                var orientations = matchGradesAtLocus.Item1.Orientations;
+
+                var confidences = orientations.Select(o => new Tuple<MatchConfidence, MatchConfidence>(
+                    CalculateConfidenceForOrientation(locus, TypePositions.One, patientLookupResult1, donorLookupResults, o),
+                    CalculateConfidenceForOrientation(locus, TypePositions.Two, patinetLookupResult2, donorLookupResults, o)
+                ));
+
+                // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
+                // We should return the best confidence amongst orientations provided
+                var selectedConfidences = confidences
+                    .OrderByDescending(c => Math.Min((int) c.Item1, (int) c.Item2))
+                    .ThenByDescending(c => (int) c.Item1 + (int) c.Item2)
+                    .First();
+
+                confidenceResults.SetAtLocus(locus, TypePositions.One, selectedConfidences.Item1);
+                confidenceResults.SetAtLocus(locus, TypePositions.Two, selectedConfidences.Item2);
             });
+
+            return confidenceResults;
         }
 
         private MatchConfidence CalculateConfidenceForOrientation(
