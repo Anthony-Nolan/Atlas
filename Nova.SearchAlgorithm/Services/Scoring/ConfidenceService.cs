@@ -76,23 +76,20 @@ namespace Nova.SearchAlgorithm.Services.Scoring
                 return MatchConfidence.Mismatch;
             }
 
-            if (patientLookupResult.TypingMethod == TypingMethod.Molecular && donorLookupResult.TypingMethod == TypingMethod.Molecular)
+            if (IsDefiniteMatch(patientLookupResult, donorLookupResult))
             {
-                if (patientLookupResult.HlaScoringInfo is SingleAlleleScoringInfo && donorLookupResult.HlaScoringInfo is SingleAlleleScoringInfo)
-                {
-                    return MatchConfidence.Definite;
-                }
+                return MatchConfidence.Definite;
+            }
 
-                if (GetPGroups(patientLookupResult).Count() == 1 && GetPGroups(donorLookupResult).Count() == 1)
-                {
-                    return MatchConfidence.Exact;
-                }
+            if (IsExactMatch(patientLookupResult, donorLookupResult))
+            {
+                return MatchConfidence.Exact;
             }
 
             return MatchConfidence.Potential;
         }
 
-        private bool IsMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
             if (patientLookupResult.TypingMethod == TypingMethod.Serology || donorLookupResult.TypingMethod == TypingMethod.Serology)
             {
@@ -102,7 +99,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             return IsMolecularMatch(patientLookupResult, donorLookupResult);
         }
 
-        private bool IsMolecularMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsMolecularMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
             var patientPGroups = GetPGroups(patientLookupResult);
             var donorPGroups = GetPGroups(donorLookupResult);
@@ -110,7 +107,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             return patientPGroups.Intersect(donorPGroups).Any();
         }
 
-        private bool IsSerologyMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsSerologyMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
             var patientSerologies = GetSerologyEntries(patientLookupResult);
             var donorSerologies = GetSerologyEntries(donorLookupResult);
@@ -118,7 +115,23 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             return patientSerologies.Intersect(donorSerologies).Any();
         }
 
-        private IEnumerable<SerologyEntry> GetSerologyEntries(IHlaScoringLookupResult patientLookupResult)
+        private static bool IsDefiniteMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        {
+            return patientLookupResult.TypingMethod == TypingMethod.Molecular
+                   && donorLookupResult.TypingMethod == TypingMethod.Molecular
+                   && patientLookupResult.HlaScoringInfo is SingleAlleleScoringInfo
+                   && donorLookupResult.HlaScoringInfo is SingleAlleleScoringInfo;
+        }
+
+        private static bool IsExactMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        {
+            return patientLookupResult.TypingMethod == TypingMethod.Molecular
+                   && donorLookupResult.TypingMethod == TypingMethod.Molecular
+                   && GetPGroups(patientLookupResult).Count() == 1
+                   && GetPGroups(donorLookupResult).Count() == 1;
+        }
+
+        private static IEnumerable<SerologyEntry> GetSerologyEntries(IHlaScoringLookupResult patientLookupResult)
         {
             switch (patientLookupResult.HlaScoringInfo)
             {
@@ -135,12 +148,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             }
         }
 
-        private IEnumerable<string> GetPGroups(IHlaScoringLookupResult patientLookupResult)
+        private static IEnumerable<string> GetPGroups(IHlaScoringLookupResult patientLookupResult)
         {
             switch (patientLookupResult.HlaScoringInfo)
             {
-                case SerologyScoringInfo serologyInfo:
-                    throw new Exception("Cannot compare p-groups for serology scoring info - compare mmatching serologies instead");
+                case SerologyScoringInfo serologyScoringInfo:
+                    throw new Exception("Cannot compare p-groups for serology scoring info - compare matching serologies instead");
                 case XxCodeScoringInfo xxInfo:
                     return xxInfo.MatchingPGroups;
                 case SingleAlleleScoringInfo singleAlleleInfo:
