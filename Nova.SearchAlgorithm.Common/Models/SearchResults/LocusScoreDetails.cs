@@ -12,7 +12,7 @@
         /// </summary>
         public int MatchConfidenceScore { get; set; }
 
-        public LocusPositionScoreDetails ScoreDetails1;
-        public LocusPositionScoreDetails ScoreDetails2;
+        public LocusPositionScoreDetails ScoreDetailsAtPosition1;
+        public LocusPositionScoreDetails ScoreDetailsAtPosition2;
     }
 }
