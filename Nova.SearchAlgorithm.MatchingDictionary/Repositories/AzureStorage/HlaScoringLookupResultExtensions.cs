@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
                 case HlaTypingCategory.NmdpCode:
                     return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
         }
 

@@ -64,6 +64,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MatchingDictionary.Repositories.HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Repositories.HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
                 .AsImplementedInterfaces()

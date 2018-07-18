@@ -74,13 +74,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
         }
 
         /// <summary>
-        /// Coalesces data for alleles that share the same locus and first field
+        /// Coalesces data for alleles with 2+ fields that share the same locus and first field
         /// to speed up XX code lookups.
         /// </summary>
         private IEnumerable<IHlaLookupResult> GetLookupResultsForXxCodeNames(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
+            // A few deleted alleles in hla_nom do not conform to v3.0 HLA nomenclature standards: 
+            // they lack field delimiters and will be assigned a field count of 1.
+            // These alleles must be excluded from the lookup results.
+
             var allelesGroupedByMatchLocusAndLookupName = matchedAlleles
+                .Where(matchedAllele => matchedAllele.TypingForHlaLookupResult.Fields.Count() > 1)
                 .GroupBy(matchedAllele => new
                 {
                     matchedAllele.TypingForHlaLookupResult.MatchLocus,
