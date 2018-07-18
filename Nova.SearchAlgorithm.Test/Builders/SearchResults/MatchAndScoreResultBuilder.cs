@@ -27,9 +27,21 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             return this;
         }
         
+        public MatchAndScoreResultBuilder WithMatchGradeScoreAtLocus(Locus locus, int matchGradeScore)
+        {
+            scoreResultBuilder = scoreResultBuilder.WithMatchGradeScoreAtLocus(locus, matchGradeScore);    
+            return this;
+        }
+        
         public MatchAndScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
         {
             scoreResultBuilder = scoreResultBuilder.WithMatchConfidenceAtLocus(locus, matchConfidence);    
+            return this;
+        }
+        
+        public MatchAndScoreResultBuilder WithMatchConfidenceScoreAtLocus(Locus locus, int matchConfidenceScore)
+        {
+            scoreResultBuilder = scoreResultBuilder.WithMatchConfidenceScoreAtLocus(locus, matchConfidenceScore);    
             return this;
         }
         
