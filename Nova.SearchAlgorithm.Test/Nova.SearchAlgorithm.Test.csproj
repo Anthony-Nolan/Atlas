@@ -333,6 +333,8 @@
   <ItemGroup>
     <Compile Include="Builders\DonorMatchCriteriaBuilder.cs" />
     <Compile Include="Builders\HlaScoringLookupResultBuilder.cs" />
+    <Compile Include="Builders\MatchResultBuilder.cs" />
+    <Compile Include="Builders\ScoreResultBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\AlleleStringScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SerologyScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SingleAlleleScoringInfoBuilder.cs" />
@@ -363,6 +365,7 @@
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
+    <Compile Include="Services\Scoring\RankingServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />
