@@ -1,7 +1,6 @@
-﻿using System;
-using Nova.HLAService.Client.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
@@ -12,20 +11,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
-        public HlaTypingCategory HlaTypingCategory { get; }
+        public LookupCategory LookupCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
             TypingMethod typingMethod,
-            HlaTypingCategory hlaTypingCategory,
+            LookupCategory lookupCategory,
             IHlaScoringInfo hlaScoringInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaTypingCategory = hlaTypingCategory;
+            LookupCategory = lookupCategory;
             HlaScoringInfo = hlaScoringInfo;
         }
 
@@ -42,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 MatchLocus == other.MatchLocus && 
                 string.Equals(LookupName, other.LookupName) && 
                 TypingMethod == other.TypingMethod && 
-                HlaTypingCategory == other.HlaTypingCategory && 
+                LookupCategory == other.LookupCategory && 
                 HlaScoringInfo.Equals(other.HlaScoringInfo);
         }
 
@@ -61,7 +60,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 var hashCode = (int) MatchLocus;
                 hashCode = (hashCode * 397) ^ LookupName.GetHashCode();
                 hashCode = (hashCode * 397) ^ (int) TypingMethod;
-                hashCode = (hashCode * 397) ^ (int) HlaTypingCategory;
+                hashCode = (hashCode * 397) ^ (int) LookupCategory;
                 hashCode = (hashCode * 397) ^ HlaScoringInfo.GetHashCode();
                 return hashCode;
             }

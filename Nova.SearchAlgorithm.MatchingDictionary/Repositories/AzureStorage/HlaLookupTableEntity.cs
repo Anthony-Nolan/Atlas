@@ -1,6 +1,5 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using System;
@@ -11,13 +10,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public string MatchLocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
-        public string HlaTypingCategoryAsString { get; set; }
+        public string LookupCategoryAsString { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
         public MatchLocus MatchLocus => ParseStringToEnum<MatchLocus>(MatchLocusAsString);
         public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
-        public HlaTypingCategory HlaTypingCategory => ParseStringToEnum<HlaTypingCategory>(HlaTypingCategoryAsString);
+        public LookupCategory LookupCategory => ParseStringToEnum<LookupCategory>(LookupCategoryAsString);
 
         public HlaLookupTableEntity() { }
 

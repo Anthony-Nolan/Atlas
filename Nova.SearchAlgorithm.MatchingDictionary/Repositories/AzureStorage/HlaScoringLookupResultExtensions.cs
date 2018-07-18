@@ -1,8 +1,6 @@
-using Nova.HLAService.Client.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -12,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return new HlaLookupTableEntity(lookupResult, lookupResult.HlaScoringInfo)
             {
-                HlaTypingCategoryAsString = lookupResult.HlaTypingCategory.ToString()
+                LookupCategoryAsString = lookupResult.LookupCategory.ToString()
             };
         }
 
@@ -24,36 +22,25 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
                 entity.MatchLocus,
                 entity.LookupName,
                 entity.TypingMethod,
-                entity.HlaTypingCategory,
+                entity.LookupCategory,
                 scoringInfo);
         }
 
         private static IHlaScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
         {
-            switch (entity.HlaTypingCategory)
+            switch (entity.LookupCategory)
             {
-                case HlaTypingCategory.Allele:
-                    return GetHlaInfoForAlleleTyping(entity);
-                case HlaTypingCategory.Serology:
+                case LookupCategory.Serology:
                     return entity.GetHlaInfo<SerologyScoringInfo>();
-                case HlaTypingCategory.XxCode:
-                    return entity.GetHlaInfo<XxCodeScoringInfo>();
-                case HlaTypingCategory.AlleleStringOfNames:
-                case HlaTypingCategory.AlleleStringOfSubtypes:
-                case HlaTypingCategory.NmdpCode:
+                case LookupCategory.OriginalAllele:
+                    return entity.GetHlaInfo<SingleAlleleScoringInfo>();
+                case LookupCategory.NmdpCodeAllele:
                     return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
+                case LookupCategory.XxCode:
+                    return entity.GetHlaInfo<XxCodeScoringInfo>();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
-        private static IHlaScoringInfo GetHlaInfoForAlleleTyping(HlaLookupTableEntity entity)
-        {
-            var alleleScoringInfos = entity.GetHlaInfo<IEnumerable<SingleAlleleScoringInfo>>().ToList();
-
-            return alleleScoringInfos.Count == 1
-                ? alleleScoringInfos.First() as IHlaScoringInfo
-                : new MultipleAlleleScoringInfo(alleleScoringInfos);
         }
     }
 }
