@@ -10,7 +10,7 @@ using System.Linq;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversion
 {
     [TestFixture]
-    public class HlaMatchingDataConverterTest : 
+    public class HlaMatchingDataConverterTest :
         MatchedHlaDataConverterTestBase<HlaMatchingDataConverter>
     {
         [TestCase("999:999", "")]
@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             var expectedLookupResults = new List<IHlaLookupResult>
             {
                 BuildExpectedMolecularHlaLookupResult(alleleName),
-                BuildExpectedMolecularHlaLookupResult("999")
+                BuildExpectedMolecularHlaLookupResult("999", new []{alleleName})
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
@@ -43,15 +43,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             var expectedLookupResults = new List<IHlaLookupResult>
             {
                 BuildExpectedMolecularHlaLookupResult(alleleName),
-                BuildExpectedMolecularHlaLookupResult("999:999" + expressionSuffix),
-                BuildExpectedMolecularHlaLookupResult("999")
+                BuildExpectedMolecularHlaLookupResult("999:999" + expressionSuffix, new []{alleleName}),
+                BuildExpectedMolecularHlaLookupResult("999", new[] {alleleName})
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
 
         [Test]
-        public void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_OneEntryGeneratedPerUniqueNameVariant()
+        public void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_OneLookupResultGeneratedPerUniqueLookupName()
         {
             string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02", "999:999:999:03N" };
             var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
@@ -63,9 +63,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
                 BuildExpectedMolecularHlaLookupResult(alleles[1]),
                 BuildExpectedMolecularHlaLookupResult(alleles[2]),
                 BuildExpectedMolecularHlaLookupResult(alleles[3]),
-                BuildExpectedMolecularHlaLookupResult("999:999"),
-                BuildExpectedMolecularHlaLookupResult("999:999N"),
-                BuildExpectedMolecularHlaLookupResult("999")
+                BuildExpectedMolecularHlaLookupResult("999:999", new[] {alleles[0], alleles[1], alleles[2]}),
+                BuildExpectedMolecularHlaLookupResult("999:999N", new[] {alleles[3]}),
+                BuildExpectedMolecularHlaLookupResult("999", alleles)
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
@@ -81,14 +81,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             );
         }
 
-        private static IHlaLookupResult BuildExpectedMolecularHlaLookupResult(string alleleName)
+        private static IHlaLookupResult BuildExpectedMolecularHlaLookupResult(string alleleName, IEnumerable<string> pGroups = null)
         {
             return new HlaMatchingLookupResult(
                 MatchedLocus,
                 alleleName,
                 TypingMethod.Molecular,
-                new List<string>()
-                );
+                pGroups ?? new[] { alleleName }
+            );
         }
     }
 }
