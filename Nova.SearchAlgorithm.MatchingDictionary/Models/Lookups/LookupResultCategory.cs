@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum LookupCategory
+    public enum LookupResultCategory
     {
         /// <summary>
         /// Lookup original serology name, as listed in hla_nom.

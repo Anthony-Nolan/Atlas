@@ -11,20 +11,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
-        public LookupCategory LookupCategory { get; }
+        public LookupResultCategory LookupResultCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
             TypingMethod typingMethod,
-            LookupCategory lookupCategory,
+            LookupResultCategory lookupResultCategory,
             IHlaScoringInfo hlaScoringInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            LookupCategory = lookupCategory;
+            LookupResultCategory = lookupResultCategory;
             HlaScoringInfo = hlaScoringInfo;
         }
 
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 MatchLocus == other.MatchLocus && 
                 string.Equals(LookupName, other.LookupName) && 
                 TypingMethod == other.TypingMethod && 
-                LookupCategory == other.LookupCategory && 
+                LookupResultCategory == other.LookupResultCategory && 
                 HlaScoringInfo.Equals(other.HlaScoringInfo);
         }
 
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 var hashCode = (int) MatchLocus;
                 hashCode = (hashCode * 397) ^ LookupName.GetHashCode();
                 hashCode = (hashCode * 397) ^ (int) TypingMethod;
-                hashCode = (hashCode * 397) ^ (int) LookupCategory;
+                hashCode = (hashCode * 397) ^ (int) LookupResultCategory;
                 hashCode = (hashCode * 397) ^ HlaScoringInfo.GetHashCode();
                 return hashCode;
             }

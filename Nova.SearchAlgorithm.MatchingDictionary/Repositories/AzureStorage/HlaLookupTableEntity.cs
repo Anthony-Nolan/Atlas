@@ -10,13 +10,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public string MatchLocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
-        public string LookupCategoryAsString { get; set; }
+        public string LookupResultCategoryAsString { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
         public MatchLocus MatchLocus => ParseStringToEnum<MatchLocus>(MatchLocusAsString);
         public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
-        public LookupCategory LookupCategory => ParseStringToEnum<LookupCategory>(LookupCategoryAsString);
+        public LookupResultCategory LookupResultCategory => ParseStringToEnum<LookupResultCategory>(LookupResultCategoryAsString);
 
         public HlaLookupTableEntity() { }
 

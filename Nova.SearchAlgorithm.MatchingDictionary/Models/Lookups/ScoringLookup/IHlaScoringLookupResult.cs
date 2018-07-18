@@ -5,7 +5,7 @@
     /// </summary>
     public interface IHlaScoringLookupResult : IHlaLookupResult
     {
-        LookupCategory LookupCategory { get; }
+        LookupResultCategory LookupResultCategory { get; }
         IHlaScoringInfo HlaScoringInfo { get; }
     }
 }
