@@ -13,7 +13,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     {
         public IEnumerable<MatchAndScoreResult> RankSearchResults(IEnumerable<MatchAndScoreResult> results)
         {
-            return results.OrderByDescending(r => r.MatchResult.TotalMatchCount);
+            return results
+                .OrderByDescending(r => r.MatchResult.TotalMatchCount)
+                .ThenByDescending(r => r.ScoreResult.TotalMatchGradeScore);
         }
     }
 }
