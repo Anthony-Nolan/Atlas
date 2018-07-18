@@ -3,15 +3,16 @@
     public class LocusScoreDetails
     {
         /// <summary>
-        /// The match grade at this locus, according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm
         /// </summary>
-        public int MatchGrade { get; set; }
+        public int MatchGradeScore { get; set; }
 
         /// <summary>
-        /// The match confidence at this locus, according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the relative match confidence at this locus, according to the scoring algorithm
         /// </summary>
-        public int MatchConfidence { get; set; }
+        public int MatchConfidenceScore { get; set; }
+
+        public LocusPositionScoreDetails ScoreDetailsAtPosition1;
+        public LocusPositionScoreDetails ScoreDetailsAtPosition2;
     }
 }

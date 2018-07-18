@@ -128,8 +128,8 @@ namespace Nova.SearchAlgorithm.Services
             {
                 IsLocusTyped = result.MatchResult.MatchDetailsForLocus(locus).IsLocusTyped,
                 MatchCount = result.MatchResult.MatchDetailsForLocus(locus).MatchCount,
-                MatchGrade = result.ScoreResult.ScoreDetailsForLocus(locus).MatchGrade,
-                MatchConfidence = result.ScoreResult.ScoreDetailsForLocus(locus).MatchConfidence
+                MatchGrade = result.ScoreResult.ScoreDetailsForLocus(locus).MatchGradeScore,
+                MatchConfidence = result.ScoreResult.ScoreDetailsForLocus(locus).MatchConfidenceScore
             };
         }
     }
