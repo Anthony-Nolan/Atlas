@@ -2,9 +2,9 @@
 {
     public enum MatchConfidence
     {
-        Definite,
-        Exact,
-        Potential,
-        Mismatch
+        Mismatch = 0,
+        Potential = 1,
+        Exact = 2,
+        Definite = 3
     }
 }

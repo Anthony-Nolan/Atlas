@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
@@ -12,8 +13,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     {
         public IEnumerable<MatchAndScoreResult> RankSearchResults(IEnumerable<MatchAndScoreResult> results)
         {
-            // TODO: NOVA-1448: Implement
-            throw new System.NotImplementedException();
+            return results
+                .OrderByDescending(r => r.MatchResult.TotalMatchCount)
+                .ThenByDescending(r => r.ScoreResult.TotalMatchGradeScore)
+                .ThenByDescending(r => r.ScoreResult.TotalMatchConfidenceScore);
         }
     }
 }
