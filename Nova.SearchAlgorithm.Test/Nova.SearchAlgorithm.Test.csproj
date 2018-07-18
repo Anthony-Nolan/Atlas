@@ -333,13 +333,14 @@
   <ItemGroup>
     <Compile Include="Builders\DonorMatchCriteriaBuilder.cs" />
     <Compile Include="Builders\HlaScoringLookupResultBuilder.cs" />
-    <Compile Include="Builders\MatchResultBuilder.cs" />
-    <Compile Include="Builders\ScoreResultBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\AlleleStringScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SerologyScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SingleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\XxCodeScoringInfoBuilder.cs" />
     <Compile Include="Builders\SearchRequestBuilder.cs" />
+    <Compile Include="Builders\SearchResults\MatchAndScoreResultBuilder.cs" />
+    <Compile Include="Builders\SearchResults\MatchResultBuilder.cs" />
+    <Compile Include="Builders\SearchResults\ScoreResultBuilder.cs" />
     <Compile Include="Client\Validators\LocusMismatchCriteriaValidatorTests.cs" />
     <Compile Include="Client\Validators\SearchHlaDataValidatorTests.cs" />
     <Compile Include="Client\Validators\LocusSearchHlaValidatorTests.cs" />

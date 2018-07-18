@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.SearchAlgorithm.Test.Builders;
+using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring
@@ -21,63 +22,47 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         }
 
         [Test]
-        public void RankSearchResults_OrdersResultsByMismatchCount()
+        public void RankSearchResults_OrdersResultsByMatchCount()
         {
-            var resultWithMoreMismatches = new MatchAndScoreResult
-            {
-                MatchResult = new MatchResultBuilder()
-                    .WithMatchCountAtLocus(Locus.A, 2)
-                    .WithMatchCountAtLocus(Locus.B, 2)
-                    .WithMatchCountAtLocus(Locus.Drb1, 1)
-                    .Build(),
-                ScoreResult = new ScoreResultBuilder().Build()
-            };
-            
-            var resultWithFewerMismatches = new MatchAndScoreResult
-            {
-                MatchResult = new MatchResultBuilder()
-                    .WithMatchCountAtLocus(Locus.A, 2)
-                    .WithMatchCountAtLocus(Locus.B, 2)
-                    .WithMatchCountAtLocus(Locus.Drb1, 2)
-                    .Build(),
-                ScoreResult = new ScoreResultBuilder().Build()
-            };
+            var resultWithFewerMatches = new MatchAndScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 1)
+                .WithMatchCountAtLocus(Locus.B, 1)
+                .WithMatchCountAtLocus(Locus.B, 1)
+                .Build();
 
+            var resultWithMoreMatches = new MatchAndScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithMatchCountAtLocus(Locus.B, 2)
+                .WithMatchCountAtLocus(Locus.Drb1, 2)
+                .Build();
+            
             var unorderedSearchResults = new List<MatchAndScoreResult>
             {
-                resultWithMoreMismatches,
-                resultWithFewerMismatches
+                resultWithFewerMatches,
+                resultWithMoreMatches
             };
 
             var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
 
             orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
             {
-                resultWithFewerMismatches,
-                resultWithMoreMismatches
+                resultWithMoreMatches,
+                resultWithFewerMatches
             });
         }
         
         [Test]
         public void RankSearchResults_OrdersResultsByMatchGrade()
         {
-            var resultWithBetterOverallGrade = new MatchAndScoreResult
-            {
-                MatchResult = new MatchResultBuilder().Build(),
-                ScoreResult = new ScoreResultBuilder()
-                    .WithMatchGradeAtLocus(Locus.A, MatchGrade.GDna)
-                    .WithMatchGradeAtLocus(Locus.B, MatchGrade.GDna)
-                    .Build()
-            };
-            
-            var resultWithWorseOverallGrade = new MatchAndScoreResult
-            {
-                MatchResult = new MatchResultBuilder().Build(),
-                ScoreResult = new ScoreResultBuilder()
-                    .WithMatchGradeAtLocus(Locus.B, MatchGrade.Split)
-                    .WithMatchGradeAtLocus(Locus.Drb1, MatchGrade.Associated)
-                    .Build()
-            };
+            var resultWithBetterOverallGrade = new MatchAndScoreResultBuilder()
+                .WithMatchGradeAtLocus(Locus.A, MatchGrade.GDna)
+                .WithMatchGradeAtLocus(Locus.B, MatchGrade.GDna)
+                .Build();
+
+            var resultWithWorseOverallGrade = new MatchAndScoreResultBuilder()
+                .WithMatchGradeAtLocus(Locus.B, MatchGrade.Split)
+                .WithMatchGradeAtLocus(Locus.Drb1, MatchGrade.Associated)
+                .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
             {
@@ -95,29 +80,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         }      
         
         [Test]
-        public void RankSearchResults_OrdersResultsByMismatchCountBeforeMatchGrade()
+        public void RankSearchResults_OrdersResultsByMatchCountBeforeMatchGrade()
         {
-            var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResult
-            {
-                MatchResult = new MatchResultBuilder()
-                    .WithMatchCountAtLocus(Locus.A, 1)
-                    .Build(),
-                ScoreResult = new ScoreResultBuilder()
-                    .WithMatchGradeAtLocus(Locus.A, MatchGrade.GDna)
-                    .WithMatchGradeAtLocus(Locus.B, MatchGrade.GDna)
-                    .Build()
-            };
-            
-            var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResult
-            {
-                MatchResult = new MatchResultBuilder()
-                    .WithMatchCountAtLocus(Locus.A, 2)
-                    .Build(),
-                ScoreResult = new ScoreResultBuilder()
-                    .WithMatchGradeAtLocus(Locus.B, MatchGrade.Split)
-                    .WithMatchGradeAtLocus(Locus.Drb1, MatchGrade.Associated)
-                    .Build()
-            };
+            var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 1)
+                .WithMatchGradeAtLocus(Locus.A, MatchGrade.GDna)
+                .WithMatchGradeAtLocus(Locus.B, MatchGrade.GDna)
+                .Build();
+
+            var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithMatchGradeAtLocus(Locus.B, MatchGrade.Split)
+                .WithMatchGradeAtLocus(Locus.Drb1, MatchGrade.Associated)
+                .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
             {

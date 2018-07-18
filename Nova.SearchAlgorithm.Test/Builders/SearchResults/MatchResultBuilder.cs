@@ -1,7 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
-namespace Nova.SearchAlgorithm.Test.Builders
+namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 {
     public class MatchResultBuilder
     {

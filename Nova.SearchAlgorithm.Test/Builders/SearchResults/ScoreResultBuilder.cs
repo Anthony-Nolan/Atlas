@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
-namespace Nova.SearchAlgorithm.Test.Builders
+namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 {
     public class ScoreResultBuilder
     {
