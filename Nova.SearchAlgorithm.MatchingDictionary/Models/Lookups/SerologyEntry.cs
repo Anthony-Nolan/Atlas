@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
@@ -6,6 +7,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
     public class SerologyEntry : IEquatable<SerologyEntry>
     {
         public string Name { get; }
+
+        [JsonProperty("subtype")]
         public SerologySubtype SerologySubtype { get; }
 
         public SerologyEntry(string name, SerologySubtype serologySubtype)

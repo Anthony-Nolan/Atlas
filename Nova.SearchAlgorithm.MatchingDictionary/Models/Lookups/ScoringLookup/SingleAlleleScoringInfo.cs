@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
@@ -12,14 +13,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         IHlaScoringInfo,
         IEquatable<SingleAlleleScoringInfo>
     {
+        [JsonProperty("name")]
         public string AlleleName { get; }
+
+        [JsonProperty("status")]
         public AlleleTypingStatus AlleleTypingStatus { get; }
+
+        [JsonProperty("pGrp")]
         public string MatchingPGroup { get; }
+
+        [JsonProperty("gGrp")]
         public string MatchingGGroup { get; }
 
         /// <summary>
         /// Used when scoring against a serology typing.
         /// </summary>
+        [JsonProperty("ser")]
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         public SingleAlleleScoringInfo(
