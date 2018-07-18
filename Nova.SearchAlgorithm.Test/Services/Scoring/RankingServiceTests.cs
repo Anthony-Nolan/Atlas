@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Services.Scoring;
+using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NUnit.Framework;
@@ -14,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
     public class RankingServiceTests
     {
         private IRankingService rankingService;
-        
+
         [SetUp]
         public void SetUp()
         {
@@ -35,7 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 .WithMatchCountAtLocus(Locus.B, 2)
                 .WithMatchCountAtLocus(Locus.Drb1, 2)
                 .Build();
-            
+
             var unorderedSearchResults = new List<MatchAndScoreResult>
             {
                 resultWithFewerMatches,
@@ -50,18 +52,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 resultWithFewerMatches
             });
         }
-        
+
         [Test]
         public void RankSearchResults_OrdersResultsByMatchGrade()
         {
             var resultWithBetterOverallGrade = new MatchAndScoreResultBuilder()
-                .WithMatchGradeAtLocus(Locus.A, MatchGrade.GDna)
-                .WithMatchGradeAtLocus(Locus.B, MatchGrade.GDna)
+                .WithMatchGradeScoreAtLocus(Locus.A, 3)
                 .Build();
 
             var resultWithWorseOverallGrade = new MatchAndScoreResultBuilder()
-                .WithMatchGradeAtLocus(Locus.B, MatchGrade.Split)
-                .WithMatchGradeAtLocus(Locus.Drb1, MatchGrade.Associated)
+                .WithMatchGradeScoreAtLocus(Locus.A, 1)
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -77,21 +77,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 resultWithBetterOverallGrade,
                 resultWithWorseOverallGrade
             });
-        }      
-        
+        }
+
         [Test]
         public void RankSearchResults_OrdersResultsByMatchCountBeforeMatchGrade()
         {
             var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResultBuilder()
                 .WithMatchCountAtLocus(Locus.A, 1)
-                .WithMatchGradeAtLocus(Locus.A, MatchGrade.GDna)
-                .WithMatchGradeAtLocus(Locus.B, MatchGrade.GDna)
+                .WithMatchGradeScoreAtLocus(Locus.A, 3)
                 .Build();
 
             var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResultBuilder()
                 .WithMatchCountAtLocus(Locus.A, 2)
-                .WithMatchGradeAtLocus(Locus.B, MatchGrade.Split)
-                .WithMatchGradeAtLocus(Locus.Drb1, MatchGrade.Associated)
+                .WithMatchGradeScoreAtLocus(Locus.A, 1)
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -108,18 +106,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 resultWithBetterOverallGradeButFewerMatches,
             });
         }
-        
+
         [Test]
         public void RankSearchResults_OrdersResultsByMatchConfidence()
         {
             var resultWithBetterOverallConfidence = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Definite)
-                .WithMatchConfidenceAtLocus(Locus.B, MatchConfidence.Exact)
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 4)
                 .Build();
 
             var resultWithWorseOverallConfidence = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
-                .WithMatchConfidenceAtLocus(Locus.B, MatchConfidence.Mismatch)
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 2)
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -141,13 +137,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchGradeBeforeConfidence()
         {
             var resultWithWorseConfidenceButBetterGrade = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
-                .WithMatchGradeAtLocus(Locus.A, MatchGrade.CDna)
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 1)
+                .WithMatchGradeScoreAtLocus(Locus.A, 4)
                 .Build();
 
             var resultWithBetterConfidenceButWorseGrade = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Definite)
-                .WithMatchGradeAtLocus(Locus.A, MatchGrade.Split)
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 5)
+                .WithMatchGradeScoreAtLocus(Locus.A, 1)
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -169,12 +165,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchCountBeforeConfidence()
         {
             var resultWithWorseConfidenceButBetterMatchCount = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 1)
                 .WithMatchCountAtLocus(Locus.A, 2)
                 .Build();
 
             var resultWithBetterConfidenceButWorseMatchCount = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Definite)
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 5)
                 .WithMatchCountAtLocus(Locus.A, 1)
                 .Build();
 

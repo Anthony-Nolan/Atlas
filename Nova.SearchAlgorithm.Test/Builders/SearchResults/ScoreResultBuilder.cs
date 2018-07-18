@@ -14,28 +14,68 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             {
                 ScoreDetailsAtLocusA = new LocusScoreDetails
                 {
-                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails(),
-                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails()
+                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    },
+                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    }
                 },
                 ScoreDetailsAtLocusB = new LocusScoreDetails
                 {
-                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails(),
-                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails()
+                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    },
+                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    }
                 },
                 ScoreDetailsAtLocusC = new LocusScoreDetails
                 {
-                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails(),
-                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails()
+                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    },
+                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    }
                 },
                 ScoreDetailsAtLocusDqb1 = new LocusScoreDetails
                 {
-                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails(),
-                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails()
+                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    },
+                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    }
                 },
                 ScoreDetailsAtLocusDrb1 = new LocusScoreDetails
                 {
-                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails(),
-                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails()
+                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    },
+                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    }
                 },
             };
         }
@@ -50,7 +90,17 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
-
+        
+        public ScoreResultBuilder WithMatchGradeScoreAtLocus(Locus locus, int matchGradeScore)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
+            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
+            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
+            scoreDetails1.MatchGradeScore = matchGradeScore / 2;
+            scoreDetails2.MatchGradeScore = matchGradeScore / 2 + matchGradeScore % 2;
+            scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
+            return this;
+        }
 
         public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
         {
@@ -63,6 +113,17 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             return this;
         }
 
+        public ScoreResultBuilder WithMatchConfidenceScoreAtLocus(Locus locus, int matchConfidenceScore)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
+            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
+            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
+            scoreDetails1.MatchConfidenceScore = matchConfidenceScore / 2;
+            scoreDetails2.MatchConfidenceScore = matchConfidenceScore / 2 + matchConfidenceScore % 2;
+            scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
+            return this;
+        }
+        
         public ScoreResult Build()
         {
             return scoreResult;
