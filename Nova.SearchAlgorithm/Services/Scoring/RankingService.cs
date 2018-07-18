@@ -15,7 +15,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         {
             return results
                 .OrderByDescending(r => r.MatchResult.TotalMatchCount)
-                .ThenByDescending(r => r.ScoreResult.TotalMatchGradeScore);
+                .ThenByDescending(r => r.ScoreResult.TotalMatchGradeScore)
+                .ThenByDescending(r => r.ScoreResult.TotalMatchConfidenceScore);
         }
     }
 }

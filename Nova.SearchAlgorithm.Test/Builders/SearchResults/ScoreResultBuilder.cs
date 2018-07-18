@@ -51,6 +51,18 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             return this;
         }
 
+
+        public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
+            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
+            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
+            scoreDetails1.MatchConfidence = matchConfidence;
+            scoreDetails2.MatchConfidence = matchConfidence;
+            scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
+            return this;
+        }
+
         public ScoreResult Build()
         {
             return scoreResult;

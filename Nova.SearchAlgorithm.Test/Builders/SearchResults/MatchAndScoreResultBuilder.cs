@@ -27,6 +27,12 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             return this;
         }
         
+        public MatchAndScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
+        {
+            scoreResultBuilder = scoreResultBuilder.WithMatchConfidenceAtLocus(locus, matchConfidence);    
+            return this;
+        }
+        
         public MatchAndScoreResult Build()
         {
             return new MatchAndScoreResult

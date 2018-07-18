@@ -108,5 +108,89 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 resultWithBetterOverallGradeButFewerMatches,
             });
         }
+        
+        [Test]
+        public void RankSearchResults_OrdersResultsByMatchConfidence()
+        {
+            var resultWithBetterOverallConfidence = new MatchAndScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Definite)
+                .WithMatchConfidenceAtLocus(Locus.B, MatchConfidence.Exact)
+                .Build();
+
+            var resultWithWorseOverallConfidence = new MatchAndScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
+                .WithMatchConfidenceAtLocus(Locus.B, MatchConfidence.Mismatch)
+                .Build();
+
+            var unorderedSearchResults = new List<MatchAndScoreResult>
+            {
+                resultWithWorseOverallConfidence,
+                resultWithBetterOverallConfidence,
+            };
+
+            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+
+            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
+            {
+                resultWithBetterOverallConfidence,
+                resultWithWorseOverallConfidence
+            });
+        }
+
+        [Test]
+        public void RankSearchResults_OrdersResultsByMatchGradeBeforeConfidence()
+        {
+            var resultWithWorseConfidenceButBetterGrade = new MatchAndScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
+                .WithMatchGradeAtLocus(Locus.A, MatchGrade.CDna)
+                .Build();
+
+            var resultWithBetterConfidenceButWorseGrade = new MatchAndScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Definite)
+                .WithMatchGradeAtLocus(Locus.A, MatchGrade.Split)
+                .Build();
+
+            var unorderedSearchResults = new List<MatchAndScoreResult>
+            {
+                resultWithBetterConfidenceButWorseGrade,
+                resultWithWorseConfidenceButBetterGrade,
+            };
+
+            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+
+            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
+            {
+                resultWithWorseConfidenceButBetterGrade,
+                resultWithBetterConfidenceButWorseGrade
+            });
+        }
+
+        [Test]
+        public void RankSearchResults_OrdersResultsByMatchCountBeforeConfidence()
+        {
+            var resultWithWorseConfidenceButBetterMatchCount = new MatchAndScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .Build();
+
+            var resultWithBetterConfidenceButWorseMatchCount = new MatchAndScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Definite)
+                .WithMatchCountAtLocus(Locus.A, 1)
+                .Build();
+
+            var unorderedSearchResults = new List<MatchAndScoreResult>
+            {
+                resultWithBetterConfidenceButWorseMatchCount,
+                resultWithWorseConfidenceButBetterMatchCount,
+            };
+
+            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+
+            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
+            {
+                resultWithWorseConfidenceButBetterMatchCount,
+                resultWithBetterConfidenceButWorseMatchCount
+            });
+        }
     }
 }
