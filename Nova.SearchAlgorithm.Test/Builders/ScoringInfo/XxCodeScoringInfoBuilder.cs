@@ -29,9 +29,9 @@ namespace Nova.SearchAlgorithm.Test.Builders.ScoringInfo
             return this;
         }
         
-        public XxCodeScoringInfoBuilder WithMatchingSerologies(IEnumerable<SerologyEntry> serologyEntries)
+        public XxCodeScoringInfoBuilder WithMatchingSerologies(IEnumerable<SerologyEntry> matchingSerologies)
         {
-            scoringInfo = new XxCodeScoringInfo(scoringInfo.MatchingPGroups, scoringInfo.MatchingGGroups, serologyEntries);
+            scoringInfo = new XxCodeScoringInfo(scoringInfo.MatchingPGroups, scoringInfo.MatchingGGroups, matchingSerologies);
             return this;
         }
 
