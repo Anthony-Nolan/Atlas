@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {

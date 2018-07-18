@@ -25,20 +25,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
         public override async Task<HlaMatchingLookupResult> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
             var alleleNamesToLookup = await GetAlleleLookupNames(matchLocus, lookupName);
-            var lookupResults = await GetHlaMatchingLookupResult(matchLocus, alleleNamesToLookup);
+            var lookupResults = await GetHlaMatchingLookupResults(matchLocus, alleleNamesToLookup);
 
-            return new HlaMatchingLookupResult(matchLocus, lookupName, lookupResults);
+            return MergeHlaMatchingLookupResults(matchLocus, lookupName, lookupResults);
         }
 
         protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName);
 
-        private async Task<IEnumerable<HlaMatchingLookupResult>> GetHlaMatchingLookupResult(MatchLocus matchLocus, IEnumerable<string> alleleNamesToLookup)
+        private async Task<IEnumerable<HlaMatchingLookupResult>> GetHlaMatchingLookupResults(MatchLocus matchLocus, IEnumerable<string> alleleNamesToLookup)
         {
             var lookupTasks = alleleNamesToLookup.Select(name => GetHlaMatchingLookupResultsForAlleleNameIfExists(matchLocus, name));
             var lookupResults = await Task.WhenAll(lookupTasks);
-            var preCalculatedHlaMatchInfo = lookupResults.SelectMany(result => result);
+            var matchingLookupResult = lookupResults.SelectMany(result => result);
 
-            return preCalculatedHlaMatchInfo;
+            return matchingLookupResult;
         }
 
         /// <summary>
@@ -69,6 +69,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             var currentNames = await alleleNamesLookupService.GetCurrentAlleleNames(matchLocus, lookupName);
             var lookupTasks = currentNames.Select(name => GetHlaMatchingLookupResultIfExists(matchLocus, name, TypingMethod.Molecular));
             return await Task.WhenAll(lookupTasks);
+        }
+
+        private static HlaMatchingLookupResult MergeHlaMatchingLookupResults(MatchLocus matchLocus, string lookupName,
+            IEnumerable<HlaMatchingLookupResult> lookupResults)
+        {
+            var pGroups = lookupResults
+                .SelectMany(lookupResult => lookupResult.MatchingPGroups)
+                .Distinct();
+
+            return new HlaMatchingLookupResult(
+                matchLocus,
+                lookupName,
+                TypingMethod.Molecular,
+                pGroups);
         }
     }
 }

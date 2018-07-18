@@ -27,32 +27,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
             MatchingPGroups = matchingPGroups;
         }
 
-        public HlaMatchingLookupResult(IHlaLookupResultSource<SerologyTyping> serologySource)
-        {
-            MatchLocus = serologySource.TypingForHlaLookupResult.MatchLocus;
-            LookupName = serologySource.TypingForHlaLookupResult.Name;
-            TypingMethod = TypingMethod.Serology;
-            MatchingPGroups = serologySource.MatchingPGroups;
-        }
-
-        public HlaMatchingLookupResult(IHlaLookupResultSource<AlleleTyping> alleleSource, string lookupName)
-        {
-            MatchLocus = alleleSource.TypingForHlaLookupResult.MatchLocus;
-            LookupName = lookupName;
-            TypingMethod = TypingMethod.Molecular;
-            MatchingPGroups = alleleSource.MatchingPGroups;
-        }
-
-        public HlaMatchingLookupResult(MatchLocus matchLocus, string lookupName, IEnumerable<HlaMatchingLookupResult> lookupResults)
-        {
-            var entriesList = lookupResults.ToList();
-
-            MatchLocus = matchLocus;
-            LookupName = lookupName;
-            TypingMethod = TypingMethod.Molecular;
-            MatchingPGroups = entriesList.SelectMany(p => p.MatchingPGroups).Distinct();
-        }
-
         public HlaLookupTableEntity ConvertToTableEntity()
         {
             return this.ToTableEntity();
