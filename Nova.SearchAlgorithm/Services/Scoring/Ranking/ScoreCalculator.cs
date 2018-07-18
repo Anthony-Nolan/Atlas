@@ -2,7 +2,7 @@
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
 {
-    public interface IMatchGradeScoreCalculator
+    public interface IMatchScoreCalculator
     {
         /// <summary>
         /// Converts a match grade to a numeric score, to allow for grade weighting
@@ -13,10 +13,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
         /// <summary>
         /// Converts a match confidence to a numeric score, to allow for confidence weighting
         /// </summary>
-        int CalculateScoreForMatchConfidence(MatchGrade matchConfidence);
+        int CalculateScoreForMatchConfidence(MatchConfidence matchConfidence);
     }
 
-    public class MatchGradeScoreCalculator: IMatchGradeScoreCalculator
+    public class MatchScoreCalculator: IMatchScoreCalculator
     {
         // TODO: NOVA-1467: Apply appropriate weighting to match grade scores
         public int CalculateScoreForMatchGrade(MatchGrade matchGrade)
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
         }
 
         // TODO: NOVA-1467: Apply appropriate weighting to match confidence scores
-        public int CalculateScoreForMatchConfidence(MatchGrade matchConfidence)
+        public int CalculateScoreForMatchConfidence(MatchConfidence matchConfidence)
         {
             return (int) matchConfidence;
         }
