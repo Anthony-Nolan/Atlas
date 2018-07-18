@@ -63,12 +63,12 @@ namespace Nova.SearchAlgorithm.Services
                 A_2 = searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2,
                 B_1 = searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1,
                 B_2 = searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2,
-                C_1 = searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1,
-                C_2 = searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2,
-                DQB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1,
-                DQB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2,
-                DRB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1,
-                DRB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2
+                C_1 = searchRequest.SearchHlaData.LocusSearchHlaC?.SearchHla1,
+                C_2 = searchRequest.SearchHlaData.LocusSearchHlaC?.SearchHla2,
+                DQB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDqb1?.SearchHla1,
+                DQB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDqb1?.SearchHla2,
+                DRB1_1 = searchRequest.SearchHlaData.LocusSearchHlaDrb1?.SearchHla1,
+                DRB1_2 = searchRequest.SearchHlaData.LocusSearchHlaDrb1?.SearchHla2
             };
             var scoredMatches = await donorScoringService.Score(patientHla, matches);
             
