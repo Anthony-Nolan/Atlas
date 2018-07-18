@@ -367,6 +367,7 @@
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
     <Compile Include="Services\Scoring\RankingServiceTests.cs" />
+    <Compile Include="Services\Scoring\DonorScoringServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />

@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public class HlaScoringLookupService : 
         LookupServiceBase<IHlaScoringLookupResult>, IHlaScoringLookupService
     {
-        public Task<IHlaScoringLookupResult> GetHlaScoringLookupResults(MatchLocus matchLocus, string hlaName)
+        public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResults(MatchLocus matchLocus, string hlaName)
         {
             // TODO: NOVA-1445: lookup should return a list of non-consolidated entries
             throw new System.NotImplementedException();

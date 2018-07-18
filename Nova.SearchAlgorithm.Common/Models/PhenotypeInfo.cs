@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         public T DRB1_1 { get; set; }
         public T DRB1_2 { get; set; }
 
+        // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> Map<R>(Func<Locus, TypePositions, T, R> mapping)
         {
             return new PhenotypeInfo<R>
@@ -40,6 +41,26 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DQB1_2 = mapping(Locus.Dqb1, TypePositions.Two, DQB1_2),
                 DRB1_1 = mapping(Locus.Drb1, TypePositions.One, DRB1_1),
                 DRB1_2 = mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
+            };
+        }
+        
+        // TODO: NOVA-1427: Running these tasks in parallel could likely improve performance
+        public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, TypePositions, T, Task<R>> mapping)
+        {
+            return new PhenotypeInfo<R>
+            {
+                A_1 = await mapping(Locus.A, TypePositions.One, A_1),
+                A_2 = await mapping(Locus.A, TypePositions.Two, A_2),
+                B_1 = await mapping(Locus.B, TypePositions.One, B_1),
+                B_2 = await mapping(Locus.B, TypePositions.Two, B_2),
+                C_1 = await mapping(Locus.C, TypePositions.One, C_1),
+                C_2 = await mapping(Locus.C, TypePositions.Two, C_2),
+                DPB1_1 = await mapping(Locus.Dpb1, TypePositions.One, DPB1_1),
+                DPB1_2 = await mapping(Locus.Dpb1, TypePositions.Two, DPB1_2),
+                DQB1_1 = await mapping(Locus.Dqb1, TypePositions.One, DQB1_1),
+                DQB1_2 = await mapping(Locus.Dqb1, TypePositions.Two, DQB1_2),
+                DRB1_1 = await mapping(Locus.Drb1, TypePositions.One, DRB1_1),
+                DRB1_2 = await mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
             };
         }
 

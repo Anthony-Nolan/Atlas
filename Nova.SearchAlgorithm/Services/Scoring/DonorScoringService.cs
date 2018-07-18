@@ -1,9 +1,12 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.MatchingDictionaryConversions;
+using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
@@ -15,19 +18,36 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public class DonorScoringService : IDonorScoringService
     {
         private readonly IHlaScoringLookupService hlaScoringLookupService;
+        private readonly IGradingService gradingService;
+        private readonly IConfidenceService confidenceService;
+        private readonly IRankingService rankingService;
 
-        // TODO:NOVA-930 inject dependencies
-        public DonorScoringService(IHlaScoringLookupService hlaScoringLookupService)
+        public DonorScoringService(
+            IHlaScoringLookupService hlaScoringLookupService,
+            IGradingService gradingService,
+            IConfidenceService confidenceService,
+            IRankingService rankingService
+        )
         {
             this.hlaScoringLookupService = hlaScoringLookupService;
+            this.gradingService = gradingService;
+            this.confidenceService = confidenceService;
+            this.rankingService = rankingService;
         }
 
-        public Task<IEnumerable<MatchAndScoreResult>> Score(PhenotypeInfo<string> patientHla,  IEnumerable<MatchResult> matchResults)
+        public async Task<IEnumerable<MatchAndScoreResult>> Score(PhenotypeInfo<string> patientHla, IEnumerable<MatchResult> matchResults)
         {
-            // TODO: NOVA-1449: (write tests and) implement
-            return Task.FromResult(matchResults.Select(r => new MatchAndScoreResult
+            var patientScoringLookupResults = patientHla.MapAsync(async (locus, position, hla) => await GetHlaScoringResultsForLocus(locus, hla));
+
+            var donorScoringLookupResults = matchResults.Select(matchResult =>
             {
-                MatchResult = r, 
+                return matchResult.Donor.HlaNames.MapAsync(async (locus, position, hla) => await GetHlaScoringResultsForLocus(locus, hla));
+            }).ToList();
+
+            // TODO: NOVA-1449: (write tests and) implement
+            return await Task.FromResult(matchResults.Select(r => new MatchAndScoreResult
+            {
+                MatchResult = r,
                 ScoreResult = new ScoreResult
                 {
                     ScoreDetailsAtLocusA = new LocusScoreDetails(),
@@ -37,6 +57,16 @@ namespace Nova.SearchAlgorithm.Services.Scoring
                     ScoreDetailsAtLocusDrb1 = new LocusScoreDetails()
                 }
             }));
+        }
+
+        private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
+        {
+            if (locus == Locus.Dpb1 || hla == null)
+            {
+                return null;
+            }
+
+            return await hlaScoringLookupService.GetHlaScoringLookupResults(locus.ToMatchLocus(), hla);
         }
     }
 }
