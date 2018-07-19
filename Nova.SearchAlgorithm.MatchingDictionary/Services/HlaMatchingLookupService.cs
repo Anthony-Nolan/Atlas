@@ -11,6 +11,7 @@ using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.HLAService.Client.Models;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -64,17 +65,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         protected override async Task<IHlaMatchingLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
-            var dictionaryLookup = GetHlaMatchingLookup(lookupName);
+            var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
+            var dictionaryLookup = GetHlaLookup(hlaTypingCategory);
             var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
-            var lookupResults = GetHlaMatchingLookupResults(matchLocus, lookupName, lookupTableEntities);
+            var lookupResults = GetHlaLookupResults(matchLocus, lookupName, lookupTableEntities);
 
-            return GetConsolidatedHlaMatchingLookupResult(matchLocus, lookupName, lookupResults);
+            return GetConsolidatedHlaLookupResult(matchLocus, lookupName, lookupResults);
         }
 
-        private HlaLookupBase GetHlaMatchingLookup(string lookupName)
+        private HlaLookupBase GetHlaLookup(HlaTypingCategory hlaTypingCategory)
         {
-            var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
-
             return HlaLookupFactory
                 .GetLookupByHlaTypingCategory(
                     hlaTypingCategory,
@@ -87,7 +87,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     logger);
         }
 
-        private static IEnumerable<HlaMatchingLookupResult> GetHlaMatchingLookupResults(
+        private static IEnumerable<IHlaMatchingLookupResult> GetHlaLookupResults(
             MatchLocus matchLocus, 
             string lookupName,
             IEnumerable<HlaLookupTableEntity> lookupTableEntities)
@@ -102,10 +102,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return entities.Select(entity => entity.ToHlaMatchingLookupResult());
         }
 
-        private static HlaMatchingLookupResult GetConsolidatedHlaMatchingLookupResult(
+        private static IHlaMatchingLookupResult GetConsolidatedHlaLookupResult(
             MatchLocus matchLocus, 
             string lookupName,
-            IEnumerable<HlaMatchingLookupResult> lookupResults)
+            IEnumerable<IHlaMatchingLookupResult> lookupResults)
         {
             var results = lookupResults.ToList();
 

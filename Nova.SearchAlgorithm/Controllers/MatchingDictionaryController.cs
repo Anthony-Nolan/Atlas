@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
@@ -11,13 +12,16 @@ namespace Nova.SearchAlgorithm.Controllers
     {
         private readonly IManageMatchingDictionaryService manageMatchingService;
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
+        private readonly IHlaScoringLookupService hlaScoringLookupService;
 
         public MatchingDictionaryController(
             IManageMatchingDictionaryService manageMatchingService, 
-            IHlaMatchingLookupService hlaMatchingLookupService)
+            IHlaMatchingLookupService hlaMatchingLookupService,
+            IHlaScoringLookupService hlaScoringLookupService)
         {
             this.manageMatchingService = manageMatchingService;
             this.hlaMatchingLookupService = hlaMatchingLookupService;
+            this.hlaScoringLookupService = hlaScoringLookupService;
         }
 
         [HttpPost]
@@ -29,9 +33,18 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("matching-lookup")]
-        public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(MatchLocus matchLocus, string hlaName)
+        public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(
+            MatchLocus matchLocus, string hlaName)
         {
             return await hlaMatchingLookupService.GetHlaMatchingLookupResult(matchLocus, hlaName);
+        }
+
+        [HttpGet]
+        [Route("scoring-lookup")]
+        public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(
+            MatchLocus matchLocus, string hlaName)
+        {
+            return await hlaScoringLookupService.GetHlaScoringLookupResults(matchLocus, hlaName);
         }
     }
 }

@@ -9,8 +9,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaScoringLookupRepository : IHlaLookupRepository
     {
-        Task<IHlaScoringLookupResult> GetHlaScoringLookupResultIfExists(
-            MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
     public class HlaScoringLookupRepository : HlaLookupRepositoryBase, IHlaScoringLookupRepository
@@ -24,14 +22,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             IMemoryCache memoryCache)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, memoryCache, CacheKey)
         {
-        }
-
-        public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResultIfExists(
-            MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-        {
-            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, typingMethod);
-
-            return entity?.ToHlaScoringLookupResult();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.HLAService.Client.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System;
 
@@ -13,6 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public TypingMethod TypingMethod { get; }
         public LookupResultCategory LookupResultCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
+        public HlaTypingCategory HlaTypingCategory { get; set; }
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,

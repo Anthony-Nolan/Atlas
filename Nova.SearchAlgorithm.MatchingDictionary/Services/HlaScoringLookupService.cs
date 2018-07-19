@@ -1,6 +1,17 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups;
+using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -17,13 +28,39 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResults(MatchLocus matchLocus, string hlaName);
     }
 
-    public class HlaScoringLookupService : 
+    public class HlaScoringLookupService :
         LookupServiceBase<IHlaScoringLookupResult>, IHlaScoringLookupService
     {
-        public Task<IHlaScoringLookupResult> GetHlaScoringLookupResults(MatchLocus matchLocus, string hlaName)
+        private readonly IHlaScoringLookupRepository hlaScoringLookupRepository;
+        private readonly IAlleleNamesLookupService alleleNamesLookupService;
+        private readonly IHlaServiceClient hlaServiceClient;
+        private readonly IHlaCategorisationService hlaCategorisationService;
+        private readonly IAlleleStringSplitterService alleleSplitter;
+        private readonly IMemoryCache memoryCache;
+        private readonly ILogger logger;
+
+        public HlaScoringLookupService(
+            IHlaScoringLookupRepository hlaScoringLookupRepository,
+            IAlleleNamesLookupService alleleNamesLookupService,
+            IHlaServiceClient hlaServiceClient,
+            IHlaCategorisationService hlaCategorisationService,
+            IAlleleStringSplitterService alleleSplitter,
+            IMemoryCache memoryCache,
+            ILogger logger
+        )
         {
-            // TODO: NOVA-1445: lookup should return a list of non-consolidated entries
-            throw new System.NotImplementedException();
+            this.hlaScoringLookupRepository = hlaScoringLookupRepository;
+            this.alleleNamesLookupService = alleleNamesLookupService;
+            this.hlaServiceClient = hlaServiceClient;
+            this.hlaCategorisationService = hlaCategorisationService;
+            this.alleleSplitter = alleleSplitter;
+            this.memoryCache = memoryCache;
+            this.logger = logger;
+        }
+
+        public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResults(MatchLocus matchLocus, string hlaName)
+        {
+            return await GetLookupResults(matchLocus, hlaName);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -31,10 +68,86 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override Task<IHlaScoringLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IHlaScoringLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
-            // TODO: NOVA-1445: lookup should return a list of non-consolidated entries
-            throw new System.NotImplementedException();
+            var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
+            var dictionaryLookup = GetHlaLookup(hlaTypingCategory);
+            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
+            var lookupResults = GetHlaLookupResults(matchLocus, lookupName, lookupTableEntities);
+
+            return GetConsolidatedHlaLookupResult(matchLocus, lookupName, lookupResults, hlaTypingCategory);
+        }
+
+        private HlaLookupBase GetHlaLookup(HlaTypingCategory hlaTypingCategory)
+        {
+            return HlaLookupFactory
+                .GetLookupByHlaTypingCategory(
+                    hlaTypingCategory,
+                    hlaScoringLookupRepository,
+                    alleleNamesLookupService,
+                    hlaServiceClient,
+                    hlaCategorisationService,
+                    alleleSplitter,
+                    memoryCache,
+                    logger);
+        }
+
+        private static IEnumerable<IHlaScoringLookupResult> GetHlaLookupResults(
+            MatchLocus matchLocus,
+            string lookupName,
+            IEnumerable<HlaLookupTableEntity> lookupTableEntities)
+        {
+            var entities = lookupTableEntities.ToList();
+
+            if (!entities.Any())
+            {
+                throw new InvalidHlaException(matchLocus, lookupName);
+            }
+
+            return entities.Select(entity => entity.ToHlaScoringLookupResult());
+        }
+
+        private static IHlaScoringLookupResult GetConsolidatedHlaLookupResult(
+            MatchLocus matchLocus,
+            string lookupName,
+            IEnumerable<IHlaScoringLookupResult> lookupResults,
+            HlaTypingCategory hlaTypingCategory)
+        {
+            var results = lookupResults.ToList();
+
+            // only molecular typings have the potential to bring back >1 result
+            var lookupResult = results.Count == 1
+                ? results.First()
+                : GetConsolidatedMolecularHlaLookupResult(matchLocus, lookupName, results);
+
+            lookupResult.HlaTypingCategory = hlaTypingCategory;
+
+            return lookupResult;
+        }
+
+        private static IHlaScoringLookupResult GetConsolidatedMolecularHlaLookupResult(
+            MatchLocus matchLocus,
+            string lookupName,
+            IEnumerable<IHlaScoringLookupResult> lookupResults)
+        {
+            var allScoringInfos = lookupResults
+                .Select(result => result.HlaScoringInfo)
+                .ToList();
+
+            var singleAlleleScoringInfos = allScoringInfos.OfType<SingleAlleleScoringInfo>()
+                    .Concat(allScoringInfos.OfType<MultipleAlleleScoringInfo>()
+                        .SelectMany(info => info.AlleleScoringInfos))
+                        .ToList();
+
+            var mergedMultipleAlleleScoringInfo = new MultipleAlleleScoringInfo(singleAlleleScoringInfos);
+
+            return new HlaScoringLookupResult(
+                matchLocus,
+                lookupName,
+                TypingMethod.Molecular,
+                LookupResultCategory.MultipleAlleles,
+                mergedMultipleAlleleScoringInfo
+            );
         }
     }
 }

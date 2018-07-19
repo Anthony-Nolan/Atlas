@@ -7,23 +7,28 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
     public enum LookupResultCategory
     {
         /// <summary>
-        /// Lookup original serology name, as listed in hla_nom.
+        /// Lookup result is original serology name, as listed in hla_nom.
         /// </summary>
         Serology,
 
         /// <summary>
-        /// Lookup original allele name, as listed in hla_nom.
+        /// Lookup result is original allele name, as listed in hla_nom.
         /// </summary>
         OriginalAllele,
 
         /// <summary>
-        /// Lookup truncated allele name, as used in NMDP codes.
+        /// Lookup result is truncated allele name, as used in NMDP codes.
         /// </summary>
         NmdpCodeAllele,
 
         /// <summary>
-        /// Lookup XX code's first field value.
+        /// Lookup result is XX code first field value.
         /// </summary>
-        XxCode
+        XxCode,
+
+        /// <summary>
+        /// Lookup result is collection of multiple alleles. 
+        /// </summary>
+        MultipleAlleles
     }
 }

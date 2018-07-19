@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             };
         }
 
-        internal static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
+        internal static HlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
         {
             var scoringInfo = GetPreCalculatedScoringInfo(entity);
 
