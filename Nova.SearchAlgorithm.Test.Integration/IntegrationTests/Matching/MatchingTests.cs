@@ -42,13 +42,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void ResolveSearchRepo()
         {
-            matchingService = container.Resolve<IDonorMatchingService>();
+            matchingService = Container.Resolve<IDonorMatchingService>();
         }
         
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var importRepo = container.Resolve<IDonorImportRepository>();
+            var importRepo = Container.Resolve<IDonorImportRepository>();
 
             cordDonorWithFullHomozygousMatchAtLocusA = GetDefaultInputDonorBuilder().Build();
 

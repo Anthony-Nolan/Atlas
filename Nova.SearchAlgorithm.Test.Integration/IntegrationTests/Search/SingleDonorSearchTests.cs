@@ -41,8 +41,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var lookupService = container.Resolve<IHlaMatchingLookupService>();
-            var donorRepository = container.Resolve<IDonorImportRepository>();
+            var lookupService = Container.Resolve<IHlaMatchingLookupService>();
+            var donorRepository = Container.Resolve<IDonorImportRepository>();
             
             donor = new InputDonor
             {
@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [SetUp]
         public void ResolveSearchService()
         {
-            searchService = container.Resolve<ISearchService>();
+            searchService = Container.Resolve<ISearchService>();
         }
 
         [Test]

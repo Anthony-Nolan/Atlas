@@ -42,10 +42,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [TestCase("")]
         public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
         {
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(
+            Assert.ThrowsAsync<MatchingDictionaryException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString));
         }
 
+        [Test]
         public void GetCurrentAlleleNames_WhenNotAlleleTyping_ThrowsException()
         {
             const string notAlleleName = "NOT-AN-ALLELE";
@@ -53,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
             hlaCategorisationService.GetHlaTypingCategory(notAlleleName).Returns(notAlleleTypingCategory);
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(
+            Assert.ThrowsAsync<MatchingDictionaryException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, notAlleleName));
         }
 

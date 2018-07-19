@@ -30,32 +30,39 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {
     public abstract class IntegrationTestBase
     {
-        protected IContainer container;
+        protected IContainer Container;
 
         protected IDonorIdGenerator DonorIdGenerator
         {
             get
             {
-                if (container == null)
+                if (Container == null)
                 {
                     throw new Exception("Cannot access injected property before DI container setup");
                 }
 
-                return container.Resolve<IDonorIdGenerator>();
+                return Container.Resolve<IDonorIdGenerator>();
             }
         }
 
         [OneTimeSetUp]
         public void Setup()
         {
-            container = CreateContainer();
+            StorageEmulator.Start();
+            Container = CreateContainer();
             ClearDatabase();
             SetupDatabase();
         }
 
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            StorageEmulator.Stop();
+        }
+        
         private void SetupDatabase()
         {
-            if (container.TryResolve(out SearchAlgorithmContext context))
+            if (Container.TryResolve(out SearchAlgorithmContext context))
             {
                 context.Database.CreateIfNotExists();
             }
@@ -136,7 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         /// </summary>
         protected void ClearDatabase()
         {
-            if (container.TryResolve(out SearchAlgorithmContext context))
+            if (Container.TryResolve(out SearchAlgorithmContext context))
             {
                 context.Database.Delete();
             }
