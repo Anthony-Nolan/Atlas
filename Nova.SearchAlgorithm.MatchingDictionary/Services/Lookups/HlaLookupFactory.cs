@@ -15,7 +15,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             IHlaLookupRepository hlaLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaServiceClient hlaServiceClient,
-            IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMemoryCache memoryCache,
             ILogger logger)

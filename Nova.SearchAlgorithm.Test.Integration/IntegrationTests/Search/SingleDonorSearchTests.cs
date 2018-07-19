@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = (donorHlas).Map((l, p, h) => h == null ? null : lookupService.GetHlaMatchingLookupResult(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
+                MatchingHla = (donorHlas).Map((l, p, h) => h == null ? null : lookupService.GetHlaLookupResult(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
             };
             donorRepository.AddOrUpdateDonorWithHla(donor).Wait();
         }

@@ -246,6 +246,7 @@
     <Compile Include="Services\HlaDataConversion\AlleleTypingExtensions.cs" />
     <Compile Include="Services\HlaDataConversion\HlaScoringDataConverter.cs" />
     <Compile Include="Services\HlaDataConversion\MatchedHlaDataConverterBase.cs" />
+    <Compile Include="Services\HlaSearchingLookupServiceBase.cs" />
     <Compile Include="Services\HlaScoringLookupService.cs" />
     <Compile Include="Services\LookupServiceBase.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoriesConsolidator.cs" />

@@ -92,6 +92,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
+            // TODO: NOVA-1472: Create a file-backed scoring repo
+            builder.RegisterType<HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 

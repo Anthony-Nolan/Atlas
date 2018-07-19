@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Controllers
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(
             MatchLocus matchLocus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaMatchingLookupResult(matchLocus, hlaName);
+            return await hlaMatchingLookupService.GetHlaLookupResult(matchLocus, hlaName);
         }
 
         [HttpGet]
@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Controllers
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(
             MatchLocus matchLocus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaScoringLookupResults(matchLocus, hlaName);
+            return await hlaScoringLookupService.GetHlaLookupResult(matchLocus, hlaName);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public abstract class LookupServiceBase<T>
     {
-        public async Task<T> GetLookupResults(MatchLocus matchLocus, string lookupName)
+        protected async Task<T> GetLookupResults(MatchLocus matchLocus, string lookupName)
         {
             try
             {
