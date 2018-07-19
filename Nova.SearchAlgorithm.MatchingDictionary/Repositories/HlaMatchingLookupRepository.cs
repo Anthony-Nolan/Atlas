@@ -1,18 +1,14 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Common.Exceptions;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaMatchingLookupRepository : IHlaLookupRepository
     {
-        Task<HlaMatchingLookupResult> GetHlaMatchingLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
         IEnumerable<string> GetAllPGroups();
     }
 
@@ -27,13 +23,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             IMemoryCache memoryCache)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, memoryCache, CacheKey)
         {
-        }
-
-        public async Task<HlaMatchingLookupResult> GetHlaMatchingLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-        {
-            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, typingMethod);
-
-            return entity?.ToHlaMatchingLookupResult();
         }
 
         public IEnumerable<string> GetAllPGroups()

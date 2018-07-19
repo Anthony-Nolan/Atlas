@@ -8,16 +8,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
     internal class SingleAlleleLookup : AlleleNamesLookupBase
     {
         public SingleAlleleLookup(
-            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
+            IHlaLookupRepository hlaLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService)
-            : base(hlaMatchingLookupRepository, alleleNamesLookupService)
+            : base(hlaLookupRepository, alleleNamesLookupService)
         {
         }
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName)
         {
-            return await Task.FromResult(
-                (IEnumerable<string>)new[] { lookupName });
+            return await Task.FromResult((IEnumerable<string>)new[] { lookupName });
         }
     }
 }

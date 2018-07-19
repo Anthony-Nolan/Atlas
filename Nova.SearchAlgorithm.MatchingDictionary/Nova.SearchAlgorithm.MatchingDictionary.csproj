@@ -259,12 +259,12 @@
     <Compile Include="Services\HlaMatchingLookupService.cs" />
     <Compile Include="Services\Lookups\AlleleNamesLookupBase.cs" />
     <Compile Include="Services\Lookups\AlleleStringLookup.cs" />
-    <Compile Include="Services\Lookups\HlaMatchingLookupFactory.cs" />
+    <Compile Include="Services\Lookups\HlaLookupFactory.cs" />
     <Compile Include="Services\Lookups\SerologyLookup.cs" />
     <Compile Include="Services\Lookups\NmdpCodeLookup.cs" />
     <Compile Include="Services\Lookups\XxCodeLookup.cs" />
     <Compile Include="Services\Lookups\SingleAlleleLookup.cs" />
-    <Compile Include="Services\Lookups\HlaMatchingLookupBase.cs" />
+    <Compile Include="Services\Lookups\HlaLookupBase.cs" />
     <Compile Include="Services\HlaDataConversion\HlaMatchingDataConverter.cs" />
     <Compile Include="Models\Lookups\SerologyEntry.cs" />
     <Compile Include="Models\Lookups\SerologyEntryExtensions.cs" />

@@ -1,11 +1,15 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups;
 using Nova.Utils.ApplicationInsights;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -61,15 +65,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         protected override async Task<IHlaMatchingLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
             var dictionaryLookup = GetHlaMatchingLookup(lookupName);
+            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
+            var lookupResults = GetHlaMatchingLookupResults(matchLocus, lookupName, lookupTableEntities);
 
-            return await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
+            return GetConsolidatedHlaMatchingLookupResult(matchLocus, lookupName, lookupResults);
         }
 
-        private HlaMatchingLookupBase GetHlaMatchingLookup(string lookupName)
+        private HlaLookupBase GetHlaMatchingLookup(string lookupName)
         {
             var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
 
-            return HlaMatchingLookupFactory
+            return HlaLookupFactory
                 .GetLookupByHlaTypingCategory(
                     hlaTypingCategory,
                     hlaMatchingLookupRepository,
@@ -79,6 +85,43 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     alleleSplitter,
                     memoryCache,
                     logger);
+        }
+
+        private static IEnumerable<HlaMatchingLookupResult> GetHlaMatchingLookupResults(
+            MatchLocus matchLocus, 
+            string lookupName,
+            IEnumerable<HlaLookupTableEntity> lookupTableEntities)
+        {
+            var entities = lookupTableEntities.ToList();
+
+            if (!entities.Any())
+            {
+                throw new InvalidHlaException(matchLocus, lookupName);
+            }
+
+            return entities.Select(entity => entity.ToHlaMatchingLookupResult());
+        }
+
+        private static HlaMatchingLookupResult GetConsolidatedHlaMatchingLookupResult(
+            MatchLocus matchLocus, 
+            string lookupName,
+            IEnumerable<HlaMatchingLookupResult> lookupResults)
+        {
+            var results = lookupResults.ToList();
+
+            var typingMethod = results
+                .First()
+                .TypingMethod;
+
+            var pGroups = results
+                .SelectMany(lookupResult => lookupResult.MatchingPGroups)
+                .Distinct();
+
+            return new HlaMatchingLookupResult(
+                matchLocus,
+                lookupName,
+                typingMethod,
+                pGroups);
         }
     }
 }
