@@ -4,6 +4,8 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.Utils.WebApi.Client;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Client

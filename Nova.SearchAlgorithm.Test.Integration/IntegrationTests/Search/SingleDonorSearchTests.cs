@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
