@@ -3,22 +3,22 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Test.Builders.ScoringInfo
 {
-    public class AlleleStringScoringInfoBuilder
+    public class MultipleAlleleScoringInfoBuilder
     {
-        private AlleleStringScoringInfo scoringInfo;
+        private MultipleAlleleScoringInfo scoringInfo;
 
-        public AlleleStringScoringInfoBuilder()
+        public MultipleAlleleScoringInfoBuilder()
         {
-            scoringInfo = new AlleleStringScoringInfo(new List<SingleAlleleScoringInfo>());
+            scoringInfo = new MultipleAlleleScoringInfo(new List<SingleAlleleScoringInfo>());
         }
         
-        public AlleleStringScoringInfoBuilder WithAlleleScoringInfos(IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos)
+        public MultipleAlleleScoringInfoBuilder WithAlleleScoringInfos(IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos)
         {
-            scoringInfo = new AlleleStringScoringInfo(alleleScoringInfos);
+            scoringInfo = new MultipleAlleleScoringInfo(alleleScoringInfos);
             return this;
         }
 
-        public AlleleStringScoringInfo Build()
+        public MultipleAlleleScoringInfo Build()
         {
             return scoringInfo;
         }

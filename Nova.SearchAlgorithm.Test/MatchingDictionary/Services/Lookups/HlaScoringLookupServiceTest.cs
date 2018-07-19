@@ -100,7 +100,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var lookupResult = new HlaScoringLookupResult(
                 MatchedLocus,
                 alleleName,
-                TypingMethod.Molecular,
                 LookupResultCategory.OriginalAllele,
                 scoringInfo
                 );
@@ -119,7 +118,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 lookupName,
-                TypingMethod.Molecular,
                 LookupResultCategory.MultipleAlleles,
                 scoringInfo
                 );

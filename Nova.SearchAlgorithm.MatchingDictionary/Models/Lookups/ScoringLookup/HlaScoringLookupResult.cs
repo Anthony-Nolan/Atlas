@@ -11,7 +11,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
-        public TypingMethod TypingMethod { get; }
+
+        public TypingMethod TypingMethod => LookupResultCategory == LookupResultCategory.Serology
+            ? TypingMethod.Serology
+            : TypingMethod.Molecular;
+        
         public LookupResultCategory LookupResultCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
         public HlaTypingCategory HlaTypingCategory { get; set; }
@@ -19,13 +23,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
-            TypingMethod typingMethod,
             LookupResultCategory lookupResultCategory,
             IHlaScoringInfo hlaScoringInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
-            TypingMethod = typingMethod;
             LookupResultCategory = lookupResultCategory;
             HlaScoringInfo = hlaScoringInfo;
         }

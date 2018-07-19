@@ -21,7 +21,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             return new HlaScoringLookupResult(
                 entity.MatchLocus,
                 entity.LookupName,
-                entity.TypingMethod,
                 entity.LookupResultCategory,
                 scoringInfo);
         }

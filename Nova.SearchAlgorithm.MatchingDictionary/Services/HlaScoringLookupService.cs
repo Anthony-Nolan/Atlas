@@ -87,7 +87,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return new HlaScoringLookupResult(
                 matchLocus,
                 lookupName,
-                TypingMethod.Molecular,
                 LookupResultCategory.MultipleAlleles,
                 multipleAlleleScoringInfo
             );
