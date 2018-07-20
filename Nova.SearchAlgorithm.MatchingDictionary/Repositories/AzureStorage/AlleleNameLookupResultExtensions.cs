@@ -1,6 +1,5 @@
-using Newtonsoft.Json;
-using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -8,17 +7,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         internal static HlaLookupTableEntity ToTableEntity(this AlleleNameLookupResult lookupResult)
         {
-            return new HlaLookupTableEntity(lookupResult.MatchLocus, lookupResult.LookupName, lookupResult.TypingMethod)
-            {
-                SerialisedHlaInfo = JsonConvert.SerializeObject(lookupResult.CurrentAlleleNames)
-            };
+            return new HlaLookupTableEntity(lookupResult, lookupResult.CurrentAlleleNames);
         }
 
-        internal static AlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity result)
+        internal static AlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity entity)
         {
-            var currentAlleleNames = JsonConvert.DeserializeObject<IEnumerable<string>>(result.SerialisedHlaInfo);
+            var currentAlleleNames = entity.GetHlaInfo<IEnumerable<string>>();
 
-            return new AlleleNameLookupResult(result.MatchLocus, result.LookupName, currentAlleleNames);
+            return new AlleleNameLookupResult(
+                entity.MatchLocus, 
+                entity.LookupName, 
+                currentAlleleNames);
         }
     }
 }

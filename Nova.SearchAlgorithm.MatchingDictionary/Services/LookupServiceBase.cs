@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public abstract class LookupServiceBase<T>
     {
-        public async Task<T> GetLookupResults(MatchLocus matchLocus, string lookupName)
+        protected async Task<T> GetLookupResults(MatchLocus matchLocus, string lookupName)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             }
             catch (Exception ex)
             {
-                var msg = $"Failed to lookup \"{lookupName}\" at locus {matchLocus}.";
+                var msg = $"Failed to lookup '{lookupName}' at locus {matchLocus}.";
                 throw new MatchingDictionaryException(msg, ex);
             }
         }

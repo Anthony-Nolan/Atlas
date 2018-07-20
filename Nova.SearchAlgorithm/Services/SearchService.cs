@@ -80,8 +80,8 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var lookupResult = await Task.WhenAll(
-                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), searchHla.SearchHla1),
-                hlaMatchingLookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), searchHla.SearchHla2));
+                hlaMatchingLookupService.GetHlaLookupResult(locus.ToMatchLocus(), searchHla.SearchHla1),
+                hlaMatchingLookupService.GetHlaLookupResult(locus.ToMatchLocus(), searchHla.SearchHla2));
 
             return new AlleleLevelLocusMatchCriteria
             {

@@ -7,7 +7,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     /// </summary>
     public interface IHlaScoringLookupResult : IHlaLookupResult
     {
-        HlaTypingCategory HlaTypingCategory { get; }
+        LookupResultCategory LookupResultCategory { get; }
         IHlaScoringInfo HlaScoringInfo { get; }
+
+        /// <summary>
+        /// Value should be set by lookup service before return.
+        /// </summary>
+        HlaTypingCategory HlaTypingCategory { get; set; }
     }
 }

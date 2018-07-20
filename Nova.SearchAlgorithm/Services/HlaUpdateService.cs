@@ -125,7 +125,7 @@ namespace Nova.SearchAlgorithm.Services
 
             return hla == null
                 ? null
-                : (await lookupService.GetHlaMatchingLookupResult(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
+                : (await lookupService.GetHlaLookupResult(locus.ToMatchLocus(), hla)).ToExpandedHla(hla);
         }
     }
 }

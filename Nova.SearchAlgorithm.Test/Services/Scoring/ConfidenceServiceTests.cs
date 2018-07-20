@@ -56,12 +56,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const Locus locus2 = Locus.Drb1;
             
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            var patientLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithLookupResultCategory(LookupResultCategory.OriginalAllele).Build();
             patientLookupResults.SetAtLocus(locus1, Position, patientLookupResultAtLocus1);
             patientLookupResults.SetAtLocus(locus2, Position, null);
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithHlaTypingCategory(HlaTypingCategory.Allele).Build();
+            var donorLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithLookupResultCategory(LookupResultCategory.OriginalAllele).Build();
             donorLookupResults.SetAtLocus(locus1, Position, donorLookupResultAtLocus1);
             donorLookupResults.SetAtLocus(locus2, Position, null);
 
@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
@@ -128,7 +128,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
@@ -167,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
@@ -209,13 +209,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var patientLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
