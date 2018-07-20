@@ -17,8 +17,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
     {
         public LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<IEnumerable<string>, IEnumerable<string>> pGroups)
         {
-            var hla1 = new ExpandedHla{PGroups = pGroups.Item1.IsNullOrEmpty() ? null : pGroups.Item1 };
-            var hla2 = new ExpandedHla{PGroups = pGroups.Item1.IsNullOrEmpty() ? null : pGroups.Item2 };
+            var hla1 =  pGroups.Item1.IsNullOrEmpty() ? null : new ExpandedHla{PGroups = pGroups.Item1 };
+            var hla2 =  pGroups.Item2.IsNullOrEmpty() ? null : new ExpandedHla{PGroups = pGroups.Item2 };
             return CalculateMatchDetailsForDonorHla(locusMatchCriteria, new Tuple<ExpandedHla, ExpandedHla>(hla1, hla2));
         }
 
