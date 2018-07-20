@@ -33,12 +33,6 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         public int TypedLociCount { get; set; }
 
         /// <summary>
-        /// The relative rank of this match within the search results,
-        /// based on the scoring algorithm.
-        /// </summary>
-        public int MatchRank { get; set; }
-
-        /// <summary>
         /// The match grade according to the scoring algorithm,
         /// for validation and debugging.
         /// </summary>

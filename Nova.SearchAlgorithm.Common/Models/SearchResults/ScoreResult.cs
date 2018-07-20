@@ -6,7 +6,6 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
     public class ScoreResult
     {
-        public int TotalMatchRank;
         public int TotalMatchGradeScore => LocusScoreDetails.Sum(scoreDetails => scoreDetails.MatchGradeScore);
         public int TotalMatchConfidenceScore => LocusScoreDetails.Sum(scoreDetails => scoreDetails.MatchConfidenceScore);
         
