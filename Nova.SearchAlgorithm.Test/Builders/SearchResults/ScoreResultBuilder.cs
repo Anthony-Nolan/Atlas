@@ -82,44 +82,36 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 
         public ScoreResultBuilder WithMatchGradeAtLocus(Locus locus, MatchGrade grade)
         {
-            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
-            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
-            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
-            scoreDetails1.MatchGrade = grade;
-            scoreDetails2.MatchGrade = grade;
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.ScoreDetailsAtPosition1.MatchGrade = grade;
+            locusScoreDetails.ScoreDetailsAtPosition2.MatchGrade = grade;
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
         
         public ScoreResultBuilder WithMatchGradeScoreAtLocus(Locus locus, int matchGradeScore)
         {
-            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
-            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
-            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
-            scoreDetails1.MatchGradeScore = matchGradeScore / 2;
-            scoreDetails2.MatchGradeScore = matchGradeScore / 2 + matchGradeScore % 2;
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.ScoreDetailsAtPosition1.MatchGradeScore = matchGradeScore / 2;
+            locusScoreDetails.ScoreDetailsAtPosition2.MatchGradeScore = matchGradeScore / 2 + matchGradeScore % 2;
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
 
         public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
         {
-            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
-            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
-            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
-            scoreDetails1.MatchConfidence = matchConfidence;
-            scoreDetails2.MatchConfidence = matchConfidence;
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
+            locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
 
         public ScoreResultBuilder WithMatchConfidenceScoreAtLocus(Locus locus, int matchConfidenceScore)
         {
-            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus) ?? new LocusScoreDetails();
-            var scoreDetails1 = locusScoreDetails.ScoreDetailsAtPosition1 ?? new LocusPositionScoreDetails();
-            var scoreDetails2 = locusScoreDetails.ScoreDetailsAtPosition2 ?? new LocusPositionScoreDetails();
-            scoreDetails1.MatchConfidenceScore = matchConfidenceScore / 2;
-            scoreDetails2.MatchConfidenceScore = matchConfidenceScore / 2 + matchConfidenceScore % 2;
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidenceScore = matchConfidenceScore / 2;
+            locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidenceScore = matchConfidenceScore / 2 + matchConfidenceScore % 2;
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }

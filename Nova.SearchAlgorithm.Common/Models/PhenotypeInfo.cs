@@ -173,6 +173,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
         }
+        
         public T DataAtPosition(Locus locus, TypePositions position)
         {
             const string errorMessage = "Can only fetch a single piece of data at a specific position";
