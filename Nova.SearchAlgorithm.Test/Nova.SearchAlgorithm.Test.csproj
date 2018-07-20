@@ -338,6 +338,9 @@
     <Compile Include="Builders\ScoringInfo\SingleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\XxCodeScoringInfoBuilder.cs" />
     <Compile Include="Builders\SearchRequestBuilder.cs" />
+    <Compile Include="Builders\SearchResults\MatchAndScoreResultBuilder.cs" />
+    <Compile Include="Builders\SearchResults\MatchResultBuilder.cs" />
+    <Compile Include="Builders\SearchResults\ScoreResultBuilder.cs" />
     <Compile Include="Client\Validators\LocusMismatchCriteriaValidatorTests.cs" />
     <Compile Include="Client\Validators\SearchHlaDataValidatorTests.cs" />
     <Compile Include="Client\Validators\LocusSearchHlaValidatorTests.cs" />
@@ -367,6 +370,9 @@
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
+    <Compile Include="Services\Scoring\RankingServiceTests.cs" />
+    <Compile Include="Services\Scoring\ConfidenceCalculatorTests.cs" />
+    <Compile Include="Services\Scoring\ConfidenceServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />
