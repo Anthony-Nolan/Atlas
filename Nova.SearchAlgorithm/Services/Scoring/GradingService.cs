@@ -18,7 +18,59 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
             // TODO: NOVA-1446: Implement
-            throw new System.NotImplementedException();
+            return new PhenotypeInfo<MatchGradeResult>
+            {
+                A_1 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                A_2 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                B_1 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                B_2= new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                C_1 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                C_2 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                DQB1_1 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                DQB1_2 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                DRB1_1 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+                DRB1_2 = new MatchGradeResult
+                {
+                    GradeResult = MatchGrade.Split,
+                    Orientations = new []{MatchOrientation.Cross, MatchOrientation.Direct}
+                },
+            };
         }
     }
 }
