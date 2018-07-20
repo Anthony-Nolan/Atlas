@@ -1,6 +1,4 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-
-namespace Nova.SearchAlgorithm.Client.Models.SearchResults
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
     public class SearchResult
     {

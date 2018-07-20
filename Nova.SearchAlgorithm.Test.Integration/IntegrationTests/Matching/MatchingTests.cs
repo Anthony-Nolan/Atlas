@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;

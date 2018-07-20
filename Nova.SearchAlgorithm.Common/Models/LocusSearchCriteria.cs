@@ -1,7 +1,7 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 
-namespace Nova.SearchAlgorithm.Repositories.Donors
+namespace Nova.SearchAlgorithm.Common.Models
 {
     public class LocusSearchCriteria
     {

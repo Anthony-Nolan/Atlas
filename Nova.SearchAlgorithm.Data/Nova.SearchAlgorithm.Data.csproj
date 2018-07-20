@@ -195,6 +195,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
+      <Project>{ad4a122a-cbb7-4996-af5c-baed84271a9e}</Project>
+      <Name>Nova.SearchAlgorithm.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
       <Project>{FB453E02-3CE1-42E7-BDC4-13899B993F2A}</Project>
       <Name>Nova.SearchAlgorithm.Common</Name>

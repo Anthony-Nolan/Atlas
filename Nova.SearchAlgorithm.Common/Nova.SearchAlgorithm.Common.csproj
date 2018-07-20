@@ -122,7 +122,6 @@
     <Compile Include="Exceptions\MemoryCacheException.cs" />
     <Compile Include="Models\AlleleLevelMatchCriteria.cs" />
     <Compile Include="Models\DonorResult.cs" />
-    <Compile Include="Models\DonorType.cs" />
     <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\IBatchQueryAsync.cs" />
     <Compile Include="Models\IStorableInCloudTable.cs" />
@@ -132,13 +131,9 @@
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialHlaMatchRelation.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
-    <Compile Include="Models\RegistryCode.cs" />
-    <Compile Include="Models\Scoring\MatchConfidence.cs" />
-    <Compile Include="Models\Scoring\MatchGrade.cs" />
     <Compile Include="Models\Scoring\MatchGradeResult.cs" />
     <Compile Include="Models\Scoring\MatchOrientation.cs" />
     <Compile Include="Models\SearchResults\LocusMatchDetails.cs" />
-    <Compile Include="Models\SearchResults\LocusPositionScoreDetails.cs" />
     <Compile Include="Models\SearchResults\LocusScoreDetails.cs" />
     <Compile Include="Models\SearchResults\MatchResult.cs" />
     <Compile Include="Models\SearchResults\ScoreResult.cs" />
@@ -161,6 +156,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
+      <Project>{ad4a122a-cbb7-4996-af5c-baed84271a9e}</Project>
+      <Name>Nova.SearchAlgorithm.Client</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
