@@ -333,7 +333,7 @@
   <ItemGroup>
     <Compile Include="Builders\DonorMatchCriteriaBuilder.cs" />
     <Compile Include="Builders\HlaScoringLookupResultBuilder.cs" />
-    <Compile Include="Builders\ScoringInfo\AlleleStringScoringInfoBuilder.cs" />
+    <Compile Include="Builders\ScoringInfo\MultipleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SerologyScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SingleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\XxCodeScoringInfoBuilder.cs" />

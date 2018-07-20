@@ -47,13 +47,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             const string donorPGroup = "p-group-1";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(donorPGroup).Build())
                 .Build();
 
             const string patientPGroup = "p-group-2";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(patientPGroup).Build())
                 .Build();
 
@@ -63,9 +63,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         }
 
         // XX groups cannot map to a single p-group, so XxCodeScoringInfo does not need to be tested here
-        [TestCase(typeof(SingleAlleleScoringInfo), typeof(AlleleStringScoringInfo))]
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(SingleAlleleScoringInfo))]
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
         public void CalculateConfidence_BothTypingsMolecularAndSinglePGroup_ReturnsExact(Type donorScoringInfoType, Type patientScoringInfoType)
         {
             var patientLookupResult = BuildScoringLookupResultWithSinglePGroup(patientScoringInfoType);
@@ -79,9 +79,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         
         // XX groups cannot map to a single p-group, so XxCodeScoringInfo does not need to be tested here
         [TestCase(typeof(SingleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
-        [TestCase(typeof(SingleAlleleScoringInfo), typeof(AlleleStringScoringInfo))]
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(SingleAlleleScoringInfo))]
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
         public void CalculateConfidence_BothTypingsMolecularAndSinglePGroup_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType, Type patientScoringInfoType)
         {
             const string patientPGroup = "patient-p-group";
@@ -95,14 +95,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Mismatch);
         }
 
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientSingleAllele_DonorMultiplePGroups_ReturnsPotential(Type donorScoringInfoType)
         {
             const string matchingPGroup = "p-group-match";
             
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(matchingPGroup).Build())
                 .Build();
 
@@ -114,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Potential);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientMultiplePGroups_DonorSingleAllele_ReturnsPotential(Type patientScoringInfoType)
         {
@@ -124,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, patientPGroups);
             
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(matchingPGroup).Build())
                 .Build();
 
@@ -133,12 +133,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Potential);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientSingleAllele_DonorMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType)
         {
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup("patient-p-group").Build())
                 .Build();
 
@@ -150,7 +150,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Mismatch);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientMultiplePGroups_DonorSingleAllele_ButDoNotMatch_ReturnsMismatch(Type patientScoringInfoType)
         {
@@ -158,7 +158,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, patientPGroups);
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup("donor-p-group").Build())
                 .Build();
 
@@ -167,14 +167,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Mismatch);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientSerology_DonorMultiplePGroups_ReturnsPotential(Type donorScoringInfoType)
         {
             var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -185,7 +185,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Potential);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientMultiplePGroups_DonorSerology_ReturnsPotential(Type patientScoringInfoType)
         {
@@ -194,7 +194,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, matchingSerologies: matchingSerologies);
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -203,13 +203,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Potential);
         }    
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientSerology_DonorMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType)
         {
             var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
                 .Build();
 
@@ -221,7 +221,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Mismatch);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientMultiplePGroups_DonorSerology_ButDoNotMatch_ReturnsMismatch(Type patientScoringInfoType)
         {
@@ -230,7 +230,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
                 .Build();
 
@@ -245,12 +245,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
             
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -264,13 +264,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
                 .Build();
 
             var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
                 .Build();
 
@@ -285,12 +285,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
             
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -304,12 +304,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Serology)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
                 .Build();
             
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
                 .Build();
 
@@ -318,9 +318,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Mismatch);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(AlleleStringScoringInfo))]
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(XxCodeScoringInfo))]
-        [TestCase(typeof(XxCodeScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(XxCodeScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo), typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo), typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_BothTypingsMolecularAndMultiplePGroups_ReturnsPotential(Type donorScoringInfoType, Type patientScoringInfoType)
         {
@@ -333,9 +333,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidence.Should().Be(MatchConfidence.Potential);
         }
         
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(AlleleStringScoringInfo))]
-        [TestCase(typeof(AlleleStringScoringInfo), typeof(XxCodeScoringInfo))]
-        [TestCase(typeof(XxCodeScoringInfo), typeof(AlleleStringScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(XxCodeScoringInfo))]
+        [TestCase(typeof(XxCodeScoringInfo), typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(XxCodeScoringInfo), typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_BothTypingsMolecularAndMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType, Type patientScoringInfoType)
         {
@@ -352,7 +352,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void CalculateConfidence_DonorUntyped_ReturnsPotential()
         {
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
                 .Build();
 
@@ -365,7 +365,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void CalculateConfidence_PatientUntyped_ReturnsPotential()
         {
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
                 .Build();
 
@@ -379,22 +379,22 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             if (scoringInfoType == typeof(SingleAlleleScoringInfo))
             {
                 return new HlaScoringLookupResultBuilder()
-                    .WithHlaTypingCategory(HlaTypingCategory.Allele)
+                    .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                     .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(pGroupName).Build())
                     .Build();
             }
             if (scoringInfoType == typeof(XxCodeScoringInfo))
             {
                 return new HlaScoringLookupResultBuilder()
-                    .WithHlaTypingCategory(HlaTypingCategory.XxCode)
+                    .WithLookupResultCategory(LookupResultCategory.XxCode)
                     .WithHlaScoringInfo(new XxCodeScoringInfoBuilder().WithMatchingPGroups(new List<string>{pGroupName}).Build())
                     .Build();
             }
-            if (scoringInfoType == typeof(AlleleStringScoringInfo))
+            if (scoringInfoType == typeof(MultipleAlleleScoringInfo))
             {
                 return new HlaScoringLookupResultBuilder()
-                    .WithHlaTypingCategory(HlaTypingCategory.NmdpCode)
-                    .WithHlaScoringInfo(new AlleleStringScoringInfoBuilder()
+                    .WithLookupResultCategory(LookupResultCategory.NmdpCodeAllele)
+                    .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                         .WithAlleleScoringInfos(new List<SingleAlleleScoringInfo>
                         {
                             new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(pGroupName).Build()
@@ -416,7 +416,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             if (scoringInfoType == typeof(XxCodeScoringInfo))
             {
                 return new HlaScoringLookupResultBuilder()
-                    .WithHlaTypingCategory(HlaTypingCategory.XxCode)
+                    .WithLookupResultCategory(LookupResultCategory.XxCode)
                     .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
                         .WithMatchingPGroups(pGroupNames)
                         .WithMatchingSerologies(matchingSerologies)
@@ -425,11 +425,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build();
             }
 
-            if (scoringInfoType == typeof(AlleleStringScoringInfo))
+            if (scoringInfoType == typeof(MultipleAlleleScoringInfo))
             {
                 return new HlaScoringLookupResultBuilder()
-                    .WithHlaTypingCategory(HlaTypingCategory.NmdpCode)
-                    .WithHlaScoringInfo(new AlleleStringScoringInfoBuilder()
+                    .WithLookupResultCategory(LookupResultCategory.NmdpCodeAllele)
+                    .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                         .WithAlleleScoringInfos(pGroupNames.Select(p =>
                             new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(p).WithMatchingSerologies(matchingSerologies).Build()))
                         .Build()
