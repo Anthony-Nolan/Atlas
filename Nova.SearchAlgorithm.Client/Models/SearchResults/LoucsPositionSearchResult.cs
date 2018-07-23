@@ -1,6 +1,4 @@
-﻿using Nova.SearchAlgorithm.Common.Models.Scoring;
-
-namespace Nova.SearchAlgorithm.Client.Models.SearchResults
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
     public class LoucsPositionSearchResult
     {

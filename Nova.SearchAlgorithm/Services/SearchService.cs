@@ -115,7 +115,6 @@ namespace Nova.SearchAlgorithm.Services
                 DonorId = result.MatchResult.Donor.DonorId,
                 DonorType = result.MatchResult.Donor.DonorType,
                 Registry = result.MatchResult.Donor.RegistryCode,
-                MatchRank = result.ScoreResult.TotalMatchRank,
                 ConfidenceScore = result.ScoreResult.ConfidenceScore,
                 GradeScore = result.ScoreResult.GradeScore,
                 TotalMatchCount = result.MatchResult.TotalMatchCount,

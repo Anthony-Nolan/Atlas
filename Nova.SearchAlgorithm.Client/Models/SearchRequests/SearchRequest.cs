@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using FluentValidation;
-using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
 {

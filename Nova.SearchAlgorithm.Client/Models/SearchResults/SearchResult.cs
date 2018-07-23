@@ -1,6 +1,4 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-
-namespace Nova.SearchAlgorithm.Client.Models.SearchResults
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
     public class SearchResult
     {
@@ -31,12 +29,6 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         /// The number of loci which are typed for this donor.
         /// </summary>
         public int TypedLociCount { get; set; }
-
-        /// <summary>
-        /// The relative rank of this match within the search results,
-        /// based on the scoring algorithm.
-        /// </summary>
-        public int MatchRank { get; set; }
 
         /// <summary>
         /// A numeric value representing the aggregate relative match grade across all loci, according to the scoring algorithm

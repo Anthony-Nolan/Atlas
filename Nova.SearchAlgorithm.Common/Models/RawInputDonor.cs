@@ -1,4 +1,6 @@
-﻿namespace Nova.SearchAlgorithm.Common.Models
+﻿using Nova.SearchAlgorithm.Client.Models;
+
+namespace Nova.SearchAlgorithm.Common.Models
 {
     public class RawInputDonor
     {
