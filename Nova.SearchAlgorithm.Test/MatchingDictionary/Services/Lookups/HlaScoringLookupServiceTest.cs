@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
@@ -7,7 +6,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -20,20 +18,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
     public class HlaScoringLookupServiceTest : 
         HlaSearchingLookupServiceTestBase<IHlaScoringLookupRepository, IHlaScoringLookupService, IHlaScoringLookupResult>
     {
-        [OneTimeSetUp]
-        public void HlaScoringLookupServiceTest_OneTimeSetUp()
+        [SetUp]
+        public void HlaScoringLookupServiceTest_SetUpBeforeEachTest()
         {
-            var memoryCache = Substitute.For<IMemoryCache>();
-            var logger = Substitute.For<ILogger>();
-
             LookupService = new HlaScoringLookupService(
                 HlaLookupRepository,
                 AlleleNamesLookupService,
                 HlaServiceClient,
                 HlaCategorisationService,
                 AlleleStringSplitterService,
-                memoryCache,
-                logger);
+                MemoryCache,
+                Logger);
         }
 
         [Test]

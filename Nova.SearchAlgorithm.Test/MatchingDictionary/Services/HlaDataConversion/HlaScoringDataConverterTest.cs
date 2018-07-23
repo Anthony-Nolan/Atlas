@@ -13,69 +13,72 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
     public class HlaScoringDataConverterTest :
         MatchedHlaDataConverterTestBase<HlaScoringDataConverter>
     {
-        private static readonly List<SerologyEntry> SerologyEntries = 
-            new List<SerologyEntry>{new SerologyEntry(SerologyName, SeroSubtype)};
-        private const string XxCodeLookupName = "999";
+        private static readonly List<SerologyEntry> SerologyEntries =
+            new List<SerologyEntry> { new SerologyEntry(SerologyName, SeroSubtype) };
 
-        [TestCase("999:999", "")]
-        [TestCase("999:999Q", "Q")]
-        public void ConvertToHlaLookupResults_WhenTwoFieldAllele_TwoLookupResultsGenerated(
-            string alleleName, string expressionSuffix)
+        [TestCase("999:999", "999")]
+        [TestCase("999:999Q", "999")]
+        public override void ConvertToHlaLookupResults_WhenTwoFieldAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
+            string alleleName, string xxCodeLookupName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
             var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedAllele });
 
             var expectedLookupResults = new List<IHlaLookupResult>
             {
-                BuildExpectedSingleAlleleLookupResult(alleleName),
-                BuildExpectedXxCodeLookupResult(new[] {alleleName})
+                BuildSingleAlleleLookupResult(alleleName),
+                BuildXxCodeLookupResult(new[] {alleleName}, xxCodeLookupName)
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
 
-        [TestCase("999:999:999", "")]
-        [TestCase("999:999:999:999", "")]
-        [TestCase("999:999:999L", "L")]
-        [TestCase("999:999:999:999N", "N")]
-        public void ConvertToHlaLookupResults_WhenThreeOrFourFieldAllele_ThreeLookupResultsGenerated(
-            string alleleName, string expressionSuffix)
+        [TestCase("999:999:999", "", "999:999", "999")]
+        [TestCase("999:999:999:999", "", "999:999", "999")]
+        [TestCase("999:999:999L", "L", "999:999", "999")]
+        [TestCase("999:999:999:999N", "N", "999:999", "999")]
+        public override void ConvertToHlaLookupResults_WhenThreeOrFourFieldAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
+            string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
             var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedAllele });
 
             var expectedLookupResults = new List<IHlaLookupResult>
             {
-                BuildExpectedSingleAlleleLookupResult(alleleName),
-                BuildExpectedMultipleAlleleLookupResult("999:999" + expressionSuffix, new []{alleleName}),
-                BuildExpectedXxCodeLookupResult(new []{alleleName})
+                BuildSingleAlleleLookupResult(alleleName),
+                BuildMultipleAlleleLookupResult(nmdpCodeLookupName + expressionSuffix, new []{alleleName}),
+                BuildXxCodeLookupResult(new []{alleleName}, xxCodeLookupName)
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
 
         [Test]
-        public void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_OneLookupResultGeneratedPerUniqueLookupName()
+        public override void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_GeneratesLookupResult_ForEachUniqueLookupName()
         {
             string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02", "999:999:999:03N" };
+            const string nmdpCodeLookupName = "999:999";
+            const string nmdpCodeLookupNameWithExpressionSuffix = "999:999N";
+            const string xxCodeLookupName = "999";
+
             var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
             var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(matchedAlleles);
 
             var expectedLookupResults = new List<IHlaLookupResult>
             {
-                BuildExpectedSingleAlleleLookupResult(alleles[0]),
-                BuildExpectedSingleAlleleLookupResult(alleles[1]),
-                BuildExpectedSingleAlleleLookupResult(alleles[2]),
-                BuildExpectedSingleAlleleLookupResult(alleles[3]),
-                BuildExpectedMultipleAlleleLookupResult("999:999", new[]{ alleles[0], alleles[1], alleles[2]}),
-                BuildExpectedMultipleAlleleLookupResult("999:999N", new []{alleles[3]}),
-                BuildExpectedXxCodeLookupResult(alleles)
+                BuildSingleAlleleLookupResult(alleles[0]),
+                BuildSingleAlleleLookupResult(alleles[1]),
+                BuildSingleAlleleLookupResult(alleles[2]),
+                BuildSingleAlleleLookupResult(alleles[3]),
+                BuildMultipleAlleleLookupResult(nmdpCodeLookupName, new[]{ alleles[0], alleles[1], alleles[2]}),
+                BuildMultipleAlleleLookupResult(nmdpCodeLookupNameWithExpressionSuffix, new []{alleles[3]}),
+                BuildXxCodeLookupResult(alleles, xxCodeLookupName)
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
 
-        protected override IHlaLookupResult BuildExpectedSerologyHlaLookupResult()
+        protected override IHlaLookupResult BuildSerologyHlaLookupResult()
         {
             var scoringInfo = new SerologyScoringInfo(SeroSubtype, SerologyEntries);
 
@@ -86,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
                 scoringInfo);
         }
 
-        private static IHlaLookupResult BuildExpectedSingleAlleleLookupResult(string alleleName)
+        private static IHlaLookupResult BuildSingleAlleleLookupResult(string alleleName)
         {
             return new HlaScoringLookupResult(
                 MatchedLocus,
@@ -96,7 +99,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             );
         }
 
-        private static IHlaLookupResult BuildExpectedMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
+        private static IHlaLookupResult BuildMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
         {
             return new HlaScoringLookupResult(
                 MatchedLocus,
@@ -106,20 +109,19 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             );
         }
 
-        private static IHlaLookupResult BuildExpectedXxCodeLookupResult(IEnumerable<string> alleleNames)
+        private static IHlaLookupResult BuildXxCodeLookupResult(IEnumerable<string> alleleNames, string xxCodeLookupName)
         {
             var alleleNamesCollection = alleleNames.ToList();
 
             return new HlaScoringLookupResult(
                 MatchedLocus,
-                XxCodeLookupName,
+                xxCodeLookupName,
                 LookupResultCategory.XxCode,
                 new XxCodeScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries)
             );
         }
 
-        private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfo(
-            string alleleName)
+        private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfo(string alleleName)
         {
             return new SingleAlleleScoringInfo(
                 alleleName,
