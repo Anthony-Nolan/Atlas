@@ -13,6 +13,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         IHlaScoringInfo,
         IEquatable<SingleAlleleScoringInfo>
     {
+        // Shortened property names are used when serialising the object for storage
+        // to reduce the total row size
+
         [JsonProperty("name")]
         public string AlleleName { get; }
 
@@ -51,8 +54,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             return new SingleAlleleScoringInfo(
                 alleleSource.TypingForHlaLookupResult.Name,
                 alleleSource.TypingForHlaLookupResult.Status,
-                alleleSource.MatchingPGroups.FirstOrDefault(),
-                alleleSource.MatchingGGroups.FirstOrDefault(),
+                alleleSource.MatchingPGroups.SingleOrDefault(),
+                alleleSource.MatchingGGroups.SingleOrDefault(),
                 alleleSource.MatchingSerologies.ToSerologyEntries()
             );
         }

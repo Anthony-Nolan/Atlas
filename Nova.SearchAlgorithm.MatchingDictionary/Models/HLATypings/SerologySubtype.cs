@@ -2,7 +2,8 @@
 {
     public enum SerologySubtype
     {
-        // enum values stored in db; do not change!
+        // Enum values stored in db; changing values will require rebuild
+        // of the matching dictionary.
         NotSerologyTyping = 0,
         Broad = 1,
         Split = 2,

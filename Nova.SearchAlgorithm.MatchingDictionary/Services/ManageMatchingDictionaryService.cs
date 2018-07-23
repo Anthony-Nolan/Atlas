@@ -62,7 +62,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 .ToList();
 
             // Matching dictionary lookups require an up-to-date collection of allele names,
-            // so both collections must be recreated together; the order of execution is not important.
+            // so all collections must be recreated together; the order of execution is not important.
+
+            // TODO: NOVA-1477 - Investigate why these tasks are not being executed in parallel.
             await Task.WhenAll(
                 RecreateAlleleNames(),
                 RecreateHlaMatchingLookupData(precalculatedMatchedHla),

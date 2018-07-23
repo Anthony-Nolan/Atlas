@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
             Fields = GetFields();
             TwoFieldName = BuildAlleleNameAndAddExpressionSuffix(2);
-            FirstField = Fields.ElementAt(0);
+            FirstField = Fields.First();
             NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
         }
 
