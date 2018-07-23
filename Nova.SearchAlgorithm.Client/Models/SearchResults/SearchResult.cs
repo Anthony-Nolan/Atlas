@@ -39,14 +39,12 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         public int MatchRank { get; set; }
 
         /// <summary>
-        /// The match grade according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the aggregate relative match grade across all loci, according to the scoring algorithm
         /// </summary>
         public int TotalMatchGradeScore { get; set; }
 
         /// <summary>
-        /// The match confidence according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the aggregate relative match confidence across all loci, according to the scoring algorithm
         /// </summary>
         public int TotalMatchConfidenceScore { get; set; }
 

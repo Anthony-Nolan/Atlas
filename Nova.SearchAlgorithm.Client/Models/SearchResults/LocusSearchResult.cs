@@ -17,14 +17,12 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         public int MatchCount { get; set; }
         
         /// <summary>
-        /// The match grade at this locus, according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm
         /// </summary>
         public int MatchGradeScore { get; set; }
 
         /// <summary>
-        /// The match confidence at this locus, according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the relative match confidence at this locus, according to the scoring algorithm
         /// </summary>
         public int MatchConfidenceScore { get; set; }
 
