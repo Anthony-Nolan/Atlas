@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult donorLookupResult)
         {
             // TODO: NOVA-1446 - Implement
-            return MatchGrade.Mismatch;
+            return MatchGrade.NotCalculated;
         }
     }
 }
