@@ -5,14 +5,14 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
     public interface IGradingCalculator
     {
-        MatchGrade CalculateGrading(
+        MatchGrade CalculateGrade(
             IHlaScoringLookupResult patientLookupResult, 
             IHlaScoringLookupResult donorLookupResult);
     }
 
     public class GradingCalculator: IGradingCalculator
     {
-        public MatchGrade CalculateGrading(
+        public MatchGrade CalculateGrade(
             IHlaScoringLookupResult patientLookupResult, 
             IHlaScoringLookupResult donorLookupResult)
         {
