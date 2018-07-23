@@ -91,7 +91,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                     return xxInfo.MatchingSerologies;
                 case SingleAlleleScoringInfo singleAlleleInfo:
                     return singleAlleleInfo.MatchingSerologies;
-                case AlleleStringScoringInfo multipleAlleleInfo:
+                case MultipleAlleleScoringInfo multipleAlleleInfo:
                     return multipleAlleleInfo.AlleleScoringInfos.SelectMany(alleleInfo => alleleInfo.MatchingSerologies);
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                     return xxInfo.MatchingPGroups;
                 case SingleAlleleScoringInfo singleAlleleInfo:
                     return new List<string> {singleAlleleInfo.MatchingPGroup};
-                case AlleleStringScoringInfo multipleAlleleInfo:
+                case MultipleAlleleScoringInfo multipleAlleleInfo:
                     return multipleAlleleInfo.AlleleScoringInfos.Select(alleleInfo => alleleInfo.MatchingPGroup);
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
@@ -15,8 +14,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public IEnumerable<string> MatchingPGroups { get; }
+        public object HlaInfoToSerialise => MatchingPGroups;
 
-        [JsonConstructor]
         public HlaMatchingLookupResult(
             MatchLocus matchLocus,
             string lookupName,
@@ -27,32 +26,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
             LookupName = lookupName;
             TypingMethod = typingMethod;
             MatchingPGroups = matchingPGroups;
-        }
-
-        public HlaMatchingLookupResult(IMatchingDictionarySource<SerologyTyping> serologySource)
-        {
-            MatchLocus = serologySource.TypingForMatchingDictionary.MatchLocus;
-            LookupName = serologySource.TypingForMatchingDictionary.Name;
-            TypingMethod = TypingMethod.Serology;
-            MatchingPGroups = serologySource.MatchingPGroups;
-        }
-
-        public HlaMatchingLookupResult(IMatchingDictionarySource<AlleleTyping> alleleSource, string lookupName)
-        {
-            MatchLocus = alleleSource.TypingForMatchingDictionary.MatchLocus;
-            LookupName = lookupName;
-            TypingMethod = TypingMethod.Molecular;
-            MatchingPGroups = alleleSource.MatchingPGroups;
-        }
-
-        public HlaMatchingLookupResult(MatchLocus matchLocus, string lookupName, IEnumerable<HlaMatchingLookupResult> lookupResults)
-        {
-            var entriesList = lookupResults.ToList();
-
-            MatchLocus = matchLocus;
-            LookupName = lookupName;
-            TypingMethod = TypingMethod.Molecular;
-            MatchingPGroups = entriesList.SelectMany(p => p.MatchingPGroups).Distinct();
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()

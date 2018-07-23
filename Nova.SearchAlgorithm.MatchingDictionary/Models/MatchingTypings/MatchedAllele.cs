@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
-    public class MatchedAllele : IMatchedHla, IMatchingDictionarySource<AlleleTyping>
+    public class MatchedAllele : IMatchedHla, IHlaLookupResultSource<AlleleTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<SerologyTyping> MatchingSerologies { get; }
         public IEnumerable<SerologyMappingForAllele> AlleleToSerologyMappings { get; }
-        public AlleleTyping TypingForMatchingDictionary => (AlleleTyping) HlaTyping;
+        public AlleleTyping TypingForHlaLookupResult => (AlleleTyping) HlaTyping;
 
         public MatchedAllele(IAlleleInfoForMatching matchedAllele, IEnumerable<SerologyMappingForAllele> alleleToSerologyMappings)
         {

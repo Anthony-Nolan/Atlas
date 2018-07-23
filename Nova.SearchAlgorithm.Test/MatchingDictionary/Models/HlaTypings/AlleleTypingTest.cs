@@ -73,6 +73,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             actualAlleleTyping.TwoFieldName.Should().Be(expectedTwoFieldName);
         }
 
+        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFirstField))]
+        public void AlleleTyping_WhenNew_FirstFieldSetCorrectly(object[] alleleToTest, string expectedFirstField)
+        {
+            var actualAlleleTyping = GetActualAlleleTyping(alleleToTest);
+
+            actualAlleleTyping.FirstField.Should().Be(expectedFirstField);
+        }
+
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedAlleleNameVariants))]
         public void AlleleTyping_WhenNew_AlleleNameVariantsSetCorrectly(object[] alleleToTest, IEnumerable<string> expectedAlleleNameVariants)
         {

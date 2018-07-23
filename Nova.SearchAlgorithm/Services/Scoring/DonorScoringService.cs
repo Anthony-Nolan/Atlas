@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
                 return null;
             }
 
-            return await hlaScoringLookupService.GetHlaScoringLookupResults(locus.ToMatchLocus(), hla);
+            return await hlaScoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), hla);
         }
     }
 }

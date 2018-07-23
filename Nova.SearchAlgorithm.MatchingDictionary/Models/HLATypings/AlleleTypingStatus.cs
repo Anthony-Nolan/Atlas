@@ -1,24 +1,35 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
     public enum SequenceStatus
     {
-        Unknown,
-        Partial,
-        Full
+        // Enum values stored in db; changing values will require rebuild
+        // of the matching dictionary.
+        Unknown = 0,
+        Partial = 1,
+        Full = 2
     }
 
     public enum DnaCategory
     {
-        Unknown,
-        CDna,
-        GDna
+        // Enum values stored in db; changing values will require rebuild
+        // of the matching dictionary.
+        Unknown = 0,
+        CDna = 1,
+        GDna = 2
     }
 
     public class AlleleTypingStatus : IEquatable<AlleleTypingStatus>
     {
+        // Shortened property names are used when serialising the object for storage
+        // to reduce the total row size
+
+        [JsonProperty("seq")]
         public SequenceStatus SequenceStatus { get; }
+
+        [JsonProperty("dna")]
         public DnaCategory DnaCategory { get; }
 
         public AlleleTypingStatus(SequenceStatus sequenceStatus, DnaCategory dnaCategory)

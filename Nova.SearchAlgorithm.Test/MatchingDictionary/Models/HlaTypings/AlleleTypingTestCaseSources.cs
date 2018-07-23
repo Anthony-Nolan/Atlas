@@ -100,6 +100,19 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             new object[] {NullExpressedAllele, TwoFieldName + "N" }
         };
 
+        public static readonly object[] ExpectedFirstField =
+        {
+            new object[] {NormallyExpressedFourFieldAllele, FieldValue},
+            new object[] {NormallyExpressedThreeFieldAllele, FieldValue},
+            new object[] {NormallyExpressedTwoFieldAllele, FieldValue},
+            new object[] {LowExpressedAllele, FieldValue},
+            new object[] {QuestionableExpressedAllele, FieldValue},
+            new object[] {SecretedExpressedAllele, FieldValue},
+            new object[] {AberrantExpressedAllele, FieldValue},
+            new object[] {CytoplasmicExpressedAllele, FieldValue},
+            new object[] {NullExpressedAllele, FieldValue}
+        };
+
         public static readonly object[] ExpectedAlleleNameVariants =
         {
             new object[] {NormallyExpressedFourFieldAllele, new[] { TwoFieldName, ThreeFieldName }},
