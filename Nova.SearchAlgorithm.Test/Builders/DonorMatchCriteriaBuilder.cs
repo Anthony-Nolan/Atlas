@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Builders
 {
     public class DonorMatchCriteriaBuilder
     {
-        private AlleleLevelMatchCriteria request = new AlleleLevelMatchCriteria()
+        private readonly AlleleLevelMatchCriteria request = new AlleleLevelMatchCriteria()
         {
             RegistriesToSearch = new List<RegistryCode> {
                 RegistryCode.AN, RegistryCode.DKMS, RegistryCode.FRANCE, RegistryCode.NHSBT, RegistryCode.NMDP, RegistryCode.WBS
