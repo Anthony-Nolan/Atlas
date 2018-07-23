@@ -63,8 +63,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 ? results.First()
                 : GetMultipleAlleleLookupResult(matchLocus, lookupName, results);
 
-            lookupResult.HlaTypingCategory = HlaTypingCategory;
-
             return lookupResult;
         }
 
