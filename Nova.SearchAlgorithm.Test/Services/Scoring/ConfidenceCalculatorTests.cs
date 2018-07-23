@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
-using Nova.HLAService.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
@@ -12,6 +7,9 @@ using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring
 {
