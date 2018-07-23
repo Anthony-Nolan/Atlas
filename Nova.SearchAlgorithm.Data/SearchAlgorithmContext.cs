@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Reflection;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
@@ -42,6 +43,8 @@ namespace Nova.SearchAlgorithm.Data
         {
             var assembly = Assembly.GetExecutingAssembly();
 
+            modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
+            modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
             modelBuilder.Configurations.AddFromAssembly(assembly);
             base.OnModelCreating(modelBuilder);
         }
