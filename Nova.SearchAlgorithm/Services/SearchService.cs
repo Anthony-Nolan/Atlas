@@ -38,17 +38,16 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
-            var criteria = await MapSearchRequestToAlleleLevelMatchCriteria(searchRequest);
+            var criteria = await GetMatchCriteria(searchRequest);
+            var patientHla = GetPatientHla(searchRequest);
 
-            var matches = await donorMatchingService.Search(criteria);
-
-            var patientHla = GetPatientHlaFromSearchRequest(searchRequest);
-            var scoredMatches = await donorScoringService.Score(patientHla, matches);
+            var matches = await donorMatchingService.GetMatches(criteria);
+            var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla);
             
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
-        private async Task<AlleleLevelMatchCriteria> MapSearchRequestToAlleleLevelMatchCriteria(SearchRequest searchRequest)
+        private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(SearchRequest searchRequest)
         {
             var matchCriteria = searchRequest.MatchCriteria;
             var criteriaMappings = await Task.WhenAll(
@@ -91,7 +90,7 @@ namespace Nova.SearchAlgorithm.Services
             };
         }
 
-        private static PhenotypeInfo<string> GetPatientHlaFromSearchRequest(SearchRequest searchRequest)
+        private static PhenotypeInfo<string> GetPatientHla(SearchRequest searchRequest)
         {
             var hlaData = searchRequest.SearchHlaData;
             return new PhenotypeInfo<string>
@@ -116,8 +115,8 @@ namespace Nova.SearchAlgorithm.Services
                 DonorId = result.MatchResult.Donor.DonorId,
                 DonorType = result.MatchResult.Donor.DonorType,
                 Registry = result.MatchResult.Donor.RegistryCode,
-                TotalMatchConfidenceScore = result.ScoreResult.TotalMatchConfidenceScore,
-                TotalMatchGradeScore = result.ScoreResult.TotalMatchGradeScore,
+                ConfidenceScore = result.ScoreResult.ConfidenceScore,
+                GradeScore = result.ScoreResult.GradeScore,
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
                 TypedLociCount = result.MatchResult.TypedLociCount,
                 SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),

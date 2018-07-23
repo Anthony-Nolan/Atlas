@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var result1 = new MatchResultBuilder().Build();
             var result2 = new MatchResultBuilder().Build();
 
-            await donorScoringService.Score(patientHla, new[] {result1, result2});
+            await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
 
             await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<MatchLocus>(), Arg.Any<string>());
         }
@@ -87,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 .WithHlaAtLocus(locus, null)
                 .Build();
 
-            await donorScoringService.Score(patientHla, new[] {result1});
+            await donorScoringService.ScoreMatchesAgainstHla(new[] {result1}, patientHla);
 
             await scoringLookupService.DidNotReceive().GetHlaLookupResult(locus.ToMatchLocus(), Arg.Is<string>(s => s != patientHlaAtLocus));
         }
@@ -100,19 +100,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var patientHla = new PhenotypeInfo<string>
             {
-                A_1 = "hla",
-                A_2 = "hla",
-                B_1 = "hla",
-                B_2 = "hla",
-                C_1 = "hla",
-                C_2 = "hla",
-                DRB1_1 = "hla",
-                DRB1_2 = "hla",
-                DQB1_1 = "hla",
-                DQB1_2 = "hla",
+                A_1 = "hla-a-1",
+                A_2 = "hla-a-2",
+                B_1 = "hla-b-1",
+                B_2 = "hla-b-2",
+                C_1 = "hla-c-1",
+                C_2 = "hla-c-2",
+                DRB1_1 = "hla-drb1-1",
+                DRB1_2 = "hla-drb1-2",
+                DQB1_1 = "hla-dqb1-1",
+                DQB1_2 = "hla-dqb1-2",
             };
 
-            await donorScoringService.Score(patientHla, new List<MatchResult>());
+            await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
 
             await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<MatchLocus>(), Arg.Any<string>());
         }
@@ -122,11 +122,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var patientHla = new PhenotypeInfo<string>
             {
-                A_1 = "hla",
-                A_2 = "hla",
+                A_1 = "hla-1",
+                A_2 = "hla-2",
             };
 
-            await donorScoringService.Score(patientHla, new List<MatchResult>());
+            await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
 
             await scoringLookupService.DidNotReceive().GetHlaLookupResult(Locus.B.ToMatchLocus(), Arg.Any<string>());
         }
@@ -136,7 +136,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var matchResult = new MatchResultBuilder().Build();
 
-            var results = await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult});
+            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>());
 
             results.First().MatchResult.ShouldBeEquivalentTo(matchResult);
         }
@@ -144,21 +144,22 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public async Task Score_ReturnsMatchGradeForMatchResults()
         {
-            const MatchGrade expectedMatchGrade = MatchGrade.GGroup;
+            const MatchGrade expectedMatchGradeAtA1 = MatchGrade.GGroup;
+            const MatchGrade expectedMatchGradeAtB2 = MatchGrade.Protein;
 
             var matchResult = new MatchResultBuilder().Build();
 
             var matchGrades = defaultMatchGradeResults;
-            matchGrades.A_1 = new MatchGradeResult {GradeResult = expectedMatchGrade};
-            matchGrades.B_2 = new MatchGradeResult {GradeResult = expectedMatchGrade};
+            matchGrades.A_1 = new MatchGradeResult {GradeResult = expectedMatchGradeAtA1};
+            matchGrades.B_2 = new MatchGradeResult {GradeResult = expectedMatchGradeAtB2};
 
-            gradingService.CalculateGrades(null, null)
-                .ReturnsForAnyArgs(matchGrades);
+            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
 
-            var results = (await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult})).ToList();
+            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
 
-            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGrade.Should().Be(expectedMatchGrade);
-            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchGrade.Should().Be(expectedMatchGrade);
+            // Check across multiple loci and positions
+            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGrade.Should().Be(expectedMatchGradeAtA1);
+            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchGrade.Should().Be(expectedMatchGradeAtB2);
         }
 
         [Test]
@@ -167,7 +168,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var matchResult1 = new MatchResultBuilder().Build();
             var matchResult2 = new MatchResultBuilder().Build();
 
-            await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult1, matchResult2});
+            await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1, matchResult2}, new PhenotypeInfo<string>());
 
             gradingService.ReceivedWithAnyArgs(2).CalculateGrades(null, null);
         }
@@ -175,49 +176,84 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public async Task Score_ReturnsMatchGradeScoreForMatchResults()
         {
-            const int expectedMatchGradeScore = 190;
+            const MatchGrade matchGradeAtA1 = MatchGrade.GGroup;
+            const MatchGrade matchGradeAtB2 = MatchGrade.Protein;
+            
+            const int expectedMatchGradeScoreAtA1 = 190;
+            const int expectedMatchGradeScoreAtB2 = 87;
 
             var matchResult = new MatchResultBuilder().Build();
-            matchScoreCalculator.CalculateScoreForMatchGrade(Arg.Any<MatchGrade>()).Returns(expectedMatchGradeScore);
             
-            var results = (await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult})).ToList();
+            var matchGrades = defaultMatchGradeResults;
+            matchGrades.A_1 = new MatchGradeResult {GradeResult = matchGradeAtA1};
+            matchGrades.B_2 = new MatchGradeResult {GradeResult = matchGradeAtB2};
+            
+            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
+            matchScoreCalculator
+                .CalculateScoreForMatchGrade(Arg.Is<MatchGrade>(a => a == matchGradeAtA1))
+                .Returns(expectedMatchGradeScoreAtA1);
+            matchScoreCalculator
+                .CalculateScoreForMatchGrade(Arg.Is<MatchGrade>(a => a == matchGradeAtB2))
+                .Returns(expectedMatchGradeScoreAtB2);
+            
+            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
 
-            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGradeScore.Should().Be(expectedMatchGradeScore);
-            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchGradeScore.Should().Be(expectedMatchGradeScore);
+            // Check across multiple loci and positions
+            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGradeScore.Should().Be(expectedMatchGradeScoreAtA1);
+            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchGradeScore.Should().Be(expectedMatchGradeScoreAtB2);
         }
 
         [Test]
         public async Task Score_ReturnsMatchConfidenceForMatchResults()
         {
-            const MatchConfidence expectedMatchConfidence = MatchConfidence.Mismatch;
+            const MatchConfidence expectedMatchConfidenceAtA1 = MatchConfidence.Mismatch;
+            const MatchConfidence expectedMatchConfidenceAtB2 = MatchConfidence.Potential;
 
             var matchResult = new MatchResultBuilder().Build();
 
             confidenceService.CalculateMatchConfidences(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
                 {
-                    A_1 = expectedMatchConfidence,
-                    B_2 = expectedMatchConfidence,
+                    A_1 = expectedMatchConfidenceAtA1,
+                    B_2 = expectedMatchConfidenceAtB2,
                 });
 
-            var results = (await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult})).ToList();
+            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
 
-            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidence.Should().Be(expectedMatchConfidence);
-            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchConfidence.Should().Be(expectedMatchConfidence);
+            // Check across multiple loci and positions
+            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidence.Should().Be(expectedMatchConfidenceAtA1);
+            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchConfidence.Should().Be(expectedMatchConfidenceAtB2);
         }
 
         [Test]
         public async Task Score_ReturnsMatchConfidenceScoreForMatchResults()
         {
-            const int expectedMatchConfidenceScore = 7;
-
-            var matchResult = new MatchResultBuilder().Build();
-            matchScoreCalculator.CalculateScoreForMatchConfidence(Arg.Any<MatchConfidence>()).Returns(expectedMatchConfidenceScore);
+            const MatchConfidence matchConfidenceAtA1 = MatchConfidence.Mismatch;
+            const MatchConfidence matchConfidenceAtB2 = MatchConfidence.Potential;
             
-            var results = (await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult})).ToList();
+            const int expectedMatchConfidenceScoreAtA1 = 7;
+            const int expectedMatchConfidenceScoreAtB2 = 340;
+            
+            confidenceService.CalculateMatchConfidences(null, null, null)
+                .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
+                {
+                    A_1 = matchConfidenceAtA1,
+                    B_2 = matchConfidenceAtB2,
+                });
+            
+            var matchResult = new MatchResultBuilder().Build();
+            matchScoreCalculator
+                .CalculateScoreForMatchConfidence(Arg.Is<MatchConfidence>(a => a == matchConfidenceAtA1))
+                .Returns(expectedMatchConfidenceScoreAtA1);
+            matchScoreCalculator
+                .CalculateScoreForMatchConfidence(Arg.Is<MatchConfidence>(a => a == matchConfidenceAtB2))
+                .Returns(expectedMatchConfidenceScoreAtB2);
+            
+            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
 
-            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidenceScore.Should().Be(expectedMatchConfidenceScore);
-            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchConfidenceScore.Should().Be(expectedMatchConfidenceScore);
+            // Check across multiple loci and positions
+            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidenceScore.Should().Be(expectedMatchConfidenceScoreAtA1);
+            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchConfidenceScore.Should().Be(expectedMatchConfidenceScoreAtB2);
         }
 
         [Test]
@@ -226,7 +262,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var matchResult1 = new MatchResultBuilder().Build();
             var matchResult2 = new MatchResultBuilder().Build();
 
-            await donorScoringService.Score(new PhenotypeInfo<string>(), new[] {matchResult1, matchResult2});
+            await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1, matchResult2}, new PhenotypeInfo<string>());
 
             confidenceService.ReceivedWithAnyArgs(2).CalculateMatchConfidences(null, null, null);
         }
@@ -237,7 +273,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             var expectedSortedResults = new List<MatchAndScoreResult> {new MatchAndScoreResultBuilder().Build()};
             rankingService.RankSearchResults(null).ReturnsForAnyArgs(expectedSortedResults);
 
-            var results = await donorScoringService.Score(new PhenotypeInfo<string>(), new List<MatchResult>());
+            var results = await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), new PhenotypeInfo<string>());
 
             results.Should().BeEquivalentTo(expectedSortedResults);
         }
