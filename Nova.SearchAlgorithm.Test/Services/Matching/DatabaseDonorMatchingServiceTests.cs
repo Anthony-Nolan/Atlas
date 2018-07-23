@@ -135,6 +135,33 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().NotContain(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId);
+        }  
+        
+        [Test]
+        public async Task FindMatchesForLoci_WhenMatchesRequiredAtMultipleLoci_DoesNotReturnDonorWithMatchAtOnlyOneLocus()
+        {
+            var criteria = criteriaBuilder
+                .WithLocusMismatchA(PGroupA1, PGroupA2, 0)
+                .WithLocusMismatchB(PGroupB, PGroupB, 0)
+                .Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.Should().NotContain(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId);
+        }
+        
+        [Test]
+        public async Task FindMatchesForLoci_WhenMatchesRequiredAtMultipleLoci_ReturnDonorWithMatchAtAllLoci()
+        {
+            var criteria = criteriaBuilder
+                .WithLocusMismatchA(PGroupA1, PGroupA2, 0)
+                .WithLocusMismatchB(PGroupB, PGroupB, 0)
+                .WithLocusMismatchDRB1(PGroupDrb1, PGroupDrb1, 0)
+                .Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.Should().Contain(d => d.DonorId == donor_ExactMatch_AtLocusA.DonorId);
         }
 
         [Test]
