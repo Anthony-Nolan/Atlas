@@ -255,5 +255,25 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             results.Should().Contain(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId);
         }
+        
+        [Test]
+        public async Task FindMatchesForLoci_ForMatchingDonor_ReturnsIsLocusTypedTrue()
+        {
+            var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.First(d => d.DonorId == donor_ExactMatch_AtLocusA.DonorId).MatchDetailsForLocus(Locus.A).IsLocusTyped.Should().Be(true);
+        }        
+        
+        [Test]
+        public async Task FindMatchesForLoci_ForNonMatchingDonor_ReturnsIsLocusTypedTrue()
+        {
+            var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.First(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId).MatchDetailsForLocus(Locus.A).IsLocusTyped.Should().Be(true);
+        }
     }
 }
