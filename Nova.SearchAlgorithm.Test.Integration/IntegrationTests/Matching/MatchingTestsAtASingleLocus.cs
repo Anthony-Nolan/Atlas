@@ -140,14 +140,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHomozygousMatchesAtLocus()
         {
-            var results = await matchingService.Search(GetDefaultCriteriaBuilder().Build());
+            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHeterozygousMatchesAtLocus()
         {
-            var results = await matchingService.Search(GetDefaultCriteriaBuilder().Build());
+            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
         }
@@ -155,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
-            var results = await matchingService.Search(GetDefaultCriteriaBuilder().Build());
+            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
             results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
@@ -173,7 +173,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
@@ -191,7 +191,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
         }
 
@@ -207,7 +207,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }
 
@@ -223,7 +223,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().NotContain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
         }
 
@@ -239,7 +239,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
         }
 
@@ -255,7 +255,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
@@ -273,7 +273,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
                 })
                 .Build();
-            var results = await matchingService.Search(criteria);
+            var results = await matchingService.GetMatches(criteria);
             results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }

@@ -146,14 +146,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\LocusSearchHla.cs" />
-    <Compile Include="Models\SearchHlaData.cs" />
-    <Compile Include="Models\LocusSearchResult.cs" />
-    <Compile Include="Models\SearchResult.cs" />
-    <Compile Include="Models\LocusMismatchCriteria.cs" />
-    <Compile Include="Models\MismatchCriteria.cs" />
-    <Compile Include="Models\SearchRequest.cs" />
-    <Compile Include="Models\SearchResultSet.cs" />
+    <Compile Include="Models\SearchRequests\LocusMismatchCriteria.cs" />
+    <Compile Include="Models\SearchRequests\LocusSearchHla.cs" />
+    <Compile Include="Models\SearchRequests\MismatchCriteria.cs" />
+    <Compile Include="Models\SearchRequests\SearchHlaData.cs" />
+    <Compile Include="Models\SearchRequests\SearchRequest.cs" />
+    <Compile Include="Models\SearchResults\LocusSearchResult.cs" />
+    <Compile Include="Models\SearchResults\LoucsPositionSearchResult.cs" />
+    <Compile Include="Models\SearchResults\SearchResult.cs" />
+    <Compile Include="Models\SearchResults\SearchResultSet.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

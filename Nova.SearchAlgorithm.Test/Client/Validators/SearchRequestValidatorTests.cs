@@ -2,6 +2,7 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Common.Models;
 using NUnit.Framework;
 
