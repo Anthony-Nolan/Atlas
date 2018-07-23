@@ -104,7 +104,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 scoringInfo
                 );
 
-            return new HlaLookupTableEntity(lookupResult, lookupResult.HlaScoringInfo)
+            return new HlaLookupTableEntity(lookupResult)
             {
                 LookupResultCategoryAsString = LookupResultCategory.OriginalAllele.ToString()
             };

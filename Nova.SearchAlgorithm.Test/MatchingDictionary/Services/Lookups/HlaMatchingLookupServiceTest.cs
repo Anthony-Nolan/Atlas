@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 new List<string> { alleleName }
                 );
 
-            return new HlaLookupTableEntity(lookupResult, lookupResult.MatchingPGroups);
+            return new HlaLookupTableEntity(lookupResult);
         }
     }
 }

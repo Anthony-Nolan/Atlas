@@ -15,9 +15,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public TypingMethod TypingMethod => LookupResultCategory == LookupResultCategory.Serology
             ? TypingMethod.Serology
             : TypingMethod.Molecular;
-        
+
         public LookupResultCategory LookupResultCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
+        public object HlaInfoToSerialise => HlaScoringInfo;
         public HlaTypingCategory HlaTypingCategory { get; set; }
 
         public HlaScoringLookupResult(
