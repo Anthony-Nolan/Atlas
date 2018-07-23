@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
-namespace Nova.SearchAlgorithm.Services.Scoring
+namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
     public interface IGradingService
     {
@@ -13,12 +13,19 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 
     public class GradingService : IGradingService
     {
+        private readonly IGradingCalculator gradingCalculator;
+
+        public GradingService(IGradingCalculator gradingCalculator)
+        {
+            this.gradingCalculator = gradingCalculator;
+        }
+
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
             // TODO: NOVA-1446: Implement
-            throw new System.NotImplementedException();
+            return new PhenotypeInfo<MatchGradeResult>();
         }
     }
 }
