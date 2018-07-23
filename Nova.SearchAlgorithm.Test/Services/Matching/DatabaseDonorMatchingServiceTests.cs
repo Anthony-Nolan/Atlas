@@ -29,6 +29,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
         private readonly DonorResult donor_OnePositionMatchesBothPatientPositions_AtLocusA =
             new DonorResult {DonorId = 3, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+        
+        private readonly DonorResult donor_NoMatch_AtLocusA =
+            new DonorResult {DonorId = 4, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
         private IDatabaseDonorMatchingService donorMatchingService;
 
@@ -59,6 +62,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
                 HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
                 HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupB),
             });
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.Drb1, Arg.Any<LocusSearchCriteria>()).Returns(new List<PotentialHlaMatchRelation>
@@ -69,6 +74,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
                 HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
                 HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupDrb1),
             });
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
@@ -119,6 +126,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             results.Should().NotContain(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId);
         }
+        
+        [Test]
+        public async Task FindMatchesForLoci_WhenTwoMatchesRequired_DoesNotReturnDonorWithNoMatch()
+        {
+            var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.Should().NotContain(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId);
+        }
 
         [Test]
         public async Task FindMatchesForLoci_WhenOneMatchRequired_ReturnsExactMatchDonor()
@@ -145,7 +162,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         }
 
         [Test]
-        public async Task FindMatchesForLoci_WhenOneMatcheRequired_ReturnsSingleMatchDonorOnMatchSide()
+        public async Task FindMatchesForLoci_WhenOneMatchRequired_ReturnsSingleMatchDonorOnMatchSide()
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
@@ -154,6 +171,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             results.Should().Contain(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId);
             results.Single(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId).MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(1);
             results.Single(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId).TotalMatchCount.Should().Be(5);
+        }
+        
+        [Test]
+        public async Task FindMatchesForLoci_WhenOneMatchRequired_DoesNotReturnDonroWithNoMatch()
+        {
+            var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.Should().NotContain(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId);
         }
 
         [Test]
@@ -190,6 +217,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             results.Should().Contain(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId);
             results.Single(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId).MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(1);
             results.Single(d => d.DonorId == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId).TotalMatchCount.Should().Be(5);
+        }
+        
+        [Test]
+        public async Task FindMatchesForLoci_WhenNoMatchRequired_ReturnsDonorWithNoMatch()
+        {
+            var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
+
+            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+
+            results.Should().Contain(d => d.DonorId == donor_NoMatch_AtLocusA.DonorId);
         }
     }
 }
