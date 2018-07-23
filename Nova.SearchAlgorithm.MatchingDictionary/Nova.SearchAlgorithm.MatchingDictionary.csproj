@@ -197,14 +197,15 @@
     <Compile Include="Models\HLATypings\MolecularSubtype.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
-    <Compile Include="Models\AlleleNames\AlleleNameEntry.cs" />
-    <Compile Include="Models\MatchingDictionary\IPreCalculatedHlaInfo.cs" />
-    <Compile Include="Models\MatchingDictionary\IHlaLookupResult.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\AlleleScoringInfo.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\HlaScoringLookupResult.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\IHlaScoringLookupResult.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\IPreCalculatedScoringInfo.cs" />
-    <Compile Include="Models\MatchingDictionary\ScoringLookup\SerologyScoringInfo.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\AlleleStringScoringInfo.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\SingleAlleleScoringInfo.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\XxCodeScoringInfo.cs" />
+    <Compile Include="Models\Lookups\AlleleNameLookup\AlleleNameLookupResult.cs" />
+    <Compile Include="Models\Lookups\IHlaLookupResult.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\HlaScoringLookupResult.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\IHlaScoringLookupResult.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\IHlaScoringInfo.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\SerologyScoringInfo.cs" />
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
@@ -212,10 +213,11 @@
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Repositories\AzureStorage\AlleleNameTableEntity.cs" />
-    <Compile Include="Repositories\AzureStorage\AlleleNameEntityExtensions.cs" />
-    <Compile Include="Repositories\AlleleNamesRepository.cs" />
+    <Compile Include="Repositories\AzureStorage\AlleleNameLookupResultExtensions.cs" />
+    <Compile Include="Repositories\AlleleNamesLookupRepository.cs" />
+    <Compile Include="Repositories\AzureStorage\HlaLookupTableKeyManager.cs" />
     <Compile Include="Repositories\AzureStorage\HlaScoringLookupResultExtensions.cs" />
+    <Compile Include="Repositories\HlaLookupRepositoryBase.cs" />
     <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />
     <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
     <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
@@ -230,9 +232,9 @@
     <Compile Include="Data\WmdaFileDownloader.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
-    <Compile Include="Models\MatchingDictionary\IMatchingDictionarySource.cs" />
-    <Compile Include="Models\MatchingDictionary\MatchingLookup\IHlaMatchingLookupResult.cs" />
-    <Compile Include="Models\MatchingDictionary\MatchingLookup\HlaMatchingLookupResult.cs" />
+    <Compile Include="Models\Lookups\IMatchingDictionarySource.cs" />
+    <Compile Include="Models\Lookups\MatchingLookup\IHlaMatchingLookupResult.cs" />
+    <Compile Include="Models\Lookups\MatchingLookup\HlaMatchingLookupResult.cs" />
     <Compile Include="Models\HLATypings\HlaTyping.cs" />
     <Compile Include="Models\HLATypings\MatchLocus.cs" />
     <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
@@ -250,17 +252,17 @@
     <Compile Include="Services\AlleleNames\ReservedAlleleNamesExtractor.cs" />
     <Compile Include="Services\AlleleNamesLookupService.cs" />
     <Compile Include="Services\HlaMatchingLookupService.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\AlleleNamesLookupBase.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\AlleleStringLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\HlaMatchingLookupFactory.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\SerologyLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\NmdpCodeLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\XxCodeLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\SingleAlleleLookup.cs" />
-    <Compile Include="Services\MatchingDictionary\Lookups\HlaMatchingLookupBase.cs" />
-    <Compile Include="Services\MatchingDictionary\MatchedHlaExtensions.cs" />
-    <Compile Include="Models\MatchingDictionary\SerologyEntry.cs" />
-    <Compile Include="Models\MatchingDictionary\SerologyEntryExtensions.cs" />
+    <Compile Include="Services\Lookups\AlleleNamesLookupBase.cs" />
+    <Compile Include="Services\Lookups\AlleleStringLookup.cs" />
+    <Compile Include="Services\Lookups\HlaMatchingLookupFactory.cs" />
+    <Compile Include="Services\Lookups\SerologyLookup.cs" />
+    <Compile Include="Services\Lookups\NmdpCodeLookup.cs" />
+    <Compile Include="Services\Lookups\XxCodeLookup.cs" />
+    <Compile Include="Services\Lookups\SingleAlleleLookup.cs" />
+    <Compile Include="Services\Lookups\HlaMatchingLookupBase.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\MatchedHlaExtensions.cs" />
+    <Compile Include="Models\Lookups\SerologyEntry.cs" />
+    <Compile Include="Models\Lookups\SerologyEntryExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
     <Compile Include="HlaTypingInfo\PermittedLocusNames.cs" />
     <Compile Include="Models\HLATypings\SerologyTyping.cs" />
@@ -319,5 +321,6 @@
       <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

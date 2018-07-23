@@ -1,10 +1,13 @@
 ﻿namespace Nova.SearchAlgorithm.Common.Models.Scoring
 {
+    /// <summary>
+    /// Values for the confidence of a given match. Ordered to allow for selecting the best confidence from a list
+    /// </summary>
     public enum MatchConfidence
     {
-        Definite,
-        Exact,
-        Potential,
-        Mismatch
+        Mismatch = 0,
+        Potential = 1,
+        Exact = 2,
+        Definite = 3
     }
 }

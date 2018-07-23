@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 using NUnit.Framework.Internal;

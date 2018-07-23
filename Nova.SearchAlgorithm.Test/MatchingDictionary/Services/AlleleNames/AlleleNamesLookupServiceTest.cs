@@ -8,7 +8,7 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.AlleleNames;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
@@ -16,36 +16,37 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
     public class AlleleNamesLookupServiceTest
     {
         private IAlleleNamesLookupService lookupService;
-        private IAlleleNamesRepository repository;
+        private IAlleleNamesLookupRepository lookupRepository;
         private IHlaCategorisationService hlaCategorisationService;
         private const MatchLocus MatchedLocus = MatchLocus.A;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            repository = Substitute.For<IAlleleNamesRepository>();
+            lookupRepository = Substitute.For<IAlleleNamesLookupRepository>();
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
-            lookupService = new AlleleNamesLookupService(repository, hlaCategorisationService);
+            lookupService = new AlleleNamesLookupService(lookupRepository, hlaCategorisationService);
         }
 
         [SetUp]
         public void SetupBeforeEachTest()
         {
-            repository.ClearReceivedCalls();
+            lookupRepository.ClearReceivedCalls();
 
-            repository
+            lookupRepository
                 .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>())
-                .Returns(new AlleleNameEntry(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
+                .Returns(new AlleleNameLookupResult(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
         }
 
         [TestCase(null)]
         [TestCase("")]
         public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
         {
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(
+            Assert.ThrowsAsync<MatchingDictionaryException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString));
         }
 
+        [Test]
         public void GetCurrentAlleleNames_WhenNotAlleleTyping_ThrowsException()
         {
             const string notAlleleName = "NOT-AN-ALLELE";
@@ -53,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
             hlaCategorisationService.GetHlaTypingCategory(notAlleleName).Returns(notAlleleTypingCategory);
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(
+            Assert.ThrowsAsync<MatchingDictionaryException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, notAlleleName));
         }
 
@@ -66,7 +67,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
             await lookupService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName);
 
-            await repository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName);
+            await lookupRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName);
         }
     }
 }

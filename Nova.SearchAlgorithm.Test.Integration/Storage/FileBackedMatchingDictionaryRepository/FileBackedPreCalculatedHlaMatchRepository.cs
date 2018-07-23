@@ -1,12 +1,14 @@
 ﻿using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository
 {
@@ -20,26 +22,43 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
 
         private static IEnumerable<RawMatchingHla> ReadJsonFromFile()
         {
-            System.Reflection.Assembly assem = System.Reflection.Assembly.GetExecutingAssembly();
-            using (Stream stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.matching_hla.json"))
+            var assem = System.Reflection.Assembly.GetExecutingAssembly();
+            using (var stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.matching_hla.json"))
             {
-                using (StreamReader reader = new StreamReader(stream))
+                using (var reader = new StreamReader(stream))
                 {
-                    return JsonConvert.DeserializeObject<IEnumerable<RawMatchingHla>> (reader.ReadToEnd());
+                    return JsonConvert.DeserializeObject<IEnumerable<RawMatchingHla>>(reader.ReadToEnd());
                 }
             }
         }
 
-        public Task RecreateHlaMatchingLookupTable(IEnumerable<HlaMatchingLookupResult> dictionaryContents)
+        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, IEnumerable<string> partitions)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
+        public Task LoadDataIntoMemory()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults)
+        {
+            // No operation needed
+            return Task.CompletedTask;
+        }
+
+        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        {
+            // Not used by any tests
+            return Task.FromResult(new HlaLookupTableEntity(matchLocus, lookupName, typingMethod));
+        }
+
         public Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
             var raw = rawMatchingData.FirstOrDefault(
-                    hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase) 
+                    hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase)
                            && hla.LookupName == lookupName);
 
             if (raw == null)
@@ -50,16 +69,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
             var lookupResult = new HlaMatchingLookupResult(
                 matchLocus,
                 raw.LookupName,
-                TypingMethod.Molecular, // Arbitrary, not used in tests
+                typingMethod,
                 raw.MatchingPGroups
                 );
-            
-            return Task.FromResult(lookupResult);
-        }
 
-        public Task LoadHlaMatchingLookupTableIntoMemory()
-        {
-            return Task.CompletedTask;
+            return Task.FromResult(lookupResult);
         }
 
         public IEnumerable<string> GetAllPGroups()

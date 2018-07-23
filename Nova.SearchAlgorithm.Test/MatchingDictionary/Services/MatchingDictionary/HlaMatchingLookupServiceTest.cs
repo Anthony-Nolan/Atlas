@@ -4,8 +4,8 @@ using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingDictionary.MatchingLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.Utils.ApplicationInsights;
@@ -73,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             const string hlaName = "HLATYPING";
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(category);
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
+            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
         }
 
         [Test]
@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             const string hlaName = "XYZ:123:INVALID";
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Throws(new Exception());
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
+            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
         }
 
         [Test]
@@ -234,7 +234,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             hlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, hlaName)
                 .Returns<Task<List<string>>>(x => throw new Exception());
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
+            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
         }
 
         [Test]
@@ -256,7 +256,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             repository.GetHlaMatchLookupResultIfExists(MatchedLocus, alleleInRepo, TypingMethod.Molecular).Returns(entry);
             repository.GetHlaMatchLookupResultIfExists(MatchedLocus, alleleNotInRepo, TypingMethod.Molecular).ReturnsNull();
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
+            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]
@@ -301,7 +301,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.MatchingDictiona
             repository.GetHlaMatchLookupResultIfExists(MatchedLocus, alleleNotInRepo, TypingMethod.Molecular)
                 .ReturnsNull();
 
-            Assert.ThrowsAsync<MatchingDictionaryHttpException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
+            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await lookupService.GetHlaMatchingLookupResult(MatchedLocus, hlaName));
         }
 
         private static HlaMatchingLookupResult BuildAlleleMatchingLookupResult(string hlaName)

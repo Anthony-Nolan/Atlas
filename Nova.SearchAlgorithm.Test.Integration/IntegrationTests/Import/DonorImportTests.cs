@@ -23,9 +23,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void ResolveSearchRepo()
         {
-            importRepo = container.Resolve<IDonorImportRepository>();
-            inspectionRepo = container.Resolve<IDonorInspectionRepository>();
-            updateService = container.Resolve<IHlaUpdateService>();
+            importRepo = Container.Resolve<IDonorImportRepository>();
+            inspectionRepo = Container.Resolve<IDonorInspectionRepository>();
+            updateService = Container.Resolve<IHlaUpdateService>();
         }
 
         [Test]

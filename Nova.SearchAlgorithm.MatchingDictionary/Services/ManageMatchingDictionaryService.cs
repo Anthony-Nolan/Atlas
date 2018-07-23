@@ -1,8 +1,8 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.MatchingDictionary;
 using System;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -56,8 +56,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private async Task RecreateHlaMatchingLookupData()
         {
             var allMatchedHla = matchPreCalculationService.GetMatchedHla();
-            var entries = allMatchedHla.ToHlaMatchingLookupResult();
-            await hlaMatchingLookupRepository.RecreateHlaMatchingLookupTable(entries);
+            var lookupResults = allMatchedHla.ToHlaMatchingLookupResult();
+            await hlaMatchingLookupRepository.RecreateHlaLookupTable(lookupResults);
         }
     }
 }

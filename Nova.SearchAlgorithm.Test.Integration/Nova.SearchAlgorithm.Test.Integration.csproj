@@ -334,6 +334,7 @@
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
     <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
+    <Compile Include="IntegrationTests\StorageEmulator.cs" />
     <Compile Include="Storage\FileBackedMatchingDictionaryRepository\FileBackedPreCalculatedHlaMatchRepository.cs" />
     <Compile Include="Storage\FileBackedMatchingDictionaryRepository\RawMatchingHla.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />

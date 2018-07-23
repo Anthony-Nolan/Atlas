@@ -138,6 +138,7 @@
     <Compile Include="Models\Scoring\MatchGradeResult.cs" />
     <Compile Include="Models\Scoring\MatchOrientation.cs" />
     <Compile Include="Models\SearchResults\LocusMatchDetails.cs" />
+    <Compile Include="Models\SearchResults\LocusPositionScoreDetails.cs" />
     <Compile Include="Models\SearchResults\LocusScoreDetails.cs" />
     <Compile Include="Models\SearchResults\MatchResult.cs" />
     <Compile Include="Models\SearchResults\ScoreResult.cs" />

@@ -8,7 +8,22 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
 {
-    public abstract class LookupRepositoryBase<TStorable, TTableEntity>
+    /// <summary>
+    /// Generic repository that persists data to a CloudTable
+    /// & also caches it in memory for optimal read-access.
+    /// </summary>
+    /// <typeparam name="TStorable"></typeparam>
+    /// <typeparam name="TTableEntity"></typeparam>
+    public interface ILookupRepository<in TStorable, TTableEntity>
+        where TTableEntity : TableEntity, new()
+        where TStorable : IStorableInCloudTable<TTableEntity>
+    {
+        Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions);
+        Task LoadDataIntoMemory();
+    }
+
+    public abstract class LookupRepositoryBase<TStorable, TTableEntity> :
+        ILookupRepository<TStorable, TTableEntity>
         where TTableEntity : TableEntity, new()
         where TStorable : IStorableInCloudTable<TTableEntity>
     {
@@ -34,14 +49,33 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             this.cacheKey = cacheKey;
         }
 
-        protected abstract IEnumerable<string> GetTablePartitions();
-
-        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions)
+        public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions)
         {
             var newDataTable = CreateNewDataTable();
             InsertIntoDataTable(tableContents, partitions, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tableReferencePrefix, newDataTable.Name);
             cloudTable = null;
+        }
+
+        /// <summary>
+        /// If you plan to use this repository with multiple async operations, this method should be called first
+        /// </summary>
+        public async Task LoadDataIntoMemory()
+        {
+            var currentDataTable = await GetCurrentDataTable();
+            var tableResults = new CloudTableBatchQueryAsync<TTableEntity>(currentDataTable);
+            var dataToLoad = new Dictionary<string, TTableEntity>();
+
+            while (tableResults.HasMoreResults)
+            {
+                var results = await tableResults.RequestNextAsync();
+                foreach (var result in results)
+                {
+                    dataToLoad.Add(result.PartitionKey + result.RowKey, result);
+                }
+            }
+
+            MemoryCache.Set(cacheKey, dataToLoad);
         }
 
         protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey)
@@ -58,27 +92,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
             }
 
             throw new MemoryCacheException($"Failed to load data into the {cacheKey} cache");
-        }
-
-        /// <summary>
-        /// If you plan to use this repository with multiple async operations, this method should be called first
-        /// </summary>
-        protected async Task LoadDataIntoMemory()
-        {
-            var currentDataTable = await GetCurrentDataTable();
-            var tableResults = new CloudTableBatchQueryAsync<TTableEntity>(currentDataTable);
-            var dataToLoad = new Dictionary<string, TTableEntity>();
-
-            while (tableResults.HasMoreResults)
-            {
-                var results = await tableResults.RequestNextAsync();
-                foreach (var result in results)
-                {
-                    dataToLoad.Add(result.PartitionKey + result.RowKey, result);
-                }
-            }
-
-            MemoryCache.Set(cacheKey, dataToLoad);
         }
 
         /// <summary>
