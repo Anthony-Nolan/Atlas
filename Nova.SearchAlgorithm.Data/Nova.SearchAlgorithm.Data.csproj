@@ -170,6 +170,10 @@
     <Compile Include="Migrations\201807031238594_Separate-Matches-By-Locus.Designer.cs">
       <DependentUpon>201807031238594_Separate-Matches-By-Locus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201807161028192_Matches-Table-Id-To-BigInt.cs" />
+    <Compile Include="Migrations\201807161028192_Matches-Table-Id-To-BigInt.Designer.cs">
+      <DependentUpon>201807161028192_Matches-Table-Id-To-BigInt.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\DonorMatch.cs" />
     <Compile Include="Models\DonorMatchWithName.cs" />
     <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
@@ -210,6 +214,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201807031238594_Separate-Matches-By-Locus.resx">
       <DependentUpon>201807031238594_Separate-Matches-By-Locus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807161028192_Matches-Table-Id-To-BigInt.resx">
+      <DependentUpon>201807161028192_Matches-Table-Id-To-BigInt.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

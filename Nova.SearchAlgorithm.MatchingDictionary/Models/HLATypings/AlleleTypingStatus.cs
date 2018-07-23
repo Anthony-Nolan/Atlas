@@ -5,7 +5,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
     public enum SequenceStatus
     {
-        // enum values stored in db; do not change!
+        // Enum values stored in db; changing values will require rebuild
+        // of the matching dictionary.
         Unknown = 0,
         Partial = 1,
         Full = 2
@@ -13,7 +14,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
     public enum DnaCategory
     {
-        // enum values stored in db; do not change!
+        // Enum values stored in db; changing values will require rebuild
+        // of the matching dictionary.
         Unknown = 0,
         CDna = 1,
         GDna = 2
@@ -21,6 +23,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
     public class AlleleTypingStatus : IEquatable<AlleleTypingStatus>
     {
+        // Shortened property names are used when serialising the object for storage
+        // to reduce the total row size
+
         [JsonProperty("seq")]
         public SequenceStatus SequenceStatus { get; }
 

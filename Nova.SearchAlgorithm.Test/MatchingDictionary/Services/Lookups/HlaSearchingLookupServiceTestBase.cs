@@ -14,6 +14,8 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -22,30 +24,28 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         where TService : IHlaSearchingLookupService<TLookupResult>
         where TLookupResult : IHlaLookupResult
     {
-        protected TRepository HlaLookupRepository = Substitute.For<TRepository>();
+        protected TRepository HlaLookupRepository;
         protected IAlleleNamesLookupService AlleleNamesLookupService;
         protected IHlaServiceClient HlaServiceClient;
         protected IHlaCategorisationService HlaCategorisationService;
         protected IAlleleStringSplitterService AlleleStringSplitterService;
+        protected IMemoryCache MemoryCache;
+        protected ILogger Logger;
         protected TService LookupService;
 
         protected const MolecularLocusType MolecularLocus = MolecularLocusType.A;
         protected const MatchLocus MatchedLocus = MatchLocus.A;
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        [SetUp]
+        public void SetUpBeforeEachTest()
         {
             HlaLookupRepository = Substitute.For<TRepository>();
             HlaServiceClient = Substitute.For<IHlaServiceClient>();
             AlleleNamesLookupService = Substitute.For<IAlleleNamesLookupService>();
             HlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             AlleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
-        }
-
-        [SetUp]
-        public void SetupBeforeEachTest()
-        {
-            HlaLookupRepository.ClearReceivedCalls();
+            MemoryCache = Substitute.For<IMemoryCache>();
+            Logger = Substitute.For<ILogger>();
 
             var fakeEntityToPreventInvalidHlaExceptionBeingRaised = BuildTableEntityForSingleAllele("alleleName");
 
@@ -109,12 +109,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 TypingMethod.Molecular);
         }
 
-        [TestCase("99:XX")]
-        [TestCase("*99:XX")]
-        public async Task GetHlaLookupResult_WhenXxCode_LookupTheFirstField(string hlaName)
+        [TestCase("99:XX", "99:XX", "99")]
+        [TestCase("*99:XX", "99:XX", "99")]
+        public async Task GetHlaLookupResult_WhenXxCode_LookupTheFirstField(
+            string hlaName, string lookupName, string firstField)
         {
-            const string firstField = "99";
-            HlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.XxCode);
+            HlaCategorisationService.GetHlaTypingCategory(lookupName).Returns(HlaTypingCategory.XxCode);
 
             await LookupService.GetHlaLookupResult(MatchedLocus, hlaName);
 

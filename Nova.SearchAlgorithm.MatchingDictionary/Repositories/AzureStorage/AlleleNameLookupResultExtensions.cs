@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         internal static HlaLookupTableEntity ToTableEntity(this AlleleNameLookupResult lookupResult)
         {
-            return new HlaLookupTableEntity(lookupResult, lookupResult.CurrentAlleleNames);
+            return new HlaLookupTableEntity(lookupResult);
         }
 
         internal static AlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity entity)

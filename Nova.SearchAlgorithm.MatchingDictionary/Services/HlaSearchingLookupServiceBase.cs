@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
@@ -28,8 +27,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult
     {
-        protected HlaTypingCategory HlaTypingCategory;
-
         private readonly IHlaLookupRepository hlaLookupRepository;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaServiceClient hlaServiceClient;
@@ -69,25 +66,25 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         protected override async Task<THlaLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
         {
-            HlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
-
             return await GetSingleHlaLookupResult(matchLocus, lookupName);
         }
 
         private async Task<THlaLookupResult> GetSingleHlaLookupResult(MatchLocus matchLocus, string lookupName)
         {
-            var dictionaryLookup = GetHlaLookup();
+            var dictionaryLookup = GetHlaLookup(lookupName);
             var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
             var lookupResults = ConvertTableEntitiesToLookupResults(lookupTableEntities);
 
             return ConsolidateHlaLookupResults(matchLocus, lookupName, lookupResults);
         }
 
-        private HlaLookupBase GetHlaLookup()
+        private HlaLookupBase GetHlaLookup(string lookupName)
         {
+            var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
+
             return HlaLookupFactory
                 .GetLookupByHlaTypingCategory(
-                    HlaTypingCategory,
+                    hlaTypingCategory,
                     hlaLookupRepository,
                     alleleNamesLookupService,
                     hlaServiceClient,

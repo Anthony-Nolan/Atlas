@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
 
             var infoForMatching = Substitute.For<ISerologyInfoForMatching>();
             infoForMatching.HlaTyping.Returns(serologyTyping);
-            infoForMatching.MatchingSerologies.Returns(new[] {serologyTyping});
+            infoForMatching.MatchingSerologies.Returns(new[] { serologyTyping });
 
             var matchedSerology = new MatchedSerology(infoForMatching, new List<string>(), new List<string>());
 
@@ -39,13 +39,29 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
 
             var expectedLookupResults = new List<IHlaLookupResult>
             {
-                BuildExpectedSerologyHlaLookupResult()
+                BuildSerologyHlaLookupResult()
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
 
-        protected abstract IHlaLookupResult BuildExpectedSerologyHlaLookupResult();
+        #region Tests To Implement
+
+        public abstract void ConvertToHlaLookupResults_WhenTwoFieldAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
+            string alleleName, string xxCodeLookupName);
+
+        public abstract void ConvertToHlaLookupResults_WhenThreeOrFourFieldAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
+            string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName);
+
+        public abstract void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_GeneratesLookupResult_ForEachUniqueLookupName();
+
+        #endregion
+
+        #region Methods to Implement
+
+        protected abstract IHlaLookupResult BuildSerologyHlaLookupResult();
+
+        #endregion
 
         /// <summary>
         /// Builds a Matched Allele.
@@ -54,10 +70,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         /// </summary>
         protected static MatchedAllele BuildMatchedAllele(string alleleName)
         {
-            var infoForMatching = Substitute.For<IAlleleInfoForMatching>();
-            infoForMatching.HlaTyping.Returns(new AlleleTyping(MatchedLocus, alleleName));
-            infoForMatching.MatchingPGroups.Returns(new[] { alleleName });
-            infoForMatching.MatchingGGroups.Returns(new[] { alleleName });
+            var hlaTyping = new AlleleTyping(MatchedLocus, alleleName);
+            var alleleGroup = new[] {alleleName};
+            var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleGroup, alleleGroup);
 
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
             var serologyMatch = new SerologyMatch(serologyTyping);

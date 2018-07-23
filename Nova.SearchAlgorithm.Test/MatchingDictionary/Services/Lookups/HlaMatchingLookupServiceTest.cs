@@ -1,16 +1,14 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using FluentAssertions;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -18,20 +16,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
     public class HlaMatchingLookupServiceTest : 
         HlaSearchingLookupServiceTestBase<IHlaMatchingLookupRepository, IHlaMatchingLookupService, IHlaMatchingLookupResult>
     {
-        [OneTimeSetUp]
-        public void HlaMatchingLookupServiceTest_OneTimeSetUp()
+        [SetUp]
+        public void HlaMatchingLookupServiceTest_SetUpBeforeEachTest()
         {
-            var memoryCache = Substitute.For<IMemoryCache>();
-            var logger = Substitute.For<ILogger>();
-
             LookupService = new HlaMatchingLookupService(
                 HlaLookupRepository,
                 AlleleNamesLookupService,
                 HlaServiceClient,
                 HlaCategorisationService,
                 AlleleStringSplitterService,
-                memoryCache,
-                logger);
+                MemoryCache,
+                Logger);
         }
 
         [Test]
@@ -99,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 new List<string> { alleleName }
                 );
 
-            return new HlaLookupTableEntity(lookupResult, lookupResult.MatchingPGroups);
+            return new HlaLookupTableEntity(lookupResult);
         }
     }
 }

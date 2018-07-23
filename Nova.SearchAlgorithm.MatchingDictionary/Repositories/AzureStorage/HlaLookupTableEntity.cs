@@ -20,16 +20,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
         public HlaLookupTableEntity() { }
 
-        public HlaLookupTableEntity(
-            IHlaLookupResult lookupResult,
-            object hlaInfo)
+        public HlaLookupTableEntity(IHlaLookupResult lookupResult)
             : base(HlaLookupTableKeyManager.GetEntityPartitionKey(lookupResult.MatchLocus), 
                    HlaLookupTableKeyManager.GetEntityRowKey(lookupResult.LookupName, lookupResult.TypingMethod))
         {
             MatchLocusAsString = lookupResult.MatchLocus.ToString();
             TypingMethodAsString = lookupResult.TypingMethod.ToString();
             LookupName = lookupResult.LookupName;
-            SerialisedHlaInfo = SerialiseHlaInfo(hlaInfo);
+            SerialisedHlaInfo = SerialiseHlaInfo(lookupResult.HlaInfoToSerialise);
         }
 
         public T GetHlaInfo<T>()

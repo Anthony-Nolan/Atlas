@@ -1,5 +1,4 @@
-﻿using Nova.HLAService.Client.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System;
 
@@ -15,10 +14,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public TypingMethod TypingMethod => LookupResultCategory == LookupResultCategory.Serology
             ? TypingMethod.Serology
             : TypingMethod.Molecular;
-        
+
         public LookupResultCategory LookupResultCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
-        public HlaTypingCategory HlaTypingCategory { get; set; }
+        public object HlaInfoToSerialise => HlaScoringInfo;
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,

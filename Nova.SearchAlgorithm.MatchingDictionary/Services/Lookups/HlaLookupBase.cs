@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
         /// <summary>
         /// Lookup the submitted HLA details.
         /// </summary>
-        /// <returns>The lookup results; an Invalid HLA exception is thrown if nothing is found.</returns>
+        /// <exception cref="InvalidHlaException">Thrown if no lookup results found.</exception>
         public abstract Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(MatchLocus matchLocus, string lookupName);
 
         protected async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
