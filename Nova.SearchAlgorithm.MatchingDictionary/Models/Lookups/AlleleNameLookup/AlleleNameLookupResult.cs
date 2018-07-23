@@ -7,12 +7,15 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup
 {
-    public class AlleleNameLookupResult : IHlaLookupResult, IEquatable<AlleleNameLookupResult>
+    public class AlleleNameLookupResult : 
+        IHlaLookupResult, 
+        IEquatable<AlleleNameLookupResult>
     {
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public IEnumerable<string> CurrentAlleleNames { get; }
+        public object HlaInfoToSerialise => CurrentAlleleNames;
 
         public AlleleNameLookupResult(MatchLocus matchLocus, string lookupName, IEnumerable<string> currentAlleleNames)
         {

@@ -51,15 +51,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
 
         public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
         {
-            // Not used by any tests
-            return Task.FromResult(new HlaLookupTableEntity(matchLocus, lookupName, typingMethod));
-        }
-
-        public Task<HlaMatchingLookupResult> GetHlaMatchLookupResultIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
-        {
             var raw = rawMatchingData.FirstOrDefault(
-                    hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                           && hla.LookupName == lookupName);
+                hla => hla.MatchLocus.Equals(matchLocus.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                       && hla.LookupName == lookupName);
 
             if (raw == null)
             {
@@ -71,9 +65,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictio
                 raw.LookupName,
                 typingMethod,
                 raw.MatchingPGroups
-                );
+            );
 
-            return Task.FromResult(lookupResult);
+            return Task.FromResult(lookupResult.ConvertToTableEntity());
         }
 
         public IEnumerable<string> GetAllPGroups()

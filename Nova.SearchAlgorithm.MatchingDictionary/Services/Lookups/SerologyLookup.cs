@@ -1,19 +1,21 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
-    internal class SerologyLookup : HlaMatchingLookupBase
+    internal class SerologyLookup : HlaLookupBase
     {
-        public SerologyLookup(IHlaMatchingLookupRepository hlaMatchingLookupRepository) : base(hlaMatchingLookupRepository)
+        public SerologyLookup(IHlaLookupRepository hlaLookupRepository) : base(hlaLookupRepository)
         {
         }
 
-        public override Task<HlaMatchingLookupResult> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
+        public override async Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            return GetHlaMatchingLookupResultIfExists(matchLocus, lookupName, TypingMethod.Serology);
+            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, TypingMethod.Serology);
+            return new List<HlaLookupTableEntity> { entity };
         }
     }
 }

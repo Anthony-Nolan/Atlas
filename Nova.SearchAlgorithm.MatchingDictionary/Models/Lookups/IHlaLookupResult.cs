@@ -18,5 +18,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
         string LookupName { get; }
 
         TypingMethod TypingMethod { get; }
+
+        /// <summary>
+        /// Property containing HLA information to be stored as a serialised string.
+        /// </summary>
+        object HlaInfoToSerialise { get; }
     }
 }
