@@ -125,7 +125,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         {
             return new SingleAlleleScoringInfo(
                 alleleName,
-                false,
                 AlleleTypingStatus.GetDefaultStatus(),
                 alleleName,
                 alleleName,
