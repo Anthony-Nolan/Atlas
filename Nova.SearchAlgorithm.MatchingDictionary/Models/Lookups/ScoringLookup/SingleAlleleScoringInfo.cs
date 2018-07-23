@@ -19,6 +19,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         [JsonProperty("name")]
         public string AlleleName { get; }
 
+        [JsonProperty("nullExp")]
+        public bool IsNullExpresser { get; }
+
         [JsonProperty("status")]
         public AlleleTypingStatus AlleleTypingStatus { get; }
 
@@ -36,6 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 
         public SingleAlleleScoringInfo(
             string alleleName,
+            bool isNullExpresser,
             AlleleTypingStatus alleleTypingStatus,
             string matchingPGroup,
             string matchingGGroup,
@@ -43,6 +47,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         {
             AlleleName = alleleName;
             AlleleTypingStatus = alleleTypingStatus;
+            IsNullExpresser = isNullExpresser;
             MatchingPGroup = matchingPGroup;
             MatchingGGroup = matchingGGroup;
             MatchingSerologies = matchingSerologies;
@@ -53,19 +58,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         {
             return new SingleAlleleScoringInfo(
                 alleleSource.TypingForHlaLookupResult.Name,
+                alleleSource.TypingForHlaLookupResult.IsNullExpresser,
                 alleleSource.TypingForHlaLookupResult.Status,
                 alleleSource.MatchingPGroups.SingleOrDefault(),
                 alleleSource.MatchingGGroups.SingleOrDefault(),
                 alleleSource.MatchingSerologies.ToSerologyEntries()
             );
         }
-
+        
         public bool Equals(SingleAlleleScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
                 string.Equals(AlleleName, other.AlleleName) &&
+                IsNullExpresser == other.IsNullExpresser &&
                 AlleleTypingStatus.Equals(other.AlleleTypingStatus) &&
                 string.Equals(MatchingPGroup, other.MatchingPGroup) &&
                 string.Equals(MatchingGGroup, other.MatchingGGroup) &&
@@ -85,6 +92,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             unchecked
             {
                 var hashCode = AlleleName.GetHashCode();
+                hashCode = (hashCode * 397) ^ IsNullExpresser.GetHashCode();
                 hashCode = (hashCode * 397) ^ AlleleTypingStatus.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingPGroup.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingGGroup.GetHashCode();

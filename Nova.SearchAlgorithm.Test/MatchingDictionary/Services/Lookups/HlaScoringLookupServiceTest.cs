@@ -122,6 +122,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         {
             var scoringInfo = new SingleAlleleScoringInfo(
                 alleleName,
+                false,
                 AlleleTypingStatus.GetDefaultStatus(),
                 alleleName,
                 alleleName,
