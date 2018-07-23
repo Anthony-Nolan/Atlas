@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 {
     public interface IDonorScoringService
     {
-        Task<IEnumerable<MatchAndScoreResult>> Score(PhenotypeInfo<string> patientHla, IEnumerable<MatchResult> matchResults);
+        Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(IEnumerable<MatchResult> matchResults, PhenotypeInfo<string> patientHla);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -41,45 +41,33 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             this.matchScoreCalculator = matchScoreCalculator;
         }
 
-        public async Task<IEnumerable<MatchAndScoreResult>> Score(PhenotypeInfo<string> patientHla, IEnumerable<MatchResult> matchResults)
+        public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(
+            IEnumerable<MatchResult> matchResults,
+            PhenotypeInfo<string> patientHla)
         {
             var patientScoringLookupResult = await patientHla.MapAsync(async (locus, pos, hla) => await GetHlaScoringResultsForLocus(locus, hla));
 
-            var donorMatchingResultsAndLookupResults = await Task.WhenAll(matchResults.Select(GetHlaScoringResults));
-
-            var matchAndScoreResults = donorMatchingResultsAndLookupResults
-                .Select(donorScoringLookupResult => CombineMatchAndScoreResults(donorScoringLookupResult, patientScoringLookupResult))
-                .ToList();
+            var matchAndScoreResults = await Task.WhenAll(matchResults
+                .Select(async matchResult =>
+                {
+                    var lookupResult = await GetHlaScoringResults(matchResult);
+                    return CombineMatchAndScoreResults(matchResult, lookupResult, patientScoringLookupResult);
+                })
+                .ToList()
+            );
 
             return rankingService.RankSearchResults(matchAndScoreResults);
         }
 
         private MatchAndScoreResult CombineMatchAndScoreResults(
-            Tuple<MatchResult, PhenotypeInfo<IHlaScoringLookupResult>> donorScoringLookupResult,
+            MatchResult matchResult,
+            PhenotypeInfo<IHlaScoringLookupResult> donorScoringLookupResult,
             PhenotypeInfo<IHlaScoringLookupResult> patientScoringLookupResult)
         {
-            var matchResult = donorScoringLookupResult.Item1;
-            var scoringLookupResult = donorScoringLookupResult.Item2;
+            var grades = gradingService.CalculateGrades(patientScoringLookupResult, donorScoringLookupResult);
+            var confidences = confidenceService.CalculateMatchConfidences(patientScoringLookupResult, donorScoringLookupResult, grades);
 
-            var grades = gradingService.CalculateGrades(patientScoringLookupResult, scoringLookupResult);
-            var confidences = confidenceService.CalculateMatchConfidences(patientScoringLookupResult, scoringLookupResult, grades);
-
-            var scoreResult = new ScoreResult();
-            var allLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
-
-            foreach (var locus in allLoci)
-            {
-                var gradeResultAtPosition1 = grades.DataAtPosition(locus, TypePositions.One).GradeResult;
-                var confidenceAtPosition1 = confidences.DataAtPosition(locus, TypePositions.One);
-                var gradeResultAtPosition2 = grades.DataAtPosition(locus, TypePositions.Two).GradeResult;
-                var confidenceAtPosition2 = confidences.DataAtPosition(locus, TypePositions.Two);
-
-                var scoreDetails = BuildLocusScoreDetails(
-                    new Tuple<MatchGrade, MatchGrade>(gradeResultAtPosition1, gradeResultAtPosition2),
-                    new Tuple<MatchConfidence, MatchConfidence>(confidenceAtPosition1, confidenceAtPosition2
-                    ));
-                scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
-            }
+            var scoreResult = BuildScoreResult(grades, confidences);
 
             return new MatchAndScoreResult
             {
@@ -88,36 +76,47 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             };
         }
 
-        private LocusScoreDetails BuildLocusScoreDetails(
-            Tuple<MatchGrade, MatchGrade> matchGrades,
-            Tuple<MatchConfidence, MatchConfidence> matchConfidences)
+        private ScoreResult BuildScoreResult(PhenotypeInfo<MatchGradeResult> grades, PhenotypeInfo<MatchConfidence> confidences)
         {
-            var scoreDetails = new LocusScoreDetails
+            var scoreResult = new ScoreResult();
+
+            // TODO: NOVA-1301: Score DPB1
+            var scoredLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
+
+            foreach (var locus in scoredLoci)
             {
-                ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                var gradeResultAtPosition1 = grades.DataAtPosition(locus, TypePositions.One).GradeResult;
+                var confidenceAtPosition1 = confidences.DataAtPosition(locus, TypePositions.One);
+                var gradeResultAtPosition2 = grades.DataAtPosition(locus, TypePositions.Two).GradeResult;
+                var confidenceAtPosition2 = confidences.DataAtPosition(locus, TypePositions.Two);
+
+                var scoreDetails = new LocusScoreDetails
                 {
-                    MatchGrade = matchGrades.Item1,
-                    MatchGradeScore = matchScoreCalculator.CalculateScoreForMatchGrade(matchGrades.Item1),
-                    MatchConfidence = matchConfidences.Item1,
-                    MatchConfidenceScore = matchScoreCalculator.CalculateScoreForMatchConfidence(matchConfidences.Item1),
-                },
-                ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
-                {
-                    MatchGrade = matchGrades.Item2,
-                    MatchGradeScore = matchScoreCalculator.CalculateScoreForMatchGrade(matchGrades.Item2),
-                    MatchConfidence = matchConfidences.Item2,
-                    MatchConfidenceScore = matchScoreCalculator.CalculateScoreForMatchConfidence(matchConfidences.Item2),
-                }
-            };
-            return scoreDetails;
+                    ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
+                    ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
+                };
+                scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
+            }
+
+            return scoreResult;
         }
 
-        private async Task<Tuple<MatchResult, PhenotypeInfo<IHlaScoringLookupResult>>> GetHlaScoringResults(MatchResult matchResult)
+        private LocusPositionScoreDetails BuildScoreDetailsForPosition(MatchGrade matchGrade, MatchConfidence matchConfidence)
         {
-            var scoringLookupResult = await matchResult.Donor.HlaNames.MapAsync(
+            return new LocusPositionScoreDetails
+            {
+                MatchGrade = matchGrade,
+                MatchGradeScore = matchScoreCalculator.CalculateScoreForMatchGrade(matchGrade),
+                MatchConfidence = matchConfidence,
+                MatchConfidenceScore = matchScoreCalculator.CalculateScoreForMatchConfidence(matchConfidence),
+            };
+        }
+
+        private async Task<PhenotypeInfo<IHlaScoringLookupResult>> GetHlaScoringResults(MatchResult matchResult)
+        {
+            return await matchResult.Donor.HlaNames.MapAsync(
                 async (locus, position, hla) => await GetHlaScoringResultsForLocus(locus, hla)
             );
-            return new Tuple<MatchResult, PhenotypeInfo<IHlaScoringLookupResult>>(matchResult, scoringLookupResult);
         }
 
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)

@@ -41,12 +41,12 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         /// <summary>
         /// A numeric value representing the aggregate relative match grade across all loci, according to the scoring algorithm
         /// </summary>
-        public int TotalMatchGradeScore { get; set; }
+        public int GradeScore { get; set; }
 
         /// <summary>
         /// A numeric value representing the aggregate relative match confidence across all loci, according to the scoring algorithm
         /// </summary>
-        public int TotalMatchConfidenceScore { get; set; }
+        public int ConfidenceScore { get; set; }
 
         /// <summary>
         /// The details of the match at locus A.
