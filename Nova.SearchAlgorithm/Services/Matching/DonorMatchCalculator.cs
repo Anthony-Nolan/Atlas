@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
@@ -9,7 +8,6 @@ namespace Nova.SearchAlgorithm.Services.Matching
 {
     public interface IDonorMatchCalculator
     {
-        LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla);
         LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<IEnumerable<string>, IEnumerable<string>> pGroups);
     }
 
@@ -17,12 +15,12 @@ namespace Nova.SearchAlgorithm.Services.Matching
     {
         public LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<IEnumerable<string>, IEnumerable<string>> pGroups)
         {
-            var hla1 =  pGroups.Item1.IsNullOrEmpty() ? null : new ExpandedHla{PGroups = pGroups.Item1 };
-            var hla2 =  pGroups.Item2.IsNullOrEmpty() ? null : new ExpandedHla{PGroups = pGroups.Item2 };
+            var hla1 =  pGroups.Item1 == null ? null : new ExpandedHla{PGroups = pGroups.Item1 };
+            var hla2 =  pGroups.Item2 == null ? null : new ExpandedHla{PGroups = pGroups.Item2 };
             return CalculateMatchDetailsForDonorHla(locusMatchCriteria, new Tuple<ExpandedHla, ExpandedHla>(hla1, hla2));
         }
 
-        public LocusMatchDetails CalculateMatchDetailsForDonorHla(
+        private static LocusMatchDetails CalculateMatchDetailsForDonorHla(
             AlleleLevelLocusMatchCriteria locusMatchCriteria,
             Tuple<ExpandedHla, ExpandedHla> expandedHla
         )
