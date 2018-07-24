@@ -26,6 +26,18 @@
         public int TotalMatchCount { get; set; }
 
         /// <summary>
+        /// The number of the total potential matches.
+        /// The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values
+        /// </summary>
+        public int PotentialMatchCount { get; set; }
+
+        /// <summary>
+        /// The number of the total exact matches.
+        /// The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values
+        /// </summary>
+        public int ExactMatchCount => TotalMatchCount - PotentialMatchCount;
+
+        /// <summary>
         /// The number of loci which are typed for this donor.
         /// </summary>
         public int TypedLociCount { get; set; }
@@ -40,6 +52,11 @@
         /// </summary>
         public int ConfidenceScore { get; set; }
 
+        /// <summary>
+        /// The overall confidence for the match
+        /// </summary>
+        public MatchConfidence OverallMatchConfidence { get; set; }
+        
         /// <summary>
         /// The details of the match at locus A.
         /// </summary>

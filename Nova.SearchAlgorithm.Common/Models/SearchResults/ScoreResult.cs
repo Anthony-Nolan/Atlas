@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
@@ -8,6 +9,15 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
     {
         public int GradeScore => LocusScoreDetails.Sum(scoreDetails => scoreDetails.MatchGradeScore);
         public int ConfidenceScore => LocusScoreDetails.Sum(scoreDetails => scoreDetails.MatchConfidenceScore);
+
+        public MatchConfidence OverallMatchConfidence => AllConfidences.Min();
+
+        private IEnumerable<MatchConfidence> AllConfidences => LocusScoreDetails.SelectMany(locusScoreDetails => new List<MatchConfidence>
+        {
+            locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence,
+            locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence
+
+        });
         
         public LocusScoreDetails ScoreDetailsAtLocusA { get; set; }
         public LocusScoreDetails ScoreDetailsAtLocusB { get; set; }
