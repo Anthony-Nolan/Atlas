@@ -1,6 +1,6 @@
-﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+﻿using System;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
@@ -104,6 +104,30 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
             locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
             locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
+            scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
+            return this;
+        }
+        
+        public ScoreResultBuilder WithMatchConfidenceAtLocusPosition(Locus locus, TypePositions position, MatchConfidence matchConfidence)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            switch (position)
+            {
+                case TypePositions.None:
+                    break;
+                case TypePositions.One:
+                    locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
+                    break;
+                case TypePositions.Two:
+                    locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
+                    break;
+                case TypePositions.Both:
+                    locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
+                    locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
+            }
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
