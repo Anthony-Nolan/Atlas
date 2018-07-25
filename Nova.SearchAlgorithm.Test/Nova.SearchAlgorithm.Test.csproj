@@ -354,7 +354,6 @@
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />
-    <Compile Include="MatchingDictionary\Models\MatchingDictionary\MatchingSerologyExtensionsTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaDataConversion\HlaScoringDataConverterTest.cs" />

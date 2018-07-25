@@ -2,7 +2,7 @@
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
 {
-    public static class MatchingSerologyExtensions
+    internal static class MatchingSerologyExtensions
     {
         public static SerologyEntry ToSerologyEntry(this MatchingSerology matchingSerology)
         {
