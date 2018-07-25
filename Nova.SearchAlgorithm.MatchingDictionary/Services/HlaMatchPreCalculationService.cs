@@ -1,9 +1,8 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {

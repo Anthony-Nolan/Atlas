@@ -2,6 +2,7 @@
 using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
+using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
@@ -12,71 +13,26 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
     [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
-        [TestCase("A", MatchLocus.A, "9", SerologySubtype.Broad,
-            new[] { "9", "23", "24", "2403" },
-            new[] { SerologySubtype.Broad, SerologySubtype.Split, SerologySubtype.Split, SerologySubtype.Associated },
-            Description = "Broad serology has at least one Split with an Associated antigen")]
-
-        [TestCase("DQ", MatchLocus.Dqb1, "1", SerologySubtype.Broad,
-            new[] { "1", "5", "6" },
-            new[] { SerologySubtype.Broad, SerologySubtype.Split, SerologySubtype.Split },
-            Description = "Broad serology has Splits with no Associated antigens")]
-
-        [TestCase("B", MatchLocus.B, "21", SerologySubtype.Broad,
-        new[] { "21", "4005", "49", "50" },
-        new[] { SerologySubtype.Broad, SerologySubtype.Associated, SerologySubtype.Split, SerologySubtype.Split },
-        Description = "Broad serology has its own Associated antigen")]
-
-        [TestCase("B", MatchLocus.B, "51", SerologySubtype.Split,
-        new[] { "51", "5", "5102", "5103" },
-        new[] { SerologySubtype.Split, SerologySubtype.Broad, SerologySubtype.Associated, SerologySubtype.Associated },
-        Description = "Split serology has at least one Associated antigen")]
-
-        [TestCase("Cw", MatchLocus.C, "10", SerologySubtype.Split,
-        new[] { "10","3"},
-        new[] {SerologySubtype.Split, SerologySubtype.Broad },
-        Description = "Split serology has no Associated antigens")]
-
-        [TestCase("B", MatchLocus.B, "3902", SerologySubtype.Associated,
-        new[] { "3902","39", "16"},
-        new[] { SerologySubtype.Associated, SerologySubtype.Split, SerologySubtype.Broad },
-        Description = "Associated serology is direct child of a Split antigen")]
-
-        [TestCase("B", MatchLocus.B, "4005", SerologySubtype.Associated,
-        new[] { "4005","21"},
-        new[] { SerologySubtype.Associated, SerologySubtype.Broad},
-        Description = "Associated serology is direct child of a Broad antigen")]
-
-        [TestCase("DR", MatchLocus.Drb1, "103", SerologySubtype.Associated,
-        new[] { "103","1"},
-        new[] { SerologySubtype.Associated, SerologySubtype.NotSplit},
-        Description = "Associated serology is direct child of a Not-Split antigen")]
-
-        [TestCase("A", MatchLocus.A, "2", SerologySubtype.NotSplit,
-        new[] { "2","203", "210"},
-        new[] { SerologySubtype.NotSplit,SerologySubtype.Associated,SerologySubtype.Associated},
-        Description = "Not-Split serology has at least one Associated antigen")]
-
-        [TestCase("DR", MatchLocus.Drb1, "9", SerologySubtype.NotSplit,
-        new[] { "9" },
-        new[] { SerologySubtype.NotSplit },
-        Description = "Not-Split serology with no Associated antigens")]
-        public void MatchedSerologies_WhenValidSerology_MatchingSerologiesCorrectlyAssigned(
+        [TestCaseSource(
+            typeof(SerologyToSerologyMatchingTestCaseSources),
+            nameof(SerologyToSerologyMatchingTestCaseSources.ExpectedSerologyInfos)
+            )]
+        public void MatchedSerologies_WhenValidSerology_SerologyInfoCorrectlyAssigned(
             string locus,
             MatchLocus matchLocus,
             string serologyName,
             SerologySubtype serologySubtype,
-            string[] expectedMatchingSerologyNames,
-            SerologySubtype[] expectedMatchingSerologySubtypes)
+            object[][] matchingSerologies)
         {
+            var actualSerologyInfo = GetSingleMatchingTyping(matchLocus, serologyName);
+
             var expectedSerologyTyping = new SerologyTyping(locus, serologyName, serologySubtype);
 
-            var expectedMatchingSerologies = new List<SerologyTyping>();
-            for (var i = 0; i < expectedMatchingSerologyNames.Count(); i++)
-            {
-                expectedMatchingSerologies.Add(
-                    new SerologyTyping(locus, expectedMatchingSerologyNames[i], expectedMatchingSerologySubtypes[i]));
-            }
+            var expectedMatchingSerologies = matchingSerologies
+                .Select(m =>
+                    new MatchingSerology(
+                        new SerologyTyping(locus, m[0].ToString(), (SerologySubtype)m[1]),
+                            (bool)m[2]));
 
             var expectedSerologyInfo = new SerologyInfoForMatching
             (
@@ -85,27 +41,27 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
                 expectedMatchingSerologies
             );
 
-            var actualSerologyInfo = GetSingleMatchingTyping(matchLocus, serologyName);
-
-            Assert.AreEqual(expectedSerologyInfo, actualSerologyInfo);
+            actualSerologyInfo.ShouldBeEquivalentTo(expectedSerologyInfo);
         }
-        
+
         [Test]
-        public void MatchedSerologies_WhenDeletedSerology_MatchingSerologiesCorrectlyAssigned()
+        public void MatchedSerologies_WhenDeletedSerology_SerologyInfoCorrectlyAssigned()
         {
-            const string locus = "Cw";
             const MatchLocus matchLocus = MatchLocus.C;
             const string deletedSerologyName = "11";
             const string serologyUsedInMatchingName = "1";
 
+            var actualSerologyInfo = GetSingleMatchingTyping(matchLocus, deletedSerologyName);
+
+            const string locus = "Cw";
             var expectedDeletedSerology =
                 new SerologyTyping(locus, deletedSerologyName, SerologySubtype.NotSplit, true);
             var expectedTypingUsedInMatching =
                 new SerologyTyping(locus, serologyUsedInMatchingName, SerologySubtype.NotSplit);
-            var expectedMatchingSerologies = new List<SerologyTyping>
+            var expectedMatchingSerologies = new List<MatchingSerology>
             {
-                expectedDeletedSerology,
-                expectedTypingUsedInMatching
+                new MatchingSerology(expectedDeletedSerology, true),
+                new MatchingSerology(expectedTypingUsedInMatching, true)
             };
 
             var expectedSerologyInfo = new SerologyInfoForMatching
@@ -115,9 +71,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
                 expectedMatchingSerologies
             );
 
-            var actualSerologyInfo = GetSingleMatchingTyping(matchLocus, deletedSerologyName);
-
-            Assert.AreEqual(expectedSerologyInfo, actualSerologyInfo);
+            actualSerologyInfo.ShouldBeEquivalentTo(expectedSerologyInfo);
         }
 
         [Test]
@@ -144,6 +98,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
                 {
                     MatchedType = (SerologyTyping)m.HlaTyping,
                     SubtypeCounts = m.MatchingSerologies
+                        .Select(s => s.SerologyTyping)
                         .Where(s => !s.Equals(m.HlaTyping))
                         .GroupBy(s => s.SerologySubtype)
                         .Select(s => new { Subtype = s.Key, Count = s.Count() })

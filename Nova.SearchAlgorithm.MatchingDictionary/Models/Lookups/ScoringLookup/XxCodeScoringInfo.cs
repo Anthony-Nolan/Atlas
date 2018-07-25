@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             return new XxCodeScoringInfo(
                 alleles.SelectMany(allele => allele.MatchingPGroups).Distinct(),
                 alleles.SelectMany(allele => allele.MatchingGGroups).Distinct(),
-                alleles.SelectMany(allele => allele.MatchingSerologies.ToSerologyEntries()).Distinct()
+                alleles.SelectMany(allele => allele.MatchingSerologies.Select(m => m.ToSerologyEntry())).Distinct()
                 );
         }
 

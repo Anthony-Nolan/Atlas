@@ -1,42 +1,34 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
 {
     public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
-        [Test]
-        public void HlaTypingsMatchReciprocally()
+        [TestCase(MatchLocus.A, "02:01:100", "2")]
+        [TestCase(MatchLocus.B, "39:55", "39")]
+        [TestCase(MatchLocus.C, "01:80", "1")]
+        [TestCase(MatchLocus.Dqb1, "03:01:15", "7")]
+        [TestCase(MatchLocus.Drb1, "04:155", "4")]
+        public void HlaMatchPrecalculation_AlleleAndSerologyTypingsMatchReciprocally(
+            MatchLocus matchLocus,
+            string alleleName,
+            string serologyName)
         {
-            var alleleA = GetSingleMatchingTyping(MatchLocus.A, "02:01:100");
-            var serologyA = GetSingleMatchingTyping(MatchLocus.A, "2");
+            var allele = GetSingleMatchingTyping(matchLocus, alleleName);
+            var serology = GetSingleMatchingTyping(matchLocus, serologyName);
 
-            var alleleB = GetSingleMatchingTyping(MatchLocus.B, "39:55");
-            var serologyB = GetSingleMatchingTyping(MatchLocus.B, "39");
+            allele.MatchingSerologies
+                .Select(ser => ser.SerologyTyping as HlaTyping)
+                .Should()
+                .Contain(serology.HlaTyping);
 
-            var alleleC = GetSingleMatchingTyping(MatchLocus.C, "01:80");
-            var serologyC = GetSingleMatchingTyping(MatchLocus.C, "1");
-
-            var alleleDqb1 = GetSingleMatchingTyping(MatchLocus.Dqb1, "03:01:15");
-            var serologyDqb1 = GetSingleMatchingTyping(MatchLocus.Dqb1, "7");
-
-            var alleleDrb1 = GetSingleMatchingTyping(MatchLocus.Drb1, "04:155");
-            var serologyDrb1 = GetSingleMatchingTyping(MatchLocus.Drb1, "4");
-
-            IsReciprocallyMatchedTest(alleleA, serologyA);
-            IsReciprocallyMatchedTest(alleleB, serologyB);
-            IsReciprocallyMatchedTest(alleleC, serologyC);
-            IsReciprocallyMatchedTest(alleleDqb1, serologyDqb1);
-            IsReciprocallyMatchedTest(alleleDrb1, serologyDrb1);
-        }
-
-        private static void IsReciprocallyMatchedTest(IMatchedHla allele, IMatchedHla serology)
-        {
-            Assert.IsTrue(allele.MatchingSerologies.Contains(serology.HlaTyping));
-            Assert.IsTrue(serology.MatchingPGroups.Intersect(allele.MatchingPGroups).Any());
+            serology.MatchingPGroups
+                .Should()
+                .IntersectWith(allele.MatchingPGroups);
         }
     }
 }

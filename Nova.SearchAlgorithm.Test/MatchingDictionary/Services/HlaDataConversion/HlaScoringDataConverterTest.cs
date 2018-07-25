@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         MatchedHlaDataConverterTestBase<HlaScoringDataConverter>
     {
         private static readonly List<SerologyEntry> SerologyEntries =
-            new List<SerologyEntry> { new SerologyEntry(SerologyName, SeroSubtype) };
+            new List<SerologyEntry> { new SerologyEntry(SerologyName, SeroSubtype, IsDirectMapping) };
 
         [TestCase("999:999", "999")]
         [TestCase("999:999Q", "999")]

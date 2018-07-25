@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 alleleSource.TypingForHlaLookupResult.Status,
                 alleleSource.MatchingPGroups.SingleOrDefault(),
                 alleleSource.MatchingGGroups.SingleOrDefault(),
-                alleleSource.MatchingSerologies.ToSerologyEntries()
+                alleleSource.MatchingSerologies.Select(m => m.ToSerologyEntry())
             );
         }
 

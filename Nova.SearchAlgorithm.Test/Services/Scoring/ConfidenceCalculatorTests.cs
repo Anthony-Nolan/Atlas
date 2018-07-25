@@ -169,7 +169,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientSerology_DonorMultiplePGroups_ReturnsPotential(Type donorScoringInfoType)
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
@@ -187,7 +187,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientMultiplePGroups_DonorSerology_ReturnsPotential(Type patientScoringInfoType)
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
 
             var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, matchingSerologies: matchingSerologies);
 
@@ -205,13 +205,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientSerology_DonorMultiplePGroups_ButDoNotMatch_ReturnsMismatch(Type donorScoringInfoType)
         {
-            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated, true)};
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
                 .Build();
 
-            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
+            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated, true)};
             var donorLookupResult = BuildScoringLookupResultWithMultiplePGroups(donorScoringInfoType, matchingSerologies: donorSerologyEntries);
 
             var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
@@ -223,10 +223,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [TestCase(typeof(XxCodeScoringInfo))]
         public void CalculateConfidence_PatientMultiplePGroups_DonorSerology_ButDoNotMatch_ReturnsMismatch(Type patientScoringInfoType)
         {
-            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated, true)};
             var patientLookupResult = BuildScoringLookupResultWithMultiplePGroups(patientScoringInfoType, matchingSerologies: patientSerologyEntries);
 
-            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
+            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated, true)};
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
@@ -240,7 +240,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateConfidence_BothSerology_ReturnsPotential()
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
@@ -260,13 +260,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateConfidence_BothSerology_ButDoNotMatch_ReturnsMismatch()
         {
-            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated, true)};
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
                 .Build();
 
-            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated)};
+            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated, true)};
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
@@ -280,7 +280,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateConfidence_PatientSerology_DonorSingleAllele_ReturnsPotential()
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
@@ -300,7 +300,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateConfidence_PatientSerology_DonorSingleAllele_ButDoNotMatch_ReturnsMismatch()
         {
-            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated)};
+            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated, true)};
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())

@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         protected const MatchLocus MatchedLocus = MatchLocus.A;
         protected const SerologySubtype SeroSubtype = SerologySubtype.Broad;
         protected const string SerologyName = "999";
+        protected const bool IsDirectMapping = true;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -31,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
 
             var infoForMatching = Substitute.For<ISerologyInfoForMatching>();
             infoForMatching.HlaTyping.Returns(serologyTyping);
-            infoForMatching.MatchingSerologies.Returns(new[] { serologyTyping });
+            infoForMatching.MatchingSerologies.Returns(new[] { new MatchingSerology(serologyTyping, IsDirectMapping) });
 
             var matchedSerology = new MatchedSerology(infoForMatching, new List<string>(), new List<string>());
 
@@ -75,7 +76,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleGroup, alleleGroup);
 
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
-            var serologyMatch = new SerologyMatch(serologyTyping);
+            var serologyMatch = new SerologyMatchToAllele(serologyTyping);
             var mapping = new SerologyMappingForAllele(serologyTyping, Assignment.None, new[] { serologyMatch });
 
             return new MatchedAllele(infoForMatching, new[] { mapping });

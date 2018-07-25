@@ -20,6 +20,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             gradingCalculator = new GradingCalculator();
         }
 
+        #region Tests: Both Typings Expressing Alleles
+
         [Test]
         public void CalculateGrade_BothTypingsAreExpressingAlleles_WithSameName_AndFullGDnaSequences_ReturnsGDna()
         {
@@ -27,6 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus).Build())
@@ -34,6 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
@@ -51,6 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus).Build())
@@ -58,6 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
@@ -81,6 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string patientAlleleName = sharedFirstThreeFields + ":01";
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, patientDnaCategory);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus)
@@ -90,6 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string donorAlleleName = sharedFirstThreeFields + ":999";
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, donorDnaCategory);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus)
@@ -114,6 +122,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string patientAlleleName = sharedFirstTwoFields + ":11";
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, patientDnaCategory);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus)
@@ -123,6 +132,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string donorAlleleName = sharedFirstTwoFields + ":22";
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, donorDnaCategory);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus)
@@ -141,6 +151,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             const string patientAlleleName = "111:111";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
@@ -149,6 +160,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
@@ -168,6 +180,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string patientAlleleName = "111:111";
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -178,6 +191,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -197,6 +211,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -208,6 +223,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -227,12 +243,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             string donorAlleleName)
         {
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .Build())
@@ -243,15 +261,20 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             grade.Should().Be(MatchGrade.Mismatch);
         }
 
+        #endregion
+
         // TODO: NOVA-1479 - Add tests for scoring null vs. null alleles
+
+        #region Tests: Both Typings are Serology
 
         [Test]
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndAssociatedSubtype_ReturnsAssociated()
         {
-            const string sharedSerologyName = "9999";
+            const string sharedSerologyName = "shared-serology";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.Associated)
                     .Build())
@@ -259,6 +282,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.Associated)
                     .Build())
@@ -272,10 +296,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndSplitSubtype_ReturnsSplit()
         {
-            const string sharedSerologyName = "9999";
+            const string sharedSerologyName = "shared-serology";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.Split)
                     .Build())
@@ -283,6 +308,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.Split)
                     .Build())
@@ -296,10 +322,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndNotSplitSubtype_ReturnsSplit()
         {
-            const string sharedSerologyName = "9999";
+            const string sharedSerologyName = "shared-serology";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.NotSplit)
                     .Build())
@@ -307,6 +334,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.NotSplit)
                     .Build())
@@ -328,22 +356,24 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             SerologySubtype donorSerologySubtype
            )
         {
-            var patientSerology = new SerologyEntry("patient-serology", patientSerologySubtype);
-            var donorSerology = new SerologyEntry("donor-serology", donorSerologySubtype);
+            const string patientSerologyName = "patient-serology";
+            const string donorSerologyName = "donor-serology";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientSerology.Name)
+                .WithLookupName(patientSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(patientSerology.SerologySubtype)
-                    .WithMatchingSerologies(new[] { donorSerology })
+                    .WithSerologySubtype(patientSerologySubtype)
+                    .WithMatchingSerologies(new[] { new SerologyEntry(donorSerologyName, donorSerologySubtype, false) })
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorSerology.Name)
+                .WithLookupName(donorSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(donorSerology.SerologySubtype)
-                    .WithMatchingSerologies(new[] { patientSerology })
+                    .WithSerologySubtype(donorSerologySubtype)
+                    .WithMatchingSerologies(new[] { new SerologyEntry(patientSerologyName, patientSerologySubtype, false) })
                     .Build())
                 .Build();
 
@@ -355,10 +385,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndBroadSubtype_ReturnsBroad()
         {
-            const string sharedSerologyName = "9999";
+            const string sharedSerologyName = "shared-serology";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.Broad)
                     .Build())
@@ -366,6 +397,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithSerologySubtype(SerologySubtype.Broad)
                     .Build())
@@ -388,22 +420,24 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             SerologySubtype donorSerologySubtype
         )
         {
-            var patientSerology = new SerologyEntry("patient-serology", patientSerologySubtype);
-            var donorSerology = new SerologyEntry("donor-serology", donorSerologySubtype);
+            const string patientSerologyName = "patient-serology";
+            const string donorSerologyName = "donor-serology";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientSerology.Name)
+                .WithLookupName(patientSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(patientSerology.SerologySubtype)
-                    .WithMatchingSerologies(new[] { donorSerology })
+                    .WithSerologySubtype(patientSerologySubtype)
+                    .WithMatchingSerologies(new[] { new SerologyEntry(donorSerologyName, donorSerologySubtype, false) })
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorSerology.Name)
+                .WithLookupName(donorSerologyName)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(donorSerology.SerologySubtype)
-                    .WithMatchingSerologies(new[] { patientSerology })
+                    .WithSerologySubtype(donorSerologySubtype)
+                    .WithMatchingSerologies(new[] { new SerologyEntry(patientSerologyName, patientSerologySubtype, false) })
                     .Build())
                 .Build();
 
@@ -411,5 +445,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             grade.Should().Be(MatchGrade.Broad);
         }
+
+        #endregion       
     }
 }

@@ -209,6 +209,7 @@
     <Compile Include="Models\MatchingTypings\AlleleTypingExtensions.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
+    <Compile Include="Models\MatchingTypings\MatchingSerology.cs" />
     <Compile Include="Models\Wmda\VersionedAlleleName.cs" />
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
@@ -246,6 +247,13 @@
     <Compile Include="Services\HlaDataConversion\AlleleTypingExtensions.cs" />
     <Compile Include="Services\HlaDataConversion\HlaScoringDataConverter.cs" />
     <Compile Include="Services\HlaDataConversion\MatchedHlaDataConverterBase.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\AssociatedCalculator.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\BroadCalculator.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\MatchingSerologyCalculatorFactory.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\SplitCalculator.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\NotSplitCalculator.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\MatchingSerologyCalculatorBase.cs" />
+    <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\SerologyFamily.cs" />
     <Compile Include="Services\HlaSearchingLookupServiceBase.cs" />
     <Compile Include="Services\HlaScoringLookupService.cs" />
     <Compile Include="Services\LookupServiceBase.cs" />
@@ -268,7 +276,7 @@
     <Compile Include="Services\Lookups\HlaLookupBase.cs" />
     <Compile Include="Services\HlaDataConversion\HlaMatchingDataConverter.cs" />
     <Compile Include="Models\Lookups\SerologyEntry.cs" />
-    <Compile Include="Models\Lookups\SerologyEntryExtensions.cs" />
+    <Compile Include="Models\Lookups\MatchingSerologyExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
     <Compile Include="HlaTypingInfo\PermittedLocusNames.cs" />
     <Compile Include="Models\HLATypings\SerologyTyping.cs" />
@@ -281,7 +289,7 @@
     <Compile Include="Models\MatchingTypings\IMatchedHla.cs" />
     <Compile Include="Models\MatchingTypings\MatchedSerology.cs" />
     <Compile Include="Models\MatchingTypings\SerologyMappingForAllele.cs" />
-    <Compile Include="Models\MatchingTypings\SerologyMatch.cs" />
+    <Compile Include="Models\MatchingTypings\SerologyMatchToAllele.cs" />
     <Compile Include="Models\MatchingTypings\SerologyInfoForMatching.cs" />
     <Compile Include="Models\Wmda\Assignment.cs" />
     <Compile Include="Models\Wmda\ConfidentialAllele.cs" />
