@@ -3,14 +3,15 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
-    public interface IGradingCalculator
+    /// <summary>
+    /// To be used when both typings are molecular, and at least
+    /// one is an XX code.
+    /// </summary>
+    public interface IXxCodeGradingCalculator : IGradingCalculator
     {
-        MatchGrade CalculateGrade(
-            IHlaScoringLookupResult patientLookupResult, 
-            IHlaScoringLookupResult donorLookupResult);
     }
 
-    public class GradingCalculator: IGradingCalculator
+    public class XxCodeGradingCalculator: IXxCodeGradingCalculator
     {
         public MatchGrade CalculateGrade(
             IHlaScoringLookupResult patientLookupResult, 

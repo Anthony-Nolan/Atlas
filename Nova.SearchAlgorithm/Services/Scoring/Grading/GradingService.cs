@@ -13,13 +13,6 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
     public class GradingService : IGradingService
     {
-        private readonly IGradingCalculator gradingCalculator;
-
-        public GradingService(IGradingCalculator gradingCalculator)
-        {
-            this.gradingCalculator = gradingCalculator;
-        }
-
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)

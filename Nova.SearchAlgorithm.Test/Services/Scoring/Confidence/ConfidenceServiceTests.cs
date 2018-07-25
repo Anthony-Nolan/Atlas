@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
@@ -8,9 +9,8 @@ using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
-using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.Services.Scoring
+namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
 {
     [TestFixture]
     public class ConfidenceServiceTests

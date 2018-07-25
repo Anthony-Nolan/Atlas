@@ -7,263 +7,18 @@ using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Services.Scoring
+namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class GradingCalculatorTests
+    public class SerologyGradingCalculatorTests
     {
-        private IGradingCalculator gradingCalculator;
+        private ISerologyGradingCalculator serologyGradingCalculator;
 
         [SetUp]
         public void SetUp()
         {
-            gradingCalculator = new GradingCalculator();
+            serologyGradingCalculator = new SerologyGradingCalculator();
         }
-
-        #region Tests: Both Typings Expressing Alleles
-
-        [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithSameName_AndFullGDnaSequences_ReturnsGDna()
-        {
-            const string sharedAlleleName = "999:999";
-
-            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(sharedAlleleName)
-                    .WithAlleleTypingStatus(patientAlleleStatus).Build())
-                .Build();
-
-            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(sharedAlleleName)
-                    .WithAlleleTypingStatus(donorAlleleStatus).Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.GDna);
-        }
-
-        [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithSameName_AndFullCDnaSequences_ReturnsCDna()
-        {
-            const string sharedAlleleName = "999:999";
-
-            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(sharedAlleleName)
-                    .WithAlleleTypingStatus(patientAlleleStatus).Build())
-                .Build();
-
-            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(sharedAlleleName)
-                    .WithAlleleTypingStatus(donorAlleleStatus).Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.CDna);
-        }
-
-        [TestCase(DnaCategory.GDna, DnaCategory.GDna)]
-        [TestCase(DnaCategory.CDna, DnaCategory.CDna)]
-        [TestCase(DnaCategory.GDna, DnaCategory.CDna)]
-        [TestCase(DnaCategory.CDna, DnaCategory.GDna)]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithSameFirstThreeFields_AndFullSequences_ReturnsCDna(
-            DnaCategory patientDnaCategory,
-            DnaCategory donorDnaCategory)
-        {
-            const string sharedFirstThreeFields = "999:999:999";
-
-            const string patientAlleleName = sharedFirstThreeFields + ":01";
-            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, patientDnaCategory);
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .WithAlleleTypingStatus(patientAlleleStatus)
-                    .Build())
-                .Build();
-
-            const string donorAlleleName = sharedFirstThreeFields + ":999";
-            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, donorDnaCategory);
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .WithAlleleTypingStatus(donorAlleleStatus)
-                    .Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.CDna);
-        }
-
-        [TestCase(DnaCategory.GDna, DnaCategory.GDna)]
-        [TestCase(DnaCategory.CDna, DnaCategory.CDna)]
-        [TestCase(DnaCategory.GDna, DnaCategory.CDna)]
-        [TestCase(DnaCategory.CDna, DnaCategory.GDna)]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithSameFirstTwoFields_AndFullSequences_ReturnsProtein(
-            DnaCategory patientDnaCategory,
-            DnaCategory donorDnaCategory)
-        {
-            const string sharedFirstTwoFields = "999:999";
-
-            const string patientAlleleName = sharedFirstTwoFields + ":11";
-            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, patientDnaCategory);
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .WithAlleleTypingStatus(patientAlleleStatus)
-                    .Build())
-                .Build();
-
-            const string donorAlleleName = sharedFirstTwoFields + ":22";
-            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, donorDnaCategory);
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .WithAlleleTypingStatus(donorAlleleStatus)
-                    .Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.CDna);
-        }
-
-        [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithDifferentNames_ButSameGGroup_ReturnsGGroup()
-        {
-            const string sharedGGroup = "shared-g-group";
-
-            const string patientAlleleName = "111:111";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .WithMatchingGGroup(sharedGGroup)
-                    .Build())
-                .Build();
-
-            const string donorAlleleName = "999:999";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .WithMatchingGGroup(sharedGGroup)
-                    .Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.GGroup);
-        }
-
-        [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithDifferentNamesAndGGroups_ButSamePGroup_ReturnsGGroup()
-        {
-            const string sharedPGroup = "shared-p-group";
-
-            const string patientAlleleName = "111:111";
-            const string patientGGroup = "patient-g-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .WithMatchingGGroup(patientGGroup)
-                    .WithMatchingPGroup(sharedPGroup)
-                    .Build())
-                .Build();
-
-            const string donorAlleleName = "999:999";
-            const string donorGGroup = "donor-g-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .WithMatchingGGroup(donorGGroup)
-                    .WithMatchingPGroup(sharedPGroup)
-                    .Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.PGroup);
-        }
-
-        [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithDifferentNamesAndGGroupsAndPGroups_ReturnsMismatch()
-        {
-            const string patientAlleleName = "111:111";
-            const string patientGGroup = "patient-g-group";
-            const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .WithMatchingGGroup(patientGGroup)
-                    .WithMatchingPGroup(patientPGroup)
-                    .Build())
-                .Build();
-
-            const string donorAlleleName = "999:999";
-            const string donorGGroup = "donor-g-group";
-            const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .WithMatchingGGroup(donorGGroup)
-                    .WithMatchingPGroup(donorPGroup)
-                    .Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.Mismatch);
-        }
-
-        [TestCase("999:999", "999:999N")]
-        [TestCase("999:999N", "999:999")]
-        public void CalculateGrade_OneAlleleIsExpressingAndOtherIsNullExpresser_ReturnsMismatch(
-            string patientAlleleName,
-            string donorAlleleName)
-        {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .Build())
-                .Build();
-
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .Build())
-                .Build();
-
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.Mismatch);
-        }
-
-        #endregion
-
-        // TODO: NOVA-1479 - Add tests for scoring null vs. null alleles
 
         #region Tests: Both Typings are Serology
 
@@ -288,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -314,7 +69,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -340,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -377,7 +132,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -403,7 +158,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -441,7 +196,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -455,10 +210,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            const string patientAlleleName = "999:999";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithLookupName(patientAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
@@ -472,7 +225,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -482,9 +235,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            const string patientAlleleName = "999:999";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientAlleleName)
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
@@ -499,7 +250,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -509,9 +260,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            const string patientAlleleName = "999:999";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientAlleleName)
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
@@ -526,7 +275,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -563,7 +312,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -573,9 +322,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            const string patientAlleleName = "999:999";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientAlleleName)
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
@@ -590,7 +337,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -628,7 +375,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -650,16 +397,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
-                .WithLookupName(donorAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -677,16 +422,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorAlleleName)
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -704,16 +447,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorAlleleName)
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -750,7 +491,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -768,16 +509,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorAlleleName)
                 .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -815,7 +554,409 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                     .Build())
                 .Build();
 
-            var grade = gradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Broad);
+        }
+
+        #endregion
+
+        #region Tests: Null Allele vs Serology
+
+        [Test]
+        public void CalculateGrade_NullAlleleVsSerology_ReturnsMismatch()
+        {
+            const string patientAlleleName = "999:999N";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(patientAlleleName)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Associated);
+        }
+
+        #endregion
+
+        #region Tests: Serology vs Null Allele
+
+        [Test]
+        public void CalculateGrade_SerologyVsNullAllele_ReturnsMismatch()
+        {
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .Build();
+
+            const string donorAlleleName = "999:999N";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(donorAlleleName)
+                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Associated);
+        }
+
+        #endregion
+
+        #region Tests: XX Code vs Serology
+
+        [Test]
+        public void CalculateGrade_XxCodeVsSerology_WhereXxCodeDirectlyMapsToAssociatedSerology_ReturnsAssociated()
+        {
+            var serologyDirectlyMappedToPatientXxCode = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientXxCode })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithLookupName(serologyDirectlyMappedToPatientXxCode.Name)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToPatientXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Associated);
+        }
+
+        [Test]
+        public void CalculateGrade_XxCodeVsSerology_WhereXxCodeDirectlyMapsToSplitSerology_ReturnsSplit()
+        {
+            var serologyDirectlyMappedToPatientXxCode = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientXxCode })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyDirectlyMappedToPatientXxCode.Name)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToPatientXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Split);
+        }
+
+        [Test]
+        public void CalculateGrade_XxCodeVsSerology_WhereXxCodeDirectlyMapsToNotSplitSerology_ReturnsSplit()
+        {
+            var serologyDirectlyMappedToPatientXxCode = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientXxCode })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyDirectlyMappedToPatientXxCode.Name)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToPatientXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Split);
+        }
+
+        // This covers the case from WMDA matching framework:
+        // s1 does not have any splits & s2 is associated to s1, or vice versa.
+        [TestCase(SerologySubtype.Split, SerologySubtype.Associated)]
+        [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
+        [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
+        [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
+        public void CalculateGrade_XxCodeVsSerology_WithIndirectAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directSerologySubtype,
+            SerologySubtype indirectSerologySubtype
+           )
+        {
+            var serologyDirectlyMappedToXxCode = new SerologyEntry("patient-serology", directSerologySubtype, true);
+            var serologyIndirectlyMatchedToXxCode = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[]
+                    {
+                        serologyDirectlyMappedToXxCode,
+                        serologyIndirectlyMatchedToXxCode
+                    })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyIndirectlyMatchedToXxCode.Name)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyIndirectlyMatchedToXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Split);
+        }
+
+        [Test]
+        public void CalculateGrade_XxCodeVsSerology_WhereXxCodeDirectlyMapsToBroadSerology_ReturnsBroad()
+        {
+            var serologyDirectlyMappedToPatientXxCode = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientXxCode })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyDirectlyMappedToPatientXxCode.Name)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToPatientXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Broad);
+        }
+
+        // This covers the case from WMDA matching framework:
+        // s1 is a broad & s2 is a split of s1, or vice versa.
+        // s1 is a broad & s2 is associated to a split of s1, or vice versa.
+        [TestCase(SerologySubtype.Broad, SerologySubtype.Split)]
+        [TestCase(SerologySubtype.Split, SerologySubtype.Broad)]
+        [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
+        [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
+        public void CalculateGrade_XxCodeVsSerology_WithIndirectBroadRelationship_ReturnsBroad(
+            SerologySubtype directSerologySubtype,
+            SerologySubtype indirectSerologySubtype
+        )
+        {
+            var serologyDirectlyMappedToXxCode = new SerologyEntry("patient-serology", directSerologySubtype, true);
+            var serologyIndirectlyMatchedToXxCode = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[]
+                    {
+                        serologyDirectlyMappedToXxCode,
+                        serologyIndirectlyMatchedToXxCode
+                    })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyIndirectlyMatchedToXxCode.Name)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyIndirectlyMatchedToXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Broad);
+        }
+
+        #endregion
+
+        #region Tests: Serology vs XX Code
+
+        [Test]
+        public void CalculateGrade_SerologyVsXxCode_WhereXxCodeDirectlyMapsToAssociatedSerology_ReturnsAssociated()
+        {
+            var serologyDirectlyMappedToDonorXxCode = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithLookupName(serologyDirectlyMappedToDonorXxCode.Name)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToDonorXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorXxCode })
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Associated);
+        }
+
+        [Test]
+        public void CalculateGrade_SerologyVsXxCode_WhereXxCodeDirectlyMapsToSplitSerology_ReturnsSplit()
+        {
+            var serologyDirectlyMappedToDonorXxCode = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyDirectlyMappedToDonorXxCode.Name)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToDonorXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorXxCode })
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Split);
+        }
+
+        [Test]
+        public void CalculateGrade_SerologyVsXxCode_WhereXxCodeDirectlyMapsToNotSplitSerology_ReturnsSplit()
+        {
+            var serologyDirectlyMappedToDonorXxCode = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyDirectlyMappedToDonorXxCode.Name)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToDonorXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorXxCode })
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Split);
+        }
+
+        // This covers the case from WMDA matching framework:
+        // s1 does not have any splits & s2 is associated to s1, or vice versa.
+        [TestCase(SerologySubtype.Split, SerologySubtype.Associated)]
+        [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
+        [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
+        [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
+        public void CalculateGrade_SerologyVsXxCode_WithIndirectAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directSerologySubtype,
+            SerologySubtype indirectSerologySubtype
+           )
+        {
+            var serologyDirectlyMappedToXxCode = new SerologyEntry("donor-serology", directSerologySubtype, true);
+            var serologyIndirectlyMatchedToXxCode = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyIndirectlyMatchedToXxCode.Name)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyIndirectlyMatchedToXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[]
+                    {
+                        serologyDirectlyMappedToXxCode,
+                        serologyIndirectlyMatchedToXxCode
+                    })
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Split);
+        }
+
+        [Test]
+        public void CalculateGrade_SerologyVsXxCode_WhereXxCodeDirectlyMapsToBroadSerology_ReturnsBroad()
+        {
+            var serologyDirectlyMappedToDonorXxCode = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyDirectlyMappedToDonorXxCode.Name)
+                .WithLookupResultCategory(LookupResultCategory.Serology)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyDirectlyMappedToDonorXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorXxCode })
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Broad);
+        }
+
+        // This covers the case from WMDA matching framework:
+        // s1 is a broad & s2 is a split of s1, or vice versa.
+        // s1 is a broad & s2 is associated to a split of s1, or vice versa.
+        [TestCase(SerologySubtype.Broad, SerologySubtype.Split)]
+        [TestCase(SerologySubtype.Split, SerologySubtype.Broad)]
+        [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
+        [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
+        public void CalculateGrade_SerologyVsXxCode_WithIndirectBroadRelationship_ReturnsBroad(
+            SerologySubtype directSerologySubtype,
+            SerologySubtype indirectSerologySubtype
+        )
+        {
+            var serologyDirectlyMappedToXxCode = new SerologyEntry("donor-serology", directSerologySubtype, true);
+            var serologyIndirectlyMatchedToXxCode = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupName(serologyIndirectlyMatchedToXxCode.Name)
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithSerologySubtype(serologyIndirectlyMatchedToXxCode.SerologySubtype)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                    .WithMatchingSerologies(new[]
+                    {
+                        serologyDirectlyMappedToXxCode,
+                        serologyIndirectlyMatchedToXxCode
+                    })
+                    .Build())
+                .Build();
+
+            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
