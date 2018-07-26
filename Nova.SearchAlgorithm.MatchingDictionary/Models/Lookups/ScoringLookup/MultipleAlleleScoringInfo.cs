@@ -14,25 +14,42 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         IHlaScoringInfo, 
         IEquatable<MultipleAlleleScoringInfo>
     {
-        public IEnumerable<SingleAlleleScoringInfo> AlleleScoringInfos { get; set; }
+        public IEnumerable<SingleAlleleScoringInfo> AlleleScoringInfos { get; }
+        public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
-        public MultipleAlleleScoringInfo(IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos)
+        public MultipleAlleleScoringInfo(
+            IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos, 
+            IEnumerable<SerologyEntry> matchingSerologies)
         {
             AlleleScoringInfos = alleleScoringInfos;
+            MatchingSerologies = matchingSerologies;
         }
 
         public static MultipleAlleleScoringInfo GetScoringInfo(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
         {
+            var sources = lookupResultSources.ToList();
+
+            var alleleScoringInfos = sources
+                .Select(SingleAlleleScoringInfo.GetScoringInfoExcludingMatchingSerologies);
+
+            var matchingSerologies = sources
+                .SelectMany(source => source.MatchingSerologies)
+                .Select(matchingSerology => matchingSerology.ToSerologyEntry())
+                .Distinct();
+
             return new MultipleAlleleScoringInfo(
-                lookupResultSources.Select(SingleAlleleScoringInfo.GetScoringInfo));
+                alleleScoringInfos,
+                matchingSerologies);
         }
 
         public bool Equals(MultipleAlleleScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return AlleleScoringInfos.SequenceEqual(other.AlleleScoringInfos);
+            return 
+                AlleleScoringInfos.SequenceEqual(other.AlleleScoringInfos) && 
+                MatchingSerologies.SequenceEqual(other.MatchingSerologies);
         }
 
         public override bool Equals(object obj)
@@ -45,7 +62,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 
         public override int GetHashCode()
         {
-            return AlleleScoringInfos.GetHashCode();
+            unchecked
+            {
+                return (AlleleScoringInfos.GetHashCode() * 397) ^ MatchingSerologies.GetHashCode();
+            }
         }
     }
 }

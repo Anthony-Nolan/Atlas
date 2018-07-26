@@ -108,7 +108,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         private static IHlaScoringLookupResult BuildExpectedMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
         {
             var scoringInfo = new MultipleAlleleScoringInfo(
-                alleleNames.Select(BuildSingleAlleleScoringInfo));
+                alleleNames.Select(BuildSingleAlleleScoringInfo),
+                new List<SerologyEntry>());
 
             return new HlaScoringLookupResult(
                 MatchedLocus,
@@ -124,8 +125,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 alleleName,
                 AlleleTypingStatus.GetDefaultStatus(),
                 alleleName,
-                alleleName,
-                new List<SerologyEntry>());
+                alleleName);
+
             return scoringInfo;
         }
     }

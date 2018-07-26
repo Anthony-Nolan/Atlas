@@ -429,9 +429,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
                     .WithLookupResultCategory(LookupResultCategory.NmdpCodeAllele)
                     .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                         .WithAlleleScoringInfos(pGroupNames.Select(p =>
-                            new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(p).WithMatchingSerologies(matchingSerologies).Build()))
-                        .Build()
-                    )
+                            new SingleAlleleScoringInfoBuilder().WithMatchingPGroup(p).Build()))
+                        .WithMatchingSerologies(matchingSerologies)
+                        .Build())
                     .Build();
             }
             throw new Exception($"Unsupported type: {scoringInfoType}");

@@ -14,10 +14,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     {
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
-
-        /// <summary>
-        /// Used when scoring against a serology typing.
-        /// </summary>
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         public XxCodeScoringInfo(

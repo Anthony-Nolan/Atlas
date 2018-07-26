@@ -75,12 +75,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 .Select(result => result.HlaScoringInfo)
                 .ToList();
 
-            var singleAlleleScoringInfos = allScoringInfos.OfType<SingleAlleleScoringInfo>()
-                    .Concat(allScoringInfos.OfType<MultipleAlleleScoringInfo>()
-                        .SelectMany(info => info.AlleleScoringInfos))
-                        .ToList();
+            var singles = allScoringInfos.OfType<SingleAlleleScoringInfo>().ToList();
+            var multiples = allScoringInfos.OfType<MultipleAlleleScoringInfo>().ToList();
 
-            var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(singleAlleleScoringInfos);
+            var alleleScoringInfos = singles
+                .Concat(multiples.SelectMany(info => info.AlleleScoringInfos))
+                .Distinct();
+
+            var matchingSerologies = singles
+                .SelectMany(allele => allele.MatchingSerologies)
+                .Concat(multiples.SelectMany(multiple => multiple.MatchingSerologies))
+                .Distinct();
+
+            var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(
+                alleleScoringInfos,
+                matchingSerologies);
 
             return new HlaScoringLookupResult(
                 matchLocus,

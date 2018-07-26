@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 new[] { lookupResultSource },
                 allele => allele.Name,
                 LookupResultCategory.OriginalAllele,
-                sources => SingleAlleleScoringInfo.GetScoringInfo(sources.First()));
+                sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
         protected override IHlaLookupResult GetNmdpCodeAlleleLookupResult(
