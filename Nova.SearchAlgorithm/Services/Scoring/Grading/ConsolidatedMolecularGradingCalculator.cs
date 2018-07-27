@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
     /// <summary>
     /// To be used when both typings are molecular, and at least
-    /// one is an XX code.
+    /// one has consolidated molecular scoring info.
     /// </summary>
     public interface IConsolidatedMolecularGradingCalculator : IGradingCalculator
     {
