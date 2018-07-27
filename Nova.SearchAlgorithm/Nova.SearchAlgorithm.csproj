@@ -315,6 +315,7 @@
     <Compile Include="Services\Scoring\Confidence\ConfidenceService.cs" />
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
     <Compile Include="Services\Scoring\Grading\ConsolidatedMolecularGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\GradingCalculatorBase.cs" />
     <Compile Include="Services\Scoring\Grading\SerologyGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\AlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\GradingService.cs" />

@@ -12,51 +12,47 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     {
     }
 
-    public class AlleleGradingCalculator : IAlleleGradingCalculator
+    public class AlleleGradingCalculator : 
+        GradingCalculatorBase, 
+        IAlleleGradingCalculator
     {
-        private class MatchGraderArgs
+        private class AlleleGradingFunctionArgs
         {
             public AlleleTyping PatientAllele { get; }
             public AlleleTyping DonorAllele { get; }
             public SingleAlleleScoringInfo PatientScoringInfo { get; }
             public SingleAlleleScoringInfo DonorScoringInfo { get; }
 
-            public MatchGraderArgs(
+            public AlleleGradingFunctionArgs(
                 MatchLocus matchLocus,
-                SingleAlleleScoringInfo patientScoringInfo, 
-                SingleAlleleScoringInfo donorScoringInfo)
+                IHlaScoringInfo patientScoringInfo, 
+                IHlaScoringInfo donorScoringInfo)
             {
-                PatientScoringInfo = patientScoringInfo;
-                DonorScoringInfo = donorScoringInfo;
-                PatientAllele = new AlleleTyping(matchLocus, patientScoringInfo.AlleleName);
-                DonorAllele = new AlleleTyping(matchLocus, donorScoringInfo.AlleleName);
+                PatientScoringInfo = (SingleAlleleScoringInfo)patientScoringInfo;
+                DonorScoringInfo = (SingleAlleleScoringInfo)donorScoringInfo;
+                PatientAllele = new AlleleTyping(matchLocus, PatientScoringInfo.AlleleName);
+                DonorAllele = new AlleleTyping(matchLocus, DonorScoringInfo.AlleleName);
             }
         }
 
-        public MatchGrade CalculateGrade(
+        protected override bool ScoringInfosAreOfPermittedTypes(
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
-            if (patientLookupResult == null || donorLookupResult == null)
-            {
-                throw new ArgumentException("Cannot calculate grade for null lookup result(s).");
-            }
-
-            if (patientLookupResult.MatchLocus != donorLookupResult.MatchLocus)
-            {
-                throw new ArgumentException("Cannot calculate grade for different loci");
-            }
-
-            var patientInfo = patientLookupResult.HlaScoringInfo;
-            var donorInfo = donorLookupResult.HlaScoringInfo;
-
-            return (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
-                ? GetMatchGrade(new MatchGraderArgs(patientLookupResult.MatchLocus, pInfo, dInfo))
-                : throw new ArgumentException($"Both lookup results must be of type: {typeof(SingleAlleleScoringInfo)}.");
+            return patientLookupResult.HlaScoringInfo is SingleAlleleScoringInfo &&
+                   donorLookupResult.HlaScoringInfo is SingleAlleleScoringInfo;
         }
 
-        private static MatchGrade GetMatchGrade(MatchGraderArgs args)
+        protected override MatchGrade GetMatchGrade(
+            IHlaScoringLookupResult patientLookupResult,
+            IHlaScoringLookupResult donorLookupResult)
         {
+            var args = new AlleleGradingFunctionArgs(
+                patientLookupResult.MatchLocus,
+                patientLookupResult.HlaScoringInfo,
+                donorLookupResult.HlaScoringInfo
+                );
+
             // Order of the following checks is critical to the grade outcome
 
             if (IsExpressingVsNullMismatch(args))
@@ -95,7 +91,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// <summary>
         /// Is one allele is expressing and the other null expressing?
         /// </summary>
-        private static bool IsExpressingVsNullMismatch(MatchGraderArgs args)
+        private static bool IsExpressingVsNullMismatch(AlleleGradingFunctionArgs args)
         {
             return !args.PatientAllele.IsNullExpresser
                 .Equals(args.DonorAllele.IsNullExpresser);
@@ -104,7 +100,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// <summary>
         /// Do both alleles have same name & full gDNA sequences?
         /// </summary>
-        private static bool IsGDnaMatch(MatchGraderArgs args)
+        private static bool IsGDnaMatch(AlleleGradingFunctionArgs args)
         {
             return
                 args.PatientScoringInfo.Equals(args.DonorScoringInfo) &&
@@ -116,7 +112,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// Do both alleles have the same name AND have full cDNA; OR
         /// Do both alleles share the same first three fields AND have full sequences?
         /// </summary>
-        private static bool IsCDnaMatch(MatchGraderArgs args)
+        private static bool IsCDnaMatch(AlleleGradingFunctionArgs args)
         {
             if (!AreBothSequencesFullLength(
                 args.PatientScoringInfo, 
@@ -141,9 +137,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Do both expressing alleles have the same first two fields AND have full c/gDNA?
+        /// Do both expressing alleles have the same first two fields AND have full sequences?
         /// </summary>
-        private static bool IsProteinMatch(MatchGraderArgs args)
+        private static bool IsProteinMatch(AlleleGradingFunctionArgs args)
         {
             return
                 AreBothAllelesExpressing(args.PatientAllele, args.DonorAllele) &&
@@ -154,20 +150,20 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// <summary>
         /// Do both expressing alleles belong to the same G Group?
         /// </summary>
-        private static bool IsGGroupMatch(MatchGraderArgs args)
+        private static bool IsGGroupMatch(AlleleGradingFunctionArgs args)
         {
            return
-                !args.PatientAllele.IsNullExpresser && !args.DonorAllele.IsNullExpresser &&
+                AreBothAllelesExpressing(args.PatientAllele, args.DonorAllele) &&
                 string.Equals(args.PatientScoringInfo.MatchingGGroup, args.DonorScoringInfo.MatchingGGroup);
         }
 
         /// <summary>
         /// Do both expressing alleles belong to the same P Group?
         /// </summary>
-        private static bool IsPGroupMatch(MatchGraderArgs args)
+        private static bool IsPGroupMatch(AlleleGradingFunctionArgs args)
         {
             return
-                !args.PatientAllele.IsNullExpresser && !args.DonorAllele.IsNullExpresser &&
+                AreBothAllelesExpressing(args.PatientAllele, args.DonorAllele) &&
                 string.Equals(args.PatientScoringInfo.MatchingPGroup, args.DonorScoringInfo.MatchingPGroup);
         }
 
