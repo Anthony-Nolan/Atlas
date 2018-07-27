@@ -29,7 +29,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus).Build())
@@ -37,7 +36,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
@@ -55,7 +53,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus).Build())
@@ -63,7 +60,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
@@ -87,7 +83,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string patientAlleleName = sharedFirstThreeFields + ":01";
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, patientDnaCategory);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus)
@@ -97,7 +92,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorAlleleName = sharedFirstThreeFields + ":999";
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, donorDnaCategory);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus)
@@ -122,7 +116,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string patientAlleleName = sharedFirstTwoFields + ":11";
             var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, patientDnaCategory);
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithAlleleTypingStatus(patientAlleleStatus)
@@ -132,7 +125,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorAlleleName = sharedFirstTwoFields + ":22";
             var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, donorDnaCategory);
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus)
@@ -151,7 +143,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             const string patientAlleleName = "111:111";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
@@ -160,7 +151,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
@@ -180,7 +170,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string patientAlleleName = "111:111";
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -191,7 +180,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -211,7 +199,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -223,7 +210,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -247,14 +233,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             string donorAlleleName)
         {
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .Build())

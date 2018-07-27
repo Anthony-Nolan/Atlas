@@ -6,17 +6,18 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
-    /// Only to be used with XX codes where consolidated data is sufficient for scoring.
+    /// Only to be used with molecular types, such as NMDP codes & XX codes,
+    /// where consolidated data is sufficient for scoring.
     /// </summary>
-    public class XxCodeScoringInfo : 
+    public class ConsolidatedMolecularScoringInfo : 
         IHlaScoringInfo,
-        IEquatable<XxCodeScoringInfo>
+        IEquatable<ConsolidatedMolecularScoringInfo>
     {
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
-        public XxCodeScoringInfo(
+        public ConsolidatedMolecularScoringInfo(
             IEnumerable<string> matchingPGroups,
             IEnumerable<string> matchingGGroups, 
             IEnumerable<SerologyEntry> matchingSerologies)
@@ -26,19 +27,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             MatchingSerologies = matchingSerologies;
         }
 
-        public static XxCodeScoringInfo GetScoringInfo(
+        public static ConsolidatedMolecularScoringInfo GetScoringInfo(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> allelesSource)
         {
             var alleles = allelesSource.ToList();
 
-            return new XxCodeScoringInfo(
+            return new ConsolidatedMolecularScoringInfo(
                 alleles.SelectMany(allele => allele.MatchingPGroups).Distinct(),
                 alleles.SelectMany(allele => allele.MatchingGGroups).Distinct(),
                 alleles.SelectMany(allele => allele.MatchingSerologies.Select(m => m.ToSerologyEntry())).Distinct()
                 );
         }
 
-        public bool Equals(XxCodeScoringInfo other)
+        public bool Equals(ConsolidatedMolecularScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -53,7 +54,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((XxCodeScoringInfo) obj);
+            return Equals((ConsolidatedMolecularScoringInfo) obj);
         }
 
         public override int GetHashCode()

@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return new HlaScoringLookupResult(
                 lookupResultSource.TypingForHlaLookupResult.MatchLocus,
                 lookupResultSource.TypingForHlaLookupResult.Name,
-                LookupResultCategory.Serology,
+                LookupNameCategory.Serology,
                 scoringInfo
             );
         }
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return GetMolecularLookupResult(
                 new[] { lookupResultSource },
                 allele => allele.Name,
-                LookupResultCategory.OriginalAllele,
+                LookupNameCategory.OriginalAllele,
                 sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => allele.ToNmdpCodeAlleleLookupName(),
-                LookupResultCategory.NmdpCodeAllele,
+                LookupNameCategory.NmdpCodeAllele,
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
@@ -57,14 +57,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => allele.ToXxCodeLookupName(),
-                LookupResultCategory.XxCode,
-                XxCodeScoringInfo.GetScoringInfo);
+                LookupNameCategory.XxCode,
+                ConsolidatedMolecularScoringInfo.GetScoringInfo);
         }
 
         private static HlaScoringLookupResult GetMolecularLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             Func<AlleleTyping, string> getLookupName,
-            LookupResultCategory lookupResultCategory,
+            LookupNameCategory lookupNameCategory,
             Func<IEnumerable<IHlaLookupResultSource<AlleleTyping>>, IHlaScoringInfo> getScoringInfo)
         {
             var sources = lookupResultSources.ToList();
@@ -76,7 +76,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return new HlaScoringLookupResult(
                 firstAllele.MatchLocus,
                 getLookupName(firstAllele),
-                lookupResultCategory,
+                lookupNameCategory,
                 getScoringInfo(sources)
             );
         }

@@ -7,11 +7,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// To be used when both typings are molecular, and at least
     /// one is an XX code.
     /// </summary>
-    public interface IXxCodeGradingCalculator : IGradingCalculator
+    public interface IConsolidatedMolecularGradingCalculator : IGradingCalculator
     {
     }
 
-    public class XxCodeGradingCalculator: IXxCodeGradingCalculator
+    public class ConsolidatedMolecularGradingCalculator: IConsolidatedMolecularGradingCalculator
     {
         public MatchGrade CalculateGrade(
             IHlaScoringLookupResult patientLookupResult, 

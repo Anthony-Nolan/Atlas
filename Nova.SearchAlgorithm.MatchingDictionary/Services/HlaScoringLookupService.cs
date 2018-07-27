@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
@@ -7,6 +8,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.Utils.ApplicationInsights;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,7 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     }
 
     public class HlaScoringLookupService :
-        HlaSearchingLookupServiceBase<IHlaScoringLookupResult>, 
+        HlaSearchingLookupServiceBase<IHlaScoringLookupResult>,
         IHlaScoringLookupService
     {
         public HlaScoringLookupService(
@@ -56,36 +58,38 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             string lookupName,
             IEnumerable<IHlaScoringLookupResult> lookupResults)
         {
+            var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
             var results = lookupResults.ToList();
+            var scoringInfos = results.Select(result => result.HlaScoringInfo);
+            
+            switch (hlaTypingCategory)
+            {
+                case HlaTypingCategory.Allele:
+                    return results.Count == 1
+                        ? results.Single()
+                        : GetMultipleAlleleLookupResult(matchLocus, lookupName, scoringInfos);
 
-            // only molecular typings have the potential to bring back >1 result
-            var lookupResult = results.Count == 1
-                ? results.First()
-                : GetMultipleAlleleLookupResult(matchLocus, lookupName, results);
+                case HlaTypingCategory.AlleleStringOfNames:
+                case HlaTypingCategory.AlleleStringOfSubtypes:
+                case HlaTypingCategory.NmdpCode:
+                    return GetConsolidatedMolecularLookupResult(matchLocus, lookupName, scoringInfos);
 
-            return lookupResult;
+                case HlaTypingCategory.XxCode:
+                case HlaTypingCategory.Serology:
+                    return results.Single();
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private static IHlaScoringLookupResult GetMultipleAlleleLookupResult(
             MatchLocus matchLocus,
             string lookupName,
-            IEnumerable<IHlaScoringLookupResult> lookupResults)
+            IEnumerable<IHlaScoringInfo> scoringInfos)
         {
-            var allScoringInfos = lookupResults
-                .Select(result => result.HlaScoringInfo)
-                .ToList();
-
-            var singles = allScoringInfos.OfType<SingleAlleleScoringInfo>().ToList();
-            var multiples = allScoringInfos.OfType<MultipleAlleleScoringInfo>().ToList();
-
-            var alleleScoringInfos = singles
-                .Concat(multiples.SelectMany(info => info.AlleleScoringInfos))
-                .Distinct();
-
-            var matchingSerologies = singles
-                .SelectMany(allele => allele.MatchingSerologies)
-                .Concat(multiples.SelectMany(multiple => multiple.MatchingSerologies))
-                .Distinct();
+            var alleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
+            var matchingSerologies = GetMatchingSerologies(alleleScoringInfos);
 
             var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(
                 alleleScoringInfos,
@@ -94,9 +98,67 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return new HlaScoringLookupResult(
                 matchLocus,
                 lookupName,
-                LookupResultCategory.MultipleAlleles,
+                LookupNameCategory.MultipleAlleles,
                 multipleAlleleScoringInfo
             );
+        }
+
+        private static IHlaScoringLookupResult GetConsolidatedMolecularLookupResult(
+            MatchLocus matchLocus,
+            string lookupName,
+            IEnumerable<IHlaScoringInfo> scoringInfos)
+        {
+            var singleAlleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
+
+            var matchingGGroups = GetMatchingGGroups(singleAlleleScoringInfos);
+            var matchingPGroups = GetMatchingPGroups(singleAlleleScoringInfos);
+            var matchingSerologies = GetMatchingSerologies(singleAlleleScoringInfos);
+
+            var consolidatedMolecularScoringInfo = new ConsolidatedMolecularScoringInfo(
+                matchingGGroups,
+                matchingPGroups,
+                matchingSerologies);
+
+            return new HlaScoringLookupResult(
+                matchLocus,
+                lookupName,
+                LookupNameCategory.MultipleAlleles,
+                consolidatedMolecularScoringInfo
+            );
+        }
+
+        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(
+            IEnumerable<IHlaScoringInfo> scoringInfos)
+        {
+            var infos = scoringInfos.ToList();
+
+            return infos.OfType<SingleAlleleScoringInfo>()
+                .Union(infos.OfType<MultipleAlleleScoringInfo>()
+                    .SelectMany(multiple => multiple.AlleleScoringInfos));
+        }
+
+        private static IEnumerable<string> GetMatchingGGroups(
+            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        {
+            return singleAlleleScoringInfos
+                .Select(single => single.MatchingGGroup)
+                .Distinct();
+        }
+
+        private static IEnumerable<string> GetMatchingPGroups(
+            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        {
+            return singleAlleleScoringInfos
+                .Select(single => single.MatchingPGroup)
+                .Distinct();
+        }
+
+        private static IEnumerable<SerologyEntry> GetMatchingSerologies(
+            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        {
+            return singleAlleleScoringInfos
+                .SelectMany(info => info.MatchingSerologies)
+                .Distinct();
         }
     }
 }

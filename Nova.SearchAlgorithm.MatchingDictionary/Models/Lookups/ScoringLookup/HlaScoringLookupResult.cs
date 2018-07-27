@@ -11,23 +11,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public MatchLocus MatchLocus { get; }
         public string LookupName { get; }
 
-        public TypingMethod TypingMethod => LookupResultCategory == LookupResultCategory.Serology
+        public TypingMethod TypingMethod => LookupNameCategory == LookupNameCategory.Serology
             ? TypingMethod.Serology
             : TypingMethod.Molecular;
 
-        public LookupResultCategory LookupResultCategory { get; }
+        public LookupNameCategory LookupNameCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
 
         public HlaScoringLookupResult(
             MatchLocus matchLocus,
             string lookupName,
-            LookupResultCategory lookupResultCategory,
+            LookupNameCategory lookupNameCategory,
             IHlaScoringInfo hlaScoringInfo)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
-            LookupResultCategory = lookupResultCategory;
+            LookupNameCategory = lookupNameCategory;
             HlaScoringInfo = hlaScoringInfo;
         }
 
@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 MatchLocus == other.MatchLocus && 
                 string.Equals(LookupName, other.LookupName) && 
                 TypingMethod == other.TypingMethod && 
-                LookupResultCategory == other.LookupResultCategory && 
+                LookupNameCategory == other.LookupNameCategory && 
                 HlaScoringInfo.Equals(other.HlaScoringInfo);
         }
 
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 var hashCode = (int) MatchLocus;
                 hashCode = (hashCode * 397) ^ LookupName.GetHashCode();
                 hashCode = (hashCode * 397) ^ (int) TypingMethod;
-                hashCode = (hashCode * 397) ^ (int) LookupResultCategory;
+                hashCode = (hashCode * 397) ^ (int) LookupNameCategory;
                 hashCode = (hashCode * 397) ^ HlaScoringInfo.GetHashCode();
                 return hashCode;
             }

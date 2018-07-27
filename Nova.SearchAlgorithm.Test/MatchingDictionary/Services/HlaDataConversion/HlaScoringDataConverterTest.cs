@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 SerologyName,
-                LookupResultCategory.Serology,
+                LookupNameCategory.Serology,
                 scoringInfo);
         }
 
@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 alleleName,
-                LookupResultCategory.OriginalAllele,
+                LookupNameCategory.OriginalAllele,
                 BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName)
             );
         }
@@ -104,7 +104,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 lookupName,
-                LookupResultCategory.NmdpCodeAllele,
+                LookupNameCategory.NmdpCodeAllele,
                 new MultipleAlleleScoringInfo(
                     alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
                     SerologyEntries)
@@ -118,8 +118,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 xxCodeLookupName,
-                LookupResultCategory.XxCode,
-                new XxCodeScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries)
+                LookupNameCategory.XxCode,
+                new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries)
             );
         }
 

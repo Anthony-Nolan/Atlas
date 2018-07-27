@@ -196,10 +196,10 @@
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
-    <Compile Include="Models\Lookups\LookupResultCategory.cs" />
+    <Compile Include="Models\Lookups\LookupNameCategory.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\MultipleAlleleScoringInfo.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\SingleAlleleScoringInfo.cs" />
-    <Compile Include="Models\Lookups\ScoringLookup\XxCodeScoringInfo.cs" />
+    <Compile Include="Models\Lookups\ScoringLookup\ConsolidatedMolecularScoringInfo.cs" />
     <Compile Include="Models\Lookups\AlleleNameLookup\AlleleNameLookupResult.cs" />
     <Compile Include="Models\Lookups\IHlaLookupResult.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\HlaScoringLookupResult.cs" />

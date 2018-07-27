@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
@@ -9,258 +10,253 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class XxCodeGradingCalculatorTests
+    public class ConsolidatedMolecularGradingCalculatorTests
     {
-        private IXxCodeGradingCalculator xxCodeGradingCalculator;
+        private IConsolidatedMolecularGradingCalculator consolidatedMolecularGradingCalculator;
 
         [SetUp]
         public void SetUp()
         {
-            xxCodeGradingCalculator = new XxCodeGradingCalculator();
+            consolidatedMolecularGradingCalculator = new ConsolidatedMolecularGradingCalculator();
         }
 
-        #region Tests: Both Typings XX Codes
+        #region Tests: Both Typings Consolidated Molecular
 
         [Test]
-        public void CalculateGrade_BothTypingsAreXxCodes_WithSameName_ReturnsGGroup()
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithSameName_ReturnsGGroup()
         {
-            const string sharedXxCodeName = "shared-xx-code";
+            const string sharedConsolidatedMolecularName = "shared-hla-name";
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithLookupName(sharedConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
+                .WithLookupName(sharedConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreXxCodes_WithDifferentNames_ButIntersectingGGroups_ReturnsGGroup()
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithDifferentNames_ButIntersectingGGroups_ReturnsGGroup()
         {
             const string sharedGGroup = "shared-g-group";
 
-            const string patientXxCodeName = "patient-xx-code";
+            const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, patientGGroup })
                     .Build())
                 .Build();
 
-            const string donorXxCodeName = "donor-xx-code";
+            const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, donorGGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreXxCodes_WithDifferentNamesAndGGroups_ButIntersectingPGroups_ReturnsGGroup()
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithDifferentNamesAndGGroups_ButIntersectingPGroups_ReturnsGGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
-            const string patientXxCodeName = "patient-xx-code";
+            const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new []{ patientGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, patientPGroup })
                     .Build())
                 .Build();
 
-            const string donorXxCodeName = "donor-xx-code";
+            const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, donorPGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreXxCodes_WithDifferentNamesAndGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithDifferentNamesAndGGroupsAndPGroups_ReturnsMismatch()
         {
-            const string patientXxCodeName = "patient-xx-code";
+            const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { patientPGroup })
                     .Build())
                 .Build();
 
-            const string donorXxCodeName = "donor-xx-code";
+            const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorXxCodeName)
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { donorPGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
 
         #endregion
 
-        #region Tests: XX Code vs. Expressing Allele
+        #region Tests: Consolidated Molecular vs. Expressing Allele
 
         [Test]
-        public void CalculateGrade_XxCodeVsExpressingAllele_WithIntersectingGGroups_ReturnsGGroup()
+        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_WithIntersectingGGroups_ReturnsGGroup()
         {
             const string sharedGGroup = "shared-g-group";
 
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, patientGGroup })
                     .Build())
                 .Build();
 
+            const string donorAlleleName = "999:999";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
 
         [Test]
-        public void CalculateGrade_XxCodeVsExpressingAllele_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
+        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, patientPGroup })
                     .Build())
                 .Build();
 
+            const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
                     .WithMatchingPGroup(sharedPGroup)
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_XxCodeVsExpressingAllele_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { patientPGroup })
                     .Build())
                 .Build();
 
+            const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
                     .WithMatchingPGroup(donorPGroup)
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
 
         #endregion
 
-        #region Tests: Expressing Allele vs. XX Code
+        #region Tests: Expressing Allele vs. Consolidated Molecular
 
         [Test]
-        public void CalculateGrade_ExpressingAlleleVsXxCode_WithIntersectingGGroups_ReturnsGGroup()
+        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_WithIntersectingGGroups_ReturnsGGroup()
         {
             const string sharedGGroup = "shared-g-group";
 
+            const string patientAlleleName = "999:999";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
                     .Build())
                 .Build();
 
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, donorGGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
 
         [Test]
-        public void CalculateGrade_ExpressingAlleleVsXxCode_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
+        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
+            const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
                     .WithMatchingPGroup(sharedPGroup)
                     .Build())
@@ -269,26 +265,26 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, donorPGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_ExpressingAlleleVsXxCode_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
         {
+            const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.OriginalAllele)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
                     .WithMatchingPGroup(patientPGroup)
                     .Build())
@@ -297,40 +293,37 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { donorPGroup })
                     .Build())
                 .Build();   
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
 
         #endregion
 
-        // TODO: NOVA-1479 - Add tests for scoring XX code vs. null allele & vice versa
+        // TODO: NOVA-1479 - Add tests for scoring Consolidated Molecular vs. null allele & vice versa
 
-        #region Tests: XX Code vs. Multiple Alleles
+        #region Tests: Consolidated Molecular vs. Multiple Alleles
 
         [Test]
-        public void CalculateGrade_XxCodeVsMultipleAllele_WithIntersectingGGroups_ReturnsGGroup()
+        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_WithIntersectingGGroups_ReturnsGGroup()
         {
             const string sharedGGroup = "shared-g-group";
 
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, patientGGroup })
                     .Build())
                 .Build();
 
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.MultipleAlleles)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new []{
                         new SingleAlleleScoringInfoBuilder()
@@ -343,21 +336,20 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
 
         [Test]
-        public void CalculateGrade_XxCodeVsMultipleAllele_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
+        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, patientPGroup })
                     .Build())
@@ -366,7 +358,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.MultipleAlleles)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -381,19 +372,18 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_XxCodeVsMultipleAllele_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { patientPGroup })
                     .Build())
@@ -402,7 +392,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.MultipleAlleles)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -413,23 +402,22 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
 
         #endregion
 
-        #region Tests: Multiple Alleles vs. XX Code
+        #region Tests: Multiple Alleles vs. Consolidated Molecular
 
         [Test]
-        public void CalculateGrade_MultipleAlleleVsXxCode_WithIntersectingGGroups_ReturnsGGroup()
+        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_WithIntersectingGGroups_ReturnsGGroup()
         {
             const string sharedGGroup = "shared-g-group";
 
             const string patientGGroup = "patient-g-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.MultipleAlleles)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -444,26 +432,24 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, donorGGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
 
         [Test]
-        public void CalculateGrade_MultipleAlleleVsXxCode_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
+        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_WithDifferentGGroups_ButIntersectingPGroups_ReturnsGGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.MultipleAlleles)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -481,25 +467,23 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, donorPGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_MultipleAlleleVsXxCode_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.MultipleAlleles)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -513,14 +497,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.XxCode)
-                .WithHlaScoringInfo(new XxCodeScoringInfoBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { donorPGroup })
                     .Build())
                 .Build();
 
-            var grade = xxCodeGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }

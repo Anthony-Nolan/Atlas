@@ -145,7 +145,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             AlleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, submittedAlleleName)
                 .Returns(Task.FromResult((IEnumerable<string>)new[] { currentAlleleName }));
 
-            // return null on submitted name to emulate scenario that requires a two-field-name lookup
+            // return null on submitted name to emulate scenario that requires a current name lookup
             HlaLookupRepository
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, submittedAlleleName, TypingMethod.Molecular)
                 .ReturnsNull();

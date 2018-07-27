@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.Common.Models.Scoring;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Common.Models.Scoring;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 {
@@ -43,7 +41,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private static bool IsMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
-            if (patientLookupResult.TypingMethod == TypingMethod.Serology || donorLookupResult.TypingMethod == TypingMethod.Serology)
+            if (patientLookupResult.HlaScoringInfo is SerologyScoringInfo ||
+                donorLookupResult.HlaScoringInfo is SerologyScoringInfo)
             {
                 return IsSerologyMatch(patientLookupResult, donorLookupResult);
             }
@@ -75,8 +74,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private static bool IsExactMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
-            return patientLookupResult.TypingMethod == TypingMethod.Molecular
-                   && donorLookupResult.TypingMethod == TypingMethod.Molecular
+            return !(patientLookupResult.HlaScoringInfo is SerologyScoringInfo)
+                   && !(donorLookupResult.HlaScoringInfo is SerologyScoringInfo)
                    && GetPGroups(patientLookupResult).Count() == 1
                    && GetPGroups(donorLookupResult).Count() == 1;
         }
@@ -85,10 +84,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
         {
             switch (patientLookupResult.HlaScoringInfo)
             {
-                case SerologyScoringInfo serologyScoringInfo:
+                case SerologyScoringInfo _:
                     throw new Exception("Cannot compare p-groups for serology scoring info - compare matching serologies instead");
-                case XxCodeScoringInfo xxInfo:
-                    return xxInfo.MatchingPGroups;
+                case ConsolidatedMolecularScoringInfo consolidatedMolecularInfo:
+                    return consolidatedMolecularInfo.MatchingPGroups;
                 case SingleAlleleScoringInfo singleAlleleInfo:
                     return new List<string> {singleAlleleInfo.MatchingPGroup};
                 case MultipleAlleleScoringInfo multipleAlleleInfo:
