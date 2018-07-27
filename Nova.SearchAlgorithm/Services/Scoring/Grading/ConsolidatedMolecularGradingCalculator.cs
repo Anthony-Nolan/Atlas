@@ -1,5 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -11,14 +12,64 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     {
     }
 
-    public class ConsolidatedMolecularGradingCalculator: IConsolidatedMolecularGradingCalculator
+    public class ConsolidatedMolecularGradingCalculator :
+        GradingCalculatorBase,
+        IConsolidatedMolecularGradingCalculator
     {
-        public MatchGrade CalculateGrade(
+        protected override bool ScoringInfosAreOfPermittedTypes(
+            IHlaScoringInfo patientInfo,
+            IHlaScoringInfo donorInfo)
+        {
+            return (patientInfo is ConsolidatedMolecularScoringInfo ||
+                    donorInfo is ConsolidatedMolecularScoringInfo) &&
+                   !(patientInfo is SerologyScoringInfo) &&
+                   !(donorInfo is SerologyScoringInfo);
+        }
+
+        protected override MatchGrade GetMatchGrade(
             IHlaScoringLookupResult patientLookupResult, 
             IHlaScoringLookupResult donorLookupResult)
         {
-            // TODO: NOVA-1446 - Implement
-            return MatchGrade.NotCalculated;
+            var patientInfo = patientLookupResult.HlaScoringInfo;
+            var donorInfo = donorLookupResult.HlaScoringInfo;
+
+            // Order of the following checks is critical to the grade outcome
+
+            if (IsGGroupMatch(patientInfo, donorInfo))
+            {
+                return MatchGrade.GGroup;
+            }
+
+            if (IsPGroupMatch(patientInfo, donorInfo))
+            {
+                return MatchGrade.PGroup;
+            }
+
+            return MatchGrade.Mismatch;
+        }
+
+        /// <summary>
+        /// Do both typings have interseting G Groups?
+        /// </summary>
+        private static bool IsGGroupMatch(
+            IHlaScoringInfo patientInfo,
+            IHlaScoringInfo donorInfo)
+        {
+            return patientInfo.MatchingGGroups
+                .Intersect(donorInfo.MatchingGGroups)
+                .Any();
+        }
+
+        /// <summary>
+        /// Do both typings have interseting P Groups?
+        /// </summary>
+        private static bool IsPGroupMatch(
+            IHlaScoringInfo patientInfo,
+            IHlaScoringInfo donorInfo)
+        {
+            return patientInfo.MatchingPGroups
+                .Intersect(donorInfo.MatchingPGroups)
+                .Any();
         }
     }
 }

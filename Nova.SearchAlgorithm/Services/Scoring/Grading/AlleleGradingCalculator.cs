@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         protected override bool ScoringInfosAreOfPermittedTypes(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringInfo patientInfo,
+            IHlaScoringInfo donorInfo)
         {
-            return patientLookupResult.HlaScoringInfo is SingleAlleleScoringInfo &&
-                   donorLookupResult.HlaScoringInfo is SingleAlleleScoringInfo;
+            return patientInfo is SingleAlleleScoringInfo &&
+                   donorInfo is SingleAlleleScoringInfo;
         }
 
         protected override MatchGrade GetMatchGrade(

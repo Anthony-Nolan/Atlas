@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
@@ -11,6 +12,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
     {
         public SerologySubtype SerologySubtype { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
+
+        [JsonIgnore]
+        public IEnumerable<string> MatchingGGroups => new List<string>();
+
+        [JsonIgnore]
+        public IEnumerable<string> MatchingPGroups => new List<string>();
 
         public SerologyScoringInfo(
             SerologySubtype serologySubtype, 

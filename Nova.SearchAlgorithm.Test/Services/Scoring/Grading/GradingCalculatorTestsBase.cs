@@ -51,7 +51,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                         .Build()));
         }
 
-        [Test]
         public abstract void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
             Type patientScoringInfoType,
             Type donorScoringInfoType);

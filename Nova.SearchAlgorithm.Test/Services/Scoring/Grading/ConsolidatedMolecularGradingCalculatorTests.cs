@@ -1,24 +1,45 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
+using System;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class ConsolidatedMolecularGradingCalculatorTests
+    public class ConsolidatedMolecularGradingCalculatorTests :
+        GradingCalculatorTestsBase<ConsolidatedMolecularGradingCalculator>
     {
-        private IConsolidatedMolecularGradingCalculator consolidatedMolecularGradingCalculator;
+        #region Tests: Exception Cases
 
-        [SetUp]
-        public void SetUp()
+        [TestCase(typeof(ConsolidatedMolecularScoringInfo), typeof(SerologyScoringInfo))]
+        [TestCase(typeof(SerologyScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(SerologyScoringInfo), typeof(SerologyScoringInfo))]
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        public override void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
+            Type patientScoringInfoType,
+            Type donorScoringInfoType
+        )
         {
-            consolidatedMolecularGradingCalculator = new ConsolidatedMolecularGradingCalculator();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
+                .Build();
+
+            Assert.Throws<ArgumentException>(() =>
+                GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult));
         }
+
+        #endregion
 
         #region Tests: Both Typings Consolidated Molecular
 
@@ -37,7 +58,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -65,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -97,7 +118,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
@@ -127,7 +148,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -156,7 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -185,7 +206,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
@@ -213,7 +234,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -242,7 +263,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -271,7 +292,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
@@ -299,7 +320,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();   
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -336,7 +357,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -372,7 +393,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
@@ -402,7 +423,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -437,7 +458,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -473,7 +494,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
@@ -503,7 +524,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = consolidatedMolecularGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }

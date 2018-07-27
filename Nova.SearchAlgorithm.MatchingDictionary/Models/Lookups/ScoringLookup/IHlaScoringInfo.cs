@@ -8,5 +8,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         /// Used when scoring against a serology typing.
         /// </summary>
         IEnumerable<SerologyEntry> MatchingSerologies { get; }
+
+        /// <summary>
+        /// Used when scoring against a consolidated molecular typing.
+        /// </summary>
+        IEnumerable<string> MatchingGGroups { get; }
+
+        /// <summary>
+        /// Used when scoring against a consolidated molecular typing.
+        /// </summary>
+        IEnumerable<string> MatchingPGroups { get; }
     }
 }
