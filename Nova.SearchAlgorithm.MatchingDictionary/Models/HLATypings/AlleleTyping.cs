@@ -35,6 +35,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         {
         }
 
+        public bool TryGetThreeFieldName(out string threeFieldName)
+        {
+            threeFieldName = null;
+
+            if (Fields.Count() < 3)
+            {
+                return false;
+            }
+
+            threeFieldName = string.Join(":", Fields.Take(3));
+            return true;
+        }
+
         private string GetExpressionSuffix()
         {
             return new Regex(@"[A-Z]$").Match(Name).Value;

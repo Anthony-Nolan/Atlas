@@ -1,11 +1,12 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
+using System;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
@@ -19,6 +20,51 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         {
             alleleGradingCalculator = new AlleleGradingCalculator();
         }
+
+        #region Tests: Exception Cases
+
+        [Test]
+        public void CalculateGrade_BothResultsAreNull_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                alleleGradingCalculator.CalculateGrade(null, null));
+        }
+
+        [Test]
+        public void CalculateGrade_PatientResultIsNull_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                alleleGradingCalculator.CalculateGrade(null, new HlaScoringLookupResultBuilder().Build()));
+        }
+
+        [Test]
+        public void CalculateGrade_DonorResultIsNull_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                alleleGradingCalculator.CalculateGrade(new HlaScoringLookupResultBuilder().Build(), null));
+        }
+
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(SerologyScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        public void CalculateGrade_EitherScoringInfoIsNotASingleAllele_ThrowsException(
+            Type patientScoringInfoType,
+            Type donorScoringInfoType
+            )
+        {
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
+                .Build();
+
+            Assert.Throws<ArgumentException>(() =>
+                alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult));
+        }
+
+        #endregion
 
         #region Tests: Both Typings Expressing Alleles
 
@@ -133,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
-            grade.Should().Be(MatchGrade.CDna);
+            grade.Should().Be(MatchGrade.Protein);
         }
 
         [Test]
