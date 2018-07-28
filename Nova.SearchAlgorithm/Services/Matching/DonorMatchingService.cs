@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 {
     public interface IDonorMatchingService
     {
-        Task<IEnumerable<MatchResult>> Search(AlleleLevelMatchCriteria criteria);
+        Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria);
     }
 
     public class DonorMatchingService : IDonorMatchingService
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             this.matchFilteringService = matchFilteringService;
         }
 
-        public async Task<IEnumerable<MatchResult>> Search(AlleleLevelMatchCriteria criteria)
+        public async Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
         {
             var lociToSearch = criteria.LociWithCriteriaSpecified().ToList();
 

@@ -13,6 +13,9 @@ using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.Utils.WebApi.Filters;
 using System.Configuration;
 using System.Reflection;
+using Nova.SearchAlgorithm.Services.Scoring.Confidence;
+using Nova.SearchAlgorithm.Services.Scoring.Grading;
+using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -43,6 +46,14 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            
+            // Scoring Services
+            builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<GradingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ConfidenceService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ConfidenceCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<RankingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchScoreCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
             builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();

@@ -369,6 +369,8 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\SharedTestDataCache.cs" />
+    <Compile Include="Models\SearchResults\MatchAndScoreResultTests.cs" />
+    <Compile Include="Models\SearchResults\ScoreResultTests.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
@@ -380,6 +382,7 @@
     <Compile Include="Services\Scoring\RankingServiceTests.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceServiceTests.cs" />
+    <Compile Include="Services\Scoring\DonorScoringServiceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />

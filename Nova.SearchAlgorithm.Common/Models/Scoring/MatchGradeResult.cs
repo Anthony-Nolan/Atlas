@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.Scoring
 {

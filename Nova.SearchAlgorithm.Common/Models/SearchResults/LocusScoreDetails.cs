@@ -1,4 +1,5 @@
 ﻿using System;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
@@ -36,5 +37,8 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 
         public LocusPositionScoreDetails ScoreDetailsAtPosition1;
         public LocusPositionScoreDetails ScoreDetailsAtPosition2;
+
+        public bool IsPotentialMatch => ScoreDetailsAtPosition1.MatchConfidence == MatchConfidence.Potential &&
+                                        ScoreDetailsAtPosition2.MatchConfidence == MatchConfidence.Potential;
     }
 }

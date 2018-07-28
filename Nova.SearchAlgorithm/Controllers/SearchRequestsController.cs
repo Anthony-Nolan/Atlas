@@ -4,6 +4,8 @@ using System.Web.Http;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Services;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Exceptions;
 
 namespace Nova.SearchAlgorithm.Controllers

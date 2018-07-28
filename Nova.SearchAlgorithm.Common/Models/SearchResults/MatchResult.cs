@@ -45,6 +45,14 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         public int TypedLociCount => LocusMatchDetails.Count(m => m != null && m.IsLocusTyped);
 
         public int PopulatedLociCount => LocusMatchDetails.Count(m => m != null);
+
+        /// <summary>
+        /// Returns the loci for which match results have been set
+        /// </summary>
+        public IEnumerable<Locus> MatchedLoci => LocusHelpers.AllLoci()
+            // TODO: NOVA-1300 Match on DPB1
+            .Except(new[] {Locus.Dpb1})
+            .Where(l => MatchDetailsForLocus(l) != null);
         
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>
         {
@@ -125,6 +133,7 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
                     MatchDetailsAtLocusDrb1 = locusMatchDetails;
                     break;
                 case Locus.Dpb1:
+                    // TODO: NOVA-1300: Match on DPB1
                     throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException();

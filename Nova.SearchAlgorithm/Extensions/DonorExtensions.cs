@@ -1,5 +1,6 @@
 ﻿using System;
 using Nova.DonorService.Client.Models;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Exceptions;
 

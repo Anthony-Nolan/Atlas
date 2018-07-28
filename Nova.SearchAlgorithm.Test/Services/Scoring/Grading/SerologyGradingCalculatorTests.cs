@@ -1,9 +1,8 @@
 ﻿using System;
 using FluentAssertions;
-using Nova.SearchAlgorithm.Common.Models.Scoring;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
@@ -59,18 +58,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndAssociatedSubtype_ReturnsAssociated()
         {
             const string sharedSerologyName = "shared-serology";
+            const SerologySubtype sharedSubtype = SerologySubtype.Associated;
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.Associated)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.Associated)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
@@ -83,18 +83,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndSplitSubtype_ReturnsSplit()
         {
             const string sharedSerologyName = "shared-serology";
+            const SerologySubtype sharedSubtype = SerologySubtype.Split;
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.Split)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.Split)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
@@ -107,18 +108,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndNotSplitSubtype_ReturnsSplit()
         {
             const string sharedSerologyName = "shared-serology";
+            const SerologySubtype sharedSubtype = SerologySubtype.NotSplit;
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.NotSplit)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.NotSplit)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
@@ -166,18 +168,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndBroadSubtype_ReturnsBroad()
         {
             const string sharedSerologyName = "shared-serology";
+            const SerologySubtype sharedSubtype = SerologySubtype.Broad;
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.Broad)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(SerologySubtype.Broad)
+                    .WithSerologySubtype(sharedSubtype)
                     .Build())
                 .Build();
 
@@ -569,8 +572,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         {
             const string patientAlleleName = "999:999N";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientAlleleName)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
@@ -595,8 +599,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             const string donorAlleleName = "999:999N";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorAlleleName)
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .Build())
                 .Build();
 
             var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);

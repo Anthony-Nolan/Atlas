@@ -1,8 +1,6 @@
-﻿using Nova.SearchAlgorithm.Common.Models.Scoring;
-
-namespace Nova.SearchAlgorithm.Common.Models.SearchResults
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
-    public class LocusPositionScoreDetails
+    public class LoucsPositionSearchResult
     {
         /// <summary>
         /// The match grade at this locus, according to the scoring algorithm, for validation and debugging.

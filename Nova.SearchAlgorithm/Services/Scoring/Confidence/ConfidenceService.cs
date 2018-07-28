@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using System;
@@ -32,6 +33,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
             patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
             {
+                // TODO: NOVA-1301: Score DPB1
+                if (locus == Locus.Dpb1)
+                {
+                    return;
+                }
                 var matchGradesAtLocus = matchGrades.DataAtLocus(locus);
                 var orientations = matchGradesAtLocus.Item1.Orientations;
 
