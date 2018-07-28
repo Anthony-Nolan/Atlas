@@ -14,6 +14,7 @@ using Nova.Utils.WebApi.Filters;
 using System.Configuration;
 using System.Reflection;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
+using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Module = Autofac.Module;
 

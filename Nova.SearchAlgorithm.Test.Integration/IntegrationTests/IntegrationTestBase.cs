@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
+using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
