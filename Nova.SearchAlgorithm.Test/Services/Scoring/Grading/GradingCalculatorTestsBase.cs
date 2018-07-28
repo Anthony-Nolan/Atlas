@@ -1,4 +1,6 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using NUnit.Framework;
@@ -18,24 +20,27 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothResultsAreNull_ThrowsException()
+        public void CalculateGrade_BothResultsAreNull_ReturnsPGroup()
         {
-            Assert.Throws<ArgumentException>(() =>
-                GradingCalculator.CalculateGrade(null, null));
+            var grade = GradingCalculator.CalculateGrade(null, null);
+
+            grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_PatientResultIsNull_ThrowsException()
+        public void CalculateGrade_PatientResultIsNull_ReturnsPGroup()
         {
-            Assert.Throws<ArgumentException>(() =>
-                GradingCalculator.CalculateGrade(null, new HlaScoringLookupResultBuilder().Build()));
+            var grade = GradingCalculator.CalculateGrade(null, new HlaScoringLookupResultBuilder().Build());
+
+            grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]
-        public void CalculateGrade_DonorResultIsNull_ThrowsException()
+        public void CalculateGrade_DonorResultIsNull_ReturnsPGroup()
         {
-            Assert.Throws<ArgumentException>(() =>
-                GradingCalculator.CalculateGrade(new HlaScoringLookupResultBuilder().Build(), null));
+            var grade = GradingCalculator.CalculateGrade(new HlaScoringLookupResultBuilder().Build(), null);
+
+            grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]

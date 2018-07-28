@@ -10,9 +10,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult patientLookupResult, 
             IHlaScoringLookupResult donorLookupResult)
         {
+            // if patient and/or donor type are missing, then match grade
+            // is automatically P group
             if (patientLookupResult == null || donorLookupResult == null)
             {
-                throw new ArgumentException("One or both lookup results are null.");
+                return MatchGrade.PGroup;
             }
 
             if (patientLookupResult.MatchLocus != donorLookupResult.MatchLocus)
