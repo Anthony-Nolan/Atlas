@@ -18,8 +18,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
         {
             return results
                 .OrderByDescending(r => r.MatchResult.TotalMatchCount)
-                .ThenByDescending(r => r.ScoreResult.TotalMatchGradeScore)
-                .ThenByDescending(r => r.ScoreResult.TotalMatchConfidenceScore);
+                .ThenByDescending(r => r.ScoreResult.GradeScore)
+                .ThenByDescending(r => r.ScoreResult.ConfidenceScore);
         }
     }
 }

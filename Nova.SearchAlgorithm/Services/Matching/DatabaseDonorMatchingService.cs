@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -12,7 +13,6 @@ namespace Nova.SearchAlgorithm.Services.Matching
 {
     public interface IDatabaseDonorMatchingService
     {
-        
         /// <summary>
         /// Searches the pre-processed matching data for matches at the specified loci
         /// Performs filtering against loci and total mismatch counts
@@ -22,8 +22,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// </returns>
         Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci);
     }
-    
-    public class DatabaseDonorMatchingService: IDatabaseDonorMatchingService
+
+    public class DatabaseDonorMatchingService : IDatabaseDonorMatchingService
     {
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             this.donorSearchRepository = donorSearchRepository;
             this.matchFilteringService = matchFilteringService;
         }
-        
+
         public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
         {
             if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
@@ -42,8 +42,9 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 // Donors with no typing for the locus should count as potential matches, but will not be returned by a search of the matching table
                 throw new NotImplementedException();
             }
-            
-            var results = await Task.WhenAll(loci.Select(l => FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l))));
+
+            var results = await Task.WhenAll(loci.Select(l =>
+                FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l))));
 
             var matches = results
                 .SelectMany(r => r)
@@ -58,7 +59,9 @@ namespace Nova.SearchAlgorithm.Services.Matching
                     foreach (var locus in loci)
                     {
                         var matchesAtLocus = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
-                        var locusMatchDetails = matchesAtLocus.Value != null ? matchesAtLocus.Value.Match : new LocusMatchDetails {MatchCount = 0};
+                        var locusMatchDetails = matchesAtLocus.Value != null
+                            ? matchesAtLocus.Value.Match
+                            : new LocusMatchDetails {MatchCount = 0, IsLocusTyped = IsLocusTyped(locus, donorId)};
                         result.SetMatchDetailsForLocus(locus, locusMatchDetails);
                     }
 
@@ -66,11 +69,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 })
                 .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
                 .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)));
-            
+
             return matches.ToList();
         }
 
-        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType, IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
+        private bool IsLocusTyped(Locus locus, int donorId)
+        {
+            // This service is only currently implemented for loci that are guaranteed to be typed (A, B, DRB1)
+            // If this behaviour changes, an additional lookup will be needed for unmatched, potentially untyped loci to determine whether they are typed
+            return true;
+        }
+
+        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType,
+            IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
         {
             var repoCriteria = new LocusSearchCriteria
             {
@@ -86,14 +97,16 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             return matches;
         }
-        
+
         private DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
         {
+            var donorId = group.Key;
             return new DonorAndMatchForLocus
             {
-                DonorId = group.Key,
+                DonorId = donorId,
                 Match = new LocusMatchDetails
                 {
+                    IsLocusTyped = IsLocusTyped(locus, donorId),
                     MatchCount = DirectMatch(group.ToList()) || CrossMatch(group.ToList()) ? 2 : 1
                 },
                 Locus = locus

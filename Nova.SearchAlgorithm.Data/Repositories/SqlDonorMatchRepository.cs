@@ -56,7 +56,7 @@ GROUP BY DonorId, TypePosition";
 
             using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QueryAsync<DonorMatch>(sql);
+                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
             }
         }
 

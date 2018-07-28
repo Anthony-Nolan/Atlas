@@ -1,4 +1,5 @@
 ﻿using System;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders

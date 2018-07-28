@@ -146,14 +146,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\LocusSearchHla.cs" />
-    <Compile Include="Models\SearchHlaData.cs" />
-    <Compile Include="Models\LocusSearchResult.cs" />
-    <Compile Include="Models\SearchResult.cs" />
-    <Compile Include="Models\LocusMismatchCriteria.cs" />
-    <Compile Include="Models\MismatchCriteria.cs" />
-    <Compile Include="Models\SearchRequest.cs" />
-    <Compile Include="Models\SearchResultSet.cs" />
+    <Compile Include="Models\DonorType.cs" />
+    <Compile Include="Models\RegistryCode.cs" />
+    <Compile Include="Models\SearchRequests\LocusMismatchCriteria.cs" />
+    <Compile Include="Models\SearchRequests\LocusSearchHla.cs" />
+    <Compile Include="Models\SearchRequests\MismatchCriteria.cs" />
+    <Compile Include="Models\SearchRequests\SearchHlaData.cs" />
+    <Compile Include="Models\SearchRequests\SearchRequest.cs" />
+    <Compile Include="Models\SearchResults\LocusPositionScoreDetails.cs" />
+    <Compile Include="Models\SearchResults\LocusSearchResult.cs" />
+    <Compile Include="Models\SearchResults\LoucsPositionSearchResult.cs" />
+    <Compile Include="Models\SearchResults\MatchConfidence.cs" />
+    <Compile Include="Models\SearchResults\MatchGrade.cs" />
+    <Compile Include="Models\SearchResults\SearchResult.cs" />
+    <Compile Include="Models\SearchResults\SearchResultSet.cs" />
     <Compile Include="SearchAlgorithmClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -167,12 +173,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
-      <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
-      <Name>Nova.SearchAlgorithm.Common</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

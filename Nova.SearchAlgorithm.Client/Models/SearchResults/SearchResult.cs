@@ -1,7 +1,4 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-
-namespace Nova.SearchAlgorithm.Client.Models
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
     public class SearchResult
     {
@@ -29,28 +26,37 @@ namespace Nova.SearchAlgorithm.Client.Models
         public int TotalMatchCount { get; set; }
 
         /// <summary>
+        /// The number of the total potential matches.
+        /// The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values
+        /// </summary>
+        public int PotentialMatchCount { get; set; }
+
+        /// <summary>
+        /// The number of the total exact matches.
+        /// The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values
+        /// </summary>
+        public int ExactMatchCount => TotalMatchCount - PotentialMatchCount;
+
+        /// <summary>
         /// The number of loci which are typed for this donor.
         /// </summary>
         public int TypedLociCount { get; set; }
 
         /// <summary>
-        /// The relative rank of this match within the search results,
-        /// based on the scoring algorithm.
+        /// A numeric value representing the aggregate relative match grade across all loci, according to the scoring algorithm
         /// </summary>
-        public int MatchRank { get; set; }
+        public int GradeScore { get; set; }
 
         /// <summary>
-        /// The match grade according to the scoring algorithm,
-        /// for validation and debugging.
+        /// A numeric value representing the aggregate relative match confidence across all loci, according to the scoring algorithm
         /// </summary>
-        public int TotalMatchGrade { get; set; }
+        public int ConfidenceScore { get; set; }
 
         /// <summary>
-        /// The match confidence according to the scoring algorithm,
-        /// for validation and debugging.
+        /// The overall confidence for the match
         /// </summary>
-        public int TotalMatchConfidence { get; set; }
-
+        public MatchConfidence OverallMatchConfidence { get; set; }
+        
         /// <summary>
         /// The details of the match at locus A.
         /// </summary>

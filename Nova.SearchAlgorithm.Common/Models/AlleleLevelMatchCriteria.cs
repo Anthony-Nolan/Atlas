@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 
 namespace Nova.SearchAlgorithm.Common.Models
 {

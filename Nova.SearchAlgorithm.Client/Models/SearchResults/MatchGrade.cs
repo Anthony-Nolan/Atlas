@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.Common.Models.Scoring
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
     /// <summary>
     /// Values for the grade of a given match. Ordered to allow for selecting the best grade - higher numbers being a better grade

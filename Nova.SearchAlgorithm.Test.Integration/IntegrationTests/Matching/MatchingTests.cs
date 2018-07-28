@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -141,7 +142,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorMismatchCount(2)
                 .WithLocusMismatchCount(Locus.A, 2)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
         }
 
@@ -153,7 +154,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(Locus.A, 2)
                 .WithLocusMismatchCount(Locus.B, 1)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHeterozygousMatchAtLocusA.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHomozygousMatchAtLocusA.DonorId);
         }
@@ -166,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(Locus.A, 2)
                 .WithLocusMismatchCount(Locus.B, 1)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA.DonorId);
         }
@@ -179,7 +180,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(Locus.A, 2)
                 .WithLocusMismatchCount(Locus.B, 1)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocusAAndExactMatchAtB.DonorId);
         }
 
@@ -191,7 +192,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(Locus.A, 2)
                 .WithLocusMismatchCount(Locus.B, 1)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
         }
 
@@ -201,7 +202,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithRegistries(new List<RegistryCode> {RegistryCode.AN, RegistryCode.NMDP})
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullMatchAtAnthonyNolanRegistry.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullMatchAtNmdpRegistry.DonorId);
         }
@@ -212,7 +213,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithRegistries(new List<RegistryCode> {DefaultRegistryCode})
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithFullMatchAtNmdpRegistry.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithFullMatchAtAnthonyNolanRegistry.DonorId);
         } 
@@ -223,7 +224,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Adult)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithFullHeterozygousMatchAtLocusA.DonorId);
             results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithFullHomozygousMatchAtLocusA.DonorId);
         }
@@ -234,7 +235,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == adultDonorWithFullMatch.DonorId);
         }
         
@@ -244,7 +245,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHeterozygousMatchAtLocusA.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHomozygousMatchAtLocusA.DonorId);
         }
@@ -256,7 +257,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(1)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().NotContain(d => d.Donor.DonorId == adultDonorWithFullMatch.DonorId);
         }
         
@@ -267,7 +268,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithSearchType(DonorType.Cord)
                 .WithTotalMismatchCount(1)
                 .Build();
-            var results = await matchingService.Search(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHeterozygousMatchAtLocusA.DonorId);
         }
         
