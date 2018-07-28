@@ -1,7 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
@@ -52,8 +50,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private static bool IsMolecularMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
-            var patientPGroups = GetPGroups(patientLookupResult);
-            var donorPGroups = GetPGroups(donorLookupResult);
+            var patientPGroups = patientLookupResult.HlaScoringInfo.MatchingPGroups;
+            var donorPGroups = donorLookupResult.HlaScoringInfo.MatchingPGroups;
 
             return patientPGroups.Intersect(donorPGroups).Any();
         }
@@ -76,25 +74,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
         {
             return !(patientLookupResult.HlaScoringInfo is SerologyScoringInfo)
                    && !(donorLookupResult.HlaScoringInfo is SerologyScoringInfo)
-                   && GetPGroups(patientLookupResult).Count() == 1
-                   && GetPGroups(donorLookupResult).Count() == 1;
-        }
-
-        private static IEnumerable<string> GetPGroups(IHlaScoringLookupResult patientLookupResult)
-        {
-            switch (patientLookupResult.HlaScoringInfo)
-            {
-                case SerologyScoringInfo _:
-                    throw new Exception("Cannot compare p-groups for serology scoring info - compare matching serologies instead");
-                case ConsolidatedMolecularScoringInfo consolidatedMolecularInfo:
-                    return consolidatedMolecularInfo.MatchingPGroups;
-                case SingleAlleleScoringInfo singleAlleleInfo:
-                    return new List<string> {singleAlleleInfo.MatchingPGroup};
-                case MultipleAlleleScoringInfo multipleAlleleInfo:
-                    return multipleAlleleInfo.AlleleScoringInfos.Select(alleleInfo => alleleInfo.MatchingPGroup);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                   && patientLookupResult.HlaScoringInfo.MatchingPGroups.Count() == 1
+                   && donorLookupResult.HlaScoringInfo.MatchingPGroups.Count() == 1;
         }
     }
 }
