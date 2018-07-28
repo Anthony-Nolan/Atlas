@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Do both typings have interseting G Groups?
+        /// Do both typings have intersecting G Groups?
         /// </summary>
         private static bool IsGGroupMatch(
             IHlaScoringInfo patientInfo,
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Do both typings have interseting P Groups?
+        /// Do both typings have intersecting P Groups?
         /// </summary>
         private static bool IsPGroupMatch(
             IHlaScoringInfo patientInfo,

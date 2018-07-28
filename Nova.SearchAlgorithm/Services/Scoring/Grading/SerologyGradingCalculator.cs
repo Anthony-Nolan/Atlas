@@ -11,14 +11,23 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     {
     }
 
-    public class SerologyGradingCalculator: ISerologyGradingCalculator
+    public class SerologyGradingCalculator:
+        GradingCalculatorBase,
+        ISerologyGradingCalculator
     {
-        public MatchGrade CalculateGrade(
+        protected override bool ScoringInfosAreOfPermittedTypes(
+            IHlaScoringInfo patientInfo, 
+            IHlaScoringInfo donorInfo)
+        {
+            return patientInfo is SerologyScoringInfo ||
+                   donorInfo is SerologyScoringInfo;
+        }
+
+        protected override MatchGrade GetMatchGrade(
             IHlaScoringLookupResult patientLookupResult, 
             IHlaScoringLookupResult donorLookupResult)
         {
-            // TODO: NOVA-1446 - Implement
-            return MatchGrade.NotCalculated;
+            throw new System.NotImplementedException();
         }
     }
 }
