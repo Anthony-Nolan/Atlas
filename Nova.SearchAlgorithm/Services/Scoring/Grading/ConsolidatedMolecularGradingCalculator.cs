@@ -35,6 +35,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
             // Order of the following checks is critical to the grade outcome
 
+            if (patientInfo.Equals(donorInfo))
+            {
+                return MatchGrade.GGroup;
+            }
+
             if (IsGGroupMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.GGroup;
