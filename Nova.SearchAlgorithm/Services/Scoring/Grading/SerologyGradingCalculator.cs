@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Web.DynamicData;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
+﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -103,8 +103,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             if (IsIndirectMatch(
                 patientSerologies,
                 donorSerologies,
-                new[] { SerologySubtype.Split, SerologySubtype.Associated },
-                new[] { SerologySubtype.Broad}))
+                new[] { SerologySubtype.Broad },
+                new[] { SerologySubtype.Split, SerologySubtype.Associated }))
             {
                 return true;
             }
@@ -117,40 +117,46 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IEnumerable<SerologyEntry> donorSerologies,
             SerologySubtype matchingSubtype)
         {
-            var patientDirect = GetDirectlyMappedSerology(patientSerologies);
-            var donorDirect = GetDirectlyMappedSerology(donorSerologies);
+            var patientDirect = GetDirectlyMappedSerologies(patientSerologies);
+            var donorDirect = GetDirectlyMappedSerologies(donorSerologies);
 
             return patientDirect
                 .Intersect(donorDirect)
-                .Any(x => x.SerologySubtype == matchingSubtype);
+                .Any(x => x.Item2 == matchingSubtype);
         }
 
         private static bool IsIndirectMatch(
             IReadOnlyCollection<SerologyEntry> patientSerologies,
             IReadOnlyCollection<SerologyEntry> donorSerologies,
-            IReadOnlyCollection<SerologySubtype> firstSetOfSubtypes,
+            IEnumerable<SerologySubtype> firstSetOfSubtypes,
             IReadOnlyCollection<SerologySubtype> secondSetOfSubtypes)
         {
-            var subtypePairings =
-                firstSetOfSubtypes
-                    .SelectMany(directSer => secondSetOfSubtypes,
-                        (firstSubtype, secondSubtype) => new { firstSubtype, secondSubtype })
-                        .Concat(secondSetOfSubtypes
-                            .SelectMany(directSer => firstSetOfSubtypes,
-                                (firstSubtype, secondSubtype) => new { firstSubtype, secondSubtype }))
-                                    .ToList();
+            var subtypePairs = firstSetOfSubtypes
+                .SelectMany(directSer => secondSetOfSubtypes, GetSubtypePairs)
+                .SelectMany(subtypePair => subtypePair)
+                .ToList();
 
             return
-                subtypePairings.Any(pairing => IsIndirectSerologySubtypeMatch(
+                subtypePairs.Any(subtypePair => IsIndirectSerologySubtypeMatch(
                     patientSerologies,
                     donorSerologies,
-                    pairing.firstSubtype,
-                    pairing.secondSubtype)) ||
-                subtypePairings.Any(pairing => IsIndirectSerologySubtypeMatch(
+                    subtypePair.Item1,
+                    subtypePair.Item2)) ||
+                subtypePairs.Any(pairing => IsIndirectSerologySubtypeMatch(
                     donorSerologies,
                     patientSerologies,
-                    pairing.firstSubtype,
-                    pairing.secondSubtype));
+                    pairing.Item1,
+                    pairing.Item2));
+        }
+
+        private static IEnumerable<Tuple<SerologySubtype, SerologySubtype>> GetSubtypePairs(
+            SerologySubtype firstSubtype,
+            SerologySubtype secondSubtype)
+        {
+            var firstPair = new Tuple<SerologySubtype, SerologySubtype>(firstSubtype, secondSubtype);
+            var secondPair = new Tuple<SerologySubtype, SerologySubtype>(secondSubtype, firstSubtype);
+
+            return new[] { firstPair, secondPair };
         }
 
         private static bool IsIndirectSerologySubtypeMatch(
@@ -159,29 +165,30 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             SerologySubtype directMatchingSubtype,
             SerologySubtype indirectMatchingSubtype)
         {
-            var firstTypingDirect = GetDirectlyMappedSerology(firstTypingSerologies);
-            var firstTypingIndirect = GetIndirectlyMappedSerology(firstTypingSerologies);
+            var firstTypingDirect = GetDirectlyMappedSerologies(firstTypingSerologies);
+            var firstTypingIndirect = GetIndirectlyMappedSerologies(firstTypingSerologies);
+            var secondTypingDirect = GetDirectlyMappedSerologies(secondTypingSerologies);
 
-            var secondTypingDirect = GetDirectlyMappedSerology(secondTypingSerologies);
-
-            return firstTypingDirect.Any(ser => ser.SerologySubtype == directMatchingSubtype) &&
-                firstTypingIndirect.Join(secondTypingDirect,
-                        firstIndirect => new { firstIndirect.Name, firstIndirect.SerologySubtype },
-                        secondDirect => new { secondDirect.Name, secondDirect.SerologySubtype },
-                        (firstIndirect, secondDirect) => new { firstIndirect, secondDirect })
-                    .Any(ser => ser.firstIndirect.SerologySubtype == indirectMatchingSubtype);
+            return firstTypingDirect.Any(serology => serology.Item2 == directMatchingSubtype) &&
+                firstTypingIndirect
+                    .Intersect(secondTypingDirect)
+                    .Any(serology => serology.Item2 == indirectMatchingSubtype);
         }
 
-        private static IEnumerable<SerologyEntry> GetDirectlyMappedSerology(
+        private static IEnumerable<Tuple<string, SerologySubtype>> GetDirectlyMappedSerologies(
             IEnumerable<SerologyEntry> serologies)
         {
-            return serologies.Where(s => s.IsDirectMapping);
+            return serologies
+                .Where(s => s.IsDirectMapping)
+                .Select(s => new Tuple<string, SerologySubtype>(s.Name, s.SerologySubtype));
         }
 
-        private static IEnumerable<SerologyEntry> GetIndirectlyMappedSerology(
+        private static IEnumerable<Tuple<string, SerologySubtype>> GetIndirectlyMappedSerologies(
             IEnumerable<SerologyEntry> serologies)
         {
-            return serologies.Where(s => !s.IsDirectMapping);
+            return serologies
+                .Where(s => !s.IsDirectMapping)
+                .Select(s => new Tuple<string, SerologySubtype>(s.Name, s.SerologySubtype));
         }
     }
 }
