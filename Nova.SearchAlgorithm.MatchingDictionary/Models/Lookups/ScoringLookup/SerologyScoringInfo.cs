@@ -10,7 +10,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         IHlaScoringInfo,
         IEquatable<SerologyScoringInfo>
     {
-        public SerologySubtype SerologySubtype { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
         [JsonIgnore]
@@ -20,10 +19,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         public IEnumerable<string> MatchingPGroups => new List<string>();
 
         public SerologyScoringInfo(
-            SerologySubtype serologySubtype, 
             IEnumerable<SerologyEntry> matchingSerologies)
         {
-            SerologySubtype = serologySubtype;
             MatchingSerologies = matchingSerologies;
         }
 
@@ -31,7 +28,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             IHlaLookupResultSource<SerologyTyping> lookupResultSource)
         {
             return new SerologyScoringInfo(
-                lookupResultSource.TypingForHlaLookupResult.SerologySubtype,
                 lookupResultSource.MatchingSerologies.Select(m => m.ToSerologyEntry()));
         }
 
@@ -39,9 +35,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return 
-                SerologySubtype == other.SerologySubtype && 
-                MatchingSerologies.SequenceEqual(other.MatchingSerologies);
+            return MatchingSerologies.SequenceEqual(other.MatchingSerologies);
         }
 
         public override bool Equals(object obj)
@@ -54,10 +48,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return ((int) SerologySubtype * 397) ^ MatchingSerologies.GetHashCode();
-            }
+            return MatchingSerologies.GetHashCode();
         }
     }
 }
