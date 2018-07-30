@@ -28,9 +28,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         [JsonProperty("gGrp")]
         public string MatchingGGroup { get; }
 
-        /// <summary>
-        /// Used when scoring against a serology typing.
-        /// </summary>
         [JsonProperty("ser")]
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
@@ -39,16 +36,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             AlleleTypingStatus alleleTypingStatus,
             string matchingPGroup,
             string matchingGGroup,
-            IEnumerable<SerologyEntry> matchingSerologies)
+            IEnumerable<SerologyEntry> matchingSerologies = null)
         {
             AlleleName = alleleName;
             AlleleTypingStatus = alleleTypingStatus;
             MatchingPGroup = matchingPGroup;
             MatchingGGroup = matchingGGroup;
-            MatchingSerologies = matchingSerologies;
+            MatchingSerologies = matchingSerologies ?? new List<SerologyEntry>();
         }
 
-        public static SingleAlleleScoringInfo GetScoringInfo(
+        public static SingleAlleleScoringInfo GetScoringInfoWithMatchingSerologies(
             IHlaLookupResultSource<AlleleTyping> alleleSource)
         {
             return new SingleAlleleScoringInfo(
@@ -56,7 +53,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
                 alleleSource.TypingForHlaLookupResult.Status,
                 alleleSource.MatchingPGroups.SingleOrDefault(),
                 alleleSource.MatchingGGroups.SingleOrDefault(),
-                alleleSource.MatchingSerologies.ToSerologyEntries()
+                alleleSource.MatchingSerologies.Select(m => m.ToSerologyEntry())
+            );
+        }
+
+        public static SingleAlleleScoringInfo GetScoringInfoExcludingMatchingSerologies(
+            IHlaLookupResultSource<AlleleTyping> alleleSource)
+        {
+            return new SingleAlleleScoringInfo(
+                alleleSource.TypingForHlaLookupResult.Name,
+                alleleSource.TypingForHlaLookupResult.Status,
+                alleleSource.MatchingPGroups.SingleOrDefault(),
+                alleleSource.MatchingGGroups.SingleOrDefault()
             );
         }
 

@@ -314,8 +314,12 @@
     <Compile Include="Services\Scoring\Confidence\ConfidenceCalculator.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceService.cs" />
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
-    <Compile Include="Services\Scoring\GradingService.cs" />
+    <Compile Include="Services\Scoring\Grading\ConsolidatedMolecularGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\SerologyGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\AlleleGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\GradingService.cs" />
     <Compile Include="Services\HlaUpdateService.cs" />
+    <Compile Include="Services\Scoring\Grading\IGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Ranking\ScoreCalculator.cs" />
     <Compile Include="Services\Scoring\Ranking\RankingService.cs" />
     <Compile Include="Services\SearchService.cs" />

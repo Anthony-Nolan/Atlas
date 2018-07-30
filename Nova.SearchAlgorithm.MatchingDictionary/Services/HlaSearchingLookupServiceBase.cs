@@ -27,10 +27,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult
     {
+        protected readonly IHlaCategorisationService HlaCategorisationService;
+
         private readonly IHlaLookupRepository hlaLookupRepository;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaServiceClient hlaServiceClient;
-        private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAlleleStringSplitterService alleleSplitter;
         private readonly IMemoryCache memoryCache;
         private readonly ILogger logger;
@@ -48,7 +49,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.hlaLookupRepository = hlaLookupRepository;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaServiceClient = hlaServiceClient;
-            this.hlaCategorisationService = hlaCategorisationService;
+            HlaCategorisationService = hlaCategorisationService;
             this.alleleSplitter = alleleSplitter;
             this.memoryCache = memoryCache;
             this.logger = logger;
@@ -80,7 +81,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private HlaLookupBase GetHlaLookup(string lookupName)
         {
-            var hlaTypingCategory = hlaCategorisationService.GetHlaTypingCategory(lookupName);
+            var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
 
             return HlaLookupFactory
                 .GetLookupByHlaTypingCategory(

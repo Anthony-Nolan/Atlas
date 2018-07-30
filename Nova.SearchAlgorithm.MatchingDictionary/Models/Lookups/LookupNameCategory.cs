@@ -4,30 +4,30 @@ using Newtonsoft.Json.Converters;
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum LookupResultCategory
+    public enum LookupNameCategory
     {
         /// <summary>
-        /// Lookup result is original serology name, as listed in hla_nom.
+        /// Lookup name is original serology name, as listed in hla_nom.
         /// </summary>
         Serology,
 
         /// <summary>
-        /// Lookup result is original allele name, as listed in hla_nom.
+        /// Lookup name is original allele name, as listed in hla_nom.
         /// </summary>
         OriginalAllele,
 
         /// <summary>
-        /// Lookup result is truncated allele name, as used in NMDP codes.
+        /// Lookup name is truncated allele name, as used in NMDP codes.
         /// </summary>
         NmdpCodeAllele,
 
         /// <summary>
-        /// Lookup result is XX code first field value.
+        /// Lookup name is XX code first field value.
         /// </summary>
         XxCode,
 
         /// <summary>
-        /// Lookup result is collection of multiple alleles. 
+        /// Lookup name represents multiple alleles. 
         /// </summary>
         MultipleAlleles
     }

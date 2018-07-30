@@ -10,9 +10,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
     {
         public SerologyTyping DirectSerology { get; }
         public Assignment Assignment { get; }
-        public IEnumerable<SerologyMatch> AllMatchingSerology { get; }
+        public IEnumerable<SerologyMatchToAllele> AllMatchingSerology { get; }
         
-        public SerologyMappingForAllele(SerologyTyping directSerology, Assignment assignment, IEnumerable<SerologyMatch> allMatchingSerology)
+        public SerologyMappingForAllele(SerologyTyping directSerology, Assignment assignment, IEnumerable<SerologyMatchToAllele> allMatchingSerology)
         {
             DirectSerology = directSerology;
             Assignment = assignment;

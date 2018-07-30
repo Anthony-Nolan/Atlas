@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using FluentAssertions;
-using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Services.Scoring
+namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
 {
     [TestFixture]
     public class ConfidenceServiceTests
@@ -31,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [SetUp]
         public void SetUp()
         {
-            var confidenceCalculator = new ConfidenceCalculator();;
+            var confidenceCalculator = new ConfidenceCalculator();
             confidenceService = new ConfidenceService(confidenceCalculator);
             defaultGradingResults = new PhenotypeInfo<MatchGradeResult>
             {
@@ -57,12 +53,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const Locus locus2 = Locus.Drb1;
             
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithLookupResultCategory(LookupResultCategory.OriginalAllele).Build();
+            var patientLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().Build();
             patientLookupResults.SetAtLocus(locus1, Position, patientLookupResultAtLocus1);
             patientLookupResults.SetAtLocus(locus2, Position, null);
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().WithLookupResultCategory(LookupResultCategory.OriginalAllele).Build();
+            var donorLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().Build();
             donorLookupResults.SetAtLocus(locus1, Position, donorLookupResultAtLocus1);
             donorLookupResults.SetAtLocus(locus2, Position, null);
 
@@ -78,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateMatchConfidences_WhenCrossOrientationProvided_ReturnsConfidenceForCrossPairsOfHlaData()
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var patientLookupResultSingleAllele1 = new HlaScoringLookupResultBuilder()
@@ -90,7 +86,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
@@ -117,7 +112,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateMatchConfidences_WhenDirectOrientationProvided_ReturnsConfidenceForDirectPairsOfHlaData()
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var patientLookupResultSingleAllele1 = new HlaScoringLookupResultBuilder()
@@ -129,7 +124,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
@@ -156,7 +150,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateMatchConfidences_WhenBothOrientationsProvided_AndBothOrientationsHaveSameEquivalentConfidence_ReturnsConfidenceForSingleOrientation()
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var patientLookupResultSingleAllele1 = new HlaScoringLookupResultBuilder()
@@ -168,7 +162,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
@@ -203,20 +196,18 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public void CalculateMatchConfidences_WhenBothOrientationsProvided_AndOneOrientationHasHigherConfidence_ReturnsConfidenceForBestOrientation()
         {
-            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated)};
+            var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var patientLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var patientLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
-                .WithLookupResultCategory(LookupResultCategory.Serology)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()

@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public HlaTyping TypingUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
-        public IEnumerable<SerologyTyping> MatchingSerologies { get; }
+        public IEnumerable<MatchingSerology> MatchingSerologies { get; }
         public IEnumerable<SerologyMappingForAllele> AlleleToSerologyMappings { get; }
         public AlleleTyping TypingForHlaLookupResult => (AlleleTyping) HlaTyping;
 
@@ -22,9 +22,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
             MatchingPGroups = matchedAllele.MatchingPGroups;
             MatchingGGroups = matchedAllele.MatchingGGroups;
 
-            var serologyMappingsList = alleleToSerologyMappings.ToList();
-            MatchingSerologies = serologyMappingsList.SelectMany(m => m.AllMatchingSerology.Select(s => s.SerologyTyping));
-            AlleleToSerologyMappings = serologyMappingsList;
+            var alleleToSerologyMappingsCollection = alleleToSerologyMappings.ToList();
+            MatchingSerologies = alleleToSerologyMappingsCollection.SelectMany(ConvertMappingToMatchingSerology);
+
+            // TODO: NOVA-1483 - Do not need to store all details of allele-to-serology mappings
+            AlleleToSerologyMappings = alleleToSerologyMappingsCollection;
+        }
+
+        private static IEnumerable<MatchingSerology> ConvertMappingToMatchingSerology(SerologyMappingForAllele mapping)
+        {
+            return mapping
+                .AllMatchingSerology
+                .Select(ser => ser.SerologyTyping)
+                .Select(ser => new MatchingSerology(ser, ser.Equals(mapping.DirectSerology)));
         }
     }
 }

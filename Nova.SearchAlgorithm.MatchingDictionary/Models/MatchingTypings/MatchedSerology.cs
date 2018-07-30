@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public HlaTyping TypingUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
-        public IEnumerable<SerologyTyping> MatchingSerologies { get; }
+        public IEnumerable<MatchingSerology> MatchingSerologies { get; }
         public SerologyTyping TypingForHlaLookupResult => (SerologyTyping) HlaTyping;
 
         public MatchedSerology(ISerologyInfoForMatching matchedSerology, IEnumerable<string> matchingPGroups, IEnumerable<string> matchingGGroups)

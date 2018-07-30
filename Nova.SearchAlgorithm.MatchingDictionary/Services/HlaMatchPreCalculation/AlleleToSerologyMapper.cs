@@ -59,18 +59,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
                     (SerologyTyping)serology.HlaTyping,
                     assigned.Assignment,
                     serology.MatchingSerologies.Select(actualMatchingSerology =>
-                        GetSerologyMatchInfo(actualMatchingSerology, alleleFamilyAsTyping, expectedMatchingSerology)));
+                        GetSerologyMatchInfo(
+                            actualMatchingSerology.SerologyTyping, 
+                            alleleFamilyAsTyping, 
+                            expectedMatchingSerology)));
 
             return mappingInfoQuery;
         }
 
-        private static SerologyMatch GetSerologyMatchInfo(
+        private static SerologyMatchToAllele GetSerologyMatchInfo(
             SerologyTyping actualMatchingSerology,
             HlaTyping alleleFamilyAsTyping,
-            IEnumerable<SerologyTyping> expectedMatchingSerology
+            IEnumerable<MatchingSerology> expectedMatchingSerologies
         )
         {
-            var matchInfo = new SerologyMatch(actualMatchingSerology);
+            var matchInfo = new SerologyMatchToAllele(actualMatchingSerology);
 
             if (actualMatchingSerology.IsDeleted
                 || UnexpectedAlleleToSerologyMappings.PermittedExceptions.Contains(alleleFamilyAsTyping))
@@ -79,8 +82,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
             }
 
             matchInfo.IsUnexpected =
-                expectedMatchingSerology == null
-                || !expectedMatchingSerology.Contains(actualMatchingSerology);
+                expectedMatchingSerologies == null ||
+                !expectedMatchingSerologies
+                .Select(ser => ser.SerologyTyping)
+                .Contains(actualMatchingSerology);
 
             return matchInfo;
         }

@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         {
             return new SerologyScoringInfo(
                 lookupResultSource.TypingForHlaLookupResult.SerologySubtype,
-                lookupResultSource.MatchingSerologies.ToSerologyEntries());
+                lookupResultSource.MatchingSerologies.Select(m => m.ToSerologyEntry()));
         }
 
         public bool Equals(SerologyScoringInfo other)

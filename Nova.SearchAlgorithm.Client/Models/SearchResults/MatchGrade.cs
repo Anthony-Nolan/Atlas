@@ -5,13 +5,15 @@
     /// </summary>
     public enum MatchGrade
     {
-        GDna = 7,
-        CDna = 6,
-        Protein = 5,
-        GGroup = 4,
-        PGroup = 3,
-        Associated = 2,
-        Split = 1,
-        Mismatch = 0
+        NotCalculated = 0,
+        Mismatch = 1,
+        Broad = 2,
+        Split = 3,
+        Associated = 4,
+        PGroup = 5,
+        GGroup = 6,
+        Protein = 7,
+        CDna = 8,
+        GDna = 9
     }
 }

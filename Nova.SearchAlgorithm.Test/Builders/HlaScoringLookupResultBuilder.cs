@@ -16,32 +16,32 @@ namespace Nova.SearchAlgorithm.Test.Builders
             result = new HlaScoringLookupResult(
                 MatchLocus.A,
                 "lookup-name",
-                LookupResultCategory.OriginalAllele,
+                LookupNameCategory.OriginalAllele,
                 new SingleAlleleScoringInfoBuilder().Build()
             );
         }
 
         public HlaScoringLookupResultBuilder AtLocus(Locus locus)
         {
-            result = new HlaScoringLookupResult(locus.ToMatchLocus(), result.LookupName, result.LookupResultCategory, result.HlaScoringInfo);
+            result = new HlaScoringLookupResult(locus.ToMatchLocus(), result.LookupName, result.LookupNameCategory, result.HlaScoringInfo);
             return this;
         }
 
         public HlaScoringLookupResultBuilder WithLookupName(string lookupName)
         {
-            result = new HlaScoringLookupResult(result.MatchLocus, lookupName, result.LookupResultCategory, result.HlaScoringInfo);
+            result = new HlaScoringLookupResult(result.MatchLocus, lookupName, result.LookupNameCategory, result.HlaScoringInfo);
             return this;
         }
 
-        public HlaScoringLookupResultBuilder WithLookupResultCategory(LookupResultCategory lookupResultCategory)
+        public HlaScoringLookupResultBuilder WithLookupNameCategory(LookupNameCategory lookupNameCategory)
         {
-            result = new HlaScoringLookupResult(result.MatchLocus, result.LookupName, lookupResultCategory, result.HlaScoringInfo);
+            result = new HlaScoringLookupResult(result.MatchLocus, result.LookupName, lookupNameCategory, result.HlaScoringInfo);
             return this;
         }
 
         public HlaScoringLookupResultBuilder WithHlaScoringInfo(IHlaScoringInfo scoringInfo)
         {
-            result = new HlaScoringLookupResult(result.MatchLocus, result.LookupName, result.LookupResultCategory, scoringInfo);
+            result = new HlaScoringLookupResult(result.MatchLocus, result.LookupName, result.LookupNameCategory, scoringInfo);
             return this;
         }
         

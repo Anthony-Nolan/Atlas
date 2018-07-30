@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return new HlaLookupTableEntity(lookupResult)
             {
-                LookupResultCategoryAsString = lookupResult.LookupResultCategory.ToString()
+                LookupNameCategoryAsString = lookupResult.LookupNameCategory.ToString()
             };
         }
 
@@ -21,22 +21,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             return new HlaScoringLookupResult(
                 entity.MatchLocus,
                 entity.LookupName,
-                entity.LookupResultCategory,
+                entity.LookupNameCategory,
                 scoringInfo);
         }
 
         private static IHlaScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
         {
-            switch (entity.LookupResultCategory)
+            switch (entity.LookupNameCategory)
             {
-                case LookupResultCategory.Serology:
+                case LookupNameCategory.Serology:
                     return entity.GetHlaInfo<SerologyScoringInfo>();
-                case LookupResultCategory.OriginalAllele:
+                case LookupNameCategory.OriginalAllele:
                     return entity.GetHlaInfo<SingleAlleleScoringInfo>();
-                case LookupResultCategory.NmdpCodeAllele:
+                case LookupNameCategory.NmdpCodeAllele:
                     return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
-                case LookupResultCategory.XxCode:
-                    return entity.GetHlaInfo<XxCodeScoringInfo>();
+                case LookupNameCategory.XxCode:
+                    return entity.GetHlaInfo<ConsolidatedMolecularScoringInfo>();
                 default:
                     throw new ArgumentOutOfRangeException();
             }

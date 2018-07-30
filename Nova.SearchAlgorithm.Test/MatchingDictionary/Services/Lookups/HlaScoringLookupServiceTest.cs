@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NSubstitute.ReturnsExtensions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -29,6 +30,46 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 AlleleStringSplitterService,
                 MemoryCache,
                 Logger);
+        }
+
+        [Test]
+        public async Task GetHlaLookupResult_WhenAlleleNameMapsToMultipleAlleles_ScoringInfoForAllAllelesIsReturned()
+        {
+            const string expectedLookupName = "999:999";
+            const string firstAlleleName = "999:999:01";
+            const string secondAlleleName = "999:999:02";
+
+            HlaCategorisationService
+                .GetHlaTypingCategory(expectedLookupName)
+                .Returns(HlaTypingCategory.Allele);
+
+            var expectedCurrentAlleleNames = new List<string> { firstAlleleName, secondAlleleName };
+            AlleleNamesLookupService
+                .GetCurrentAlleleNames(MatchedLocus, expectedLookupName)
+                .Returns(expectedCurrentAlleleNames);
+
+            // return null on submitted name to emulate scenario that requires a current name lookup
+            HlaLookupRepository
+                .GetHlaLookupTableEntityIfExists(
+                    MatchedLocus, 
+                    expectedLookupName, 
+                    TypingMethod.Molecular)
+                .ReturnsNull();
+
+            // return entries using current names list
+            var firstEntry = BuildTableEntityForSingleAllele(firstAlleleName);
+            var secondEntry = BuildTableEntityForSingleAllele(secondAlleleName);
+            HlaLookupRepository
+                .GetHlaLookupTableEntityIfExists(
+                    MatchedLocus, 
+                    Arg.Is<string>(x => x.Equals(firstAlleleName) || x.Equals(secondAlleleName)),
+                    TypingMethod.Molecular)
+                .Returns(firstEntry, secondEntry);
+
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
+            var expectedResult = BuildMultipleAlleleLookupResult(expectedLookupName, expectedCurrentAlleleNames);
+
+            actualResult.Should().Be(expectedResult);
         }
 
         [Test]
@@ -57,14 +98,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .Returns(firstEntry, secondEntry, thirdEntry);
 
             var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
-            var expectedResult = BuildExpectedMultipleAlleleLookupResult(expectedLookupName, alleleNames);
+            var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, alleleNames);
 
             actualResult.Should().Be(expectedResult);
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]
         [TestCase(HlaTypingCategory.AlleleStringOfNames, "Allele1/Allele2", "Allele1", "Allele2")]
-        public async Task GetHlaLookupResult_WhenAlleleString_MatchingHlaForAllAllelesIsReturned(
+        public async Task GetHlaLookupResult_WhenAlleleString_ScoringInfoForAllAllelesIsReturned(
             HlaTypingCategory category, string expectedLookupName, string firstAlleleName, string secondAlleleName)
         {
             HlaCategorisationService
@@ -83,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .Returns(firstEntry, secondEntry);
 
             var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
-            var expectedResult = BuildExpectedMultipleAlleleLookupResult(expectedLookupName, expectedAlleleNames);
+            var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, expectedAlleleNames);
 
             actualResult.Should().Be(expectedResult);
         }
@@ -95,27 +136,43 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var lookupResult = new HlaScoringLookupResult(
                 MatchedLocus,
                 alleleName,
-                LookupResultCategory.OriginalAllele,
+                LookupNameCategory.OriginalAllele,
                 scoringInfo
                 );
 
             return new HlaLookupTableEntity(lookupResult)
             {
-                LookupResultCategoryAsString = LookupResultCategory.OriginalAllele.ToString()
+                LookupNameCategoryAsString = LookupNameCategory.OriginalAllele.ToString()
             };
         }
 
-        private static IHlaScoringLookupResult BuildExpectedMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
+        private static IHlaScoringLookupResult BuildMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
         {
             var scoringInfo = new MultipleAlleleScoringInfo(
-                alleleNames.Select(BuildSingleAlleleScoringInfo));
+                alleleNames.Select(BuildSingleAlleleScoringInfo),
+                new List<SerologyEntry>());
 
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 lookupName,
-                LookupResultCategory.MultipleAlleles,
+                LookupNameCategory.MultipleAlleles,
                 scoringInfo
-                );
+            );
+        }
+
+        private static IHlaScoringLookupResult BuildConsolidatedMolecularLookupResult(string lookupName, IEnumerable<string> alleleNames)
+        {
+            var scoringInfo = new ConsolidatedMolecularScoringInfo(
+                alleleNames,
+                alleleNames,
+                new List<SerologyEntry>());
+
+            return new HlaScoringLookupResult(
+                MatchedLocus,
+                lookupName,
+                LookupNameCategory.MultipleAlleles,
+                scoringInfo
+            );
         }
 
         private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfo(string alleleName)
@@ -124,8 +181,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 alleleName,
                 AlleleTypingStatus.GetDefaultStatus(),
                 alleleName,
-                alleleName,
-                new List<SerologyEntry>());
+                alleleName);
+
             return scoringInfo;
         }
     }

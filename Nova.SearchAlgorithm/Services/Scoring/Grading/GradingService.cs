@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
-namespace Nova.SearchAlgorithm.Services.Scoring
+namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
     public interface IGradingService
     {

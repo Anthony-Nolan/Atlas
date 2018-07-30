@@ -19,13 +19,19 @@ namespace Nova.SearchAlgorithm.Test.Builders.ScoringInfo
 
         public SerologyScoringInfoBuilder WithSerologySubtype(SerologySubtype serologySubtype)
         {
-            scoringInfo = new SerologyScoringInfo(serologySubtype, scoringInfo.MatchingSerologies);
+            scoringInfo = new SerologyScoringInfo(
+                serologySubtype, 
+                scoringInfo.MatchingSerologies);
+
             return this;
         }
         
         public SerologyScoringInfoBuilder WithMatchingSerologies(IEnumerable<SerologyEntry> serologyEntries)
         {
-            scoringInfo = new SerologyScoringInfo(scoringInfo.SerologySubtype, serologyEntries);
+            scoringInfo = new SerologyScoringInfo(
+                scoringInfo.SerologySubtype, 
+                serologyEntries);
+
             return this;
         }
 
