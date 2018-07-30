@@ -335,6 +335,7 @@
     <Compile Include="Builders\HlaScoringLookupResultBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\MultipleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\SerologyScoringInfoBuilder.cs" />
+    <Compile Include="Builders\ScoringInfo\ScoringInfoBuilderFactory.cs" />
     <Compile Include="Builders\ScoringInfo\SingleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\ConsolidatedMolecularScoringInfoBuilder.cs" />
     <Compile Include="Builders\SearchRequestBuilder.cs" />
@@ -373,6 +374,7 @@
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
+    <Compile Include="Services\Scoring\Grading\GradingCalculatorTestsBase.cs" />
     <Compile Include="Services\Scoring\Grading\GradingServiceTests.cs" />
     <Compile Include="Services\Scoring\Grading\ConsolidatedMolecularGradingCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Grading\SerologyGradingCalculatorTests.cs" />

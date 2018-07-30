@@ -1,23 +1,42 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NUnit.Framework;
+using System;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class AlleleGradingCalculatorTests
+    public class AlleleGradingCalculatorTests : 
+        GradingCalculatorTestsBase<AlleleGradingCalculator>
     {
-        private IAlleleGradingCalculator alleleGradingCalculator;
+        #region Tests: Exception Cases
 
-        [SetUp]
-        public void SetUp()
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(SerologyScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        public override void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
+            Type patientScoringInfoType,
+            Type donorScoringInfoType
+            )
         {
-            alleleGradingCalculator = new AlleleGradingCalculator();
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
+                .Build();
+
+            Assert.Throws<ArgumentException>(() =>
+                GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult));
         }
+
+        #endregion
 
         #region Tests: Both Typings Expressing Alleles
 
@@ -40,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GDna);
         }
@@ -64,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.CDna);
         }
@@ -97,7 +116,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.CDna);
         }
@@ -130,9 +149,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
-            grade.Should().Be(MatchGrade.CDna);
+            grade.Should().Be(MatchGrade.Protein);
         }
 
         [Test]
@@ -156,7 +175,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.GGroup);
         }
@@ -186,7 +205,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.PGroup);
         }
@@ -216,7 +235,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -243,7 +262,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = alleleGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }

@@ -1,21 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
-    /// To be used with NMDP codes, allele strings & allele name variants that map to >1 allele,
+    /// To be used with allele name variants that map to >1 allele,
     /// where info on each individual allele represented by the typing is needed for scoring.
-    /// Not to be used with XX codes.
     /// </summary>
     public class MultipleAlleleScoringInfo : 
         IHlaScoringInfo, 
         IEquatable<MultipleAlleleScoringInfo>
     {
+        /// <summary>
+        /// The scoring info for each single allele represented by this typing only holds molecular data;
+        /// this is to reduce the object's final row size. The consolidated serology data
+        /// needed when scoring against a serology typing is held in the Matching Serologies property.
+        /// </summary>
         public IEnumerable<SingleAlleleScoringInfo> AlleleScoringInfos { get; }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// The total collection of serologies that match the multiple allele typing
+        /// is passed in during object creation; this data will be stored in the cloud table.
+        /// </summary>
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
+
+        [JsonIgnore]
+        public IEnumerable<string> MatchingGGroups => AlleleScoringInfos
+            .Select(info => info.MatchingGGroup)
+            .Distinct();
+
+        [JsonIgnore]
+        public IEnumerable<string> MatchingPGroups => AlleleScoringInfos
+            .Select(info => info.MatchingPGroup)
+            .Distinct();
 
         public MultipleAlleleScoringInfo(
             IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos, 

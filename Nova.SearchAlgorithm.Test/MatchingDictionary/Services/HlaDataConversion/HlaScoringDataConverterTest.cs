@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
 
         protected override IHlaLookupResult BuildSerologyHlaLookupResult()
         {
-            var scoringInfo = new SerologyScoringInfo(SeroSubtype, SerologyEntries);
+            var scoringInfo = new SerologyScoringInfo(SerologyEntries);
 
             return new HlaScoringLookupResult(
                 MatchedLocus,

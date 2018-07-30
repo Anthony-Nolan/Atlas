@@ -1,7 +1,10 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
+using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
@@ -10,7 +13,8 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class SerologyGradingCalculatorTests
+    public class SerologyGradingCalculatorTests :
+        GradingCalculatorTestsBase<SerologyGradingCalculator>
     {
         private ISerologyGradingCalculator serologyGradingCalculator;
 
@@ -20,25 +24,52 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             serologyGradingCalculator = new SerologyGradingCalculator();
         }
 
+        #region Tests: Exception Cases
+
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(ConsolidatedMolecularScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(ConsolidatedMolecularScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(ConsolidatedMolecularScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        public override void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
+            Type patientScoringInfoType,
+            Type donorScoringInfoType
+        )
+        {
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
+                .Build();
+
+            Assert.Throws<ArgumentException>(() =>
+                GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult));
+        }
+
+        #endregion
+
         #region Tests: Both Typings are Serology
 
         [Test]
-        public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndAssociatedSubtype_ReturnsAssociated()
+        public void CalculateGrade_BothTypingsAreSerology_WithDirectAssociatedRelationship_ReturnsAssociated()
         {
-            const string sharedSerologyName = "shared-serology";
-            const SerologySubtype sharedSubtype = SerologySubtype.Associated;
+            var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
@@ -48,22 +79,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndSplitSubtype_ReturnsSplit()
+        public void CalculateGrade_BothTypingsAreSerology_WithDirectSplitRelationship_ReturnsSplit()
         {
-            const string sharedSerologyName = "shared-serology";
-            const SerologySubtype sharedSubtype = SerologySubtype.Split;
+            var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
@@ -73,22 +101,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndNotSplitSubtype_ReturnsSplit()
+        public void CalculateGrade_BothTypingsAreSerology_WithDirectNotSplitRelationship_ReturnsSplit()
         {
-            const string sharedSerologyName = "shared-serology";
-            const SerologySubtype sharedSubtype = SerologySubtype.NotSplit;
+            var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
@@ -103,7 +128,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_BothTypingsAreSerology_WithDifferentNames_ButHaveAssociatedRelationship_ReturnsSplit(
+        public void CalculateGrade_BothTypingsAreSerology_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
             SerologySubtype patientSerologySubtype,
             SerologySubtype donorSerologySubtype
            )
@@ -111,19 +136,25 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string patientSerologyName = "patient-serology";
             const string donorSerologyName = "donor-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(patientSerologyName, patientSerologySubtype, true),
+                new SerologyEntry(donorSerologyName, donorSerologySubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(patientSerologySubtype)
-                    .WithMatchingSerologies(new[] { new SerologyEntry(donorSerologyName, donorSerologySubtype, false) })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(donorSerologyName, donorSerologySubtype, true),
+                new SerologyEntry(patientSerologyName, patientSerologySubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(donorSerologySubtype)
-                    .WithMatchingSerologies(new[] { new SerologyEntry(patientSerologyName, patientSerologySubtype, false) })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -133,22 +164,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreSerology_WithSameName_AndBroadSubtype_ReturnsBroad()
+        public void CalculateGrade_BothTypingsAreSerology_WithDirectBroadRelationship_ReturnsBroad()
         {
-            const string sharedSerologyName = "shared-serology";
-            const SerologySubtype sharedSubtype = SerologySubtype.Broad;
+            var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(sharedSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(sharedSubtype)
+                    .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
@@ -164,7 +192,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Split, SerologySubtype.Broad)]
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
-        public void CalculateGrade_BothTypingsAreSerology_WithDifferentNames_ButHaveBroadRelationship_ReturnsBroad(
+        public void CalculateGrade_BothTypingsAreSerology_WithIndirectBroadRelationship_ReturnsBroad(
             SerologySubtype patientSerologySubtype,
             SerologySubtype donorSerologySubtype
         )
@@ -172,19 +200,26 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string patientSerologyName = "patient-serology";
             const string donorSerologyName = "donor-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(patientSerologyName, patientSerologySubtype, true),
+                new SerologyEntry(donorSerologyName, donorSerologySubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(patientSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(patientSerologySubtype)
-                    .WithMatchingSerologies(new[] { new SerologyEntry(donorSerologyName, donorSerologySubtype, false) })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(donorSerologyName, donorSerologySubtype, true),
+                new SerologyEntry(patientSerologyName, patientSerologySubtype, false)
+
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(donorSerologyName)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(donorSerologySubtype)
-                    .WithMatchingSerologies(new[] { new SerologyEntry(patientSerologyName, patientSerologySubtype, false) })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -209,9 +244,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
@@ -232,9 +266,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
@@ -255,9 +288,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
@@ -272,28 +304,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_ExpressingAlleleVsSerology_WithIndirectAssociatedRelationship_ReturnsSplit(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+        public void CalculateGrade_ExpressingAlleleVsSerology_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directToAlleleSubtype,
+            SerologySubtype indirectToAlleleSubtype
            )
         {
-            var serologyDirectlyMappedToAllele = new SerologyEntry("patient-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry("patient-serology", directToAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToAllele,
-                        serologyIndirectlyMatchedToAllele
-                    })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToAllele.SerologySubtype)
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -314,9 +349,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
@@ -333,27 +367,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
         public void CalculateGrade_ExpressingAlleleVsSerology_WithIndirectBroadRelationship_ReturnsBroad(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+            SerologySubtype directToAlleleSubtype,
+            SerologySubtype indirectToAlleleSubtype
         )
         {
-            var serologyDirectlyMappedToAllele = new SerologyEntry("patient-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry("patient-serology", directToAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToAllele,
-                        serologyIndirectlyMatchedToAllele
-                    })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToAllele.SerologySubtype)
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -372,9 +409,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
@@ -395,9 +431,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
@@ -418,9 +453,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
@@ -441,28 +475,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_SerologyVsExpressingAllele_WithIndirectAssociatedRelationship_ReturnsSplit(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+        public void CalculateGrade_SerologyVsExpressingAllele_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directToAlleleSubtype,
+            SerologySubtype indirectToAlleleSubtype
            )
         {
-            var serologyDirectlyMappedToAllele = new SerologyEntry("donor-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToAllele.SerologySubtype)
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry("donor-serology", directToAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToAllele,
-                        serologyIndirectlyMatchedToAllele
-                    })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -477,9 +514,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
@@ -502,27 +538,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
         public void CalculateGrade_SerologyVsExpressingAllele_WithIndirectBroadRelationship_ReturnsBroad(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+            SerologySubtype directToAlleleSubtype,
+            SerologySubtype indirectToAlleleSubtype
         )
         {
-            var serologyDirectlyMappedToAllele = new SerologyEntry("donor-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToAllele.SerologySubtype)
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry("donor-serology", directToAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToAllele,
-                        serologyIndirectlyMatchedToAllele
-                    })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -538,10 +577,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [Test]
         public void CalculateGrade_NullAlleleVsSerology_ReturnsMismatch()
         {
-            const string patientAlleleName = "999:999N";
+            // null alleles do not have any matching serologies
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
+                    .WithMatchingSerologies(new List<SerologyEntry>())
                     .Build())
                 .Build();
 
@@ -551,7 +590,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
-            grade.Should().Be(MatchGrade.Associated);
+            grade.Should().Be(MatchGrade.Mismatch);
         }
 
         #endregion
@@ -565,16 +604,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().Build())
                 .Build();
 
-            const string donorAlleleName = "999:999N";
+            // null alleles do not have any matching serologies
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
+                    .WithMatchingSerologies(new List<SerologyEntry>())
                     .Build())
                 .Build();
 
             var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
-            grade.Should().Be(MatchGrade.Associated);
+            grade.Should().Be(MatchGrade.Mismatch);
         }
 
         #endregion
@@ -584,7 +623,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [Test]
         public void CalculateGrade_MultipleAlleleVsSerology_WhereMultipleAlleleDirectlyMapsToAssociatedSerology_ReturnsAssociated()
         {
-            var serologyDirectlyMappedToPatientMultipleAllele = 
+            var serologyDirectlyMappedToPatientMultipleAllele =
                 new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
@@ -594,9 +633,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
@@ -617,9 +655,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
@@ -640,9 +677,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
@@ -657,28 +693,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_MultipleAlleleVsSerology_WithIndirectAssociatedRelationship_ReturnsSplit(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+        public void CalculateGrade_MultipleAlleleVsSerology_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directToMultipleAlleleSubtype,
+            SerologySubtype indirectToMultipleAlleleSubtype
            )
         {
-            var serologyDirectlyMappedToMultipleAllele = new SerologyEntry("patient-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToMultipleAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry("patient-serology", directToMultipleAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToMultipleAllele,
-                        serologyIndirectlyMatchedToMultipleAllele
-                    })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -699,9 +738,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
@@ -718,27 +756,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
         public void CalculateGrade_MultipleAlleleVsSerology_WithIndirectBroadRelationship_ReturnsBroad(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+            SerologySubtype directToMultipleAlleleSubtype,
+            SerologySubtype indirectToMultipleAlleleSubtype
         )
         {
-            var serologyDirectlyMappedToMultipleAllele = new SerologyEntry("patient-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToMultipleAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry("patient-serology", directToMultipleAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToMultipleAllele,
-                        serologyIndirectlyMatchedToMultipleAllele
-                    })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -757,9 +798,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
@@ -780,9 +820,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
@@ -803,9 +842,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
@@ -826,28 +864,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_SerologyVsMultipleAllele_WithIndirectAssociatedRelationship_ReturnsSplit(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+        public void CalculateGrade_SerologyVsMultipleAllele_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directToMultipleAlleleSubtype,
+            SerologySubtype indirectToMultipleAlleleSubtype
            )
         {
-            var serologyDirectlyMappedToMultipleAllele = new SerologyEntry("donor-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToMultipleAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry("donor-serology", directToMultipleAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToMultipleAllele,
-                        serologyIndirectlyMatchedToMultipleAllele
-                    })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -862,9 +903,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
@@ -887,27 +927,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
         public void CalculateGrade_SerologyVsMultipleAllele_WithIndirectBroadRelationship_ReturnsBroad(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+            SerologySubtype directToMultipleAlleleSubtype,
+            SerologySubtype indirectToMultipleAlleleSubtype
         )
         {
-            var serologyDirectlyMappedToMultipleAllele = new SerologyEntry("donor-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToMultipleAllele = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToMultipleAllele.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToMultipleAllele.SerologySubtype)
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry("donor-serology", directToMultipleAlleleSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToMultipleAllele,
-                        serologyIndirectlyMatchedToMultipleAllele
-                    })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -932,9 +975,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -955,9 +997,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -978,9 +1019,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -995,28 +1035,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_ConsolidatedMolecularVsSerology_WithIndirectAssociatedRelationship_ReturnsSplit(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+        public void CalculateGrade_ConsolidatedMolecularVsSerology_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directToConsolidatedMolecularSubtype,
+            SerologySubtype indirectToConsolidatedMolecularSubtype
            )
         {
-            var serologyDirectlyMappedToConsolidatedMolecular = new SerologyEntry("patient-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToConsolidatedMolecular = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry("patient-serology", directToConsolidatedMolecularSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToConsolidatedMolecular,
-                        serologyIndirectlyMatchedToConsolidatedMolecular
-                    })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -1037,9 +1080,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToPatientConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToPatientConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -1056,27 +1098,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
         public void CalculateGrade_ConsolidatedMolecularVsSerology_WithIndirectBroadRelationship_ReturnsBroad(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+            SerologySubtype directToConsolidatedMolecularSubtype,
+            SerologySubtype indirectToConsolidatedMolecularSubtype
         )
         {
-            var serologyDirectlyMappedToConsolidatedMolecular = new SerologyEntry("patient-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToConsolidatedMolecular = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry("patient-serology", directToConsolidatedMolecularSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToConsolidatedMolecular,
-                        serologyIndirectlyMatchedToConsolidatedMolecular
-                    })
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -1095,9 +1140,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -1118,9 +1162,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -1141,9 +1184,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -1164,28 +1206,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Associated, SerologySubtype.Split)]
         [TestCase(SerologySubtype.NotSplit, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.NotSplit)]
-        public void CalculateGrade_SerologyVsConsolidatedMolecular_WithIndirectAssociatedRelationship_ReturnsSplit(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+        public void CalculateGrade_SerologyVsConsolidatedMolecular_WithIndirectSplitToAssociatedRelationship_ReturnsSplit(
+            SerologySubtype directToConsolidateMolecularSubtype,
+            SerologySubtype indirectToConsolidatedMolecularSubtype
            )
         {
-            var serologyDirectlyMappedToConsolidatedMolecular = new SerologyEntry("donor-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToConsolidatedMolecular = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry("donor-serology", directToConsolidateMolecularSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToConsolidatedMolecular,
-                        serologyIndirectlyMatchedToConsolidatedMolecular
-                    })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 
@@ -1200,9 +1245,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyDirectlyMappedToDonorConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyDirectlyMappedToDonorConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
@@ -1225,27 +1269,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [TestCase(SerologySubtype.Broad, SerologySubtype.Associated)]
         [TestCase(SerologySubtype.Associated, SerologySubtype.Broad)]
         public void CalculateGrade_SerologyVsConsolidatedMolecular_WithIndirectBroadRelationship_ReturnsBroad(
-            SerologySubtype directSerologySubtype,
-            SerologySubtype indirectSerologySubtype
+            SerologySubtype directToConsolidateMolecularSubtype,
+            SerologySubtype indirectToConsolidatedMolecularSubtype
         )
         {
-            var serologyDirectlyMappedToConsolidatedMolecular = new SerologyEntry("donor-serology", directSerologySubtype, true);
-            var serologyIndirectlyMatchedToConsolidatedMolecular = new SerologyEntry("shared-serology", indirectSerologySubtype, false);
+            const string sharedSerologyName = "shared-serology";
 
+            var patientSerologies = new[]
+            {
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
+            };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithLookupName(serologyIndirectlyMatchedToConsolidatedMolecular.Name)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithSerologySubtype(serologyIndirectlyMatchedToConsolidatedMolecular.SerologySubtype)
+                    .WithMatchingSerologies(patientSerologies)
                     .Build())
                 .Build();
 
+            var donorSerologies = new[]
+            {
+                new SerologyEntry("donor-serology", directToConsolidateMolecularSubtype, true),
+                new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingSerologies(new[]
-                    {
-                        serologyDirectlyMappedToConsolidatedMolecular,
-                        serologyIndirectlyMatchedToConsolidatedMolecular
-                    })
+                    .WithMatchingSerologies(donorSerologies)
                     .Build())
                 .Build();
 

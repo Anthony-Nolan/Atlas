@@ -31,6 +31,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         [JsonProperty("ser")]
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
+        [JsonIgnore]
+        public IEnumerable<string> MatchingGGroups => new List<string> { MatchingGGroup };
+
+        [JsonIgnore]
+        public IEnumerable<string> MatchingPGroups => new List<string> { MatchingPGroup };
+
         public SingleAlleleScoringInfo(
             string alleleName,
             AlleleTypingStatus alleleTypingStatus,
