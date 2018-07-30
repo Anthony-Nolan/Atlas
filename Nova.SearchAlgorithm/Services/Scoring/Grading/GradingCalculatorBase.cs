@@ -22,9 +22,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 throw new ArgumentException("Lookup results do not belong to same locus.");
             }
 
-            if (!ScoringInfosAreOfPermittedTypes(
-                patientLookupResult.HlaScoringInfo, 
-                donorLookupResult.HlaScoringInfo))
+            if (!ScoringInfosAreOfPermittedTypes(patientLookupResult.HlaScoringInfo, donorLookupResult.HlaScoringInfo))
             {
                 throw new ArgumentException("One or both scoring infos are not of the permitted types.");
             }
