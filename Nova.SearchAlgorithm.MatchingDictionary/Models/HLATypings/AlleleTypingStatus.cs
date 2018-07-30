@@ -34,8 +34,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         public AlleleTypingStatus(SequenceStatus sequenceStatus, DnaCategory dnaCategory)
         {
-            if (sequenceStatus == SequenceStatus.Unknown && dnaCategory != DnaCategory.Unknown ||
-                sequenceStatus != SequenceStatus.Unknown && dnaCategory == DnaCategory.Unknown)
+            if (sequenceStatus == SequenceStatus.Unknown ^ dnaCategory == DnaCategory.Unknown)
             {
                 throw new ArgumentException("Both sequence status and dna category must be set to unknown; or neither must be set to unknown.");
             }
