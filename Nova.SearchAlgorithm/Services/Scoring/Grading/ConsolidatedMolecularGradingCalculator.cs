@@ -39,13 +39,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return MatchGrade.GGroup;
             }
-
-            if (IsGGroupMatch(patientInfo, donorInfo))
+            else if (IsGGroupMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.GGroup;
             }
-
-            if (IsPGroupMatch(patientInfo, donorInfo))
+            else if (IsPGroupMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.PGroup;
             }

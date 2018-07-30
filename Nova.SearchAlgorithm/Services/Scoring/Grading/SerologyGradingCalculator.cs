@@ -42,13 +42,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return MatchGrade.Associated;
             }
-
-            if (IsSplitMatch(patientSerologies, donorSerologies))
+            else if (IsSplitMatch(patientSerologies, donorSerologies))
             {
                 return MatchGrade.Split;
             }
-
-            if (IsBroadMatch(patientSerologies, donorSerologies))
+            else if (IsBroadMatch(patientSerologies, donorSerologies))
             {
                 return MatchGrade.Broad;
             }
@@ -57,7 +55,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Does s1 = s2, and is s1[s2] an associated?
+        /// Are both serologies the same, and of the Associated subtype?
         /// </summary>
         private static bool IsAssociatedMatch(
             IEnumerable<SerologyEntry> patientSerologies,
@@ -70,9 +68,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Does s1 = s2, and is s1[s2] a split? OR
-        /// Does s1 = s2, and is s1[s2] a not-split? OR
-        /// Is s1 not-split & s2 associated to s1 (or vice versa)?
+        /// Are both serologies the same, and of the Split subtype? OR
+        /// Are both serologies the same, and of the Not-Split subtype? OR
+        /// Is one serology Not-Split & the other Associated to it (or vice versa)?
         /// </summary>
         private static bool IsSplitMatch(
             IReadOnlyCollection<SerologyEntry> patientSerologies,
@@ -101,9 +99,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Does s1 = s2, and is s1[s2] a broad? OR
-        /// Is s1 broad & s2 split of s1 (or vice versa)? OR
-        /// Is s1 broad & s2 associated to split of s1 (or vice versa)?
+        /// Are both serologies the same, and of the Broad subtype? OR
+        /// Is one serology a Broad & the other a Split of it (or vice versa)? OR
+        /// Is one serology a Broad & the other an Associated to one of its Splits (or vice versa)?
         /// </summary>
         private static bool IsBroadMatch(
             IReadOnlyCollection<SerologyEntry> patientSerologies,
@@ -156,17 +154,21 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 .SelectMany(subtypePair => subtypePair)
                 .ToList();
 
-            return
-                subtypePairs.Any(subtypePair => IsIndirectSerologySubtypeMatch(
+            var isPatientVsDonorMatch = subtypePairs.Any(subtypePair => 
+                IsIndirectSerologySubtypeMatch(
                     patientSerologies,
                     donorSerologies,
                     subtypePair.Item1,
-                    subtypePair.Item2)) ||
-                subtypePairs.Any(pairing => IsIndirectSerologySubtypeMatch(
+                    subtypePair.Item2));
+
+            var isDonorVsPatientMatch = subtypePairs.Any(subtypePair => 
+                IsIndirectSerologySubtypeMatch(
                     donorSerologies,
                     patientSerologies,
-                    pairing.Item1,
-                    pairing.Item2));
+                    subtypePair.Item1,
+                    subtypePair.Item2));
+
+            return isPatientVsDonorMatch || isDonorVsPatientMatch;
         }
 
         private static IEnumerable<Tuple<SerologySubtype, SerologySubtype>> GetSubtypePairs(

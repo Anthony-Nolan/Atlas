@@ -14,12 +14,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         IHlaScoringInfo, 
         IEquatable<MultipleAlleleScoringInfo>
     {
+        /// <summary>
+        /// The scoring info for each single allele represented by this typing only holds molecular data;
+        /// this is to reduce the object's final row size. The consolidated serology data
+        /// needed when scoring against a serology typing is held in the Matching Serologies property.
+        /// </summary>
         public IEnumerable<SingleAlleleScoringInfo> AlleleScoringInfos { get; }
 
         /// <inheritdoc />
         /// <summary>
-        /// Matching Serologies not computed from allele scoring infos to reduce row size;
-        /// instead, collection must be set during instantiation.
+        /// The total collection of serologies that match the multiple allele typing
+        /// is passed in during object creation; this data will be stored in the cloud table.
         /// </summary>
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
