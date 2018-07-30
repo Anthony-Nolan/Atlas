@@ -101,6 +101,15 @@ WHERE DonorId = {donorId}
                     {
                         result.SetAtLocus(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
                     }
+
+                    if (result.DataAtPosition(locus, TypePositions.One) == null)
+                    {
+                        result.SetAtLocus(locus, TypePositions.One, new List<string>());
+                    }
+                    if (result.DataAtPosition(locus, TypePositions.Two) == null)
+                    {
+                        result.SetAtLocus(locus, TypePositions.Two, new List<string>());
+                    }
                 }
             }
 
