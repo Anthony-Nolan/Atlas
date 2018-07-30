@@ -11,6 +11,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// <summary>
     /// To be used when at least one typing is serology;
     /// the other typing can be either serology or molecular.
+    /// Grades definitions have been taken from the WMDA Matching Framework (2010).
     /// </summary>
     public interface ISerologyGradingCalculator : IGradingCalculator
     {
@@ -55,6 +56,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return MatchGrade.Mismatch;
         }
 
+        /// <summary>
+        /// Does s1 = s2, and is s1[s2] an associated?
+        /// </summary>
         private static bool IsAssociatedMatch(
             IEnumerable<SerologyEntry> patientSerologies,
             IEnumerable<SerologyEntry> donorSerologies)
@@ -65,6 +69,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 SerologySubtype.Associated);
         }
 
+        /// <summary>
+        /// Does s1 = s2, and is s1[s2] a split? OR
+        /// Does s1 = s2, and is s1[s2] a not-split? OR
+        /// Is s1 not-split & s2 associated to s1 (or vice versa)?
+        /// </summary>
         private static bool IsSplitMatch(
             IReadOnlyCollection<SerologyEntry> patientSerologies,
             IReadOnlyCollection<SerologyEntry> donorSerologies)
@@ -91,6 +100,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return false;
         }
 
+        /// <summary>
+        /// Does s1 = s2, and is s1[s2] a broad? OR
+        /// Is s1 broad & s2 split of s1 (or vice versa)? OR
+        /// Is s1 broad & s2 associated to split of s1 (or vice versa)?
+        /// </summary>
         private static bool IsBroadMatch(
             IReadOnlyCollection<SerologyEntry> patientSerologies,
             IReadOnlyCollection<SerologyEntry> donorSerologies)
@@ -112,6 +126,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return false;
         }
 
+        /// <summary>
+        /// Do patient & donor HLA have the same directly mapped serology?
+        /// </summary>
         private static bool IsDirectMatch(
             IEnumerable<SerologyEntry> patientSerologies,
             IEnumerable<SerologyEntry> donorSerologies,
@@ -125,6 +142,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 .Any(x => x.Item2 == matchingSubtype);
         }
 
+        /// <summary>
+        /// Do patient & donor HLA have an indirect matching serology relationship?
+        /// </summary>
         private static bool IsIndirectMatch(
             IReadOnlyCollection<SerologyEntry> patientSerologies,
             IReadOnlyCollection<SerologyEntry> donorSerologies,
