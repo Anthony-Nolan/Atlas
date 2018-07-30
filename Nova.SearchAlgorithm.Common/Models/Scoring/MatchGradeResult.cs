@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.Scoring
 {
-    public class MatchGradeResult
+    public class MatchGradeResult : IEquatable<MatchGradeResult>
     {
         /// <summary>
         /// The grade given to this match - it is the best grade calculated across all typing combinations
@@ -24,6 +26,31 @@ namespace Nova.SearchAlgorithm.Common.Models.Scoring
         {
             GradeResult = gradeResult;
             Orientations = orientations;
+        }
+
+        public bool Equals(MatchGradeResult other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return 
+                GradeResult == other.GradeResult && 
+                Orientations.SequenceEqual(other.Orientations);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MatchGradeResult) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((int) GradeResult * 397) ^ Orientations.GetHashCode();
+            }
         }
     }
 }
