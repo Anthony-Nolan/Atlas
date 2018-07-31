@@ -135,7 +135,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             var result1 = GetBestMatchGradeResult(bestOrientations, directResults.Item1, crossResults.Item1);
             var result2 = GetBestMatchGradeResult(bestOrientations, directResults.Item2, crossResults.Item2);
 
-            return new Tuple<MatchGradeResult, MatchGradeResult>(result1, result2);
+            // Set the higher value grade in position 1
+            return (int) result1.GradeResult > (int) result2.GradeResult
+                ? new Tuple<MatchGradeResult, MatchGradeResult>(result1, result2)
+                : new Tuple<MatchGradeResult, MatchGradeResult>(result2, result1);
         }
 
         private static IEnumerable<MatchOrientation> CalculateBestOrientations(
@@ -157,7 +160,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
         private static int SumGrades(Tuple<MatchGrade, MatchGrade> grades)
         {
-            return (int)grades.Item1 + (int)grades.Item2;
+            return (int) grades.Item1 + (int) grades.Item2;
         }
 
         private static MatchGradeResult GetBestMatchGradeResult(
@@ -165,8 +168,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             MatchGrade directGrade,
             MatchGrade crossGrade)
         {
-            var crossIsBest = bestOrientations.Equals(new[] { MatchOrientation.Cross });
-            var gradeResult = crossIsBest ? crossGrade: directGrade;
+            var crossIsBest = bestOrientations.SequenceEqual(new[] { MatchOrientation.Cross });
+
+            var gradeResult = crossIsBest ? crossGrade : directGrade;
 
             return new MatchGradeResult(gradeResult, bestOrientations);
         }
