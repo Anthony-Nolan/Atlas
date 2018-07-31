@@ -118,8 +118,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return new ConsolidatedMolecularGradingCalculator();
             }
+            else if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
+            {
+                return new MultipleAlleleGradingCalculator();
+            }
 
-            return new AlleleGradingCalculator();
+            return new SingleAlleleGradingCalculator();
         }
 
         private static Tuple<MatchGradeResult, MatchGradeResult> GetGradeResultsInBestOrientations(

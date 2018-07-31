@@ -11,8 +11,8 @@ using System;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class AlleleGradingCalculatorTests : 
-        GradingCalculatorTestsBase<AlleleGradingCalculator>
+    public class SingleAlleleGradingCalculatorTests :
+        GradingCalculatorTestsBase<SingleAlleleGradingCalculator>
     {
         #region Tests: Exception Cases
 
@@ -181,7 +181,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithDifferentNamesAndGGroups_ButSamePGroup_ReturnsGGroup()
+        public void CalculateGrade_BothTypingsAreExpressingAlleles_WithDifferentNamesAndGGroups_ButSamePGroup_ReturnsPGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
