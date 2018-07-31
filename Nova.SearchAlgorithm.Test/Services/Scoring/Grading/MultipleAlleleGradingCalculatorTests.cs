@@ -660,6 +660,44 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
         #endregion
 
+        [Test]
+        public void CalculateGrade_MoreThanOnePossibleMatchGrade_BestGradeReturned()
+        {
+            const string sharedPGroup = "shared-p-group";
+            
+            var sharedGDnaAllele = new SingleAlleleScoringInfoBuilder()
+                .WithAlleleName("111:111")
+                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                .WithMatchingPGroup(sharedPGroup)
+                .Build();
+
+            const string mismatchedGGroup = "mismatch-g-group";
+            var patientPGroupMatchedAllele = new SingleAlleleScoringInfoBuilder()
+                .WithMatchingGGroup(mismatchedGGroup)
+                .WithMatchingPGroup(sharedPGroup)
+                .Build();
+
+            var patientMismatchedAllele = new SingleAlleleScoringInfoBuilder()
+                .WithMatchingGGroup(mismatchedGGroup)
+                .WithMatchingPGroup("mismatched-p-group")
+                .Build();
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
+                    .WithAlleleScoringInfos(new[] { sharedGDnaAllele, patientPGroupMatchedAllele, patientMismatchedAllele })
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(sharedGDnaAllele)
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            // Possible grades are GDna, PGroup, or Mismatch; GDna should be returned.
+            grade.Should().Be(MatchGrade.GDna);
+        }
+
         // TODO: NOVA-1479 - Add tests for scoring Multiple Allele vs. null allele & vice versa
     }
 }
