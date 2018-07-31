@@ -1085,7 +1085,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSerology_DonorHasMultipleAllele_ReturnsMaxGradeOfAssociated()
+        public void CalculateGrades_PatientHasSerology_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -1124,7 +1124,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSerology_DonorHasConsolidatedMolecular_ReturnsMaxGradeOfAssociated()
+        public void CalculateGrades_PatientHasSerology_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
