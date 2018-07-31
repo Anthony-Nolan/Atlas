@@ -1,5 +1,9 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -35,11 +39,49 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return bothAreMultiple || patientIsMultipleDonorIsSingle || patientIsSingleDonorIsMultiple;
         }
 
+        /// <summary>
+        /// Returns the maximum grade possible from every possible combination of patient to donor allele.
+        /// </summary>
         protected override MatchGrade GetMatchGrade(
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
-            return MatchGrade.Mismatch;
+            var patientAlleles = GetSingleAlleleLookupResults(patientLookupResult);
+            var donorAlleles = GetSingleAlleleLookupResults(donorLookupResult);
+
+            var singleAlleleCalculator = new SingleAlleleGradingCalculator();
+            var allGrades = patientAlleles.SelectMany(patientAllele => donorAlleles,
+                (patientAllele, donorAllele) => singleAlleleCalculator.CalculateGrade(patientAllele, donorAllele));
+
+            return allGrades.Max();
+        }
+
+        private static IEnumerable<IHlaScoringLookupResult> GetSingleAlleleLookupResults(
+            IHlaScoringLookupResult lookupResult)
+        {
+            var singleAlleleInfos = GetSingleAlleleInfos(lookupResult);
+
+            return singleAlleleInfos.Select(alleleInfo => new HlaScoringLookupResult(
+                lookupResult.MatchLocus,
+                alleleInfo.AlleleName,
+                LookupNameCategory.OriginalAllele,
+                alleleInfo));
+        }
+
+        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleInfos(
+            IHlaScoringLookupResult lookupResult)
+        {
+            var scoringInfo = lookupResult.HlaScoringInfo;
+
+            switch (scoringInfo)
+            {
+                case var info when scoringInfo is MultipleAlleleScoringInfo:
+                    return ((MultipleAlleleScoringInfo) info).AlleleScoringInfos;
+                case var info when scoringInfo is SingleAlleleScoringInfo:
+                    return new[] { (SingleAlleleScoringInfo) info };
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

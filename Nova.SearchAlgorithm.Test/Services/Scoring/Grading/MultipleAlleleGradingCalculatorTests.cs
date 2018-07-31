@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         {
             var sharedAllele = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
-                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna))
                 .Build();
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
@@ -286,7 +286,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         {
             var sharedAllele = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
-                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna))
                 .Build();
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
@@ -488,7 +488,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         {
             var sharedAllele = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
-                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna))
                 .Build();
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
