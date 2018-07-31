@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         {
             if (patientLookupResults == null || donorLookupResults == null)
             {
-                throw new ArgumentException("HLA scoring lookup result cannot be null.");
+                throw new ArgumentException("Phenotype object cannot be null.");
             }
 
             return GetPhenotypeGradingResults(patientLookupResults, donorLookupResults);

@@ -36,6 +36,32 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build();
         }
 
+        #region Tests: Exception Cases
+
+        [Test]
+        public void CalculateGrades_PatientPhenotypeIsNull_ThrowsException()
+        {
+            var donorphenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, donorphenotype));
+        }
+
+        [Test]
+        public void CalculateGrades_DonorPhenotypeIsNull_ThrowsException()
+        {
+            var patientPhenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(patientPhenotype, null));
+        }
+
+        [Test]
+        public void CalculateGrades_BothPhenotypesAreNull_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, null));
+        }
+
+        #endregion
+
         #region Tests: Best Grades & Orientation(s) returned
 
         [Test]
