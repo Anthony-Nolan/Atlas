@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
             {
                 var hashCode = AlleleName.GetHashCode();
                 hashCode = (hashCode * 397) ^ AlleleTypingStatus.GetHashCode();
-                hashCode = (hashCode * 397) ^ MatchingPGroup.GetHashCode();
+                hashCode = (hashCode * 397) ^ (MatchingPGroup != null ? MatchingPGroup.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ MatchingGGroup.GetHashCode();
                 hashCode = (hashCode * 397) ^ MatchingSerologies.GetHashCode();
                 return hashCode;

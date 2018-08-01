@@ -36,6 +36,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
         [JsonIgnore]
         public IEnumerable<string> MatchingPGroups => AlleleScoringInfos
             .Select(info => info.MatchingPGroup)
+            .Where(pGroup => pGroup != null)
             .Distinct();
 
         public MultipleAlleleScoringInfo(
