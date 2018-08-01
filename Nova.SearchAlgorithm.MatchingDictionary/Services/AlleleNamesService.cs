@@ -12,17 +12,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IAlleleNamesService
     {
-        /// <summary>
-        /// Generates and persists Allele Names collection,
-        /// overwriting any existing collection.
-        /// </summary>
-        /// <returns></returns>
-        Task RecreateAlleleNames();
-
-        /// <summary>
-        /// Generates - but does not persist - Allele Names collection.
-        /// </summary>
-        /// <returns></returns>
         IEnumerable<AlleleNameLookupResult> GetAlleleNamesAndTheirVariants();
     }
 
@@ -47,12 +36,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.alleleNameVariantsExtractor = alleleNameVariantsExtractor;
             this.reservedAlleleNamesExtractor = reservedAlleleNamesExtractor;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
-        }
-
-        public async Task RecreateAlleleNames()
-        {
-            var alleleNames = GetAlleleNamesAndTheirVariants();
-            await alleleNamesLookupRepository.RecreateHlaLookupTable(alleleNames);
         }
 
         public IEnumerable<AlleleNameLookupResult> GetAlleleNamesAndTheirVariants()

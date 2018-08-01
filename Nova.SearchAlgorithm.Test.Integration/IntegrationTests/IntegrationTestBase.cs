@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ManageMatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<RecreateHlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 

@@ -196,6 +196,7 @@
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
+    <Compile Include="Models\Lookups\HlaLookupResultCollections.cs" />
     <Compile Include="Models\Lookups\LookupNameCategory.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\MultipleAlleleScoringInfo.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\SingleAlleleScoringInfo.cs" />
@@ -303,7 +304,8 @@
     <Compile Include="Repositories\AzureStorage\HlaMatchingLookupResultExtensions.cs" />
     <Compile Include="Repositories\HlaMatchingLookupRepository.cs" />
     <Compile Include="Repositories\WmdaDataRepository.cs" />
-    <Compile Include="Services\ManageMatchingDictionaryService.cs" />
+    <Compile Include="Services\HlaLookupResultsService.cs" />
+    <Compile Include="Services\RecreateHlaLookupResultsService.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\AlleleInfoGenerator.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\AlleleMatcher.cs" />
     <Compile Include="Services\HlaMatchPreCalculationService.cs" />
