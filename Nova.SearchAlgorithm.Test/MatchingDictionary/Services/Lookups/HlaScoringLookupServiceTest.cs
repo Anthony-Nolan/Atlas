@@ -163,8 +163,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         private static IHlaScoringLookupResult BuildConsolidatedMolecularLookupResult(string lookupName, IEnumerable<string> alleleNames)
         {
             var scoringInfo = new ConsolidatedMolecularScoringInfo(
-                alleleNames,
-                alleleNames,
+                alleleNames.Select(ToPGroup),
+                alleleNames.Select(ToGGroup),
                 new List<SerologyEntry>());
 
             return new HlaScoringLookupResult(
@@ -180,10 +180,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var scoringInfo = new SingleAlleleScoringInfo(
                 alleleName,
                 AlleleTypingStatus.GetDefaultStatus(),
-                alleleName,
-                alleleName);
+                ToPGroup(alleleName),
+                ToGGroup(alleleName));
 
             return scoringInfo;
+        }
+
+        private static string ToPGroup(string alleleName)
+        {
+            return alleleName + "P";
+        }
+
+        private static string ToGGroup(string alleleName)
+        {
+            return alleleName + "G";
         }
     }
 }
