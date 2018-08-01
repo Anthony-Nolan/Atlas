@@ -17,6 +17,30 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
     public class GradingService : IGradingService
     {
+        private class LocusMatchGrades
+        {
+            public MatchGrade Grade1 { get; }
+            public MatchGrade Grade2 { get; }
+
+            public LocusMatchGrades(MatchGrade grade1, MatchGrade grade2)
+            {
+                Grade1 = grade1;
+                Grade2 = grade2;
+            }
+        }
+
+        private class LocusMatchGradeResults
+        {
+            public MatchGradeResult Result1 { get; }
+            public MatchGradeResult Result2 { get; }
+
+            public LocusMatchGradeResults(MatchGradeResult result1, MatchGradeResult result2)
+            {
+                Result1 = result1;
+                Result2 = result2;
+            }
+        }
+
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
@@ -33,7 +57,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
-            var phenotype = new PhenotypeInfo<MatchGradeResult>();
+            var gradeResults = new PhenotypeInfo<MatchGradeResult>();
 
             patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
             {
@@ -52,14 +76,14 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                     patientLookupResultsAtLocus,
                     donorLookupResults.DataAtLocus(locus));
 
-                phenotype.SetAtLocus(locus, TypePositions.One, locusGradeResults.Item1);
-                phenotype.SetAtLocus(locus, TypePositions.Two, locusGradeResults.Item2);
+                gradeResults.SetAtLocus(locus, TypePositions.One, locusGradeResults.Result1);
+                gradeResults.SetAtLocus(locus, TypePositions.Two, locusGradeResults.Result2);
             });
 
-            return phenotype;
+            return gradeResults;
         }
 
-        private static Tuple<MatchGradeResult, MatchGradeResult> GetLocusGradeResults(
+        private static LocusMatchGradeResults GetLocusGradeResults(
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
         {
@@ -69,24 +93,24 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return GetGradeResultsInBestOrientations(directGrades, crossGrades);
         }
 
-        private static Tuple<MatchGrade, MatchGrade> GetMatchGradesForDirectOrientation(
+        private static LocusMatchGrades GetMatchGradesForDirectOrientation(
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
         {
             var grade1 = CalculateMatchGrade(patientLookupResults.Item1, donorLookupResults.Item1);
             var grade2 = CalculateMatchGrade(patientLookupResults.Item2, donorLookupResults.Item2);
 
-            return new Tuple<MatchGrade, MatchGrade>(grade1, grade2);
+            return new LocusMatchGrades(grade1, grade2);
         }
 
-        private static Tuple<MatchGrade, MatchGrade> GetMatchGradesForCrossOrientation(
+        private static LocusMatchGrades GetMatchGradesForCrossOrientation(
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
         {
             var grade1 = CalculateMatchGrade(patientLookupResults.Item1, donorLookupResults.Item2);
             var grade2 = CalculateMatchGrade(patientLookupResults.Item2, donorLookupResults.Item1);
 
-            return new Tuple<MatchGrade, MatchGrade>(grade1, grade2);
+            return new LocusMatchGrades(grade1, grade2);
         }
 
         private static MatchGrade CalculateMatchGrade(
@@ -126,41 +150,43 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return new SingleAlleleGradingCalculator();
         }
 
-        private static Tuple<MatchGradeResult, MatchGradeResult> GetGradeResultsInBestOrientations(
-            Tuple<MatchGrade, MatchGrade> directResults,
-            Tuple<MatchGrade, MatchGrade> crossResults)
+        private static LocusMatchGradeResults GetGradeResultsInBestOrientations(
+            LocusMatchGrades directResults,
+            LocusMatchGrades crossResults)
         {
             var bestOrientations = CalculateBestOrientations(directResults, crossResults).ToList();
 
-            var result1 = GetBestMatchGradeResult(bestOrientations, directResults.Item1, crossResults.Item1);
-            var result2 = GetBestMatchGradeResult(bestOrientations, directResults.Item2, crossResults.Item2);
+            var result1 = GetBestMatchGradeResult(bestOrientations, directResults.Grade1, crossResults.Grade1);
+            var result2 = GetBestMatchGradeResult(bestOrientations, directResults.Grade2, crossResults.Grade2);
 
             // Set the higher value grade in position 1
             return (int) result1.GradeResult > (int) result2.GradeResult
-                ? new Tuple<MatchGradeResult, MatchGradeResult>(result1, result2)
-                : new Tuple<MatchGradeResult, MatchGradeResult>(result2, result1);
+                ? new LocusMatchGradeResults(result1, result2)
+                : new LocusMatchGradeResults(result2, result1);
         }
 
         private static IEnumerable<MatchOrientation> CalculateBestOrientations(
-            Tuple<MatchGrade, MatchGrade> directGrades,
-            Tuple<MatchGrade, MatchGrade> crossGrades)
+            LocusMatchGrades directGrades,
+            LocusMatchGrades crossGrades)
         {
             var difference = SumGrades(directGrades) - SumGrades(crossGrades);
 
-            switch (difference)
+            if (difference > 0)
             {
-                case var _ when difference > 0:
-                    return new[] { MatchOrientation.Direct };
-                case var _ when difference < 0:
-                    return new[] { MatchOrientation.Cross };
-                default:
-                    return new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+                return new[] { MatchOrientation.Direct };
             }
+
+            if (difference < 0)
+            {
+                return new[] { MatchOrientation.Cross };
+            }
+
+            return new[] { MatchOrientation.Direct, MatchOrientation.Cross };
         }
 
-        private static int SumGrades(Tuple<MatchGrade, MatchGrade> grades)
+        private static int SumGrades(LocusMatchGrades grades)
         {
-            return (int) grades.Item1 + (int) grades.Item2;
+            return (int) grades.Grade1 + (int) grades.Grade2;
         }
 
         private static MatchGradeResult GetBestMatchGradeResult(
@@ -170,6 +196,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         {
             var crossIsBest = bestOrientations.SequenceEqual(new[] { MatchOrientation.Cross });
 
+            // only use cross if it has been deemed to be the better orientation;
+            // else use direct where it is better or both orientations give equally good grades.
             var gradeResult = crossIsBest ? crossGrade : directGrade;
 
             return new MatchGradeResult(gradeResult, bestOrientations);

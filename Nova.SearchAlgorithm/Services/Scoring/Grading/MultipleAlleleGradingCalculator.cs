@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Returns the maximum grade possible from every possible combination of patient to donor allele.
+        /// Returns the maximum grade possible after grading every combination of patient and donor allele.
         /// </summary>
         protected override MatchGrade GetMatchGrade(
             IHlaScoringLookupResult patientLookupResult,
@@ -75,10 +75,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
             switch (scoringInfo)
             {
-                case var info when scoringInfo is MultipleAlleleScoringInfo:
-                    return ((MultipleAlleleScoringInfo) info).AlleleScoringInfos;
-                case var info when scoringInfo is SingleAlleleScoringInfo:
-                    return new[] { (SingleAlleleScoringInfo) info };
+                case MultipleAlleleScoringInfo info:
+                    return info.AlleleScoringInfos;
+                case SingleAlleleScoringInfo info:
+                    return new[] { info };
                 default:
                     throw new ArgumentOutOfRangeException();
             }
