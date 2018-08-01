@@ -334,16 +334,14 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="BaseStepDefinitions.cs" />
-    <Compile Include="Search.feature.cs">
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValidationTests\Features\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Search.feature</DependentUpon>
     </Compile>
-    <Compile Include="SearchSteps.cs" />
-    <Compile Include="SearchTests.cs" />
-    <Compile Include="SmokeTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\BaseStepDefinitions.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
@@ -352,12 +350,12 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Search.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Search.feature.cs</LastGenOutput>
-    </None>
     <None Include="Settings\SecureSettings.config">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="ValidationTests\Features\Search.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>Search.feature.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
