@@ -7,10 +7,10 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Validation
 {
     [TestFixture]
-    public class Class1
+    public class SmokeTests
     {
         [Test]
-        public async Task Test()
+        public async Task ServiceStatusEndpoint_ReturnsOk()
         {
             using (var server = TestServer.Create<Startup>())
             {

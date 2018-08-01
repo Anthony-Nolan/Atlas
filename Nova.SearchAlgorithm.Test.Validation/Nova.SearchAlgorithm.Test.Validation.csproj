@@ -329,7 +329,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="SmokeTest.cs" />
+    <Compile Include="SearchTests.cs" />
+    <Compile Include="SmokeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -337,6 +338,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Settings\SecureSettings.config">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
@@ -356,6 +360,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj">
       <Project>{478d829d-9aa2-4de2-9fdd-dee35e50111e}</Project>
       <Name>Nova.SearchAlgorithm.MatchingDictionary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj">
+      <Project>{09444497-e6f9-44b1-b7bb-f2a072c20ba5}</Project>
+      <Name>Nova.SearchAlgorithm.Test.Integration</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj">
       <Project>{B5CB5431-D854-4F2B-8ECA-06055376EE02}</Project>

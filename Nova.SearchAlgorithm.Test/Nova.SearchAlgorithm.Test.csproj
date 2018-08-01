@@ -338,7 +338,6 @@
     <Compile Include="Builders\ScoringInfo\ScoringInfoBuilderFactory.cs" />
     <Compile Include="Builders\ScoringInfo\SingleAlleleScoringInfoBuilder.cs" />
     <Compile Include="Builders\ScoringInfo\ConsolidatedMolecularScoringInfoBuilder.cs" />
-    <Compile Include="Builders\SearchRequestBuilder.cs" />
     <Compile Include="Builders\SearchResults\MatchAndScoreResultBuilder.cs" />
     <Compile Include="Builders\SearchResults\MatchResultBuilder.cs" />
     <Compile Include="Builders\SearchResults\ScoreResultBuilder.cs" />
