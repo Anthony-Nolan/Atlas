@@ -110,13 +110,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             var singleAlleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
 
-            var matchingGGroups = GetMatchingGGroups(singleAlleleScoringInfos);
             var matchingPGroups = GetMatchingPGroups(singleAlleleScoringInfos);
+            var matchingGGroups = GetMatchingGGroups(singleAlleleScoringInfos);
             var matchingSerologies = GetMatchingSerologies(singleAlleleScoringInfos);
 
             var consolidatedMolecularScoringInfo = new ConsolidatedMolecularScoringInfo(
-                matchingGGroups,
                 matchingPGroups,
+                matchingGGroups,
                 matchingSerologies);
 
             return new HlaScoringLookupResult(
@@ -137,19 +137,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     .SelectMany(multiple => multiple.AlleleScoringInfos));
         }
 
-        private static IEnumerable<string> GetMatchingGGroups(
-            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
-        {
-            return singleAlleleScoringInfos
-                .Select(single => single.MatchingGGroup)
-                .Distinct();
-        }
-
         private static IEnumerable<string> GetMatchingPGroups(
             IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
         {
             return singleAlleleScoringInfos
                 .Select(single => single.MatchingPGroup)
+                .Distinct();
+        }
+
+        private static IEnumerable<string> GetMatchingGGroups(
+            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        {
+            return singleAlleleScoringInfos
+                .Select(single => single.MatchingGGroup)
                 .Distinct();
         }
 
