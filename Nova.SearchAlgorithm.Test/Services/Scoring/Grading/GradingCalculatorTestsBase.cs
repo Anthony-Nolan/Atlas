@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using NUnit.Framework;
@@ -17,30 +15,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             GradingCalculator = new TCalculator();
-        }
-
-        [Test]
-        public void CalculateGrade_BothResultsAreNull_ReturnsPGroup()
-        {
-            var grade = GradingCalculator.CalculateGrade(null, null);
-
-            grade.Should().Be(MatchGrade.PGroup);
-        }
-
-        [Test]
-        public void CalculateGrade_PatientResultIsNull_ReturnsPGroup()
-        {
-            var grade = GradingCalculator.CalculateGrade(null, new HlaScoringLookupResultBuilder().Build());
-
-            grade.Should().Be(MatchGrade.PGroup);
-        }
-
-        [Test]
-        public void CalculateGrade_DonorResultIsNull_ReturnsPGroup()
-        {
-            var grade = GradingCalculator.CalculateGrade(new HlaScoringLookupResultBuilder().Build(), null);
-
-            grade.Should().Be(MatchGrade.PGroup);
         }
 
         [Test]

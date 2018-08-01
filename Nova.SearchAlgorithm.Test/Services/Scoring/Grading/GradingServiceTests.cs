@@ -36,39 +36,65 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build();
         }
 
+        #region Tests: Exception Cases
+
+        [Test]
+        public void CalculateGrades_PatientPhenotypeIsNull_ThrowsException()
+        {
+            var donorphenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, donorphenotype));
+        }
+
+        [Test]
+        public void CalculateGrades_DonorPhenotypeIsNull_ThrowsException()
+        {
+            var patientPhenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(patientPhenotype, null));
+        }
+
+        [Test]
+        public void CalculateGrades_BothPhenotypesAreNull_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, null));
+        }
+
+        #endregion
+
         #region Tests: Best Grades & Orientation(s) returned
 
         [Test]
         public void CalculateGrades_TwoMatchesInDirect_TwoMismatchesInCross_ReturnsTwoMatchGradesInDirectOrientation()
         {
-            const string sharedPGroup1 = "p-group-1";
-            const string sharedPGroup2 = "p-group-2";
+            const string sharedGGroup1 = "g-group-1";
+            const string sharedGGroup2 = "g-group-2";
 
             var patientResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup1)
+                    .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
             var patientResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup2)
+                    .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
             var donorResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup1)
+                    .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
             var donorResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup2)
+                    .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
@@ -77,12 +103,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] { MatchOrientation.Direct };
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
+            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
+            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
 
-            // Direct grade (P1: D1) is PGroup; Cross (P1: D2) is Mismatch
+            // Direct grade (P1: D1) is GGroup; Cross (P1: D2) is Mismatch
             actualGradingResults.A_1.ShouldBeEquivalentTo(expectedGradingResult1);
-            // Direct grade (P2: D2) is PGroup; Cross (P2: D1) is Mismatch
+            // Direct grade (P2: D2) is GGroup; Cross (P2: D1) is Mismatch
             actualGradingResults.A_2.ShouldBeEquivalentTo(expectedGradingResult2);
         }
 
@@ -205,34 +231,34 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [Test]
         public void CalculateGrades_TwoMismatchesInDirect_TwoMatchesInCross_ReturnsTwoMatchesInCrossOrientation()
         {
-            const string sharedPGroup1 = "p-group-1";
-            const string sharedPGroup2 = "p-group-2";
+            const string sharedGGroup1 = "g-group-1";
+            const string sharedGGroup2 = "g-group-2";
 
             var patientResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup1)
+                    .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
             var patientResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup2)
+                    .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
             var donorResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup2)
+                    .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
             var donorResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithMatchingPGroup(sharedPGroup1)
+                    .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
@@ -241,12 +267,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] { MatchOrientation.Cross };
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
+            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
+            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
 
-            // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is PGroup
+            // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is GGroup
             actualGradingResults.A_1.ShouldBeEquivalentTo(expectedGradingResult1);
-            // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is PGroup
+            // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is GGroup
             actualGradingResults.A_2.ShouldBeEquivalentTo(expectedGradingResult2);
         }
 
@@ -471,6 +497,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingGGroup("patient-g-group-1")
                     .WithMatchingPGroup("patient-p-group-1")
                     .Build())
                 .Build();
@@ -478,6 +505,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingGGroup("patient-g-group-2")
                     .WithMatchingPGroup("patient-p-group-2")
                     .Build())
                 .Build();
@@ -485,6 +513,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingGGroup("donor-g-group-1")
                     .WithMatchingPGroup("donor-p-group-1")
                     .Build())
                 .Build();
@@ -492,6 +521,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingGGroup("donor-g-group-2")
                     .WithMatchingPGroup("donor-p-group-2")
                     .Build())
                 .Build();

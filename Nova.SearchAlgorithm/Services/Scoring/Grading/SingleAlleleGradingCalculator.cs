@@ -7,13 +7,13 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// <summary>
     /// To be used when comparing two original allele typings.
     /// </summary>
-    public interface IAlleleGradingCalculator : IGradingCalculator
+    public interface ISingleAlleleGradingCalculator : IGradingCalculator
     {
     }
 
-    public class AlleleGradingCalculator :
+    public class SingleAlleleGradingCalculator :
         GradingCalculatorBase,
-        IAlleleGradingCalculator
+        ISingleAlleleGradingCalculator
     {
         private class AlleleGradingInfo
         {
