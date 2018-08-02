@@ -8,13 +8,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [BeforeTestRun]
         public static void BeforeTestRun()
         {
-            ServerManager.StartServer();
+            AlgorithmService.StartServer();
         }
 
         [AfterTestRun]
         public static void AfterTestRun()
         {
-            ServerManager.StopServer();
+            AlgorithmService.StopServer();
         }
         
     }

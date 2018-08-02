@@ -1,10 +1,6 @@
 ﻿using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Owin.Testing;
-using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -17,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
     public class SearchSteps
     {
         private SearchRequestBuilder searchRequestBuilder = new SearchRequestBuilder();
-        private HttpResponseMessage result;
+        private SearchResultSet result;
 
         [Given(@"I search for recognised hla")]
         public void GivenISearchForRecognisedHla()
@@ -56,19 +52,14 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMismatchCount(Locus.B, 0)
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .Build();
-            
-            result = await ServerManager.Server.CreateRequest("/search")
-                .AddHeader("X-Samples-ApiKey", "test-key")
-                .And(request => request.Content = new StringContent(JsonConvert.SerializeObject(searchRequest), Encoding.UTF8, "application/json"))
-                .PostAsync();
+
+            result = await AlgorithmService.Search(searchRequest);
         }
 
         [Then(@"The result should contain at least one donor")]
-        public async Task ThenTheResultShouldContainAtLeastOneDonor()
+        public void ThenTheResultShouldContainAtLeastOneDonor()
         {
-            var content = await result.Content.ReadAsStringAsync();
-            var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
-            deserialisedContent.SearchResults.Count().Should().BeGreaterThan(0);
+            result.SearchResults.Count().Should().BeGreaterThan(0);
         }
     }
 }
