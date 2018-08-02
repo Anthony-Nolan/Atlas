@@ -4,9 +4,9 @@ using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
-    internal static class HlaScoringLookupResultExtensions
+    public static class HlaScoringLookupResultExtensions
     {
-        internal static HlaLookupTableEntity ToTableEntity(this IHlaScoringLookupResult lookupResult)
+        public static HlaLookupTableEntity ToTableEntity(this IHlaScoringLookupResult lookupResult)
         {
             return new HlaLookupTableEntity(lookupResult)
             {
@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             };
         }
 
-        internal static HlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
+        public static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
         {
             var scoringInfo = GetPreCalculatedScoringInfo(entity);
 

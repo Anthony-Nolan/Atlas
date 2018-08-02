@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
-    internal static class HlaMatchingLookupResultExtensions
+    public static class HlaMatchingLookupResultExtensions
     {
-        internal static HlaLookupTableEntity ToTableEntity(this HlaMatchingLookupResult lookupResult)
+        public static HlaLookupTableEntity ToTableEntity(this IHlaMatchingLookupResult lookupResult)
         {
             return new HlaLookupTableEntity(lookupResult);
         }
 
-        internal static HlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity entity)
+        public static IHlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity entity)
         {
             var matchingPGroups = entity.GetHlaInfo<IEnumerable<string>>();
 

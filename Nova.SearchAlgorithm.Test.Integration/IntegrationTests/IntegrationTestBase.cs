@@ -15,6 +15,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
+using Nova.SearchAlgorithm.Services.Scoring.Confidence;
+using Nova.SearchAlgorithm.Services.Scoring.Grading;
+using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.WebApi.ApplicationInsights;
@@ -23,10 +27,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using Nova.SearchAlgorithm.Services.Scoring.Confidence;
-using Nova.SearchAlgorithm.Services.Scoring.Grading;
-using Nova.SearchAlgorithm.Services.Scoring.Ranking;
-using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedMatchingDictionaryRepository;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
@@ -109,10 +109,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            // TODO: NOVA-1472: Create a file-backed scoring repo
-            builder.RegisterType<HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedHlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<WmdaDataRepository>()
+                .AsImplementedInterfaces()
+                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
+                .InstancePerLifetimeScope();
 
             builder.RegisterType<HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<RecreateHlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -124,16 +127,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
 
-            builder.RegisterType<AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<WmdaDataRepository>()
-                .AsImplementedInterfaces()
-                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
-                .InstancePerLifetimeScope();
-
-
             builder.RegisterType<AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
             builder.RegisterType<AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();

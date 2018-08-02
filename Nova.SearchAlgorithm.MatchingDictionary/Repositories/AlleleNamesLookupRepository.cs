@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IAlleleNamesLookupRepository : IHlaLookupRepository
     {
-        Task<AlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName);
+        Task<IAlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName);
     }
 
     public class AlleleNamesLookupRepository : 
@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public async Task<AlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
+        public async Task<IAlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
         {
             var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, TypingMethod.Molecular);
 
