@@ -12,13 +12,10 @@ namespace Nova.SearchAlgorithm.Test.Validation
     [Binding]
     public class SearchSteps
     {
-        private SearchRequestBuilder searchRequestBuilder = new SearchRequestBuilder();
-        private SearchResultSet result;
-
         [Given(@"I search for recognised hla")]
         public void GivenISearchForRecognisedHla()
         {
-            searchRequestBuilder = searchRequestBuilder
+            var searchRequestBuilder = new SearchRequestBuilder()
                 .WithLocusMatchHla(Locus.A, TypePositions.One, "2")
                 .WithLocusMatchHla(Locus.A, TypePositions.Two, "68")
                 .WithLocusMatchHla(Locus.B, TypePositions.One, "7")
@@ -29,6 +26,8 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMatchHla(Locus.C, TypePositions.Two, "15:02")
                 .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, "05:01")
                 .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, "06:01");
+            
+            ScenarioContext.Current.Set(searchRequestBuilder);
         }
 
         [Given(@"The search type is (.*)")]
@@ -46,20 +45,21 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [When(@"I run a 6/6 search")]
         public async Task WhenIRunASearch()
         {
-            var searchRequest = searchRequestBuilder
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .Build();
 
-            result = await AlgorithmService.Search(searchRequest);
+            ScenarioContext.Current.Set(await AlgorithmService.Search(searchRequest));
         }
 
         [Then(@"The result should contain at least one donor")]
         public void ThenTheResultShouldContainAtLeastOneDonor()
         {
-            result.SearchResults.Count().Should().BeGreaterThan(0);
+            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            results.SearchResults.Count().Should().BeGreaterThan(0);
         }
     }
 }
