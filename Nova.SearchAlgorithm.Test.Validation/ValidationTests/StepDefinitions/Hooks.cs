@@ -1,0 +1,21 @@
+﻿using TechTalk.SpecFlow;
+
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
+{
+    [Binding]
+    public sealed class Hooks
+    {
+        [BeforeTestRun]
+        public static void BeforeTestRun()
+        {
+            ServerManager.StartServer();
+        }
+
+        [AfterTestRun]
+        public static void AfterTestRun()
+        {
+            ServerManager.StopServer();
+        }
+        
+    }
+}

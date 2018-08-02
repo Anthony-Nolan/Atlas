@@ -3,20 +3,21 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Owin.Testing;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
+using Nova.SearchAlgorithm.Test.Validation.ValidationTests;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation
 {
     [Binding]
-    public class SearchSteps : BaseStepDefinitions
+    public class SearchSteps
     {
         private SearchRequestBuilder searchRequestBuilder = new SearchRequestBuilder();
         private HttpResponseMessage result;
-
 
         [Given(@"I search for recognised hla")]
         public void GivenISearchForRecognisedHla()
@@ -34,8 +35,8 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, "06:01");
         }
 
-        [Given(@"The search type is adult")]
-        public void GivenTheSearchTypeIsAdult()
+        [Given(@"The search type is (.*)")]
+        public void GivenTheSearchTypeIs(string searchType)
         {
             // TODO
         }
@@ -56,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .Build();
             
-            result = await Server.CreateRequest("/search")
+            result = await ServerManager.Server.CreateRequest("/search")
                 .AddHeader("X-Samples-ApiKey", "test-key")
                 .And(request => request.Content = new StringContent(JsonConvert.SerializeObject(searchRequest), Encoding.UTF8, "application/json"))
                 .PostAsync();
