@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
     {
         private const string ApiKeyHeader = "X-Samples-ApiKey";
         private const string ApiKey = "test-key";
-        
+
         private static TestServer server;
 
         public static void StartServer()
@@ -31,10 +31,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
                 .AddHeader(ApiKeyHeader, ApiKey)
                 .And(request => request.Content = SerialiseToJson(searchRequest))
                 .PostAsync();
-            
+
             var content = await result.Content.ReadAsStringAsync();
             var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
             return deserialisedContent;
+        }
+
+        public static void RunHlaRefresh()
+        {
+            Task.Run(() => server.CreateRequest("/trigger-donor-hla-update")
+                .AddHeader(ApiKeyHeader, ApiKey)
+                .PostAsync()).Wait();
         }
 
         private static StringContent SerialiseToJson(SearchRequest searchRequest)

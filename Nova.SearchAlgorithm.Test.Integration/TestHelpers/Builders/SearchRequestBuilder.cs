@@ -50,12 +50,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     searchRequest.MatchCriteria.LocusMismatchB = locusMatchCriteria;
                     break;
                 case Locus.C:
+                    if (searchRequest.MatchCriteria.LocusMismatchC == null)
+                    {
+                        searchRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria();
+                    }
                     searchRequest.MatchCriteria.LocusMismatchC = locusMatchCriteria;
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    searchRequest.MatchCriteria.LocusMismatchDqb1 = locusMatchCriteria;
+                    if (searchRequest.MatchCriteria.LocusMismatchDqb1 == null)
+                    {
+                        searchRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria();
+                    }
                     break;
                 case Locus.Drb1:
                     searchRequest.MatchCriteria.LocusMismatchDrb1 = locusMatchCriteria;

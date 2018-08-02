@@ -343,6 +343,7 @@
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
+    <Compile Include="ValidationTests\TestDataGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

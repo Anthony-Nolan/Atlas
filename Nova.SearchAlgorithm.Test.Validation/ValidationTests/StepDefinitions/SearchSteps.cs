@@ -16,12 +16,12 @@ namespace Nova.SearchAlgorithm.Test.Validation
         public void GivenISearchForRecognisedHla()
         {
             var searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchHla(Locus.A, TypePositions.One, "2")
-                .WithLocusMatchHla(Locus.A, TypePositions.Two, "68")
-                .WithLocusMatchHla(Locus.B, TypePositions.One, "7")
-                .WithLocusMatchHla(Locus.B, TypePositions.Two, "44")
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, "01:MS")
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, "12:MN")
+                .WithLocusMatchHla(Locus.A, TypePositions.One, "01:01")
+                .WithLocusMatchHla(Locus.A, TypePositions.Two, "11:02")
+                .WithLocusMatchHla(Locus.B, TypePositions.One, "07:02")
+                .WithLocusMatchHla(Locus.B, TypePositions.Two, "08:41")
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, "15:09")
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, "12:02")
                 .WithLocusMatchHla(Locus.C, TypePositions.One, "04:01")
                 .WithLocusMatchHla(Locus.C, TypePositions.Two, "15:02")
                 .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, "05:01")
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
         }
 
         [When(@"I run a 6/6 search")]
-        public async Task WhenIRunASearch()
+        public async Task WhenIRunASixOutOfSixSearch()
         {
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(0)
