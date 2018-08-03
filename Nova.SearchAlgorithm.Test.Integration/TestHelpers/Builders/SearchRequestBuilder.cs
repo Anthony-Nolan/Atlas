@@ -16,7 +16,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             {
                 SearchType = DonorType.Adult,
                 RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
-                MatchCriteria = new MismatchCriteria(),
+                MatchCriteria = new MismatchCriteria
+                {
+                    LocusMismatchA = new LocusMismatchCriteria(),
+                    LocusMismatchB = new LocusMismatchCriteria(),
+                    LocusMismatchDrb1 = new LocusMismatchCriteria()
+                },
                 SearchHlaData = new SearchHlaData
                 {
                     LocusSearchHlaA = new LocusSearchHla(),
@@ -62,26 +67,34 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
         
-        public SearchRequestBuilder WithLocusMatchCount(Locus locus, int locusMatchCount)
+        public SearchRequestBuilder WithLocusMismatchCount(Locus locus, int locusMismatchCount)
         {
             switch (locus)
             {
                 case Locus.A:
-                    searchRequest.MatchCriteria.LocusMismatchA.MismatchCount = locusMatchCount;
+                    searchRequest.MatchCriteria.LocusMismatchA.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.B:
-                    searchRequest.MatchCriteria.LocusMismatchB.MismatchCount = locusMatchCount;
+                    searchRequest.MatchCriteria.LocusMismatchB.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.C:
-                    searchRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMatchCount;
+                    if (searchRequest.MatchCriteria.LocusMismatchC == null)
+                    {
+                        searchRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria();
+                    }
+                    searchRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    searchRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMatchCount;
+                    if (searchRequest.MatchCriteria.LocusMismatchDqb1 == null)
+                    {
+                        searchRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria();
+                    }
+                    searchRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Drb1:
-                    searchRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = locusMatchCount;
+                    searchRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = locusMismatchCount;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);

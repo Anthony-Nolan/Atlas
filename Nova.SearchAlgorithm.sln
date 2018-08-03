@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Common
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Integration", "Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj", "{09444497-E6F9-44B1-B7BB-F2A072C20BA5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Validation", "Nova.SearchAlgorithm.Test.Validation\Nova.SearchAlgorithm.Test.Validation.csproj", "{C320E568-8D97-490E-AFDA-57CE50ED2893}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,12 @@ Global
 		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

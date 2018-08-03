@@ -160,9 +160,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             {
                 searchRequestBuilder = searchRequestBuilder
                     .WithTotalMismatchCount(0)
-                    .WithLocusMatchCount(Locus.A, 0)
-                    .WithLocusMatchCount(Locus.B, 0)
-                    .WithLocusMatchCount(Locus.Drb1, 0);
+                    .WithLocusMismatchCount(Locus.A, 0)
+                    .WithLocusMismatchCount(Locus.B, 0)
+                    .WithLocusMismatchCount(Locus.Drb1, 0);
                 return this;
             }
 
