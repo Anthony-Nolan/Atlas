@@ -182,6 +182,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             searchRequest.SearchType = donorType;
             return this;
         }
+
+        public SearchRequestBuilder ForRegistries(IEnumerable<RegistryCode> registryCodes)
+        {
+            searchRequest.RegistriesToSearch = registryCodes;
+            return this;
+        }
         
         public SearchRequest Build()
         {

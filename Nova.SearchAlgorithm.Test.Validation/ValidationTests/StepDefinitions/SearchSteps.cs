@@ -43,7 +43,8 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [Given(@"The search is run for Anthony Nolan's registry only")]
         public void GivenTheSearchIsRunForAnthonyNolanSRegistryOnly()
         {
-            // TODO
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            ScenarioContext.Current.Set(searchRequest.ForRegistries(new []{ RegistryCode.AN }));
         }
 
         [When(@"I run a 6/6 search")]
