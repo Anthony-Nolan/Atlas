@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
     [Binding]
     public class SearchSteps
     {
-        [Given(@"I search for recognised hla")]
+        [Given(@"I search for exact donor hla")]
         public void GivenISearchForRecognisedHla()
         {
             var searchRequestBuilder = new SearchRequestBuilder()
@@ -98,6 +98,21 @@ namespace Nova.SearchAlgorithm.Test.Validation
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(1)
                 .WithLocusMismatchCount(locus, 1)
+                .WithMismatchCountAtLoci(exactMatchLoci, 0)
+                .Build();
+
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
+        }
+        
+        [When(@"I run an 8/10 search at locus (.*)")]
+        public async Task WhenIRunAnEightOutOfTenSearchAtLocus(string locusString)
+        {
+            var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
+            var exactMatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
+            
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                .WithTotalMismatchCount(2)
+                .WithLocusMismatchCount(locus, 2)
                 .WithMismatchCountAtLoci(exactMatchLoci, 0)
                 .Build();
 
