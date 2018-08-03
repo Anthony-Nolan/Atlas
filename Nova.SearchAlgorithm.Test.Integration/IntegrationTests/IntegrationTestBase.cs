@@ -101,39 +101,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<RankingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchScoreCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
-            builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
-
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<FileBackedHlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<WmdaDataRepository>()
-                .AsImplementedInterfaces()
-                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
-                .InstancePerLifetimeScope();
 
-            builder.RegisterType<HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<RecreateHlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
             builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
-
-            builder.RegisterType<AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
+            
             builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
             
             var logger = new RequestAwareLogger(new TelemetryClient(),
