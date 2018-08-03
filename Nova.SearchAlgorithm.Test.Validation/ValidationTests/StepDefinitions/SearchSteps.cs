@@ -59,6 +59,35 @@ namespace Nova.SearchAlgorithm.Test.Validation
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
+        
+        [When(@"I run an 8/8 search")]
+        public async Task WhenIRunAnEightOutOfEightSearch()
+        {
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                .WithTotalMismatchCount(0)
+                .WithLocusMismatchCount(Locus.A, 0)
+                .WithLocusMismatchCount(Locus.B, 0)
+                .WithLocusMismatchCount(Locus.Drb1, 0)
+                .WithLocusMismatchCount(Locus.C, 0)
+                .Build();
+
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
+        }
+        
+        [When(@"I run a 10/10 search")]
+        public async Task WhenIRunATenOutOfTenSearch()
+        {
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                .WithTotalMismatchCount(0)
+                .WithLocusMismatchCount(Locus.A, 0)
+                .WithLocusMismatchCount(Locus.B, 0)
+                .WithLocusMismatchCount(Locus.Drb1, 0)
+                .WithLocusMismatchCount(Locus.C, 0)
+                .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .Build();
+
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
+        }
 
         [Then(@"The result should contain at least one donor")]
         public void ThenTheResultShouldContainAtLeastOneDonor()

@@ -33,6 +33,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
                         B_2 = "08:41",
                         DRB1_1 = "15:09",
                         DRB1_2 = "12:02",
+                        C_1 = "04:01",
+                        C_2 = "15:02",
+                        DQB1_1 = "05:01",
+                        DQB1_2 = "06:01",
                     },
                     new Donor
                     {
@@ -45,6 +49,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
                         B_2 = "08:41",
                         DRB1_1 = "15:09",
                         DRB1_2 = "12:02",
+                        C_1 = "04:01",
+                        C_2 = "15:02",
+                        DQB1_1 = "05:01",
+                        DQB1_2 = "06:01",
                     },
                 };
 
