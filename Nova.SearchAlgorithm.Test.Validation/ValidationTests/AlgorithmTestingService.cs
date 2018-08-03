@@ -8,7 +8,7 @@ using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
 {
-    public static class AlgorithmService
+    public static class AlgorithmTestingService
     {
         private const string ApiKeyHeader = "X-Samples-ApiKey";
         private const string ApiKey = "test-key";

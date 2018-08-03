@@ -50,19 +50,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     searchRequest.MatchCriteria.LocusMismatchB = locusMatchCriteria;
                     break;
                 case Locus.C:
-                    if (searchRequest.MatchCriteria.LocusMismatchC == null)
-                    {
-                        searchRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria();
-                    }
                     searchRequest.MatchCriteria.LocusMismatchC = locusMatchCriteria;
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    if (searchRequest.MatchCriteria.LocusMismatchDqb1 == null)
-                    {
-                        searchRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria();
-                    }
                     break;
                 case Locus.Drb1:
                     searchRequest.MatchCriteria.LocusMismatchDrb1 = locusMatchCriteria;
@@ -85,11 +77,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     searchRequest.MatchCriteria.LocusMismatchB.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.C:
+                    if (searchRequest.MatchCriteria.LocusMismatchC == null)
+                    {
+                        searchRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria();
+                    }
                     searchRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
+                    if (searchRequest.MatchCriteria.LocusMismatchDqb1 == null)
+                    {
+                        searchRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria();
+                    }
                     searchRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Drb1:

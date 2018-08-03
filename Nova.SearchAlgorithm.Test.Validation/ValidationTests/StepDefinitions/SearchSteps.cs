@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .Build();
 
-            ScenarioContext.Current.Set(await AlgorithmService.Search(searchRequest));
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
 
         [Then(@"The result should contain at least one donor")]

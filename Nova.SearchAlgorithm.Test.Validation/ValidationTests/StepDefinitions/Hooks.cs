@@ -11,14 +11,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             TestDataGenerator.SetupDatabase();
             TestDataGenerator.AddTestDonors();
-            AlgorithmService.StartServer();
-            AlgorithmService.RunHlaRefresh();
+            AlgorithmTestingService.StartServer();
+            AlgorithmTestingService.RunHlaRefresh();
         }
 
         [AfterTestRun]
         public static void AfterTestRun()
         {
-            AlgorithmService.StopServer();
+            AlgorithmTestingService.StopServer();
         }
         
     }
