@@ -87,6 +87,21 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
+        }   
+        
+        [When(@"I run a 9/10 search at locus (.*)")]
+        public async Task WhenIRunANineOutOfTenSearchAtLocus(string locusString)
+        {
+            var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
+            var exactMatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
+            
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                .WithTotalMismatchCount(1)
+                .WithLocusMismatchCount(locus, 1)
+                .WithMismatchCountAtLoci(exactMatchLoci, 0)
+                .Build();
+
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
 
         [Then(@"The result should contain at least one donor")]
@@ -94,6 +109,13 @@ namespace Nova.SearchAlgorithm.Test.Validation
         {
             var results = ScenarioContext.Current.Get<SearchResultSet>();
             results.SearchResults.Count().Should().BeGreaterThan(0);
+        }
+        
+        [Then(@"The result should contain no donors")]
+        public void ThenTheResultShouldContainNoDonors()
+        {
+            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            results.SearchResults.Count().Should().Be(0);
         }
     }
 }

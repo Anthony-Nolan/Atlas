@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Common.Models;
@@ -101,6 +102,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             }
 
             return this;
+        }
+                
+        public SearchRequestBuilder WithMismatchCountAtLoci(IEnumerable<Locus> loci, int locusMismatchCount)
+        {
+            return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
         
         public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePositions positions, string hlaString)

@@ -128,21 +128,42 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search for a matching cord")]
-        public virtual void _66SearchForAMatchingCord()
+        [NUnit.Framework.DescriptionAttribute("9/10 Search for a matching donor")]
+        public virtual void _910SearchForAMatchingDonor()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search for a matching cord", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("9/10 Search for a matching donor", ((string[])(null)));
 #line 26
   this.ScenarioSetup(scenarioInfo);
 #line 27
     testRunner.Given("I search for recognised hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 28
-    testRunner.And("The search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("The search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 29
     testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 30
-    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 31
+    testRunner.Then("The result should contain no donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("6/6 Search for a matching cord")]
+        public virtual void _66SearchForAMatchingCord()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search for a matching cord", ((string[])(null)));
+#line 33
+  this.ScenarioSetup(scenarioInfo);
+#line 34
+    testRunner.Given("I search for recognised hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 35
+    testRunner.And("The search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 36
+    testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 37
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 38
     testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
