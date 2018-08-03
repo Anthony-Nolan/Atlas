@@ -18,18 +18,6 @@ namespace Nova.SearchAlgorithm.Controllers
             this.lookupService = lookupService;
         }
 
-        /// <summary>
-        /// Note: the Allele Names collection is recreated during the matching dictionary recreation process.
-        /// This endpoint allows the collection to be recreated independently if needs be.
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("recreate")]
-        public Task RecreateAlleleNames()
-        {
-            return alleleNamesService.RecreateAlleleNames();
-        }
-
         [HttpGet]
         [Route("lookup")]
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(MatchLocus matchLocus, string alleleLookupName)

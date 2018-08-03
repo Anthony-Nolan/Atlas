@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
-    internal static class AlleleNameLookupResultExtensions
+    public static class AlleleNameLookupResultExtensions
     {
-        internal static HlaLookupTableEntity ToTableEntity(this AlleleNameLookupResult lookupResult)
+        public static HlaLookupTableEntity ToTableEntity(this IAlleleNameLookupResult lookupResult)
         {
             return new HlaLookupTableEntity(lookupResult);
         }
 
-        internal static AlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity entity)
+        public static IAlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity entity)
         {
             var currentAlleleNames = entity.GetHlaInfo<IEnumerable<string>>();
 

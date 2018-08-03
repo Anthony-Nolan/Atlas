@@ -7,8 +7,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup
 {
+    public interface IAlleleNameLookupResult : IHlaLookupResult
+    {
+        IEnumerable<string> CurrentAlleleNames { get; }
+    }
+
     public class AlleleNameLookupResult : 
-        IHlaLookupResult, 
+        IAlleleNameLookupResult, 
         IEquatable<AlleleNameLookupResult>
     {
         public MatchLocus MatchLocus { get; }

@@ -335,8 +335,14 @@
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
     <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
     <Compile Include="IntegrationTests\StorageEmulator.cs" />
-    <Compile Include="Storage\FileBackedMatchingDictionaryRepository\FileBackedPreCalculatedHlaMatchRepository.cs" />
-    <Compile Include="Storage\FileBackedMatchingDictionaryRepository\RawMatchingHla.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaLookupRepositoryBase.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedAlleleNamesLookupRepository.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaScoringLookupRepository.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaMatchingLookupRepository.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaLookupResultCollections.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedAlleleNameLookupResult.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaMatchingLookupResult.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaScoringLookupResult.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestBuilder.cs" />
@@ -346,7 +352,6 @@
     <Compile Include="IntegrationTests\Matching\MatchingTestsAtASingleLocus.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\MatchingDictionary\matching_hla.json" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
@@ -356,6 +361,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <EmbeddedResource Include="Resources\MatchingDictionary\all_hla_lookup_results.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
