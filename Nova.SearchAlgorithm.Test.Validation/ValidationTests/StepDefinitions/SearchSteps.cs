@@ -41,10 +41,32 @@ namespace Nova.SearchAlgorithm.Test.Validation
         }
 
         [Given(@"The search is run for Anthony Nolan's registry only")]
-        public void GivenTheSearchIsRunForAnthonyNolanSRegistryOnly()
+        public void GivenTheSearchIsRunForAnthonyNolansRegistryOnly()
         {
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
             ScenarioContext.Current.Set(searchRequest.ForRegistries(new []{ RegistryCode.AN }));
+        }
+
+        [Given(@"The search is run for aligned registries")]
+        public void GivenTheSearchIsRunForAlignedRegistries()
+        {
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            ScenarioContext.Current.Set(searchRequest.ForRegistries(new []
+            {
+                RegistryCode.AN,
+                RegistryCode.NHSBT,
+                RegistryCode.WBS,
+                RegistryCode.DKMS
+            }));
+        }
+
+        [Given(@"The search is run for the registry: (.*)")]
+        public void GivenTheSearchIsRunForRegistry(string registryString)
+        {
+            // If the search team prefer to write the tests with expanded registry names, we will need to manually map to the enum
+            var registry = (RegistryCode) Enum.Parse(typeof(RegistryCode), registryString, true);
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            ScenarioContext.Current.Set(searchRequest.ForAdditionalRegistry(registry));
         }
 
         [When(@"I run a 6/6 search")]

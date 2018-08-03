@@ -86,10 +86,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("8/8 Search for a matching donor")]
-        public virtual void _88SearchForAMatchingDonor()
+        [NUnit.Framework.DescriptionAttribute("6/6 aligned registries search")]
+        public virtual void _66AlignedRegistriesSearch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search for a matching donor", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 aligned registries search", ((string[])(null)));
 #line 12
   this.ScenarioSetup(scenarioInfo);
 #line 13
@@ -97,10 +97,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 14
     testRunner.And("The search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 15
-    testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("The search is run for aligned registries", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 16
-    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 17
+    testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("8/8 Search for a matching donor")]
+        public virtual void _88SearchForAMatchingDonor()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search for a matching donor", ((string[])(null)));
+#line 19
+  this.ScenarioSetup(scenarioInfo);
+#line 20
+    testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 21
+    testRunner.And("The search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 22
+    testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 23
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 24
     testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -111,17 +132,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         public virtual void _1010SearchForAMatchingDonor()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a matching donor", ((string[])(null)));
-#line 19
+#line 26
   this.ScenarioSetup(scenarioInfo);
-#line 20
+#line 27
     testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 21
+#line 28
     testRunner.And("The search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 22
+#line 29
     testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 23
+#line 30
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 24
+#line 31
     testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -132,17 +153,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         public virtual void _910SearchForAMatchingDonor()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("9/10 Search for a matching donor", ((string[])(null)));
-#line 26
+#line 33
   this.ScenarioSetup(scenarioInfo);
-#line 27
+#line 34
     testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 28
+#line 35
     testRunner.And("The search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 29
+#line 36
     testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 30
+#line 37
     testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 31
+#line 38
     testRunner.Then("The result should contain no donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -153,17 +174,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         public virtual void _810SearchForAMatchingDonor()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search for a matching donor", ((string[])(null)));
-#line 33
+#line 40
   this.ScenarioSetup(scenarioInfo);
-#line 34
+#line 41
     testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 35
+#line 42
     testRunner.And("The search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 36
+#line 43
     testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 37
+#line 44
     testRunner.When("I run an 8/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 38
+#line 45
     testRunner.Then("The result should contain no donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -174,17 +195,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         public virtual void _66SearchForAMatchingCord()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search for a matching cord", ((string[])(null)));
-#line 40
+#line 47
   this.ScenarioSetup(scenarioInfo);
-#line 41
+#line 48
     testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 42
+#line 49
     testRunner.And("The search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 43
+#line 50
     testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 44
+#line 51
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 45
+#line 52
     testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -195,17 +216,46 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         public virtual void _48SearchForAMatchingCord()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("4/8 Search for a matching cord", ((string[])(null)));
-#line 47
+#line 54
   this.ScenarioSetup(scenarioInfo);
-#line 48
+#line 55
     testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 49
+#line 56
     testRunner.And("The search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 50
+#line 57
     testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 51
+#line 58
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 52
+#line 59
+    testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("4/8 Search for a cord at multiple registries")]
+        public virtual void _48SearchForACordAtMultipleRegistries()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("4/8 Search for a cord at multiple registries", ((string[])(null)));
+#line 61
+  this.ScenarioSetup(scenarioInfo);
+#line 62
+    testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 63
+    testRunner.And("The search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 64
+    testRunner.And("The search is run for the registry: AN", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 65
+    testRunner.And("The search is run for the registry: NHSBT", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 66
+    testRunner.And("The search is run for the registry: NMDP", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 67
+    testRunner.And("The search is run for the registry: France", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 68
+    testRunner.And("The search is run for the registry: Italy", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 69
+    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 70
     testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

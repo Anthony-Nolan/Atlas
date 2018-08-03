@@ -9,6 +9,13 @@
     When I run a 6/6 search
     Then The result should contain at least one donor
 
+  Scenario: 6/6 aligned registries search
+    Given I search for exact donor hla
+    And The search type is adult
+    And The search is run for aligned registries
+    When I run a 6/6 search
+    Then The result should contain at least one donor
+
   Scenario: 8/8 Search for a matching donor
     Given I search for exact donor hla
     And The search type is adult
@@ -48,5 +55,16 @@
     Given I search for exact donor hla
     And The search type is cord
     And The search is run for Anthony Nolan's registry only
+    When I run a 4/8 search
+    Then The result should contain at least one donor
+    
+  Scenario: 4/8 Search for a cord at multiple registries
+    Given I search for exact donor hla
+    And The search type is cord
+    And The search is run for the registry: AN
+    And The search is run for the registry: NHSBT
+    And The search is run for the registry: NMDP
+    And The search is run for the registry: France
+    And The search is run for the registry: Italy
     When I run a 4/8 search
     Then The result should contain at least one donor

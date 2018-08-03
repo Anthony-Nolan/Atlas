@@ -10,13 +10,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
     public class SearchRequestBuilder
     {
         private readonly SearchRequest searchRequest;
-        
+
         public SearchRequestBuilder()
         {
             searchRequest = new SearchRequest()
             {
                 SearchType = DonorType.Adult,
-                RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
+                RegistriesToSearch = new List<RegistryCode> {RegistryCode.AN},
                 MatchCriteria = new MismatchCriteria
                 {
                     LocusMismatchA = new LocusMismatchCriteria(),
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 }
             };
         }
-        
+
         public SearchRequestBuilder WithTotalMismatchCount(int mismatchCount)
         {
             searchRequest.MatchCriteria.DonorMismatchCount = mismatchCount;
@@ -67,7 +67,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
             return this;
         }
-        
+
         public SearchRequestBuilder WithLocusMismatchCount(Locus locus, int locusMismatchCount)
         {
             switch (locus)
@@ -83,6 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     {
                         searchRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria();
                     }
+
                     searchRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Dpb1:
@@ -92,6 +93,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     {
                         searchRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria();
                     }
+
                     searchRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Drb1:
@@ -103,12 +105,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
             return this;
         }
-                
+
         public SearchRequestBuilder WithMismatchCountAtLoci(IEnumerable<Locus> loci, int locusMismatchCount)
         {
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
-        
+
         public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePositions positions, string hlaString)
         {
             switch (locus)
@@ -122,7 +124,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
-
                     }
 
                     break;
@@ -194,7 +195,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             searchRequest.RegistriesToSearch = registryCodes;
             return this;
         }
-        
+
+        public SearchRequestBuilder ForAdditionalRegistry(RegistryCode registryCode)
+        {
+            searchRequest.RegistriesToSearch = searchRequest.RegistriesToSearch.ToList().Concat(new[] {registryCode}).Distinct();
+            return this;
+        }
+
         public SearchRequest Build()
         {
             return searchRequest;
