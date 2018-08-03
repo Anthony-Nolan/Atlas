@@ -73,6 +73,20 @@ namespace Nova.SearchAlgorithm.Test.Validation
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
+               
+        [When(@"I run a 4/8 search")]
+        public async Task WhenIRunAFourOutOfEightSearch()
+        {
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                .WithTotalMismatchCount(4)
+                .WithLocusMismatchCount(Locus.A, 2)
+                .WithLocusMismatchCount(Locus.B, 2)
+                .WithLocusMismatchCount(Locus.Drb1, 2)
+                .WithLocusMismatchCount(Locus.C, 2)
+                .Build();
+
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
+        }
         
         [When(@"I run a 10/10 search")]
         public async Task WhenIRunATenOutOfTenSearch()

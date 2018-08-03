@@ -43,3 +43,10 @@
     And The search is run for Anthony Nolan's registry only
     When I run a 6/6 search
     Then The result should contain at least one donor
+    
+  Scenario: 4/8 Search for a matching cord
+    Given I search for exact donor hla
+    And The search type is cord
+    And The search is run for Anthony Nolan's registry only
+    When I run a 4/8 search
+    Then The result should contain at least one donor

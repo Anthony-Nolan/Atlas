@@ -189,6 +189,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("4/8 Search for a matching cord")]
+        public virtual void _48SearchForAMatchingCord()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("4/8 Search for a matching cord", ((string[])(null)));
+#line 47
+  this.ScenarioSetup(scenarioInfo);
+#line 48
+    testRunner.Given("I search for exact donor hla", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 49
+    testRunner.And("The search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 50
+    testRunner.And("The search is run for Anthony Nolan\'s registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 51
+    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 52
+    testRunner.Then("The result should contain at least one donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
