@@ -177,6 +177,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestBuilder WithSearchType(DonorType donorType)
+        {
+            searchRequest.SearchType = donorType;
+            return this;
+        }
+        
         public SearchRequest Build()
         {
             return searchRequest;

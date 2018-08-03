@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -33,7 +35,9 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [Given(@"The search type is (.*)")]
         public void GivenTheSearchTypeIs(string searchType)
         {
-            // TODO
+            var donorType = (DonorType) Enum.Parse(typeof(DonorType), searchType, true);
+            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            ScenarioContext.Current.Set(searchRequest.WithSearchType(donorType));
         }
 
         [Given(@"The search is run for Anthony Nolan's registry only")]
