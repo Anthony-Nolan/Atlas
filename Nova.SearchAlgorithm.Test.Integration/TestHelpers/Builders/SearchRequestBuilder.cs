@@ -55,6 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
+                    searchRequest.MatchCriteria.LocusMismatchDqb1 = locusMatchCriteria;
                     break;
                 case Locus.Drb1:
                     searchRequest.MatchCriteria.LocusMismatchDrb1 = locusMatchCriteria;
