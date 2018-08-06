@@ -38,9 +38,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithTotalMismatchCount(0)
-                .WithLocusMatchCount(Locus.A, 0)
-                .WithLocusMatchCount(Locus.B, 0)
-                .WithLocusMatchCount(Locus.Drb1, 0);
+                .WithLocusMismatchCount(Locus.A, 0)
+                .WithLocusMismatchCount(Locus.B, 0)
+                .WithLocusMismatchCount(Locus.Drb1, 0);
             return this;
         }
 
@@ -48,9 +48,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithTotalMismatchCount(0)
-                .WithLocusMatchCount(Locus.A, locus == Locus.A ? 1 : 0)
-                .WithLocusMatchCount(Locus.B, locus == Locus.B ? 1 : 0)
-                .WithLocusMatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0)
+                .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
+                .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 1 : 0)
+                .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0)
                 .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);
             return this;
         }
