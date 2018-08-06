@@ -128,7 +128,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromSearch_HaveNullMatchCounts()
+        public async Task Search_SixOutOfSix_LociExcludedFromSearchHaveNullMatchCounts()
         {
             var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
