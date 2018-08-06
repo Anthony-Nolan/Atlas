@@ -12,6 +12,12 @@ node('windows') {
     stage('Checkout') {
         checkout scm
     }
+    
+    stage('Validation Tests') {
+        configFileProvider(
+                [configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Settings/SecureSettings.config')]) {}
+    }
+    
     stage('Prepare Nuget') {
         withCredentials([usernamePassword(credentialsId: env.NUGET_CREDENTIALS_ID, passwordVariable: 'password', usernameVariable: 'username')]) {
             bat "init.cmd"
