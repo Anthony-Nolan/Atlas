@@ -15,7 +15,7 @@ node('windows') {
     
     stage('Validation Tests') {
         configFileProvider(
-                [configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Settings/SecureSettings.config')]) {}
+                [configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/SecureSettings.config')]) {}
     }
     
     stage('Prepare Nuget') {
