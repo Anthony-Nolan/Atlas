@@ -163,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithOneAllowedMismatchAtA_MatchesDonorsWithTwoMatchesAtLocus()
+        public async Task Search_WithOneAllowedMismatchAtLocus_MatchesDonorsWithTwoMatchesAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
@@ -181,7 +181,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithOneAllowedMismatchAtA_MatchesDonorWithOneOfTwoHvGAtLocus()
+        public async Task Search_WithOneAllowedMismatchAtLocus_MatchesDonorWithOneOfTwoHvGAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
@@ -197,7 +197,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithOneAllowedMismatchAtA_MatchesDonorWithOneOfTwoBothDirectionsAtLocus()
+        public async Task Search_WithOneAllowedMismatchAtLocus_MatchesDonorWithOneOfTwoBothDirectionsAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
@@ -213,7 +213,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithOneAllowedMismatchAtA_DoesNotMatchDonorsWithNoMatchAtLocus()
+        public async Task Search_WithOneAllowedMismatchAtLocus_DoesNotMatchDonorsWithNoMatchAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(1)
@@ -229,7 +229,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithTwoAllowedMismatchesAtA_MatchesDonorWithNoMatchAtLocus()
+        public async Task Search_WithTwoAllowedMismatchesAtLocus_MatchesDonorWithNoMatchAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(2)
@@ -245,7 +245,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithTwoAllowedMismatchesAtA_MatchesDonorsWithExactMatchAtLocus()
+        public async Task Search_WithTwoAllowedMismatchesAtLocus_MatchesDonorsWithExactMatchAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(2)
@@ -263,7 +263,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithTwoAllowedMismatchesAtA_MatchesDonorsWithSingleMatchAtLocus()
+        public async Task Search_WithTwoAllowedMismatchesAtLocus_MatchesDonorsWithSingleMatchAtLocus()
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithTotalMismatchCount(2)
