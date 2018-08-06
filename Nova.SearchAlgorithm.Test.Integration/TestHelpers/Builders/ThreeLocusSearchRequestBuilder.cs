@@ -49,18 +49,23 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public ThreeLocusSearchRequestBuilder FiveOutOfSixWithPositionOneMismatchAt(Locus locus)
+        public ThreeLocusSearchRequestBuilder FiveOutOfSix()
         {
             searchRequestBuilder = searchRequestBuilder
-                .WithTotalMismatchCount(0)
-                .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
-                .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 1 : 0)
-                .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0)
-                .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);
+                .WithTotalMismatchCount(1);
             return this;
         }
 
-        public ThreeLocusSearchRequestBuilder WithSingleMismatchAt(Locus locus)
+        public ThreeLocusSearchRequestBuilder WithSingleMismatchRequestedAt(Locus locus)
+        {
+            searchRequestBuilder = searchRequestBuilder
+                .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
+                .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 1 : 0)
+                .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0);
+            return this;
+        }
+
+        public ThreeLocusSearchRequestBuilder WithPositionOneOfSearchHlaMismatchedAt(Locus locus)
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);

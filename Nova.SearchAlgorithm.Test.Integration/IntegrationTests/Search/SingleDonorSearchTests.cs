@@ -78,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithSingleMismatchAt(Locus.A)
+                .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -91,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithSingleMismatchAt(Locus.B)
+                .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -104,7 +104,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithSingleMismatchAt(Locus.Drb1)
+                .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
@@ -117,9 +117,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithSingleMismatchAt(Locus.A)
-                .WithSingleMismatchAt(Locus.B)
-                .WithSingleMismatchAt(Locus.Drb1)
+                .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
+                .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
+                .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
             
             var results = await searchService.Search(searchRequest);
