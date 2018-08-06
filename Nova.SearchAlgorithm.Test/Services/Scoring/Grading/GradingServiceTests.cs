@@ -482,8 +482,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
+            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
+            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is Split
             actualGradingResults.A_1.ShouldBeEquivalentTo(expectedGradingResult1);

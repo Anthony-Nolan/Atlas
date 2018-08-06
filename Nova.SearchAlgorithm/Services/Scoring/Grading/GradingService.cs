@@ -159,10 +159,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             var result1 = GetBestMatchGradeResult(bestOrientations, directResults.Grade1, crossResults.Grade1);
             var result2 = GetBestMatchGradeResult(bestOrientations, directResults.Grade2, crossResults.Grade2);
 
-            // Set the higher value grade in position 1
-            return (int) result1.GradeResult > (int) result2.GradeResult
-                ? new LocusMatchGradeResults(result1, result2)
-                : new LocusMatchGradeResults(result2, result1);
+            return new LocusMatchGradeResults(result1, result2);
         }
 
         private static IEnumerable<MatchOrientation> CalculateBestOrientations(
