@@ -11,8 +11,9 @@
         /// The number of matches within this locus.
         /// Either 0, 1 or 2 if the locus is typed.
         /// If the locus is not typed this will be 2, since there is a potential match.
+        /// If matching has not been requested on the locus, then the value will be null.
         /// </summary>
-        public int MatchCount { get; set; }
+        public int? MatchCount { get; set; }
         
         /// <summary>
         /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm

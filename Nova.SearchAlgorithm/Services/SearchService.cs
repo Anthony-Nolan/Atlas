@@ -134,15 +134,11 @@ namespace Nova.SearchAlgorithm.Services
             var matchDetailsForLocus = result.MatchResult.MatchDetailsForLocus(locus);
             var scoreDetailsForLocus = result.ScoreResult.ScoreDetailsForLocus(locus);
 
-            if (matchDetailsForLocus == null)
-            {
-                return null;
-            }
 
             return new LocusSearchResult
             {
-                IsLocusTyped = matchDetailsForLocus.IsLocusTyped,
-                MatchCount = matchDetailsForLocus.MatchCount,
+                IsLocusTyped = matchDetailsForLocus != null && matchDetailsForLocus.IsLocusTyped,
+                MatchCount = matchDetailsForLocus?.MatchCount,
                 MatchGradeScore = scoreDetailsForLocus.MatchGradeScore,
                 MatchConfidenceScore = scoreDetailsForLocus.MatchConfidenceScore,
                 ScoreDetailsAtPositionOne = new LocusPositionScoreDetails
