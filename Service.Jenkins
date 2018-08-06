@@ -15,8 +15,8 @@ node('windows') {
     
     // This must be done before the build step, or else the validation tests build will fail
     stage('Prepare Validation Test Config') {
-        configFileProvider(
-                [configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/SecureSettings.config')]) {}
+        configFileProvider([configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/SecureSettings.config')]) {}
+        configFileProvider([configFile(fileId: 'Search Algorithm Validation Tests Connection Strings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/ConnectionStrings.config')]) {}
     }
     
     stage('Prepare Nuget') {
