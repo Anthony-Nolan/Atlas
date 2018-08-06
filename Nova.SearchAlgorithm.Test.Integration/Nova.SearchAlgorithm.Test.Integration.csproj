@@ -333,6 +333,7 @@
   <ItemGroup>
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
+    <Compile Include="IntegrationTests\Search\ScoringTests.cs" />
     <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
     <Compile Include="IntegrationTests\StorageEmulator.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaLookupRepositoryBase.cs" />
@@ -343,7 +344,9 @@
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedAlleleNameLookupResult.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaMatchingLookupResult.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaScoringLookupResult.cs" />
+    <Compile Include="TestData\TestDonorHla.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\SingleDonorSearchRequestBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestBuilder.cs" />
     <Compile Include="TestHelpers\DonorIdGenerator.cs" />

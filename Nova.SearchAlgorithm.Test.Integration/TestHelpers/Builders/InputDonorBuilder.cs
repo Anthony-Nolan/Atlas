@@ -19,6 +19,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             };
         }
 
+        public InputDonorBuilder WithMatchingHla(PhenotypeInfo<ExpandedHla> matchingHla)
+        {
+            donor.MatchingHla = matchingHla;
+            return this;
+        }
+
         public InputDonorBuilder WithHlaAtLocus(Locus locus, ExpandedHla hla1, ExpandedHla hla2)
         {
             switch (locus)
@@ -53,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        // Populates all null required hla positions (A, B, DRB) with given hla values
+        // Populates all null required hla positions (A, B, DRB1) with given hla values
         public InputDonorBuilder WithDefaultRequiredHla(ExpandedHla hla)
         {
             donor.MatchingHla.A_1 = donor.MatchingHla.A_1 ?? hla;
