@@ -19,22 +19,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         {
             this.nonMatchingHlas = nonMatchingHlas;
             searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchCriteria(Locus.A, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0
-                })
                 .WithLocusMatchHla(Locus.A, TypePositions.One, searchHlas.A_1)
                 .WithLocusMatchHla(Locus.A, TypePositions.Two, searchHlas.A_2)
-                .WithLocusMatchCriteria(Locus.B, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0
-                })
                 .WithLocusMatchHla(Locus.B, TypePositions.One, searchHlas.B_1)
                 .WithLocusMatchHla(Locus.B, TypePositions.Two, searchHlas.B_2)
-                .WithLocusMatchCriteria(Locus.Drb1, new LocusMismatchCriteria
-                {
-                    MismatchCount = 0
-                })
+                .WithLocusMatchHla(Locus.C, TypePositions.One, searchHlas.C_1)
+                .WithLocusMatchHla(Locus.C, TypePositions.Two, searchHlas.C_2)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, searchHlas.DQB1_1)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, searchHlas.DQB1_2)
                 .WithLocusMatchHla(Locus.Drb1, TypePositions.One, searchHlas.DRB1_1)
                 .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHlas.DRB1_2);
         }
