@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_ScoringAssignsZeroMismatches()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(
+            var searchRequest = new ThreeLocusSearchRequestBuilder(
                     defaultHlaSet.ThreeLocus_SingleExpressingAlleles,
                     mismatchHlaSet.ThreeLocus_SingleExpressingAlleles)
                 .SixOutOfSix()
@@ -125,7 +125,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FiveOutOfSix_DonorMismatchedAtA_ScoringAssignsOneMismatchAtA()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(
+            var searchRequest = new ThreeLocusSearchRequestBuilder(
                     defaultHlaSet.ThreeLocus_SingleExpressingAlleles,
                     mismatchHlaSet.ThreeLocus_SingleExpressingAlleles)
                 .FiveOutOfSixWithPositionOneMismatchAt(Locus.A)
@@ -162,7 +162,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_ScoringAssignsPotentialMatchesAtMissingCAndDqb1()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(
+            var searchRequest = new ThreeLocusSearchRequestBuilder(
                     defaultHlaSet.ThreeLocus_SingleExpressingAlleles,
                     mismatchHlaSet.ThreeLocus_SingleExpressingAlleles)
                 .SixOutOfSix()

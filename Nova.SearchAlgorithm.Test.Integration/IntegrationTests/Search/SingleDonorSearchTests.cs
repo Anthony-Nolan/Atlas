@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System.Linq;
+using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -63,7 +64,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_ExactMatch_ReturnsDonor()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .Build();
             
@@ -75,7 +76,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusA_DoesNotReturnDonor()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithSingleMismatchAt(Locus.A)
                 .Build();
@@ -88,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusB_DoesNotReturnDonor()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithSingleMismatchAt(Locus.B)
                 .Build();
@@ -101,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusDrb1_DoesNotReturnDonor()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithSingleMismatchAt(Locus.Drb1)
                 .Build();
@@ -114,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_MismatchAtMultipleLoci_DoesNotReturnDonor()
         {
-            var searchRequest = new SingleDonorSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithSingleMismatchAt(Locus.A)
                 .WithSingleMismatchAt(Locus.B)
@@ -124,6 +125,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_LociExcludedFromSearch_HaveNullMatchCounts()
+        {
+            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+
+            // C & DQB1 should both be null in a 6/6 only search
+            result?.SearchResultAtLocusC.MatchCount.Should().BeNull();
+            result?.SearchResultAtLocusDqb1.MatchCount.Should().BeNull();
         }
     }
 }
