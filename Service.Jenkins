@@ -13,7 +13,8 @@ node('windows') {
         checkout scm
     }
     
-    stage('Validation Tests') {
+    // This must be done before the build step, or else the validation tests build will fail
+    stage('Prepare Validation Test Config') {
         configFileProvider(
                 [configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/SecureSettings.config')]) {}
     }
@@ -40,14 +41,26 @@ node('windows') {
     stage('Build for tests and migrations') {
         bat "${msBuild} ${solutionFile} /p:Configuration=Debug /v:minimal"
     }
-    stage('Run Tests') {
+    stage('Run Unit Tests') {
         def testOutput = 'TestResult.xml'
 
         // Get a list of all of the test assembly paths
         def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.dll')
 
         //Run the tests
-        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --where=\"class !~ Nova.SearchAlgorithm.Test.Integration\" --noheader"
+        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
+
+        // Generate reports
+        nunit testResultsPattern: testOutput
+    }
+    stage('Run Validation Tests') {
+        def testOutput = 'ValidationTestResult.xml'
+
+        // Get a list of all of the test assembly paths
+        def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.Validation.dll')
+
+        //Run the tests
+        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
 
         // Generate reports
         nunit testResultsPattern: testOutput
