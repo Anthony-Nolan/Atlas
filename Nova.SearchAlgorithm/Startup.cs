@@ -1,12 +1,8 @@
 ﻿using System.Configuration;
 using System.Diagnostics.CodeAnalysis;
-using System.Web.Hosting;
-using Autofac;
 using Microsoft.Owin;
-using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Config;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.WebApi.Owin.Middleware;
 using Owin;
@@ -21,12 +17,8 @@ namespace Nova.SearchAlgorithm
         {
             app.SetUpInstrumentation(ConfigurationManager.AppSettings["insights.instrumentationKey"]);
             var container = app.ConfigureAutofac();
-            
-            // TODO: NOVA-1440: Sort out caching in a more sensible way
-            HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IAntigenCachingService>().GenerateAntigenCache());
-            HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IHlaMatchingLookupRepository>().LoadDataIntoMemory());
-            HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IAlleleNamesLookupRepository>().LoadDataIntoMemory());
-            HostingEnvironment.QueueBackgroundWorkItem(clt => container.Resolve<IHlaScoringLookupRepository>().LoadDataIntoMemory());
+
+            app.ConfigureHangfire(container);
             
             var logLevel = ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel();
             app.ConfigureNovaMiddleware("search_algorithm", JsonConfig.GlobalSettings, logLevel);
