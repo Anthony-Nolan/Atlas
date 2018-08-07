@@ -37,10 +37,51 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
 The service has external dependencies on two services, the `DonorService` and `HlaService`. By default the configuration points to the 
 deployed development instances of these service - locally the api keys for these services will need adding to the `Settings/SecureSettings` file.
 
+
+##Pre-Processing 
+
+The service has three pre-processing stages that will need to be run locally before it will be posisble to run a search.
+
+###(1) Matching Dictionary
+
+The "Matching Dictionary" is a set of azure cloud storage tables containing nomenclature information about HLA.
+The pre-processing job fetches up to date information from WMDA, and populates these tables with the information necessary to run a search
+
+- Start the job by POST-ing to the `/matching-dictionary/recreate` endpoint
+- The job is expected to take several minutes to run to completion
+- The job will need re-running whenever 
+  - (a) The schema is changed
+  - (b) The data from WMDA is updated (every 3 months)
+
+###(2) Donor Import
+
+The donors against which we run searches are imported from Anthony Nolan's `Solar` Oracle database, via the `DonorService`.
+We only store as much information as is needed for a search - ID, Registry, Donor Type, and HLA information.
+
+- Start the job by POST-ing to the `/trigger-donor-import` endpoint
+- The job is expected to take several hours to run
+- The job should never need re-running in full. 
+    - A smaller donor import of only new/changed donors should be configured to run overnight (at time of writing, 07/08/2018, this is yet to be implemented)
+
+###(3) Hla Refresh
+
+For each donor, we expand all hla into corresponding p-groups, and store a relation in the appropriate `<MatchingHlaAt<Locus>` table
+
+- Start the job by POST-ing to the `/trigger-donor-hla-update` endpoint
+- The job is expected to take multiple hours to run
+- The job should never need re-running in full. 
+    - New/changed donors should have these relations (re-)calculated as part of the overnight donor import (at time of writing, 07/08/2018, this is yet to be implemented)
+    - When hla information from WMDA changes (every 3 months) a subset of this job will need re-running on affected donors (at time of writing, 07/08/2018, this is yet to be implemented)
+
+
 ## Terminology
 
 The following terms are assumed domain knowledge when used in the code:
 
+* HLA
+  - Human Leukocyte Antigen 
+* WMDA
+  - World Marrow Donor Association
 * Homozygous locus
   - The typings at both positions for a locus are the same
   - e.g. *A\*01:01,01:01*
