@@ -4,9 +4,9 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
-    public static class DonorGenotypeRepository
+    public static class GenotypeRepository
     {
-        public static readonly IEnumerable<Genotype> DonorGenotypes = new List<Genotype>
+        public static readonly IEnumerable<Genotype> Genotypes = new List<Genotype>
         {
             new Genotype
             {

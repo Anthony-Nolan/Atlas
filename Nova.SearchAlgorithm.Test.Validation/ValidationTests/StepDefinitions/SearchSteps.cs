@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [Given(@"I search for exact donor hla")]
         public void GivenISearchForRecognisedHla()
         {
-            var patientGenotypeHla = DonorGenotypeRepository.DonorGenotypes.First().Hla;
+            var patientGenotypeHla = GenotypeRepository.Genotypes.First().Hla;
             
             var searchRequestBuilder = new SearchRequestBuilder()
                 .WithLocusMatchHla(Locus.A, TypePositions.One, patientGenotypeHla.A_1.TgsTypedAllele)

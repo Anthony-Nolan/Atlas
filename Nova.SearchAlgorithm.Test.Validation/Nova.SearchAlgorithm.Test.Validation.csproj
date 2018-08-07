@@ -340,7 +340,7 @@
     <Compile Include="TestData\Models\Genotype.cs" />
     <Compile Include="TestData\Models\HlaTypingCategory.cs" />
     <Compile Include="TestData\Models\TgsAllele.cs" />
-    <Compile Include="TestData\Repositories\DonorGenotypeRepository.cs" />
+    <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
