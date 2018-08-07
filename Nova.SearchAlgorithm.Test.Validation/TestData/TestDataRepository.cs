@@ -6,7 +6,7 @@ using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
 {
-    public static class TestDataGenerator
+    public static class TestDataRepository
     {
         public static void SetupDatabase()
         {

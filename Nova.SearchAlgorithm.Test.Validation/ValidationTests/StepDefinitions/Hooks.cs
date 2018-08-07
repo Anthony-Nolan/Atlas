@@ -9,8 +9,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [BeforeTestRun]
         public static void BeforeTestRun()
         {
-            TestDataGenerator.SetupDatabase();
-            TestDataGenerator.AddTestDonors();
+            TestDataRepository.SetupDatabase();
+            TestDataRepository.AddTestDonors();
             AlgorithmTestingService.StartServer();
             AlgorithmTestingService.RunHlaRefresh();
         }
