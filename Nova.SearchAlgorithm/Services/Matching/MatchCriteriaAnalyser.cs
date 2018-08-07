@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
         public IEnumerable<Locus> LociToMatchInDatabase(AlleleLevelMatchCriteria criteria)
         {
             var lociToSearchInDatabase = new List<Locus>();
-            
+
             // Prefer to avoid searching for Locus A as it is the largest dataset, and takes longest to query
             if (criteria.LocusMismatchB.MismatchCount < 2)
             {
@@ -41,7 +41,15 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             if (!lociToSearchInDatabase.Any())
             {
-                throw new NotImplementedException("The facility does not yet exist to run a search with 2 allowed mismatches at A, B and DRB1. Please refine the search criteria");
+                // Unless we allow 6+ mismatches total across A, B, DRB1, at least one of them must have at least one match
+                if (criteria.DonorMismatchCount < 6)
+                {
+                    lociToSearchInDatabase = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
+                }
+                else
+                {
+                    throw new NotImplementedException("A search cannot be run with 2 allowed mismatches at A, B and DRB1 at 6+ total mismatches. Please refine the search criteria");
+                }
             }
 
             return lociToSearchInDatabase;

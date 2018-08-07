@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.Drb1});
         }
-        
+
         [Test]
         public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtDrb1AndA_ReturnsBOnly()
         {
@@ -128,6 +128,21 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B});
+        }
+
+        [Test]
+        public void LociToMatchInDatabase_WithFourAllowedMismatches_AcrossAllRequiredLoci_ReturnsABAndDrb1()
+        {
+            var criteria = new DonorMatchCriteriaBuilder()
+                .WithDonorMismatchCount(4)
+                .WithLocusMismatchA("", "", 2)
+                .WithLocusMismatchB("", "", 2)
+                .WithLocusMismatchDRB1("", "", 2)
+                .Build();
+
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+
+            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.B, Locus.Drb1});
         }
     }
 }
