@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Test.Validation.TestData;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -9,8 +10,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [BeforeTestRun]
         public static void BeforeTestRun()
         {
-            TestDataRepository.SetupDatabase();
-            TestDataRepository.AddTestDonors();
+            TestDataService.SetupTestData();
             AlgorithmTestingService.StartServer();
             AlgorithmTestingService.RunHlaRefresh();
         }

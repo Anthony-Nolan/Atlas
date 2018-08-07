@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData;
 using Nova.SearchAlgorithm.Test.Validation.ValidationTests;
 using TechTalk.SpecFlow;
 
@@ -17,17 +18,19 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [Given(@"I search for exact donor hla")]
         public void GivenISearchForRecognisedHla()
         {
+            var patientGenotypeHla = DonorGenotypeRepository.DonorGenotypes.First().Hla;
+            
             var searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchHla(Locus.A, TypePositions.One, "01:01")
-                .WithLocusMatchHla(Locus.A, TypePositions.Two, "11:02")
-                .WithLocusMatchHla(Locus.B, TypePositions.One, "07:02")
-                .WithLocusMatchHla(Locus.B, TypePositions.Two, "08:41")
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, "15:09")
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, "12:02")
-                .WithLocusMatchHla(Locus.C, TypePositions.One, "04:01")
-                .WithLocusMatchHla(Locus.C, TypePositions.Two, "15:02")
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, "05:01")
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, "06:01");
+                .WithLocusMatchHla(Locus.A, TypePositions.One, patientGenotypeHla.A_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.A, TypePositions.Two, patientGenotypeHla.A_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.B, TypePositions.One, patientGenotypeHla.B_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.B, TypePositions.Two, patientGenotypeHla.B_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, patientGenotypeHla.DRB1_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, patientGenotypeHla.DRB1_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.C, TypePositions.One, patientGenotypeHla.C_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.C, TypePositions.Two, patientGenotypeHla.C_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, patientGenotypeHla.DQB1_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, patientGenotypeHla.DQB1_2.TgsTypedAllele);
             
             ScenarioContext.Current.Set(searchRequestBuilder);
         }

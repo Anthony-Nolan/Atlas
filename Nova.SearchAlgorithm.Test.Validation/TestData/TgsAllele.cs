@@ -41,6 +41,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData
             return splitAllele.First();
         }
         
+        /// <summary>
+        /// Returns the most accurate TGS typing stored for the allele, either three or four field
+        /// </summary>
+        public string TgsTypedAllele => FourFieldAllele ?? ThreeFieldAllele;
+
         public string FourFieldAllele { get; set; }
         public string ThreeFieldAllele { get; set; }
         public string TwoFieldAllele { get; set; }
