@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
@@ -193,9 +194,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus1, 2)
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
+            var results = (await matchingService.GetMatches(searchCriteria)).ToList();
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2.DonorId);
             results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
+        }
+        
+        [Test]
+        public async Task Search_WithFourAllowedMismatches_TwoAtLocus1_TwoAtLocus2_MatchesDonorsWithNoMatchAtEitherLocus()
+        {
+            var searchCriteria = GetDefaultCriteriaBuilder()
+                .WithDonorMismatchCount(4)
+                .WithLocusMismatchCount(locus1, 2)
+                .WithLocusMismatchCount(locus2, 2)
+                .Build();
+            var results = await matchingService.GetMatches(searchCriteria);
+            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtEitherLocus.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>

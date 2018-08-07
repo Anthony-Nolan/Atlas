@@ -323,6 +323,7 @@
     <Compile Include="Services\Matching\DonorMatchingService.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingService.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
+    <Compile Include="Services\Matching\MatchCriteriaAnalyser.cs" />
     <Compile Include="Services\Matching\MatchFilteringService.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceCalculator.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceService.cs" />
