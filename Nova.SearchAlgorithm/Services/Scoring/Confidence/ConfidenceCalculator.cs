@@ -58,8 +58,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private static bool IsSerologyMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
-            var patientSerologies = patientLookupResult.HlaScoringInfo.MatchingSerologies;
-            var donorSerologies = donorLookupResult.HlaScoringInfo.MatchingSerologies;
+            var patientSerologies = patientLookupResult.HlaScoringInfo.MatchingSerologies.Select(ser => ser.Name);
+            var donorSerologies = donorLookupResult.HlaScoringInfo.MatchingSerologies.Select(ser => ser.Name);
 
             return patientSerologies.Intersect(donorSerologies).Any();
         }
