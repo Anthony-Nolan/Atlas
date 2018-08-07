@@ -73,6 +73,45 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
     - New/changed donors should have these relations (re-)calculated as part of the overnight donor import (at time of writing, 07/08/2018, this is yet to be implemented)
     - When hla information from WMDA changes (every 3 months) a subset of this job will need re-running on affected donors (at time of writing, 07/08/2018, this is yet to be implemented)
 
+## Testing
+
+The solution has three levels of testing: Unit, Integration, Validation
+
+###Unit Testing
+
+Contained within the `Nova.SearchAlgorithm.Test` project.
+
+No external dependencies or storage, testing indiviual code units. 
+
+###Integration Testing
+
+Contained within the `Nova.SearchAlgorithm.Test.Integration` project.
+
+- Uses a real SQL database, which is populated/cleared in each test run.
+- External dependencies, and Matching Dictionary are stubbed out.
+- Azure Storage emulator will need to be running - the tests should start this if it's not currently running, but it must be installed.
+- Uses an independent Autofac module defined in `IntegrationTestBase`
+  - **Warning:** When adding new classes, they will need to be registered with Autofac in both the app module and the integration tests modules. 
+
+These tests are especially useful for matching, where some logic is contained within the database layer and not covered in unit tests.
+
+###Validation Testing
+
+Contained within the `Nova.SearchAlgorithm.Test.Validation` project.
+
+These tests are primarily for the benefit of non-developers, intended to confirm that the algorithm conforms to the specification
+ to the Search Team's satisfaction.
+ 
+- Uses a real SQL database, which is populated/cleared in each test run.
+- Dependencies are not stubbed out (may change in future)
+- Uses development azure storage account (may change in future)
+- Starts an in-memory OWIN server, aiming to run the application as realistically as possible. 
+  - All test implementations should be via HTTP requests to the in-memory service.
+  - **SETUP:** As these tests spin up a full version of the application, a `Settings/SecureSettings.config` file must be created, as with the service itself
+  - **SETUP:** `Settings/ConnectionStrings.config` must also be created. This is seperate from the web.config file to allow the CI server to override connection strings to point at a non-local database
+
+- Tests are written in the Gherkin language, using the library `SpecFlow`
+    - This allows the test suite to more more easily readable/reviewable/editable by non technical members of the Search and BioInformatics teams
 
 ## Terminology
 
