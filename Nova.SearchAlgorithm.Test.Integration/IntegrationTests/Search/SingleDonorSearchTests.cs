@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_ExactMatch_ReturnsDonor()
         {
-            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .Build();
             
@@ -76,7 +76,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusA_DoesNotReturnDonor()
         {
-            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
                 .Build();
@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusB_DoesNotReturnDonor()
         {
-            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
                 .Build();
@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_SingleMismatchAtLocusDrb1_DoesNotReturnDonor()
         {
-            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_MismatchAtMultipleLoci_DoesNotReturnDonor()
         {
-            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
@@ -130,7 +130,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_LociExcludedFromSearchHaveNullMatchCounts()
         {
-            var searchRequest = new ThreeLocusSearchRequestBuilder(donorHlas, nonMatchingHlas)
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .Build();
 
