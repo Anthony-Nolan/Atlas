@@ -1,10 +1,126 @@
 # Nova.SearchAlgorithm
 Service for AN's HSC Search Algorithm.
 
+## Start Up Guide
+
+####Authentication
+
+The app is authenticated via an api key header present in requests.
+
+The key is not checked in, so when setting up the project a file `Settings/SecureSettings` will need to be created within the `Nova.SearchAlgorithm` project.
+The top level node of this project should be `<appSettings>`, and all keys specified here will be added to the config on build.
+
+`<add key="apiKey:example-key" value="true" />` is an example of how to add a local api key.
+
+
+####Storage
+
+The service uses two storage methods for different data, SQL and Azure Cloud Tables.
+
+- Cloud Tables
+    - The `StorageConnectionString` connectionString in `Web.config` determines the connection to Azure storage. 
+    The default is to use local emulated storage, for which the *Azure Storage Emulator* will need to be running. 
+    - To run against development storage (e.g. if performance of the emulator is not good enough, or the emulator is 
+    unavailable), this connection string can be overridden to point at the DEV storage account. (*DO NOT* check this is string in to git!)
+    
+- SQL
+    - The service makes use of Entity Framework Code-First migrations. The models and repositories for data access
+    are found within the `Nova.SearchAlgorithm.Data` project.
+    - Before running the app, migrations must be run using `Update-Database`. 
+    - After changing any data models, a migration must be created with `Add-Migration <migration-name>`, then run with `Update-Database`
+      - **Important Note Regarding Migrations:** The `MatchingHlaAt<Locus>` tables are so large that the entity framework 
+      migration runner has been known to struggle to cope with large migrations of existing data. 
+     In such cases the data may need to be manually migrated
+     
+####Dependencies
+
+The service has external dependencies on two services, the `DonorService` and `HlaService`. By default the configuration points to the 
+deployed development instances of these service - locally the api keys for these services will need adding to the `Settings/SecureSettings` file.
+
+
+##Pre-Processing 
+
+The service has three pre-processing stages that will need to be run locally before it will be posisble to run a search.
+
+###(1) Matching Dictionary
+
+The "Matching Dictionary" is a set of azure cloud storage tables containing nomenclature information about HLA.
+The pre-processing job fetches up to date information from WMDA, and populates these tables with the information necessary to run a search
+
+- Start the job by POST-ing to the `/matching-dictionary/recreate` endpoint
+- The job is expected to take several minutes to run to completion
+- The job will need re-running whenever 
+  - (a) The schema is changed
+  - (b) The data from WMDA is updated (every 3 months)
+
+###(2) Donor Import
+
+The donors against which we run searches are imported from Anthony Nolan's `Solar` Oracle database, via the `DonorService`.
+We only store as much information as is needed for a search - ID, Registry, Donor Type, and HLA information.
+
+- Start the job by POST-ing to the `/trigger-donor-import` endpoint
+- The job is expected to take several hours to run
+- The job should never need re-running in full. 
+    - A smaller donor import of only new/changed donors should be configured to run overnight (at time of writing, 07/08/2018, this is yet to be implemented)
+
+###(3) Hla Refresh
+
+For each donor, we expand all hla into corresponding p-groups, and store a relation in the appropriate `<MatchingHlaAt<Locus>` table
+
+- Start the job by POST-ing to the `/trigger-donor-hla-update` endpoint
+- The job is expected to take multiple hours to run
+- The job should never need re-running in full. 
+    - New/changed donors should have these relations (re-)calculated as part of the overnight donor import (at time of writing, 07/08/2018, this is yet to be implemented)
+    - When hla information from WMDA changes (every 3 months) a subset of this job will need re-running on affected donors (at time of writing, 07/08/2018, this is yet to be implemented)
+
+## Testing
+
+The solution has three levels of testing: Unit, Integration, Validation
+
+###Unit Testing
+
+Contained within the `Nova.SearchAlgorithm.Test` project.
+
+No external dependencies or storage, testing indiviual code units. 
+
+###Integration Testing
+
+Contained within the `Nova.SearchAlgorithm.Test.Integration` project.
+
+- Uses a real SQL database, which is populated/cleared in each test run.
+- External dependencies, and Matching Dictionary are stubbed out.
+- Azure Storage emulator will need to be running - the tests should start this if it's not currently running, but it must be installed.
+- Uses an independent Autofac module defined in `IntegrationTestBase`
+  - **Warning:** When adding new classes, they will need to be registered with Autofac in both the app module and the integration tests modules. 
+
+These tests are especially useful for matching, where some logic is contained within the database layer and not covered in unit tests.
+
+###Validation Testing
+
+Contained within the `Nova.SearchAlgorithm.Test.Validation` project.
+
+These tests are primarily for the benefit of non-developers, intended to confirm that the algorithm conforms to the specification
+ to the Search Team's satisfaction.
+ 
+- Uses a real SQL database, which is populated/cleared in each test run.
+- Dependencies are not stubbed out (may change in future)
+- Uses development azure storage account (may change in future)
+- Starts an in-memory OWIN server, aiming to run the application as realistically as possible. 
+  - All test implementations should be via HTTP requests to the in-memory service.
+  - **SETUP:** As these tests spin up a full version of the application, a `Settings/SecureSettings.config` file must be created, as with the service itself
+  - **SETUP:** `Settings/ConnectionStrings.config` must also be created. This is seperate from the web.config file to allow the CI server to override connection strings to point at a non-local database
+
+- Tests are written in the Gherkin language, using the library `SpecFlow`
+    - This allows the test suite to more more easily readable/reviewable/editable by non technical members of the Search and BioInformatics teams
+
 ## Terminology
 
 The following terms are assumed domain knowledge when used in the code:
 
+* HLA
+  - Human Leukocyte Antigen 
+* WMDA
+  - World Marrow Donor Association
 * Homozygous locus
   - The typings at both positions for a locus are the same
   - e.g. *A\*01:01,01:01*
