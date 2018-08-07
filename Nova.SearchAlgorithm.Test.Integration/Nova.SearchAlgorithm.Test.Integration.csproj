@@ -348,7 +348,7 @@
     <Compile Include="TestData\TestHla.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\HlaNamePhenotypeBuilder.cs" />
-    <Compile Include="TestHelpers\Builders\ThreeLocusSearchRequestBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\SearchRequestFromHlasBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestBuilder.cs" />
     <Compile Include="TestHelpers\DonorIdGenerator.cs" />

@@ -4,18 +4,17 @@ using Nova.SearchAlgorithm.Common.Models;
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
     /// <summary>
-    /// Builds a search request for matching on loci: A, B & DRB1.
-    /// Allows HLA typings at specified loci positions to be easily altered
-    /// to induce mismatched scenarios.
+    /// Build search requests from the submitted HLA typings.
+    /// The typings at specified loci positions can be easily altered to induce mismatched scenarios.
     /// </summary>
-    public class ThreeLocusSearchRequestBuilder
+    public class SearchRequestFromHlasBuilder
     {
         private readonly PhenotypeInfo<string> nonMatchingHlas;
         private SearchRequestBuilder searchRequestBuilder;
 
         /// <param name="searchHlas">A selection of valid HLA data.</param>
         /// <param name="nonMatchingHlas">A selection of valid hla strings that do not match the search HLA.</param>
-        public ThreeLocusSearchRequestBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas)
+        public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas)
         {
             this.nonMatchingHlas = nonMatchingHlas;
             searchRequestBuilder = new SearchRequestBuilder()
@@ -31,7 +30,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHlas.DRB1_2);
         }
 
-        public ThreeLocusSearchRequestBuilder SixOutOfSix()
+        public SearchRequestFromHlasBuilder TenOutOfTen()
+        {
+            searchRequestBuilder = searchRequestBuilder
+                .WithTotalMismatchCount(0)
+                .WithLocusMismatchCount(Locus.A, 0)
+                .WithLocusMismatchCount(Locus.B, 0)
+                .WithLocusMismatchCount(Locus.C, 0)
+                .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .WithLocusMismatchCount(Locus.Drb1, 0);
+            return this;
+        }
+
+        public SearchRequestFromHlasBuilder SixOutOfSix()
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithTotalMismatchCount(0)
@@ -41,14 +52,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public ThreeLocusSearchRequestBuilder FiveOutOfSix()
+        public SearchRequestFromHlasBuilder FiveOutOfSix()
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithTotalMismatchCount(1);
             return this;
         }
 
-        public ThreeLocusSearchRequestBuilder WithSingleMismatchRequestedAt(Locus locus)
+        public SearchRequestFromHlasBuilder WithSingleMismatchRequestedAt(Locus locus)
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
@@ -57,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public ThreeLocusSearchRequestBuilder WithPositionOneOfSearchHlaMismatchedAt(Locus locus)
+        public SearchRequestFromHlasBuilder WithPositionOneOfSearchHlaMismatchedAt(Locus locus)
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);
