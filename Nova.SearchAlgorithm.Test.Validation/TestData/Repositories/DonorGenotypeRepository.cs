@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
     public static class DonorGenotypeRepository
     {
-        public static IEnumerable<DonorGenotype> DonorGenotypes = new List<DonorGenotype>
+        public static readonly IEnumerable<DonorGenotype> DonorGenotypes = new List<DonorGenotype>
         {
             new DonorGenotype
             {

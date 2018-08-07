@@ -3,7 +3,7 @@ using System.Linq;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Entity;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
     public static class TestDataRepository
     {

@@ -335,11 +335,11 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\DonorGenotype.cs" />
-    <Compile Include="TestData\DonorGenotypeRepository.cs" />
-    <Compile Include="TestData\TestDataRepository.cs" />
+    <Compile Include="TestData\Models\DonorGenotype.cs" />
+    <Compile Include="TestData\Models\TgsAllele.cs" />
+    <Compile Include="TestData\Repositories\DonorGenotypeRepository.cs" />
+    <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\TestDataService.cs" />
-    <Compile Include="TestData\TgsAllele.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\Search.feature.cs">
       <AutoGen>True</AutoGen>
