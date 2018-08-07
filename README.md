@@ -3,6 +3,16 @@ Service for AN's HSC Search Algorithm.
 
 ## Start Up Guide
 
+####Authentication
+
+The app is authenticated via an api key header present in requests.
+
+The key is not checked in, so when setting up the project a file `Settings/SecureSettings` will need to be created within the `Nova.SearchAlgorithm` project.
+The top level node of this project should be `<appSettings>`, and all keys specified here will be added to the config on build.
+
+`<add key="apiKey:example-key" value="true" />` is an example of how to add a local api key.
+
+
 ####Storage
 
 The service uses two storage methods for different data, SQL and Azure Cloud Tables.
@@ -22,7 +32,10 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
       migration runner has been known to struggle to cope with large migrations of existing data. 
      In such cases the data may need to be manually migrated
      
-     
+####Dependencies
+
+The service has external dependencies on two services, the `DonorService` and `HlaService`. By default the configuration points to the 
+deployed development instances of these service - locally the api keys for these services will need adding to the `Settings/SecureSettings` file.
 
 ## Terminology
 
