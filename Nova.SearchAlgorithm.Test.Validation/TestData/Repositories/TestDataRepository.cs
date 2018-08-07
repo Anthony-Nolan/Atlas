@@ -12,6 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             using (var context = new SearchAlgorithmContext())
             {
                 context.Database.CreateIfNotExists();
+                RemoveTestData();
             }
         }
 
@@ -27,6 +28,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                     }
                 }
 
+                context.SaveChanges();
+            }
+        }
+
+        private static void RemoveTestData()
+        {
+            using (var context = new SearchAlgorithmContext())
+            {
+                context.Donors.RemoveRange(context.Donors);
+                context.MatchingHlaAtA.RemoveRange(context.MatchingHlaAtA);
+                context.MatchingHlaAtB.RemoveRange(context.MatchingHlaAtB);
+                context.MatchingHlaAtC.RemoveRange(context.MatchingHlaAtC);
+                context.MatchingHlaAtDrb1.RemoveRange(context.MatchingHlaAtDrb1);
+                context.MatchingHlaAtDqb1.RemoveRange(context.MatchingHlaAtDqb1);
                 context.SaveChanges();
             }
         }

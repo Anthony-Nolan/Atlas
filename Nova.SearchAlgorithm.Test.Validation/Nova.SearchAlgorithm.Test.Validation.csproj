@@ -335,7 +335,10 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\Models\DonorGenotype.cs" />
+    <Compile Include="TestData\Builders\DonorBuilder.cs" />
+    <Compile Include="TestData\DonorIdGenerator.cs" />
+    <Compile Include="TestData\Models\Genotype.cs" />
+    <Compile Include="TestData\Models\HlaTypingCategory.cs" />
     <Compile Include="TestData\Models\TgsAllele.cs" />
     <Compile Include="TestData\Repositories\DonorGenotypeRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />

@@ -6,9 +6,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
     public static class DonorGenotypeRepository
     {
-        public static readonly IEnumerable<DonorGenotype> DonorGenotypes = new List<DonorGenotype>
+        public static readonly IEnumerable<Genotype> DonorGenotypes = new List<Genotype>
         {
-            new DonorGenotype
+            new Genotype
             {
                 Hla = new PhenotypeInfo<TgsAllele>
                 {

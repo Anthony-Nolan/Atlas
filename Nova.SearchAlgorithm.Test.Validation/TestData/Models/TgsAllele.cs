@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
@@ -45,13 +46,34 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         /// </summary>
         public string TgsTypedAllele => FourFieldAllele ?? ThreeFieldAllele;
 
-        public string FourFieldAllele { get; set; }
-        public string ThreeFieldAllele { get; set; }
-        public string TwoFieldAllele { get; set; }
+        private string FourFieldAllele { get; set; }
+        public string ThreeFieldAllele { get; private set; }
+        public string TwoFieldAllele { get; private set; }
         
-        public string NmdpCode { get; set; }
-        public string XxCode { get; set; }
+        public string NmdpCode { get; private set; }
+        public string XxCode { get; private set; }
         
-        public string Serology { get; set; }
+        public string Serology { get; private set; }
+
+        public string GetHlaForCategory(HlaTypingCategory typingCategory)
+        {
+            switch (typingCategory)
+            {
+                case HlaTypingCategory.Tgs:
+                    return TgsTypedAllele;
+                case HlaTypingCategory.ThreeField:
+                    return ThreeFieldAllele;
+                case HlaTypingCategory.TwoField:
+                    return TwoFieldAllele;
+                case HlaTypingCategory.XxCode:
+                    return XxCode;
+                case HlaTypingCategory.NmdpCode:
+                    return NmdpCode;
+                case HlaTypingCategory.Serology:
+                    return Serology;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(typingCategory), typingCategory, null);
+            }
+        }
     }
 }
