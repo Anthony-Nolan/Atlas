@@ -335,17 +335,34 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\Builders\DonorBuilder.cs" />
+    <Compile Include="TestData\DonorIdGenerator.cs" />
+    <Compile Include="TestData\Models\Genotype.cs" />
+    <Compile Include="TestData\Models\GenotypeDonor.cs" />
+    <Compile Include="TestData\Models\HlaTypingCategory.cs" />
+    <Compile Include="TestData\Models\PatientDataSelector.cs" />
+    <Compile Include="TestData\Models\TgsAllele.cs" />
+    <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
+    <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
+    <Compile Include="TestData\Repositories\TestDataRepository.cs" />
+    <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
-    <Compile Include="ValidationTests\Features\Search.feature.cs">
+    <Compile Include="ValidationTests\Features\ExampleSearch.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Search.feature</DependentUpon>
+      <DependentUpon>ExampleSearch.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TenOutOfTenSearch.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
-    <Compile Include="ValidationTests\TestDataGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ValidationTests\Features\TenOutOfTenSearch.feature" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
@@ -355,15 +372,16 @@
     <Content Include="Settings\ConnectionStrings.config">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
+    </Content>
     <Content Include="Settings\SecureSettings.config">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="ValidationTests\Features\Search.feature">
+    <None Include="ValidationTests\Features\ExampleSearch.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Search.feature.cs</LastGenOutput>
+      <LastGenOutput>ExampleSearch.feature.cs</LastGenOutput>
     </None>
+    <EmbeddedResource Include="TestData\Resources\four_field_hla_names.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">

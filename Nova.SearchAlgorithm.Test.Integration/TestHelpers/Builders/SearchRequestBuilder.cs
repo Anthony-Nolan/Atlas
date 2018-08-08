@@ -202,6 +202,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
+        {
+            return WithLocusMatchHla(Locus.A, TypePositions.One, searchHla.A_1)
+                .WithLocusMatchHla(Locus.A, TypePositions.Two, searchHla.A_2)
+                .WithLocusMatchHla(Locus.B, TypePositions.One, searchHla.B_1)
+                .WithLocusMatchHla(Locus.B, TypePositions.Two, searchHla.B_2)
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, searchHla.DRB1_1)
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHla.DRB1_2)
+                .WithLocusMatchHla(Locus.C, TypePositions.One, searchHla.C_1)
+                .WithLocusMatchHla(Locus.C, TypePositions.Two, searchHla.C_2)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, searchHla.DQB1_1)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, searchHla.DQB1_2);
+        }
+
         public SearchRequest Build()
         {
             return searchRequest;

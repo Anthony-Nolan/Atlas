@@ -6,10 +6,11 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.SearchAlgorithm.Test.Validation.ValidationTests;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using TechTalk.SpecFlow;
 
-namespace Nova.SearchAlgorithm.Test.Validation
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {
     [Binding]
     public class SearchSteps
@@ -17,22 +18,24 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [Given(@"I search for exact donor hla")]
         public void GivenISearchForRecognisedHla()
         {
+            var patientGenotypeHla = GenotypeRepository.Genotypes.First().Hla;
+            
             var searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchHla(Locus.A, TypePositions.One, "01:01")
-                .WithLocusMatchHla(Locus.A, TypePositions.Two, "11:02")
-                .WithLocusMatchHla(Locus.B, TypePositions.One, "07:02")
-                .WithLocusMatchHla(Locus.B, TypePositions.Two, "08:41")
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, "15:09")
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, "12:02")
-                .WithLocusMatchHla(Locus.C, TypePositions.One, "04:01")
-                .WithLocusMatchHla(Locus.C, TypePositions.Two, "15:02")
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, "05:01")
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, "06:01");
+                .WithLocusMatchHla(Locus.A, TypePositions.One, patientGenotypeHla.A_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.A, TypePositions.Two, patientGenotypeHla.A_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.B, TypePositions.One, patientGenotypeHla.B_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.B, TypePositions.Two, patientGenotypeHla.B_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, patientGenotypeHla.DRB1_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, patientGenotypeHla.DRB1_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.C, TypePositions.One, patientGenotypeHla.C_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.C, TypePositions.Two, patientGenotypeHla.C_2.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, patientGenotypeHla.DQB1_1.TgsTypedAllele)
+                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, patientGenotypeHla.DQB1_2.TgsTypedAllele);
             
             ScenarioContext.Current.Set(searchRequestBuilder);
         }
 
-        [Given(@"The search type is (.*)")]
+        [Given(@"the search type is (.*)")]
         public void GivenTheSearchTypeIs(string searchType)
         {
             var donorType = (DonorType) Enum.Parse(typeof(DonorType), searchType, true);
@@ -40,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
             ScenarioContext.Current.Set(searchRequest.WithSearchType(donorType));
         }
 
-        [Given(@"The search is run for Anthony Nolan's registry only")]
+        [Given(@"the search is run against the Anthony Nolan registry only")]
         public void GivenTheSearchIsRunForAnthonyNolansRegistryOnly()
         {
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
@@ -113,6 +116,10 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [When(@"I run a 10/10 search")]
         public async Task WhenIRunATenOutOfTenSearch()
         {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            var searchHla = patientDataSelector.GetPatientHla();
+            
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
@@ -120,6 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .WithLocusMismatchCount(Locus.C, 0)
                 .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
@@ -159,6 +167,15 @@ namespace Nova.SearchAlgorithm.Test.Validation
         public void ThenTheResultShouldContainAtLeastOneDonor()
         {
             var results = ScenarioContext.Current.Get<SearchResultSet>();
+            results.SearchResults.Count().Should().BeGreaterThan(0);
+        }
+        
+        [Then(@"the results should contain the specified donor")]
+        public void ThenTheResultShouldContainTheSpecifiedDonor()
+        {
+            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            
+            // TODO: Assert the exact donor specified in feature criteria
             results.SearchResults.Count().Should().BeGreaterThan(0);
         }
         
