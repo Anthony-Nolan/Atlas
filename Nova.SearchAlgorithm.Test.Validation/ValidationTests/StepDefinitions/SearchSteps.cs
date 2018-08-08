@@ -6,12 +6,11 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.SearchAlgorithm.Test.Validation.TestData;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using Nova.SearchAlgorithm.Test.Validation.ValidationTests;
 using TechTalk.SpecFlow;
 
-namespace Nova.SearchAlgorithm.Test.Validation
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {
     [Binding]
     public class SearchSteps
@@ -36,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
             ScenarioContext.Current.Set(searchRequestBuilder);
         }
 
-        [Given(@"The search type is (.*)")]
+        [Given(@"the search type is (.*)")]
         public void GivenTheSearchTypeIs(string searchType)
         {
             var donorType = (DonorType) Enum.Parse(typeof(DonorType), searchType, true);
@@ -44,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
             ScenarioContext.Current.Set(searchRequest.WithSearchType(donorType));
         }
 
-        [Given(@"The search is run for Anthony Nolan's registry only")]
+        [Given(@"the search is run against the Anthony Nolan registry only")]
         public void GivenTheSearchIsRunForAnthonyNolansRegistryOnly()
         {
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
@@ -117,6 +116,10 @@ namespace Nova.SearchAlgorithm.Test.Validation
         [When(@"I run a 10/10 search")]
         public async Task WhenIRunATenOutOfTenSearch()
         {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            var searchHla = patientDataSelector.GetPatientHla();
+            
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
@@ -124,6 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Validation
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .WithLocusMismatchCount(Locus.C, 0)
                 .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
@@ -163,6 +167,15 @@ namespace Nova.SearchAlgorithm.Test.Validation
         public void ThenTheResultShouldContainAtLeastOneDonor()
         {
             var results = ScenarioContext.Current.Get<SearchResultSet>();
+            results.SearchResults.Count().Should().BeGreaterThan(0);
+        }
+        
+        [Then(@"the results should contain the specified donor")]
+        public void ThenTheResultShouldContainTheSpecifiedDonor()
+        {
+            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            
+            // TODO: Assert the exact donor specified in feature criteria
             results.SearchResults.Count().Should().BeGreaterThan(0);
         }
         

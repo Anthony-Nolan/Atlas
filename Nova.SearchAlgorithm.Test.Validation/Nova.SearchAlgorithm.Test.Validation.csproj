@@ -339,20 +339,28 @@
     <Compile Include="TestData\DonorIdGenerator.cs" />
     <Compile Include="TestData\Models\Genotype.cs" />
     <Compile Include="TestData\Models\HlaTypingCategory.cs" />
+    <Compile Include="TestData\Models\PatientDataSelector.cs" />
     <Compile Include="TestData\Models\TgsAllele.cs" />
     <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
-    <Compile Include="ValidationTests\Features\Search.feature.cs">
+    <Compile Include="ValidationTests\Features\ExampleSearch.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Search.feature</DependentUpon>
+      <DependentUpon>ExampleSearch.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TenOutOfTenSearch.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ValidationTests\Features\TenOutOfTenSearch.feature" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
@@ -367,9 +375,9 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="ValidationTests\Features\Search.feature">
+    <None Include="ValidationTests\Features\ExampleSearch.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Search.feature.cs</LastGenOutput>
+      <LastGenOutput>ExampleSearch.feature.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
