@@ -372,6 +372,7 @@
     <Compile Include="Models\SearchResults\ScoreResultTests.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingServiceTests.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
+    <Compile Include="Services\Matching\MatchCriteriaAnalyserTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
     <Compile Include="Services\Scoring\Grading\MultipleAlleleGradingCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorTestsBase.cs" />
