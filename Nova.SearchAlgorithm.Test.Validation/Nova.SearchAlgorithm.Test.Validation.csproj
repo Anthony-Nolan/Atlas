@@ -338,6 +338,7 @@
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
     <Compile Include="TestData\DonorIdGenerator.cs" />
     <Compile Include="TestData\Models\Genotype.cs" />
+    <Compile Include="TestData\Models\GenotypeDonor.cs" />
     <Compile Include="TestData\Models\HlaTypingCategory.cs" />
     <Compile Include="TestData\Models\PatientDataSelector.cs" />
     <Compile Include="TestData\Models\TgsAllele.cs" />
