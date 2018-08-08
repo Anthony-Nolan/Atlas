@@ -17,6 +17,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         public RegistryCode Registry { get; set; }
         public DonorType DonorType { get; set; }
 
+        public List<Donor> DatabaseDonors { get; set; }
+
         /// <summary>
         /// Determines to what typing levels each hla will be set at in the database
         /// </summary>
@@ -25,11 +27,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
             FullHlaAtTypingCategory(HlaTypingCategory.Tgs)
         };
 
-        public IEnumerable<Donor> GetDatabaseDonors() => HlaTypingCategorySets.Select(typingCategorySet => new DonorBuilder(Genotype)
-            .AtRegistry(Registry)
-            .OfType(DonorType)
-            .WithTypingCategories(typingCategorySet)
-            .Build());
+        public List<Donor> GetDatabaseDonors()
+        {
+            if (DatabaseDonors == null)
+            {
+                DatabaseDonors = HlaTypingCategorySets.Select(typingCategorySet => new DonorBuilder(Genotype)
+                        .AtRegistry(Registry)
+                        .OfType(DonorType)
+                        .WithTypingCategories(typingCategorySet)
+                        .Build())
+                    .ToList();
+            }
+
+            return DatabaseDonors;
+        }
 
         public static PhenotypeInfo<HlaTypingCategory> FullHlaAtTypingCategory(HlaTypingCategory category)
         {

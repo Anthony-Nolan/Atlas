@@ -173,10 +173,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then(@"the results should contain the specified donor")]
         public void ThenTheResultShouldContainTheSpecifiedDonor()
         {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
             var results = ScenarioContext.Current.Get<SearchResultSet>();
             
-            // TODO: Assert the exact donor specified in feature criteria
-            results.SearchResults.Count().Should().BeGreaterThan(0);
+            results.SearchResults.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
         }
         
         [Then(@"The result should contain no donors")]

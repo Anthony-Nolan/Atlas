@@ -39,26 +39,48 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
 
             patientDataSelector.MatchingDonorTypes.Add(donorType);
-            
+
             ScenarioContext.Current.Set(patientDataSelector);
         }
-        
+
         [Given(@"the matching donor is (.*) typed")]
-        public void GivenTheMatchingDonorIsHlaTyped(string hlaTypingCategoryString)
+        public void GivenTheMatchingDonorIsHlaTyped(string typingCategory)
         {
-            var typingCategory = (HlaTypingCategory) Enum.Parse(typeof(HlaTypingCategory), hlaTypingCategoryString, true);
             var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
 
-            patientDataSelector.MatchingTypingCategories.Add(typingCategory);
-            
+            switch (typingCategory)
+            {
+                case "TGS":
+                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.Tgs;
+                    break;
+                case "three field allele":
+                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.ThreeField;
+                    break;
+                case "two field allele":
+                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.TwoField;
+                    break;
+                case "XX code":
+                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.XxCode;
+                    break;
+                case "NMDP code":
+                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.NmdpCode;
+                    break;
+                case "serology":
+                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.Serology;
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
             ScenarioContext.Current.Set(patientDataSelector);
         }
-        
+
         [Given(@"the matching donor is in registry: (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string registryString)
         {
             var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
-            
+
             switch (registryString)
             {
                 case "Anthony Nolan":

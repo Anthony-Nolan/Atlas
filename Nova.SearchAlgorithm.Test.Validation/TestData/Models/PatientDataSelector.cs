@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -14,13 +15,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// </summary>
     public class PatientDataSelector
     {
+        private GenotypeDonor selectedMetaDonor;
         public bool HasMatch { get; set; }
 
         public PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
 
         public List<DonorType> MatchingDonorTypes { get; set; } = new List<DonorType>();
         public List<RegistryCode> MatchingRegistries { get; set; } = new List<RegistryCode>();
-        public List<HlaTypingCategory> MatchingTypingCategories { get; set; } = new List<HlaTypingCategory>();
+        public HlaTypingCategory MatchingTypingCategory { get; set; }
 
         public void SetAsTenOutOfTenMatch()
         {
@@ -33,11 +35,42 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                 MatchingDonorTypes.Contains(md.DonorType)
                 && MatchingRegistries.Contains(md.Registry));
 
-            var matchingGenotype = matchingMetaDonors.First().Genotype;
+            selectedMetaDonor = matchingMetaDonors.First();
+            
+            var matchingGenotype = selectedMetaDonor.Genotype;
 
             return matchingGenotype.Hla.Map((locus, position, tgsAllele) => HlaMatches.DataAtPosition(locus, position)
                 ? tgsAllele.TgsTypedAllele
                 : GenotypeRepository.NonMatchingGenotype.Hla.DataAtPosition(locus, position).TgsTypedAllele);
+        }
+
+        public int GetExpectedMatchingDonorId()
+        {
+            for (var i = 0; i < selectedMetaDonor.HlaTypingCategorySets.Count; i++)
+            {
+                var typingCategorySet = selectedMetaDonor.HlaTypingCategorySets[i];
+                if (IsTypingCategoryAtAllPositions(typingCategorySet, MatchingTypingCategory))
+                {
+                    return selectedMetaDonor.DatabaseDonors[i].DonorId;
+                }
+            }
+            throw new Exception("Failed to find the expected matched donor for this patient.");
+        }
+
+        private static bool IsTypingCategoryAtAllPositions(PhenotypeInfo<HlaTypingCategory> typingCategorySet, HlaTypingCategory typingCategory)
+        {
+            return typingCategorySet.A_1 == typingCategory
+                   && typingCategorySet.A_2 == typingCategory
+                   && typingCategorySet.B_1 == typingCategory
+                   && typingCategorySet.B_2 == typingCategory
+                   && typingCategorySet.C_1 == typingCategory
+                   && typingCategorySet.C_2 == typingCategory
+                   && typingCategorySet.DRB1_1 == typingCategory
+                   && typingCategorySet.DRB1_2 == typingCategory
+                   && typingCategorySet.DQB1_1 == typingCategory
+                   && typingCategorySet.DQB1_2 == typingCategory
+                   && typingCategorySet.DPB1_1 == typingCategory
+                   && typingCategorySet.DPB1_2 == typingCategory;
         }
     }
 }
