@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         /// Holds a small selection (5 per allele) of corresponding nmdp codes for each two field prefix existing in the test hla names.
         /// If test hla information changes, this data will need manually re-creating
         /// </summary>
-        public static List<KeyValuePair<string, string>> NmdpCodeLookup = new List<KeyValuePair<string, string>>
+        public static readonly List<KeyValuePair<string, string>> NmdpCodeLookup = new List<KeyValuePair<string, string>>
         {
             new KeyValuePair<string, string>("0101", "RPH"),
             new KeyValuePair<string, string>("0101", "RPK"),
