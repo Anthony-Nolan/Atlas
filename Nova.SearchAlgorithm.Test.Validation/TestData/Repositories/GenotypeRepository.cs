@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public static PhenotypeInfo<List<string>> FourFieldHlas { get; set; }
 
         private static PhenotypeInfo<List<TgsAllele>> TgsAlleles =>
-            FourFieldHlas.Map((l, p, alleles) => alleles.Select(a => TgsAllele.FromFourFieldAllele(a)).ToList());
+            FourFieldHlas.Map((l, p, alleles) => alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
 
         public static readonly IEnumerable<Genotype> Genotypes = new List<Genotype>();
 
@@ -56,18 +56,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         {
             Hla = new PhenotypeInfo<TgsAllele>
             {
-                A_1 = TgsAllele.FromFourFieldAllele("29:01:01:11"),
-                A_2 = TgsAllele.FromFourFieldAllele("29:02:01:11"),
-                B_1 = TgsAllele.FromFourFieldAllele("44:03:01:11"),
-                B_2 = TgsAllele.FromFourFieldAllele("07:05:01:11"),
-                DRB1_1 = TgsAllele.FromFourFieldAllele("15:01:01:11"),
-                DRB1_2 = TgsAllele.FromFourFieldAllele("13:01:01:11"),
-                C_1 = TgsAllele.FromFourFieldAllele("07:02:01:13"),
-                C_2 = TgsAllele.FromFourFieldAllele("03:04:01:11"),
-                DQB1_1 = TgsAllele.FromFourFieldAllele("02:02:01:11"),
-                DQB1_2 = TgsAllele.FromFourFieldAllele("06:02:01:11"),
-                DPB1_1 = TgsAllele.FromFourFieldAllele("04:02:01:12"),
-                DPB1_2 = TgsAllele.FromThreeFieldAllele("03:01:11"),
+                A_1 = TgsAllele.FromFourFieldAllele("29:01:01:11", Locus.A),
+                A_2 = TgsAllele.FromFourFieldAllele("29:02:01:11", Locus.A),
+                B_1 = TgsAllele.FromFourFieldAllele("44:03:01:11", Locus.B),
+                B_2 = TgsAllele.FromFourFieldAllele("07:05:01:11", Locus.B),
+                DRB1_1 = TgsAllele.FromFourFieldAllele("15:01:01:11", Locus.Drb1),
+                DRB1_2 = TgsAllele.FromFourFieldAllele("13:01:01:11", Locus.Drb1),
+                C_1 = TgsAllele.FromFourFieldAllele("07:02:01:13", Locus.C),
+                C_2 = TgsAllele.FromFourFieldAllele("03:04:01:11", Locus.C),
+                DQB1_1 = TgsAllele.FromFourFieldAllele("02:02:01:11", Locus.Dqb1),
+                DQB1_2 = TgsAllele.FromFourFieldAllele("06:02:01:11", Locus.Dqb1),
+                DPB1_1 = TgsAllele.FromFourFieldAllele("04:02:01:12", Locus.Dpb1),
+                DPB1_2 = TgsAllele.FromThreeFieldAllele("03:01:11", Locus.Dpb1),
             }
         };
     }
