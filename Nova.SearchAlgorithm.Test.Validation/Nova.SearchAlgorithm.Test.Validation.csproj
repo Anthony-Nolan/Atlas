@@ -347,11 +347,6 @@
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
-    <Compile Include="ValidationTests\Features\ExampleSearch.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ExampleSearch.feature</DependentUpon>
-    </Compile>
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -377,10 +372,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="ValidationTests\Features\ExampleSearch.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>ExampleSearch.feature.cs</LastGenOutput>
-    </None>
     <EmbeddedResource Include="TestData\Resources\four_field_hla_names.json" />
   </ItemGroup>
   <ItemGroup>
