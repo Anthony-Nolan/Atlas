@@ -134,68 +134,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 Task.Run(() => importRepo.AddOrUpdateDonorWithHla(donor)).Wait();
             }
         }
-
-        [Test]
-        public async Task Search_WithTwoAllowedMismatchesAtA_DoesNotMatchDonorWithNoMatchAtLocusAAndHalfMatchAtLocusB()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(2)
-                .WithLocusMismatchCount(Locus.A, 2)
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
-        }
-
-        [Test]
-        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_MatchesDonorsWithExactMatchAtAAndB()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(3)
-                .WithLocusMismatchCount(Locus.A, 2)
-                .WithLocusMismatchCount(Locus.B, 1)
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHeterozygousMatchAtLocusA.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullHomozygousMatchAtLocusA.DonorId);
-        }
-
-        [Test]
-        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_MatchesDonorsWithSingleMatchAtAAndCompleteMatchAtB()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(3)
-                .WithLocusMismatchCount(Locus.A, 2)
-                .WithLocusMismatchCount(Locus.B, 1)
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA.DonorId);
-        }
-
-        [Test]
-        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_ReturnsDonorsWithNoMatchAtLocusA()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(3)
-                .WithLocusMismatchCount(Locus.A, 2)
-                .WithLocusMismatchCount(Locus.B, 1)
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocusAAndExactMatchAtB.DonorId);
-        }
-
-        [Test]
-        public async Task Search_WithThreeAllowedMismatchesTwoAtAAndOneAtB_MatchesDonorWithNoMatchAtLocusAAndHalfMatchAtLocusB()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(3)
-                .WithLocusMismatchCount(Locus.A, 2)
-                .WithLocusMismatchCount(Locus.B, 1)
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocusAAndHalfMatchAtB.DonorId);
-        }
-
+        
         [Test]
         public async Task Search_ForMultipleSpecifiedRegistries_MatchesDonorsAtAllSpecifiedRegistries()
         {

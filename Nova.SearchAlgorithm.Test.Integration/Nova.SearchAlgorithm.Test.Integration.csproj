@@ -333,6 +333,7 @@
   <ItemGroup>
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
+    <Compile Include="IntegrationTests\Matching\MatchingTestsAtTwoLoci.cs" />
     <Compile Include="IntegrationTests\Search\ScoringTests.cs" />
     <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
     <Compile Include="IntegrationTests\StorageEmulator.cs" />
