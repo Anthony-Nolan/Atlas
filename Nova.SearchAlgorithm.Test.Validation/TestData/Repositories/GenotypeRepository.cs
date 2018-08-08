@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
@@ -15,8 +16,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public static PhenotypeInfo<List<string>> FourFieldHlas { get; set; }
 
         private static PhenotypeInfo<List<TgsAllele>> TgsAlleles =>
-            FourFieldHlas.Map((l, p, alleles) => alleles.Select(a => TgsAllele.FromFourFieldAllele(a, "TODO", "TODO")).ToList());
-        
+            FourFieldHlas.Map((l, p, alleles) => alleles.Select(a => TgsAllele.FromFourFieldAllele(a, GetNmdpCode(a), "TODO")).ToList());
+
         public static readonly IEnumerable<Genotype> Genotypes = new List<Genotype>();
 
         /// <summary>
@@ -46,6 +47,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                     FourFieldHlas = JsonConvert.DeserializeObject<PhenotypeInfo<List<string>>>(reader.ReadToEnd());
                 }
             }
+        }
+
+        /// <summary>
+        /// Selects a random nmdp string that corresponds to the first two fields of the allele string, as stored in the NmdpCodes class
+        /// </summary>
+        /// <param name="fourFieldAlleleString"></param>
+        /// <returns></returns>
+        private static string GetNmdpCode(string fourFieldAlleleString)
+        {
+            // Includes asterisk prefix
+            var firstField = fourFieldAlleleString.Split(':')[0];
+            var firstTwoFields = (firstField + fourFieldAlleleString.Split(':')[1]).Replace("*", "");
+            
+            var possibleNmdpCodes = NmdpCodes.NmdpCodeLookup.Where(nmdp => nmdp.Key == firstTwoFields).ToList();
+            var alphaNmdpCode = possibleNmdpCodes[random.Next(possibleNmdpCodes.Count)].Value;
+            
+            return $"{firstField}:{alphaNmdpCode}";
         }
 
         /// <summary>

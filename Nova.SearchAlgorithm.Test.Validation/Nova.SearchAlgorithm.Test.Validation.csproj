@@ -345,6 +345,7 @@
     <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
+    <Compile Include="TestData\Resources\NmdpCodes.cs" />
     <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
