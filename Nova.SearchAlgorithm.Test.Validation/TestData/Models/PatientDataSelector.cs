@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     public class PatientDataSelector
     {
         public bool HasMatch { get; set; }
-        
+
         public PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
 
         public List<DonorType> MatchingDonorTypes { get; set; } = new List<DonorType>();
@@ -29,7 +29,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
         public PhenotypeInfo<string> GetPatientHla()
         {
-            var matchingGenotype = GenotypeRepository.Genotypes.First();
+            var matchingMetaDonors = MetaDonorRepository.MetaDonors.Where(md =>
+                MatchingDonorTypes.Contains(md.DonorType)
+                && MatchingRegistries.Contains(md.Registry));
+
+            var matchingGenotype = matchingMetaDonors.First().Genotype;
 
             return matchingGenotype.Hla.Map((locus, position, tgsAllele) => HlaMatches.DataAtPosition(locus, position)
                 ? tgsAllele.TgsTypedAllele

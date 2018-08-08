@@ -343,6 +343,7 @@
     <Compile Include="TestData\Models\PatientDataSelector.cs" />
     <Compile Include="TestData\Models\TgsAllele.cs" />
     <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
+    <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
@@ -380,6 +381,7 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ExampleSearch.feature.cs</LastGenOutput>
     </None>
+    <EmbeddedResource Include="TestData\Resources\four_field_hla_names.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
