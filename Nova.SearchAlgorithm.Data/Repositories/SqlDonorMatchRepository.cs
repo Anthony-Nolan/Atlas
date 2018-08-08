@@ -205,7 +205,6 @@ WHERE DonorId = {donorId}
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
-                conn.Execute($@"DELETE FROM {tableName} WHERE DonorId IN('{string.Join("', '", donors.Select(d => d.DonorId))}')", null, transaction);
 
                 var dataTableGenerationTask = Task.Run(() =>
                 {
