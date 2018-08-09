@@ -20,19 +20,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         public static TgsAllele FromFourFieldAllele(string fourFieldAllele, Locus locus)
         {
             var threeFieldAllele = RemoveLastField(fourFieldAllele);
-            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, locus);
+            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, locus, GetSerology(fourFieldAllele, locus));
             tgsAllele.FourFieldAllele = fourFieldAllele;
             return tgsAllele;
         }
 
-        public static TgsAllele FromThreeFieldAllele(string threeFieldAllele, Locus locus)
+        public static TgsAllele FromThreeFieldAllele(string threeFieldAllele, Locus locus, string serology = null)
         {
             return new TgsAllele
             {
                 ThreeFieldAllele = threeFieldAllele,
                 TwoFieldAllele = RemoveLastField(threeFieldAllele),
                 NmdpCode = GetNmdpCode(threeFieldAllele, locus),
-                Serology = GetSerology(threeFieldAllele, locus),
+                Serology = serology ?? GetSerology(threeFieldAllele, locus),
                 XxCode = $"{FirstField(threeFieldAllele)}:XX",
                 Locus = locus,
             };
@@ -104,7 +104,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         /// <summary>
         /// Selects a random serology typing that corresponds to the first two fields of the allele string, as stored in the NmdpCodes class
         /// </summary>
-        private static string GetSerology(string threeFieldAllele, Locus locus)
+        private static string GetSerology(string allele, Locus locus)
         {
             if (relDnaSerFileContents == null)
             {
@@ -112,10 +112,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                 relDnaSerFileContents = File.ReadAllLines(filePath);
             }
 
-            var line = relDnaSerFileContents.FirstOrDefault(l => l.Contains(threeFieldAllele.Replace("*", ""))
+            var line = relDnaSerFileContents.FirstOrDefault(l => l.Contains($";{allele.Replace("*", "")};")
                                                                  && l.Contains(locus.ToString().ToUpper()));
 
-            var serology =  line == null ? null : GetSerologyFromLine(line);
+            var serology = line == null ? null : GetSerologyFromLine(line);
             return serology == "?" ? null : serology;
         }
 
