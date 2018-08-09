@@ -15,7 +15,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// </summary>
     public class TgsAllele
     {
-        static readonly Random random = new Random();
         private static IEnumerable<string> relDnaSerFileContents;
 
         public static TgsAllele FromFourFieldAllele(string fourFieldAllele, Locus locus)
@@ -32,14 +31,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
             {
                 ThreeFieldAllele = threeFieldAllele,
                 TwoFieldAllele = RemoveLastField(threeFieldAllele),
-                NmdpCode = GetNmdpCode(threeFieldAllele),
+                NmdpCode = GetNmdpCode(threeFieldAllele, locus),
                 Serology = GetSerology(threeFieldAllele, locus),
                 XxCode = $"{FirstField(threeFieldAllele)}:XX",
                 Locus = locus,
             };
         }
 
-        public Locus Locus { get; set; }
+        private Locus Locus { get; set; }
 
         /// <summary>
         /// Returns the most accurate TGS typing stored for the allele, either three or four field
@@ -91,15 +90,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         /// <summary>
         /// Selects a random nmdp string that corresponds to the first two fields of the allele string, as stored in the NmdpCodes class
         /// </summary>
-        private static string GetNmdpCode(string threeFieldAlleleString)
+        private static string GetNmdpCode(string threeFieldAlleleString, Locus locus)
         {
             var firstField = FirstField(threeFieldAlleleString);
             var firstTwoFields = (firstField + threeFieldAlleleString.Split(':')[1]).Replace("*", "");
 
-            var possibleNmdpCodes = NmdpCodes.NmdpCodeLookup.Where(nmdp => nmdp.Key == firstTwoFields).ToList();
-            var alphaNmdpCode = possibleNmdpCodes[random.Next(possibleNmdpCodes.Count)].Value;
+            var locusNmdpCodes = NmdpCodes.NmdpCodeLookup.DataAtLocus(locus);
+            var nmdpCode = locusNmdpCodes.Item1.Concat(locusNmdpCodes.Item2).First(nmdp => nmdp.Key == firstTwoFields).Value;
 
-            return $"{firstField}:{alphaNmdpCode}";
+            return $"{firstField}:{nmdpCode}";
         }
 
         /// <summary>

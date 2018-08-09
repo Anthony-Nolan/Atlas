@@ -52,6 +52,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         /// <summary>
         /// A Genotype for which all hla values do not match any others in the repository
         /// </summary>
+        ///  TODO: As we're randomly selecting alleles for donors, there's a slim chance this will actually match
+        /// We may want to reserve some alleles that cannot be selected for other donor genotypes
         public static readonly Genotype NonMatchingGenotype = new Genotype
         {
             Hla = new PhenotypeInfo<TgsAllele>
@@ -67,7 +69,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                 DQB1_1 = TgsAllele.FromFourFieldAllele("02:02:01:11", Locus.Dqb1),
                 DQB1_2 = TgsAllele.FromFourFieldAllele("06:02:01:11", Locus.Dqb1),
                 DPB1_1 = TgsAllele.FromFourFieldAllele("04:02:01:12", Locus.Dpb1),
-                DPB1_2 = TgsAllele.FromThreeFieldAllele("03:01:11", Locus.Dpb1),
+                DPB1_2 = TgsAllele.FromThreeFieldAllele("85:01:01", Locus.Dpb1),
             }
         };
     }
