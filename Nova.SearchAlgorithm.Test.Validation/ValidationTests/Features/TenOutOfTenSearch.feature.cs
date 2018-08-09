@@ -93,10 +93,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a three field allele typed match")]
-        public virtual void _1010SearchWithAThreeFieldAlleleTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a three field truncated allele typed match")]
+        public virtual void _1010SearchWithAThreeFieldTruncatedAlleleTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a three field allele typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a three field truncated allele typed match", ((string[])(null)));
 #line 16
   this.ScenarioSetup(scenarioInfo);
 #line 17
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 19
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 20
-    testRunner.And("the matching donor is three field allele typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is three field truncated allele typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 22
@@ -122,10 +122,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a two field allele typed match")]
-        public virtual void _1010SearchWithATwoFieldAlleleTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a two field truncated allele typed match")]
+        public virtual void _1010SearchWithATwoFieldTruncatedAlleleTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a two field allele typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a two field truncated allele typed match", ((string[])(null)));
 #line 27
   this.ScenarioSetup(scenarioInfo);
 #line 28
@@ -135,7 +135,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 30
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 31
-    testRunner.And("the matching donor is three field allele typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is two field truncated allele typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 32
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 33

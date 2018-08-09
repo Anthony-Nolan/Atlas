@@ -81,13 +81,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (typingCategory)
             {
                 case "TGS":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.Tgs);
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.TgsFourFieldAllele);
                     break;
-                case "three field allele":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.ThreeField);
+                case "three field truncated allele":
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.ThreeFieldTruncatedAllele);
                     break;
-                case "two field allele":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.TwoField);
+                case "two field truncated allele":
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.TwoFieldTruncatedAllele);
                     break;
                 case "XX code":
                     patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.XxCode);

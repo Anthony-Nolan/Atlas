@@ -6,10 +6,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
     public enum HlaTypingCategory
     {
-        // Either 3 or 4 field allele, depending on the allele
-        Tgs,
-        ThreeField,
-        TwoField,
+        // A TGS typed, 4 field allele
+        TgsFourFieldAllele,
+        // A TGS typed, 3 field allele
+        TgsThreeFieldAllele,
+        // A TGS typed, 2 field allele
+        TgsTwoFieldAllele,
+        // A 4 field allele that has been truncated to 3 fields
+        ThreeFieldTruncatedAllele,
+        // A 3/4 field allele that has been truncated to 2 fields
+        TwoFieldTruncatedAllele,
         XxCode,
         NmdpCode,
         Serology

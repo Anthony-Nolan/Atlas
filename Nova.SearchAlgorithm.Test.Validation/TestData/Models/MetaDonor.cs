@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// A 'meta-donor', with a genotype, registry, and donor type.
     /// The donor's genotype will have the resolution artifically reduced, and hence correspond to multiple database donors 
     /// </summary>
-    public class GenotypeDonor
+    public class MetaDonor
     {
         public Genotype Genotype { get; set; }
         public RegistryCode Registry { get; set; }
@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         /// </summary>
         public List<PhenotypeInfo<HlaTypingCategory>> HlaTypingCategorySets { get; set; } = new List<PhenotypeInfo<HlaTypingCategory>>
         {
-            FullHlaAtTypingCategory(HlaTypingCategory.Tgs)
+            FullHlaAtTypingCategory(HlaTypingCategory.TgsFourFieldAllele)
         };
 
         public List<Donor> GetDatabaseDonors()
