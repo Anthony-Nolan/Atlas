@@ -1,5 +1,6 @@
 ﻿using System;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using TechTalk.SpecFlow;
 
@@ -20,13 +21,42 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
 
-            if (matchType == "10/10")
+            switch (matchType)
             {
-                patientDataSelector.SetAsTenOutOfTenMatch();
+                case "10/10":
+                    patientDataSelector.SetAsTenOutOfTenMatch();
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
             }
-            else
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"the matching donor is untyped at Locus (.*)")]
+        public void GivenTheMatchingDonorIsUntypedAt(string locus)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            switch (locus)
             {
-                ScenarioContext.Current.Pending();
+                case "C":
+                    patientDataSelector.MatchingDonorUntypedAt.Add(Locus.A);
+                    break;
+                case "Dpb1":
+                    patientDataSelector.MatchingDonorUntypedAt.Add(Locus.Dpb1);
+                    break;
+                case "Dqb1":
+                    patientDataSelector.MatchingDonorUntypedAt.Add(Locus.Dqb1);
+                    break;
+                case "A":
+                case "B":
+                case "Drb1":
+                    throw new Exception("Loci A, B, DRB1 cannot be untyped");
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
             }
 
             ScenarioContext.Current.Set(patientDataSelector);
@@ -51,22 +81,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (typingCategory)
             {
                 case "TGS":
-                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.Tgs;
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.Tgs);
                     break;
                 case "three field allele":
-                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.ThreeField;
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.ThreeField);
                     break;
                 case "two field allele":
-                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.TwoField;
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.TwoField);
                     break;
                 case "XX code":
-                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.XxCode;
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.XxCode);
                     break;
                 case "NMDP code":
-                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.NmdpCode;
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.NmdpCode);
                     break;
                 case "serology":
-                    patientDataSelector.MatchingTypingCategory = HlaTypingCategory.Serology;
+                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.Serology);
                     break;
                 default:
                     ScenarioContext.Current.Pending();

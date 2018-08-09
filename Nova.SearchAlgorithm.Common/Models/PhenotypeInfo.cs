@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DRB1_2 = mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
             };
         }
-        
+
         // TODO: NOVA-1427: Running these tasks in parallel could likely improve performance
         public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, TypePositions, T, Task<R>> mapping)
         {
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Common.Models
 
         public IEnumerable<T> ToEnumerable()
         {
-            return new List<T>{ A_1, A_2, B_1, B_2, C_1, C_2, DPB1_1, DPB1_2, DRB1_1, DRB1_2, DQB1_1, DQB1_2 };
+            return new List<T> {A_1, A_2, B_1, B_2, C_1, C_2, DPB1_1, DPB1_2, DRB1_1, DRB1_2, DQB1_1, DQB1_2};
         }
 
         public void EachPosition(Action<Locus, TypePositions, T> action)
@@ -117,7 +117,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                 action(Locus.C, C_1, C_2),
                 action(Locus.Dpb1, DPB1_1, DPB1_2),
                 action(Locus.Dqb1, DQB1_1, DQB1_2),
-                action(Locus.Drb1, DRB1_1, DRB1_2)); 
+                action(Locus.Drb1, DRB1_1, DRB1_2));
         }
 
         public async Task<PhenotypeInfo<R>> WhenAllPositions<R>(Func<Locus, TypePositions, T, Task<R>> action)
@@ -173,7 +173,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
         }
-        
+
         public T DataAtPosition(Locus locus, TypePositions position)
         {
             const string errorMessage = "Can only fetch a single piece of data at a specific position";
@@ -265,64 +265,128 @@ namespace Nova.SearchAlgorithm.Common.Models
                     {
                         A_1 = value;
                     }
+
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         A_2 = value;
                     }
+
                     break;
                 case Locus.B:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
                         B_1 = value;
                     }
+
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         B_2 = value;
                     }
+
                     break;
                 case Locus.C:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
                         C_1 = value;
                     }
+
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         C_2 = value;
                     }
+
                     break;
                 case Locus.Dpb1:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
                         DPB1_1 = value;
                     }
+
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         DPB1_2 = value;
                     }
+
                     break;
                 case Locus.Dqb1:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
                         DQB1_1 = value;
                     }
+
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         DQB1_2 = value;
                     }
+
                     break;
                 case Locus.Drb1:
                     if (positions == TypePositions.One || positions == TypePositions.Both)
                     {
                         DRB1_1 = value;
                     }
+
                     if (positions == TypePositions.Two || positions == TypePositions.Both)
                     {
                         DRB1_2 = value;
                     }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
         }
+
+        #region Equality operators
+        
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PhenotypeInfo<T>) obj);
+        }
+
+        private bool Equals(PhenotypeInfo<T> other)
+        {
+            return EqualityComparer<T>.Default.Equals(A_1, other.A_1) && EqualityComparer<T>.Default.Equals(A_2, other.A_2) &&
+                   EqualityComparer<T>.Default.Equals(B_1, other.B_1) && EqualityComparer<T>.Default.Equals(B_2, other.B_2) &&
+                   EqualityComparer<T>.Default.Equals(C_1, other.C_1) && EqualityComparer<T>.Default.Equals(C_2, other.C_2) &&
+                   EqualityComparer<T>.Default.Equals(DPB1_1, other.DPB1_1) && EqualityComparer<T>.Default.Equals(DPB1_2, other.DPB1_2) &&
+                   EqualityComparer<T>.Default.Equals(DQB1_1, other.DQB1_1) && EqualityComparer<T>.Default.Equals(DQB1_2, other.DQB1_2) &&
+                   EqualityComparer<T>.Default.Equals(DRB1_1, other.DRB1_1) && EqualityComparer<T>.Default.Equals(DRB1_2, other.DRB1_2);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = EqualityComparer<T>.Default.GetHashCode(A_1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(A_2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B_1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B_2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C_1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C_2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DPB1_1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DPB1_2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DQB1_1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DQB1_2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DRB1_1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DRB1_2);
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
+        {
+            return !Equals(left, right);
+        }
+        
+        #endregion
     }
 }

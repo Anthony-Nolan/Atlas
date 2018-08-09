@@ -18,17 +18,39 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         private GenotypeDonor selectedMetaDonor;
         public bool HasMatch { get; set; }
 
-        public PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
+        public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
+        public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
 
-        public List<DonorType> MatchingDonorTypes { get; set; } = new List<DonorType>();
-        public List<RegistryCode> MatchingRegistries { get; set; } = new List<RegistryCode>();
-        public HlaTypingCategory MatchingTypingCategory { get; set; }
+        private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
+        private readonly PhenotypeInfo<HlaTypingCategory> MatchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
+
+
+        public List<Locus> MatchingDonorUntypedAt { get; } = new List<Locus>();
 
         public void SetAsTenOutOfTenMatch()
         {
             HlaMatches = HlaMatches.Map((l, p, hasMatch) => l != Locus.Dpb1);
         }
 
+        /// <summary>
+        /// Will set the desired matching category at all positions
+        /// </summary>
+        public void SetFullMatchingTypingCategory(HlaTypingCategory category)
+        {
+            MatchingTypingCategories.A_1 = category;
+            MatchingTypingCategories.A_2 = category;
+            MatchingTypingCategories.B_1 = category;
+            MatchingTypingCategories.B_2 = category;
+            MatchingTypingCategories.C_1 = category;
+            MatchingTypingCategories.C_2 = category;
+            MatchingTypingCategories.DPB1_1 = category;
+            MatchingTypingCategories.DPB1_2 = category;
+            MatchingTypingCategories.DQB1_1 = category;
+            MatchingTypingCategories.DQB1_2 = category;
+            MatchingTypingCategories.DRB1_1 = category;
+            MatchingTypingCategories.DRB1_2 = category;
+        }
+        
         public PhenotypeInfo<string> GetPatientHla()
         {
             var matchingMetaDonors = MetaDonorRepository.MetaDonors.Where(md =>
@@ -48,29 +70,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         {
             for (var i = 0; i < selectedMetaDonor.HlaTypingCategorySets.Count; i++)
             {
-                var typingCategorySet = selectedMetaDonor.HlaTypingCategorySets[i];
-                if (IsTypingCategoryAtAllPositions(typingCategorySet, MatchingTypingCategory))
+                if (selectedMetaDonor.HlaTypingCategorySets[i].Equals(MatchingTypingCategories))
                 {
                     return selectedMetaDonor.DatabaseDonors[i].DonorId;
                 }
             }
             throw new Exception("Failed to find the expected matched donor for this patient.");
-        }
-
-        private static bool IsTypingCategoryAtAllPositions(PhenotypeInfo<HlaTypingCategory> typingCategorySet, HlaTypingCategory typingCategory)
-        {
-            return typingCategorySet.A_1 == typingCategory
-                   && typingCategorySet.A_2 == typingCategory
-                   && typingCategorySet.B_1 == typingCategory
-                   && typingCategorySet.B_2 == typingCategory
-                   && typingCategorySet.C_1 == typingCategory
-                   && typingCategorySet.C_2 == typingCategory
-                   && typingCategorySet.DRB1_1 == typingCategory
-                   && typingCategorySet.DRB1_2 == typingCategory
-                   && typingCategorySet.DQB1_1 == typingCategory
-                   && typingCategorySet.DQB1_2 == typingCategory
-                   && typingCategorySet.DPB1_1 == typingCategory
-                   && typingCategorySet.DPB1_2 == typingCategory;
         }
     }
 }
