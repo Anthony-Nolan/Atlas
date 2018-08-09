@@ -22,6 +22,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                     GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.XxCode),
                     GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.NmdpCode),
                     GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.Serology),
+                    new PhenotypeInfo<HlaTypingCategory>
+                    {
+                        A_1 = HlaTypingCategory.Tgs,
+                        A_2 = HlaTypingCategory.Tgs,
+                        B_1 = HlaTypingCategory.Tgs,
+                        B_2 = HlaTypingCategory.Tgs,
+                        C_1 = HlaTypingCategory.Untyped,
+                        C_2 = HlaTypingCategory.Untyped,
+                        DPB1_1 = HlaTypingCategory.Tgs,
+                        DPB1_2 = HlaTypingCategory.Tgs,
+                        DQB1_1 = HlaTypingCategory.Tgs,
+                        DQB1_2 = HlaTypingCategory.Tgs,
+                        DRB1_1 = HlaTypingCategory.Tgs,
+                        DRB1_2 = HlaTypingCategory.Tgs,
+                    }
                 }
             },
             new GenotypeDonor

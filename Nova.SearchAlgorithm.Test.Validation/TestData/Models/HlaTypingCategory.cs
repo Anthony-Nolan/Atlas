@@ -12,7 +12,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         TwoField,
         XxCode,
         NmdpCode,
-        Serology
+        Serology,
+        Untyped
     }
 
     public static class HlaTypingCategoryHelper

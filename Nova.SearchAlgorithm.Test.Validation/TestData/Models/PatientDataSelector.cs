@@ -24,9 +24,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
         private readonly PhenotypeInfo<HlaTypingCategory> MatchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
 
-
-        public List<Locus> MatchingDonorUntypedAt { get; } = new List<Locus>();
-
         public void SetAsTenOutOfTenMatch()
         {
             HlaMatches = HlaMatches.Map((l, p, hasMatch) => l != Locus.Dpb1);
@@ -49,6 +46,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
             MatchingTypingCategories.DQB1_2 = category;
             MatchingTypingCategories.DRB1_1 = category;
             MatchingTypingCategories.DRB1_2 = category;
+        }
+
+        public void SetMatchingDonorUntypedAtLocus(Locus locus)
+        {
+            MatchingTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
         }
         
         public PhenotypeInfo<string> GetPatientHla()
@@ -75,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                     return selectedMetaDonor.DatabaseDonors[i].DonorId;
                 }
             }
-            throw new Exception("Failed to find the expected matched donor for this patient.");
+            throw new Exception("Failed to find the expected matched donor for this patient - does the corresponding test data exist?");
         }
     }
 }

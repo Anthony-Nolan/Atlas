@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
             FullHlaAtTypingCategory(HlaTypingCategory.Tgs)
         };
 
-        public List<Donor> GetDatabaseDonors()
+        public IEnumerable<Donor> GetDatabaseDonors()
         {
             if (DatabaseDonors == null)
             {
