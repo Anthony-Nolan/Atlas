@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
     /// <summary>
-    /// Test data will be generated from strongly types TGS data - i.e. in a 3 or 4 field allele name format
+    /// Test data will be generated from strongly types TGS data - i.e. in a 2, 3, or 4 field allele name format
     /// It will be 'dumbed down' to lower resolution typings. This class includes all lower resolution typiings for a given 3 or 4 field allele. 
     /// </summary>
     public class TgsAllele
@@ -27,13 +27,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
         public static TgsAllele FromThreeFieldAllele(string threeFieldAllele, Locus locus, string serology = null)
         {
+            var twoFieldAllele = RemoveLastField(threeFieldAllele);
+            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, locus, serology ?? GetSerology(threeFieldAllele, locus));
+            tgsAllele.ThreeFieldAllele = threeFieldAllele;
+            return tgsAllele;
+        }
+
+        public static TgsAllele FromTwoFieldAllele(string twoFieldAllele, Locus locus, string serology = null)
+        {
             return new TgsAllele
             {
-                ThreeFieldAllele = threeFieldAllele,
-                TwoFieldAllele = RemoveLastField(threeFieldAllele),
-                NmdpCode = GetNmdpCode(threeFieldAllele, locus),
-                Serology = serology ?? GetSerology(threeFieldAllele, locus),
-                XxCode = $"{FirstField(threeFieldAllele)}:XX",
+                TwoFieldAllele = twoFieldAllele,
+                NmdpCode = GetNmdpCode(twoFieldAllele, locus),
+                Serology = serology ?? GetSerology(twoFieldAllele, locus),
+                XxCode = $"{FirstField(twoFieldAllele)}:XX",
                 Locus = locus,
             };
         }
@@ -58,11 +65,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         {
             switch (typingCategory)
             {
-                case HlaTypingCategory.Tgs:
+                case HlaTypingCategory.TgsFourFieldAllele:
                     return TgsTypedAllele;
-                case HlaTypingCategory.ThreeField:
+                case HlaTypingCategory.ThreeFieldTruncatedAllele:
                     return ThreeFieldAllele;
-                case HlaTypingCategory.TwoField:
+                case HlaTypingCategory.TwoFieldTruncatedAllele:
                     return TwoFieldAllele;
                 case HlaTypingCategory.XxCode:
                     return XxCode;
@@ -79,6 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
         private static string RemoveLastField(string allele)
         {
+            // TODO: NOVA-1571: Handle expressing alleles. This truncation will remove expression suffix.
             var splitAllele = allele.Split(':');
             return string.Join(":", splitAllele.Take(splitAllele.Length - 1));
         }
@@ -90,21 +98,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         }
 
         /// <summary>
-        /// Selects a random nmdp string that corresponds to the first two fields of the allele string, as stored in the NmdpCodes class
+        /// Selects an nmdp string that corresponds to a two field allele string, as stored in the NmdpCodes class
+        /// These NMDP Codes are manually curated
         /// </summary>
-        private static string GetNmdpCode(string threeFieldAlleleString, Locus locus)
+        private static string GetNmdpCode(string twoFieldAlleleString, Locus locus)
         {
-            var firstField = FirstField(threeFieldAlleleString);
-            var firstTwoFields = (firstField + threeFieldAlleleString.Split(':')[1]).Replace("*", "");
+            var firstField = FirstField(twoFieldAlleleString);
 
             var locusNmdpCodes = NmdpCodes.NmdpCodeLookup.DataAtLocus(locus);
-            var nmdpCode = locusNmdpCodes.Item1.Concat(locusNmdpCodes.Item2).First(nmdp => nmdp.Key == firstTwoFields).Value;
+            var nmdpCode = locusNmdpCodes.Item1.Concat(locusNmdpCodes.Item2)
+                .First(nmdp => nmdp.Key == twoFieldAlleleString.Replace("*", "")).Value;
 
             return $"{firstField}:{nmdpCode}";
         }
 
         /// <summary>
-        /// Selects a random serology typing that corresponds to the first two fields of the allele string, as stored in the NmdpCodes class
+        /// Looks up the corresponding serology from a local version of the rel_dna_ser.txt file from WMDA
         /// </summary>
         private static string GetSerology(string allele, Locus locus)
         {
@@ -123,7 +132,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
         private static string GetSerologyFromLine(string line)
         {
-            return line.Split(';').Skip(2).FirstOrDefault(s => !s.IsNullOrEmpty());
+            return line
+                .Split(';')
+                // First two values are locus and hla name
+                .Skip(2)
+                .First(s => !s.IsNullOrEmpty())
+                ?.Split('/')
+                .First(s => s != "0");
         }
     }
 }

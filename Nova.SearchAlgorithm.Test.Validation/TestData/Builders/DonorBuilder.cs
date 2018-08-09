@@ -21,13 +21,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             switch (category)
             {
-                case HlaTypingCategory.Tgs:
+                case HlaTypingCategory.TgsFourFieldAllele:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.TgsTypedAllele));
                     break;
-                case HlaTypingCategory.ThreeField:
+                case HlaTypingCategory.ThreeFieldTruncatedAllele:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.ThreeFieldAllele));
                     break;
-                case HlaTypingCategory.TwoField:
+                case HlaTypingCategory.TwoFieldTruncatedAllele:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.TwoFieldAllele));
                     break;
                 case HlaTypingCategory.XxCode:

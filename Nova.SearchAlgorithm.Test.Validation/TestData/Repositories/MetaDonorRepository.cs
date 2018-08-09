@@ -7,51 +7,51 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
     public static class MetaDonorRepository
     {
-        public static readonly IEnumerable<GenotypeDonor> MetaDonors = new List<GenotypeDonor>
+        public static readonly IEnumerable<MetaDonor> MetaDonors = new List<MetaDonor>
         {
-            new GenotypeDonor
+            new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 Genotype = GenotypeRepository.NextGenotype(),
                 HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingCategory>>
                 {
-                    GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.Tgs),
-                    GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.ThreeField),
-                    GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.TwoField),
-                    GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.XxCode),
-                    GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.NmdpCode),
-                    GenotypeDonor.FullHlaAtTypingCategory(HlaTypingCategory.Serology),
+                    MetaDonor.FullHlaAtTypingCategory(HlaTypingCategory.TgsFourFieldAllele),
+                    MetaDonor.FullHlaAtTypingCategory(HlaTypingCategory.ThreeFieldTruncatedAllele),
+                    MetaDonor.FullHlaAtTypingCategory(HlaTypingCategory.TwoFieldTruncatedAllele),
+                    MetaDonor.FullHlaAtTypingCategory(HlaTypingCategory.XxCode),
+                    MetaDonor.FullHlaAtTypingCategory(HlaTypingCategory.NmdpCode),
+                    MetaDonor.FullHlaAtTypingCategory(HlaTypingCategory.Serology),
                     new PhenotypeInfo<HlaTypingCategory>
                     {
-                        A_1 = HlaTypingCategory.Tgs,
-                        A_2 = HlaTypingCategory.Tgs,
-                        B_1 = HlaTypingCategory.Tgs,
-                        B_2 = HlaTypingCategory.Tgs,
+                        A_1 = HlaTypingCategory.TgsFourFieldAllele,
+                        A_2 = HlaTypingCategory.TgsFourFieldAllele,
+                        B_1 = HlaTypingCategory.TgsFourFieldAllele,
+                        B_2 = HlaTypingCategory.TgsFourFieldAllele,
                         C_1 = HlaTypingCategory.Untyped,
                         C_2 = HlaTypingCategory.Untyped,
-                        DPB1_1 = HlaTypingCategory.Tgs,
-                        DPB1_2 = HlaTypingCategory.Tgs,
-                        DQB1_1 = HlaTypingCategory.Tgs,
-                        DQB1_2 = HlaTypingCategory.Tgs,
-                        DRB1_1 = HlaTypingCategory.Tgs,
-                        DRB1_2 = HlaTypingCategory.Tgs,
+                        DPB1_1 = HlaTypingCategory.TgsFourFieldAllele,
+                        DPB1_2 = HlaTypingCategory.TgsFourFieldAllele,
+                        DQB1_1 = HlaTypingCategory.TgsFourFieldAllele,
+                        DQB1_2 = HlaTypingCategory.TgsFourFieldAllele,
+                        DRB1_1 = HlaTypingCategory.TgsFourFieldAllele,
+                        DRB1_2 = HlaTypingCategory.TgsFourFieldAllele,
                     }
                 }
             },
-            new GenotypeDonor
+            new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.AN,
                 Genotype = GenotypeRepository.NextGenotype()
             },
-            new GenotypeDonor
+            new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.DKMS,
                 Genotype = GenotypeRepository.NextGenotype()
             },
-            new GenotypeDonor
+            new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.DKMS,

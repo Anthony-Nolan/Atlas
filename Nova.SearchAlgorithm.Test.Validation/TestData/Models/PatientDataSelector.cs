@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// </summary>
     public class PatientDataSelector
     {
-        private GenotypeDonor selectedMetaDonor;
+        private MetaDonor selectedMetaDonor;
         public bool HasMatch { get; set; }
 
         public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();

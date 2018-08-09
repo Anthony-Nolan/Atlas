@@ -15,26 +15,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
     [Binding]
     public class SearchSteps
     {
-        [Given(@"I search for exact donor hla")]
-        public void GivenISearchForRecognisedHla()
-        {
-            var patientGenotypeHla = GenotypeRepository.Genotypes.First().Hla;
-            
-            var searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchHla(Locus.A, TypePositions.One, patientGenotypeHla.A_1.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.A, TypePositions.Two, patientGenotypeHla.A_2.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.B, TypePositions.One, patientGenotypeHla.B_1.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.B, TypePositions.Two, patientGenotypeHla.B_2.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, patientGenotypeHla.DRB1_1.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, patientGenotypeHla.DRB1_2.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.C, TypePositions.One, patientGenotypeHla.C_1.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.C, TypePositions.Two, patientGenotypeHla.C_2.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, patientGenotypeHla.DQB1_1.TgsTypedAllele)
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, patientGenotypeHla.DQB1_2.TgsTypedAllele);
-            
-            ScenarioContext.Current.Set(searchRequestBuilder);
-        }
-
         [Given(@"the search type is (.*)")]
         public void GivenTheSearchTypeIs(string searchType)
         {
@@ -137,27 +117,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public async Task WhenIRunANineOutOfTenSearchAtLocus(string locusString)
         {
             var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
-            var exactMatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
+            var fullyMatchedLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
             
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(1)
                 .WithLocusMismatchCount(locus, 1)
-                .WithMismatchCountAtLoci(exactMatchLoci, 0)
+                .WithMismatchCountAtLoci(fullyMatchedLoci, 0)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
         
-        [When(@"I run an 8/10 search at locus (.*)")]
-        public async Task WhenIRunAnEightOutOfTenSearchAtLocus(string locusString)
+        [When(@"I run an 8/10 search")]
+        public async Task WhenIRunAnEightOutOfTenSearch()
         {
-            var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
-            var exactMatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
+            var allowedMismatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
             
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(2)
-                .WithLocusMismatchCount(locus, 2)
-                .WithMismatchCountAtLoci(exactMatchLoci, 0)
+                .WithMismatchCountAtLoci(allowedMismatchLoci, 2)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));

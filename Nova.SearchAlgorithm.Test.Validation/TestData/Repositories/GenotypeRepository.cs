@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public static readonly IEnumerable<Genotype> Genotypes = new List<Genotype>();
 
         /// <summary>
-        /// Creates a random full Genotype from the available four field allele names
+        /// Creates a random full Genotype from the available TGS allele names
         /// </summary>
         /// <returns></returns>
         public static Genotype NextGenotype()
@@ -52,8 +52,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         /// <summary>
         /// A Genotype for which all hla values do not match any others in the repository
         /// </summary>
-        ///  TODO: As we're randomly selecting alleles for donors, there's a slim chance this will actually match
-        /// We may want to reserve some alleles that cannot be selected for other donor genotypes
+        ///  TODO: NOVA-1590: Create more robust method of guaranteeing a mismatch
+        /// As we're randomly selecting alleles for donors, there's a chance this will actually match
         public static readonly Genotype NonMatchingGenotype = new Genotype
         {
             Hla = new PhenotypeInfo<TgsAllele>
