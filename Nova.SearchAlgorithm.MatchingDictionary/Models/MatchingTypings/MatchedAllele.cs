@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
 {
@@ -12,29 +11,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<MatchingSerology> MatchingSerologies { get; }
-        public IEnumerable<SerologyMappingForAllele> AlleleToSerologyMappings { get; }
         public AlleleTyping TypingForHlaLookupResult => (AlleleTyping) HlaTyping;
 
-        public MatchedAllele(IAlleleInfoForMatching matchedAllele, IEnumerable<SerologyMappingForAllele> alleleToSerologyMappings)
+        public MatchedAllele(IAlleleInfoForMatching matchedAllele, IEnumerable<MatchingSerology> matchingSerologies)
         {
             HlaTyping = matchedAllele.HlaTyping;
             TypingUsedInMatching = matchedAllele.TypingUsedInMatching;
             MatchingPGroups = matchedAllele.MatchingPGroups;
             MatchingGGroups = matchedAllele.MatchingGGroups;
-
-            var alleleToSerologyMappingsCollection = alleleToSerologyMappings.ToList();
-            MatchingSerologies = alleleToSerologyMappingsCollection.SelectMany(ConvertMappingToMatchingSerology);
-
-            // TODO: NOVA-1483 - Do not need to store all details of allele-to-serology mappings
-            AlleleToSerologyMappings = alleleToSerologyMappingsCollection;
-        }
-
-        private static IEnumerable<MatchingSerology> ConvertMappingToMatchingSerology(SerologyMappingForAllele mapping)
-        {
-            return mapping
-                .AllMatchingSerology
-                .Select(ser => ser.SerologyTyping)
-                .Select(ser => new MatchingSerology(ser, ser.Equals(mapping.DirectSerology)));
+            MatchingSerologies = matchingSerologies;
         }
     }
 }

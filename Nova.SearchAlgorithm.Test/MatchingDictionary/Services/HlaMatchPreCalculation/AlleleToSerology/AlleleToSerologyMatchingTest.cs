@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Linq;
 
@@ -59,7 +58,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         }
 
         [Test]
-        public void DeletedAlleleWithNoIdenticalHlaHasNoMatchingSerology()
+        public void AlleleToSerologyMatching_DeletedAlleleWithNoIdenticalHla_HasNoMatchingSerology()
         {
             var deletedNoIdentical = GetSingleMatchingTyping(MatchLocus.A, "02:100");
             deletedNoIdentical.MatchingSerologies.Should().BeEmpty();
@@ -82,21 +81,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
 
         [TestCaseSource(
             typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.B15Alleles))]
-        public void AlleleToSerologyMatching_B15Alleles_HaveNoUnexpectedMappings(
-            MatchLocus matchLocus,
-            string alleleName)
-        {
-            var actualMappings = GetSingleMatchingTyping(matchLocus, alleleName).AlleleToSerologyMappings;
-
-            actualMappings
-                .Where(m => m.AllMatchingSerology.Any(match => match.IsUnexpected))
-                .Should()
-                .BeEmpty();
-        }
-
-        [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.B15AllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_B15Alleles_HaveCorrectMatchingSerologies(
             object[] alleleDetails,
@@ -115,35 +99,18 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
 
         [TestCaseSource(
             typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.AllelesWithUnexpectedMappings))]
-        public void AlleleToSerologyMatching_AllelesWithUnexpectedMappings_UnexpectedMatchesCorrectlyCaptured(
-            MatchLocus matchLocus,
-            string alleleName,
-            object[] mappings
-            )
-        {
-            var actualMappings = GetSingleMatchingTyping(matchLocus, alleleName).AlleleToSerologyMappings;
-            var expectedMappings = mappings
-                .Select(m => (object[])m)
-                .Select(BuildSerologyMappingForAllele);
-
-            actualMappings.ShouldBeEquivalentTo(expectedMappings);
-        }
-
-        [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.AllelesOfUnknownSerology))]
-        public void AlleleToSerologyMatching_AlleleOfUnknownSerology_HasCorrectSerologyMappings(
+        public void AlleleToSerologyMatching_AllelesOfUnknownSerology_HaveCorrectMatchingSerologies(
             MatchLocus matchLocus,
             string alleleName,
-            object[] mappings)
+            object[] matchingSerologies)
         {
-            var actualMappings = GetSingleMatchingTyping(matchLocus, alleleName).AlleleToSerologyMappings;
-            var expectedMappings = mappings
-                .Select(m => (object[]) m)
-                .Select(BuildSerologyMappingForAllele);
+            var actualMatchingSerologies = GetSingleMatchingTyping(matchLocus, alleleName).MatchingSerologies;
+            var expectedMatchingSerologies = matchingSerologies
+                .Select(m => (object[])m)
+                .Select(BuildMatchingSerology);
 
-            actualMappings.ShouldBeEquivalentTo(expectedMappings);
+            actualMatchingSerologies.ShouldBeEquivalentTo(expectedMatchingSerologies);
         }
 
         private static MatchingSerology BuildMatchingSerology(object[] dataSource)
@@ -156,32 +123,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             var isDeletedMapping = (bool)dataSource[3];
 
             return new MatchingSerology(serology, isDeletedMapping);
-        }
-
-        private static SerologyMappingForAllele BuildSerologyMappingForAllele(object[] dataSource)
-        {
-            var locus = dataSource[0].ToString();
-            var directSerologyName = dataSource[1].ToString();
-            var directSerologySubtype = (SerologySubtype)dataSource[2];
-            var assignment = (Assignment)dataSource[3];
-            var serologyMatches = (object[][])dataSource[4];
-
-            return new SerologyMappingForAllele(
-                new SerologyTyping(locus, directSerologyName, directSerologySubtype),
-                assignment,
-                serologyMatches.Select(BuildSerologyMatchToAllele));
-        }
-
-        private static SerologyMatchToAllele BuildSerologyMatchToAllele(object[] dataSource)
-        {
-            var serology = new SerologyTyping(
-                dataSource[0].ToString(),
-                dataSource[1].ToString(),
-                (SerologySubtype)dataSource[2]);
-
-            var isUnexpected = (bool)dataSource[3];
-
-            return new SerologyMatchToAllele(serology, isUnexpected);
         }
     }
 }

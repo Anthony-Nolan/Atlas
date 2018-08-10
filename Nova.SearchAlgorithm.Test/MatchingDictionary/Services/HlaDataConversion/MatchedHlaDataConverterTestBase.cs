@@ -72,14 +72,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         protected static MatchedAllele BuildMatchedAllele(string alleleName)
         {
             var hlaTyping = new AlleleTyping(MatchedLocus, alleleName);
-            var alleleGroup = new[] {alleleName};
+            var alleleGroup = new[] { alleleName };
             var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleGroup, alleleGroup);
 
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
-            var serologyMatch = new SerologyMatchToAllele(serologyTyping);
-            var mapping = new SerologyMappingForAllele(serologyTyping, Assignment.None, new[] { serologyMatch });
+            var matchingSerologies = new[] { new MatchingSerology(serologyTyping, true) };
 
-            return new MatchedAllele(infoForMatching, new[] { mapping });
+            return new MatchedAllele(infoForMatching, matchingSerologies);
         }
     }
 }
