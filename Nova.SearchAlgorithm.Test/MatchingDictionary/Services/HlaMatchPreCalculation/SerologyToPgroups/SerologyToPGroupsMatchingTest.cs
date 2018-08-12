@@ -3,7 +3,6 @@ using ApprovalTests.Reporters;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
@@ -13,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
     public class SerologyToPGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
         [Test]
-        public void ValidSerologyHaveAtLeastOnePGroup()
+        public void SerologyToAlleleMatching_ValidSerology_HaveAtLeastOnePGroup()
         {
             var pGroupCounts = MatchedHla
                 .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is SerologyTyping)
@@ -24,97 +23,97 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         }
 
         [Test]
-        public void BroadWhereSplitHasAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_BroadWhereSplitHasAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.A, "9"));
         }
 
         [Test]
-        public void BroadWhereSplitHasNoAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.Dqb1, "1"));
         }
 
         [Test]
-        public void BroadHasSplitAndAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_BroadHasSplitAndAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "21"));
         }
 
         [Test]
-        public void SplitHasAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "51"));
         }
 
         [Test]
-        public void SplitNoAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.C, "10"));
         }
 
         [Test]
-        public void AssociatedWithSplitPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_AssociatedWithSplit_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "3902"));
         }
 
         [Test]
-        public void AssociatedWithBroadPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_AssociatedWithBroad_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "4005"));
         }
 
         [Test]
-        public void AssociatedWithNotSplitPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.Drb1, "103"));
         }
 
         [Test]
-        public void NotSplitWithAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_NotSplitWithAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.A, "2"));
         }
 
         [Test]
-        public void NotSplitNoAssociatedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_NotSplitNoAssociated_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.A, "1"));
         }
 
         [Test]
-        public void DeletedPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_Deleted_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.C, "11"));
         }
 
         [Test]
-        public void B15BroadPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_B15Broad_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "15"));
         }
 
         [Test]
-        public void B15SplitPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_B15Split_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "62"));
         }
 
         [Test]
-        public void B70BroadPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_B70Broad_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "70"));
         }
 
         [Test]
-        public void B70SplitPGroupsAreCorrect()
+        public void SerologyToAlleleMatching_B70Split_PGroupsAreCorrect()
         {
             Approvals.Verify(GetPGroupsAsString(MatchLocus.B, "72"));
         }
 
         [Test]
-        public void B15And70ShareMatchingPGroups()
+        public void SerologyToAlleleMatching_B15And70_ShareMatchingPGroups()
         {
             var b15 = GetSingleMatchingTyping(MatchLocus.B, "15").MatchingPGroups;
             var b70 = GetSingleMatchingTyping(MatchLocus.B, "70").MatchingPGroups;

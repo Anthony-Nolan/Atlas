@@ -491,41 +491,39 @@
     <Content Include="MatchingDictionary\Repositories\Wmda\SerologiesTest.WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.AssociatedWithBroadGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.AssociatedWithNotSplitGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.AssociatedWithSplitGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.B15And70ShareMatchingGGroups.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.B15BroadGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.B15SplitGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.B70BroadGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.B70SplitGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.BroadHasSplitAndAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.BroadWhereSplitHasAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.BroadWhereSplitHasNoAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.DeletedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.NotSplitNoAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.NotSplitWithAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SplitHasAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SplitNoAssociatedGGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.AssociatedWithBroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.AssociatedWithNotSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.AssociatedWithSplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.B15And70ShareMatchingPGroups.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.B15BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.B15SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.B70BroadPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.B70SplitPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.BroadHasSplitAndAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.BroadWhereSplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.BroadWhereSplitHasNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.DeletedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.NotSplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.NotSplitWithAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SplitHasAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SplitNoAssociatedPGroupsAreCorrect.approved.txt" />
-    <Content Include="Resources\MDPreCalc\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithBroad_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingGGroups.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Split_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Split_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_Deleted_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithBroad_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingPGroups.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Split_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Split_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_Deleted_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="Resources\MDPreCalc\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt" />
   </ItemGroup>
   <ItemGroup />
   <Choose>
