@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
+using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -16,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [TestCase("DQB1*", "05:04:01G", new[] { "05:04", "05:132Q" }, Description = "G group where allele has expression suffix")]
         [TestCase("DQB1*", "05:02:01G", new[] {
                     "05:02:01:01", "05:02:01:02", "05:02:01:03",
-                    "05:02:03", "05:02:07", "05:02:11",
+                    "05:02:03", "05:02:07", "05:02:11", "05:02:14", "05:02:15",
                     "05:14", "05:17", "05:35", "05:36", "05:37", "05:46", "05:47", "05:57",
                     "05:87Q", "05:90N",
                     "05:102", "05:106", "05:136" },
@@ -30,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 
             var actualGGroup = GetSingleWmdaHlaTyping(locus, gGroupName);
 
-            Assert.AreEqual(expectedGGroup, actualGGroup);
+            actualGGroup.ShouldBeEquivalentTo(expectedGGroup);
         }
     }
 }
