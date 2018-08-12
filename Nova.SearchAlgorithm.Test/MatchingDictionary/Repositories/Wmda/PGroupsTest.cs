@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
+using FluentAssertions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -30,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 
             var actualPGroup = GetSingleWmdaHlaTyping(locus, pGroupName);
 
-            Assert.AreEqual(expectedPGroup, actualPGroup);
+            actualPGroup.ShouldBeEquivalentTo(expectedPGroup);
         }
     }
 }
