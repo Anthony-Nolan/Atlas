@@ -338,6 +338,7 @@
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
     <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
     <Compile Include="TestData\DonorIdGenerator.cs" />
+    <Compile Include="TestData\Models\AlleleTestData.cs" />
     <Compile Include="TestData\Models\Genotype.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
     <Compile Include="TestData\Models\HlaTypingCategory.cs" />
@@ -346,7 +347,8 @@
     <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
-    <Compile Include="TestData\Resources\NmdpCodes.cs" />
+    <Compile Include="TestData\Resources\FourFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\NonMatchingAlleles.cs" />
     <Compile Include="TestData\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
@@ -360,9 +362,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ValidationTests\Features\TenOutOfTenSearch.feature" />
-    <EmbeddedResource Include="TestData\Resources\rel_dna_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
@@ -377,7 +376,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="TestData\Resources\four_field_hla_names.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">

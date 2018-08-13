@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
-using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
@@ -15,32 +11,44 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// </summary>
     public class TgsAllele
     {
-        private static IEnumerable<string> relDnaSerFileContents;
-
-        public static TgsAllele FromFourFieldAllele(string fourFieldAllele, Locus locus)
+        public static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, Locus locus)
         {
-            var threeFieldAllele = RemoveLastField(fourFieldAllele);
-            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, locus, GetSerology(fourFieldAllele, locus));
-            tgsAllele.FourFieldAllele = fourFieldAllele;
+            var threeFieldAllele = new AlleleTestData
+            {
+                AlleleName = RemoveLastField(fourFieldAllele.AlleleName),
+                PGroup = fourFieldAllele.PGroup,
+                GGroup = fourFieldAllele.GGroup,
+                NmdpCode = fourFieldAllele.NmdpCode,
+                Serology = fourFieldAllele.Serology
+            };
+            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, locus);
+            tgsAllele.FourFieldAllele = fourFieldAllele.AlleleName;
             return tgsAllele;
         }
 
-        public static TgsAllele FromThreeFieldAllele(string threeFieldAllele, Locus locus, string serology = null)
+        public static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, Locus locus)
         {
-            var twoFieldAllele = RemoveLastField(threeFieldAllele);
-            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, locus, serology ?? GetSerology(threeFieldAllele, locus));
-            tgsAllele.ThreeFieldAllele = threeFieldAllele;
+            var twoFieldAllele = new AlleleTestData
+            {
+                AlleleName = RemoveLastField(threeFieldAllele.AlleleName),
+                PGroup = threeFieldAllele.PGroup,
+                GGroup = threeFieldAllele.GGroup,
+                NmdpCode = threeFieldAllele.NmdpCode,
+                Serology = threeFieldAllele.Serology
+            };
+            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, locus);
+            tgsAllele.ThreeFieldAllele = threeFieldAllele.AlleleName;
             return tgsAllele;
         }
 
-        public static TgsAllele FromTwoFieldAllele(string twoFieldAllele, Locus locus, string serology = null)
+        public static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, Locus locus)
         {
             return new TgsAllele
             {
-                TwoFieldAllele = twoFieldAllele,
-                NmdpCode = GetNmdpCode(twoFieldAllele, locus),
-                Serology = serology ?? GetSerology(twoFieldAllele, locus),
-                XxCode = $"{FirstField(twoFieldAllele)}:XX",
+                TwoFieldAllele = twoFieldAllele.AlleleName,
+                NmdpCode = twoFieldAllele.NmdpCode,
+                Serology = twoFieldAllele.Serology,
+                XxCode = $"{FirstField(twoFieldAllele.AlleleName)}:XX",
                 Locus = locus,
             };
         }
@@ -79,6 +87,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                     return Serology;
                 case HlaTypingCategory.Untyped:
                     return null;
+                case HlaTypingCategory.TgsThreeFieldAllele:
+                case HlaTypingCategory.TgsTwoFieldAllele:
+                    throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typingCategory), typingCategory, null);
             }
@@ -95,50 +106,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         {
             var splitAllele = allele.Split(':');
             return splitAllele.First();
-        }
-
-        /// <summary>
-        /// Selects an nmdp string that corresponds to a two field allele string, as stored in the NmdpCodes class
-        /// These NMDP Codes are manually curated
-        /// </summary>
-        private static string GetNmdpCode(string twoFieldAlleleString, Locus locus)
-        {
-            var firstField = FirstField(twoFieldAlleleString);
-
-            var locusNmdpCodes = NmdpCodes.NmdpCodeLookup.DataAtLocus(locus);
-            var nmdpCode = locusNmdpCodes.Item1.Concat(locusNmdpCodes.Item2)
-                .First(nmdp => nmdp.Key == twoFieldAlleleString.Replace("*", "")).Value;
-
-            return $"{firstField}:{nmdpCode}";
-        }
-
-        /// <summary>
-        /// Looks up the corresponding serology from a local version of the rel_dna_ser.txt file from WMDA
-        /// </summary>
-        private static string GetSerology(string allele, Locus locus)
-        {
-            if (relDnaSerFileContents == null)
-            {
-                var filePath = $"{TestContext.CurrentContext.TestDirectory}\\TestData\\Resources\\rel_dna_ser.txt";
-                relDnaSerFileContents = File.ReadAllLines(filePath);
-            }
-
-            var line = relDnaSerFileContents.FirstOrDefault(l => l.Contains($";{allele.Replace("*", "")};")
-                                                                 && l.Contains(locus.ToString().ToUpper()));
-
-            var serology = line == null ? null : GetSerologyFromLine(line);
-            return serology == "?" ? null : serology;
-        }
-
-        private static string GetSerologyFromLine(string line)
-        {
-            return line
-                .Split(';')
-                // First two values are locus and hla name
-                .Skip(2)
-                .First(s => !s.IsNullOrEmpty())
-                ?.Split('/')
-                .First(s => s != "0");
         }
     }
 }
