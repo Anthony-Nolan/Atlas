@@ -106,7 +106,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                     {
                         var pGroup = AlleleRepository.FourFieldAlleles.DataAtPosition(l, p).First(a => a.AlleleName == hla.TgsTypedAllele).PGroup;
                         var selectedAllele = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.DataAtPosition(l, p).First(a =>
-                            a.PGroup == pGroup && a.AlleleName != hla.TgsTypedAllele);
+                            a.PGroup == pGroup 
+                            && a.AlleleName != hla.TgsTypedAllele
+                            && a.AlleleName != selectedMetaDonor.Genotype.Hla.DataAtPosition(l, p.Other()).TgsTypedAllele);
                         return TgsAllele.FromFourFieldAllele(selectedAllele, l);
                     }
 

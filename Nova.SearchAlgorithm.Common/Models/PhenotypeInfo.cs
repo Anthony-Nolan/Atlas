@@ -43,6 +43,33 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DRB1_2 = mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
             };
         }
+        
+        // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
+        public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, Tuple<R, R>> mapping)
+        {
+            var a = mapping(Locus.A, A_1, A_2);
+            var b = mapping(Locus.B, B_1, B_2);
+            var c = mapping(Locus.C, C_1, C_2);
+            var dpb1 = mapping(Locus.Dpb1, DPB1_1, DPB1_2);
+            var dqb1 = mapping(Locus.Dqb1, DQB1_1, DQB1_2);
+            var drb1 = mapping(Locus.Drb1, DRB1_1, DRB1_2);
+            
+            return new PhenotypeInfo<R>
+            {
+                A_1 = a.Item1,
+                A_2 = a.Item2,
+                B_1 = b.Item1,
+                B_2 = b.Item2,
+                C_1 = c.Item1,
+                C_2 = c.Item2,
+                DPB1_1 = dpb1.Item1,
+                DPB1_2 = dpb1.Item2,
+                DQB1_1 = dqb1.Item1,
+                DQB1_2 = dqb1.Item2,
+                DRB1_1 = drb1.Item1,
+                DRB1_2 = drb1.Item2,
+            };
+        }
 
         // TODO: NOVA-1427: Running these tasks in parallel could likely improve performance
         public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, TypePositions, T, Task<R>> mapping)

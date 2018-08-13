@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         /// <returns></returns>
         public static Genotype RandomGenotype()
         {
-            var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles.Map((l, p, alleles) => 
+            var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles.Map((l, p, alleles) =>
                 alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
             return new Genotype
             {
@@ -36,11 +36,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         /// <returns></returns>
         public static Genotype GenotypeWithNonUniquePGroups()
         {
-            var allelesWithNonUniquePGroups = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.Map((l, p, alleles) => 
-                alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());;
             return new Genotype
             {
-                Hla = allelesWithNonUniquePGroups.Map((locus, position, alleleNames) => alleleNames[random.Next(alleleNames.Count)])
+                Hla = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.MapByLocus((l, alleles1, alleles2) =>
+                {
+                    var pGroupGroups = alleles1.Concat(alleles2).Distinct().GroupBy(a => a.PGroup).ToList();
+                    var selectedPGroup = pGroupGroups[random.Next(pGroupGroups.Count)];
+
+                    // All p-group level matches will be homozygous.
+                    // This cannot be changed util we have enough test data to ensure that the selected patient data will not be a direct or cross match
+                    return new Tuple<TgsAllele, TgsAllele>(
+                        TgsAllele.FromFourFieldAllele(selectedPGroup.AsEnumerable().First(), l),
+                        TgsAllele.FromFourFieldAllele(selectedPGroup.AsEnumerable().First(), l)
+                    );
+                })
             };
         }
 
