@@ -77,6 +77,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                     return NmdpCode;
                 case HlaTypingCategory.Serology:
                     return Serology;
+                case HlaTypingCategory.Untyped:
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typingCategory), typingCategory, null);
             }

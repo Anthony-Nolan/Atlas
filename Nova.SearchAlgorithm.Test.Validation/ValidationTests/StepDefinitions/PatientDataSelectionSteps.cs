@@ -42,13 +42,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (locus)
             {
                 case "C":
-                    patientDataSelector.MatchingDonorUntypedAt.Add(Locus.A);
+                    patientDataSelector.SetMatchingDonorUntypedAtLocus(Locus.C);
                     break;
                 case "Dpb1":
-                    patientDataSelector.MatchingDonorUntypedAt.Add(Locus.Dpb1);
+                    patientDataSelector.SetMatchingDonorUntypedAtLocus(Locus.Dpb1);
                     break;
                 case "Dqb1":
-                    patientDataSelector.MatchingDonorUntypedAt.Add(Locus.Dqb1);
+                    patientDataSelector.SetMatchingDonorUntypedAtLocus(Locus.Dqb1);
                     break;
                 case "A":
                 case "B":

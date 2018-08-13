@@ -18,7 +18,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         TwoFieldTruncatedAllele,
         XxCode,
         NmdpCode,
-        Serology
+        Serology,
+        Untyped
     }
 
     public static class HlaTypingCategoryHelper

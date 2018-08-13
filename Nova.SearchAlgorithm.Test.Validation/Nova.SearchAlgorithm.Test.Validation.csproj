@@ -336,6 +336,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
+    <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
     <Compile Include="TestData\DonorIdGenerator.cs" />
     <Compile Include="TestData\Models\Genotype.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />

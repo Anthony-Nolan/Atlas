@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+﻿using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData
