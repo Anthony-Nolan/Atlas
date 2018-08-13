@@ -13,9 +13,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
     public static class GenotypeRepository
     {
         static readonly Random random = new Random();
-        
-        private static PhenotypeInfo<List<TgsAllele>> TgsAlleles =>
-            FourFieldAlleles.Alleles.Map((l, p, alleles) => alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
 
         public static readonly IEnumerable<Genotype> Genotypes = new List<Genotype>();
 
@@ -23,11 +20,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         /// Creates a random full Genotype from the available TGS allele names
         /// </summary>
         /// <returns></returns>
-        public static Genotype NextGenotype()
+        public static Genotype RandomGenotype()
         {
+            var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles.Map((l, p, alleles) => 
+                alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
             return new Genotype
             {
-                Hla = TgsAlleles.Map((locus, position, alleleNames) => alleleNames[random.Next(alleleNames.Count)])
+                Hla = tgsFourFieldAlleles.Map((locus, position, alleleNames) => alleleNames[random.Next(alleleNames.Count)])
+            };
+        }
+
+        /// <summary>
+        /// Creates a full Genotype from the available TGS allele names, such that each position's allele corresponds to a p-group at least one other allele in the dataset shares
+        /// </summary>
+        /// <returns></returns>
+        public static Genotype GenotypeWithNonUniquePGroups()
+        {
+            var allelesWithNonUniquePGroups = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.Map((l, p, alleles) => 
+                alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());;
+            return new Genotype
+            {
+                Hla = allelesWithNonUniquePGroups.Map((locus, position, alleleNames) => alleleNames[random.Next(alleleNames.Count)])
             };
         }
 

@@ -21,6 +21,26 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
         public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
 
+        /// <summary>
+        /// The match level of the expected matching donor (if HasMatch == true)
+        /// e.g. If PGroup, an different allele in the same p-group as the donor will be selected
+        /// </summary>
+        private PhenotypeInfo<MatchLevel> MatchLevels { get; } = new PhenotypeInfo<MatchLevel>
+        {
+            A_1 = MatchLevel.Allele,
+            A_2 = MatchLevel.Allele,
+            B_1 = MatchLevel.Allele,
+            B_2 = MatchLevel.Allele,
+            C_1 = MatchLevel.Allele,
+            C_2 = MatchLevel.Allele,
+            DPB1_1 = MatchLevel.Allele,
+            DPB1_2 = MatchLevel.Allele,
+            DQB1_1 = MatchLevel.Allele,
+            DQB1_2 = MatchLevel.Allele,
+            DRB1_1 = MatchLevel.Allele,
+            DRB1_2 = MatchLevel.Allele,
+        };
+
         private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
         private readonly PhenotypeInfo<HlaTypingCategory> MatchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
 
@@ -52,16 +72,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         {
             MatchingTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
         }
-        
+
+        public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
+        {
+            MatchLevels.A_1 = matchLevel;
+            MatchLevels.A_2 = matchLevel;
+            MatchLevels.B_1 = matchLevel;
+            MatchLevels.B_2 = matchLevel;
+            MatchLevels.C_1 = matchLevel;
+            MatchLevels.C_2 = matchLevel;
+            MatchLevels.DPB1_1 = matchLevel;
+            MatchLevels.DPB1_2 = matchLevel;
+            MatchLevels.DQB1_1 = matchLevel;
+            MatchLevels.DQB1_2 = matchLevel;
+            MatchLevels.DRB1_1 = matchLevel;
+            MatchLevels.DRB1_2 = matchLevel;
+        }
+
         public PhenotypeInfo<string> GetPatientHla()
         {
-            var matchingMetaDonors = MetaDonorRepository.MetaDonors.Where(md =>
-                MatchingDonorTypes.Contains(md.DonorType)
-                && MatchingRegistries.Contains(md.Registry));
+            var matchingMetaDonors = MetaDonorRepository.MetaDonors
+                .Where(md => MatchingDonorTypes.Contains(md.DonorType))
+                .Where(md => MatchingRegistries.Contains(md.Registry))
+                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup) || md.HasNonUniquePGroups);
 
             selectedMetaDonor = matchingMetaDonors.First();
-            
-            var matchingGenotype = selectedMetaDonor.Genotype;
+
+            var matchingGenotype = new Genotype
+            {
+                Hla = selectedMetaDonor.Genotype.Hla.Map((l, p, hla) =>
+                {
+                    if (MatchLevels.DataAtPosition(l, p) == MatchLevel.PGroup)
+                    {
+                        var pGroup = AlleleRepository.FourFieldAlleles.DataAtPosition(l, p).First(a => a.AlleleName == hla.TgsTypedAllele).PGroup;
+                        var selectedAllele = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.DataAtPosition(l, p).First(a =>
+                            a.PGroup == pGroup && a.AlleleName != hla.TgsTypedAllele);
+                        return TgsAllele.FromFourFieldAllele(selectedAllele, l);
+                    }
+
+                    return hla;
+                })
+            };
 
             return matchingGenotype.Hla.Map((locus, position, tgsAllele) => HlaMatches.DataAtPosition(locus, position)
                 ? tgsAllele.TgsTypedAllele
@@ -77,6 +128,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                     return selectedMetaDonor.DatabaseDonors[i].DonorId;
                 }
             }
+
             throw new Exception("Failed to find the expected matched donor for this patient - does the corresponding test data exist?");
         }
     }

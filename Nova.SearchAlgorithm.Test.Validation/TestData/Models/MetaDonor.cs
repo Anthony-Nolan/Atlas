@@ -16,6 +16,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         public Genotype Genotype { get; set; }
         public RegistryCode Registry { get; set; }
         public DonorType DonorType { get; set; }
+        
+        /// <summary>
+        /// Flag will be set if this meta-donor is guaranteed to have a p-group that corresponds to multiple test alleles,
+        /// such that patient data can be chosen that does not exactliy match but does share a p-group
+        /// </summary>
+        public bool HasNonUniquePGroups { get; set; }
 
         public List<Donor> DatabaseDonors { get; set; }
 
