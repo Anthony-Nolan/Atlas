@@ -86,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
         private static string RemoveLastField(string allele)
         {
-            // TODO: NOVA-1571: Handle expressing alleles. This truncation will remove expression suffix.
+            // TODO: NOVA-1571: Handle alleles with an expression suffix. This truncation will remove expression suffix.
             var splitAllele = allele.Split(':');
             return string.Join(":", splitAllele.Take(splitAllele.Length - 1));
         }
