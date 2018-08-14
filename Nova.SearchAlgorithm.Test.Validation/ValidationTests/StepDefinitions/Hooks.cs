@@ -33,12 +33,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             ScenarioContext.Current.Set(new SearchRequestBuilder());
             ScenarioContext.Current.Set(container.Resolve<IMetaDonorRepository>());
+            ScenarioContext.Current.Set(container.Resolve<IAlleleRepository>());
         }
         
         private static IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();
+            
             builder.RegisterType<MetaDonorRepository>().AsImplementedInterfaces();
+            builder.RegisterType<AlleleRepository>().AsImplementedInterfaces();
+            
             builder.RegisterType<TestDataService>().AsImplementedInterfaces();
 
             return builder.Build();

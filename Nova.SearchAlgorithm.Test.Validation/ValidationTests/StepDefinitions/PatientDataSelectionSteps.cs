@@ -16,7 +16,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void GivenAPatientHasAMatch()
         {
             var metaDonorRepository = ScenarioContext.Current.Get<IMetaDonorRepository>();
-            var patientDataSelector = new PatientDataSelector(metaDonorRepository) {HasMatch = true};
+            var alleleRepository = ScenarioContext.Current.Get<IAlleleRepository>();
+            var patientDataSelector = new PatientDataSelector(metaDonorRepository, alleleRepository) {HasMatch = true};
             ScenarioContext.Current.Set(patientDataSelector);
         }
 

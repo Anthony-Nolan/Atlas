@@ -17,10 +17,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     public class PatientDataSelector
     {
         private readonly IMetaDonorRepository metaDonorRepository;
+        private readonly IAlleleRepository alleleRepository;
 
-        public PatientDataSelector(IMetaDonorRepository metaDonorRepository)
+        public PatientDataSelector(IMetaDonorRepository metaDonorRepository, IAlleleRepository alleleRepository)
         {
             this.metaDonorRepository = metaDonorRepository;
+            this.alleleRepository = alleleRepository;
         }
         
         private MetaDonor selectedMetaDonor;
@@ -116,7 +118,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 {
                     if (MatchLevels.DataAtPosition(l, p) == MatchLevel.PGroup)
                     {
-                        var allelesAtLocus = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.DataAtLocus(l);
+                        var allelesAtLocus = alleleRepository.FourFieldAllelesWithNonUniquePGroups().DataAtLocus(l);
                         var allAllelesAtLocus = allelesAtLocus.Item1.Concat(allelesAtLocus.Item2).ToList();
                         var pGroup = allAllelesAtLocus.First(a => a.AlleleName == hla.TgsTypedAllele).PGroup;
                         var selectedAllele = allAllelesAtLocus.First(a =>
