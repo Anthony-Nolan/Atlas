@@ -16,11 +16,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     /// </summary>
     public class PatientDataSelector
     {
-        private MetaDonor selectedMetaDonor;
-        public bool HasMatch { get; set; }
+        private readonly IMetaDonorRepository metaDonorRepository;
+        private readonly IAlleleRepository alleleRepository;
 
-        public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
-        public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
+        public PatientDataSelector(IMetaDonorRepository metaDonorRepository, IAlleleRepository alleleRepository)
+        {
+            this.metaDonorRepository = metaDonorRepository;
+            this.alleleRepository = alleleRepository;
+        }
+        
+        private MetaDonor selectedMetaDonor;
 
         /// <summary>
         /// The match level of the expected matching donor (if HasMatch == true)
@@ -43,7 +48,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         };
 
         private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
-        private readonly PhenotypeInfo<HlaTypingCategory> MatchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
+
+        private readonly PhenotypeInfo<HlaTypingCategory> matchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
+
+        public bool HasMatch { get; set; }
+
+        public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
+
+        public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
 
         public void SetAsTenOutOfTenMatch()
         {
@@ -55,23 +67,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// </summary>
         public void SetFullMatchingTypingCategory(HlaTypingCategory category)
         {
-            MatchingTypingCategories.A_1 = category;
-            MatchingTypingCategories.A_2 = category;
-            MatchingTypingCategories.B_1 = category;
-            MatchingTypingCategories.B_2 = category;
-            MatchingTypingCategories.C_1 = category;
-            MatchingTypingCategories.C_2 = category;
-            MatchingTypingCategories.DPB1_1 = category;
-            MatchingTypingCategories.DPB1_2 = category;
-            MatchingTypingCategories.DQB1_1 = category;
-            MatchingTypingCategories.DQB1_2 = category;
-            MatchingTypingCategories.DRB1_1 = category;
-            MatchingTypingCategories.DRB1_2 = category;
+            matchingTypingCategories.A_1 = category;
+            matchingTypingCategories.A_2 = category;
+            matchingTypingCategories.B_1 = category;
+            matchingTypingCategories.B_2 = category;
+            matchingTypingCategories.C_1 = category;
+            matchingTypingCategories.C_2 = category;
+            matchingTypingCategories.DPB1_1 = category;
+            matchingTypingCategories.DPB1_2 = category;
+            matchingTypingCategories.DQB1_1 = category;
+            matchingTypingCategories.DQB1_2 = category;
+            matchingTypingCategories.DRB1_1 = category;
+            matchingTypingCategories.DRB1_2 = category;
         }
 
         public void SetMatchingDonorUntypedAtLocus(Locus locus)
         {
-            MatchingTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
+            matchingTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
         }
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
@@ -92,7 +104,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         public PhenotypeInfo<string> GetPatientHla()
         {
-            var matchingMetaDonors = MetaDonorRepository.MetaDonors
+            var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
                 .Where(md => MatchingDonorTypes.Contains(md.DonorType))
                 .Where(md => MatchingRegistries.Contains(md.Registry))
                 .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
@@ -106,7 +118,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 {
                     if (MatchLevels.DataAtPosition(l, p) == MatchLevel.PGroup)
                     {
-                        var allelesAtLocus = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.DataAtLocus(l);
+                        var allelesAtLocus = alleleRepository.FourFieldAllelesWithNonUniquePGroups().DataAtLocus(l);
                         var allAllelesAtLocus = allelesAtLocus.Item1.Concat(allelesAtLocus.Item2).ToList();
                         var pGroup = allAllelesAtLocus.First(a => a.AlleleName == hla.TgsTypedAllele).PGroup;
                         var selectedAllele = allAllelesAtLocus.First(a =>
@@ -129,7 +141,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             for (var i = 0; i < selectedMetaDonor.HlaTypingCategorySets.Count; i++)
             {
-                if (selectedMetaDonor.HlaTypingCategorySets[i].Equals(MatchingTypingCategories))
+                if (selectedMetaDonor.HlaTypingCategorySets[i].Equals(matchingTypingCategories))
                 {
                     return selectedMetaDonor.DatabaseDonors[i].DonorId;
                 }

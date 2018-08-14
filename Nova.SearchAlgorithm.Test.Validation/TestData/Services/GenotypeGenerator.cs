@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
@@ -13,6 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     public static class GenotypeGenerator
     {
         private static readonly Random Random = new Random();
+        private static readonly IAlleleRepository AlleleRepository = new AlleleRepository();
 
         public static Genotype GenerateGenotype(GenotypeCriteria criteria)
         {
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// <returns></returns>
         private static Genotype RandomGenotype()
         {
-            var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles.Map((l, p, alleles) =>
+            var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles().Map((l, p, alleles) =>
                 alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
             return new Genotype
             {
@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             return new Genotype
             {
-                Hla = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.MapByLocus((l, alleles1, alleles2) =>
+                Hla = AlleleRepository.FourFieldAllelesWithNonUniquePGroups().MapByLocus((l, alleles1, alleles2) =>
                 {
                     var pGroupGroups = alleles1.Concat(alleles2).Distinct().GroupBy(a => a.PGroup).ToList();
                     var selectedPGroup = pGroupGroups[Random.Next(pGroupGroups.Count)];

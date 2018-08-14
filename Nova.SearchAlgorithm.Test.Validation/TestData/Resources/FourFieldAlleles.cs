@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     /// (2) Has the correct p-group, g-group, and serology associations
     /// (3) Has a valid corresponding nmdp code
     /// </summary>
-    public class FourFieldAlleles
+    public static class FourFieldAlleles
     {
         public static readonly PhenotypeInfo<List<AlleleTestData>> Alleles = new PhenotypeInfo<List<AlleleTestData>>
         {

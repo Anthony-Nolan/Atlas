@@ -1,6 +1,7 @@
-﻿using Nova.SearchAlgorithm.Data;
+﻿using Autofac;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.SearchAlgorithm.Test.Validation.TestData;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -8,10 +9,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
     [Binding]
     public sealed class Hooks
     {
+        private static IContainer container;
+
         [BeforeTestRun]
         public static void BeforeTestRun()
         {
-            TestDataService.SetupTestData();
+            container = CreateContainer();
+            var testDataService = container.Resolve<ITestDataService>();
+            
+            testDataService.SetupTestData();
             AlgorithmTestingService.StartServer();
             AlgorithmTestingService.RunHlaRefresh();
         }
@@ -26,6 +32,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public static void BeforeScenario()
         {
             ScenarioContext.Current.Set(new SearchRequestBuilder());
+            ScenarioContext.Current.Set(container.Resolve<IMetaDonorRepository>());
+            ScenarioContext.Current.Set(container.Resolve<IAlleleRepository>());
+        }
+        
+        private static IContainer CreateContainer()
+        {
+            var builder = new ContainerBuilder();
+            
+            builder.RegisterType<MetaDonorRepository>().AsImplementedInterfaces();
+            builder.RegisterType<AlleleRepository>().AsImplementedInterfaces();
+            
+            builder.RegisterType<TestDataService>().AsImplementedInterfaces();
+
+            return builder.Build();
         }
     }
 }

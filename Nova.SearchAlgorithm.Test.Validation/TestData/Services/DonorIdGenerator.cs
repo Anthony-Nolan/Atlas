@@ -1,5 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
-namespace Nova.SearchAlgorithm.Test.Validation.TestData
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {
     public static class DonorIdGenerator
     {

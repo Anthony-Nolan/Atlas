@@ -356,11 +356,13 @@
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\Resources\FourFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\MetaDonorsData.cs" />
     <Compile Include="TestData\Resources\NonMatchingAlleles.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\PatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
       <AutoGen>True</AutoGen>
