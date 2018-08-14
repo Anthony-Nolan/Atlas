@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using TechTalk.SpecFlow;
 
@@ -14,7 +15,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"a patient has a match")]
         public void GivenAPatientHasAMatch()
         {
-            var patientDataSelector = new PatientDataSelector {HasMatch = true};
+            var metaDonorRepository = ScenarioContext.Current.Get<IMetaDonorRepository>();
+            var patientDataSelector = new PatientDataSelector(metaDonorRepository) {HasMatch = true};
             ScenarioContext.Current.Set(patientDataSelector);
         }
 

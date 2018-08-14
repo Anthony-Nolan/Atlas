@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
 {
-    public class NonMatchingAlleles
+    public static class NonMatchingAlleles
     {
         /// <summary>
         /// A set of alleles selected such that no loci match any other test data.
