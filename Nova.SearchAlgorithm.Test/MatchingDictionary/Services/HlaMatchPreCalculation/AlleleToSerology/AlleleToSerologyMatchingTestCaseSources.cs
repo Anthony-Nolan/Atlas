@@ -1,5 +1,4 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.AlleleToSerology
 {
@@ -190,15 +189,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         private static readonly object[] B70SplitAllele = { MatchLocus.B, "15:03:01:01" };
         private static readonly object[] B15And70BroadAllele = { MatchLocus.B, "15:36" };
 
-        public static readonly object[] B15Alleles =
-        {
-            B15BroadAllele,
-            B15SplitAllele,
-            B70BroadAllele,
-            B70SplitAllele,
-            B15And70BroadAllele
-        };
-
         public static readonly object[] B15AllelesMatchingSerologies =
         {
             new object[]
@@ -260,58 +250,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             }
         };
 
-        public static readonly object[] AllelesWithUnexpectedMappings =
-        {
-            new object[]
-            {
-                // Mapped to same Broad
-                MatchLocus.A, "26:10",
-                new object[]
-                {
-                    new object[]
-                    {
-                        "A", "10", SerologySubtype.Broad, Assignment.Unambiguous,
-                        new[]
-                        {
-                            new object[] {"A", "10", SerologySubtype.Broad, false },
-                            new object[] {"A", "25", SerologySubtype.Split, true },
-                            new object[] {"A", "26", SerologySubtype.Split, false },
-                            new object[] {"A", "34", SerologySubtype.Split, true },
-                            new object[] {"A", "66", SerologySubtype.Split, true }
-                        }
-                    }
-                }
-            },
-            new object[]
-            {
-                // Mapped to different Broad
-                MatchLocus.A, "02:55",
-                new object[]
-                {
-                    new object[]
-                    {
-                        "A", "2", SerologySubtype.NotSplit, Assignment.Assumed,
-                        new[]
-                        {
-                            new object[] {"A", "2", SerologySubtype.NotSplit, false },
-                            new object[] {"A", "203", SerologySubtype.Associated, false },
-                            new object[] {"A", "210", SerologySubtype.Associated, false }
-                        }
-                    },
-                    new object[]
-                    {
-                        "A", "28", SerologySubtype.Broad, Assignment.Expert,
-                        new[]
-                        {
-                            new object[] { "A", "28", SerologySubtype.Broad, true },
-                            new object[] {"A", "68", SerologySubtype.Split, true },
-                            new object[] {"A", "69", SerologySubtype.Split, true }
-                        }
-                    }
-                }
-            }
-        };
-
         public static readonly object[] AllelesOfUnknownSerology =
         {
             new object[]
@@ -324,18 +262,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             {
                 // Only has expert assignment
                 MatchLocus.C, "15:07",
-                new object[]
+                new[]
                 {
-                    new object[]
-                    {
-                        "Cw", "3", SerologySubtype.Broad, Assignment.Expert,
-                        new[]
-                        {
-                            new object[] {"Cw", "3", SerologySubtype.Broad, true},
-                            new object[] {"Cw", "9", SerologySubtype.Split, true},
-                            new object[] {"Cw", "10", SerologySubtype.Split, true}
-                        }
-                    }
+                    new object[] {"Cw", "3", SerologySubtype.Broad, true},
+                    new object[] {"Cw", "9", SerologySubtype.Split, false},
+                    new object[] {"Cw", "10", SerologySubtype.Split, false}
                 }
             }
         };

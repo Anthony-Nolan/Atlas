@@ -17,12 +17,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         {
             var expectedConfidentialAlleles = new List<ConfidentialAllele>
             {
-                new ConfidentialAllele("A*", "02:01:01:28"),
-                new ConfidentialAllele("B*", "18:37:02"),
-                new ConfidentialAllele("B*", "48:43"),
-                new ConfidentialAllele("C*", "06:211N"),
-                new ConfidentialAllele("DQB1*", "03:01:01:20"),
-                new ConfidentialAllele("DQB1*", "03:23:03")
+                new ConfidentialAllele("A*", "02:741"),
+                new ConfidentialAllele("B*", "40:01:51"),
+                new ConfidentialAllele("B*", "40:366"),
+                new ConfidentialAllele("C*", "02:02:41"),
+                new ConfidentialAllele("DQB1*", "03:279"),
+                new ConfidentialAllele("DQB1*", "06:02:29")
             };
 
             WmdaHlaTypings.ShouldAllBeEquivalentTo(expectedConfidentialAlleles);

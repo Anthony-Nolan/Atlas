@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary
     // This class will evaluate such data the first time it's requested, and serve it from a cache thereafter
     public static class SharedTestDataCache
     {
-        private const string HlaDatabaseVersionToTest = "3310";
+        private const string HlaDatabaseVersionToTest = "3330";
         
         private static List<IMatchedHla> _matchedHla;
         private static WmdaDataRepository _wmdaDataRepository;

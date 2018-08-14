@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         }
 
         [TestCase(MatchLocus.A, "02:05",
-            new[] { "02:05:01:01", "02:05:01:02", "02:05:02", "02:05:03", "02:05:04", "02:05:05", "02:05:06" },
+            new[] { "02:05:01:01", "02:05:01:02", "02:05:02", "02:05:03", "02:05:04", "02:05:05", "02:05:06", "02:05:07" },
             Description = "Lookup name should return 3 & 4 field allele names")]
         [TestCase(MatchLocus.Drb1, "03:01:01",
             new[] { "03:01:01:01", "03:01:01:02", "03:01:01:03" },

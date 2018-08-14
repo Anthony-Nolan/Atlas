@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
                 .AsParallel()
                 .Select(alleleInfo => new MatchedAllele(
                     alleleInfo, 
-                    alleleToSerologyMapper.GetSerologyMappingsForAllele(hlaInfo, (AlleleTyping)alleleInfo.TypingUsedInMatching))
+                    alleleToSerologyMapper.GetSerologiesMatchingToAllele(hlaInfo, (AlleleTyping)alleleInfo.TypingUsedInMatching))
                 )
                 .AsEnumerable();
 
