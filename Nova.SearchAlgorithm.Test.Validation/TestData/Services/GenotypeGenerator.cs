@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
-using static System.Linq.Enumerable;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {
-    public static class GenotypeRepository
+    /// <summary>
+    /// Generates Genotypes from the allele test data
+    /// </summary>
+    public static class GenotypeGenerator
     {
-        static readonly Random random = new Random();
-
-        public static readonly IEnumerable<Genotype> Genotypes = new List<Genotype>();
+        private static readonly Random Random = new Random();
 
         /// <summary>
         /// Creates a random full Genotype from the available TGS allele names
@@ -27,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                 alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
             return new Genotype
             {
-                Hla = tgsFourFieldAlleles.Map((locus, position, alleleNames) => alleleNames[random.Next(alleleNames.Count)])
+                Hla = tgsFourFieldAlleles.Map((locus, position, alleleNames) => alleleNames[Random.Next(alleleNames.Count)])
             };
         }
 
@@ -42,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                 Hla = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.MapByLocus((l, alleles1, alleles2) =>
                 {
                     var pGroupGroups = alleles1.Concat(alleles2).Distinct().GroupBy(a => a.PGroup).ToList();
-                    var selectedPGroup = pGroupGroups[random.Next(pGroupGroups.Count)];
+                    var selectedPGroup = pGroupGroups[Random.Next(pGroupGroups.Count)];
 
                     // All p-group level matches will be homozygous.
                     // This cannot be changed util we have enough test data to ensure that the selected patient data will not be a direct or cross match

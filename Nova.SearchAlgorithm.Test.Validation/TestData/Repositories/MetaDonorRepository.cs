@@ -4,9 +4,13 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
+    /// <summary>
+    /// Generates and stores meta-donors for use in testing.
+    /// </summary>
     public static class MetaDonorRepository
     {
         public static readonly IEnumerable<MetaDonor> MetaDonors = new List<MetaDonor>
@@ -15,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                Genotype = GenotypeRepository.RandomGenotype(),
+                Genotype = GenotypeGenerator.RandomGenotype(),
                 HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingCategory>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.TgsFourFieldAllele).Build(),
@@ -34,25 +38,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 HasNonUniquePGroups = true,
-                Genotype = GenotypeRepository.GenotypeWithNonUniquePGroups()
+                Genotype = GenotypeGenerator.GenotypeWithNonUniquePGroups()
             },
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.AN,
-                Genotype = GenotypeRepository.RandomGenotype()
+                Genotype = GenotypeGenerator.RandomGenotype()
             },
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.DKMS,
-                Genotype = GenotypeRepository.RandomGenotype()
+                Genotype = GenotypeGenerator.RandomGenotype()
             },
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.DKMS,
-                Genotype = GenotypeRepository.RandomGenotype()
+                Genotype = GenotypeGenerator.RandomGenotype()
             }
         };
     }

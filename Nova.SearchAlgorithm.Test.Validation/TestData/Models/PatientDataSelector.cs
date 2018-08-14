@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.Utils.Models;
 using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
@@ -119,7 +120,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
             return matchingGenotype.Hla.Map((locus, position, tgsAllele) => HlaMatches.DataAtPosition(locus, position)
                 ? tgsAllele.TgsTypedAllele
-                : GenotypeRepository.NonMatchingGenotype.Hla.DataAtPosition(locus, position).TgsTypedAllele);
+                : GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position).TgsTypedAllele);
         }
 
         public int GetExpectedMatchingDonorId()
