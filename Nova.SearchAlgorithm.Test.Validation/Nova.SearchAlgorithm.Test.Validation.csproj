@@ -352,7 +352,6 @@
     <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
     <Compile Include="TestData\Models\MatchLevel.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
-    <Compile Include="TestData\Models\PatientDataSelector.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
@@ -360,6 +359,7 @@
     <Compile Include="TestData\Resources\NonMatchingAlleles.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
+    <Compile Include="TestData\Services\PatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">

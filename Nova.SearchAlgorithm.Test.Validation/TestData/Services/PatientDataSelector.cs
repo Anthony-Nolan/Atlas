@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
-using Nova.Utils.Models;
 using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {
     /// <summary>
     /// Stores various search criteria from the feature file, and selects appropriate patient data
