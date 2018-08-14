@@ -18,12 +18,12 @@ namespace Nova.SearchAlgorithm.Config
                     c.IgnoreObsoleteProperties();
                     c.ApiKey("apiKey")
                         .Description("API key authentication")
-                        .Name(ApiKeyRequiredAttribute.HEADER_KEY)
+                        .Name(ApiKeyRequiredAttribute.HeaderKey)
                         .In("header");
                 })
                 .EnableSwaggerUi(c =>
                 {
-                    c.EnableApiKeySupport(ApiKeyRequiredAttribute.HEADER_KEY, "header");
+                    c.EnableApiKeySupport(ApiKeyRequiredAttribute.HeaderKey, "header");
                 });
 
             return config;

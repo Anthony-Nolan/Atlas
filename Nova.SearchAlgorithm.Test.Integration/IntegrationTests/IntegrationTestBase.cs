@@ -27,6 +27,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using Nova.Utils.Models;
 using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
