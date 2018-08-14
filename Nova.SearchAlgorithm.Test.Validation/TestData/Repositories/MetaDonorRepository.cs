@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                Genotype = GenotypeGenerator.RandomGenotype(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingCategory>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.TgsFourFieldAllele).Build(),
@@ -37,26 +37,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                HasNonUniquePGroups = true,
-                Genotype = GenotypeGenerator.GenotypeWithNonUniquePGroups()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNonUniquePGroupsAtAllLoci().Build()
             },
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.AN,
-                Genotype = GenotypeGenerator.RandomGenotype()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.DKMS,
-                Genotype = GenotypeGenerator.RandomGenotype()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.DKMS,
-                Genotype = GenotypeGenerator.RandomGenotype()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             }
         };
     }

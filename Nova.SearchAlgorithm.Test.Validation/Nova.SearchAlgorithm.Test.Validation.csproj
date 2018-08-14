@@ -336,9 +336,11 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
+    <Compile Include="TestData\Builders\GenotypeCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
     <Compile Include="TestData\Models\Hla\Genotype.cs" />
+    <Compile Include="TestData\Models\Hla\GenotypeCriteria.cs" />
     <Compile Include="TestData\Models\Hla\HlaTypingCategory.cs" />
     <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
     <Compile Include="TestData\Models\MatchLevel.cs" />

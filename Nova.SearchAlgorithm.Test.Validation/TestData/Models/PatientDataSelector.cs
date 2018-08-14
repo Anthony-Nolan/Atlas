@@ -96,7 +96,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
             var matchingMetaDonors = MetaDonorRepository.MetaDonors
                 .Where(md => MatchingDonorTypes.Contains(md.DonorType))
                 .Where(md => MatchingRegistries.Contains(md.Registry))
-                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup) || md.HasNonUniquePGroups);
+                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
+                             || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
 
             selectedMetaDonor = matchingMetaDonors.First();
 
@@ -108,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                     {
                         var pGroup = AlleleRepository.FourFieldAlleles.DataAtPosition(l, p).First(a => a.AlleleName == hla.TgsTypedAllele).PGroup;
                         var selectedAllele = AlleleRepository.FourFieldAllelesWithNonUniquePGroups.DataAtPosition(l, p).First(a =>
-                            a.PGroup == pGroup 
+                            a.PGroup == pGroup
                             && a.AlleleName != hla.TgsTypedAllele
                             && a.AlleleName != selectedMetaDonor.Genotype.Hla.DataAtPosition(l, p.Other()).TgsTypedAllele);
                         return TgsAllele.FromFourFieldAllele(selectedAllele, l);

@@ -14,11 +14,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     {
         private static readonly Random Random = new Random();
 
+        public static Genotype GenerateGenotype(GenotypeCriteria criteria)
+        {
+            if (criteria == null)
+            {
+                return RandomGenotype();
+            }
+            
+            // Naive implementation - if any locus requires non-unique p-groups, ensure all loci have non-unique p-groups
+            // If we need to specify that some loci have unique p-groups, this will need changing
+            if (criteria.HasNonUniquePGroups.ToEnumerable().Any(x => x))
+            {
+                return GenotypeWithNonUniquePGroups();
+            }
+
+            return RandomGenotype();
+        }
+
         /// <summary>
         /// Creates a random full Genotype from the available TGS allele names
         /// </summary>
         /// <returns></returns>
-        public static Genotype RandomGenotype()
+        private static Genotype RandomGenotype()
         {
             var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles.Map((l, p, alleles) =>
                 alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
@@ -32,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// Creates a full Genotype from the available TGS allele names, such that each position's allele corresponds to a p-group at least one other allele in the dataset shares
         /// </summary>
         /// <returns></returns>
-        public static Genotype GenotypeWithNonUniquePGroups()
+        private static Genotype GenotypeWithNonUniquePGroups()
         {
             return new Genotype
             {

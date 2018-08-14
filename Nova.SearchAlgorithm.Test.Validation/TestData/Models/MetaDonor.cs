@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
@@ -14,15 +15,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// </summary>
     public class MetaDonor
     {
-        public Genotype Genotype { get; set; }
+        private Genotype genotype;
+
+        public Genotype Genotype
+        {
+            get
+            {
+                if (genotype == null)
+                {
+                    genotype = GenotypeGenerator.GenerateGenotype(GenotypeCriteria);
+                }
+                return genotype;
+            }
+        }
+
         public RegistryCode Registry { get; set; }
         public DonorType DonorType { get; set; }
         
         /// <summary>
-        /// Flag will be set if this meta-donor is guaranteed to have a p-group that corresponds to multiple test alleles,
-        /// such that patient data can be chosen that does not exactliy match but does share a p-group
+        /// Criteria for selecting a Genotype for this meta-donor
         /// </summary>
-        public bool HasNonUniquePGroups { get; set; }
+        public GenotypeCriteria GenotypeCriteria { get; set; }
 
         public List<Donor> DatabaseDonors { get; set; }
 
