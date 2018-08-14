@@ -3,6 +3,17 @@ using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
 {
+    /// <summary>
+    /// This test data was manually curated from 4-field TGS typed alleles found in the SOLAR database
+    /// A corresponding NMDP code was selected for each allele from the DR_ANTIGENS table
+    /// (most alleles will correspond to multiple NMDP codes - only one is necessary for testing purposes)
+    /// The corresponding serology, p-group, and g-group data was retrieved from the wmda files: hla_nom_g, hla_nom_p, rel_dna_ser
+    ///
+    /// This dataset may be amended, provided all data:
+    /// (1) Is a 4-field, TGS typed allele
+    /// (2) Has the correct p-group, g-group, and serology associations
+    /// (3) Has a valid corresponding nmdp code
+    /// </summary>
     public class FourFieldAlleles
     {
         public static readonly PhenotypeInfo<List<AlleleTestData>> Alleles = new PhenotypeInfo<List<AlleleTestData>>
