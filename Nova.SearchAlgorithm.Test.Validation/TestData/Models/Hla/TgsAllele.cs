@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 {
     /// <summary>
     /// Test data will be generated from strongly types TGS data - i.e. in a 2, 3, or 4 field allele name format

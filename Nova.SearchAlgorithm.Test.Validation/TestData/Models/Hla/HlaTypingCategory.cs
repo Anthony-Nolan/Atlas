@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 {
     public enum HlaTypingCategory
     {

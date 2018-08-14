@@ -338,13 +338,13 @@
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
     <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
     <Compile Include="TestData\DonorIdGenerator.cs" />
-    <Compile Include="TestData\Models\AlleleTestData.cs" />
-    <Compile Include="TestData\Models\Genotype.cs" />
+    <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
+    <Compile Include="TestData\Models\Hla\Genotype.cs" />
+    <Compile Include="TestData\Models\Hla\HlaTypingCategory.cs" />
+    <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
     <Compile Include="TestData\Models\MatchLevel.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
-    <Compile Include="TestData\Models\HlaTypingCategory.cs" />
     <Compile Include="TestData\Models\PatientDataSelector.cs" />
-    <Compile Include="TestData\Models\TgsAllele.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />

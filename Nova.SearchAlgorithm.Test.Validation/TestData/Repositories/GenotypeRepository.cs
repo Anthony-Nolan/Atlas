@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 using static System.Linq.Enumerable;
 

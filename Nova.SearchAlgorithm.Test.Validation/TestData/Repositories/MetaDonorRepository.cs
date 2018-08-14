@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
