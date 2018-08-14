@@ -2,6 +2,8 @@
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -115,6 +117,24 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             {
                 case "Anthony Nolan":
                     patientDataSelector.MatchingRegistries.Add(RegistryCode.AN);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+        
+        [Given(@"the match level is (.*)")]
+        public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            switch (matchLevel)
+            {
+                case "p-group":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
                     break;
                 default:
                     ScenarioContext.Current.Pending();

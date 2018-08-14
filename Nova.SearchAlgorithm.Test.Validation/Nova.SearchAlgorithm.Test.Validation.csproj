@@ -156,6 +156,10 @@
     <Reference Include="Microsoft.Owin.Testing, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Testing.3.1.0\lib\net45\Microsoft.Owin.Testing.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ServiceBus, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\packages\WindowsAzure.ServiceBus.4.1.10\lib\net45\Microsoft.ServiceBus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.0.1\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
     </Reference>
@@ -169,12 +173,13 @@
     <Reference Include="Newtonsoft.Json.Schema, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.Schema.3.0.2\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.HLAService.Client, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Nova.HLAService.Client.1.4.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
+    <Reference Include="Nova.HLAService.Client, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.HLAService.Client.3.0.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nova.Utils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.3.3.2\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=6.1.3.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.Utils.6.1.3\lib\net462\Nova.Utils.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Nova.Utils.Entity, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.Utils.Entity.3.3.2\lib\net462\Nova.Utils.Entity.dll</HintPath>
@@ -182,8 +187,9 @@
     <Reference Include="Nova.Utils.TestUtils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.Utils.TestUtils.3.3.2\lib\net462\Nova.Utils.TestUtils.dll</HintPath>
     </Reference>
-    <Reference Include="Nova.Utils.WebApi, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.WebApi.3.3.2\lib\net462\Nova.Utils.WebApi.dll</HintPath>
+    <Reference Include="Nova.Utils.WebApi, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.Utils.WebApi.6.0.0\lib\net462\Nova.Utils.WebApi.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NSubstitute, Version=2.0.2.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
       <HintPath>..\packages\NSubstitute.2.0.2\lib\net45\NSubstitute.dll</HintPath>
@@ -303,6 +309,7 @@
     <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Spatial, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Spatial.5.8.2\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
@@ -336,18 +343,24 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
+    <Compile Include="TestData\Builders\GenotypeCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
-    <Compile Include="TestData\DonorIdGenerator.cs" />
-    <Compile Include="TestData\Models\Genotype.cs" />
+    <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
+    <Compile Include="TestData\Models\Hla\Genotype.cs" />
+    <Compile Include="TestData\Models\Hla\GenotypeCriteria.cs" />
+    <Compile Include="TestData\Models\Hla\HlaTypingCategory.cs" />
+    <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
+    <Compile Include="TestData\Models\MatchLevel.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
-    <Compile Include="TestData\Models\HlaTypingCategory.cs" />
-    <Compile Include="TestData\Models\PatientDataSelector.cs" />
-    <Compile Include="TestData\Models\TgsAllele.cs" />
-    <Compile Include="TestData\Repositories\GenotypeRepository.cs" />
+    <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
-    <Compile Include="TestData\Resources\NmdpCodes.cs" />
-    <Compile Include="TestData\TestDataService.cs" />
+    <Compile Include="TestData\Resources\FourFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\NonMatchingAlleles.cs" />
+    <Compile Include="TestData\Services\DonorIdGenerator.cs" />
+    <Compile Include="TestData\Services\GenotypeGenerator.cs" />
+    <Compile Include="TestData\Services\PatientDataSelector.cs" />
+    <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
       <AutoGen>True</AutoGen>
@@ -360,9 +373,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ValidationTests\Features\TenOutOfTenSearch.feature" />
-    <EmbeddedResource Include="TestData\Resources\rel_dna_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
@@ -377,7 +387,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="TestData\Resources\four_field_hla_names.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">

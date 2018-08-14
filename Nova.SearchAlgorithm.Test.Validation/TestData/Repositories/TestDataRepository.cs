@@ -5,6 +5,9 @@ using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
+    /// <summary>
+    /// Repository layer for interacting with test SQL database
+    /// </summary>
     public static class TestDataRepository
     {
         public static void SetupDatabase()

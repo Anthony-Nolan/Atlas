@@ -4,6 +4,8 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
@@ -13,9 +15,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     /// </summary>
     public class MetaDonor
     {
-        public Genotype Genotype { get; set; }
+        private Genotype genotype;
+
+        public Genotype Genotype
+        {
+            get
+            {
+                if (genotype == null)
+                {
+                    genotype = GenotypeGenerator.GenerateGenotype(GenotypeCriteria);
+                }
+                return genotype;
+            }
+        }
+
         public RegistryCode Registry { get; set; }
         public DonorType DonorType { get; set; }
+        
+        /// <summary>
+        /// Criteria for selecting a Genotype for this meta-donor
+        /// </summary>
+        public GenotypeCriteria GenotypeCriteria { get; set; }
 
         public List<Donor> DatabaseDonors { get; set; }
 
