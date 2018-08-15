@@ -8,6 +8,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
     public interface IAlleleRepository
     {
         PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
+        PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> FourFieldAllelesWithNonUniquePGroups();
     }
 
@@ -19,6 +20,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles()
         {
             return Resources.FourFieldAlleles.Alleles;
+        }
+        
+        public PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles()
+        {
+            return Resources.ThreeFieldAlleles.Alleles;
         }
 
         // TODO: NOVA-1567: Allow for 2 and 3 field alleles when testing based on p-group level matches

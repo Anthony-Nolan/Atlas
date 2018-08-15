@@ -39,6 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             var tgsFourFieldAlleles = AlleleRepository.FourFieldAlleles().Map((l, p, alleles) =>
                 alleles.Select(a => TgsAllele.FromFourFieldAllele(a, l)).ToList());
+            
             return new Genotype
             {
                 Hla = tgsFourFieldAlleles.Map((locus, position, alleleNames) => alleleNames[Random.Next(alleleNames.Count)])

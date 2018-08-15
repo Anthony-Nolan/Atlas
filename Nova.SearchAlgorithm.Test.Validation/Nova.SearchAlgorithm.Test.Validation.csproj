@@ -358,6 +358,7 @@
     <Compile Include="TestData\Resources\FourFieldAlleles.cs" />
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
     <Compile Include="TestData\Resources\NonMatchingAlleles.cs" />
+    <Compile Include="TestData\Resources\ThreeFieldAlleles.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\PatientDataSelector.cs" />
