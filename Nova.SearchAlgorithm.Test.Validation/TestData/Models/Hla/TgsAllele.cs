@@ -55,9 +55,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         private Locus Locus { get; set; }
 
         /// <summary>
-        /// Returns the most accurate TGS typing stored for the allele, either three or four field
+        /// Returns the most accurate TGS typing stored for the allele, either two, three, or four field
         /// </summary>
-        public string TgsTypedAllele => FourFieldAllele ?? ThreeFieldAllele;
+        public string TgsTypedAllele => FourFieldAllele ?? ThreeFieldAllele ?? TwoFieldAllele; 
 
         private string FourFieldAllele { get; set; }
         public string ThreeFieldAllele { get; private set; }
@@ -68,29 +68,26 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 
         public string Serology { get; private set; }
 
-        public string GetHlaForCategory(HlaTypingCategory typingCategory)
+        public string GetHlaForCategory(HlaTypingResolution typingResolution)
         {
-            switch (typingCategory)
+            switch (typingResolution)
             {
-                case HlaTypingCategory.TgsFourFieldAllele:
+                case HlaTypingResolution.Tgs:
                     return TgsTypedAllele;
-                case HlaTypingCategory.ThreeFieldTruncatedAllele:
+                case HlaTypingResolution.ThreeFieldTruncatedAllele:
                     return ThreeFieldAllele;
-                case HlaTypingCategory.TwoFieldTruncatedAllele:
+                case HlaTypingResolution.TwoFieldTruncatedAllele:
                     return TwoFieldAllele;
-                case HlaTypingCategory.XxCode:
+                case HlaTypingResolution.XxCode:
                     return XxCode;
-                case HlaTypingCategory.NmdpCode:
+                case HlaTypingResolution.NmdpCode:
                     return NmdpCode;
-                case HlaTypingCategory.Serology:
+                case HlaTypingResolution.Serology:
                     return Serology;
-                case HlaTypingCategory.Untyped:
+                case HlaTypingResolution.Untyped:
                     return null;
-                case HlaTypingCategory.TgsThreeFieldAllele:
-                case HlaTypingCategory.TgsTwoFieldAllele:
-                    throw new NotImplementedException();
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(typingCategory), typingCategory, null);
+                    throw new ArgumentOutOfRangeException(nameof(typingResolution), typingResolution, null);
             }
         }
 

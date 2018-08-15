@@ -49,7 +49,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
 
-        private readonly PhenotypeInfo<HlaTypingCategory> matchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
+        /// <summary>
+        /// Determines to what resolution the expected matched donor is typed
+        /// </summary>
+        private readonly PhenotypeInfo<HlaTypingResolution> matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
+        
+        /// <summary>
+        /// Determines how many fields the matching meta-donor's genotype should have at each position
+        /// </summary>
+        private readonly PhenotypeInfo<TgsHlaTypingCategory> matchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>();
 
         public bool HasMatch { get; set; }
 
@@ -65,25 +73,44 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// <summary>
         /// Will set the desired matching category at all positions
         /// </summary>
-        public void SetFullMatchingTypingCategory(HlaTypingCategory category)
+        public void SetFullMatchingTypingResolution(HlaTypingResolution resolution)
         {
-            matchingTypingCategories.A_1 = category;
-            matchingTypingCategories.A_2 = category;
-            matchingTypingCategories.B_1 = category;
-            matchingTypingCategories.B_2 = category;
-            matchingTypingCategories.C_1 = category;
-            matchingTypingCategories.C_2 = category;
-            matchingTypingCategories.DPB1_1 = category;
-            matchingTypingCategories.DPB1_2 = category;
-            matchingTypingCategories.DQB1_1 = category;
-            matchingTypingCategories.DQB1_2 = category;
-            matchingTypingCategories.DRB1_1 = category;
-            matchingTypingCategories.DRB1_2 = category;
+            matchingTypingResolutions.A_1 = resolution;
+            matchingTypingResolutions.A_2 = resolution;
+            matchingTypingResolutions.B_1 = resolution;
+            matchingTypingResolutions.B_2 = resolution;
+            matchingTypingResolutions.C_1 = resolution;
+            matchingTypingResolutions.C_2 = resolution;
+            matchingTypingResolutions.DPB1_1 = resolution;
+            matchingTypingResolutions.DPB1_2 = resolution;
+            matchingTypingResolutions.DQB1_1 = resolution;
+            matchingTypingResolutions.DQB1_2 = resolution;
+            matchingTypingResolutions.DRB1_1 = resolution;
+            matchingTypingResolutions.DRB1_2 = resolution;
+        }
+        
+        /// <summary>
+        /// Will set the desired matching category at all positions
+        /// </summary>
+        public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
+        {
+            matchingTgsTypingCategories.A_1 = tgsCategory;
+            matchingTgsTypingCategories.A_2 = tgsCategory;
+            matchingTgsTypingCategories.B_1 = tgsCategory;
+            matchingTgsTypingCategories.B_2 = tgsCategory;
+            matchingTgsTypingCategories.C_1 = tgsCategory;
+            matchingTgsTypingCategories.C_2 = tgsCategory;
+            matchingTgsTypingCategories.DPB1_1 = tgsCategory;
+            matchingTgsTypingCategories.DPB1_2 = tgsCategory;
+            matchingTgsTypingCategories.DQB1_1 = tgsCategory;
+            matchingTgsTypingCategories.DQB1_2 = tgsCategory;
+            matchingTgsTypingCategories.DRB1_1 = tgsCategory;
+            matchingTgsTypingCategories.DRB1_2 = tgsCategory;
         }
 
         public void SetMatchingDonorUntypedAtLocus(Locus locus)
         {
-            matchingTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
+            matchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
         }
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
@@ -141,7 +168,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             for (var i = 0; i < selectedMetaDonor.HlaTypingCategorySets.Count; i++)
             {
-                if (selectedMetaDonor.HlaTypingCategorySets[i].Equals(matchingTypingCategories))
+                if (selectedMetaDonor.HlaTypingCategorySets[i].Equals(matchingTypingResolutions))
                 {
                     return selectedMetaDonor.DatabaseDonors[i].DonorId;
                 }

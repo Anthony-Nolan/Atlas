@@ -18,30 +18,30 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             donor = new Donor {DonorId = DonorIdGenerator.NextId()};
         }
 
-        public DonorBuilder WithFullTypingCategory(HlaTypingCategory category)
+        public DonorBuilder WithFullTypingCategory(HlaTypingResolution resolution)
         {
-            switch (category)
+            switch (resolution)
             {
-                case HlaTypingCategory.TgsFourFieldAllele:
+                case HlaTypingResolution.Tgs:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.TgsTypedAllele));
                     break;
-                case HlaTypingCategory.ThreeFieldTruncatedAllele:
+                case HlaTypingResolution.ThreeFieldTruncatedAllele:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.ThreeFieldAllele));
                     break;
-                case HlaTypingCategory.TwoFieldTruncatedAllele:
+                case HlaTypingResolution.TwoFieldTruncatedAllele:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.TwoFieldAllele));
                     break;
-                case HlaTypingCategory.XxCode:
+                case HlaTypingResolution.XxCode:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.XxCode));
                     break;
-                case HlaTypingCategory.NmdpCode:
+                case HlaTypingResolution.NmdpCode:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.NmdpCode));
                     break;
-                case HlaTypingCategory.Serology:
+                case HlaTypingResolution.Serology:
                     AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.Serology));
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(category), category, null);
+                    throw new ArgumentOutOfRangeException(nameof(resolution), resolution, null);
             }
 
             return this;
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
 
-        public DonorBuilder WithTypingCategories(PhenotypeInfo<HlaTypingCategory> typingCategorySet)
+        public DonorBuilder WithTypingCategories(PhenotypeInfo<HlaTypingResolution> typingCategorySet)
         {
             donor.A_1 = genotype.Hla.A_1.GetHlaForCategory(typingCategorySet.A_1);
             donor.A_2 = genotype.Hla.A_2.GetHlaForCategory(typingCategorySet.A_2);
