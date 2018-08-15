@@ -100,8 +100,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             matchingTgsTypingCategories.B_2 = tgsCategory;
             matchingTgsTypingCategories.C_1 = tgsCategory;
             matchingTgsTypingCategories.C_2 = tgsCategory;
-            matchingTgsTypingCategories.DPB1_1 = tgsCategory;
-            matchingTgsTypingCategories.DPB1_2 = tgsCategory;
+            // There is no DPB1 test data with fewer than 4 fields
+            matchingTgsTypingCategories.DPB1_1 = TgsHlaTypingCategory.FourFieldAllele;
+            matchingTgsTypingCategories.DPB1_2 = TgsHlaTypingCategory.FourFieldAllele;
             matchingTgsTypingCategories.DQB1_1 = tgsCategory;
             matchingTgsTypingCategories.DQB1_2 = tgsCategory;
             matchingTgsTypingCategories.DRB1_1 = tgsCategory;
@@ -134,6 +135,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
                 .Where(md => MatchingDonorTypes.Contains(md.DonorType))
                 .Where(md => MatchingRegistries.Contains(md.Registry))
+                .Where(md => matchingTgsTypingCategories.Equals(md.GenotypeCriteria.TgsHlaCategories))
                 .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
                              || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
 
