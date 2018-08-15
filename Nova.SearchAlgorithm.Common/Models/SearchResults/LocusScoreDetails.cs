@@ -5,6 +5,8 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
     public class LocusScoreDetails
     {
+        public bool IsLocusTyped { get; set; }
+        
         /// <summary>
         /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm
         /// </summary>

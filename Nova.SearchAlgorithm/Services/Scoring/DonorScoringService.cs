@@ -68,7 +68,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             var grades = gradingService.CalculateGrades(patientScoringLookupResult, donorScoringLookupResult);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringLookupResult, donorScoringLookupResult, grades);
 
-            var scoreResult = BuildScoreResult(grades, confidences);
+            var locusTypingInformation = donorScoringLookupResult.Map((l, p, result) => result != null);
+
+            var scoreResult = BuildScoreResult(grades, confidences, locusTypingInformation);
 
             return new MatchAndScoreResult
             {
@@ -77,7 +79,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             };
         }
 
-        private ScoreResult BuildScoreResult(PhenotypeInfo<MatchGradeResult> grades, PhenotypeInfo<MatchConfidence> confidences)
+        private ScoreResult BuildScoreResult(
+            PhenotypeInfo<MatchGradeResult> grades,
+            PhenotypeInfo<MatchConfidence> confidences,
+            PhenotypeInfo<bool> locusTypingInformation
+        )
         {
             var scoreResult = new ScoreResult();
 
@@ -93,6 +99,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 
                 var scoreDetails = new LocusScoreDetails
                 {
+                    // Either position can be used here, as the locus will either be typed at both positions or neither
+                    IsLocusTyped = locusTypingInformation.DataAtPosition(locus, TypePositions.One),
                     ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
                     ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
                 };

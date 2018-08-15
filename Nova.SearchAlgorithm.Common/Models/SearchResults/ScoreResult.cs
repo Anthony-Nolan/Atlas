@@ -12,6 +12,8 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 
         public MatchConfidence OverallMatchConfidence => AllConfidences.Min();
 
+        public int TypedLociCount => LocusScoreDetails.Count(m => m.IsLocusTyped);
+        
         private IEnumerable<MatchConfidence> AllConfidences => LocusScoreDetails.SelectMany(locusScoreDetails => new List<MatchConfidence>
         {
             locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence,

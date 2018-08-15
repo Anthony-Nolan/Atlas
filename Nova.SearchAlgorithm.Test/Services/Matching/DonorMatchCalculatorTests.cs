@@ -254,31 +254,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
 
         #endregion
         
-        #region IsLocusTyped Tests
-        
-        [Test]
-        public void CalculateMatchesForDonors_WhenBothDonorPositionsHaveData_ReturnsIsLocusTypedTrue()
-        {
-            var donorPGroups = new List<string>{ArbitraryPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups, donorPGroups);
-
-            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
-
-            matchDetails.IsLocusTyped.Should().BeTrue();
-        }        
-
-        [Test]
-        public void CalculateMatchesForDonors_WhenBothDonorPositionsNull_ReturnsIsLocusTypedFalse()
-        {
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(null, null);
-
-            var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
-
-            matchDetails.IsLocusTyped.Should().BeFalse();
-        }
-        
-        #endregion
-        
         [Test]
         public void CalculateMatchesForDonors_WhenOnlyDonorPositionOneNull_ThrowsException()
         {

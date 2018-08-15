@@ -33,13 +33,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return new LocusMatchDetails
             {
                 MatchCount = CalculateMatchCount(locusMatchCriteria, expandedHla),
-                IsLocusTyped = IsLocusTyped(expandedHla),
             };
-        }
-
-        private static bool IsLocusTyped(Tuple<ExpandedHla, ExpandedHla> expandedHla)
-        {
-            return expandedHla.Item1 != null && expandedHla.Item2 != null;
         }
 
         private static int CalculateMatchCount(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)

@@ -36,7 +36,6 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
         {
             matchResult.SetMatchDetailsForLocus(locus, new LocusMatchDetails
             {
-                IsLocusTyped = true,
                 MatchCount = matchCount
             });
             return this;
