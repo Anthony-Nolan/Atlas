@@ -99,6 +99,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 
                 var scoreDetails = new LocusScoreDetails
                 {
+                    // Either position can be used here, as the locus will either be typed at both positions or neither
                     IsLocusTyped = locusTypingInformation.DataAtPosition(locus, TypePositions.One),
                     ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
                     ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
