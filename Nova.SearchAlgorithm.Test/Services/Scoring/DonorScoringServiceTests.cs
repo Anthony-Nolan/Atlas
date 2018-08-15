@@ -15,6 +15,7 @@ using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring
@@ -268,6 +269,45 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidenceService.ReceivedWithAnyArgs(2).CalculateMatchConfidences(null, null, null);
         }
 
+        [Test]
+        public async Task Score_ForUnypedDonorLoci_ReturnsIsDonorTypedAsFalse()
+        {
+            const Locus locus = Locus.A;
+            scoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), Arg.Any<string>()).ReturnsNull();
+
+            var matchResult1 = new MatchResultBuilder().Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
+
+            results.Single().ScoreResult.ScoreDetailsForLocus(locus).IsLocusTyped.Should().BeFalse();
+        }
+        
+        [Test]
+        public async Task Score_ForTypedDonorLoci_ReturnsIsDonorTypedAsTrue()
+        {
+            const Locus locus = Locus.A;
+
+            var matchResult1 = new MatchResultBuilder().Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
+
+            results.Single().ScoreResult.ScoreDetailsForLocus(locus).IsLocusTyped.Should().BeTrue();
+        }    
+        
+        [Test]
+        public async Task Score_ForTypedDonorLoci_ReturnsTypedLociCountEqualToNumberOfTypedLoci()
+        {
+            const Locus locus = Locus.A;
+            scoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), Arg.Any<string>()).ReturnsNull();
+
+            var matchResult1 = new MatchResultBuilder().Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
+
+            // Results for 5 loci, one of which is untyped
+            results.Single().ScoreResult.TypedLociCount.Should().Be(4);
+        }
+        
         [Test]
         public async Task Score_RanksResults()
         {

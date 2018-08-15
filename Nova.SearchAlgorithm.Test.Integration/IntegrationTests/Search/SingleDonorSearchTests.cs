@@ -27,6 +27,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             B_2 = "14:47",
             DRB1_1 = "13:03:01",
             DRB1_2 = "13:02:01:03",
+            C_1 = "02:02",
+            C_2 = "02:02",
         };
         // A selection of valid hla strings that do not match the donor's
         private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
@@ -36,7 +38,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             B_1 = "07:02:01:01",
             B_2 = "07:02:13",
             DRB1_1 = "14:190",
-            DRB1_2 = "14:190"
+            DRB1_2 = "14:190",
+            C_1 = "07:01",
+            C_2 = "07:01",
         };
 
         [OneTimeSetUp]
@@ -140,6 +144,48 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             // C & DQB1 should both be null in a 6/6 only search
             result?.SearchResultAtLocusC.MatchCount.Should().BeNull();
             result?.SearchResultAtLocusDqb1.MatchCount.Should().BeNull();
+        }
+        
+        [Test]
+        public async Task Search_SixOutOfSix_TypedLociExcludedFromSearchSetIsLocusTypedAsTrue()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+
+            // C is typed but not included in search
+            result?.SearchResultAtLocusC.IsLocusTyped.Should().BeTrue();
+        }
+        
+        [Test]
+        public async Task Search_SixOutOfSix_TypedLociIncludedInSearchSetIsLocusTypedAsTrue()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+
+            // A is typed and included in search
+            result?.SearchResultAtLocusA.IsLocusTyped.Should().BeTrue();
+        }
+        
+        [Test]
+        public async Task Search_SixOutOfSix_UntypedLociExcludedFromSearchSetIsLocusTypedAsFalse()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+
+            // DQB1 is not typed and not included in search
+            result?.SearchResultAtLocusDqb1.IsLocusTyped.Should().BeFalse();
         }
     }
 }

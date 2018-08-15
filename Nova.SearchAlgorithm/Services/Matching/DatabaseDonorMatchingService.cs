@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                         var matchesAtLocus = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
                         var locusMatchDetails = matchesAtLocus.Value != null
                             ? matchesAtLocus.Value.Match
-                            : new LocusMatchDetails {MatchCount = 0, IsLocusTyped = IsLocusTyped(locus, donorId)};
+                            : new LocusMatchDetails {MatchCount = 0};
                         result.SetMatchDetailsForLocus(locus, locusMatchDetails);
                     }
 
@@ -71,13 +71,6 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)));
 
             return matches.ToList();
-        }
-
-        private bool IsLocusTyped(Locus locus, int donorId)
-        {
-            // This service is only currently implemented for loci that are guaranteed to be typed (A, B, DRB1)
-            // If this behaviour changes, an additional lookup will be needed for unmatched, potentially untyped loci to determine whether they are typed
-            return true;
         }
 
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType,
@@ -106,7 +99,6 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 DonorId = donorId,
                 Match = new LocusMatchDetails
                 {
-                    IsLocusTyped = IsLocusTyped(locus, donorId),
                     MatchCount = DirectMatch(group.ToList()) || CrossMatch(group.ToList()) ? 2 : 1
                 },
                 Locus = locus

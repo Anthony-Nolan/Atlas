@@ -120,7 +120,7 @@ namespace Nova.SearchAlgorithm.Services
                 GradeScore = result.ScoreResult.GradeScore,
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
                 PotentialMatchCount = result.PotentialMatchCount,
-                TypedLociCount = result.MatchResult.TypedLociCount,
+                TypedLociCount = result.ScoreResult.TypedLociCount,
                 SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),
                 SearchResultAtLocusB = MapSearchResultToApiLocusSearchResult(result, Locus.B),
                 SearchResultAtLocusC = MapSearchResultToApiLocusSearchResult(result, Locus.C),
@@ -134,10 +134,9 @@ namespace Nova.SearchAlgorithm.Services
             var matchDetailsForLocus = result.MatchResult.MatchDetailsForLocus(locus);
             var scoreDetailsForLocus = result.ScoreResult.ScoreDetailsForLocus(locus);
 
-
             return new LocusSearchResult
             {
-                IsLocusTyped = matchDetailsForLocus != null && matchDetailsForLocus.IsLocusTyped,
+                IsLocusTyped = scoreDetailsForLocus.IsLocusTyped,
                 MatchCount = matchDetailsForLocus?.MatchCount,
                 MatchGradeScore = scoreDetailsForLocus.MatchGradeScore,
                 MatchConfidenceScore = scoreDetailsForLocus.MatchConfidenceScore,

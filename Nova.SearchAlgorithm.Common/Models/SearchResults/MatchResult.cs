@@ -42,8 +42,6 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 
         public int TotalMatchCount => LocusMatchDetails.Where(m => m != null).Select(m => m.MatchCount).Sum();
 
-        public int TypedLociCount => LocusMatchDetails.Count(m => m != null && m.IsLocusTyped);
-
         public int PopulatedLociCount => LocusMatchDetails.Count(m => m != null);
 
         /// <summary>
