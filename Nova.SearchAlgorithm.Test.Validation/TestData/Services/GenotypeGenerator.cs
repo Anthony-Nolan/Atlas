@@ -46,7 +46,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         }
 
         /// <summary>
-        /// Creates a full Genotype from the available TGS allele names, such that each position's allele corresponds to a p-group at least one other allele in the dataset shares
+        /// Creates a full Genotype from the available TGS allele names, such that each position's allele corresponds to a p-group that is shared with at least one other allele in the dataset
+        /// This is necessary to ensure we can find a match with a lower grade than a full sequence level match
         /// </summary>
         /// <returns></returns>
         private static Genotype GenotypeWithNonUniquePGroups()
