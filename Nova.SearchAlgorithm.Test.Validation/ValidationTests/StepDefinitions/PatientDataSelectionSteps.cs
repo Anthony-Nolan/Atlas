@@ -120,22 +120,32 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (typingCategory)
             {
                 case "TGS":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.TgsFourFieldAllele);
+                case "TGS (four field)":
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    break;
+                case "TGS (three field)":
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
+                    break;
+                case "TGS (two field)":
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
                     break;
                 case "three field truncated allele":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.ThreeFieldTruncatedAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele);
                     break;
                 case "two field truncated allele":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.TwoFieldTruncatedAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele);
                     break;
                 case "XX code":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.XxCode);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.XxCode);
                     break;
                 case "NMDP code":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.NmdpCode);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.NmdpCode);
                     break;
                 case "serology":
-                    patientDataSelector.SetFullMatchingTypingCategory(HlaTypingCategory.Serology);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Serology);
                     break;
                 default:
                     ScenarioContext.Current.Pending();

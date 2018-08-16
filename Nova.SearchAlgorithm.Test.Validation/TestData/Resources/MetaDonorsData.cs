@@ -16,14 +16,51 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-                HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingCategory>>
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.TgsFourFieldAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.ThreeFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.TwoFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.XxCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingCategory.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.XxCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
+                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
+                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
+                }
+            },
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
+                    .Build(),
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                {
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.XxCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
+                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
+                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
+                }
+            },
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele)
+                    .Build(),
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                {
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.XxCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),

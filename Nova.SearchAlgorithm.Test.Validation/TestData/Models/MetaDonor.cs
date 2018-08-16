@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         /// <summary>
         /// Determines to what typing levels each hla will be set at in the database
         /// </summary>
-        public List<PhenotypeInfo<HlaTypingCategory>> HlaTypingCategorySets { get; set; } = new List<PhenotypeInfo<HlaTypingCategory>>
+        public List<PhenotypeInfo<HlaTypingResolution>> HlaTypingResolutionSets { get; set; } = new List<PhenotypeInfo<HlaTypingResolution>>
         {
             new HlaTypingCategorySetBuilder().Build()
         };
@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         {
             if (DatabaseDonors == null)
             {
-                DatabaseDonors = HlaTypingCategorySets.Select(typingCategorySet => new DonorBuilder(Genotype)
+                DatabaseDonors = HlaTypingResolutionSets.Select(typingCategorySet => new DonorBuilder(Genotype)
                         .AtRegistry(Registry)
                         .OfType(DonorType)
                         .WithTypingCategories(typingCategorySet)

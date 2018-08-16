@@ -11,10 +11,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             genotypeCriteria = new GenotypeCriteria
             {
-                HasNonUniquePGroups = new PhenotypeInfo<bool>()
+                HasNonUniquePGroups = new PhenotypeInfo<bool>(),
+                TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
+                {
+                    A_1 = TgsHlaTypingCategory.FourFieldAllele,
+                    A_2 = TgsHlaTypingCategory.FourFieldAllele,
+                    B_1 = TgsHlaTypingCategory.FourFieldAllele,
+                    B_2 = TgsHlaTypingCategory.FourFieldAllele,
+                    C_1 = TgsHlaTypingCategory.FourFieldAllele,
+                    C_2 = TgsHlaTypingCategory.FourFieldAllele,
+                    DPB1_1 = TgsHlaTypingCategory.FourFieldAllele,
+                    DPB1_2 = TgsHlaTypingCategory.FourFieldAllele,
+                    DQB1_1 = TgsHlaTypingCategory.FourFieldAllele,
+                    DQB1_2 = TgsHlaTypingCategory.FourFieldAllele,
+                    DRB1_1 = TgsHlaTypingCategory.FourFieldAllele,
+                    DRB1_2 = TgsHlaTypingCategory.FourFieldAllele,
+                }
             };
         }
 
+        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory category)
+        {
+            genotypeCriteria.TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
+            {
+                A_1 = category,
+                A_2 = category,
+                B_1 = category,
+                B_2 = category,
+                C_1 = category,
+                C_2 = category,
+                // There is no test data for DPB1 that is less than four-field
+                DPB1_1 = TgsHlaTypingCategory.FourFieldAllele,
+                DPB1_2 = TgsHlaTypingCategory.FourFieldAllele,
+                DQB1_1 = category,
+                DQB1_2 = category,
+                DRB1_1 = category,
+                DRB1_2 = category
+            };
+
+            return this;
+        }
+        
         public GenotypeCriteriaBuilder WithNonUniquePGroupsAtAllLoci()
         {
             genotypeCriteria.HasNonUniquePGroups = new PhenotypeInfo<bool>

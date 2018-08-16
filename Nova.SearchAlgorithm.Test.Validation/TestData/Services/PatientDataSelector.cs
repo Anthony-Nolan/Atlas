@@ -46,24 +46,32 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             DRB1_2 = MatchLevel.Allele,
         };
 
-        // todo: NOVA-1642 - patient typing categories to be set by step; currently defaulting to TGS four field
-        private readonly PhenotypeInfo<HlaTypingCategory> patientTypingCategories = new PhenotypeInfo<HlaTypingCategory>
+        // TODO: NOVA-1642 - patient typing resolutions to be set by step; currently defaulting to TGS
+        private readonly PhenotypeInfo<HlaTypingResolution> patientTypingCategories = new PhenotypeInfo<HlaTypingResolution>
         {
-            A_1 = HlaTypingCategory.TgsFourFieldAllele,
-            A_2 = HlaTypingCategory.TgsFourFieldAllele,
-            B_1 = HlaTypingCategory.TgsFourFieldAllele,
-            B_2 = HlaTypingCategory.TgsFourFieldAllele,
-            C_1 = HlaTypingCategory.TgsFourFieldAllele,
-            C_2 = HlaTypingCategory.TgsFourFieldAllele,
-            DPB1_1 = HlaTypingCategory.TgsFourFieldAllele,
-            DPB1_2 = HlaTypingCategory.TgsFourFieldAllele,
-            DQB1_1 = HlaTypingCategory.TgsFourFieldAllele,
-            DQB1_2 = HlaTypingCategory.TgsFourFieldAllele,
-            DRB1_1 = HlaTypingCategory.TgsFourFieldAllele,
-            DRB1_2 = HlaTypingCategory.TgsFourFieldAllele
+            A_1 = HlaTypingResolution.Tgs,
+            A_2 = HlaTypingResolution.Tgs,
+            B_1 = HlaTypingResolution.Tgs,
+            B_2 = HlaTypingResolution.Tgs,
+            C_1 = HlaTypingResolution.Tgs,
+            C_2 = HlaTypingResolution.Tgs,
+            DPB1_1 = HlaTypingResolution.Tgs,
+            DPB1_2 = HlaTypingResolution.Tgs,
+            DQB1_1 = HlaTypingResolution.Tgs,
+            DQB1_2 = HlaTypingResolution.Tgs,
+            DRB1_1 = HlaTypingResolution.Tgs,
+            DRB1_2 = HlaTypingResolution.Tgs,
         };
 
-        private readonly PhenotypeInfo<HlaTypingCategory> matchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
+        /// <summary>
+        /// Determines to what resolution the expected matched donor is typed
+        /// </summary>
+        private readonly PhenotypeInfo<HlaTypingResolution> matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
+        
+        /// <summary>
+        /// Determines how many fields the matching meta-donor's genotype should have at each position
+        /// </summary>
+        private readonly PhenotypeInfo<TgsHlaTypingCategory> matchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>();
 
         public PatientDataSelector(IMetaDonorRepository metaDonorRepository, IAlleleRepository alleleRepository)
         {
@@ -73,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         public void SetPatientUntypedAt(Locus locus)
         {
-            patientTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
+            patientTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
         }
 
         public void SetAsTenOutOfTenMatch()
@@ -92,27 +100,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         }
 
         /// <summary>
-        /// Will set the desired matching category at all positions
+        /// Will set the desired typing resolution at all positions
         /// </summary>
-        public void SetFullMatchingTypingCategory(HlaTypingCategory category)
+        public void SetFullMatchingTypingResolution(HlaTypingResolution resolution)
         {
-            matchingTypingCategories.A_1 = category;
-            matchingTypingCategories.A_2 = category;
-            matchingTypingCategories.B_1 = category;
-            matchingTypingCategories.B_2 = category;
-            matchingTypingCategories.C_1 = category;
-            matchingTypingCategories.C_2 = category;
-            matchingTypingCategories.DPB1_1 = category;
-            matchingTypingCategories.DPB1_2 = category;
-            matchingTypingCategories.DQB1_1 = category;
-            matchingTypingCategories.DQB1_2 = category;
-            matchingTypingCategories.DRB1_1 = category;
-            matchingTypingCategories.DRB1_2 = category;
+            matchingTypingResolutions.A_1 = resolution;
+            matchingTypingResolutions.A_2 = resolution;
+            matchingTypingResolutions.B_1 = resolution;
+            matchingTypingResolutions.B_2 = resolution;
+            matchingTypingResolutions.C_1 = resolution;
+            matchingTypingResolutions.C_2 = resolution;
+            matchingTypingResolutions.DPB1_1 = resolution;
+            matchingTypingResolutions.DPB1_2 = resolution;
+            matchingTypingResolutions.DQB1_1 = resolution;
+            matchingTypingResolutions.DQB1_2 = resolution;
+            matchingTypingResolutions.DRB1_1 = resolution;
+            matchingTypingResolutions.DRB1_2 = resolution;
+        }
+        
+        /// <summary>
+        /// Will set the desired tgs typing category at all positions
+        /// </summary>
+        public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
+        {
+            matchingTgsTypingCategories.A_1 = tgsCategory;
+            matchingTgsTypingCategories.A_2 = tgsCategory;
+            matchingTgsTypingCategories.B_1 = tgsCategory;
+            matchingTgsTypingCategories.B_2 = tgsCategory;
+            matchingTgsTypingCategories.C_1 = tgsCategory;
+            matchingTgsTypingCategories.C_2 = tgsCategory;
+            // There is no DPB1 test data with fewer than 4 fields
+            matchingTgsTypingCategories.DPB1_1 = TgsHlaTypingCategory.FourFieldAllele;
+            matchingTgsTypingCategories.DPB1_2 = TgsHlaTypingCategory.FourFieldAllele;
+            matchingTgsTypingCategories.DQB1_1 = tgsCategory;
+            matchingTgsTypingCategories.DQB1_2 = tgsCategory;
+            matchingTgsTypingCategories.DRB1_1 = tgsCategory;
+            matchingTgsTypingCategories.DRB1_2 = tgsCategory;
         }
 
         public void SetMatchingDonorUntypedAtLocus(Locus locus)
         {
-            matchingTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
+            matchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
         }
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
@@ -133,18 +161,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         public PhenotypeInfo<string> GetPatientHla()
         {
-            selectedMetaDonor = GetMetaDonor();
-
-            return selectedMetaDonor.Genotype.Hla.Map(GetHlaName);
+            return GetMetaDonor().Genotype.Hla.Map(GetHlaName);
         }
 
         public int GetExpectedMatchingDonorId()
         {
-            for (var i = 0; i < selectedMetaDonor.HlaTypingCategorySets.Count; i++)
+            var metaDonor = GetMetaDonor();
+            for (var i = 0; i < metaDonor.HlaTypingResolutionSets.Count; i++)
             {
-                if (selectedMetaDonor.HlaTypingCategorySets[i].Equals(matchingTypingCategories))
+                if (metaDonor.HlaTypingResolutionSets[i].Equals(matchingTypingResolutions))
                 {
-                    return selectedMetaDonor.DatabaseDonors[i].DonorId;
+                    return metaDonor.DatabaseDonors[i].DonorId;
                 }
             }
 
@@ -153,13 +180,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         private MetaDonor GetMetaDonor()
         {
-            var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
-                .Where(md => MatchingDonorTypes.Contains(md.DonorType))
-                .Where(md => MatchingRegistries.Contains(md.Registry))
-                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
-                             || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
+            // Cache the selected meta-donor to ensure we do not have to perform this calculation multiple times
+            if (selectedMetaDonor == null)
+            {
+                var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
+                    .Where(md => MatchingDonorTypes.Contains(md.DonorType))
+                    .Where(md => MatchingRegistries.Contains(md.Registry))
+                    .Where(md => matchingTgsTypingCategories.Equals(md.GenotypeCriteria.TgsHlaCategories))
+                    .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
+                                 || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
+                selectedMetaDonor = matchingMetaDonors.First();
+            }
 
-            return matchingMetaDonors.First();
+            return selectedMetaDonor;
         }
 
         private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele)
@@ -195,7 +228,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var selectedAllele = allAllelesAtLocus.First(a =>
                 a.PGroup == pGroup
                 && a.AlleleName != allele.TgsTypedAllele
-                && a.AlleleName != selectedMetaDonor.Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
+                && a.AlleleName != GetMetaDonor().Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
 
             return TgsAllele.FromFourFieldAllele(selectedAllele, locus);
         }
