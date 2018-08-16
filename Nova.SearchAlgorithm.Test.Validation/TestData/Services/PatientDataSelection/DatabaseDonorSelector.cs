@@ -1,4 +1,5 @@
 ﻿using System;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
@@ -21,7 +22,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 }
             }
 
-            throw new Exception("Failed to find the expected matched donor for this patient - does the corresponding test data exist?");
+            // This exception should never be thrown in practice, as the meta-donor should not have been selected if it did not contain a donor of the correct resolution
+            throw new DonorNotFoundException("Failed to find the expected matched donor for this patient - does the corresponding test data exist?");
         }
     }
 }
