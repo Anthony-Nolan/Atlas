@@ -26,7 +26,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 .Where(md => FulfilsDonorTypeCriteria(criteria, md)
                              && FulfilsRegistryCriteria(criteria, md)
                              && FulfilsTgsTypingCategoryCriteria(criteria, md)
-                             && FulfilsMatchLevelCriteria(criteria, md))
+                             && FulfilsMatchLevelCriteria(criteria, md)
+                             && FulfilsTypingResolutionCriteria(criteria, md))
                 .ToList();
 
             if (!matchingMetaDonors.Any())
@@ -37,20 +38,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return matchingMetaDonors.First();
         }
 
-        private static bool FulfilsMatchLevelCriteria(MetaDonorSelectionCriteria criteria, MetaDonor md)
+        private static bool FulfilsTypingResolutionCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            return metaDonor.HlaTypingResolutionSets.Any(resolutions => criteria.TypingResolutions.Equals(resolutions));
+        }
+
+        private static bool FulfilsMatchLevelCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
             return criteria.MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
-                   || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x);
+                   || metaDonor.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x);
         }
 
-        private static bool FulfilsTgsTypingCategoryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor md)
+        private static bool FulfilsTgsTypingCategoryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return criteria.MatchingTgsTypingCategories.Equals(md.GenotypeCriteria.TgsHlaCategories);
+            return criteria.MatchingTgsTypingCategories.Equals(metaDonor.GenotypeCriteria.TgsHlaCategories);
         }
 
-        private static bool FulfilsRegistryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor md)
+        private static bool FulfilsRegistryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return criteria.MatchingRegistry == md.Registry;
+            return criteria.MatchingRegistry == metaDonor.Registry;
         }
 
         private static bool FulfilsDonorTypeCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)

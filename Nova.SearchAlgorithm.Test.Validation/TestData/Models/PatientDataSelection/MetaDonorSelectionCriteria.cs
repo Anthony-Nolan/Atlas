@@ -20,5 +20,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// e.g. for a p-group match, ensure that other alleles in the same p-group exist in our dataset
         /// </summary>
         public PhenotypeInfo<MatchLevel> MatchLevels { get; set; } 
+        
+        /// <summary>
+        /// Determines to what resolution the expected matched donor is typed
+        /// Necessary for meta-donor selection to ensure the selectyed meta-donor contains donors at the expected resolution
+        /// </summary>
+        public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
     }
 }

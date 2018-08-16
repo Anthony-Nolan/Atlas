@@ -124,6 +124,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
+        
+        [Test]
+        public void GetMetaDonor_WhenNoMetaDonorsContainDonorAtExpectedResolution_ThrowsException()
+        {
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria { TgsHlaCategories = defaultTgsTypingCategories },
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+                TypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.NmdpCode),
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
 
         [Test]
         public void GetMetaDonor_ReturnsMetaDonorAtMatchingRegistry()

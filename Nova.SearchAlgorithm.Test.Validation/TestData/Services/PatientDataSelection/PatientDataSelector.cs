@@ -45,8 +45,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private static readonly PhenotypeInfo<MatchLevel> DefaultMatchLevels = new PhenotypeInfo<MatchLevel>().Map((l, p, noop) => MatchLevel.Allele);
 
-        private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria {MatchLevels = DefaultMatchLevels};
-        private readonly DatabaseDonorSelectionCriteria databaseDonorSelectionCriteria = new DatabaseDonorSelectionCriteria();
+        private static readonly PhenotypeInfo<HlaTypingResolution> DefaultTypingResolutions =
+            new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Tgs);
+
+        private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
+        {
+            MatchLevels = DefaultMatchLevels,
+            TypingResolutions = DefaultTypingResolutions
+        };
+
+        private readonly DatabaseDonorSelectionCriteria databaseDonorSelectionCriteria =
+            new DatabaseDonorSelectionCriteria {MatchingTypingResolutions = DefaultTypingResolutions};
+
         private readonly PatientHlaSelectionCriteria patientHlaSelectionCriteria = new PatientHlaSelectionCriteria {MatchLevels = DefaultMatchLevels};
 
         public PatientDataSelector(
@@ -99,8 +109,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         public void SetFullMatchingTypingResolution(HlaTypingResolution resolution)
         {
-            var resolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => resolution);
-            databaseDonorSelectionCriteria.MatchingTypingResolutions = resolutions;
+            var hlaTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => resolution);
+            SetTypingResolutions(hlaTypingResolutions);
         }
 
         /// <summary>
@@ -156,6 +166,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             metaDonorSelectionCriteria.MatchLevels = matchLevels;
             patientHlaSelectionCriteria.MatchLevels = matchLevels;
+        }
+
+        /// <summary>
+        /// This method should be used to set the expected typing resolutions for meta donor and database donor selction criteria,
+        /// as both criteria rely on this data
+        /// </summary>
+        private void SetTypingResolutions(PhenotypeInfo<HlaTypingResolution> resolutions)
+        {
+            metaDonorSelectionCriteria.TypingResolutions = resolutions;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions = resolutions;
         }
     }
 }
