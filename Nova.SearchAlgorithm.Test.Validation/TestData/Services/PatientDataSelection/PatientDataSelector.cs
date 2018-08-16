@@ -5,46 +5,42 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {
+    public interface IPatientDataSelector
+    {
+        void SetPatientUntypedAt(Locus locus);
+        void SetAsTenOutOfTenMatch();
+        void SetAsEightOutOfEightMatch();
+        void SetAsSixOutOfSixMatch();
+        void SetMatchingDonorUntypedAtLocus(Locus locus);
+        void SetFullMatchingTypingResolution(HlaTypingResolution resolution);
+        void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
+        void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
+        void SetMatchingRegistry(RegistryCode registry);
+        void SetMatchingDonorType(DonorType donorType);
+
+        PhenotypeInfo<string> GetPatientHla();
+        int GetExpectedMatchingDonorId();
+    }
+    
     /// <summary>
     /// Stores various search criteria from the feature file, and selects appropriate patient data
     /// e.g. A 9/10 adult match with mismatch at A, from AN registry
     /// </summary>
-    public class PatientDataSelector
+    public class PatientDataSelector: IPatientDataSelector
     {
         public bool HasMatch { get; set; }
-        public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
-        public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
 
-        private readonly IMetaDonorRepository metaDonorRepository;
-        private readonly IAlleleRepository alleleRepository;        
+        private readonly IAlleleRepository alleleRepository;
+        private readonly IMetaDonorSelector metaDonorSelector;
         private MetaDonor selectedMetaDonor;
 
         private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
-
-        /// <summary>
-        /// The match level of the expected matching donor (if HasMatch == true)
-        /// e.g. If PGroup, an different allele in the same p-group as the donor will be selected
-        /// </summary>
-        private PhenotypeInfo<MatchLevel> MatchLevels { get; } = new PhenotypeInfo<MatchLevel>
-        {
-            A_1 = MatchLevel.Allele,
-            A_2 = MatchLevel.Allele,
-            B_1 = MatchLevel.Allele,
-            B_2 = MatchLevel.Allele,
-            C_1 = MatchLevel.Allele,
-            C_2 = MatchLevel.Allele,
-            DPB1_1 = MatchLevel.Allele,
-            DPB1_2 = MatchLevel.Allele,
-            DQB1_1 = MatchLevel.Allele,
-            DQB1_2 = MatchLevel.Allele,
-            DRB1_1 = MatchLevel.Allele,
-            DRB1_2 = MatchLevel.Allele,
-        };
 
         // TODO: NOVA-1642 - patient typing resolutions to be set by step; currently defaulting to TGS
         private readonly PhenotypeInfo<HlaTypingResolution> patientTypingCategories = new PhenotypeInfo<HlaTypingResolution>
@@ -68,15 +64,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// </summary>
         private readonly PhenotypeInfo<HlaTypingResolution> matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
         
-        /// <summary>
-        /// Determines how many fields the matching meta-donor's genotype should have at each position
-        /// </summary>
-        private readonly PhenotypeInfo<TgsHlaTypingCategory> matchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>();
+        private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria();
 
-        public PatientDataSelector(IMetaDonorRepository metaDonorRepository, IAlleleRepository alleleRepository)
+        public PatientDataSelector(IAlleleRepository alleleRepository, IMetaDonorSelector metaDonorSelector)
         {
-            this.metaDonorRepository = metaDonorRepository;
             this.alleleRepository = alleleRepository;
+            this.metaDonorSelector = metaDonorSelector;
         }
 
         public void SetPatientUntypedAt(Locus locus)
@@ -123,19 +116,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// </summary>
         public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
         {
-            matchingTgsTypingCategories.A_1 = tgsCategory;
-            matchingTgsTypingCategories.A_2 = tgsCategory;
-            matchingTgsTypingCategories.B_1 = tgsCategory;
-            matchingTgsTypingCategories.B_2 = tgsCategory;
-            matchingTgsTypingCategories.C_1 = tgsCategory;
-            matchingTgsTypingCategories.C_2 = tgsCategory;
-            // There is no DPB1 test data with fewer than 4 fields
-            matchingTgsTypingCategories.DPB1_1 = TgsHlaTypingCategory.FourFieldAllele;
-            matchingTgsTypingCategories.DPB1_2 = TgsHlaTypingCategory.FourFieldAllele;
-            matchingTgsTypingCategories.DQB1_1 = tgsCategory;
-            matchingTgsTypingCategories.DQB1_2 = tgsCategory;
-            matchingTgsTypingCategories.DRB1_1 = tgsCategory;
-            matchingTgsTypingCategories.DRB1_2 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.A_1 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.A_2 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.B_1 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.B_2 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.C_1 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.C_2 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.DQB1_1 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.DQB1_2 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.DRB1_1 = tgsCategory;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.DRB1_2 = tgsCategory;
+            
+            //There is no DPB1 test data with fewer than 4 fields
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.DPB1_1 = TgsHlaTypingCategory.FourFieldAllele;
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories.DPB1_2 = TgsHlaTypingCategory.FourFieldAllele;
         }
 
         public void SetMatchingDonorUntypedAtLocus(Locus locus)
@@ -145,18 +139,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
         {
-            MatchLevels.A_1 = matchLevel;
-            MatchLevels.A_2 = matchLevel;
-            MatchLevels.B_1 = matchLevel;
-            MatchLevels.B_2 = matchLevel;
-            MatchLevels.C_1 = matchLevel;
-            MatchLevels.C_2 = matchLevel;
-            MatchLevels.DPB1_1 = matchLevel;
-            MatchLevels.DPB1_2 = matchLevel;
-            MatchLevels.DQB1_1 = matchLevel;
-            MatchLevels.DQB1_2 = matchLevel;
-            MatchLevels.DRB1_1 = matchLevel;
-            MatchLevels.DRB1_2 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.A_1 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.A_2 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.B_1 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.B_2 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.C_1 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.C_2 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.DPB1_1 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.DPB1_2 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.DQB1_1 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.DQB1_2 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.DRB1_1 = matchLevel;
+            metaDonorSelectionCriteria.MatchLevels.DRB1_2 = matchLevel;
+        }
+
+        public void SetMatchingRegistry(RegistryCode registry)
+        {
+            metaDonorSelectionCriteria.MatchingRegistry = registry;
+        }
+
+        public void SetMatchingDonorType(DonorType donorType)
+        {
+            metaDonorSelectionCriteria.MatchingDonorType = donorType;
         }
 
         public PhenotypeInfo<string> GetPatientHla()
@@ -183,13 +187,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             // Cache the selected meta-donor to ensure we do not have to perform this calculation multiple times
             if (selectedMetaDonor == null)
             {
-                var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
-                    .Where(md => MatchingDonorTypes.Contains(md.DonorType))
-                    .Where(md => MatchingRegistries.Contains(md.Registry))
-                    .Where(md => matchingTgsTypingCategories.Equals(md.GenotypeCriteria.TgsHlaCategories))
-                    .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
-                                 || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
-                selectedMetaDonor = matchingMetaDonors.First();
+                selectedMetaDonor = metaDonorSelector.GetMetaDonor(metaDonorSelectionCriteria);
             }
 
             return selectedMetaDonor;
@@ -212,7 +210,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             }
 
             // if patient should have a P-group match at this position
-            if (MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
+            if (metaDonorSelectionCriteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
             {
                 return GetDifferentTgsAlleleFromSamePGroup(locus, originalAllele, position);
             }

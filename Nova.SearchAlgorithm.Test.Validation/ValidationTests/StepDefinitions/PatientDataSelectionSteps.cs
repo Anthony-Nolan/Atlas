@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -15,16 +16,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"a patient has a match")]
         public void GivenAPatientHasAMatch()
         {
-            var metaDonorRepository = ScenarioContext.Current.Get<IMetaDonorRepository>();
-            var alleleRepository = ScenarioContext.Current.Get<IAlleleRepository>();
-            var patientDataSelector = new PatientDataSelector(metaDonorRepository, alleleRepository) {HasMatch = true};
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
         [Given(@"the patient is untyped at Locus (.*)")]
         public void GivenThePatientIsUntypedAt(string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             switch (locus)
             {
@@ -52,7 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"the matching donor is a (.*) match")]
         public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             switch (matchType)
             {
@@ -76,7 +75,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"the matching donor is untyped at Locus (.*)")]
         public void GivenTheMatchingDonorIsUntypedAt(string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             switch (locus)
             {
@@ -105,9 +104,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void GivenTheMatchingDonorIsOfDonorType(string donorTypeString)
         {
             var donorType = (DonorType) Enum.Parse(typeof(DonorType), donorTypeString, true);
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
-            patientDataSelector.MatchingDonorTypes.Add(donorType);
+            patientDataSelector.SetMatchingDonorType(donorType);
 
             ScenarioContext.Current.Set(patientDataSelector);
         }
@@ -115,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"the matching donor is (.*) typed")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             switch (typingCategory)
             {
@@ -158,12 +157,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"the matching donor is in registry: (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string registryString)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             switch (registryString)
             {
                 case "Anthony Nolan":
-                    patientDataSelector.MatchingRegistries.Add(RegistryCode.AN);
+                    patientDataSelector.SetMatchingRegistry(RegistryCode.AN);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
@@ -176,7 +175,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"the match level is (.*)")]
         public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             switch (matchLevel)
             {

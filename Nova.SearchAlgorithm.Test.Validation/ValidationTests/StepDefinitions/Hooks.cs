@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -32,8 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public static void BeforeScenario()
         {
             ScenarioContext.Current.Set(new SearchRequestBuilder());
-            ScenarioContext.Current.Set(container.Resolve<IMetaDonorRepository>());
-            ScenarioContext.Current.Set(container.Resolve<IAlleleRepository>());
+            ScenarioContext.Current.Set(container.Resolve<IPatientDataSelector>());
         }
         
         private static IContainer CreateContainer()
@@ -44,6 +44,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             builder.RegisterType<AlleleRepository>().AsImplementedInterfaces();
             
             builder.RegisterType<TestDataService>().AsImplementedInterfaces();
+            
+            builder.RegisterType<PatientDataSelector>().AsImplementedInterfaces();
+            builder.RegisterType<MetaDonorSelector>().AsImplementedInterfaces();
 
             return builder.Build();
         }

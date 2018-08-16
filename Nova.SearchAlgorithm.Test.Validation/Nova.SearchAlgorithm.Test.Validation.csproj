@@ -353,6 +353,7 @@
     <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
     <Compile Include="TestData\Models\MatchLevel.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
+    <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
@@ -363,7 +364,10 @@
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
-    <Compile Include="TestData\Services\PatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\DatabaseDonorSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\HlaSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\MetaDonorSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
