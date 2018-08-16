@@ -25,6 +25,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         [TestCase("A*", MatchLocus.A)]
         [TestCase("B*", MatchLocus.B)]
         [TestCase("C*", MatchLocus.C)]
+        [TestCase("DPB1*", MatchLocus.Dpb1)]
         [TestCase("DQB1*", MatchLocus.Dqb1)]
         [TestCase("DRB1*", MatchLocus.Drb1)]
         public void HlaTyping_WhenMolecularTyping_LocusConvertedToMatchLocus(string locus, MatchLocus expectedMatchLocus)

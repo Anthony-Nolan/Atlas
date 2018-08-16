@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         private static readonly object[] QuestionableExpressedAllele = { MatchLocus.C, FourFieldName + "Q" };
         private static readonly object[] SecretedExpressedAllele = { MatchLocus.Dqb1, FourFieldName + "S" };
         private static readonly object[] AberrantExpressedAllele = { MatchLocus.Drb1, FourFieldName + "A" };
-        private static readonly object[] CytoplasmicExpressedAllele = { MatchLocus.A, FourFieldName + "C" };
+        private static readonly object[] CytoplasmicExpressedAllele = { MatchLocus.Dpb1, FourFieldName + "C" };
         private static readonly object[] NullExpressedAllele = { MatchLocus.B, FourFieldName + "N" };
 
         public static readonly object[] AlleleTypingsToTest =
@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             new object[] {QuestionableExpressedAllele, "C*"},
             new object[] {SecretedExpressedAllele, "DQB1*"},
             new object[] {AberrantExpressedAllele, "DRB1*"},
-            new object[] {CytoplasmicExpressedAllele, "A*"},
+            new object[] {CytoplasmicExpressedAllele, "DPB1*"},
             new object[] {NullExpressedAllele, "B*"}
         };
 

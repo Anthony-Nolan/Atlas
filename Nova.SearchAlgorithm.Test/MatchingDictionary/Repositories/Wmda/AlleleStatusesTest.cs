@@ -1,6 +1,5 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -16,6 +15,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [TestCase("DRB1*", "07:04", "Full", "cDNA")]
         [TestCase("A*","68:113", "Partial", "gDNA")]
         [TestCase("B*", "07:05:06", "Partial", "cDNA")]
+        [TestCase("DPB1*", "01:01:03", "Partial", "cDNA")]
         [TestCase("C*", "07:491:01N", "Partial", "cDNA")]
         [TestCase("C*", "07:01:53", "Full", "cDNA")]
         [TestCase("DQB1*", "03:01:01:07", "Full", "gDNA")]

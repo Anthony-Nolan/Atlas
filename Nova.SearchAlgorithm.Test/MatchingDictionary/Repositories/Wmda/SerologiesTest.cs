@@ -29,10 +29,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
             Assert.AreEqual(expectedSerology, actualSerology);
         }
 
-        [TestCase("Cw", "11", "1")]
-        public void WmdaDataRepository_WhenDeletedSerology_SuccessfullyCaptured(
-            string locus, string serologyName, string identicalHla)
+        [Test]
+        public void WmdaDataRepository_WhenDeletedSerology_SuccessfullyCaptured()
         {
+            const string locus = "Cw";
+            const string serologyName = "11";
+            const string identicalHla = "1";
+
             var expectedSerology = new HlaNom(TypingMethod.Serology, locus, serologyName, true, identicalHla);
 
             var actualSerology = GetSingleWmdaHlaTyping(locus, serologyName);

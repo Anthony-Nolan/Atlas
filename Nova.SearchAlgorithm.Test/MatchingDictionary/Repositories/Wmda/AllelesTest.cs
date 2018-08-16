@@ -1,7 +1,6 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using NUnit.Framework;
-using System.Collections.Generic;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
@@ -18,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [TestCase("C*", "07:491:01N")]
         [TestCase("DQB1*", "03:01:01:07")]
         [TestCase("C*", "07:01:01:14Q")]
+        [TestCase("DPB1*", "124:01:01:01")]
         public void WmdaDataRepository_WhenValidAllele_SuccessfullyCaptured(string locus, string alleleName)
         {
             var expectedAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName);

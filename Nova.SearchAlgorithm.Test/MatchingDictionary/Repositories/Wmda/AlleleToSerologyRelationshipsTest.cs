@@ -86,5 +86,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 
             actualRelationship.Assignments.ShouldBeEquivalentTo(new List<SerologyAssignment>());
         }
+
+        [Test]
+        public void WmdaDataRepository_WhenDpb1Allele_NoSerologyAssignmentsAreCaptured()
+        {
+            WmdaHlaTypings
+                .Where(hla => hla.Locus.Equals("DPB1*"))
+                .SelectMany(hla => hla.Assignments)
+                .ShouldAllBeEquivalentTo(new List<SerologyAssignment>());
+        }
     }
 }
