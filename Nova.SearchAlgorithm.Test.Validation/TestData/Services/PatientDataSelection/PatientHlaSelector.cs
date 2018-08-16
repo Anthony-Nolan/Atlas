@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return genotypeAllele;
         }
 
-        // TODO: Remove static dependency on GenotypeGenerator so we can unit test this
+        // TODO: NOVA-1654: Remove static dependency on GenotypeGenerator so we can unit test this
         private static TgsAllele GetNonMatchingAllele(Locus locus, TypePositions position)
         {
             return GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position);
