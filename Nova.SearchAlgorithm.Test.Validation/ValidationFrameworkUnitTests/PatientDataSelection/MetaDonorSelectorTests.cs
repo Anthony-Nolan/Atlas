@@ -3,6 +3,7 @@ using System.Linq;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -16,9 +17,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
     [TestFixture]
     public class PatientDataSelectorTests
     {
-        private List<MetaDonor> metaDonors;
         private IMetaDonorRepository metaDonorRepository;
         private IMetaDonorSelector metaDonorSelector;
+
+        private readonly PhenotypeInfo<TgsHlaTypingCategory> defaultTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>();
 
         [SetUp]
         public void SetUp()
@@ -29,22 +31,116 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
+        public void GetMetaDonor_WhenNoMetaDonorsExistOfSpecifiedType_ThrowsException()
+        {
+            const DonorType donorType = DonorType.Adult;
+            const DonorType anotherDonorType = DonorType.Cord;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
+                    DonorType = anotherDonorType
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+
+        [Test]
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedRegistry_ThrowsException()
+        {
+            const RegistryCode registry = RegistryCode.AN;
+            const RegistryCode anotherRegistry = RegistryCode.DKMS;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
+                    Registry = anotherRegistry
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingRegistry = registry,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_ThrowsException()
+        {
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingTgsTypingCategories = new PhenotypeInfo<bool>().Map((l, p, noop) => TgsHlaTypingCategory.ThreeFieldAllele)
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+
+        [Test]
+        public void GetMetaDonor_WhenPGroupLevelMatchRequiredAndMetaDonorHasUniquePGroups_ThrowsException()
+        {
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria
+                    {
+                        TgsHlaCategories = defaultTgsTypingCategories,
+                        HasNonUniquePGroups = new PhenotypeInfo<bool>().Map((l, p, noop) => false)
+                    },
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+                MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.PGroup),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+
+        [Test]
         public void GetMetaDonor_ReturnsMetaDonorAtMatchingRegistry()
         {
             const RegistryCode registryCode = RegistryCode.AN;
             const RegistryCode anotherRegistryCode = RegistryCode.DKMS;
 
-            var matchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>();
-            metaDonors = new List<MetaDonor>
+            var metaDonors = new List<MetaDonor>
             {
                 new MetaDonor
                 {
-                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = matchingTgsTypingCategories},
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
                     Registry = anotherRegistryCode,
                 },
                 new MetaDonor
                 {
-                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = matchingTgsTypingCategories},
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
                     Registry = registryCode,
                 }
             };
@@ -54,7 +150,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new MetaDonorSelectionCriteria
             {
                 MatchingRegistry = registryCode,
-                MatchingTgsTypingCategories = matchingTgsTypingCategories,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
@@ -64,22 +160,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetMetaDonor_ReturnsHlaForDonorOfMatchingType()
+        public void GetMetaDonor_ReturnsMetaDonorOfMatchingType()
         {
             const DonorType donorType = DonorType.Adult;
             const DonorType anotherDonorType = DonorType.Cord;
 
-            var matchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>();
-            metaDonors = new List<MetaDonor>
+            var metaDonors = new List<MetaDonor>
             {
                 new MetaDonor
                 {
-                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = matchingTgsTypingCategories},
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
                     DonorType = anotherDonorType,
                 },
                 new MetaDonor
                 {
-                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = matchingTgsTypingCategories},
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
                     DonorType = donorType,
                 }
             };
@@ -89,7 +184,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new MetaDonorSelectionCriteria
             {
                 MatchingDonorType = donorType,
-                MatchingTgsTypingCategories = matchingTgsTypingCategories,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
