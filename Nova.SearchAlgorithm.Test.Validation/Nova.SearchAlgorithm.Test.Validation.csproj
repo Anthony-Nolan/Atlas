@@ -371,7 +371,8 @@
     <Compile Include="TestData\Services\PatientDataSelection\MetaDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\EightOutOfEightSearch.feature.cs">
       <AutoGen>True</AutoGen>
