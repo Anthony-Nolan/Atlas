@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 {
     /// <summary>
     /// Test data will be generated from strongly types TGS data - i.e. in a 2, 3, or 4 field allele name format
-    /// It will be 'dumbed down' to lower resolution typings. This class includes all lower resolution typiings for a given 3 or 4 field allele. 
+    /// It will be 'dumbed down' to lower resolution typings. This class includes all lower resolution typings for a given 3 or 4 field allele. 
     /// </summary>
     public class TgsAllele
     {

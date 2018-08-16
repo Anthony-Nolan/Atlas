@@ -21,8 +21,36 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
+        [Given(@"the patient is untyped at Locus (.*)")]
+        public void GivenThePatientIsUntypedAt(string locus)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            switch (locus)
+            {
+                case "C":
+                    patientDataSelector.SetPatientUntypedAt(Locus.C);
+                    break;
+                case "Dpb1":
+                    patientDataSelector.SetPatientUntypedAt(Locus.Dpb1);
+                    break;
+                case "Dqb1":
+                    patientDataSelector.SetPatientUntypedAt(Locus.Dqb1);
+                    break;
+                case "A":
+                case "B":
+                case "Drb1":
+                    throw new Exception("Loci A, B, DRB1 cannot be untyped");
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
         [Given(@"the matching donor is a (.*) match")]
-        public void GivenAPatientIsAMatchOfType(string matchType)
+        public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
             var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
 
@@ -30,6 +58,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             {
                 case "10/10":
                     patientDataSelector.SetAsTenOutOfTenMatch();
+                    break;
+                case "8/8":
+                    patientDataSelector.SetAsEightOutOfEightMatch();
+                    break;
+                case "6/6":
+                    patientDataSelector.SetAsSixOutOfSixMatch();
                     break;
                 default:
                     ScenarioContext.Current.Pending();

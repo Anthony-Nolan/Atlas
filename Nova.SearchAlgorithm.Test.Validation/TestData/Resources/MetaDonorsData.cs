@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-                HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingResolution>>
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
                     .Build(),
-                HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingResolution>>
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele)
                     .Build(),
-                HlaTypingCategorySets = new List<PhenotypeInfo<HlaTypingResolution>>
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.XxCode).Build(),

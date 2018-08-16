@@ -1,14 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -56,11 +54,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 6/6 search")]
         public async Task WhenIRunASixOutOfSixSearch()
         {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            var searchHla = patientDataSelector.GetPatientHla();
+
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
                 .WithLocusMismatchCount(Locus.Drb1, 0)
+                .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
@@ -69,12 +72,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run an 8/8 search")]
         public async Task WhenIRunAnEightOutOfEightSearch()
         {
+            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+
+            var searchHla = patientDataSelector.GetPatientHla();
+
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
                 .WithLocusMismatchCount(Locus.Drb1, 0)
                 .WithLocusMismatchCount(Locus.C, 0)
+                .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));

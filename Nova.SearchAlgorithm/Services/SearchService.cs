@@ -71,9 +71,9 @@ namespace Nova.SearchAlgorithm.Services
             return criteria;
         }
 
-        private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(Locus locus, LocusMismatchCriteria mismatch, LocusSearchHla searchHla)
+        private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(Locus locus, LocusMismatchCriteria mismatchCriteria, LocusSearchHla searchHla)
         {
-            if (mismatch == null)
+            if (mismatchCriteria == null)
             {
                 return null;
             }
@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.Services
 
             return new AlleleLevelLocusMatchCriteria
             {
-                MismatchCount = mismatch.MismatchCount,
+                MismatchCount = mismatchCriteria.MismatchCount,
                 PGroupsToMatchInPositionOne = lookupResult[0].MatchingPGroups,
                 PGroupsToMatchInPositionTwo = lookupResult[1].MatchingPGroups,
             };
