@@ -29,8 +29,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             };
 
             alleleRepository = Substitute.For<IAlleleRepository>();
-            
-            alleleRepository.FourFieldAllelesWithNonUniquePGroups().Returns(AllelesAtAllLoci(alleles));
+
+            alleleRepository.FourFieldAllelesWithNonUniquePGroups().Returns(new PhenotypeInfo<bool>().Map((l, p, noop) => alleles));
 
             patientHlaSelector = new PatientHlaSelector(alleleRepository);
         }
@@ -47,51 +47,34 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = GenotypeHlaWithAlleleAtAllLoci(alleles.First())
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromFourFieldAllele(alleles.First(), locus))
                 }
             };
-            
+
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
             patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
         }
         
-        private static PhenotypeInfo<List<AlleleTestData>> AllelesAtAllLoci(List<AlleleTestData> alleles)
+        [Test]
+        public void GetPatientHla_ForUntypedLocus_ReturnsNull()
         {
-            return new PhenotypeInfo<List<AlleleTestData>>
+            var criteria = new PatientHlaSelectionCriteria
             {
-                A_1 = alleles,
-                A_2 = alleles,
-                B_1 = alleles,
-                B_2 = alleles,
-                C_1 = alleles,
-                C_2 = alleles,
-                DPB1_1 = alleles,
-                DPB1_2 = alleles,
-                DQB1_1 = alleles,
-                DQB1_2 = alleles,
-                DRB1_1 = alleles,
-                DRB1_2 = alleles,
+                PatientTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Untyped)
             };
-        }
-        
-        private static PhenotypeInfo<TgsAllele> GenotypeHlaWithAlleleAtAllLoci(AlleleTestData allele)
-        {
-            return new PhenotypeInfo<TgsAllele>
+
+            var metaDonor = new MetaDonor
             {
-                A_1 = TgsAllele.FromFourFieldAllele(allele, Locus.A),
-                A_2 = TgsAllele.FromFourFieldAllele(allele, Locus.A),
-                B_1 = TgsAllele.FromFourFieldAllele(allele, Locus.B),
-                B_2 = TgsAllele.FromFourFieldAllele(allele, Locus.B),
-                C_1 = TgsAllele.FromFourFieldAllele(allele, Locus.C),
-                C_2 = TgsAllele.FromFourFieldAllele(allele, Locus.C),
-                DPB1_1 = TgsAllele.FromFourFieldAllele(allele, Locus.Dpb1),
-                DPB1_2 = TgsAllele.FromFourFieldAllele(allele, Locus.Dpb1),
-                DQB1_1 = TgsAllele.FromFourFieldAllele(allele, Locus.Dqb1),
-                DQB1_2 = TgsAllele.FromFourFieldAllele(allele, Locus.Dqb1),
-                DRB1_1 = TgsAllele.FromFourFieldAllele(allele, Locus.Drb1),
-                DRB1_2 = TgsAllele.FromFourFieldAllele(allele, Locus.Drb1),
+                Genotype =
+                {
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromFourFieldAllele(alleles.First(), locus))
+                }
             };
+
+            var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+            patientHla.ToEnumerable().All(x => x == null).Should().BeTrue();
         }
     }
 }

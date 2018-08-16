@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
     public class PatientHlaSelectionCriteria
     {
         // TODO: NOVA-1642 - patient typing resolutions to be set by step; currently defaulting to TGS
-        public readonly PhenotypeInfo<HlaTypingResolution> PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
+        public PhenotypeInfo<HlaTypingResolution> PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
         {
             A_1 = HlaTypingResolution.Tgs,
             A_2 = HlaTypingResolution.Tgs,
