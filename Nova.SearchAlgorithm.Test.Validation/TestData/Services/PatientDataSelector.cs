@@ -161,18 +161,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         public PhenotypeInfo<string> GetPatientHla()
         {
-            selectedMetaDonor = GetMetaDonor();
-
-            return selectedMetaDonor.Genotype.Hla.Map(GetHlaName);
+            return GetMetaDonor().Genotype.Hla.Map(GetHlaName);
         }
 
         public int GetExpectedMatchingDonorId()
         {
-            for (var i = 0; i < selectedMetaDonor.HlaTypingResolutionSets.Count; i++)
+            var metaDonor = GetMetaDonor();
+            for (var i = 0; i < metaDonor.HlaTypingResolutionSets.Count; i++)
             {
-                if (selectedMetaDonor.HlaTypingResolutionSets[i].Equals(matchingTypingResolutions))
+                if (metaDonor.HlaTypingResolutionSets[i].Equals(matchingTypingResolutions))
                 {
-                    return selectedMetaDonor.DatabaseDonors[i].DonorId;
+                    return metaDonor.DatabaseDonors[i].DonorId;
                 }
             }
 
@@ -181,14 +180,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         private MetaDonor GetMetaDonor()
         {
-            var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
-                .Where(md => MatchingDonorTypes.Contains(md.DonorType))
-                .Where(md => MatchingRegistries.Contains(md.Registry))
-                .Where(md => matchingTgsTypingCategories.Equals(md.GenotypeCriteria.TgsHlaCategories))
-                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
-                             || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
+            // Cache the selected meta-donor to ensure we do not have to perform this calculation multiple times
+            if (selectedMetaDonor == null)
+            {
+                var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
+                    .Where(md => MatchingDonorTypes.Contains(md.DonorType))
+                    .Where(md => MatchingRegistries.Contains(md.Registry))
+                    .Where(md => matchingTgsTypingCategories.Equals(md.GenotypeCriteria.TgsHlaCategories))
+                    .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
+                                 || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
+                selectedMetaDonor = matchingMetaDonors.First();
+            }
 
-            return matchingMetaDonors.First();
+            return selectedMetaDonor;
         }
 
         private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele)
@@ -224,7 +228,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var selectedAllele = allAllelesAtLocus.First(a =>
                 a.PGroup == pGroup
                 && a.AlleleName != allele.TgsTypedAllele
-                && a.AlleleName != selectedMetaDonor.Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
+                && a.AlleleName != GetMetaDonor().Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
 
             return TgsAllele.FromFourFieldAllele(selectedAllele, locus);
         }
