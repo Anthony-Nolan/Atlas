@@ -11,8 +11,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     {
         PhenotypeInfo<string> GetPatientHla(MetaDonor metaDonor, PatientHlaSelectionCriteria criteria);
     }
-    
-    public class PatientHlaSelector: IPatientHlaSelector
+
+    public class PatientHlaSelector : IPatientHlaSelector
     {
         private readonly IAlleleRepository alleleRepository;
 
@@ -20,12 +20,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             this.alleleRepository = alleleRepository;
         }
-        
+
         public PhenotypeInfo<string> GetPatientHla(MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
         {
             return metaDonor.Genotype.Hla.Map((locus, position, allele) => GetHlaName(locus, position, allele, metaDonor, criteria));
         }
-        
+
         private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele, MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
         {
             var allele = GetTgsAllele(locus, position, tgsAllele, metaDonor, criteria);
@@ -33,22 +33,34 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
             return allele.GetHlaForCategory(typingResolution);
         }
-        
-        private TgsAllele GetTgsAllele(Locus locus, TypePositions position, TgsAllele originalAllele, MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
+
+        private TgsAllele GetTgsAllele(
+            Locus locus,
+            TypePositions position,
+            TgsAllele genotypeAllele,
+            MetaDonor metaDonor,
+            PatientHlaSelectionCriteria criteria
+        )
         {
             // if patient should be mismatched at this position
             if (!criteria.HlaMatches.DataAtPosition(locus, position))
             {
-                return GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position);
+                return GetNonMatchingAllele(locus, position);
             }
 
             // if patient should have a P-group match at this position
             if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
             {
-                return GetDifferentTgsAlleleFromSamePGroup(locus, originalAllele, position, metaDonor);
+                return GetDifferentTgsAlleleFromSamePGroup(locus, genotypeAllele, position, metaDonor);
             }
 
-            return originalAllele;
+            return genotypeAllele;
+        }
+
+        // TODO: Remove static dependency on GenotypeGenerator so we can unit test this
+        private static TgsAllele GetNonMatchingAllele(Locus locus, TypePositions position)
+        {
+            return GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position);
         }
 
         private TgsAllele GetDifferentTgsAlleleFromSamePGroup(Locus locus, TgsAllele allele, TypePositions position, MetaDonor metaDonor)
