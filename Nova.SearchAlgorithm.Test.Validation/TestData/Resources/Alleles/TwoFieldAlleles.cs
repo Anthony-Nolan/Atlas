@@ -90,6 +90,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 new AlleleTestData {AlleleName = "*06:11", PGroup = "06:02P", GGroup = "06:02:01G", NmdpCode = "*06:BPNT", Serology = "6"},
                 new AlleleTestData {AlleleName = "*07:18", PGroup = "07:01P", GGroup = "07:01:01G", NmdpCode = "*07:BBTA", Serology = "7"},
             },
+            // Note that none of the DPB1 TGS 2-field alleles had a g-group, nmdp code, and serology association - all of which are currently needed to be valid as test data
             DPB1_1 = new List<AlleleTestData> { },
             DPB1_2 = new List<AlleleTestData> { },
             DQB1_1 =
