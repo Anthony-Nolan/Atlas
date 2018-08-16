@@ -355,6 +355,7 @@
     <Compile Include="TestData\Models\MetaDonor.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
+    <Compile Include="TestData\Models\PatientDataSelection\PatientHlaSelectionCriteria.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
@@ -366,7 +367,7 @@
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DatabaseDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\HlaSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\MetaDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />

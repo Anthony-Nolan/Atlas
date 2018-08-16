@@ -16,23 +16,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         
         /// <summary>
         /// The match level of the expected matching donor (if a match is expected)
-        /// e.g. If PGroup, an different allele in the same p-group as the donor will be selected
-        /// This may converge with MatchGrades in the future
+        /// Necessary for meta-donor selection as we must ensure the genotype is valid for the specified match type
+        /// e.g. for a p-group match, ensure that other alleles in the same p-group exist in our dataset
         /// </summary>
-        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; } = new PhenotypeInfo<MatchLevel>
-        {
-            A_1 = MatchLevel.Allele,
-            A_2 = MatchLevel.Allele,
-            B_1 = MatchLevel.Allele,
-            B_2 = MatchLevel.Allele,
-            C_1 = MatchLevel.Allele,
-            C_2 = MatchLevel.Allele,
-            DPB1_1 = MatchLevel.Allele,
-            DPB1_2 = MatchLevel.Allele,
-            DQB1_1 = MatchLevel.Allele,
-            DQB1_2 = MatchLevel.Allele,
-            DRB1_1 = MatchLevel.Allele,
-            DRB1_2 = MatchLevel.Allele,
-        };
+        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; } 
     }
 }
