@@ -27,17 +27,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         PhenotypeInfo<string> GetPatientHla();
         int GetExpectedMatchingDonorId();
     }
-    
+
     /// <summary>
     /// Stores various search criteria from the feature file, and selects appropriate patient data
     /// e.g. A 9/10 adult match with mismatch at A, from AN registry
     /// </summary>
-    public class PatientDataSelector: IPatientDataSelector
+    public class PatientDataSelector : IPatientDataSelector
     {
         public bool HasMatch { get; set; }
 
         private readonly IAlleleRepository alleleRepository;
         private readonly IMetaDonorSelector metaDonorSelector;
+        private readonly IDatabaseDonorSelector databaseDonorSelector;
         private MetaDonor selectedMetaDonor;
 
         private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
@@ -59,17 +60,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             DRB1_2 = HlaTypingResolution.Tgs,
         };
 
-        /// <summary>
-        /// Determines to what resolution the expected matched donor is typed
-        /// </summary>
-        private readonly PhenotypeInfo<HlaTypingResolution> matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
-        
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria();
+        private readonly DatabaseDonorSelectionCriteria databaseDonorSelectionCriteria = new DatabaseDonorSelectionCriteria();
 
-        public PatientDataSelector(IAlleleRepository alleleRepository, IMetaDonorSelector metaDonorSelector)
+        public PatientDataSelector(
+            IAlleleRepository alleleRepository,
+            IMetaDonorSelector metaDonorSelector,
+            IDatabaseDonorSelector databaseDonorSelector
+        )
         {
             this.alleleRepository = alleleRepository;
             this.metaDonorSelector = metaDonorSelector;
+            this.databaseDonorSelector = databaseDonorSelector;
         }
 
         public void SetPatientUntypedAt(Locus locus)
@@ -97,20 +99,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         public void SetFullMatchingTypingResolution(HlaTypingResolution resolution)
         {
-            matchingTypingResolutions.A_1 = resolution;
-            matchingTypingResolutions.A_2 = resolution;
-            matchingTypingResolutions.B_1 = resolution;
-            matchingTypingResolutions.B_2 = resolution;
-            matchingTypingResolutions.C_1 = resolution;
-            matchingTypingResolutions.C_2 = resolution;
-            matchingTypingResolutions.DPB1_1 = resolution;
-            matchingTypingResolutions.DPB1_2 = resolution;
-            matchingTypingResolutions.DQB1_1 = resolution;
-            matchingTypingResolutions.DQB1_2 = resolution;
-            matchingTypingResolutions.DRB1_1 = resolution;
-            matchingTypingResolutions.DRB1_2 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.A_1 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.A_2 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.B_1 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.B_2 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.C_1 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.C_2 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.DPB1_1 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.DPB1_2 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.DQB1_1 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.DQB1_2 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.DRB1_1 = resolution;
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.DRB1_2 = resolution;
         }
-        
+
         /// <summary>
         /// Will set the desired tgs typing category at all positions
         /// </summary>
@@ -126,7 +128,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             metaDonorSelectionCriteria.MatchingTgsTypingCategories.DQB1_2 = tgsCategory;
             metaDonorSelectionCriteria.MatchingTgsTypingCategories.DRB1_1 = tgsCategory;
             metaDonorSelectionCriteria.MatchingTgsTypingCategories.DRB1_2 = tgsCategory;
-            
+
             //There is no DPB1 test data with fewer than 4 fields
             metaDonorSelectionCriteria.MatchingTgsTypingCategories.DPB1_1 = TgsHlaTypingCategory.FourFieldAllele;
             metaDonorSelectionCriteria.MatchingTgsTypingCategories.DPB1_2 = TgsHlaTypingCategory.FourFieldAllele;
@@ -134,7 +136,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void SetMatchingDonorUntypedAtLocus(Locus locus)
         {
-            matchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
+            databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
         }
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
@@ -170,16 +172,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public int GetExpectedMatchingDonorId()
         {
-            var metaDonor = GetMetaDonor();
-            for (var i = 0; i < metaDonor.HlaTypingResolutionSets.Count; i++)
-            {
-                if (metaDonor.HlaTypingResolutionSets[i].Equals(matchingTypingResolutions))
-                {
-                    return metaDonor.DatabaseDonors[i].DonorId;
-                }
-            }
-
-            throw new Exception("Failed to find the expected matched donor for this patient - does the corresponding test data exist?");
+            return databaseDonorSelector.GetExpectedMatchingDonorId(GetMetaDonor(), databaseDonorSelectionCriteria);
         }
 
         private MetaDonor GetMetaDonor()
@@ -217,7 +210,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
             return originalAllele;
         }
-        
+
         private TgsAllele GetDifferentTgsAlleleFromSamePGroup(Locus locus, TgsAllele allele, TypePositions position)
         {
             var allelesAtLocus = alleleRepository.FourFieldAllelesWithNonUniquePGroups().DataAtLocus(locus);
