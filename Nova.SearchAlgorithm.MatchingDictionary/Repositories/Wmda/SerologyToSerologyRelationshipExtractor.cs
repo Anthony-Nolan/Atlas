@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
     internal class SerologyToSerologyRelationshipExtractor : WmdaDataExtractor<RelSerSer>
     {
-        private const string FileName = WmdaFilePathPrefix + "rel_ser_ser";
+        private const string FileName = WmdaFilePathPrefix + "rel_ser_ser.txt";
         private const string RegexPattern = @"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)";
 
         public SerologyToSerologyRelationshipExtractor() : base(FileName)
