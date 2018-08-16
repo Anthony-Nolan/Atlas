@@ -16,16 +16,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     /// </summary>
     public class PatientDataSelector
     {
-        private readonly IMetaDonorRepository metaDonorRepository;
-        private readonly IAlleleRepository alleleRepository;
+        public bool HasMatch { get; set; }
+        public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
+        public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
 
-        public PatientDataSelector(IMetaDonorRepository metaDonorRepository, IAlleleRepository alleleRepository)
-        {
-            this.metaDonorRepository = metaDonorRepository;
-            this.alleleRepository = alleleRepository;
-        }
-        
+        private readonly IMetaDonorRepository metaDonorRepository;
+        private readonly IAlleleRepository alleleRepository;        
         private MetaDonor selectedMetaDonor;
+
+        private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
 
         /// <summary>
         /// The match level of the expected matching donor (if HasMatch == true)
@@ -47,19 +46,49 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             DRB1_2 = MatchLevel.Allele,
         };
 
-        private PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>();
+        // todo: NOVA-1642 - patient typing categories to be set by step; currently defaulting to TGS four field
+        private readonly PhenotypeInfo<HlaTypingCategory> patientTypingCategories = new PhenotypeInfo<HlaTypingCategory>
+        {
+            A_1 = HlaTypingCategory.TgsFourFieldAllele,
+            A_2 = HlaTypingCategory.TgsFourFieldAllele,
+            B_1 = HlaTypingCategory.TgsFourFieldAllele,
+            B_2 = HlaTypingCategory.TgsFourFieldAllele,
+            C_1 = HlaTypingCategory.TgsFourFieldAllele,
+            C_2 = HlaTypingCategory.TgsFourFieldAllele,
+            DPB1_1 = HlaTypingCategory.TgsFourFieldAllele,
+            DPB1_2 = HlaTypingCategory.TgsFourFieldAllele,
+            DQB1_1 = HlaTypingCategory.TgsFourFieldAllele,
+            DQB1_2 = HlaTypingCategory.TgsFourFieldAllele,
+            DRB1_1 = HlaTypingCategory.TgsFourFieldAllele,
+            DRB1_2 = HlaTypingCategory.TgsFourFieldAllele
+        };
 
         private readonly PhenotypeInfo<HlaTypingCategory> matchingTypingCategories = new PhenotypeInfo<HlaTypingCategory>();
 
-        public bool HasMatch { get; set; }
+        public PatientDataSelector(IMetaDonorRepository metaDonorRepository, IAlleleRepository alleleRepository)
+        {
+            this.metaDonorRepository = metaDonorRepository;
+            this.alleleRepository = alleleRepository;
+        }
 
-        public List<DonorType> MatchingDonorTypes { get; } = new List<DonorType>();
-
-        public List<RegistryCode> MatchingRegistries { get; } = new List<RegistryCode>();
+        public void SetPatientUntypedAt(Locus locus)
+        {
+            patientTypingCategories.SetAtLocus(locus, TypePositions.Both, HlaTypingCategory.Untyped);
+        }
 
         public void SetAsTenOutOfTenMatch()
         {
             HlaMatches = HlaMatches.Map((l, p, hasMatch) => l != Locus.Dpb1);
+        }
+
+        public void SetAsEightOutOfEightMatch()
+        {
+            HlaMatches = HlaMatches.Map((l, p, hasMatch) => l != Locus.Dqb1 || l != Locus.Dpb1);
+        }
+
+        public void SetAsSixOutOfSixMatch()
+        {
+            HlaMatches = HlaMatches.Map((l, p, hasMatch) => l != Locus.C || l != Locus.Dqb1 || l != Locus.Dpb1);
         }
 
         /// <summary>
@@ -104,37 +133,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         public PhenotypeInfo<string> GetPatientHla()
         {
-            var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
-                .Where(md => MatchingDonorTypes.Contains(md.DonorType))
-                .Where(md => MatchingRegistries.Contains(md.Registry))
-                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
-                             || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
+            selectedMetaDonor = GetMetaDonor();
 
-            selectedMetaDonor = matchingMetaDonors.First();
-
-            var matchingGenotype = new Genotype
-            {
-                Hla = selectedMetaDonor.Genotype.Hla.Map((l, p, hla) =>
-                {
-                    if (MatchLevels.DataAtPosition(l, p) == MatchLevel.PGroup)
-                    {
-                        var allelesAtLocus = alleleRepository.FourFieldAllelesWithNonUniquePGroups().DataAtLocus(l);
-                        var allAllelesAtLocus = allelesAtLocus.Item1.Concat(allelesAtLocus.Item2).ToList();
-                        var pGroup = allAllelesAtLocus.First(a => a.AlleleName == hla.TgsTypedAllele).PGroup;
-                        var selectedAllele = allAllelesAtLocus.First(a =>
-                            a.PGroup == pGroup
-                            && a.AlleleName != hla.TgsTypedAllele
-                            && a.AlleleName != selectedMetaDonor.Genotype.Hla.DataAtPosition(l, p.Other()).TgsTypedAllele);
-                        return TgsAllele.FromFourFieldAllele(selectedAllele, l);
-                    }
-
-                    return hla;
-                })
-            };
-
-            return matchingGenotype.Hla.Map((locus, position, tgsAllele) => HlaMatches.DataAtPosition(locus, position)
-                ? tgsAllele.TgsTypedAllele
-                : GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position).TgsTypedAllele);
+            return selectedMetaDonor.Genotype.Hla.Map(GetHlaName);
         }
 
         public int GetExpectedMatchingDonorId()
@@ -148,6 +149,55 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             }
 
             throw new Exception("Failed to find the expected matched donor for this patient - does the corresponding test data exist?");
+        }
+
+        private MetaDonor GetMetaDonor()
+        {
+            var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
+                .Where(md => MatchingDonorTypes.Contains(md.DonorType))
+                .Where(md => MatchingRegistries.Contains(md.Registry))
+                .Where(md => MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
+                             || md.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x));
+
+            return matchingMetaDonors.First();
+        }
+
+        private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele)
+        {
+            var allele = GetTgsAllele(locus, position, tgsAllele);
+            var typingCategory = patientTypingCategories.DataAtPosition(locus, position);
+
+            return allele.GetHlaForCategory(typingCategory);
+        }
+
+        private TgsAllele GetTgsAllele(Locus locus, TypePositions position, TgsAllele originalAllele)
+        {
+            // if patient should be mismatched at this position
+            if (!HlaMatches.DataAtPosition(locus, position))
+            {
+                return GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position);
+            }
+
+            // if patient should have a P-group match at this position
+            if (MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
+            {
+                return GetDifferentTgsAlleleFromSamePGroup(locus, originalAllele, position);
+            }
+
+            return originalAllele;
+        }
+        
+        private TgsAllele GetDifferentTgsAlleleFromSamePGroup(Locus locus, TgsAllele allele, TypePositions position)
+        {
+            var allelesAtLocus = alleleRepository.FourFieldAllelesWithNonUniquePGroups().DataAtLocus(locus);
+            var allAllelesAtLocus = allelesAtLocus.Item1.Concat(allelesAtLocus.Item2).ToList();
+            var pGroup = allAllelesAtLocus.First(a => a.AlleleName == allele.TgsTypedAllele).PGroup;
+            var selectedAllele = allAllelesAtLocus.First(a =>
+                a.PGroup == pGroup
+                && a.AlleleName != allele.TgsTypedAllele
+                && a.AlleleName != selectedMetaDonor.Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
+
+            return TgsAllele.FromFourFieldAllele(selectedAllele, locus);
         }
     }
 }
