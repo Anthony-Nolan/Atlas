@@ -47,6 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             
             builder.RegisterType<PatientDataSelector>().AsImplementedInterfaces();
             builder.RegisterType<MetaDonorSelector>().AsImplementedInterfaces();
+            builder.RegisterType<DatabaseDonorSelector>().AsImplementedInterfaces();
 
             return builder.Build();
         }

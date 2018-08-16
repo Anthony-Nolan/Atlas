@@ -353,6 +353,7 @@
     <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
     <Compile Include="TestData\Models\MatchLevel.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
+    <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
