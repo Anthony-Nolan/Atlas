@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private TgsAllele GetDifferentTgsAlleleFromSamePGroup(Locus locus, TgsAllele allele, TypePositions position, MetaDonor metaDonor)
         {
-            var allelesAtLocus = alleleRepository.FourFieldAllelesWithNonUniquePGroups().DataAtLocus(locus);
+            var allelesAtLocus = alleleRepository.AllelesWithNonUniquePGroups().DataAtLocus(locus);
             var allAllelesAtLocus = allelesAtLocus.Item1.Concat(allelesAtLocus.Item2).ToList();
             var pGroup = allAllelesAtLocus.First(a => a.AlleleName == allele.TgsTypedAllele).PGroup;
             var selectedAllele = allAllelesAtLocus.First(a =>
@@ -73,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 && a.AlleleName != allele.TgsTypedAllele
                 && a.AlleleName != metaDonor.Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
 
-            return TgsAllele.FromFourFieldAllele(selectedAllele, locus);
+            return TgsAllele.FromTwoFieldAllele(selectedAllele, locus);
         }
     }
 }

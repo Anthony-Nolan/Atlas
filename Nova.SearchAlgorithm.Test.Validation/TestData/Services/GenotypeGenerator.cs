@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             return new Genotype
             {
-                Hla = AlleleRepository.FourFieldAllelesWithNonUniquePGroups().MapByLocus((l, alleles1, alleles2) =>
+                Hla = AlleleRepository.AllelesWithNonUniquePGroups().MapByLocus((l, alleles1, alleles2) =>
                 {
                     var pGroupGroups = alleles1.Concat(alleles2).Distinct().GroupBy(a => a.PGroup).ToList();
                     var selectedPGroup = pGroupGroups[Random.Next(pGroupGroups.Count)];
@@ -97,8 +97,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     // All p-group level matches will be homozygous.
                     // This cannot be changed util we have enough test data to ensure that the selected patient data will not be a direct or cross match
                     return new Tuple<TgsAllele, TgsAllele>(
-                        TgsAllele.FromFourFieldAllele(selectedPGroup.AsEnumerable().First(), l),
-                        TgsAllele.FromFourFieldAllele(selectedPGroup.AsEnumerable().First(), l)
+                        TgsAllele.FromTwoFieldAllele(selectedPGroup.AsEnumerable().First(), l),
+                        TgsAllele.FromTwoFieldAllele(selectedPGroup.AsEnumerable().First(), l)
                     );
                 })
             };
