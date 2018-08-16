@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -54,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 6/6 search")]
         public async Task WhenIRunASixOutOfSixSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             var searchHla = patientDataSelector.GetPatientHla();
 
@@ -72,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run an 8/8 search")]
         public async Task WhenIRunAnEightOutOfEightSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             var searchHla = patientDataSelector.GetPatientHla();
 
@@ -105,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 10/10 search")]
         public async Task WhenIRunATenOutOfTenSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
             var searchHla = patientDataSelector.GetPatientHla();
             
@@ -160,7 +161,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then(@"the results should contain the specified donor")]
         public void ThenTheResultShouldContainTheSpecifiedDonor()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<PatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
             var results = ScenarioContext.Current.Get<SearchResultSet>();
             
             results.SearchResults.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
