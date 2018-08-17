@@ -31,7 +31,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             new LocusName("B", "B*", MatchLocus.B),
             new LocusName("Cw", "C*", MatchLocus.C),
             new LocusName("DQ", "DQB1*", MatchLocus.Dqb1),
-            new LocusName("DR", "DRB1*", MatchLocus.Drb1)
+            new LocusName("DR", "DRB1*", MatchLocus.Drb1),
+
+            // TODO: NOVA-1298 - confirm that no serology info should be imported for DPB1
+            new LocusName(string.Empty, "DPB1*", MatchLocus.Dpb1)
         };
 
         public static bool IsPermittedMolecularLocus(string locusName)
@@ -41,7 +44,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
 
         public static bool IsPermittedSerologyLocus(string locusName)
         {
-            return NamesOfPermittedLoci.Select(n => n.Serology).Contains(locusName);
+            return NamesOfPermittedLoci
+                .Where(n => !string.IsNullOrEmpty(n.Serology))
+                .Select(n => n.Serology).Contains(locusName);
         }
 
         public static IEnumerable<MatchLocus> GetPermittedMatchLoci()

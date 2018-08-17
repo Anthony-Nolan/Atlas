@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         B = 2,
         C = 3,
         Dqb1 = 4,
-        Drb1 = 5
+        Drb1 = 5,
+        Dpb1 = 6
     }
 }

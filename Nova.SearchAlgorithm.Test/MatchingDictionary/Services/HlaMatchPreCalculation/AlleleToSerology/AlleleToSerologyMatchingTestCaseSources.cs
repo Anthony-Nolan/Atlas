@@ -260,6 +260,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             },
             new object[]
             {
+                // No assignments
+                MatchLocus.Dpb1, "01:01:01:01",
+                new object[][]{}
+            },
+            new object[]
+            {
                 // Only has expert assignment
                 MatchLocus.C, "15:07",
                 new[]
