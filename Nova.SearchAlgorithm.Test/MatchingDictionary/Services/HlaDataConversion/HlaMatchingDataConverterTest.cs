@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
                 MatchedLocus,
                 SerologyName,
                 TypingMethod.Serology,
-                new List<string>()
+                new List<string> { PGroupName }
             );
         }
 
