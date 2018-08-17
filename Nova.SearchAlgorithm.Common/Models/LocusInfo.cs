@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Nova.SearchAlgorithm.Common.Models
 {
     /// <summary>
-    /// Data type to hold one instance of T for each of the six supported HLA loci
+    /// Data type to hold one instance of T for each of the supported HLA loci
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each locus.</typeparam>
     public class LocusInfo<T>

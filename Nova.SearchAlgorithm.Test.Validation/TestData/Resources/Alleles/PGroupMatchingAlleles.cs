@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     /// Donor HLA is the remainder of the p-group, with some caveats.
     /// (1) Alleles with the same first two fields as the patient allele have been removed, so as to avoid a better match
     /// (2) Alleles failing a matching dictionary lookup have been commented out.
-    ///    - Presumably this is due to wmda versiopn dioscrepancies with the deployed Matching Dictionary at time of writing
+    ///    - Presumably this is due to wmda version discrepancies with the deployed Matching Dictionary at time of writing
     ///    - TODO: NOVA-1539: Ensure we point at a consistent version (3330) of the matching dictionary to avoid more data becoming invalid over time
     /// </summary>
     public static class PGroupMatchingAlleles

@@ -378,6 +378,11 @@
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
+    <Compile Include="ValidationTests\Features\Scoring.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Scoring.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\EightOutOfEightSearch.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -414,6 +419,10 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="ValidationTests\Features\Scoring.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
+    </None>
     <None Include="ValidationTests\Features\EightOutOfEightSearch.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
