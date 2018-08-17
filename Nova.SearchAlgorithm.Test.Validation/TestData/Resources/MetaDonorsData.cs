@@ -11,6 +11,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     {
         public static readonly IEnumerable<MetaDonor> MetaDonors = new List<MetaDonor>
         {
+            // Arbitrary length tgs donors
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -27,6 +28,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
                 }
             },
+
+            // Four field tgs donors
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -41,12 +44,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),
                 }
             },
+
+            // Three field tgs donors
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -60,11 +62,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
                 }
             },
+
+            // Two field tgs donors
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -82,36 +83,45 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
                 }
             },
+
+            // P Group matching
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithPGroupMatchPossibleAtAllLoci().Build()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithPGroupMatchPossibleAtAllLoci().Build(),
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                {
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
+                }
             },
+
+            // G Group matching
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build(),
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                {
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
+                }
             },
-            new MetaDonor
-            {
-                DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build()
-            },
+
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
+
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.DKMS,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
+
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
