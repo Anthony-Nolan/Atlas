@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 8
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-    testRunner.And("the matching donor is TGS (four field) typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS (four field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 10
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 11
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 19
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 20
-    testRunner.And("the matching donor is TGS (three field) typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS (three field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 22
@@ -135,7 +135,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 30
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 31
-    testRunner.And("the matching donor is TGS (two field) typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS (two field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 32
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 33
@@ -164,7 +164,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 41
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 42
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 43
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 44
@@ -191,7 +191,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 51
     testRunner.And("the matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 52
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 53
     testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 54
@@ -222,7 +222,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 63
     testRunner.And("the matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 64
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 65
     testRunner.And("the matching donor is untyped at Locus Dqb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 66
@@ -253,7 +253,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 75
     testRunner.And("the matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 76
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 77
     testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 78
@@ -288,7 +288,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 89
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 90
-    testRunner.And("the matching donor is three field truncated allele typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is three field truncated allele typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 91
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 92
@@ -317,7 +317,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 100
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 101
-    testRunner.And("the matching donor is two field truncated allele typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is two field truncated allele typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 102
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 103
@@ -346,7 +346,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 111
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 112
-    testRunner.And("the matching donor is XX code typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is XX code typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 113
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 114
@@ -375,7 +375,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 122
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 123
-    testRunner.And("the matching donor is NMDP code typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is NMDP code typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 124
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 125
@@ -404,7 +404,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 133
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 134
-    testRunner.And("the matching donor is serology typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is serology typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 135
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 136
@@ -420,10 +420,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a p group match")]
-        public virtual void _1010SearchWithAPGroupMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a mixed typing resolution")]
+        public virtual void _1010SearchWithAMixedTypingResolution()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a p group match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a mixed typing resolution", ((string[])(null)));
 #line 141
   this.ScenarioSetup(scenarioInfo);
 #line 142
@@ -433,18 +433,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 144
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 145
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is differently typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 146
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 147
-    testRunner.And("the match level is p-group", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 148
     testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 149
+#line 148
     testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 150
+#line 149
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 151
+#line 150
+    testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a p group match")]
+        public virtual void _1010SearchWithAPGroupMatch()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a p group match", ((string[])(null)));
+#line 152
+  this.ScenarioSetup(scenarioInfo);
+#line 153
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 154
+    testRunner.And("the matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 155
+    testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 156
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 157
+    testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 158
+    testRunner.And("the match level is p-group", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 159
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 160
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 161
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 162
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -455,27 +484,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         public virtual void _1010SearchWithAGGroupMatch()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a g group match", ((string[])(null)));
-#line 153
+#line 164
   this.ScenarioSetup(scenarioInfo);
-#line 154
+#line 165
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 155
+#line 166
     testRunner.And("the matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 156
+#line 167
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 157
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 158
+#line 168
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 169
     testRunner.And("the matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 159
+#line 170
     testRunner.And("the match level is g-group", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 160
+#line 171
     testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 161
+#line 172
     testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 162
+#line 173
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 163
+#line 174
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

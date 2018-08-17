@@ -6,7 +6,7 @@
     Given a patient has a match
     And the matching donor is a 10/10 match
     And the matching donor is of type adult
-    And the matching donor is TGS typed
+    And the matching donor is TGS typed at each locus
     And the matching donor is in registry: Anthony Nolan
     And the match level is p-group
     And the search type is adult
@@ -18,7 +18,7 @@
     Given a patient has a match
     And the matching donor is a 10/10 match
     And the matching donor is of type adult
-    And the matching donor is TGS typed
+    And the matching donor is TGS typed at each locus
     And the matching donor is in registry: Anthony Nolan
     And the match level is g-group
     And the search type is adult

@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 8
     testRunner.And("the matching donor is a 6/6 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 10
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 11
@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 20
     testRunner.And("the matching donor is a 6/6 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 22
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 23
@@ -141,7 +141,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 33
     testRunner.And("the matching donor is a 6/6 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 34
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 35
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 36

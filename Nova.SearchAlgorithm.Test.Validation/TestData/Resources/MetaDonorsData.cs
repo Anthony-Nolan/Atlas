@@ -44,6 +44,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
+                    new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),
                 }
             },
             new MetaDonor
@@ -116,7 +117,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Cord,
                 Registry = RegistryCode.DKMS,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-            }
+            },
         };
     }
 }

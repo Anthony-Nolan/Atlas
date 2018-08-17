@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
 #line 8
     testRunner.And("the matching donor is a 8/8 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-    testRunner.And("the matching donor is TGS typed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 10
     testRunner.And("the matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 11

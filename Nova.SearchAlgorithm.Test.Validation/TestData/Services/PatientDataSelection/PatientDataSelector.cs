@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
         void SetFullMatchingTypingResolution(HlaTypingResolution resolution);
+        void SetMatchingTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
         void SetMatchingDonorUntypedAtLocus(Locus locus);
 
@@ -106,6 +107,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var hlaTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => resolution);
             SetTypingResolutions(hlaTypingResolutions);
+        }
+
+        public void SetMatchingTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
+        {
+            var typingResolutions = metaDonorSelectionCriteria.TypingResolutions;
+            SetTypingResolutions(typingResolutions.Map((l, p, existingResolution) => l == locus ? resolution : existingResolution));
         }
 
         /// <summary>

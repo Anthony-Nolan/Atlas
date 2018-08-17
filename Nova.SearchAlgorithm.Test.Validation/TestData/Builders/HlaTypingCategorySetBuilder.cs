@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 {
@@ -43,10 +44,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             categories.DRB1_2 = resolution;
             return this;
         }
-        
+
+        public HlaTypingCategorySetBuilder WithTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
+        {
+            categories.SetAtLocus(locus, TypePositions.Both, resolution);
+            return this;
+        }
+
         public HlaTypingCategorySetBuilder UntypedAtLocus(Locus locus)
         {
-            categories.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
+            return this.WithTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
+        }
+
+        public HlaTypingCategorySetBuilder WithDifferentlyTypedLoci()
+        {
+            foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
+            {
+                categories.SetAtLocus(resolution.Key, TypePositions.Both, resolution.Value);
+            }
+
             return this;
         }
 
