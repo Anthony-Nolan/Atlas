@@ -70,6 +70,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             {
                 case "p-group":
                     return MatchGrade.PGroup;
+                case "g-group":
+                    return MatchGrade.GGroup;
                 default:
                     ScenarioContext.Current.Pending();
                     return null;

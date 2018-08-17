@@ -41,16 +41,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             PatientHlaSelectionCriteria criteria
         )
         {
-            // if patient should be mismatched at this position
+            // patient should be mismatched at this position
             if (!criteria.HlaMatches.DataAtPosition(locus, position))
             {
                 return GetNonMatchingAllele(locus, position);
             }
 
-            // if patient should have a P-group match at this position
+            // patient should have a P-group match at this position
             if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
             {
                 return GetPGroupMatchLevelTgsAllele(locus);
+            }
+            
+            // patient should have a G-group match at this position
+            if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.GGroup)
+            {
+                return GetGGroupMatchLevelTgsAllele(locus, position, genotypeAllele);
             }
 
             return genotypeAllele;
@@ -67,6 +73,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().DataAtLocus(locus);
 
             return TgsAllele.FromTestDataAllele(alleleAtLocus, locus);
+        }
+
+        private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
+        {
+            var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
+            var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele); 
+            
+            return TgsAllele.FromTestDataAllele(allele, locus);
         }
     }
 }

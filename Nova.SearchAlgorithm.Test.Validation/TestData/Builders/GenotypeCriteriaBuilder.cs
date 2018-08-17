@@ -11,7 +11,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             genotypeCriteria = new GenotypeCriteria
             {
-                HasNonUniquePGroups = new PhenotypeInfo<bool>(),
+                PGroupMatchPossible = new PhenotypeInfo<bool>(),
+                GGroupMatchPossible = new PhenotypeInfo<bool>(),
                 TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
                 {
                     A_1 = TgsHlaTypingCategory.FourFieldAllele,
@@ -52,9 +53,30 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
         
-        public GenotypeCriteriaBuilder WithNonUniquePGroupsAtAllLoci()
+        public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.HasNonUniquePGroups = new PhenotypeInfo<bool>
+            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>
+            {
+                A_1 = true,
+                A_2 = true,
+                B_1 = true,
+                B_2 = true,
+                C_1 = true,
+                C_2 = true,
+                DPB1_1 = true,
+                DPB1_2 = true,
+                DQB1_1 = true,
+                DQB1_2 = true,
+                DRB1_1 = true,
+                DRB1_2 = true
+            };
+            
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
+        {
+            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>
             {
                 A_1 = true,
                 A_2 = true,

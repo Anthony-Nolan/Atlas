@@ -45,8 +45,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private static bool FulfilsMatchLevelCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return criteria.MatchLevels.ToEnumerable().All(ml => ml != MatchLevel.PGroup)
-                   || metaDonor.GenotypeCriteria.HasNonUniquePGroups.ToEnumerable().Any(x => x);
+            // TODO: NOVA-1662: Allow p/g-group matching per-locus
+            if (criteria.MatchLevels.ToEnumerable().All(ml => ml == MatchLevel.PGroup))
+            {
+                return metaDonor.GenotypeCriteria.PGroupMatchPossible.ToEnumerable().All(x => x);
+            }
+            if (criteria.MatchLevels.ToEnumerable().All(ml => ml == MatchLevel.GGroup))
+            {
+                return metaDonor.GenotypeCriteria.GGroupMatchPossible.ToEnumerable().All(x => x);
+            }
+
+            return true;
         }
 
         private static bool FulfilsTgsTypingCategoryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)

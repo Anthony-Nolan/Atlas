@@ -57,6 +57,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
         
         [Test]
+        public void GetPatientHla_ForGGroupMatchLevel_DoesNotSelectExactAlleleMatch()
+        {
+            var criteria = new PatientHlaSelectionCriteria
+            {
+                MatchLevels = new PhenotypeInfo<int>().Map((l, p, noop) => MatchLevel.GGroup)
+            };
+
+            var metaDonor = new MetaDonor
+            {
+                Genotype =
+                {
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromTestDataAllele(alleles.First(), locus))
+                }
+            };
+
+            var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+        }
+        
+        [Test]
         public void GetPatientHla_ForUntypedLocus_ReturnsNull()
         {
             var criteria = new PatientHlaSelectionCriteria

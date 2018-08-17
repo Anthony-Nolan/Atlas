@@ -15,7 +15,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection
 {
     [TestFixture]
-    public class PatientDataSelectorTests
+    public class MetaDonorSelectorTests
     {
         private IMetaDonorRepository metaDonorRepository;
         private IMetaDonorSelector metaDonorSelector;
@@ -101,7 +101,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetMetaDonor_WhenPGroupLevelMatchRequiredAndMetaDonorHasUniquePGroups_ThrowsException()
+        public void GetMetaDonor_WhenPGroupLevelMatchRequiredAndNoMetaDonorHasPGroupMatchPossible_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -110,7 +110,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                     GenotypeCriteria = new GenotypeCriteria
                     {
                         TgsHlaCategories = defaultTgsTypingCategories,
-                        HasNonUniquePGroups = new PhenotypeInfo<bool>().Map((l, p, noop) => false)
+                        PGroupMatchPossible = new PhenotypeInfo<bool>().Map((l, p, noop) => false)
                     },
                 }
             };
@@ -120,6 +120,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 MatchingTgsTypingCategories = defaultTgsTypingCategories,
                 MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.PGroup),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenGGroupLevelMatchRequiredAndNoMetaDonorHasGGroupMatchPossible_ThrowsException()
+        {
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria
+                    {
+                        TgsHlaCategories = defaultTgsTypingCategories,
+                        GGroupMatchPossible = new PhenotypeInfo<bool>().Map((l, p, noop) => false)
+                    },
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+                MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.GGroup),
             };
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));

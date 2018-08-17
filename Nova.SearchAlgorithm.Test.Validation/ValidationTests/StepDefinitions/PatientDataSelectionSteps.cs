@@ -182,6 +182,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "p-group":
                     patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
                     break;
+                case "g-group":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
+                    break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;

@@ -12,6 +12,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// </summary>
         public PhenotypeInfo<TgsHlaTypingCategory> TgsHlaCategories { get; set; }
         
-        public PhenotypeInfo<bool> HasNonUniquePGroups { get; set; }
+        /// <summary>
+        /// Will be used to determine whether to draw test data from the specially curated dataset that allows for p-group level matching
+        /// </summary>
+        public PhenotypeInfo<bool> PGroupMatchPossible { get; set; }
+        
+        /// <summary>
+        /// Will be used to determine whether to draw test data from the specially curated dataset that allows for g-group level matching
+        /// </summary>
+        public PhenotypeInfo<bool> GGroupMatchPossible { get; set; }
     }
 }
