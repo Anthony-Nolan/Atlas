@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
@@ -23,7 +22,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             A_1 =
                 new List<AlleleTestData>
                 {
-                    new AlleleTestData {AlleleName = "*01:01:03", PGroup = "01:01P", GGroup = "01:01:01G", NmdpCode = "*01:AG", Serology = "1"},
                     new AlleleTestData {AlleleName = "*02:03:01", PGroup = "02:03P", GGroup = "02:03:01G", NmdpCode = "*02:JXF", Serology = "203"},
                     new AlleleTestData {AlleleName = "*02:07:01", PGroup = "02:07P", GGroup = "02:07:01G", NmdpCode = "*02:HXA", Serology = "2"},
                     new AlleleTestData {AlleleName = "*02:11:01", PGroup = "02:11P", GGroup = "02:11:01G", NmdpCode = "*02:HRB", Serology = "2"},
@@ -54,7 +52,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new AlleleTestData {AlleleName = "*15:02:01", PGroup = "15:02P", GGroup = "15:02:01G", NmdpCode = "*15:DCJ", Serology = "75"},
                     new AlleleTestData {AlleleName = "*15:11:01", PGroup = "15:11P", GGroup = "15:11:01G", NmdpCode = "*15:CUY", Serology = "75"},
                     new AlleleTestData {AlleleName = "*15:25:01", PGroup = "15:25P", GGroup = "15:25:01G", NmdpCode = "*15:DSV", Serology = "62"},
-                    new AlleleTestData {AlleleName = "*18:01:02", PGroup = "15:18P", GGroup = "15:18:01G", NmdpCode = "*18:FDX", Serology = "18"},
                 },
             B_2 = new List<AlleleTestData>
             {
@@ -65,7 +62,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 new AlleleTestData {AlleleName = "*15:09:01", PGroup = "15:09P", GGroup = "15:09:01G", NmdpCode = "*15:EEZ", Serology = "70"},
                 new AlleleTestData {AlleleName = "*15:11:01", PGroup = "15:11P", GGroup = "15:11:01G", NmdpCode = "*15:CUY", Serology = "75"},
                 new AlleleTestData {AlleleName = "*15:25:01", PGroup = "15:25P", GGroup = "15:25:01G", NmdpCode = "*15:DSV", Serology = "62"},
-                new AlleleTestData {AlleleName = "*18:01:02", PGroup = "15:18P", GGroup = "15:18:01G", NmdpCode = "*18:FDX", Serology = "18"},
             },
             C_1 =
                 new List<AlleleTestData>
