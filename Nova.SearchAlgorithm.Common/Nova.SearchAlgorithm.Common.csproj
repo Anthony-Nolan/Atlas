@@ -127,6 +127,7 @@
     <Compile Include="Models\IStorableInCloudTable.cs" />
     <Compile Include="Models\InputDonor.cs" />
     <Compile Include="Models\Locus.cs" />
+    <Compile Include="Models\LocusInfo.cs" />
     <Compile Include="Models\LocusSearchCriteria.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialHlaMatchRelation.cs" />

@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             alleleRepository = Substitute.For<IAlleleRepository>();
 
-            alleleRepository.FourFieldAllelesWithNonUniquePGroups().Returns(new PhenotypeInfo<bool>().Map((l, p, noop) => alleles));
+            alleleRepository.DonorAllelesForPGroupMatching().Returns(new LocusInfo<bool>().Map((l, noop) => alleles));
 
             patientHlaSelector = new PatientHlaSelector(alleleRepository);
         }
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromFourFieldAllele(alleles.First(), locus))
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromTestDataAllele(alleles.First(), locus))
                 }
             };
 
@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromFourFieldAllele(alleles.First(), locus))
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromTestDataAllele(alleles.First(), locus))
                 }
             };
 

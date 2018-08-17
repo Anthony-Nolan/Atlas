@@ -10,7 +10,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles();
-        PhenotypeInfo<List<AlleleTestData>> FourFieldAllelesWithNonUniquePGroups();
+        LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
+        LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
     }
 
     /// <summary>
@@ -33,14 +34,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             return Resources.TwoFieldAlleles.Alleles;
         }
 
-        // TODO: NOVA-1567: Allow for 2 and 3 field alleles when testing based on p-group level matches
-        public PhenotypeInfo<List<AlleleTestData>> FourFieldAllelesWithNonUniquePGroups()
+        public LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching()
         {
-            return FourFieldAlleles().Map((l, p, alleles) =>
-            {
-                var pGroupGroups = alleles.GroupBy(a => a.PGroup).Where(g => g.Count() > 1).ToList();
-                return alleles.Where(a => pGroupGroups.Any(g => g.Key == a.PGroup)).ToList();
-            });
+            return Resources.PGroupMatchingAlleles.DonorAlleles;
+        }
+
+        public LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching()
+        {
+            return Resources.PGroupMatchingAlleles.PatientAlleles;
         }
     }
 }

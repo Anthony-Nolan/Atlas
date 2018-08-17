@@ -363,6 +363,7 @@
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\Resources\Alleles\FourFieldAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\NonMatchingAlleles.cs" />
+    <Compile Include="TestData\Resources\Alleles\PGroupMatchingAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\ThreeFieldAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\TwoFieldAlleles.cs" />
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
@@ -377,6 +378,11 @@
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
+    <Compile Include="ValidationTests\Features\Scoring.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Scoring.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\EightOutOfEightSearch.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -394,6 +400,7 @@
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectionSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -412,6 +419,10 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="ValidationTests\Features\Scoring.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
+    </None>
     <None Include="ValidationTests\Features\EightOutOfEightSearch.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>

@@ -138,3 +138,4 @@ Feature: Ten Out Of Ten Search
     And the search is run against the Anthony Nolan registry only
     When I run a 10/10 search
     Then the results should contain the specified donor
+    
