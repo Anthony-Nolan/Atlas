@@ -119,31 +119,39 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (typingCategory)
             {
                 case "TGS":
-                case "TGS (four field)":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
+                    break;
+                case "TGS (four field)":
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "TGS (three field)":
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "TGS (two field)":
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "three field truncated allele":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele);
                     break;
                 case "two field truncated allele":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele);
                     break;
                 case "XX code":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.XxCode);
                     break;
                 case "NMDP code":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.NmdpCode);
                     break;
                 case "serology":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Serology);
                     break;
                 default:

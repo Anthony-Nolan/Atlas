@@ -99,6 +99,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
+        
+        // We want to guarantee that 'arbitrary' typing resolution does not match other, more specific resolutions
+        [Test]
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_AndCriteriaAllowsArbitraryResolution_DoesThrowsException()
+        {
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria {TgsHlaCategories = defaultTgsTypingCategories},
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingTgsTypingCategories = new PhenotypeInfo<bool>().Map((l, p, noop) => TgsHlaTypingCategory.Arbitrary),
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
 
         [Test]
         public void GetMetaDonor_WhenPGroupLevelMatchRequiredAndNoMetaDonorHasPGroupMatchPossible_ThrowsException()

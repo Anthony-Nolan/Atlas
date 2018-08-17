@@ -33,6 +33,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         ThreeFieldAllele,
         // A TGS typed, 2 field allele
         TwoFieldAllele,
+        // Used to indicate that any underlying TGS typed allele is acceptable
+        // When comparing enum values, 'arbitary' should only match 'arbitrary', not any other values
+        Arbitrary,
     }
 
     public static class HlaTypingCategoryHelper

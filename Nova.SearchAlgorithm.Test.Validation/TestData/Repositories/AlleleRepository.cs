@@ -10,6 +10,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles();
+        
+        /// <returns>
+        /// All 2, 3, and 4 field alleles from the datasets generated from TGS-typed donors in Solar.
+        /// Does not include manually curated test data used for e.g. p-group/g-group matching
+        /// </returns>
+        PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles();
+        
         PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
@@ -50,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             return Resources.PGroupMatchingAlleles.PatientAlleles;
         }
 
-        private PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()
+        public PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()
         {
             return FourFieldAlleles().Map((l, p, alleles) =>
                 alleles.Concat(ThreeFieldAlleles().DataAtPosition(l, p))
