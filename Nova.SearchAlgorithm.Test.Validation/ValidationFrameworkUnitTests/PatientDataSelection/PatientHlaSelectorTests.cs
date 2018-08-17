@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             alleleRepository = Substitute.For<IAlleleRepository>();
 
-            alleleRepository.AllelesWithNonUniquePGroups().Returns(new PhenotypeInfo<bool>().Map((l, p, noop) => alleles));
+            alleleRepository.DonorAllelesForPGroupMatching().Returns(new LocusInfo<bool>().Map((l, noop) => alleles));
 
             patientHlaSelector = new PatientHlaSelector(alleleRepository);
         }

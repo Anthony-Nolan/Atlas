@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             // if patient should have a P-group match at this position
             if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
             {
-                return GetDifferentTgsAlleleFromSamePGroup(locus, genotypeAllele, position, metaDonor);
+                return GetPGroupMatchLevelTgsAllele(locus);
             }
 
             return genotypeAllele;
@@ -63,17 +63,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position);
         }
 
-        private TgsAllele GetDifferentTgsAlleleFromSamePGroup(Locus locus, TgsAllele allele, TypePositions position, MetaDonor metaDonor)
+        private TgsAllele GetPGroupMatchLevelTgsAllele(Locus locus)
         {
-            var allelesAtLocus = alleleRepository.AllelesWithNonUniquePGroups().DataAtLocus(locus);
-            var allAllelesAtLocus = allelesAtLocus.Item1.Concat(allelesAtLocus.Item2).ToList();
-            var pGroup = allAllelesAtLocus.First(a => a.AlleleName == allele.TgsTypedAllele).PGroup;
-            var selectedAllele = allAllelesAtLocus.First(a =>
-                a.PGroup == pGroup
-                && a.AlleleName != allele.TgsTypedAllele
-                && a.AlleleName != metaDonor.Genotype.Hla.DataAtPosition(locus, position.Other()).TgsTypedAllele);
+            var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().DataAtLocus(locus);
 
-            return TgsAllele.FromTwoFieldAllele(selectedAllele, locus);
+            return TgsAllele.FromTwoFieldAllele(alleleAtLocus, locus);
         }
     }
 }

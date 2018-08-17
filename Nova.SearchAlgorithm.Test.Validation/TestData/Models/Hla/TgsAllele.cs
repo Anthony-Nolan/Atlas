@@ -10,6 +10,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
     /// </summary>
     public class TgsAllele
     {
+        public static TgsAllele FromTestDataAllele(AlleleTestData allele, Locus locus)
+        {
+            var fieldCount = allele.AlleleName.Split(':').Length;
+            switch (fieldCount)
+            {
+                case 4:
+                    return FromFourFieldAllele(allele, locus);
+                case 3:
+                    return FromThreeFieldAllele(allele, locus);
+                case 2:
+                    return FromTwoFieldAllele(allele, locus);
+                default:
+                    throw new ArgumentOutOfRangeException("TGS test allele of unexpected field count found: " + allele.AlleleName);
+            }
+        }
+
         public static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, Locus locus)
         {
             var threeFieldAllele = new AlleleTestData
@@ -57,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// <summary>
         /// Returns the most accurate TGS typing stored for the allele, either two, three, or four field
         /// </summary>
-        public string TgsTypedAllele => FourFieldAllele ?? ThreeFieldAllele ?? TwoFieldAllele; 
+        public string TgsTypedAllele => FourFieldAllele ?? ThreeFieldAllele ?? TwoFieldAllele;
 
         private string FourFieldAllele { get; set; }
         public string ThreeFieldAllele { get; private set; }

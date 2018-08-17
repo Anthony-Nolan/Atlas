@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             // If we need to specify that some loci have unique p-groups, this will need changing
             if (criteria.HasNonUniquePGroups.ToEnumerable().Any(x => x))
             {
-                return GenotypeWithNonUniquePGroups();
+                return GenotypeForPGroupMatching();
             }
 
             return RandomGenotype(criteria);
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 hla.SetAtLocus(locus, TypePositions.One, RandomTgsAllele(locus, TypePositions.One, tgsTypingCategory.Item1));
                 hla.SetAtLocus(locus, TypePositions.Two, RandomTgsAllele(locus, TypePositions.Two, tgsTypingCategory.Item2));
             }
-            
+
             return new Genotype
             {
                 Hla = hla
@@ -81,24 +81,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         }
 
         /// <summary>
-        /// Creates a full Genotype from the available TGS allele names, such that each position's allele corresponds to a p-group that is shared with at least one other allele in the dataset
-        /// This is necessary to ensure we can find a match with a lower grade than a full sequence level match
+        /// Creates a full Genotype from the available dataset curated to give p-group level matches.
+        /// The corresponding curated patient hla data must be used to guarantee a p-group level match
         /// </summary>
-        /// <returns></returns>
-        private static Genotype GenotypeWithNonUniquePGroups()
+        private static Genotype GenotypeForPGroupMatching()
         {
             return new Genotype
             {
-                Hla = AlleleRepository.AllelesWithNonUniquePGroups().MapByLocus((l, alleles1, alleles2) =>
+                Hla = AlleleRepository.DonorAllelesForPGroupMatching().ToPhenotypeInfo((l, alleles) =>
                 {
-                    var pGroupGroups = alleles1.Concat(alleles2).Distinct().GroupBy(a => a.PGroup).ToList();
-                    var selectedPGroup = pGroupGroups[Random.Next(pGroupGroups.Count)];
+                    var allele1 = GetRandomElement(alleles);
+                    var allele2 = GetRandomElement(alleles);
 
-                    // All p-group level matches will be homozygous.
-                    // This cannot be changed util we have enough test data to ensure that the selected patient data will not be a direct or cross match
                     return new Tuple<TgsAllele, TgsAllele>(
-                        TgsAllele.FromTwoFieldAllele(selectedPGroup.AsEnumerable().First(), l),
-                        TgsAllele.FromTwoFieldAllele(selectedPGroup.AsEnumerable().First(), l)
+                        TgsAllele.FromTestDataAllele(allele1, l),
+                        TgsAllele.FromTestDataAllele(allele2, l)
                     );
                 })
             };
