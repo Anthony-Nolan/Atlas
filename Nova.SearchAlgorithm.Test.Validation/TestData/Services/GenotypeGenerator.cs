@@ -64,20 +64,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     alleles = AlleleRepository
                         .FourFieldAlleles()
                         .DataAtPosition(locus, position);
-                    return TgsAllele.FromFourFieldAllele(GetRandomElement(alleles), locus);
+                    break;
                 case TgsHlaTypingCategory.ThreeFieldAllele:
                     alleles = AlleleRepository
                         .ThreeFieldAlleles()
                         .DataAtPosition(locus, position);
-                    return TgsAllele.FromThreeFieldAllele(GetRandomElement(alleles), locus);
+                    break;
                 case TgsHlaTypingCategory.TwoFieldAllele:
                     alleles = AlleleRepository
                         .TwoFieldAlleles()
                         .DataAtPosition(locus, position);
-                    return TgsAllele.FromTwoFieldAllele(GetRandomElement(alleles), locus);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
+            return TgsAllele.FromTestDataAllele(GetRandomElement(alleles), locus);
         }
 
         /// <summary>
@@ -108,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// As we're randomly selecting alleles for donors, there's a chance this will actually match
         public static readonly Genotype NonMatchingGenotype = new Genotype
         {
-            Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromFourFieldAllele(a, l))
+            Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromTestDataAllele(a, l))
         };
 
         private static T GetRandomElement<T>(IReadOnlyList<T> data)

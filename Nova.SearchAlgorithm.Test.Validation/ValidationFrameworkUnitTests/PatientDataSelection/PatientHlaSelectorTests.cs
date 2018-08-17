@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromFourFieldAllele(alleles.First(), locus))
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromTestDataAllele(alleles.First(), locus))
                 }
             };
 
@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromFourFieldAllele(alleles.First(), locus))
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromTestDataAllele(alleles.First(), locus))
                 }
             };
 

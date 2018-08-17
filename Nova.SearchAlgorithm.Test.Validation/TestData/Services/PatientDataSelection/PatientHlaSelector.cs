@@ -23,12 +23,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public PhenotypeInfo<string> GetPatientHla(MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
         {
-            return metaDonor.Genotype.Hla.Map((locus, position, allele) => GetHlaName(locus, position, allele, metaDonor, criteria));
+            return metaDonor.Genotype.Hla.Map((locus, position, allele) => GetHlaName(locus, position, allele, criteria));
         }
 
-        private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele, MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
+        private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele, PatientHlaSelectionCriteria criteria)
         {
-            var allele = GetTgsAllele(locus, position, tgsAllele, metaDonor, criteria);
+            var allele = GetTgsAllele(locus, position, tgsAllele, criteria);
             var typingResolution = criteria.PatientTypingResolutions.DataAtPosition(locus, position);
 
             return allele.GetHlaForCategory(typingResolution);
@@ -38,7 +38,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             Locus locus,
             TypePositions position,
             TgsAllele genotypeAllele,
-            MetaDonor metaDonor,
             PatientHlaSelectionCriteria criteria
         )
         {
@@ -67,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().DataAtLocus(locus);
 
-            return TgsAllele.FromTwoFieldAllele(alleleAtLocus, locus);
+            return TgsAllele.FromTestDataAllele(alleleAtLocus, locus);
         }
     }
 }

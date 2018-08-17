@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             }
         }
 
-        public static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, Locus locus)
+        private static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, Locus locus)
         {
             var threeFieldAllele = new AlleleTestData
             {
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             return tgsAllele;
         }
 
-        public static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, Locus locus)
+        private static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, Locus locus)
         {
             var twoFieldAllele = new AlleleTestData
             {
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             return tgsAllele;
         }
 
-        public static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, Locus locus)
+        private static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, Locus locus)
         {
             return new TgsAllele
             {
