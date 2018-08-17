@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private static readonly PhenotypeInfo<MatchLevel> DefaultMatchLevels = new PhenotypeInfo<MatchLevel>().Map((l, p, noop) => MatchLevel.Allele);
 
         private static readonly PhenotypeInfo<HlaTypingResolution> DefaultTypingResolutions =
-            new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Tgs);
+            new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Arbitrary);
 
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
         {

@@ -7,60 +7,60 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 {
     public class HlaTypingCategorySetBuilder
     {
-        private readonly PhenotypeInfo<HlaTypingResolution> categories;
+        private readonly PhenotypeInfo<HlaTypingResolution> resolutions;
 
         public HlaTypingCategorySetBuilder()
         {
-            categories = new PhenotypeInfo<HlaTypingResolution>
+            resolutions = new PhenotypeInfo<HlaTypingResolution>
             {
-                A_1 = HlaTypingResolution.Tgs,
-                A_2 = HlaTypingResolution.Tgs,
-                B_1 = HlaTypingResolution.Tgs,
-                B_2 = HlaTypingResolution.Tgs,
-                C_1 = HlaTypingResolution.Tgs,
-                C_2 = HlaTypingResolution.Tgs,
-                DPB1_1 = HlaTypingResolution.Tgs,
-                DPB1_2 = HlaTypingResolution.Tgs,
-                DQB1_1 = HlaTypingResolution.Tgs,
-                DQB1_2 = HlaTypingResolution.Tgs,
-                DRB1_1 = HlaTypingResolution.Tgs,
-                DRB1_2 = HlaTypingResolution.Tgs,
+                A_1 = HlaTypingResolution.Arbitrary,
+                A_2 = HlaTypingResolution.Arbitrary,
+                B_1 = HlaTypingResolution.Arbitrary,
+                B_2 = HlaTypingResolution.Arbitrary,
+                C_1 = HlaTypingResolution.Arbitrary,
+                C_2 = HlaTypingResolution.Arbitrary,
+                DPB1_1 = HlaTypingResolution.Arbitrary,
+                DPB1_2 = HlaTypingResolution.Arbitrary,
+                DQB1_1 = HlaTypingResolution.Arbitrary,
+                DQB1_2 = HlaTypingResolution.Arbitrary,
+                DRB1_1 = HlaTypingResolution.Arbitrary,
+                DRB1_2 = HlaTypingResolution.Arbitrary,
             };
         }
 
-        public HlaTypingCategorySetBuilder WithAllLociAtTypingCategory(HlaTypingResolution resolution)
+        public HlaTypingCategorySetBuilder WithAllLociAtTypingResolution(HlaTypingResolution resolution)
         {
-            categories.A_1 = resolution;
-            categories.A_2 = resolution;
-            categories.B_1 = resolution;
-            categories.B_2 = resolution;
-            categories.C_1 = resolution;
-            categories.C_2 = resolution;
-            categories.DPB1_1 = resolution;
-            categories.DPB1_2 = resolution;
-            categories.DQB1_1 = resolution;
-            categories.DQB1_2 = resolution;
-            categories.DRB1_1 = resolution;
-            categories.DRB1_2 = resolution;
+            resolutions.A_1 = resolution;
+            resolutions.A_2 = resolution;
+            resolutions.B_1 = resolution;
+            resolutions.B_2 = resolution;
+            resolutions.C_1 = resolution;
+            resolutions.C_2 = resolution;
+            resolutions.DPB1_1 = resolution;
+            resolutions.DPB1_2 = resolution;
+            resolutions.DQB1_1 = resolution;
+            resolutions.DQB1_2 = resolution;
+            resolutions.DRB1_1 = resolution;
+            resolutions.DRB1_2 = resolution;
             return this;
         }
 
         public HlaTypingCategorySetBuilder WithTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            categories.SetAtLocus(locus, TypePositions.Both, resolution);
+            resolutions.SetAtLocus(locus, TypePositions.Both, resolution);
             return this;
         }
 
         public HlaTypingCategorySetBuilder UntypedAtLocus(Locus locus)
         {
-            return this.WithTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
+            return WithTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
         }
 
         public HlaTypingCategorySetBuilder WithDifferentlyTypedLoci()
         {
             foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
             {
-                categories.SetAtLocus(resolution.Key, TypePositions.Both, resolution.Value);
+                resolutions.SetAtLocus(resolution.Key, TypePositions.Both, resolution.Value);
             }
 
             return this;
@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 
         public PhenotypeInfo<HlaTypingResolution> Build()
         {
-            return categories;
+            return resolutions;
         }
     }
 }

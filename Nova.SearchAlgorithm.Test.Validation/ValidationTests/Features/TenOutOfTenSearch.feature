@@ -49,7 +49,6 @@ Feature: Ten Out Of Ten Search
   Scenario: 10/10 Search with untyped donor at C
     Given a patient has a match
     And the matching donor is a 10/10 match    
-    And the matching donor is TGS typed at each locus
     And the matching donor is untyped at Locus C
     And the matching donor is of type adult
     And the matching donor is in registry: Anthony Nolan
@@ -61,7 +60,6 @@ Feature: Ten Out Of Ten Search
   Scenario: 10/10 Search with untyped donor at Dqb1
     Given a patient has a match
     And the matching donor is a 10/10 match    
-    And the matching donor is TGS typed at each locus
     And the matching donor is untyped at Locus Dqb1
     And the matching donor is of type adult
     And the matching donor is in registry: Anthony Nolan
@@ -73,7 +71,6 @@ Feature: Ten Out Of Ten Search
   Scenario: 10/10 Search with untyped donor at C and Dqb1
     Given a patient has a match
     And the matching donor is a 10/10 match    
-    And the matching donor is TGS typed at each locus
     And the matching donor is untyped at Locus C
     And the matching donor is untyped at Locus Dqb1
     And the matching donor is of type adult
@@ -153,7 +150,6 @@ Feature: Ten Out Of Ten Search
     Given a patient has a match
     And the matching donor is a 10/10 match
     And the matching donor is of type adult
-    And the matching donor is TGS typed at each locus
     And the matching donor is in registry: Anthony Nolan
     And the match level is p-group
     And the search type is adult
@@ -165,7 +161,6 @@ Feature: Ten Out Of Ten Search
     Given a patient has a match
     And the matching donor is a 10/10 match
     And the matching donor is of type adult
-    And the matching donor is TGS typed at each locus
     And the matching donor is in registry: Anthony Nolan
     And the match level is g-group
     And the search type is adult

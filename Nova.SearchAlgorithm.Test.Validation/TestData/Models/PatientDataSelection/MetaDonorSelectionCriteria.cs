@@ -8,23 +8,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
     {
         public DonorType MatchingDonorType { get; set; }
         public RegistryCode MatchingRegistry { get; set; }
-        
+
         /// <summary>
         /// Determines how many fields the matching meta-donor's genotype should have at each position
         /// </summary>
-        public PhenotypeInfo<TgsHlaTypingCategory> MatchingTgsTypingCategories { get; set; } = new PhenotypeInfo<TgsHlaTypingCategory>();
-        
+        public PhenotypeInfo<TgsHlaTypingCategory> MatchingTgsTypingCategories { get; set; } = new PhenotypeInfo<bool>()
+            .Map((l, p, noop) => l == Locus.Dpb1 ? TgsHlaTypingCategory.FourFieldAllele : TgsHlaTypingCategory.Arbitrary);
+
         /// <summary>
         /// The match level of the expected matching donor (if a match is expected)
         /// Necessary for meta-donor selection as we must ensure the genotype is valid for the specified match type
         /// e.g. for a p-group match, ensure that other alleles in the same p-group exist in our dataset
         /// </summary>
-        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; } 
-        
+        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
+
         /// <summary>
         /// Determines to what resolution the expected matched donor is typed
         /// Necessary for meta-donor selection to ensure the selected meta-donor contains donors at the expected resolution
         /// </summary>
-        public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
+        public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<bool>()
+            .Map((l, p, noop) => HlaTypingResolution.Arbitrary);
     }
 }

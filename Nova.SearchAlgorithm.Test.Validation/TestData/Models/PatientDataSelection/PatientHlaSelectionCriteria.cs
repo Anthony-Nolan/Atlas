@@ -5,22 +5,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
 {
     public class PatientHlaSelectionCriteria
     {
-        // TODO: NOVA-1642 - patient typing resolutions to be set by step; currently defaulting to TGS
-        public PhenotypeInfo<HlaTypingResolution> PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
-        {
-            A_1 = HlaTypingResolution.Tgs,
-            A_2 = HlaTypingResolution.Tgs,
-            B_1 = HlaTypingResolution.Tgs,
-            B_2 = HlaTypingResolution.Tgs,
-            C_1 = HlaTypingResolution.Tgs,
-            C_2 = HlaTypingResolution.Tgs,
-            DPB1_1 = HlaTypingResolution.Tgs,
-            DPB1_2 = HlaTypingResolution.Tgs,
-            DQB1_1 = HlaTypingResolution.Tgs,
-            DQB1_2 = HlaTypingResolution.Tgs,
-            DRB1_1 = HlaTypingResolution.Tgs,
-            DRB1_2 = HlaTypingResolution.Tgs,
-        };
+        // TODO: NOVA-1642 - patient typing resolutions to be set by step; currently defaulting to Arbitrary
+        public PhenotypeInfo<HlaTypingResolution> PatientTypingResolutions = new PhenotypeInfo<bool>()
+            .Map((l, p, noop) => HlaTypingResolution.Arbitrary);
         
         /// <summary>
         /// Determines whether each position should have a donor match

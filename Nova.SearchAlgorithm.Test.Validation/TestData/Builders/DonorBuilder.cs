@@ -18,35 +18,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             donor = new Donor {DonorId = DonorIdGenerator.NextId()};
         }
 
-        public DonorBuilder WithFullTypingCategory(HlaTypingResolution resolution)
-        {
-            switch (resolution)
-            {
-                case HlaTypingResolution.Tgs:
-                    AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.TgsTypedAllele));
-                    break;
-                case HlaTypingResolution.ThreeFieldTruncatedAllele:
-                    AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.ThreeFieldAllele));
-                    break;
-                case HlaTypingResolution.TwoFieldTruncatedAllele:
-                    AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.TwoFieldAllele));
-                    break;
-                case HlaTypingResolution.XxCode:
-                    AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.XxCode));
-                    break;
-                case HlaTypingResolution.NmdpCode:
-                    AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.NmdpCode));
-                    break;
-                case HlaTypingResolution.Serology:
-                    AdornDonorWithHla(genotype.Hla.Map((l, p, tgsAllele) => tgsAllele.Serology));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(resolution), resolution, null);
-            }
-
-            return this;
-        }
-
         public DonorBuilder OfType(DonorType donorType)
         {
             donor.DonorType = donorType;

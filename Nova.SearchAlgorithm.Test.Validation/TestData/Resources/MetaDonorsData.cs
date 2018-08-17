@@ -18,10 +18,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.XxCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .Build(),
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
@@ -56,10 +56,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .Build(),
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
@@ -74,9 +74,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .Build(),
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingCategory(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
+using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 {
@@ -102,6 +105,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                     return Serology;
                 case HlaTypingResolution.Untyped:
                     return null;
+                case HlaTypingResolution.Arbitrary:
+                    // TODO: NOVA-1665: Weight this such that NMDP codes / XX codes are less frequent, to reduce time spent running hla update
+                    var options = new List<string>
+                    {
+                        FourFieldAllele, ThreeFieldAllele, TwoFieldAllele, Serology, NmdpCode, XxCode
+                    }.Where(x => x != null).ToList();
+
+                    return options.GetRandomElement();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typingResolution), typingResolution, null);
             }
