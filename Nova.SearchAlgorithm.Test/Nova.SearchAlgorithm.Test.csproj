@@ -359,6 +359,7 @@
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTestCaseSources.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\Dpb1TceGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
@@ -415,6 +416,9 @@
     <EmbeddedResource Include="Resources\Controllers\SearchRequests\validAdultSearchRequest.json" />
     <None Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="MatchingDictionary\Data\wmda-v3330\tce\dpb_tce.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
