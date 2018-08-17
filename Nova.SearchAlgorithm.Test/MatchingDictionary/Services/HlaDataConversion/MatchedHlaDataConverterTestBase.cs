@@ -16,6 +16,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         protected const MatchLocus MatchedLocus = MatchLocus.A;
         protected const SerologySubtype SeroSubtype = SerologySubtype.Broad;
         protected const string SerologyName = "999";
+        protected const string PGroupName = "999:999P";
+        protected const string GGroupName = "999:999G";
         protected const bool IsDirectMapping = true;
 
         [OneTimeSetUp]
@@ -33,7 +35,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             infoForMatching.HlaTyping.Returns(serologyTyping);
             infoForMatching.MatchingSerologies.Returns(new[] { new MatchingSerology(serologyTyping, IsDirectMapping) });
 
-            var matchedSerology = new MatchedSerology(infoForMatching, new List<string>(), new List<string>());
+            var matchedSerology = new MatchedSerology(
+                infoForMatching,
+                new List<string> { PGroupName },
+                new List<string> { GGroupName });
 
             var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedSerology });
 

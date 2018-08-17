@@ -28,6 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
             return 
                 wmdaFileContents
+                .Select(line => line.Trim())
                 .Select(MapLineOfFileContentsToWmdaHlaTypingElseNull)
                 .Where(typing => typing != null && typing.IsPermittedLocusTyping());
         }
