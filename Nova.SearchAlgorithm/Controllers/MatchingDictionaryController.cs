@@ -68,10 +68,10 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("dpb1-tce-groups-lookup")]
-        public async Task<IDpb1TceGroupsLookupResult> GetDpb1TceGroupsLookupResult(
+        public async Task<IEnumerable<string>> GetDpb1TceGroupsLookupResult(
             string dpb1HlaName)
         {
-            return await dpb1TceGroupsLookupService.GetDpb1TceGroupsLookupResult(dpb1HlaName);
+            return await dpb1TceGroupsLookupService.GetDpb1TceGroups(dpb1HlaName);
         }
 
         [HttpGet]

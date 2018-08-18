@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IDpb1TceGroupsLookupService : IHlaSearchingLookupService<IDpb1TceGroupsLookupResult>
     {
-        Task<IDpb1TceGroupsLookupResult> GetDpb1TceGroupsLookupResult(string hlaName);
+        Task<IEnumerable<string>> GetDpb1TceGroups(string dpb1HlaName);
     }
 
     public class Dpb1TceGroupsLookupService : 
@@ -44,9 +44,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
         }
 
-        public async Task<IDpb1TceGroupsLookupResult> GetDpb1TceGroupsLookupResult(string hlaName)
+        public async Task<IEnumerable<string>> GetDpb1TceGroups(string dpb1HlaName)
         {
-            return await GetHlaLookupResult(MatchLocus.Dpb1, hlaName);
+            var lookupResult = await GetHlaLookupResult(MatchLocus.Dpb1, dpb1HlaName);
+            return lookupResult.TceGroups;
         }
 
         protected override IEnumerable<IDpb1TceGroupsLookupResult> ConvertTableEntitiesToLookupResults(
