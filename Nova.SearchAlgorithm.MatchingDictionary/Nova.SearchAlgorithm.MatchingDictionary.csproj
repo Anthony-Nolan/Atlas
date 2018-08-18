@@ -261,6 +261,7 @@
     <Compile Include="Services\HlaDataConversion\AlleleTypingExtensions.cs" />
     <Compile Include="Services\HlaDataConversion\HlaScoringDataConverter.cs" />
     <Compile Include="Services\HlaDataConversion\MatchedHlaDataConverterBase.cs" />
+    <Compile Include="Services\Dpb1TceGroupsLookupService.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\AssociatedCalculator.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\BroadCalculator.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\MatchingSerologyCalculatorFactory.cs" />
