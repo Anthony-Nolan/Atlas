@@ -5,11 +5,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public static class HlaMatchingLookupResultExtensions
     {
-        public static HlaLookupTableEntity ToTableEntity(this IHlaMatchingLookupResult lookupResult)
-        {
-            return new HlaLookupTableEntity(lookupResult);
-        }
-
         public static IHlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity entity)
         {
             var matchingPGroups = entity.GetHlaInfo<IEnumerable<string>>();

@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; }
         IEnumerable<AlleleStatus> AlleleStatuses { get; }
         IEnumerable<AlleleNameHistory> AlleleNameHistories { get; }
-        IEnumerable<Dpb1TceGroup> Dpb1TceGroups { get; }
+        IEnumerable<Dpb1TceGroupAssignment> Dpb1TceGroupAssignments { get; }
     }
 
     public class WmdaDataRepository : IWmdaDataRepository
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; private set; }
         public IEnumerable<AlleleStatus> AlleleStatuses { get; private set; }
         public IEnumerable<AlleleNameHistory> AlleleNameHistories { get; private set; }
-        public IEnumerable<Dpb1TceGroup> Dpb1TceGroups { get; private set; }
+        public IEnumerable<Dpb1TceGroupAssignment> Dpb1TceGroupAssignments { get; private set; }
 
         private readonly IWmdaFileReader wmdaFileReader;
 
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor());
             AlleleStatuses = GetWmdaData(new AlleleStatusExtractor());
             AlleleNameHistories = GetWmdaData(new AlleleHistoryExtractor());
-            Dpb1TceGroups = GetWmdaData(new Dpb1TceGroupExtractor());
+            Dpb1TceGroupAssignments = GetWmdaData(new Dpb1TceGroupAssignmentExtractor());
         }
 
         private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor)

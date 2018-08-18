@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 {
-    public class Dpb1TceGroup : IWmdaHlaTyping, IEquatable<Dpb1TceGroup>
+    public class Dpb1TceGroupAssignment : IWmdaHlaTyping, IEquatable<Dpb1TceGroupAssignment>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
 
@@ -21,30 +21,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         /// </summary>
         public string Name { get; set; }
 
-        public string ProteinName { get; }
         public string VersionOneAssignment { get; }
         public string VersionTwoAssignment { get; }
 
-        public Dpb1TceGroup(
+        public Dpb1TceGroupAssignment(
             string alleleName,
-            string proteinName, 
             string versionOneAssignment, 
             string versionTwoAssignment)
         {
             Name = alleleName;
-            ProteinName = proteinName;
             VersionOneAssignment = versionOneAssignment;
             VersionTwoAssignment = versionTwoAssignment;
         }
 
-        public bool Equals(Dpb1TceGroup other)
+        public bool Equals(Dpb1TceGroupAssignment other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
                 string.Equals(Locus, other.Locus) && 
-                string.Equals(Name, other.Name) && 
-                string.Equals(ProteinName, other.ProteinName) && 
+                string.Equals(Name, other.Name) &&
                 string.Equals(VersionOneAssignment, other.VersionOneAssignment) && 
                 string.Equals(VersionTwoAssignment, other.VersionTwoAssignment);
         }
@@ -54,7 +50,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((Dpb1TceGroup) obj);
+            return Equals((Dpb1TceGroupAssignment) obj);
         }
 
         public override int GetHashCode()
@@ -63,7 +59,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             {
                 var hashCode = Locus.GetHashCode();
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
-                hashCode = (hashCode * 397) ^ ProteinName.GetHashCode();
                 hashCode = (hashCode * 397) ^ VersionOneAssignment.GetHashCode();
                 hashCode = (hashCode * 397) ^ VersionTwoAssignment.GetHashCode();
                 return hashCode;

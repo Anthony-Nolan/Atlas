@@ -359,9 +359,10 @@
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTestCaseSources.cs" />
-    <Compile Include="MatchingDictionary\Repositories\Wmda\Dpb1TceGroupsTest.cs" />
+    <Compile Include="MatchingDictionary\Repositories\Wmda\Dpb1TceGroupAssignmentTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleStatusesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\GGroupsTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Dpb1TceGroups\Dpb1TceGroupsServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaDataConversion\HlaScoringDataConverterTest.cs" />
