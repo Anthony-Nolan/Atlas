@@ -1,6 +1,5 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
@@ -68,7 +67,7 @@ namespace Nova.SearchAlgorithm.Controllers
 
         [HttpGet]
         [Route("dpb1-tce-groups-lookup")]
-        public async Task<IEnumerable<string>> GetDpb1TceGroupsLookupResult(
+        public async Task<IEnumerable<string>> GetDpb1TceGroups(
             string dpb1HlaName)
         {
             return await dpb1TceGroupsLookupService.GetDpb1TceGroups(dpb1HlaName);
