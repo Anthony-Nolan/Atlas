@@ -52,8 +52,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             foreach (var locus in LocusHelpers.AllLoci())
             {
                 var tgsTypingCategory = criteria.TgsHlaCategories.DataAtLocus(locus);
-                hla.SetAtLocus(locus, TypePositions.One, RandomTgsAllele(locus, TypePositions.One, tgsTypingCategory.Item1));
-                hla.SetAtLocus(locus, TypePositions.Two, RandomTgsAllele(locus, TypePositions.Two, tgsTypingCategory.Item2));
+                var randomTgsAllele1 = RandomTgsAllele(locus, TypePositions.One, tgsTypingCategory.Item1);
+                hla.SetAtLocus(locus, TypePositions.One, randomTgsAllele1);
+
+                if (criteria.IsHomozygous.DataAtLocus(locus))
+                {
+                    hla.SetAtLocus(locus, TypePositions.Two, randomTgsAllele1);
+
+                }
+                else
+                {
+                    var randomTgsAllele2 = RandomTgsAllele(locus, TypePositions.Two, tgsTypingCategory.Item2);
+                    hla.SetAtLocus(locus, TypePositions.Two, randomTgsAllele2);
+                }
             }
 
             return new Genotype

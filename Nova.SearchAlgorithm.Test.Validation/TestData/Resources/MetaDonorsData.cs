@@ -108,6 +108,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 }
             },
 
+            // Homozygous at A
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().HomozygousAtLocus(Locus.A).Build(),
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                {
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
+                }
+            },
+            
+            // Cord
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
@@ -115,6 +128,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
 
+            // Adult at DKMS
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -122,6 +136,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
 
+            // Cord at DKMS
             new MetaDonor
             {
                 DonorType = DonorType.Cord,

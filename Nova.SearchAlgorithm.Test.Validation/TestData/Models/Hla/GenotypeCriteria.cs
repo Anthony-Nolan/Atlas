@@ -21,5 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// Will be used to determine whether to draw test data from the specially curated dataset that allows for g-group level matching
         /// </summary>
         public PhenotypeInfo<bool> GGroupMatchPossible { get; set; }
+        
+        public LocusInfo<bool> IsHomozygous { get; set; }
     }
 }
