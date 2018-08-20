@@ -20,6 +20,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetMatchingTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
         void SetMatchingDonorUntypedAtLocus(Locus locus);
+        void SetMatchingDonorHomozygousAtLocus(Locus locus);
 
         void SetPatientUntypedAt(Locus locus);
 
@@ -132,6 +133,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetMatchingDonorUntypedAtLocus(Locus locus)
         {
             databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
+        }
+
+        public void SetMatchingDonorHomozygousAtLocus(Locus locus)
+        {
+            metaDonorSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
         }
 
         public void SetPatientUntypedAt(Locus locus)

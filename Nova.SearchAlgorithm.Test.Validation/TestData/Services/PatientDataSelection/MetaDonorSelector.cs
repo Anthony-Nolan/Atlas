@@ -23,11 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public MetaDonor GetMetaDonor(MetaDonorSelectionCriteria criteria)
         {
             var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
-                .Where(md => FulfilsDonorTypeCriteria(criteria, md)
-                             && FulfilsRegistryCriteria(criteria, md)
-                             && FulfilsTgsTypingCategoryCriteria(criteria, md)
-                             && FulfilsMatchLevelCriteria(criteria, md)
-                             && FulfilsTypingResolutionCriteria(criteria, md))
+                .Where(md => FulfilsDonorInfoCriteria(criteria, md) && FulfilsDonorHlaCriteria(criteria, md))
                 .ToList();
 
             if (!matchingMetaDonors.Any())
@@ -36,6 +32,36 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
 
             return matchingMetaDonors.First();
+        }
+
+        private static bool FulfilsDonorInfoCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            return FulfilsDonorTypeCriteria(criteria, metaDonor)
+                   && FulfilsRegistryCriteria(criteria, metaDonor);
+        }
+        
+        private static bool FulfilsDonorHlaCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            return FulfilsTgsTypingCategoryCriteria(criteria, metaDonor)
+                   && FulfilsHomozygousCriteria(criteria, metaDonor)
+                   && FulfilsMatchLevelCriteria(criteria, metaDonor)
+                   && FulfilsTypingResolutionCriteria(criteria, metaDonor);
+        }
+
+        private static bool FulfilsHomozygousCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            var perLocusFulfilment = criteria.IsHomozygous.Map((locus, shouldBeHomozygous) =>
+            {
+                if (shouldBeHomozygous)
+                {
+                    return metaDonor.GenotypeCriteria.IsHomozygous.DataAtLocus(locus);
+                }
+
+                // If we don't explicitly need a homozygous donor, we don't mind whether the donor is homozygous or not
+                return true;
+            });
+
+            return perLocusFulfilment.ToEnumerable().All(x => x);
         }
 
         private static bool FulfilsTypingResolutionCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)

@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         
         // We want to guarantee that 'arbitrary' typing resolution does not match other, more specific resolutions
         [Test]
-        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_AndCriteriaAllowsArbitraryResolution_DoesThrowsException()
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_AndCriteriaAllowsArbitraryResolution_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -260,6 +260,103 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
             metaDonor.DonorType.Should().Be(donorType);
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenNoLocusShouldBeHomozygous_AndMetaDonorIsHomozygous_ReturnsMetaDonor()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria
+                    {
+                        TgsHlaCategories = defaultTgsTypingCategories,
+                        IsHomozygous = new LocusInfo<bool>().Map((l, noop) => true)
+                    },
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false)
+            };
+
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
+
+            metaDonor.Should().NotBeNull();
+        }      
+        
+        [Test]
+        public void GetMetaDonor_WhenLocusShouldBeHomozygous_AndMetaDonorIsHomozygous_ReturnsMetaDonor()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria
+                    {
+                        TgsHlaCategories = defaultTgsTypingCategories,
+                        IsHomozygous = new LocusInfo<bool>().Map((l, noop) => true)
+                    },
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                IsHomozygous = new LocusInfo<bool>().Map((l, noop) => true)
+            };
+
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
+
+            metaDonor.Should().NotBeNull();
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenLocusShouldBeHomozygous_AndMetaDonorIsNotHomozygous_ThrowsException()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteria
+                    {
+                        TgsHlaCategories = defaultTgsTypingCategories,
+                        IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false)
+                    },
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchingTgsTypingCategories = defaultTgsTypingCategories,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                IsHomozygous = new LocusInfo<bool>().Map((l, noop) => true)
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
     }
 }

@@ -28,5 +28,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// </summary>
         public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<bool>()
             .Map((l, p, noop) => HlaTypingResolution.Arbitrary);
+        
+        /// <summary>
+        /// Determines whether the expected meta-donor should be homozygous at each locus
+        /// </summary>
+        public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false);
     }
 }
