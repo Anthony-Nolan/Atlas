@@ -30,13 +30,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (locus)
             {
                 case "C":
-                    patientDataSelector.SetPatientUntypedAt(Locus.C);
+                    patientDataSelector.SetPatientUntypedAtLocus(Locus.C);
                     break;
                 case "Dpb1":
-                    patientDataSelector.SetPatientUntypedAt(Locus.Dpb1);
+                    patientDataSelector.SetPatientUntypedAtLocus(Locus.Dpb1);
                     break;
                 case "Dqb1":
-                    patientDataSelector.SetPatientUntypedAt(Locus.Dqb1);
+                    patientDataSelector.SetPatientUntypedAtLocus(Locus.Dqb1);
                     break;
                 case "A":
                 case "B":

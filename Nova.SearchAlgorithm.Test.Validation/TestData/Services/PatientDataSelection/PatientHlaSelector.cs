@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -23,7 +25,53 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public PhenotypeInfo<string> GetPatientHla(MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
         {
-            return metaDonor.Genotype.Hla.Map((locus, position, allele) => GetHlaName(locus, position, allele, criteria));
+            return metaDonor.Genotype.Hla.MapByLocus((locus, allele1, allele2) => GetHlaName(locus, allele1, allele2, criteria));
+        }
+
+        private Tuple<string, string> GetHlaName(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)
+        {
+            TgsAllele allele1;
+            TgsAllele allele2;
+
+            if (criteria.IsHomozygous.DataAtLocus(locus))
+            {
+                var allele = GetHomozygousAllele(locus, tgsAllele1, tgsAllele2, criteria);
+                allele1 = allele;
+                allele2 = allele;
+            }
+            else
+            {
+                allele1 = GetTgsAllele(locus, TypePositions.One, tgsAllele1, criteria);
+                allele2 = GetTgsAllele(locus, TypePositions.Two, tgsAllele2, criteria);
+            }
+
+            var typingResolution1 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.One);
+            var typingResolution2 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.Two);
+
+            var hla1 = allele1.GetHlaForCategory(typingResolution1);
+            var hla2 = allele2.GetHlaForCategory(typingResolution2);
+            return new Tuple<string, string>(hla1, hla2);
+        }
+
+        private static TgsAllele GetHomozygousAllele(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)
+        {
+            var shouldMatchAtLocus = criteria.HlaMatches.DataAtLocus(locus);
+            if (shouldMatchAtLocus.Item1 ^ shouldMatchAtLocus.Item2)
+            {
+                return shouldMatchAtLocus.Item1 ? tgsAllele1 : tgsAllele2;
+            }
+
+            if (!shouldMatchAtLocus.Item1 && !shouldMatchAtLocus.Item2)
+            {
+                return tgsAllele1;
+            }
+
+            if (tgsAllele1 != tgsAllele2)
+            {
+                throw new HlaSelectionException("Cannot selected 2/2 match for homozygous patient when donor is not also homozygous");
+            }
+
+            return tgsAllele1;
         }
 
         private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele, PatientHlaSelectionCriteria criteria)
@@ -52,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             {
                 return GetPGroupMatchLevelTgsAllele(locus);
             }
-            
+
             // patient should have a G-group match at this position
             if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.GGroup)
             {
@@ -78,8 +126,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
         {
             var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
-            var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele); 
-            
+            var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele);
+
             return TgsAllele.FromTestDataAllele(allele, locus);
         }
     }

@@ -346,7 +346,9 @@
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
     <Compile Include="TestData\Builders\GenotypeCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
+    <Compile Include="TestData\Builders\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
+    <Compile Include="TestData\Exceptions\HlaSelectionException.cs" />
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
