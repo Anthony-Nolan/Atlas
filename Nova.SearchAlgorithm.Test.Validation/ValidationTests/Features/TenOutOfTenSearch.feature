@@ -135,7 +135,7 @@ Feature: Ten Out Of Ten Search
     When I run a 10/10 search
     Then the results should contain the specified donor
 
-  Scenario: 10/10 Search with a mixed typing resolution
+  Scenario: 10/10 Search with a mixed typing resolution match
     Given a patient has a match
     And the matching donor is a 10/10 match
     And the matching donor is of type adult

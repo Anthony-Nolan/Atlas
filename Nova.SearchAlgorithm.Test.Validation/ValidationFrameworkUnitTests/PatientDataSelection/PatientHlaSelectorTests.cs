@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             alleleRepository = Substitute.For<IAlleleRepository>();
 
-            alleleRepository.DonorAllelesForPGroupMatching().Returns(new LocusInfo<bool>().Map((l, noop) => alleles));
+            alleleRepository.DonorAllelesForPGroupMatching().Returns(new LocusInfo<List<AlleleTestData>>(alleles));
 
             patientHlaSelector = new PatientHlaSelector(alleleRepository);
         }
@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             var criteria = new PatientHlaSelectionCriteria
             {
-                MatchLevels = new PhenotypeInfo<int>().Map((l, p, noop) => MatchLevel.PGroup)
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.PGroup)
             };
 
             var metaDonor = new MetaDonor
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             var criteria = new PatientHlaSelectionCriteria
             {
-                MatchLevels = new PhenotypeInfo<int>().Map((l, p, noop) => MatchLevel.GGroup)
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.GGroup)
             };
 
             var metaDonor = new MetaDonor
@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             var criteria = new PatientHlaSelectionCriteria
             {
-                PatientTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Untyped)
+                PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Untyped),
             };
 
             var metaDonor = new MetaDonor

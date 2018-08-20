@@ -56,43 +56,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         
         public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>
-            {
-                A_1 = true,
-                A_2 = true,
-                B_1 = true,
-                B_2 = true,
-                C_1 = true,
-                C_2 = true,
-                DPB1_1 = true,
-                DPB1_2 = true,
-                DQB1_1 = true,
-                DQB1_2 = true,
-                DRB1_1 = true,
-                DRB1_2 = true
-            };
-            
+            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>(true);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>
-            {
-                A_1 = true,
-                A_2 = true,
-                B_1 = true,
-                B_2 = true,
-                C_1 = true,
-                C_2 = true,
-                DPB1_1 = true,
-                DPB1_2 = true,
-                DQB1_1 = true,
-                DQB1_2 = true,
-                DRB1_1 = true,
-                DRB1_2 = true
-            };
-            
+            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>(true);
             return this;
         }
         

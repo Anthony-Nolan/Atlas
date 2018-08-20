@@ -39,10 +39,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private MetaDonor selectedMetaDonor;
 
-        private static readonly PhenotypeInfo<MatchLevel> DefaultMatchLevels = new PhenotypeInfo<MatchLevel>().Map((l, p, noop) => MatchLevel.Allele);
+        private static readonly PhenotypeInfo<MatchLevel> DefaultMatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele);
 
         private static readonly PhenotypeInfo<HlaTypingResolution> DefaultTypingResolutions =
-            new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Arbitrary);
+            new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
 
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
         {
@@ -96,7 +96,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
         {
-            var matchLevels = new PhenotypeInfo<int>().Map((l, p, noop) => matchLevel);
+            var matchLevels = new PhenotypeInfo<MatchLevel>(matchLevel);
             SetMatchLevels(matchLevels);
         }
 
@@ -105,7 +105,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         public void SetFullMatchingTypingResolution(HlaTypingResolution resolution)
         {
-            var hlaTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => resolution);
+            var hlaTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(resolution);
             SetTypingResolutions(hlaTypingResolutions);
         }
 

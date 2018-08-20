@@ -94,13 +94,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var criteria = new MetaDonorSelectionCriteria
             {
-                MatchingTgsTypingCategories = new PhenotypeInfo<bool>().Map((l, p, noop) => TgsHlaTypingCategory.ThreeFieldAllele)
+                MatchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.ThreeFieldAllele)
             };
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
         
-        // We want to guarantee that 'arbitrary' typing resolution does not match other, more specific resolutions
+        /// <summary>
+        /// We want to guarantee that 'arbitrary' typing resolution does not match other, more specific resolutions
+        ///
+        /// i.e. one interpretation of a patient selector specifying 'arbitrary' data would be that it could sucessfully match any other resolution
+        /// This test makes it explicit to maintainers that 'arbitrary' resolution in the patient selection should only match
+        /// meta-donors that also specifiy 'arbitrary' resolution
+        /// </summary>
         [Test]
         public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_AndCriteriaAllowsArbitraryResolution_DoesThrowsException()
         {
@@ -115,7 +121,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var criteria = new MetaDonorSelectionCriteria
             {
-                MatchingTgsTypingCategories = new PhenotypeInfo<bool>().Map((l, p, noop) => TgsHlaTypingCategory.Arbitrary),
+                MatchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.Arbitrary),
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
@@ -132,7 +138,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                     GenotypeCriteria = new GenotypeCriteria
                     {
                         TgsHlaCategories = defaultTgsTypingCategories,
-                        PGroupMatchPossible = new PhenotypeInfo<bool>().Map((l, p, noop) => false)
+                        PGroupMatchPossible = new PhenotypeInfo<bool>(false),
                     },
                 }
             };
@@ -141,7 +147,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new MetaDonorSelectionCriteria
             {
                 MatchingTgsTypingCategories = defaultTgsTypingCategories,
-                MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.PGroup),
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.PGroup),
             };
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
@@ -157,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                     GenotypeCriteria = new GenotypeCriteria
                     {
                         TgsHlaCategories = defaultTgsTypingCategories,
-                        GGroupMatchPossible = new PhenotypeInfo<bool>().Map((l, p, noop) => false)
+                        GGroupMatchPossible = new PhenotypeInfo<bool>(false)
                     },
                 }
             };
@@ -187,7 +193,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new MetaDonorSelectionCriteria
             {
                 MatchingTgsTypingCategories = defaultTgsTypingCategories,
-                TypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.NmdpCode),
+                TypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.NmdpCode),
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
