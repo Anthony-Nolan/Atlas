@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles();
+        PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
     }
@@ -23,15 +24,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         {
             return Resources.FourFieldAlleles.Alleles;
         }
-        
+
         public PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles()
         {
             return Resources.ThreeFieldAlleles.Alleles;
         }
-        
+
         public PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles()
         {
             return Resources.TwoFieldAlleles.Alleles;
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching()
+        {
+            return Resources.GGroupMatchingAlleles.Alleles;
         }
 
         public LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching()
@@ -42,6 +48,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching()
         {
             return Resources.PGroupMatchingAlleles.PatientAlleles;
+        }
+
+        private PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()
+        {
+            return FourFieldAlleles().Map((l, p, alleles) =>
+                alleles.Concat(ThreeFieldAlleles().DataAtPosition(l, p))
+                    .Concat(TwoFieldAlleles().DataAtPosition(l, p))
+                    .ToList()
+            );
         }
     }
 }

@@ -26,11 +26,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 return RandomGenotype(DefaultCriteria);
             }
 
-            // Naive implementation - if any locus requires non-unique p-groups, ensure all loci have non-unique p-groups
-            // If we need to specify that some loci have unique p-groups, this will need changing
-            if (criteria.HasNonUniquePGroups.ToEnumerable().Any(x => x))
+            // Naive implementation - if any locus requires p-group match, ensure all loci set up from p-group matching dataset
+            // TODO: NOVA-1662: Allow specification per-locus
+            if (criteria.PGroupMatchPossible.ToEnumerable().Any(x => x))
             {
                 return GenotypeForPGroupMatching();
+            }
+
+            // Naive implementation - if any locus requires g-group match, ensure all loci set up from g-group matching dataset
+            // TODO: NOVA-1662: Allow specification per-locus
+            if (criteria.GGroupMatchPossible.ToEnumerable().Any(x => x))
+            {
+                return GenotypeForGGroupMatching();
             }
 
             return RandomGenotype(criteria);
@@ -98,6 +105,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                         TgsAllele.FromTestDataAllele(allele1, l),
                         TgsAllele.FromTestDataAllele(allele2, l)
                     );
+                })
+            };
+        }
+        
+        /// <summary>
+        /// Creates a full Genotype from the available dataset curated to give g-group level matches.
+        /// </summary>
+        private static Genotype GenotypeForGGroupMatching()
+        {
+            return new Genotype
+            {
+                Hla = AlleleRepository.AllelesForGGroupMatching().Map((l, p, alleles) =>
+                {
+                    var allele = GetRandomElement(alleles);
+                    return TgsAllele.FromTestDataAllele(allele, l);
                 })
             };
         }

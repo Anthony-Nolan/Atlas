@@ -70,7 +70,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNonUniquePGroupsAtAllLoci().Build()
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithPGroupMatchPossibleAtAllLoci().Build()
+            },
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build()
             },
             new MetaDonor
             {
