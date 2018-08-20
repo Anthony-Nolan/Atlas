@@ -12,7 +12,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// <summary>
         /// Determines to what resolution the expected matched donor is typed
         /// </summary>
-        public PhenotypeInfo<HlaTypingResolution> MatchingTypingResolutions = new PhenotypeInfo<bool>()
-            .Map((l, p, noop) => HlaTypingResolution.Arbitrary);
+        public PhenotypeInfo<HlaTypingResolution> MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
     }
 }

@@ -18,6 +18,25 @@ namespace Nova.SearchAlgorithm.Common.Models
         public T DQB1 { get; set; }
         public T DRB1 { get; set; }
 
+        
+        public LocusInfo()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new LocusInfo with all inner values set to the same starting value
+        /// </summary>
+        /// <param name="initialValue">The initial value all inner locus position values should be given</param>
+        public LocusInfo(T initialValue)
+        {
+            A = initialValue;
+            B = initialValue;
+            C = initialValue;
+            DPB1 = initialValue;
+            DQB1 = initialValue;
+            DRB1 = initialValue;
+        }
+        
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public LocusInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {

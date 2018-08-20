@@ -124,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             var criteria = new PatientHlaSelectionCriteria
             {
-                PatientTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.Untyped)
+                PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Untyped),
             };
 
             var metaDonor = new MetaDonor

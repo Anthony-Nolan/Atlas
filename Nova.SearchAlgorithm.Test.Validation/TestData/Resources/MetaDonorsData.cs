@@ -7,11 +7,22 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
 {
+    /// <summary>
+    /// This class contains the static test data for the 'meta-donors'.
+    /// Each 'meta-donor' corresponds to a donor with fully TGS typed HLA (i.e. Genotype)
+    ///
+    /// This underlying genotype will be 'dumbed down' to lower resolutions. Each meta-donor specifies a list of resolutions -
+    /// each entry in this list will correspond to a donor in the database, which will share general donor information (e.g. type, registry),
+    /// with HLA according at the resolutions specified.
+    ///
+    /// When adding new tests, it is likely that new meta donors and/or resolutions for existing meta-donors will need to be added.
+    /// The tests should fail with an appropriate error message if no suitable meta-donor was found - if this happens new donors should be added here
+    /// </summary>
     public static class MetaDonorsData
     {
         public static readonly IEnumerable<MetaDonor> MetaDonors = new List<MetaDonor>
         {
-            // Arbitrary length tgs donors
+            // TGS donors with an arbitrary field count (2, 3, or 4)
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -42,8 +53,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),
                 }
             },
@@ -56,13 +65,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
                     .Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
-                {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
-                }
             },
 
             // Two field tgs donors
@@ -73,15 +75,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele)
                     .Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
-                {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
-                }
             },
 
             // P Group matching
@@ -90,10 +83,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithPGroupMatchPossibleAtAllLoci().Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
-                {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
-                }
             },
 
             // G Group matching
@@ -102,10 +91,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
-                {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
-                }
             },
 
             // Homozygous at A
