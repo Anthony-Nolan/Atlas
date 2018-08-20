@@ -18,6 +18,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         private IPatientHlaSelector patientHlaSelector;
         private IAlleleRepository alleleRepository;
         private List<AlleleTestData> alleles;
+        private List<AlleleTestData> pGroupAlleles;
+        private List<AlleleTestData> gGroupAlleles;
 
         [SetUp]
         public void SetUp()
@@ -28,11 +30,76 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 new AlleleTestData {AlleleName = "01:01:01:a-2", PGroup = "p-1", GGroup = "g-1", NmdpCode = "nmdp-1", Serology = "s-1"},
             };
 
+            pGroupAlleles = new List<AlleleTestData>
+            {
+                new AlleleTestData
+                {
+                    AlleleName = "01:01:01:a-1 (p-groups-matching)",
+                    PGroup = "p-1",
+                    GGroup = "g-1",
+                    NmdpCode = "nmdp-1",
+                    Serology = "s-1"
+                },
+                new AlleleTestData
+                {
+                    AlleleName = "01:01:01:a-2 (p-groups-matching)",
+                    PGroup = "p-1",
+                    GGroup = "g-1",
+                    NmdpCode = "nmdp-1",
+                    Serology = "s-1"
+                },
+            };
+
+            gGroupAlleles = new List<AlleleTestData>
+            {
+                new AlleleTestData
+                {
+                    AlleleName = "01:01:01:a-1 (g-groups-matching)",
+                    PGroup = "p-1",
+                    GGroup = "g-1",
+                    NmdpCode = "nmdp-1",
+                    Serology = "s-1"
+                },
+                new AlleleTestData
+                {
+                    AlleleName = "01:01:01:a-2 (g-groups-matching)",
+                    PGroup = "p-1",
+                    GGroup = "g-1",
+                    NmdpCode = "nmdp-1",
+                    Serology = "s-1"
+                },
+            };
+
             alleleRepository = Substitute.For<IAlleleRepository>();
 
-            alleleRepository.DonorAllelesForPGroupMatching().Returns(new LocusInfo<bool>().Map((l, noop) => alleles));
+            alleleRepository.AllTgsAlleles().Returns(new PhenotypeInfo<bool>().Map((l, p, noop) => alleles));
+            alleleRepository.PatientAllelesForPGroupMatching().Returns(new LocusInfo<bool>().Map((l, noop) => pGroupAlleles.First()));
+            alleleRepository.DonorAllelesForPGroupMatching().Returns(new LocusInfo<bool>().Map((l, noop) => pGroupAlleles));
+            alleleRepository.AllelesForGGroupMatching().Returns(new PhenotypeInfo<bool>().Map((l, p, noop) => gGroupAlleles));
 
             patientHlaSelector = new PatientHlaSelector(alleleRepository);
+        }
+
+        [Test]
+        public void GetPatientHla_ReturnsMatchingAlleleFromMetaDonorGenotype()
+        {
+            var criteria = new PatientHlaSelectionCriteria
+            {
+                HlaMatches = new PhenotypeInfo<bool>().Map((l, p, noop) => true),
+                MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.Allele),
+            };
+
+            var metaDonor = new MetaDonor
+            {
+                Genotype =
+                {
+                    Hla = new PhenotypeInfo<bool>().Map((locus, p, noop) => TgsAllele.FromTestDataAllele(alleles.First(), locus))
+                }
+            };
+
+            var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+            patientHla.A_1.Should().Be(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
         }
 
         [Test]
@@ -40,6 +107,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             var criteria = new PatientHlaSelectionCriteria
             {
+                HlaMatches = new PhenotypeInfo<bool>().Map((l, p, noop) => true),
                 MatchLevels = new PhenotypeInfo<int>().Map((l, p, noop) => MatchLevel.PGroup)
             };
 
@@ -55,12 +123,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
         }
-        
+
         [Test]
         public void GetPatientHla_ForGGroupMatchLevel_DoesNotSelectExactAlleleMatch()
         {
             var criteria = new PatientHlaSelectionCriteria
             {
+                HlaMatches = new PhenotypeInfo<bool>().Map((l, p, noop) => true),
                 MatchLevels = new PhenotypeInfo<int>().Map((l, p, noop) => MatchLevel.GGroup)
             };
 
@@ -76,7 +145,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
         }
-        
+
         [Test]
         public void GetPatientHla_ForUntypedLocus_ReturnsNull()
         {
