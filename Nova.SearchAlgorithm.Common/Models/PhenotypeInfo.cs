@@ -24,6 +24,30 @@ namespace Nova.SearchAlgorithm.Common.Models
         public T DRB1_1 { get; set; }
         public T DRB1_2 { get; set; }
 
+        public PhenotypeInfo()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new PhenotypeInfo with all inner values set to the same starting value
+        /// </summary>
+        /// <param name="initialValue">The initial value all inner locus position values should be given</param>
+        public PhenotypeInfo(T initialValue)
+        {
+            A_1 = initialValue;
+            A_2 = initialValue;
+            B_1 = initialValue;
+            B_2 = initialValue;
+            C_1 = initialValue;
+            C_2 = initialValue;
+            DPB1_1 = initialValue;
+            DPB1_2 = initialValue;
+            DQB1_1 = initialValue;
+            DQB1_2 = initialValue;
+            DRB1_1 = initialValue;
+            DRB1_2 = initialValue;
+        }
+        
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> Map<R>(Func<Locus, TypePositions, T, R> mapping)
         {
@@ -43,7 +67,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DRB1_2 = mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
             };
         }
-        
+
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, Tuple<R, R>> mapping)
         {
@@ -53,7 +77,7 @@ namespace Nova.SearchAlgorithm.Common.Models
             var dpb1 = mapping(Locus.Dpb1, DPB1_1, DPB1_2);
             var dqb1 = mapping(Locus.Dqb1, DQB1_1, DQB1_2);
             var drb1 = mapping(Locus.Drb1, DRB1_1, DRB1_2);
-            
+
             return new PhenotypeInfo<R>
             {
                 A_1 = a.Item1,
@@ -365,7 +389,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         }
 
         #region Equality operators
-        
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -413,7 +437,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             return !Equals(left, right);
         }
-        
+
         #endregion
     }
 }

@@ -176,6 +176,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (typingCategory)
             {
                 case "differently":
+                    // Mixed resolution must have 4-field TGS alleles, as one of the resolution options is three field truncated
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
                     {

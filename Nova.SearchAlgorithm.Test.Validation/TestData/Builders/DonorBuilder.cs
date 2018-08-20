@@ -1,5 +1,4 @@
-﻿using System;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -48,20 +47,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public Donor Build()
         {
             return donor;
-        }
-
-        private void AdornDonorWithHla(PhenotypeInfo<string> hla)
-        {
-            donor.A_1 = hla.A_1;
-            donor.A_2 = hla.A_2;
-            donor.B_1 = hla.B_1;
-            donor.B_2 = hla.B_2;
-            donor.DRB1_1 = hla.DRB1_1;
-            donor.DRB1_2 = hla.DRB1_2;
-            donor.C_1 = hla.C_1;
-            donor.C_2 = hla.C_2;
-            donor.DQB1_1 = hla.DQB1_1;
-            donor.DQB1_2 = hla.DQB1_2;
         }
     }
 }

@@ -414,10 +414,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a mixed typing resolution")]
-        public virtual void _1010SearchWithAMixedTypingResolution()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a mixed typing resolution match")]
+        public virtual void _1010SearchWithAMixedTypingResolutionMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a mixed typing resolution", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a mixed typing resolution match", ((string[])(null)));
 #line 138
   this.ScenarioSetup(scenarioInfo);
 #line 139

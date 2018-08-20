@@ -57,16 +57,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         
         public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>().Map((l, p, noop) => true);
+            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>(true);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>().Map((l, p, noop) => true);
+            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>(true);
             return this;
         }
-        
+
         public GenotypeCriteriaBuilder HomozygousAtLocus(Locus locus)
         {
             genotypeCriteria.IsHomozygous.SetAtLocus(locus, true);
