@@ -12,9 +12,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             criteria = new PatientHlaSelectionCriteria
             {
-                HlaMatches = new PhenotypeInfo<bool>().Map((l, p, noop) => true),
-                MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.Allele),
-                IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false),
+                HlaMatches = new PhenotypeInfo<bool>(true),
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele),
+                IsHomozygous = new LocusInfo<bool>(false),
             };
         }
 
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         
         public PatientHlaSelectionCriteriaBuilder WithMatchLevelAtAllLoci(MatchLevel matchLevel)
         {
-            criteria.MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => matchLevel);
+            criteria.MatchLevels = new PhenotypeInfo<MatchLevel>(matchLevel);
             return this;
         }
 

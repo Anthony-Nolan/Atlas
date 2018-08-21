@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
                     DRB1_1 = TgsHlaTypingCategory.Arbitrary,
                     DRB1_2 = TgsHlaTypingCategory.Arbitrary,
                 },
-                IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false),
+                IsHomozygous = new LocusInfo<bool>(false),
             };
         }
 

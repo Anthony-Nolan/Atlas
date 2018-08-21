@@ -23,6 +23,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// <summary>
         /// Determines whether the patient should be homozygous at each locus
         /// </summary>
-        public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false);
+        public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>(false);
     }
 }
