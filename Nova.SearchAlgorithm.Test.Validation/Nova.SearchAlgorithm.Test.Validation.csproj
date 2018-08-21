@@ -398,10 +398,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SixOutOfSixSearch.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\TenOutOfTenSearch.feature.cs">
+    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>TenOutOfTenSearch.feature</DependentUpon>
+      <DependentUpon>Search.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\TypingResolutions.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TypingResolutions.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectionSteps.cs" />
@@ -409,7 +414,8 @@
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ValidationTests\Features\TenOutOfTenSearch.feature" />
+    <Content Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature" />
+    <Content Include="ValidationTests\Features\TenOutOfTenSearch\TypingResolutions.feature" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
