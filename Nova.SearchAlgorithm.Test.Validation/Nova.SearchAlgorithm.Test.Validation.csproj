@@ -361,6 +361,7 @@
     <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\PatientHlaSelectionCriteria.cs" />
+    <Compile Include="TestData\Models\PatientResultSet.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />

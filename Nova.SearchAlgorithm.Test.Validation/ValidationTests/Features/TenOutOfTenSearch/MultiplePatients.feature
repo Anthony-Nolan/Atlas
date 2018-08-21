@@ -7,7 +7,7 @@ Feature: Ten Out Of Ten Search - Multiple patients
     Given a set of patients with matching donors
     And each matching donor is a 10/10 match
     And each matching donor is of type adult
-    And each matching donor is TGS (four-field) typed at each locus
+    And each matching donor is TGS (four field) typed at each locus
     And each matching donor is in registry: Anthony Nolan
     And the search type is adult
     And the search is run against the Anthony Nolan registry only
