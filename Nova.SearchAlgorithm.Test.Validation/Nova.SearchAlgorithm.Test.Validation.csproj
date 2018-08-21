@@ -385,20 +385,30 @@
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
+    <Compile Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AlignedRegistries.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\EightOutOfEightSearch\Search.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Search.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\Scoring.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Scoring.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfEightSearch.feature.cs">
+    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>EightOutOfEightSearch.feature</DependentUpon>
+      <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\SixOutOfSixSearch.feature.cs">
+    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SixOutOfSixSearch.feature</DependentUpon>
+      <DependentUpon>Search.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
@@ -427,6 +437,8 @@
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\MultiplePatients.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature" />
@@ -445,17 +457,17 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="ValidationTests\Features\EightOutOfEightSearch\Search.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>Search.feature.cs</LastGenOutput>
+    </None>
     <None Include="ValidationTests\Features\Scoring.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
     </None>
-    <None Include="ValidationTests\Features\EightOutOfEightSearch.feature">
+    <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
-    </None>
-    <None Include="ValidationTests\Features\SixOutOfSixSearch.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>SixOutOfSixSearch.feature.cs</LastGenOutput>
+      <LastGenOutput>Search.feature.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
