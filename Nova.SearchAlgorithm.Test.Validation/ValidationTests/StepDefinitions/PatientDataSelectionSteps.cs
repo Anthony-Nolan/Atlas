@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -20,6 +21,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+        
+        [Given(@"a set of patients with matching donors")]
+        public void GivenASetOfPatientsWithMatchingDonors()
+        {
+            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            ScenarioContext.Current.Set(multiplePatientDataSelector);
         }
 
         [Given(@"the patient is untyped at Locus (.*)")]
@@ -95,24 +103,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            switch (matchType)
-            {
-                case "10/10":
-                    patientDataSelector.SetAsTenOutOfTenMatch();
-                    break;
-                case "8/8":
-                    patientDataSelector.SetAsEightOutOfEightMatch();
-                    break;
-                case "6/6":
-                    patientDataSelector.SetAsSixOutOfSixMatch();
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
+            patientDataSelector = SetMatchType(patientDataSelector, matchType);
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is a (.*) match")]
+        public void GivenEachMatchingDonorIsOfMatchType(string matchType)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => SetMatchType(s, matchType)).ToList();
+            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the matching donor is untyped at Locus (.*)")]
@@ -144,31 +144,35 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         }
 
         [Given(@"the matching donor is of type (.*)")]
-        public void GivenTheMatchingDonorIsOfDonorType(string donorTypeString)
+        public void GivenTheMatchingDonorIsOfDonorType(string donorType)
         {
-            var donorType = (DonorType) Enum.Parse(typeof(DonorType), donorTypeString, true);
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            patientDataSelector.SetMatchingDonorType(donorType);
-
+            patientDataSelector = SetMatchDonorType(patientDataSelector, donorType);
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is of type (.*)")]
+        public void GivenEachMatchingDonorIsOfDonorType(string donorType)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => SetMatchDonorType(s, donorType)).ToList();
+            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the matching donor is (.*) typed at (.*)")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            if (locus == "each locus")
-            {
-                patientDataSelector = SetTypingCategoryAtAllLoci(patientDataSelector, typingCategory);
-            }
-            else
-            {
-                ScenarioContext.Current.Pending();
-            }
-
+            patientDataSelector = SetMatchTypingCategories(patientDataSelector, typingCategory, locus);
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is (.*) typed at (.*)")]
+        public void GivenEachMatchingDonorIsHlaTyped(string typingCategory, string locus)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => SetMatchTypingCategories(s, typingCategory, locus)).ToList();
+            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the matching donor is homozygous at (.*)")]
@@ -212,6 +216,97 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
+        [Given(@"the matching donor is in registry: (.*)")]
+        public void GivenTheMatchingDonorIsInRegistry(string registry)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+            patientDataSelector = SetMatchDonorRegistry(patientDataSelector, registry);
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is in registry: (.*)")]
+        public void GivenEachMatchingDonorIsInRegistry(string registry)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => SetMatchDonorRegistry(s, registry)).ToList();
+            ScenarioContext.Current.Set(selector);
+        }
+
+        [Given(@"the match level is (.*)")]
+        public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+
+            switch (matchLevel)
+            {
+                case "p-group":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
+                    break;
+                case "g-group":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        private static IPatientDataSelector SetMatchType(IPatientDataSelector patientDataSelector, string matchType)
+        {
+            switch (matchType)
+            {
+                case "10/10":
+                    patientDataSelector.SetAsTenOutOfTenMatch();
+                    break;
+                case "8/8":
+                    patientDataSelector.SetAsEightOutOfEightMatch();
+                    break;
+                case "6/6":
+                    patientDataSelector.SetAsSixOutOfSixMatch();
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataSelector;
+        }
+
+        private static IPatientDataSelector SetMatchDonorType(IPatientDataSelector patientDataSelector, string matchDonorType)
+        {
+            switch (matchDonorType)
+            {
+                case "adult":
+                    patientDataSelector.SetMatchingDonorType(DonorType.Adult);
+                    break;
+                case "cord":
+                    patientDataSelector.SetMatchingDonorType(DonorType.Cord);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataSelector;
+        }
+
+        private static IPatientDataSelector SetMatchTypingCategories(IPatientDataSelector patientDataSelector, string typingCategory, string locus)
+        {
+            switch (locus)
+            {
+                case "each locus":
+                    patientDataSelector = SetTypingCategoryAtAllLoci(patientDataSelector, typingCategory);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataSelector;
+        }
+
         private static IPatientDataSelector SetTypingCategoryAtAllLoci(IPatientDataSelector patientDataSelector, string typingCategory)
         {
             switch (typingCategory)
@@ -229,6 +324,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "TGS (four field)":
+                case "TGS (four-field)":
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
@@ -267,13 +363,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             return patientDataSelector;
         }
-
-        [Given(@"the matching donor is in registry: (.*)")]
-        public void GivenTheMatchingDonorIsInRegistry(string registryString)
+        
+        private static IPatientDataSelector SetMatchDonorRegistry(IPatientDataSelector patientDataSelector, string registry)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            switch (registryString)
+            switch (registry)
             {
                 case "Anthony Nolan":
                     patientDataSelector.SetMatchingRegistry(RegistryCode.AN);
@@ -283,28 +376,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
-        }
-        
-        [Given(@"the match level is (.*)")]
-        public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
-        {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            switch (matchLevel)
-            {
-                case "p-group":
-                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
-                    break;
-                case "g-group":
-                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
-            ScenarioContext.Current.Set(patientDataSelector);
+            return patientDataSelector;
         }
     }
 }
