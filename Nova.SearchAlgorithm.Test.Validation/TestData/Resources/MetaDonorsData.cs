@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
@@ -20,7 +21,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     /// </summary>
     public static class MetaDonorsData
     {
-        public static readonly IEnumerable<MetaDonor> MetaDonors = new List<MetaDonor>
+        /// <summary>
+        /// The number of meta-donors to create when testing a range of donors
+        /// </summary>
+        private const int DonorRangeCount = 50;
+
+        /// <summary>
+        /// Individual meta-donors. The majority of test data will be in here
+        /// </summary>
+        private static readonly IEnumerable<MetaDonor> IndividualMetaDonors = new List<MetaDonor>
         {
             // TGS donors with an arbitrary field count (2, 3, or 4)
             new MetaDonor
@@ -104,7 +113,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
                 }
             },
-            
+
             // Cord
             new MetaDonor
             {
@@ -129,5 +138,51 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
         };
+
+        /// <summary>
+        /// Used when testing a selection of four-field TGS typed meta-donors
+        /// </summary>
+        private static readonly IEnumerable<MetaDonor> FourFieldDonorRange = Enumerable.Range(0, DonorRangeCount).Select(i => new MetaDonor
+        {
+            DonorType = DonorType.Adult,
+            Registry = RegistryCode.AN,
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele).Build(),
+        });
+
+        /// <summary>
+        /// Used when testing a selection of three-field TGS typed meta-donors
+        /// </summary>
+        private static readonly IEnumerable<MetaDonor> ThreeFieldDonorRange = Enumerable.Range(0, DonorRangeCount).Select(i => new MetaDonor
+        {
+            DonorType = DonorType.Adult,
+            Registry = RegistryCode.AN,
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele).Build(),
+        });
+
+        /// <summary>
+        /// Used when testing a selection of two-field TGS meta-donors
+        /// </summary>
+        private static readonly IEnumerable<MetaDonor> TwoFieldDonorRange = Enumerable.Range(0, DonorRangeCount).Select(i => new MetaDonor
+        {
+            DonorType = DonorType.Adult,
+            Registry = RegistryCode.AN,
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele).Build(),
+        });
+
+        /// <summary>
+        /// Used when testing a selection of TGS meta-donors with an arbitrary number of fields
+        /// </summary>
+        private static readonly IEnumerable<MetaDonor> ArbitraryFieldCountDonorRange = Enumerable.Range(0, DonorRangeCount).Select(i => new MetaDonor
+        {
+            DonorType = DonorType.Adult,
+            Registry = RegistryCode.AN,
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
+        });
+
+        public static readonly IEnumerable<MetaDonor> MetaDonors = IndividualMetaDonors
+            .Concat(FourFieldDonorRange)
+            .Concat(ThreeFieldDonorRange)
+            .Concat(TwoFieldDonorRange)
+            .Concat(ArbitraryFieldCountDonorRange);
     }
 }
