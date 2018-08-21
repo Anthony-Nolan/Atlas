@@ -73,6 +73,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "Anthony Nolan":
                     patientDataSelector.SetMatchingRegistry(RegistryCode.AN);
                     break;
+                case "DKMS":
+                    patientDataSelector.SetMatchingRegistry(RegistryCode.DKMS);
+                    break;
+                case "BBMR":
+                case "NHSBT":
+                    patientDataSelector.SetMatchingRegistry(RegistryCode.NHSBT);
+                    break;
+                case "WBMDR":
+                case "WBS":
+                    patientDataSelector.SetMatchingRegistry(RegistryCode.WBS);
+                    break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;
