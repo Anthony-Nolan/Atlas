@@ -92,6 +92,93 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 3-field TGS typed donors")]
+        public virtual void _1010SearchForASelectionOf3_FieldTGSTypedDonors()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 3-field TGS typed donors", ((string[])(null)));
+#line 17
+  this.ScenarioSetup(scenarioInfo);
+#line 18
+    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 19
+    testRunner.And("each matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 20
+    testRunner.And("each matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 21
+    testRunner.And("each matching donor is TGS (three field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 22
+    testRunner.And("each matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 23
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 24
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 25
+    testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 26
+    testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 2-field TGS typed donors")]
+        public virtual void _1010SearchForASelectionOf2_FieldTGSTypedDonors()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 2-field TGS typed donors", ((string[])(null)));
+#line 28
+  this.ScenarioSetup(scenarioInfo);
+#line 29
+    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 30
+    testRunner.And("each matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 31
+    testRunner.And("each matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 32
+    testRunner.And("each matching donor is TGS (two field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 33
+    testRunner.And("each matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 34
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 35
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 36
+    testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 37
+    testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of TGS typed donors")]
+        public virtual void _1010SearchForASelectionOfTGSTypedDonors()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of TGS typed donors", ((string[])(null)));
+#line 39
+  this.ScenarioSetup(scenarioInfo);
+#line 40
+    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 41
+    testRunner.And("each matching donor is a 10/10 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 42
+    testRunner.And("each matching donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 43
+    testRunner.And("each matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 44
+    testRunner.And("each matching donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 45
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 46
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 47
+    testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 48
+    testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
