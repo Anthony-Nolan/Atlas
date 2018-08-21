@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(searchRequest.ForRegistries(new []{ RegistryCode.AN }));
         }
 
-        [Given(@"The search is run for aligned registries")]
+        [Given(@"the search is run for aligned registries")]
         public void GivenTheSearchIsRunForAlignedRegistries()
         {
             var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>();
@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }));
         }
 
-        [Given(@"The search is run for the registry: (.*)")]
+        [Given(@"the search is run for the registry: (.*)")]
         public void GivenTheSearchIsRunForRegistry(string registryString)
         {
             // If the search team prefer to write the tests with expanded registry names, we will need to manually map to the enum

@@ -142,6 +142,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 Registry = RegistryCode.DKMS,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
+
+            // Adult at NHSBT
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.NHSBT,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+            },
+
+            // Adult at WBS
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.WBS,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+            },
         };
 
         /// <summary>
