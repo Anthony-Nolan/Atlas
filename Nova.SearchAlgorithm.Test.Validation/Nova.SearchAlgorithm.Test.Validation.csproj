@@ -416,6 +416,7 @@
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectionSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectorExtensions.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
