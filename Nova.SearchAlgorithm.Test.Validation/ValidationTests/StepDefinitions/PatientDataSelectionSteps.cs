@@ -23,6 +23,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
         
+        [Given(@"a set of (.*) patients with matching donors")]
+        public void GivenASetOfXPatientsWithMatchingDonors(string numberOfPatientsString)
+        {
+            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            var numberOfPatients = int.Parse(numberOfPatientsString);
+            multiplePatientDataSelector.SetNumberOfPatients(numberOfPatients);
+            ScenarioContext.Current.Set(multiplePatientDataSelector);
+        }   
+        
         [Given(@"a set of patients with matching donors")]
         public void GivenASetOfPatientsWithMatchingDonors()
         {

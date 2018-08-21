@@ -8,11 +8,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     /// </summary>
     public interface IMultiplePatientDataSelector
     {
+        void SetNumberOfPatients(int numberOfPatients);
         List<IPatientDataSelector> PatientDataSelectors { get; set; }
     }
 
     public class MultiplePatientDataSelector: IMultiplePatientDataSelector
     {
+        private const int DefaultNumberOfPatients = 50;
+
+        private readonly IMetaDonorSelector metaDonorSelector;
+        private readonly IDatabaseDonorSelector databaseDonorSelector;
+        private readonly IPatientHlaSelector patientHlaSelector;
+
         public List<IPatientDataSelector> PatientDataSelectors { get; set; } = new List<IPatientDataSelector>();
 
         public MultiplePatientDataSelector(
@@ -20,7 +27,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             IDatabaseDonorSelector databaseDonorSelector,
             IPatientHlaSelector patientHlaSelector)
         {
-            for (var i = 0; i < 50; i++)
+            this.metaDonorSelector = metaDonorSelector;
+            this.databaseDonorSelector = databaseDonorSelector;
+            this.patientHlaSelector = patientHlaSelector;
+            for (var i = 0; i < DefaultNumberOfPatients; i++)
+            {
+                PatientDataSelectors.Add(new PatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
+            }
+        }
+
+        /// <summary>
+        /// Overrides the default number of patient selectors with a new collection of a given length
+        /// Do not call this after modifying any of the selectors, as it will replace all existing selectors!
+        /// </summary>
+        public void SetNumberOfPatients(int numberOfPatients)
+        {
+            PatientDataSelectors.Clear();
+            for (var i = 0; i < numberOfPatients; i++)
             {
                 PatientDataSelectors.Add(new PatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
             }

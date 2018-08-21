@@ -4,7 +4,7 @@ Feature: Ten Out Of Ten Search - Multiple patients
   For different patients
 
   Scenario: 10/10 Search for a selection of 4-field TGS typed donors
-    Given a set of patients with matching donors
+    Given a set of 50 patients with matching donors
     And each matching donor is a 10/10 match
     And each matching donor is of type adult
     And each matching donor is TGS (four field) typed at each locus
