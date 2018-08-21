@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -16,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     public class MetaDonor
     {
         private Genotype genotype;
+        private List<Donor> databaseDonors;
 
         public Genotype Genotype
         {
@@ -25,19 +27,32 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                 {
                     genotype = GenotypeGenerator.GenerateGenotype(GenotypeCriteria);
                 }
+
                 return genotype;
             }
         }
 
         public RegistryCode Registry { get; set; }
         public DonorType DonorType { get; set; }
-        
+
         /// <summary>
         /// Criteria for selecting a Genotype for this meta-donor
         /// </summary>
         public GenotypeCriteria GenotypeCriteria { get; set; }
 
-        public List<Donor> DatabaseDonors { get; set; }
+        public List<Donor> DatabaseDonors
+        {
+            get
+            {
+                if (databaseDonors == null)
+                {
+                    throw new Exception("Tried to get database donors for meta-donor, but found null. Have the donors been added to the database?");
+                }
+
+                return databaseDonors;
+            }
+            set => databaseDonors = value;
+        }
 
         /// <summary>
         /// Determines to what typing levels each hla will be set at in the database
@@ -49,7 +64,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 
         public IEnumerable<Donor> GetDatabaseDonors()
         {
-            if (DatabaseDonors == null)
+            if (databaseDonors == null)
             {
                 DatabaseDonors = HlaTypingResolutionSets.Select(typingCategorySet => new DonorBuilder(Genotype)
                         .AtRegistry(Registry)
