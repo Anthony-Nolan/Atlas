@@ -123,7 +123,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => s.SetMatchType(matchType)).ToList();
             ScenarioContext.Current.Set(selector);
         }
-
+        
+        [Given(@"the matching donor has a (.*) mismatch at (.*)")]
+        public void GivenTheMatchingDonorHasAMismatchAt(string mismatchType, string locus)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+            patientDataSelector.SetMismatches(mismatchType, locus);
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+        
         [Given(@"the matching donor is untyped at Locus (.*)")]
         public void GivenTheMatchingDonorIsUntypedAt(string locus)
         {

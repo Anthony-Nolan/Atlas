@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -11,6 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
         void SetAsTenOutOfTenMatch();
+        void SetMismatchesAtLocus(int numberOfMismatches, Locus locus);
 
         void SetMatchingDonorType(DonorType donorType);
         void SetMatchingRegistry(RegistryCode registry);
@@ -85,6 +87,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var matches = new PhenotypeInfo<bool>().Map((locus, p, noop) => locus != Locus.Dpb1);
             patientHlaSelectionCriteria.HlaMatches = matches;
+        }
+
+        public void SetMismatchesAtLocus(int numberOfMismatches, Locus locus)
+        {
+            switch (numberOfMismatches)
+            {
+                case 1:
+                    patientHlaSelectionCriteria.HlaMatches.SetAtLocus(locus, TypePositions.One, false);
+                    break;
+                case 2:
+                    patientHlaSelectionCriteria.HlaMatches.SetAtLocus(locus, TypePositions.Both, false);
+                    break;
+                case 0:
+                    break;
+                default:
+                    throw new Exception("Cannot have fewer than 0 or more than 2 mismatches");
+            }
         }
 
         public void SetMatchingDonorType(DonorType donorType)

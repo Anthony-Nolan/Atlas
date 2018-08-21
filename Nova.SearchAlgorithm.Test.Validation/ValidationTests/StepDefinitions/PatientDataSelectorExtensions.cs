@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
@@ -33,6 +34,50 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             return patientDataSelector;
         }
 
+        public static IPatientDataSelector SetMismatches(this IPatientDataSelector patientDataSelector, string mismatchType, string locus)
+        {
+            var mismatchCount = 0;
+            switch (mismatchType)
+            {
+                case "single":
+                    mismatchCount = 1;
+                    break;
+                case "double":
+                    mismatchCount = 2;
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            switch (locus)
+            {
+                case "locus A":
+                    patientDataSelector.SetMismatchesAtLocus(mismatchCount, Locus.A);
+                    break;
+                case "locus B":
+                    patientDataSelector.SetMismatchesAtLocus(mismatchCount, Locus.B);
+                    break;
+                case "locus C":
+                    patientDataSelector.SetMismatchesAtLocus(mismatchCount, Locus.C);
+                    break;
+                case "locus Dpb1":
+                    patientDataSelector.SetMismatchesAtLocus(mismatchCount, Locus.Dpb1);
+                    break;
+                case "locus Dqb1":
+                    patientDataSelector.SetMismatchesAtLocus(mismatchCount, Locus.Dqb1);
+                    break;
+                case "locus Drb1":
+                    patientDataSelector.SetMismatchesAtLocus(mismatchCount, Locus.Drb1);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataSelector;
+        }
+
         public static IPatientDataSelector SetMatchDonorType(this IPatientDataSelector patientDataSelector, string matchDonorType)
         {
             switch (matchDonorType)
@@ -51,7 +96,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             return patientDataSelector;
         }
 
-        public static IPatientDataSelector SetMatchTypingCategories(this IPatientDataSelector patientDataSelector, string typingCategory, string locus)
+        public static IPatientDataSelector SetMatchTypingCategories(
+            this IPatientDataSelector patientDataSelector,
+            string typingCategory,
+            string locus
+        )
         {
             switch (locus)
             {
@@ -103,6 +152,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     {
                         patientDataSelector.SetMatchingTypingResolutionAtLocus(resolution.Key, resolution.Value);
                     }
+
                     break;
                 case "TGS":
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
