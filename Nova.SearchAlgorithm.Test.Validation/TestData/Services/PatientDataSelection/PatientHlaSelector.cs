@@ -135,19 +135,29 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         )
         {
             var alleles = alleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+            
+            // alleles that match the first three fields
             var matchingAlleles = alleles.Where(a =>
             {
                 var donorAlleleThreeFields = AlleleSplitter.FirstThreeFields(genotypeAllele.TgsTypedAllele);
                 var alleleFirstThreeFields = AlleleSplitter.FirstThreeFields(a.AlleleName);
                 return donorAlleleThreeFields.SequenceEqual(alleleFirstThreeFields);
             });
-            var selectedAllele = matchingAlleles
+            
+            // alleles that match the first three field, but not the fourth
+            var validAlleles = matchingAlleles
                 // Ensure that the allele is not an exact allele direct match
                 .Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele)
                 // Ensure that the allele is not an exact allele cross match
                 .Where(a => a.AlleleName != otherGenotypeAllele.TgsTypedAllele)
-                .ToList()
-                .GetRandomElement();
+                .ToList();
+
+            if (validAlleles.Count == 0)
+            {
+                throw new InvalidTestDataException($"No valid patient alleles found for the following donor data: {genotypeAllele} & {otherGenotypeAllele} at locus {locus}");
+            }
+            
+            var selectedAllele = validAlleles.GetRandomElement();
             return TgsAllele.FromTestDataAllele(selectedAllele, locus);
         }
         
@@ -158,13 +168,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             TgsAllele otherGenotypeAllele
         )
         {
-            var selectedAllele = alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position)
+            var validAlleles = alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position)
                 // Ensure that the allele is not an exact allele direct match
                 .Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele)
                 // Ensure that the allele is not an exact allele cross match
                 .Where(a => a.AlleleName != otherGenotypeAllele.TgsTypedAllele)
-                .ToList()
-                .GetRandomElement();
+                .ToList();
+            
+            if (validAlleles.Count == 0)
+            {
+                throw new InvalidTestDataException($"No valid patient alleles found for the following donor data: {genotypeAllele.TgsTypedAllele} & {otherGenotypeAllele.TgsTypedAllele} at locus {locus}");
+            }
+            
+            var selectedAllele = validAlleles.GetRandomElement();
             return TgsAllele.FromTestDataAllele(selectedAllele, locus);
         }
     }
