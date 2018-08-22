@@ -18,8 +18,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "2.3.2.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [NUnit.Framework.TestFixtureAttribute()]
-    [NUnit.Framework.DescriptionAttribute("Eight o Aligned Registry Search")]
-    public partial class EightOAlignedRegistrySearchFeature
+    [NUnit.Framework.DescriptionAttribute("Eight out of Eight Aligned Registry Search")]
+    public partial class EightOutOfEightAlignedRegistrySearchFeature
     {
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
         public virtual void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Eight o Aligned Registry Search", "  As a member of the search team\r\n  I want to be able to run a 8/8 aligned regist" +
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Eight out of Eight Aligned Registry Search", "  As a member of the search team\r\n  I want to be able to run a 8/8 aligned regist" +
                     "ry search", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
@@ -86,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
 #line 12
     testRunner.And("the search is run for aligned registries", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 13
-    testRunner.When("I run a 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 14
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
 #line 23
     testRunner.And("the search is run for aligned registries", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 24
-    testRunner.When("I run a 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 25
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -144,7 +144,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
 #line 34
     testRunner.And("the search is run for aligned registries", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 35
-    testRunner.When("I run a 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 36
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -173,7 +173,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
 #line 45
     testRunner.And("the search is run for aligned registries", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 46
-    testRunner.When("I run a 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 47
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden

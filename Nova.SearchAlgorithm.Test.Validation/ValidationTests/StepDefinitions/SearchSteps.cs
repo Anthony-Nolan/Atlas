@@ -72,6 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
         
+        [When(@"I run a 8/8 search")]
         [When(@"I run an 8/8 search")]
         public async Task WhenIRunAnEightOutOfEightSearch()
         {
