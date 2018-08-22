@@ -42,8 +42,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
             else
             {
-                allele1 = GetTgsAllele(locus, TypePositions.One, tgsAllele1, criteria);
-                allele2 = GetTgsAllele(locus, TypePositions.Two, tgsAllele2, criteria);
+                allele1 = GetTgsAllele(locus, TypePositions.One, tgsAllele1, tgsAllele2, criteria);
+                allele2 = GetTgsAllele(locus, TypePositions.Two, tgsAllele2, tgsAllele1, criteria);
             }
 
             var typingResolution1 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.One);
@@ -79,6 +79,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             Locus locus,
             TypePositions position,
             TgsAllele genotypeAllele,
+            TgsAllele otherGenotypeAllele,
             PatientHlaSelectionCriteria criteria
         )
         {
@@ -95,7 +96,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 case MatchLevel.GGroup:
                     return GetGGroupMatchLevelTgsAllele(locus, position, genotypeAllele);
                 case MatchLevel.ThreeFieldAllele:
-                    return GetThreeFieldMatchingTgsAllele(locus, position, genotypeAllele);
+                    return GetThreeFieldMatchingTgsAllele(locus, position, genotypeAllele, otherGenotypeAllele);
                 case MatchLevel.Allele:
                     return genotypeAllele;
                 default:
@@ -124,7 +125,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return TgsAllele.FromTestDataAllele(allele, locus);
         }
 
-        private TgsAllele GetThreeFieldMatchingTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
+        private TgsAllele GetThreeFieldMatchingTgsAllele(
+            Locus locus,
+            TypePositions position,
+            TgsAllele genotypeAllele,
+            TgsAllele otherGenotypeAllele
+        )
         {
             var alleles = alleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
             var matchingAlleles = alleles.Where(a =>
@@ -133,7 +139,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 var alleleFirstThreeFields = AlleleSplitter.FirstThreeFields(a.AlleleName);
                 return donorAlleleThreeFields.SequenceEqual(alleleFirstThreeFields);
             });
-            var selectedAllele = matchingAlleles.Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele).ToList().GetRandomElement();
+            var selectedAllele = matchingAlleles
+                // Ensure that the allele is not an exact allele direct match
+                .Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele)
+                // Ensure that the allele is not an exact allele cross match
+                .Where(a => a.AlleleName != otherGenotypeAllele.TgsTypedAllele)
+                .ToList()
+                .GetRandomElement();
             return TgsAllele.FromTestDataAllele(selectedAllele, locus);
         }
     }
