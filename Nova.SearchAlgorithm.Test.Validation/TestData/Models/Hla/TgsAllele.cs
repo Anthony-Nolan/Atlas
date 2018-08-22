@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
     {
         public static TgsAllele FromTestDataAllele(AlleleTestData allele, Locus locus)
         {
-            var fieldCount = allele.AlleleName.Split(':').Length;
+            var fieldCount = AlleleSplitter.NumberOfFields(allele.AlleleName);
             switch (fieldCount)
             {
                 case 4:
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         {
             var threeFieldAllele = new AlleleTestData
             {
-                AlleleName = RemoveLastField(fourFieldAllele.AlleleName),
+                AlleleName = AlleleSplitter.RemoveLastField(fourFieldAllele.AlleleName),
                 PGroup = fourFieldAllele.PGroup,
                 GGroup = fourFieldAllele.GGroup,
                 NmdpCode = fourFieldAllele.NmdpCode,
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         {
             var twoFieldAllele = new AlleleTestData
             {
-                AlleleName = RemoveLastField(threeFieldAllele.AlleleName),
+                AlleleName = AlleleSplitter.RemoveLastField(threeFieldAllele.AlleleName),
                 PGroup = threeFieldAllele.PGroup,
                 GGroup = threeFieldAllele.GGroup,
                 NmdpCode = threeFieldAllele.NmdpCode,
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 TwoFieldAllele = twoFieldAllele.AlleleName,
                 NmdpCode = twoFieldAllele.NmdpCode,
                 Serology = twoFieldAllele.Serology,
-                XxCode = $"{FirstField(twoFieldAllele.AlleleName)}:XX",
+                XxCode = $"{AlleleSplitter.FirstField(twoFieldAllele.AlleleName)}:XX",
                 Locus = locus,
             };
         }
@@ -116,19 +116,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typingResolution), typingResolution, null);
             }
-        }
-
-        private static string RemoveLastField(string allele)
-        {
-            // TODO: NOVA-1571: Handle alleles with an expression suffix. This truncation will remove expression suffix.
-            var splitAllele = allele.Split(':');
-            return string.Join(":", splitAllele.Take(splitAllele.Length - 1));
-        }
-
-        private static string FirstField(string allele)
-        {
-            var splitAllele = allele.Split(':');
-            return splitAllele.First();
         }
     }
 }
