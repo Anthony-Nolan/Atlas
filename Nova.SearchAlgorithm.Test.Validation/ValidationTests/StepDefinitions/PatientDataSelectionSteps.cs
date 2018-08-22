@@ -16,6 +16,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
     [Binding]
     public class PatientDataSelectionSteps
     {
+        [Given(@"a patient and a donor")]
+        public void GivenAPatientAndADonor()
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+        
         [Given(@"a patient has a match")]
         public void GivenAPatientHasAMatch()
         {
@@ -24,10 +31,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         }
         
         [Given(@"a set of (.*) patients with matching donors")]
-        public void GivenASetOfXPatientsWithMatchingDonors(string numberOfPatientsString)
+        public void GivenASetOfXPatientsWithMatchingDonors(int numberOfPatients)
         {
             var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            var numberOfPatients = int.Parse(numberOfPatientsString);
             multiplePatientDataSelector.SetNumberOfPatients(numberOfPatients);
             ScenarioContext.Current.Set(multiplePatientDataSelector);
         }   
@@ -108,6 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
+        [Given(@"the donor is a (.*) match")]
         [Given(@"the matching donor is a (.*) match")]
         public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
@@ -124,6 +131,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(selector);
         }
         
+        [Given(@"the donor has a (.*) mismatch at (.*)")]
         [Given(@"the matching donor has a (.*) mismatch at (.*)")]
         public void GivenTheMatchingDonorHasAMismatchAt(string mismatchType, string locus)
         {
@@ -132,6 +140,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
         
+        [Given(@"the donor is untyped at Locus (.*)")]
         [Given(@"the matching donor is untyped at Locus (.*)")]
         public void GivenTheMatchingDonorIsUntypedAt(string locus)
         {
@@ -160,6 +169,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
+        [Given(@"the donor is of type (.*)")]
         [Given(@"the matching donor is of type (.*)")]
         public void GivenTheMatchingDonorIsOfDonorType(string donorType)
         {
@@ -176,6 +186,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(selector);
         }
 
+        [Given(@"the donor is (.*) typed at (.*)")]
         [Given(@"the matching donor is (.*) typed at (.*)")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
@@ -192,6 +203,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(selector);
         }
 
+        [Given(@"the donor is homozygous at (.*)")]
         [Given(@"the matching donor is homozygous at (.*)")]
         public void GivenTheMatchingDonorIsHomozygousAt(string locus)
         {
@@ -233,6 +245,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
+        [Given(@"the donor is in registry: (.*)")]
         [Given(@"the matching donor is in registry: (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string registry)
         {

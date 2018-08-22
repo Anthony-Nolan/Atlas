@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// e.g. If PGroup, an different allele in the same p-group as the donor will be selected
         /// This may converge with MatchGrades in the future
         /// </summary>
-        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
+        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; } = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele);
         
         /// <summary>
         /// Determines whether the patient should be homozygous at each locus
