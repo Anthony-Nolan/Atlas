@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
@@ -51,18 +52,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var hla = new PhenotypeInfo<TgsAllele>();
             foreach (var locus in LocusHelpers.AllLoci())
             {
-                var tgsTypingCategory = criteria.TgsHlaCategories.DataAtLocus(locus);
-                var randomTgsAllele1 = RandomTgsAllele(locus, TypePositions.One, tgsTypingCategory.Item1);
+                var randomTgsAllele1 = RandomTgsAllele(locus, TypePositions.One, criteria);
                 hla.SetAtLocus(locus, TypePositions.One, randomTgsAllele1);
 
                 if (criteria.IsHomozygous.DataAtLocus(locus))
                 {
                     hla.SetAtLocus(locus, TypePositions.Two, randomTgsAllele1);
-
                 }
                 else
                 {
-                    var randomTgsAllele2 = RandomTgsAllele(locus, TypePositions.Two, tgsTypingCategory.Item2);
+                    var randomTgsAllele2 = RandomTgsAllele(locus, TypePositions.Two, criteria);
                     hla.SetAtLocus(locus, TypePositions.Two, randomTgsAllele2);
                 }
             }
@@ -73,8 +72,26 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             };
         }
 
-        private static TgsAllele RandomTgsAllele(Locus locus, TypePositions position, TgsHlaTypingCategory tgsHlaTypingCategory)
+        private static TgsAllele RandomTgsAllele(Locus locus, TypePositions position, GenotypeCriteria criteria)
         {
+            var tgsHlaTypingCategory = criteria.TgsHlaCategories.DataAtPosition(locus, position);
+            var threeFieldMatchPossible = criteria.ThreeFieldMatchPossible.DataAtPosition(locus, position);
+            var alleles = GetDataset(locus, position, tgsHlaTypingCategory, threeFieldMatchPossible);
+            return TgsAllele.FromTestDataAllele(alleles.GetRandomElement(), locus);
+        }
+
+        private static List<AlleleTestData> GetDataset(
+            Locus locus,
+            TypePositions position,
+            TgsHlaTypingCategory tgsHlaTypingCategory,
+            bool threeFieldMatchPossible
+        )
+        {
+            if (threeFieldMatchPossible && tgsHlaTypingCategory != TgsHlaTypingCategory.FourFieldAllele)
+            {
+                throw new InvalidTestDataException("Genotype cannot have a three field match without being explicitly four-field TGS typed");
+            }
+            
             List<AlleleTestData> alleles;
             switch (tgsHlaTypingCategory)
             {
@@ -108,7 +125,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
 
-            return TgsAllele.FromTestDataAllele(alleles.GetRandomElement(), locus);
+            if (threeFieldMatchPossible)
+            {
+                var groupedAlleles = alleles.GroupBy(a => AlleleSplitter.RemoveLastField(a.AlleleName)).Where(g => g.Count() > 1);
+                alleles = alleles.Where(a => groupedAlleles.Any(g => Equals(g.Key, AlleleSplitter.RemoveLastField(a.AlleleName)))).ToList();
+            }
+            
+            return alleles;
         }
 
         /// <summary>

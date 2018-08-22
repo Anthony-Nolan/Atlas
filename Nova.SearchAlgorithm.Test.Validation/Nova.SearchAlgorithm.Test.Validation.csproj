@@ -349,6 +349,7 @@
     <Compile Include="TestData\Builders\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
     <Compile Include="TestData\Exceptions\HlaSelectionException.cs" />
+    <Compile Include="TestData\Exceptions\InvalidTestDataException.cs" />
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
     <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
