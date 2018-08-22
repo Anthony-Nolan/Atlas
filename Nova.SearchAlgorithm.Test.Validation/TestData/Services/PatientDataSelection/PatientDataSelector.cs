@@ -206,11 +206,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             patientHlaSelectionCriteria.MatchLevels.EachPosition((l, p, matchLevel) =>
             {
-                if (matchLevel == MatchLevel.ThreeFieldAllele
+                if (matchLevel == MatchLevel.FirstThreeFieldAllele
                     && metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p) != TgsHlaTypingCategory.FourFieldAllele)
                 {
                     throw new InvalidTestDataException(
                         "Cannot generate data for a patient with a three field (not fourth field) match if the matching donor is not four field TGS typed");
+                }
+
+                if (matchLevel == MatchLevel.FirstTwoFieldAllele)
+                {
+                    var tgsTypingCategory = metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
+                    if (tgsTypingCategory == TgsHlaTypingCategory.FourFieldAllele)
+                    {
+                        throw new InvalidTestDataException(
+                            "No test data has been curated for four-field alleles matching at the first two fields only. Please add this test data if necessary");
+                    }
+
+                    if (tgsTypingCategory != TgsHlaTypingCategory.ThreeFieldAllele)
+                    {
+                        throw new InvalidTestDataException(
+                            "Cannot generate data for a patient with a two field match if the matching donor is not guaranteed to have at least three fields");
+                    }
                 }
             });
         }

@@ -95,10 +95,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     return GetPGroupMatchLevelTgsAllele(locus);
                 case MatchLevel.GGroup:
                     return GetGGroupMatchLevelTgsAllele(locus, position, genotypeAllele);
-                case MatchLevel.ThreeFieldAllele:
+                case MatchLevel.FirstThreeFieldAllele:
                     return GetThreeFieldMatchingTgsAllele(locus, position, genotypeAllele, otherGenotypeAllele);
                 case MatchLevel.Allele:
                     return genotypeAllele;
+                case MatchLevel.FirstTwoFieldAllele:
+                    return GetTwoFieldMatchingTgsAllele(locus, position, genotypeAllele, otherGenotypeAllele);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -140,6 +142,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 return donorAlleleThreeFields.SequenceEqual(alleleFirstThreeFields);
             });
             var selectedAllele = matchingAlleles
+                // Ensure that the allele is not an exact allele direct match
+                .Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele)
+                // Ensure that the allele is not an exact allele cross match
+                .Where(a => a.AlleleName != otherGenotypeAllele.TgsTypedAllele)
+                .ToList()
+                .GetRandomElement();
+            return TgsAllele.FromTestDataAllele(selectedAllele, locus);
+        }
+        
+        private TgsAllele GetTwoFieldMatchingTgsAllele(
+            Locus locus,
+            TypePositions position,
+            TgsAllele genotypeAllele,
+            TgsAllele otherGenotypeAllele
+        )
+        {
+            var selectedAllele = alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position)
                 // Ensure that the allele is not an exact allele direct match
                 .Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele)
                 // Ensure that the allele is not an exact allele cross match

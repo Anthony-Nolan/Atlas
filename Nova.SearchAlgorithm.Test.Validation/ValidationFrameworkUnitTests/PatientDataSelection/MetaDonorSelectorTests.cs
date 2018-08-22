@@ -178,12 +178,32 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var criteria = new MetaDonorSelectionCriteria
             {
-                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.ThreeFieldAllele),
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.FirstThreeFieldAllele),
             };
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
         }
 
+        [Test]
+        public void GetNextMetaDonor_WhenTwoFieldLevelMatchRequired_AndNoMetaDonorHasThreeFieldMatchPossible_ThrowsException()
+        {
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteriaBuilder().Build()
+                }
+            };
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.FirstTwoFieldAllele),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+        }
+        
         [Test]
         public void GetNextMetaDonor_WhenNoMetaDonorsContainDonorAtExpectedResolution_ThrowsException()
         {

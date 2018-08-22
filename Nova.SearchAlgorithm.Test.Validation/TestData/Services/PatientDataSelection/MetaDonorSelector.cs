@@ -100,12 +100,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 {
                     case MatchLevel.Allele:
                         return true;
-                    case MatchLevel.ThreeFieldAllele:
+                    case MatchLevel.FirstThreeFieldAllele:
                         return metaDonor.GenotypeCriteria.ThreeFieldMatchPossible.DataAtPosition(l, p);
                     case MatchLevel.PGroup:
                         return metaDonor.GenotypeCriteria.PGroupMatchPossible.DataAtPosition(l, p);
                     case MatchLevel.GGroup:
                         return metaDonor.GenotypeCriteria.GGroupMatchPossible.DataAtPosition(l, p);
+                    case MatchLevel.FirstTwoFieldAllele:
+                        return metaDonor.GenotypeCriteria.TwoFieldMatchPossible.DataAtPosition(l, p);
                     default:
                         throw new ArgumentOutOfRangeException(nameof(matchLevel), matchLevel, null);
                 }

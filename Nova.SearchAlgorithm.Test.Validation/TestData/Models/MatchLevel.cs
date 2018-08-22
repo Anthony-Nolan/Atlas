@@ -5,7 +5,9 @@
         // Exact allele match
         Allele,
         // First three fields of a four field allele match
-        ThreeFieldAllele,
+        FirstThreeFieldAllele,
+        // First two fields of a three field allele match
+        FirstTwoFieldAllele,
         // Alleles in same p-group (but not g-group)
         PGroup,
         // Alleles in same g-group

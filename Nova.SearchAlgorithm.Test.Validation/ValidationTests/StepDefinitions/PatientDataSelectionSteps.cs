@@ -276,7 +276,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
                     break;
                 case "three field (different fourth field)":
-                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.ThreeFieldAllele);
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.FirstThreeFieldAllele);
+                    break;
+                case "two field (different third field)":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.FirstTwoFieldAllele);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
