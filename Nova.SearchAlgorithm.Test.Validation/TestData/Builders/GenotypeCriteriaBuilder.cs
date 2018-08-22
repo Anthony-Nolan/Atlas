@@ -14,6 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
                 PGroupMatchPossible = new PhenotypeInfo<bool>(false),
                 GGroupMatchPossible = new PhenotypeInfo<bool>(false),
                 ThreeFieldMatchPossible = new PhenotypeInfo<bool>(false),
+                TwoFieldMatchPossible = new PhenotypeInfo<bool>(false),
                 TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
                 {
                     A_1 = TgsHlaTypingCategory.Arbitrary,
@@ -34,25 +35,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             };
         }
 
-        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory category)
+        /// <summary>
+        /// DPB1 is excluded, as it is a special case in most scenarios.
+        /// This is because no standard test data is available for DPB1 as 2/3 field alleles
+        /// </summary>
+        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory category)
         {
-            genotypeCriteria.TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
-            {
-                A_1 = category,
-                A_2 = category,
-                B_1 = category,
-                B_2 = category,
-                C_1 = category,
-                C_2 = category,
-                // There is no test data for DPB1 that is less than four-field
-                DPB1_1 = TgsHlaTypingCategory.FourFieldAllele,
-                DPB1_2 = TgsHlaTypingCategory.FourFieldAllele,
-                DQB1_1 = category,
-                DQB1_2 = category,
-                DRB1_1 = category,
-                DRB1_2 = category
-            };
+            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.A, TypePositions.Both, category);
+            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.B, TypePositions.Both, category);
+            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.C, TypePositions.Both, category);
+            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.Dqb1, TypePositions.Both, category);
+            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.Drb1, TypePositions.Both, category);
+            return this;
+        }
 
+        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtLocus(Locus locus, TgsHlaTypingCategory category)
+        {
+            genotypeCriteria.TgsHlaCategories.SetAtLocus(locus, TypePositions.Both, category);
             return this;
         }
         
@@ -71,6 +70,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public GenotypeCriteriaBuilder WithThreeFieldMatchPossibleAtAllLoci()
         {
             genotypeCriteria.ThreeFieldMatchPossible = new PhenotypeInfo<bool>(true);
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder WithTwoFieldMatchPossibleAtAllLoci()
+        {
+            genotypeCriteria.TwoFieldMatchPossible = new PhenotypeInfo<bool>(true);
             return this;
         }
 

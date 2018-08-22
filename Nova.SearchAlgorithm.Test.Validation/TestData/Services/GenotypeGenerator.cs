@@ -76,7 +76,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             var tgsHlaTypingCategory = criteria.TgsHlaCategories.DataAtPosition(locus, position);
             var threeFieldMatchPossible = criteria.ThreeFieldMatchPossible.DataAtPosition(locus, position);
-            var alleles = GetDataset(locus, position, tgsHlaTypingCategory, threeFieldMatchPossible);
+            var twoFieldMatchPossible = criteria.TwoFieldMatchPossible.DataAtPosition(locus, position);
+            var alleles = GetDataset(locus, position, tgsHlaTypingCategory, threeFieldMatchPossible, twoFieldMatchPossible);
             return TgsAllele.FromTestDataAllele(alleles.GetRandomElement(), locus);
         }
 
@@ -84,14 +85,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             Locus locus,
             TypePositions position,
             TgsHlaTypingCategory tgsHlaTypingCategory,
-            bool threeFieldMatchPossible
+            bool threeFieldMatchPossible,
+            bool twoFieldMatchPossible
         )
         {
-            if (threeFieldMatchPossible && tgsHlaTypingCategory != TgsHlaTypingCategory.FourFieldAllele)
+            if (threeFieldMatchPossible)
             {
-                throw new InvalidTestDataException("Genotype cannot have a three field match without being explicitly four-field TGS typed");
+                if (tgsHlaTypingCategory != TgsHlaTypingCategory.FourFieldAllele)
+                {
+                    throw new InvalidTestDataException("Genotype cannot have a three field match without being explicitly four-field TGS typed");
+                }
+
+                return AlleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
             }
-            
+
+            if (twoFieldMatchPossible)
+            {
+                if (tgsHlaTypingCategory != TgsHlaTypingCategory.ThreeFieldAllele)
+                {
+                    throw new InvalidTestDataException(
+                        "Two field (not third field) match required. But such test data only exists for three-field TGS alleles.");
+                }
+
+                return AlleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
+            }
+
             List<AlleleTestData> alleles;
             switch (tgsHlaTypingCategory)
             {
@@ -125,11 +143,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
 
-            if (threeFieldMatchPossible)
-            {
-                alleles = AlleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
-            }
-            
             return alleles;
         }
 

@@ -15,6 +15,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
             return SplitToFields(allele).Take(3);
         }
         
+        public static string FirstThreeFieldsAsString(string allele)
+        {
+            return FirstThreeFields(allele).Aggregate((agg, s) => agg + s);
+        }
+        
+        public static IEnumerable<string> FirstTwoFields(string allele)
+        {
+            return SplitToFields(allele).Take(2);
+        }
+        
+        public static string FirstTwoFieldsAsString(string allele)
+        {
+            return FirstTwoFields(allele).Aggregate((agg, s) => agg + s);
+        }
+        
         public static string RemoveLastField(string allele)
         {
             var splitAllele = SplitToFields(allele).ToList();
