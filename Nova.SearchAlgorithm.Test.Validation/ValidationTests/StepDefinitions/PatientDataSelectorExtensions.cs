@@ -1,5 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
@@ -132,6 +133,30 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "WBMDR":
                 case "WBS":
                     patientDataSelector.SetMatchingRegistry(RegistryCode.WBS);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataSelector;
+        }
+
+        public static IPatientDataSelector SetMatchLevelAtAllLoci(this IPatientDataSelector patientDataSelector, string matchLevel)
+        {
+            switch (matchLevel)
+            {
+                case "p-group":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
+                    break;
+                case "g-group":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
+                    break;
+                case "three field (different fourth field)":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.FirstThreeFieldAllele);
+                    break;
+                case "two field (different third field)":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.FirstTwoFieldAllele);
                     break;
                 default:
                     ScenarioContext.Current.Pending();

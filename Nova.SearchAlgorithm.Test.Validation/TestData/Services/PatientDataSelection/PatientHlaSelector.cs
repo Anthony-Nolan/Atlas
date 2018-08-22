@@ -168,7 +168,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             TgsAllele otherGenotypeAllele
         )
         {
-            var validAlleles = alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position)
+            var alleles = alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
+            
+            // alleles that match the first two fields
+            var matchingAlleles = alleles.Where(a =>
+            {
+                var donorAlleleThreeFields = AlleleSplitter.FirstTwoFields(genotypeAllele.TgsTypedAllele);
+                var alleleFirstThreeFields = AlleleSplitter.FirstTwoFields(a.AlleleName);
+                return donorAlleleThreeFields.SequenceEqual(alleleFirstThreeFields);
+            });
+            
+            var validAlleles = matchingAlleles
                 // Ensure that the allele is not an exact allele direct match
                 .Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele)
                 // Ensure that the allele is not an exact allele cross match

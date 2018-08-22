@@ -76,6 +76,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "CDna":
                 case "cDNA":
                     return MatchGrade.CDna;
+                case "protein":
+                    return MatchGrade.Protein;
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
