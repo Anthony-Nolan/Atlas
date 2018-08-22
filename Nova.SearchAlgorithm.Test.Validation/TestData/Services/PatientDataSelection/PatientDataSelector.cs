@@ -1,6 +1,7 @@
 ﻿using System;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -165,7 +166,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
         }
-        
+
         public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
             patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
@@ -179,7 +180,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 // For an exact match to exist, if the patient is homozygous the donor must implicitly also be homozygous
                 SetMatchingDonorHomozygousAtLocus(locus);
             }
-            
+
             patientHlaSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
 
             // For a homozygous locus, typing resolution must be single allele (TGS)
@@ -188,12 +189,30 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public PhenotypeInfo<string> GetPatientHla()
         {
+            ValidateCriteria();
             return patientHlaSelector.GetPatientHla(GetMetaDonor(), patientHlaSelectionCriteria);
         }
 
         public int GetExpectedMatchingDonorId()
         {
             return databaseDonorSelector.GetExpectedMatchingDonorId(GetMetaDonor(), databaseDonorSelectionCriteria);
+        }
+
+        /// <summary>
+        /// Should only be called when all criteria are set up.
+        /// If there are any logical inconsitencies in the criteria specified, they should be raised here as an Exception to aid debugging
+        /// </summary>
+        private void ValidateCriteria()
+        {
+            patientHlaSelectionCriteria.MatchLevels.EachPosition((l, p, matchLevel) =>
+            {
+                if (matchLevel == MatchLevel.ThreeFieldAllele
+                    && metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p) != TgsHlaTypingCategory.FourFieldAllele)
+                {
+                    throw new InvalidTestDataException(
+                        "Cannot generate data for a patient with a three field (not fourth field) match if the matching donor is not four field TGS typed");
+                }
+            });
         }
 
         private MetaDonor GetMetaDonor()

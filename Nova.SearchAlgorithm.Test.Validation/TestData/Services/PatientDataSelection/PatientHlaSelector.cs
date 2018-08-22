@@ -2,6 +2,7 @@
 using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -74,14 +75,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return tgsAllele1;
         }
 
-        private string GetHlaName(Locus locus, TypePositions position, TgsAllele tgsAllele, PatientHlaSelectionCriteria criteria)
-        {
-            var allele = GetTgsAllele(locus, position, tgsAllele, criteria);
-            var typingResolution = criteria.PatientTypingResolutions.DataAtPosition(locus, position);
-
-            return allele.GetHlaForCategory(typingResolution);
-        }
-
         private TgsAllele GetTgsAllele(
             Locus locus,
             TypePositions position,
@@ -95,19 +88,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 return GetNonMatchingAllele(locus, position);
             }
 
-            // patient should have a P-group match at this position
-            if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.PGroup)
+            switch (criteria.MatchLevels.DataAtPosition(locus, position))
             {
-                return GetPGroupMatchLevelTgsAllele(locus);
+                case MatchLevel.PGroup:
+                    return GetPGroupMatchLevelTgsAllele(locus);
+                case MatchLevel.GGroup:
+                    return GetGGroupMatchLevelTgsAllele(locus, position, genotypeAllele);
+                case MatchLevel.ThreeFieldAllele:
+                    return GetThreeFieldMatchingTgsAllele(locus, position, genotypeAllele);
+                case MatchLevel.Allele:
+                    return genotypeAllele;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-
-            // patient should have a G-group match at this position
-            if (criteria.MatchLevels.DataAtPosition(locus, position) == MatchLevel.GGroup)
-            {
-                return GetGGroupMatchLevelTgsAllele(locus, position, genotypeAllele);
-            }
-
-            return genotypeAllele;
         }
 
         // TODO: NOVA-1654: Remove static dependency on GenotypeGenerator so we can unit test this
@@ -129,6 +122,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele);
 
             return TgsAllele.FromTestDataAllele(allele, locus);
+        }
+
+        private TgsAllele GetThreeFieldMatchingTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
+        {
+            var alleles = alleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+            var matchingAlleles = alleles.Where(a =>
+            {
+                var donorAlleleThreeFields = AlleleSplitter.FirstThreeFields(genotypeAllele.TgsTypedAllele);
+                var alleleFirstThreeFields = AlleleSplitter.FirstThreeFields(a.AlleleName);
+                return donorAlleleThreeFields.SequenceEqual(alleleFirstThreeFields);
+            });
+            var selectedAllele = matchingAlleles.Where(a => a.AlleleName != genotypeAllele.TgsTypedAllele).ToList().GetRandomElement();
+            return TgsAllele.FromTestDataAllele(selectedAllele, locus);
         }
     }
 }

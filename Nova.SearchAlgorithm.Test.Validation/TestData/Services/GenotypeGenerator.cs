@@ -127,8 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
             if (threeFieldMatchPossible)
             {
-                var groupedAlleles = alleles.GroupBy(a => AlleleSplitter.RemoveLastField(a.AlleleName)).Where(g => g.Count() > 1);
-                alleles = alleles.Where(a => groupedAlleles.Any(g => Equals(g.Key, AlleleSplitter.RemoveLastField(a.AlleleName)))).ToList();
+                alleles = AlleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
             }
             
             return alleles;

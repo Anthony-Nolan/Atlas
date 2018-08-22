@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Documents.Spatial;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
@@ -20,6 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithThreeFieldMatchPossible();
     }
 
     /// <summary>
@@ -55,6 +58,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching()
         {
             return Resources.PGroupMatchingAlleles.PatientAlleles;
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithThreeFieldMatchPossible()
+        {
+            return FourFieldAlleles().Map((locus, position, alleles) =>
+            {
+                var groupedAlleles = alleles.GroupBy(a => AlleleSplitter.RemoveLastField(a.AlleleName)).Where(g => g.Count() > 1);
+                return alleles.Where(a => groupedAlleles.Any(g => Equals(g.Key, AlleleSplitter.RemoveLastField(a.AlleleName)))).ToList(); 
+            });
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()

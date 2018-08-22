@@ -80,6 +80,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
         
+        public GenotypeCriteriaBuilder HomozygousAtAllLoci()
+        {
+            genotypeCriteria.IsHomozygous = new LocusInfo<bool>(true);
+            return this;
+        }
+        
         public GenotypeCriteria Build()
         {
             return genotypeCriteria;

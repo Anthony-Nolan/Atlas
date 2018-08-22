@@ -275,6 +275,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "g-group":
                     patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
                     break;
+                case "three field (different fourth field)":
+                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.ThreeFieldAllele);
+                    break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;

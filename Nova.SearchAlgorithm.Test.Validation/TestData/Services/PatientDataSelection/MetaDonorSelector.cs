@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
@@ -24,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// Meta-donors that have already been returned. Tracked to avoid returning the same meta-donor more than once.
         /// </summary>
         private readonly List<MetaDonor> matchedMetaDonors;
-        
+
         public MetaDonorSelector(IMetaDonorRepository metaDonorRepository)
         {
             this.metaDonorRepository = metaDonorRepository;
@@ -46,7 +47,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
             if (!newMetaDonors.Any())
             {
-                throw new MetaDonorNotFoundException($"No more meta-donors found matching specified criteria. Already returned: {matchedMetaDonors.Count} meta-donors. Is there enough test data?");
+                throw new MetaDonorNotFoundException(
+                    $"No more meta-donors found matching specified criteria. Already returned: {matchedMetaDonors.Count} meta-donors. Is there enough test data?");
             }
 
             var metaDonor = newMetaDonors.First();
@@ -59,7 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return FulfilsDonorTypeCriteria(criteria, metaDonor)
                    && FulfilsRegistryCriteria(criteria, metaDonor);
         }
-        
+
         private static bool FulfilsDonorHlaCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
             return FulfilsTgsTypingCategoryCriteria(criteria, metaDonor)
@@ -91,17 +93,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private static bool FulfilsMatchLevelCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            // TODO: NOVA-1662: Allow p/g-group matching per-locus
-            if (criteria.MatchLevels.ToEnumerable().All(ml => ml == MatchLevel.PGroup))
+            // Maps to a list of booleans - each one indicates whether the criteria are met at that locus/position
+            return criteria.MatchLevels.Map((l, p, matchLevel) =>
             {
-                return metaDonor.GenotypeCriteria.PGroupMatchPossible.ToEnumerable().All(x => x);
-            }
-            if (criteria.MatchLevels.ToEnumerable().All(ml => ml == MatchLevel.GGroup))
-            {
-                return metaDonor.GenotypeCriteria.GGroupMatchPossible.ToEnumerable().All(x => x);
-            }
-
-            return true;
+                switch (matchLevel)
+                {
+                    case MatchLevel.Allele:
+                        return true;
+                    case MatchLevel.ThreeFieldAllele:
+                        return metaDonor.GenotypeCriteria.ThreeFieldMatchPossible.DataAtPosition(l, p);
+                    case MatchLevel.PGroup:
+                        return metaDonor.GenotypeCriteria.PGroupMatchPossible.DataAtPosition(l, p);
+                    case MatchLevel.GGroup:
+                        return metaDonor.GenotypeCriteria.GGroupMatchPossible.DataAtPosition(l, p);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(matchLevel), matchLevel, null);
+                }
+            }).ToEnumerable().All(x => x);
         }
 
         private static bool FulfilsTgsTypingCategoryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
