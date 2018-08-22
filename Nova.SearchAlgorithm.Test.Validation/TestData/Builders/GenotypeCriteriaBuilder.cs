@@ -15,29 +15,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
                 GGroupMatchPossible = new PhenotypeInfo<bool>(false),
                 ThreeFieldMatchPossible = new PhenotypeInfo<bool>(false),
                 TwoFieldMatchPossible = new PhenotypeInfo<bool>(false),
-                TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
-                {
-                    A_1 = TgsHlaTypingCategory.Arbitrary,
-                    A_2 = TgsHlaTypingCategory.Arbitrary,
-                    B_1 = TgsHlaTypingCategory.Arbitrary,
-                    B_2 = TgsHlaTypingCategory.Arbitrary,
-                    C_1 = TgsHlaTypingCategory.Arbitrary,
-                    C_2 = TgsHlaTypingCategory.Arbitrary,
-                    // There is no test data for DPB1 that is less than four-field
-                    DPB1_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    DPB1_2 = TgsHlaTypingCategory.FourFieldAllele,
-                    DQB1_1 = TgsHlaTypingCategory.Arbitrary,
-                    DQB1_2 = TgsHlaTypingCategory.Arbitrary,
-                    DRB1_1 = TgsHlaTypingCategory.Arbitrary,
-                    DRB1_2 = TgsHlaTypingCategory.Arbitrary,
-                },
+                TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.Arbitrary),
                 IsHomozygous = new LocusInfo<bool>(false),
             };
         }
 
+        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory category)
+        {
+            genotypeCriteria.TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>(category);
+            return this;
+        }
+        
         /// <summary>
-        /// DPB1 is excluded, as it is a special case in most scenarios.
-        /// This is because no standard test data is available for DPB1 as 2/3 field alleles
+        /// Option to exlucde DPB1, as it is a special case in some scenarios.
+        /// This is because test data is incomplete, e.g. two field DPB1 alleles have no serology data
         /// </summary>
         public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory category)
         {

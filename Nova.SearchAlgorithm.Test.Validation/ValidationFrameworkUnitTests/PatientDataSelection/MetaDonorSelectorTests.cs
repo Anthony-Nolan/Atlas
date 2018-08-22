@@ -110,7 +110,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 new MetaDonor
                 {
-                    GenotypeCriteria = new GenotypeCriteriaBuilder().Build()
+                    GenotypeCriteria = new GenotypeCriteriaBuilder()
+                        .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
+                        .Build()
                 }
             };
             metaDonorRepository.AllMetaDonors().Returns(metaDonors);
@@ -203,7 +205,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
         }
-        
+
         [Test]
         public void GetNextMetaDonor_WhenNoMetaDonorsContainDonorAtExpectedResolution_ThrowsException()
         {

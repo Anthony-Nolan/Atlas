@@ -12,8 +12,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// <summary>
         /// Determines how many fields the matching meta-donor's genotype should have at each position
         /// </summary>
-        public PhenotypeInfo<TgsHlaTypingCategory> MatchingTgsTypingCategories { get; set; } = new PhenotypeInfo<bool>()
-            .Map((locus, p, noop) => locus == Locus.Dpb1 ? TgsHlaTypingCategory.FourFieldAllele : TgsHlaTypingCategory.Arbitrary);
+        public PhenotypeInfo<TgsHlaTypingCategory> MatchingTgsTypingCategories { get; set; } =
+            new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.Arbitrary);
 
         /// <summary>
         /// The match level of the expected matching donor (if a match is expected)
@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// Necessary for meta-donor selection to ensure the selected meta-donor contains donors at the expected resolution
         /// </summary>
         public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
-        
+
         /// <summary>
         /// Determines whether the expected meta-donor should be homozygous at each locus
         /// </summary>

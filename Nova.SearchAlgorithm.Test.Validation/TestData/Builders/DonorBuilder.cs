@@ -41,6 +41,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             donor.C_2 = genotype.Hla.C_2.GetHlaForCategory(typingCategorySet.C_2);
             donor.DQB1_1 = genotype.Hla.DQB1_1.GetHlaForCategory(typingCategorySet.DQB1_1);
             donor.DQB1_2 = genotype.Hla.DQB1_2.GetHlaForCategory(typingCategorySet.DQB1_2);
+            donor.DPB1_1 = genotype.Hla.DPB1_1.GetHlaForCategory(typingCategorySet.DPB1_1);
+            donor.DPB1_2 = genotype.Hla.DPB1_2.GetHlaForCategory(typingCategorySet.DPB1_2);
             return this;
         }
 

@@ -143,12 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
         {
-            var categories = new PhenotypeInfo<bool>().Map((locus, p, noop) =>
-                locus == Locus.Dpb1
-                    //There is no DPB1 test data with fewer than 4 fields
-                    ? TgsHlaTypingCategory.FourFieldAllele
-                    : tgsCategory
-            );
+            var categories = new PhenotypeInfo<TgsHlaTypingCategory>(tgsCategory);
             metaDonorSelectionCriteria.MatchingTgsTypingCategories = categories;
         }
 

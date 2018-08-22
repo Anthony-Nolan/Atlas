@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.FourFieldAllele)
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele)
                     .Build(),
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.ThreeFieldAllele)
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
                     .Build(),
             },
 
@@ -87,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.TwoFieldAllele)
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele)
                     .Build(),
             },
 
@@ -113,7 +113,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.FourFieldAllele)
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele)
                     .WithThreeFieldMatchPossibleAtAllLoci()
                     .Build(),
             },
@@ -124,8 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.ThreeFieldAllele)
-                    .WithTgsTypingCategoryAtLocus(Locus.Dpb1, TgsHlaTypingCategory.ThreeFieldAllele)
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
                     .WithTwoFieldMatchPossibleAtAllLoci()
                     .Build(),
             },
@@ -190,7 +189,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
-            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.FourFieldAllele).Build(),
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele).Build(),
         });
 
         /// <summary>
@@ -200,7 +199,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
-            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.ThreeFieldAllele).Build(),
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele).Build(),
         });
 
         /// <summary>
@@ -210,7 +209,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
-            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.TwoFieldAllele).Build(),
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele).Build(),
         });
 
         /// <summary>
@@ -220,7 +219,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
-            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory.Arbitrary).Build(),
+            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
         });
 
         public IEnumerable<MetaDonor> MetaDonors
