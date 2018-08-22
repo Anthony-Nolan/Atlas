@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
@@ -8,7 +10,12 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {
-    public interface IPatientDataSelector
+    /// <summary>
+    /// Stores various search criteria from the feature file, and selects appropriate patient data.
+    /// The criteria will map to exactly one expected donor from the database
+    /// e.g. A 9/10 adult match with mismatch at A, from AN registry
+    /// </summary>
+    public interface ISingleDonorPatientDataSelector
     {
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
@@ -29,15 +36,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetPatientHomozygousAtLocus(Locus locus);
 
-        PhenotypeInfo<string> GetPatientHla();
         int GetExpectedMatchingDonorId();
     }
 
-    /// <summary>
-    /// Stores various search criteria from the feature file, and selects appropriate patient data
-    /// e.g. A 9/10 adult match with mismatch at A, from AN registry
-    /// </summary>
-    public class PatientDataSelector : IPatientDataSelector
+    public class SingleDonorPatientDataSelector : ISingleDonorPatientDataSelector, IPatientHlaContainer
     {
         private readonly IMetaDonorSelector metaDonorSelector;
         private readonly IDatabaseDonorSelector databaseDonorSelector;
@@ -53,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
         {
             MatchLevels = DefaultMatchLevels,
-            TypingResolutions = DefaultTypingResolutions
+            TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>{DefaultTypingResolutions},
         };
 
         private readonly DatabaseDonorSelectionCriteria databaseDonorSelectionCriteria =
@@ -61,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private readonly PatientHlaSelectionCriteria patientHlaSelectionCriteria = new PatientHlaSelectionCriteria {MatchLevels = DefaultMatchLevels};
 
-        public PatientDataSelector(
+        public SingleDonorPatientDataSelector(
             IMetaDonorSelector metaDonorSelector,
             IDatabaseDonorSelector databaseDonorSelector,
             IPatientHlaSelector patientHlaSelector
@@ -134,7 +136,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void SetMatchingTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            var typingResolutions = metaDonorSelectionCriteria.TypingResolutions;
+            var typingResolutions = metaDonorSelectionCriteria.TypingResolutionSets.Single();
             SetTypingResolutions(typingResolutions.Map((l, p, existingResolution) => l == locus ? resolution : existingResolution));
         }
 
@@ -253,7 +255,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         private void SetTypingResolutions(PhenotypeInfo<HlaTypingResolution> resolutions)
         {
-            metaDonorSelectionCriteria.TypingResolutions = resolutions;
+            metaDonorSelectionCriteria.TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>{resolutions};
             databaseDonorSelectionCriteria.MatchingTypingResolutions = resolutions;
         }
     }

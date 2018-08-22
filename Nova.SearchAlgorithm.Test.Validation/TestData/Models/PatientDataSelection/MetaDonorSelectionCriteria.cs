@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
@@ -23,10 +24,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
 
         /// <summary>
-        /// Determines to what resolution the expected matched donor is typed
+        /// Determines to what resolutions the expected matched donor is typed
         /// Necessary for meta-donor selection to ensure the selected meta-donor contains donors at the expected resolution
         /// </summary>
-        public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
+        public List<PhenotypeInfo<HlaTypingResolution>> TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+        {
+            new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs)
+        };
 
         /// <summary>
         /// Determines whether the expected meta-donor should be homozygous at each locus

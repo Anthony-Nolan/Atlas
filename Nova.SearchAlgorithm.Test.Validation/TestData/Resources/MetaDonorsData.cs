@@ -65,6 +65,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Arbitrary).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),

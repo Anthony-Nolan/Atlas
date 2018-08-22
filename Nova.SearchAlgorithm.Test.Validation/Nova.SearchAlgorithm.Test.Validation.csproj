@@ -379,10 +379,12 @@
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DatabaseDonorSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\IPatientHlaContainer.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\MultipleDonorPatientDataSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\MultiplePatientDataSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\MetaDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\SingleDonorPatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
@@ -450,7 +452,7 @@
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectionSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelectorExtensions.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SinglePatientDataSelectorExtensions.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>

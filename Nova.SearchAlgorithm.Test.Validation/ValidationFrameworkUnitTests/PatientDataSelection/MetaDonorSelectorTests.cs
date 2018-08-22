@@ -220,7 +220,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var criteria = new MetaDonorSelectionCriteria
             {
-                TypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.NmdpCode),
+                TypingResolutionSets =
+                    new List<PhenotypeInfo<HlaTypingResolution>> {new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.NmdpCode)},
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 

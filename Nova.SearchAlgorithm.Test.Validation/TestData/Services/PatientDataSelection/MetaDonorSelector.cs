@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private static bool FulfilsTypingResolutionCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return metaDonor.HlaTypingResolutionSets.Any(resolutions => criteria.TypingResolutions.Equals(resolutions));
+            return criteria.TypingResolutionSets.All(resolutionSet => metaDonor.HlaTypingResolutionSets.Any(resolutionSet.Equals));
         }
 
         private static bool FulfilsMatchLevelCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)

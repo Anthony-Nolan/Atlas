@@ -442,6 +442,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with matches at multiple resolutions")]
+        public virtual void _1010SearchWithMatchesAtMultipleResolutions()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with matches at multiple resolutions", ((string[])(null)));
+#line 150
+  this.ScenarioSetup(scenarioInfo);
+#line 151
+    testRunner.Given("a patient has multiple matches at different typing resolutions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 152
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 153
+    testRunner.Then("the results should contain all specified donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

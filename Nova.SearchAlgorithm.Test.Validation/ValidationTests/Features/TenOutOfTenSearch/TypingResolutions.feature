@@ -146,5 +146,10 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
     And the search is run against the Anthony Nolan registry only
     When I run a 10/10 search
     Then the results should contain the specified donor
+ 
+  Scenario: 10/10 Search with matches at multiple resolutions
+    Given a patient has multiple matches at different typing resolutions
+    When I run a 10/10 search
+    Then the results should contain all specified donors
 
     

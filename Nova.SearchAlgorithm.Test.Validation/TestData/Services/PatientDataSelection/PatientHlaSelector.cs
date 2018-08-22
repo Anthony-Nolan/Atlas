@@ -10,6 +10,9 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {
+    /// <summary>
+    /// Responsible for deciding a patient's hla based on criteria
+    /// </summary>
     public interface IPatientHlaSelector
     {
         PhenotypeInfo<string> GetPatientHla(MetaDonor metaDonor, PatientHlaSelectionCriteria criteria);
@@ -154,7 +157,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
             if (validAlleles.Count == 0)
             {
-                throw new InvalidTestDataException($"No valid patient alleles found for the following donor data: {genotypeAllele} & {otherGenotypeAllele} at locus {locus}");
+                throw new InvalidTestDataException($"No valid patient alleles found for the following donor data: {genotypeAllele.TgsTypedAllele} & {otherGenotypeAllele.TgsTypedAllele} at locus {locus}");
             }
             
             var selectedAllele = validAlleles.GetRandomElement();

@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     public interface IMultiplePatientDataSelector
     {
         void SetNumberOfPatients(int numberOfPatients);
-        List<IPatientDataSelector> PatientDataSelectors { get; set; }
+        List<SingleDonorPatientDataSelector> PatientDataSelectors { get; set; }
     }
 
     public class MultiplePatientDataSelector: IMultiplePatientDataSelector
@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private readonly IDatabaseDonorSelector databaseDonorSelector;
         private readonly IPatientHlaSelector patientHlaSelector;
 
-        public List<IPatientDataSelector> PatientDataSelectors { get; set; } = new List<IPatientDataSelector>();
+        public List<SingleDonorPatientDataSelector> PatientDataSelectors { get; set; } = new List<SingleDonorPatientDataSelector>();
 
         public MultiplePatientDataSelector(
             IMetaDonorSelector metaDonorSelector,
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             this.patientHlaSelector = patientHlaSelector;
             for (var i = 0; i < DefaultNumberOfPatients; i++)
             {
-                PatientDataSelectors.Add(new PatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
+                PatientDataSelectors.Add(new SingleDonorPatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
             }
         }
 
@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             PatientDataSelectors.Clear();
             for (var i = 0; i < numberOfPatients; i++)
             {
-                PatientDataSelectors.Add(new PatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
+                PatientDataSelectors.Add(new SingleDonorPatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
             }
         }
     }
