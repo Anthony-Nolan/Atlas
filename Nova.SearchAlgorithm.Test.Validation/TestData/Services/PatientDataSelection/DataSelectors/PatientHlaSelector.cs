@@ -137,7 +137,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             TgsAllele otherGenotypeAllele
         )
         {
-            var alleles = alleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+            var alleles = alleleRepository.PatientAllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
             
             // alleles that match the first three fields
             var matchingAlleles = alleles.Where(a =>
@@ -176,9 +176,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             // alleles that match the first two fields
             var matchingAlleles = alleles.Where(a =>
             {
-                var donorAlleleThreeFields = AlleleSplitter.FirstTwoFields(genotypeAllele.TgsTypedAllele);
-                var alleleFirstThreeFields = AlleleSplitter.FirstTwoFields(a.AlleleName);
-                return donorAlleleThreeFields.SequenceEqual(alleleFirstThreeFields);
+                var donorAlleleTwoFields = AlleleSplitter.FirstTwoFields(genotypeAllele.TgsTypedAllele);
+                var alleleFirstTwoFields = AlleleSplitter.FirstTwoFields(a.AlleleName);
+                return donorAlleleTwoFields.SequenceEqual(alleleFirstTwoFields);
             });
             
             var validAlleles = matchingAlleles

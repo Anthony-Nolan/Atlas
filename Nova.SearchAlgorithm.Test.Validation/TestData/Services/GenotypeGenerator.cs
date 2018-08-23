@@ -96,7 +96,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     throw new InvalidTestDataException("Genotype cannot have a three field match without being explicitly four-field TGS typed");
                 }
 
-                return AlleleRepository.AllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+                return AlleleRepository.DonorAllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
             }
 
             if (twoFieldMatchPossible)

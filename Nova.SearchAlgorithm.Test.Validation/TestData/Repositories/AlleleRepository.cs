@@ -25,7 +25,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
-        PhenotypeInfo<List<AlleleTestData>> AllelesWithThreeFieldMatchPossible();
+        PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
+        PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible();
     }
 
@@ -64,11 +65,37 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             return Resources.PGroupMatchingAlleles.PatientAlleles;
         }
 
-        public PhenotypeInfo<List<AlleleTestData>> AllelesWithThreeFieldMatchPossible()
+        public PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()
         {
             return FourFieldAlleles().Map((locus, position, alleles) =>
             {
-                var groupedAlleles = alleles.GroupBy(a => AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName)).Where(g => g.Count() > 1);
+                var groupedAlleles = AlleleGroupsWithSharedFirstThreeFields(alleles);
+
+                return alleles.Where(a =>
+                {
+                    var group = groupedAlleles.SingleOrDefault(g => Equals(g.Key, AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName)));
+                    if (group == null)
+                    {
+                        return false;
+                    }
+
+                    // If only two alleles exist in a group with the same first three fields, only allow the first one to be used by donors.
+                    // This ensures that patients will always be able to pick the other one, without causing an exact allele level match
+                    if (group.Count() == 2)
+                    {
+                        return group.First().AlleleName == a.AlleleName;
+                    }
+
+                    return true;
+                }).ToList();
+            });
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible()
+        {
+            return FourFieldAlleles().Map((locus, position, alleles) =>
+            {
+                var groupedAlleles = AlleleGroupsWithSharedFirstThreeFields(alleles);
                 return alleles.Where(a => groupedAlleles.Any(g => Equals(g.Key, AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName)))).ToList(); 
             });
         }
@@ -86,6 +113,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                     .Concat(TwoFieldAlleles().DataAtPosition(l, p))
                     .ToList()
             );
+        }
+
+        private static IEnumerable<IGrouping<string, AlleleTestData>> AlleleGroupsWithSharedFirstThreeFields(List<AlleleTestData> alleles)
+        {
+            var groupedAlleles = alleles
+                .GroupBy(a => AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName))
+                .Where(g => g.Count() > 1)
+                .ToList();
+            return groupedAlleles;
         }
     }
 }
