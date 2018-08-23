@@ -1,4 +1,4 @@
-# New Search Algorithm Technical Validation 
+# Anthony Nolan Search Algorithm Technical Validation 
 
 This README is intended to give an overview of the technical validation framework at a non-technical level.
 
@@ -92,6 +92,59 @@ Steps will start with one of four keywords, in the following order:
     - This is where we assert the test has passed. 
     - These will generally involve asserting that the expected donor(s) have been returned from the search
 
+###An overview of our test data
+
+Our primary test data source is a set of alleles taken from TGS typed donors from the SOLAR database. 
+They are separated by allele, and by number of fields: 2-field, 3-field, and 4-field alleles are included, and we can specify how many fields are required if necessary.
+
+Unless otherwise specified, test donors will be created with a genotype consisting of randomly selected 2, 3, or 4 field single alleles across all 6 loci.
+
+e.g. 
+
+|A_1|A_2|B_1|B_2|C_1|C_2|DPB1_1|DPB1_2|DQB1_1|DQB1_2|DRB1_1|DRB1_2|
+|---|---|---|---|---|---|------|------|------|------|------|------|
+|*02:17:02|*03:01:01:01|*15:25:01|*39:06:02:01|*05:53|*02:10:01:01|*01:01:01:04|*01:01|*03:05:01|*03:01:01:01|*11:01:08|*15:01:01:01|
 
 
+If lower typing resolutions are specified, this TGS typed dataset will be 'dumbed down' to get the required typing resolution.
 
+The typing resolutions available are: 
+
+- TGS
+  - As above
+- TGS (four field) 
+  - As above, with all alleles required to be 4-field
+- TGS (three field)
+  - As above, with all alleles required to be 3-field
+- TGS (two field)
+  - As above, with all alleles required to be 2-field
+- Three field truncated
+  - A four field allele will be truncated to give a 3-field one
+- Two field truncated
+  - A three or four field allele will be truncated to give a 2-field one
+- XX code
+  - The XX code corresponding to the TGS alleles' first field 
+- NMDP code
+  - An NMDP corresponding to the TGS allele
+  - A single NMDP code has been selected for each TGS allele, from the SOLAR database
+- Serology
+  - The serology value corresponding to the selected TGS allele
+  - (No serology data has been found for DPB1 alleles)
+- Untyped 
+  - No data will be set for the corresponding locus
+
+Multiple typing resolutions may be specified for each genotype
+
+**Exceptions**
+
+In some specific cases, the test data described above is not sufficient, so specific test data has been curated for those cases.
+
+_e.g. Matches at a p-group, but not g-group, level._
+  
+  
+  In these cases the test data will be selected from the relevent (smaller) test dataset. 
+  
+**Generating Test Data**
+
+When adding new tests, relevant test data for that scenario may not yet exist. 
+If this is a case, a developer will need to add the appropriate test donors. 
