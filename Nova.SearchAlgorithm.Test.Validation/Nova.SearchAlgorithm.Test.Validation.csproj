@@ -379,12 +379,12 @@
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DatabaseDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\IPatientHlaContainer.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\MultipleDonorPatientDataSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\MultiplePatientDataSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\MetaDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\SingleDonorPatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\IPatientHlaContainer.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\MultipleDonorPatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\MultiplePatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\SingleDonorPatientDataSelector.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />

@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     /// <summary>
     /// Stores various search criteria from the feature file, and selects appropriate patient data.
     /// The criteria will map to exactly one expected donor from the database
-    /// e.g. A 9/10 adult match with mismatch at A, from AN registry
+    /// e.g. A 9/10 adult match with mismatch at A, from AN registry, at NMDP resolution
     /// </summary>
     public interface ISingleDonorPatientDataSelector
     {
