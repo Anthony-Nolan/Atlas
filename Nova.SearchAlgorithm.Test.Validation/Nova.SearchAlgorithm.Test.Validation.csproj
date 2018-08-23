@@ -451,8 +451,8 @@
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultipleDonorPatientDataSelectionSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\PatientDataFactoryExtensions.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\SingleDonorPatientDataSelectionSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataFactoryExtensions.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
