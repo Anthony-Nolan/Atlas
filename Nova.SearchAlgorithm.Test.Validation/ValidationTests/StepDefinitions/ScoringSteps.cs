@@ -15,9 +15,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then("the match grade should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
             var results = ScenarioContext.Current.Get<SearchResultSet>();
-            var donorResult = results.SearchResults.Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
+            var donorResult = results.SearchResults.Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
 
             var matchGrade = ParseMatchGrade(grade);
             var expectedLoci = ParseExpectedLoci(locus);

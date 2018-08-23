@@ -13,52 +13,48 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"a set of (.*) patients with matching donors")]
         public void GivenASetOfXPatientsWithMatchingDonors(int numberOfPatients)
         {
-            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            multiplePatientDataSelector.SetNumberOfPatients(numberOfPatients);
-            ScenarioContext.Current.Set(multiplePatientDataSelector);
+            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            factory.SetNumberOfPatients(numberOfPatients);
+            ScenarioContext.Current.Set(factory);
         }
 
         [Given(@"a set of patients with matching donors")]
         public void GivenASetOfPatientsWithMatchingDonors()
         {
-            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            ScenarioContext.Current.Set(multiplePatientDataSelector);
+            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            ScenarioContext.Current.Set(factory);
         }
 
         [Given(@"each matching donor is a (.*) match")]
         public void GivenEachMatchingDonorIsOfMatchType(string matchType)
         {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors =
-                selector.PatientDataSelectors.Select(s => (SingleDonorPatientDataSelector) s.SetMatchType(matchType)).ToList();
-            ScenarioContext.Current.Set(selector);
+            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchType(matchType)).ToList();
+            ScenarioContext.Current.Set(factory);
         }
 
         [Given(@"each matching donor is of type (.*)")]
         public void GivenEachMatchingDonorIsOfDonorType(string donorType)
         {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => (SingleDonorPatientDataSelector) s.SetMatchDonorType(donorType))
-                .ToList();
-            ScenarioContext.Current.Set(selector);
+            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchDonorType(donorType)).ToList();
+            ScenarioContext.Current.Set(factory);
         }
 
         [Given(@"each matching donor is (.*) typed at (.*)")]
         public void GivenEachMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors = selector.PatientDataSelectors
-                .Select(s => (SingleDonorPatientDataSelector) s.SetMatchTypingCategories(typingCategory, locus)).ToList();
-            ScenarioContext.Current.Set(selector);
+            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchTypingCategories(typingCategory, locus)).ToList();
+            ScenarioContext.Current.Set(factory);
         }
 
         [Given(@"each matching donor is in registry: (.*)")]
         public void GivenEachMatchingDonorIsInRegistry(string registry)
         {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors = selector.PatientDataSelectors
-                .Select(s => (SingleDonorPatientDataSelector) s.SetMatchDonorRegistry(registry)).ToList();
-            ScenarioContext.Current.Set(selector);
+            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchDonorRegistry(registry)).ToList();
+            ScenarioContext.Current.Set(factory);
         }
     }
 }

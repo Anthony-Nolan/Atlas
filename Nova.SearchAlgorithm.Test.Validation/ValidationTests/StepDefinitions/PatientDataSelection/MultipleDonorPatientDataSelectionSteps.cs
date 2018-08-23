@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"a patient has multiple matches at different typing resolutions")]
         public void GivenAPatientHasMultipleMatchesAtDifferentTypingResolutions()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IMultipleDonorPatientDataSelector>();
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
 
             var allResolutions = new[]
             {
@@ -30,11 +30,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var resolutionSets = allResolutions.Select(r => new PhenotypeInfo<HlaTypingResolution>(r));
             foreach (var resolutionSet in resolutionSets)
             {
-                patientDataSelector.AddFullDonorTypingResolution(resolutionSet);
+                patientDataFactory.AddFullDonorTypingResolution(resolutionSet);
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
-            ScenarioContext.Current.Set((IPatientHlaContainer) patientDataSelector);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
+        
+        [Given(@"all matching donors are of type (.*)")]
+        public void GivenTheMatchingDonorIsOfDonorType(string donorType)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMatchDonorType(donorType);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
     }
 }

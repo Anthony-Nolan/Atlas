@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 {
     public interface IMetaDonorSelector
     {
+        // TODO: Remove state from this selector. There is no guarantee the criteria will be the same each time, so we should move the list of previously matched donors out of this class
         /// <summary>
         /// Will return the next matching meta-donor from the available test data.
         /// If multiple meta-donors match the criteria, each time this is called it will return a distinct meta-donor

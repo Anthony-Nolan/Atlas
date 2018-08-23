@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
     public class PatientResultSet
     {
-        public ISingleDonorPatientDataSelector SingleDonorPatientDataSelector;
+        public IPatientDataFactory PatientDataFactory;
         public SearchResultSet SearchResultSet;
     }
 }

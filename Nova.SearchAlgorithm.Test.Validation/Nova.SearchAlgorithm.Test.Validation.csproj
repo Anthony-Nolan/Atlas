@@ -378,13 +378,11 @@
     <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\DatabaseDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientHlaSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\MetaDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\IPatientHlaContainer.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\MultipleDonorPatientDataSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\MultiplePatientDataSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientSelectors\SingleDonorPatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\DatabaseDonorSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\MetaDonorSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataSelector.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
@@ -454,7 +452,7 @@
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultipleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\SingleDonorPatientDataSelectionSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\SinglePatientDataSelectorExtensions.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\PatientDataFactoryExtensions.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Documents.Spatial;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
@@ -15,31 +16,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     /// The criteria will map to exactly one expected donor from the database
     /// e.g. A 9/10 adult match with mismatch at A, from AN registry, at NMDP resolution
     /// </summary>
-    public interface ISingleDonorPatientDataSelector
+    public interface IPatientDataFactory
     {
+        // Patient only criteria
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
         void SetAsTenOutOfTenMatch();
         void SetMismatchesAtLocus(int numberOfMismatches, Locus locus);
+        void SetPatientUntypedAtLocus(Locus locus);
+        void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
 
+        // Meta-donor and patient criteria
+        void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
+        void SetPatientHomozygousAtLocus(Locus locus);
+
+        // Meta-donor only criteria
+        void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
+        void SetMatchingDonorHomozygousAtLocus(Locus locus);
         void SetMatchingDonorType(DonorType donorType);
         void SetMatchingRegistry(RegistryCode registry);
 
-        void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
-        void SetFullMatchingTypingResolution(HlaTypingResolution resolution);
-        void SetMatchingTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
-        void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
-        void SetMatchingDonorUntypedAtLocus(Locus locus);
-        void SetMatchingDonorHomozygousAtLocus(Locus locus);
-
-        void SetPatientUntypedAtLocus(Locus locus);
-        void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
-        void SetPatientHomozygousAtLocus(Locus locus);
-
-        int GetExpectedMatchingDonorId();
+        // Meta-donor and database-donor criteria
+        void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
+        /// <summary>
+        /// Will update all expected matching donor resolutions at the specified locus.
+        /// This is intended for use with a single matching donor.
+        /// Be careful that this is definitely what you want if matching multiple donors
+        /// </summary>
+        void UpdateMatchingDonorTypingResolutionsAtLocus(Locus locus, HlaTypingResolution resolution);
+        /// <summary>
+        /// Will update all expected matching donor resolutions, at all loci.
+        /// This is intended for use with a single matching donor.
+        /// Be careful that this is definitely what you want if matching multiple donors
+        /// </summary>
+        void UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution resolution);
+        
+        // Selected Data
+        IEnumerable<int> GetExpectedMatchingDonorIds();
+        PhenotypeInfo<string> GetPatientHla();
     }
 
-    public class SingleDonorPatientDataSelector : ISingleDonorPatientDataSelector, IPatientHlaContainer
+    public class PatientDataFactory : IPatientDataFactory
     {
         private readonly IMetaDonorSelector metaDonorSelector;
         private readonly IDatabaseDonorSelector databaseDonorSelector;
@@ -47,23 +64,29 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private MetaDonor selectedMetaDonor;
 
-        private static readonly PhenotypeInfo<MatchLevel> DefaultMatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele);
-
-        private static readonly PhenotypeInfo<HlaTypingResolution> DefaultTypingResolutions =
-            new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
+        private const MatchLevel DefaultMatchLevel = MatchLevel.Allele;
+        private const HlaTypingResolution DefaultTypingResolution = HlaTypingResolution.Tgs;
 
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
         {
-            MatchLevels = DefaultMatchLevels,
-            TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>{DefaultTypingResolutions},
+            MatchLevels = new PhenotypeInfo<MatchLevel>(DefaultMatchLevel),
+            TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>> {new PhenotypeInfo<HlaTypingResolution>(DefaultTypingResolution)},
         };
 
-        private readonly DatabaseDonorSelectionCriteria databaseDonorSelectionCriteria =
-            new DatabaseDonorSelectionCriteria {MatchingTypingResolutions = DefaultTypingResolutions};
+        private readonly List<DatabaseDonorSelectionCriteria> databaseDonorSelectionCriteriaSet = new List<DatabaseDonorSelectionCriteria>
+        {
+            new DatabaseDonorSelectionCriteria
+            {
+                MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(DefaultTypingResolution)
+            },
+        };
 
-        private readonly PatientHlaSelectionCriteria patientHlaSelectionCriteria = new PatientHlaSelectionCriteria {MatchLevels = DefaultMatchLevels};
+        private readonly PatientHlaSelectionCriteria patientHlaSelectionCriteria = new PatientHlaSelectionCriteria
+        {
+            MatchLevels = new PhenotypeInfo<MatchLevel>(DefaultMatchLevel)
+        };
 
-        public SingleDonorPatientDataSelector(
+        public PatientDataFactory(
             IMetaDonorSelector metaDonorSelector,
             IDatabaseDonorSelector databaseDonorSelector,
             IPatientHlaSelector patientHlaSelector
@@ -126,21 +149,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         }
 
         /// <summary>
-        /// Will set the desired typing resolution at all positions
-        /// </summary>
-        public void SetFullMatchingTypingResolution(HlaTypingResolution resolution)
-        {
-            var hlaTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(resolution);
-            SetTypingResolutions(hlaTypingResolutions);
-        }
-
-        public void SetMatchingTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
-        {
-            var typingResolutions = metaDonorSelectionCriteria.TypingResolutionSets.Single();
-            SetTypingResolutions(typingResolutions.Map((l, p, existingResolution) => l == locus ? resolution : existingResolution));
-        }
-
-        /// <summary>
         /// Will set the desired tgs typing category at all positions
         /// </summary>
         public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
@@ -149,9 +157,34 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             metaDonorSelectionCriteria.MatchingTgsTypingCategories = categories;
         }
 
-        public void SetMatchingDonorUntypedAtLocus(Locus locus)
+        public void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions)
         {
-            databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
+            metaDonorSelectionCriteria.TypingResolutionSets.Add(resolutions);
+            databaseDonorSelectionCriteriaSet.Add(new DatabaseDonorSelectionCriteria
+            {
+                MatchingTypingResolutions = resolutions,
+            });
+        }
+
+        public void UpdateMatchingDonorTypingResolutionsAtLocus(Locus locus, HlaTypingResolution resolution)
+        {
+            foreach (var resolutionSet in metaDonorSelectionCriteria.TypingResolutionSets)
+            {
+                resolutionSet.SetAtLocus(locus, TypePositions.Both, resolution);
+            }
+
+            foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
+            {
+                databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+            }
+        }
+
+        public void UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution resolution)
+        {
+            foreach (var locus in LocusHelpers.AllLoci())
+            {
+                UpdateMatchingDonorTypingResolutionsAtLocus(locus, resolution);
+            }
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)
@@ -190,9 +223,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return patientHlaSelector.GetPatientHla(GetMetaDonor(), patientHlaSelectionCriteria);
         }
 
-        public int GetExpectedMatchingDonorId()
+        public IEnumerable<int> GetExpectedMatchingDonorIds()
         {
-            return databaseDonorSelector.GetExpectedMatchingDonorId(GetMetaDonor(), databaseDonorSelectionCriteria);
+            return databaseDonorSelectionCriteriaSet.Select(c => databaseDonorSelector.GetExpectedMatchingDonorId(GetMetaDonor(), c));
         }
 
         /// <summary>
@@ -247,16 +280,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             metaDonorSelectionCriteria.MatchLevels = matchLevels;
             patientHlaSelectionCriteria.MatchLevels = matchLevels;
-        }
-
-        /// <summary>
-        /// This method should be used to set the expected typing resolutions for meta donor and database donor selction criteria,
-        /// as both criteria rely on this data
-        /// </summary>
-        private void SetTypingResolutions(PhenotypeInfo<HlaTypingResolution> resolutions)
-        {
-            metaDonorSelectionCriteria.TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>{resolutions};
-            databaseDonorSelectionCriteria.MatchingTypingResolutions = resolutions;
         }
     }
 }

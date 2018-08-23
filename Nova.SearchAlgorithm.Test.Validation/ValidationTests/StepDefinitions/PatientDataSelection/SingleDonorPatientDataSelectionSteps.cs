@@ -1,5 +1,6 @@
 ﻿using System;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
@@ -14,32 +15,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"a patient and a donor")]
         public void GivenAPatientAndADonor()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            ScenarioContext.Current.Set((IPatientHlaContainer) patientDataSelector);
         }
 
         [Given(@"a patient has a match")]
         public void GivenAPatientHasAMatch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            ScenarioContext.Current.Set((IPatientHlaContainer) patientDataSelector);
         }
 
         [Given(@"the patient is untyped at Locus (.*)")]
         public void GivenThePatientIsUntypedAt(string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
 
             switch (locus)
             {
                 case "C":
-                    patientDataSelector.SetPatientUntypedAtLocus(Locus.C);
+                    patientDataFactory.SetPatientUntypedAtLocus(Locus.C);
                     break;
                 case "Dpb1":
-                    patientDataSelector.SetPatientUntypedAtLocus(Locus.Dpb1);
+                    patientDataFactory.SetPatientUntypedAtLocus(Locus.Dpb1);
                     break;
                 case "Dqb1":
-                    patientDataSelector.SetPatientUntypedAtLocus(Locus.Dqb1);
+                    patientDataFactory.SetPatientUntypedAtLocus(Locus.Dqb1);
                     break;
                 case "A":
                 case "B":
@@ -50,84 +47,84 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the patient is homozygous at (.*)")]
         public void GivenThePatientIsHomozygousAt(string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
 
             switch (locus)
             {
                 case "locus A":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.A);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.A);
                     break;
                 case "locus B":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.B);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.B);
                     break;
                 case "locus C":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.C);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.C);
                     break;
                 case "locus DPB1":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dpb1);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dpb1);
                     break;
                 case "locus DQB1":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dqb1);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dqb1);
                     break;
                 case "locus DRB1":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Drb1);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Drb1);
                     break;
                 case "all loci":
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.A);
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.B);
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.C);
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dpb1);
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dqb1);
-                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Drb1);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.A);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.B);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.C);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dpb1);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dqb1);
+                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Drb1);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the donor is a (.*) match")]
         [Given(@"the matching donor is a (.*) match")]
         public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
-            var patientDataSelector = (SingleDonorPatientDataSelector) ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            patientDataSelector.SetMatchType(matchType);
-            ScenarioContext.Current.Set(patientDataSelector);
+            var patientDataFactory = (PatientDataFactory) ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMatchType(matchType);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the donor has a (.*) mismatch at (.*)")]
         [Given(@"the matching donor has a (.*) mismatch at (.*)")]
         public void GivenTheMatchingDonorHasAMismatchAt(string mismatchType, string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            patientDataSelector.SetMismatches(mismatchType, locus);
-            ScenarioContext.Current.Set(patientDataSelector);
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMismatches(mismatchType, locus);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the donor is untyped at Locus (.*)")]
         [Given(@"the matching donor is untyped at Locus (.*)")]
         public void GivenTheMatchingDonorIsUntypedAt(string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
 
             switch (locus)
             {
                 case "C":
-                    patientDataSelector.SetMatchingDonorUntypedAtLocus(Locus.C);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(Locus.C, HlaTypingResolution.Untyped);
                     break;
                 case "Dpb1":
-                    patientDataSelector.SetMatchingDonorUntypedAtLocus(Locus.Dpb1);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(Locus.Dpb1, HlaTypingResolution.Untyped);
                     break;
                 case "Dqb1":
-                    patientDataSelector.SetMatchingDonorUntypedAtLocus(Locus.Dqb1);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(Locus.Dqb1, HlaTypingResolution.Untyped);
                     break;
                 case "A":
                 case "B":
@@ -138,84 +135,84 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the donor is of type (.*)")]
         [Given(@"the matching donor is of type (.*)")]
         public void GivenTheMatchingDonorIsOfDonorType(string donorType)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            patientDataSelector.SetMatchDonorType(donorType);
-            ScenarioContext.Current.Set(patientDataSelector);
+            var metaDonorSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            metaDonorSelector.SetMatchDonorType(donorType);
+            ScenarioContext.Current.Set(metaDonorSelector);
         }
 
         [Given(@"the donor is (.*) typed at (.*)")]
         [Given(@"the matching donor is (.*) typed at (.*)")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            patientDataSelector.SetMatchTypingCategories(typingCategory, locus);
-            ScenarioContext.Current.Set(patientDataSelector);
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMatchTypingCategories(typingCategory, locus);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the donor is homozygous at (.*)")]
         [Given(@"the matching donor is homozygous at (.*)")]
         public void GivenTheMatchingDonorIsHomozygousAt(string locus)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
 
             switch (locus)
             {
                 case "locus A":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.A);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.A);
                     break;
                 case "locus B":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.B);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.B);
                     break;
                 case "locus C":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.C);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.C);
                     break;
                 case "locus DPB1":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dpb1);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Dpb1);
                     break;
                 case "locus DQB1":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dqb1);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Dqb1);
                     break;
                 case "locus DRB1":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
                     break;
                 case "all loci":
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.A);
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.B);
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.C);
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dpb1);
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dqb1);
-                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.A);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.B);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.C);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Dpb1);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Dqb1);
+                    patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the donor is in registry: (.*)")]
         [Given(@"the matching donor is in registry: (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string registry)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            patientDataSelector.SetMatchDonorRegistry(registry);
-            ScenarioContext.Current.Set(patientDataSelector);
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMatchDonorRegistry(registry);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
 
         [Given(@"the match level is (.*)")]
         public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
-            patientDataSelector.SetMatchLevelAtAllLoci(matchLevel);
-            ScenarioContext.Current.Set(patientDataSelector);
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMatchLevelAtAllLoci(matchLevel);
+            ScenarioContext.Current.Set(patientDataFactory);
         }
     }
 }

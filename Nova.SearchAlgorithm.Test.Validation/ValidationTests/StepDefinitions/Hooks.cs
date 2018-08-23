@@ -34,9 +34,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public static void BeforeScenario()
         {
             ScenarioContext.Current.Set(new SearchRequestBuilder());
-            ScenarioContext.Current.Set(container.Resolve<ISingleDonorPatientDataSelector>());
-            ScenarioContext.Current.Set(container.Resolve<IMultipleDonorPatientDataSelector>());
-            ScenarioContext.Current.Set(container.Resolve<IMultiplePatientDataSelector>());
+            ScenarioContext.Current.Set(container.Resolve<IPatientDataFactory>());
+            ScenarioContext.Current.Set(container.Resolve<IMultiplePatientDataFactory>());
         }
         
         private static IContainer CreateContainer()
@@ -52,9 +51,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             
             builder.RegisterType<TestDataService>().AsImplementedInterfaces();
             
-            builder.RegisterType<SingleDonorPatientDataSelector>().AsImplementedInterfaces();
-            builder.RegisterType<MultipleDonorPatientDataSelector>().AsImplementedInterfaces();
-            builder.RegisterType<MultiplePatientDataSelector>().AsImplementedInterfaces();
+            builder.RegisterType<PatientDataFactory>().AsImplementedInterfaces();
+            builder.RegisterType<MultiplePatientDataFactory>().AsImplementedInterfaces();
             
             builder.RegisterType<MetaDonorSelector>().AsImplementedInterfaces();
             builder.RegisterType<DatabaseDonorSelector>().AsImplementedInterfaces();

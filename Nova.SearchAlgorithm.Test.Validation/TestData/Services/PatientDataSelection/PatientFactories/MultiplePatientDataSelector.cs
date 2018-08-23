@@ -6,13 +6,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     /// Used to specify multiple patients with the same criteria.
     /// Each patient specified should match a unique meta-donor.
     /// </summary>
-    public interface IMultiplePatientDataSelector
+    public interface IMultiplePatientDataFactory
     {
         void SetNumberOfPatients(int numberOfPatients);
-        List<SingleDonorPatientDataSelector> PatientDataSelectors { get; set; }
+        List<IPatientDataFactory> PatientDataFactories { get; set; }
     }
 
-    public class MultiplePatientDataSelector: IMultiplePatientDataSelector
+    public class MultiplePatientDataFactory: IMultiplePatientDataFactory
     {
         private const int DefaultNumberOfPatients = 50;
 
@@ -20,9 +20,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private readonly IDatabaseDonorSelector databaseDonorSelector;
         private readonly IPatientHlaSelector patientHlaSelector;
 
-        public List<SingleDonorPatientDataSelector> PatientDataSelectors { get; set; } = new List<SingleDonorPatientDataSelector>();
+        public List<IPatientDataFactory> PatientDataFactories { get; set; } = new List<IPatientDataFactory>();
 
-        public MultiplePatientDataSelector(
+        public MultiplePatientDataFactory(
             IMetaDonorSelector metaDonorSelector,
             IDatabaseDonorSelector databaseDonorSelector,
             IPatientHlaSelector patientHlaSelector)
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             this.patientHlaSelector = patientHlaSelector;
             for (var i = 0; i < DefaultNumberOfPatients; i++)
             {
-                PatientDataSelectors.Add(new SingleDonorPatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
+                PatientDataFactories.Add(new PatientDataFactory(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
             }
         }
 
@@ -42,10 +42,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         public void SetNumberOfPatients(int numberOfPatients)
         {
-            PatientDataSelectors.Clear();
+            PatientDataFactories.Clear();
             for (var i = 0; i < numberOfPatients; i++)
             {
-                PatientDataSelectors.Add(new SingleDonorPatientDataSelector(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
+                PatientDataFactories.Add(new PatientDataFactory(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
             }
         }
     }
