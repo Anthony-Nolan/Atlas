@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using Autofac;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {
+    /// <summary>
+    /// Contains step definitions for selecting patient data when a single patient corresponds to a single donor
+    /// </summary>
     [Binding]
-    public class PatientDataSelectionSteps
+    public class SingleDonorPatientDataSelectionSteps
     {
         [Given(@"a patient and a donor")]
         public void GivenAPatientAndADonor()
@@ -29,46 +23,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
             ScenarioContext.Current.Set((IPatientHlaContainer) patientDataSelector);
-        }
-
-        [Given(@"a patient has multiple matches at different typing resolutions")]
-        public void GivenAPatientHasMultipleMatchesAtDifferentTypingResolutions()
-        {
-            var patientDataSelector = ScenarioContext.Current.Get<IMultipleDonorPatientDataSelector>();
-
-            var allResolutions = new[]
-            {
-                HlaTypingResolution.Tgs,
-                HlaTypingResolution.ThreeFieldTruncatedAllele,
-                HlaTypingResolution.TwoFieldTruncatedAllele,
-                HlaTypingResolution.NmdpCode,
-                HlaTypingResolution.XxCode,
-                HlaTypingResolution.Serology,
-                HlaTypingResolution.Arbitrary
-            };
-            var resolutionSets = allResolutions.Select(r => new PhenotypeInfo<HlaTypingResolution>(r));
-            foreach (var resolutionSet in resolutionSets)
-            {
-                patientDataSelector.AddFullDonorTypingResolution(resolutionSet);
-            }
-
-            ScenarioContext.Current.Set(patientDataSelector);
-            ScenarioContext.Current.Set((IPatientHlaContainer) patientDataSelector);
-        }
-
-        [Given(@"a set of (.*) patients with matching donors")]
-        public void GivenASetOfXPatientsWithMatchingDonors(int numberOfPatients)
-        {
-            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            multiplePatientDataSelector.SetNumberOfPatients(numberOfPatients);
-            ScenarioContext.Current.Set(multiplePatientDataSelector);
-        }
-
-        [Given(@"a set of patients with matching donors")]
-        public void GivenASetOfPatientsWithMatchingDonors()
-        {
-            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            ScenarioContext.Current.Set(multiplePatientDataSelector);
         }
 
         [Given(@"the patient is untyped at Locus (.*)")]
@@ -149,15 +103,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
-        [Given(@"each matching donor is a (.*) match")]
-        public void GivenEachMatchingDonorIsOfMatchType(string matchType)
-        {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors =
-                selector.PatientDataSelectors.Select(s => (SingleDonorPatientDataSelector) s.SetMatchType(matchType)).ToList();
-            ScenarioContext.Current.Set(selector);
-        }
-
         [Given(@"the donor has a (.*) mismatch at (.*)")]
         [Given(@"the matching donor has a (.*) mismatch at (.*)")]
         public void GivenTheMatchingDonorHasAMismatchAt(string mismatchType, string locus)
@@ -205,15 +150,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
-        [Given(@"each matching donor is of type (.*)")]
-        public void GivenEachMatchingDonorIsOfDonorType(string donorType)
-        {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => (SingleDonorPatientDataSelector) s.SetMatchDonorType(donorType))
-                .ToList();
-            ScenarioContext.Current.Set(selector);
-        }
-
         [Given(@"the donor is (.*) typed at (.*)")]
         [Given(@"the matching donor is (.*) typed at (.*)")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
@@ -221,15 +157,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
             patientDataSelector.SetMatchTypingCategories(typingCategory, locus);
             ScenarioContext.Current.Set(patientDataSelector);
-        }
-
-        [Given(@"each matching donor is (.*) typed at (.*)")]
-        public void GivenEachMatchingDonorIsHlaTyped(string typingCategory, string locus)
-        {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors = selector.PatientDataSelectors
-                .Select(s => (SingleDonorPatientDataSelector) s.SetMatchTypingCategories(typingCategory, locus)).ToList();
-            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the donor is homozygous at (.*)")]
@@ -281,15 +208,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var patientDataSelector = ScenarioContext.Current.Get<ISingleDonorPatientDataSelector>();
             patientDataSelector.SetMatchDonorRegistry(registry);
             ScenarioContext.Current.Set(patientDataSelector);
-        }
-
-        [Given(@"each matching donor is in registry: (.*)")]
-        public void GivenEachMatchingDonorIsInRegistry(string registry)
-        {
-            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
-            selector.PatientDataSelectors = selector.PatientDataSelectors
-                .Select(s => (SingleDonorPatientDataSelector) s.SetMatchDonorRegistry(registry)).ToList();
-            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the match level is (.*)")]
