@@ -406,6 +406,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ValidationTests\Features\TenOutOfTenSearch.feature" />
+    <Content Include="ValidationTests\Features\ValidationREADME.md" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
