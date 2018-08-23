@@ -10,30 +10,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 {
     public interface IMetaDonorSelector
     {
-        // TODO: NOVA-1646: Remove state from this selector. There is no guarantee the criteria will be the same each time, so we should move the list of previously matched donors out of this class
         /// <summary>
-        /// Will return the next matching meta-donor from the available test data.
-        /// If multiple meta-donors match the criteria, each time this is called it will return a distinct meta-donor
+        /// Will return a meta-donor matching the criteria from the available test data.
         /// </summary>
-        MetaDonor GetNextMetaDonor(MetaDonorSelectionCriteria criteria);
+        MetaDonor GetMetaDonor(MetaDonorSelectionCriteria criteria);
     }
 
     public class MetaDonorSelector : IMetaDonorSelector
     {
         private readonly IMetaDonorRepository metaDonorRepository;
 
-        /// <summary>
-        /// Meta-donors that have already been returned. Tracked to avoid returning the same meta-donor more than once.
-        /// </summary>
-        private readonly List<MetaDonor> matchedMetaDonors;
-
         public MetaDonorSelector(IMetaDonorRepository metaDonorRepository)
         {
             this.metaDonorRepository = metaDonorRepository;
-            matchedMetaDonors = new List<MetaDonor>();
         }
 
-        public MetaDonor GetNextMetaDonor(MetaDonorSelectionCriteria criteria)
+        public MetaDonor GetMetaDonor(MetaDonorSelectionCriteria criteria)
         {
             var matchingMetaDonors = metaDonorRepository.AllMetaDonors()
                 .Where(md => FulfilsDonorInfoCriteria(criteria, md) && FulfilsDonorHlaCriteria(criteria, md))
@@ -44,16 +36,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 throw new MetaDonorNotFoundException("No meta-donors found matching specified criteria.");
             }
 
-            var newMetaDonors = matchingMetaDonors.Except(matchedMetaDonors).ToList();
+            var newMetaDonors = matchingMetaDonors.Skip(criteria.MetaDonorsToSkip).ToList();
 
             if (!newMetaDonors.Any())
             {
                 throw new MetaDonorNotFoundException(
-                    $"No more meta-donors found matching specified criteria. Already returned: {matchedMetaDonors.Count} meta-donors. Is there enough test data?");
+                    $"No more meta-donors found matching specified criteria. Ignored {criteria.MetaDonorsToSkip} meta-donors. Is there enough test data?");
             }
 
             var metaDonor = newMetaDonors.First();
-            matchedMetaDonors.Add(metaDonor);
             return metaDonor;
         }
 

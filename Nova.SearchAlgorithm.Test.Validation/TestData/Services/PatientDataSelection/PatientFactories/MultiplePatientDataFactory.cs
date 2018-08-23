@@ -30,10 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             this.metaDonorSelector = metaDonorSelector;
             this.databaseDonorSelector = databaseDonorSelector;
             this.patientHlaSelector = patientHlaSelector;
-            for (var i = 0; i < DefaultNumberOfPatients; i++)
-            {
-                PatientDataFactories.Add(new PatientDataFactory(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
-            }
+            SetNumberOfPatients(DefaultNumberOfPatients);
         }
 
         /// <summary>
@@ -45,7 +42,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             PatientDataFactories.Clear();
             for (var i = 0; i < numberOfPatients; i++)
             {
-                PatientDataFactories.Add(new PatientDataFactory(metaDonorSelector, databaseDonorSelector, patientHlaSelector));
+                var patientDataFactory = new PatientDataFactory(metaDonorSelector, databaseDonorSelector, patientHlaSelector);
+                patientDataFactory.SetNumberOfMetaDonorsToSkip(i);
+                PatientDataFactories.Add(patientDataFactory);
             }
         }
     }

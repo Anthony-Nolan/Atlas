@@ -38,6 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// Will set the desired tgs typing category at all positions
         /// </summary>
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
+        void SetNumberOfMetaDonorsToSkip(int numberToSkip);
 
         // Meta-donor and database-donor criteria
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
@@ -166,7 +167,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var categories = new PhenotypeInfo<TgsHlaTypingCategory>(tgsCategory);
             metaDonorSelectionCriteria.MatchingTgsTypingCategories = categories;
         }
-        
+
+        public void SetNumberOfMetaDonorsToSkip(int numberToSkip)
+        {
+            metaDonorSelectionCriteria.MetaDonorsToSkip = numberToSkip;
+        }
+
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)
         {
             metaDonorSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
@@ -286,7 +292,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             // Cache the selected meta-donor to ensure we do not have to perform this calculation multiple times
             if (selectedMetaDonor == null)
             {
-                selectedMetaDonor = metaDonorSelector.GetNextMetaDonor(metaDonorSelectionCriteria);
+                selectedMetaDonor = metaDonorSelector.GetMetaDonor(metaDonorSelectionCriteria);
             }
 
             return selectedMetaDonor;
