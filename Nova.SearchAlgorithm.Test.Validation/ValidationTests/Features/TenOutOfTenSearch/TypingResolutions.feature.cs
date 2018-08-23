@@ -453,8 +453,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 151
     testRunner.Given("a patient has multiple matches at different typing resolutions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 152
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.And("all matching donors are of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 153
+    testRunner.And("all matching donors are in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 154
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 155
     testRunner.Then("the results should contain all specified donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

@@ -149,6 +149,8 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
  
   Scenario: 10/10 Search with matches at multiple resolutions
     Given a patient has multiple matches at different typing resolutions
+    And all matching donors are of type adult
+    And all matching donors are in registry: Anthony Nolan
     When I run a 10/10 search
     Then the results should contain all specified donors
 
