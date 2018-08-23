@@ -31,10 +31,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetPatientHomozygousAtLocus(Locus locus);
 
         // Meta-donor only criteria
-        void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
-        void SetMatchingDonorHomozygousAtLocus(Locus locus);
         void SetMatchingDonorType(DonorType donorType);
         void SetMatchingRegistry(RegistryCode registry);
+        void SetMatchingDonorHomozygousAtLocus(Locus locus);
+        /// <summary>
+        /// Will set the desired tgs typing category at all positions
+        /// </summary>
+        void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
 
         // Meta-donor and database-donor criteria
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
@@ -96,6 +99,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             this.databaseDonorSelector = databaseDonorSelector;
             this.patientHlaSelector = patientHlaSelector;
         }
+        
+        #region Patient only critera
 
         public void SetAsSixOutOfSixMatch()
         {
@@ -131,7 +136,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     throw new Exception("Cannot have fewer than 0 or more than 2 mismatches");
             }
         }
+        
+        public void SetPatientUntypedAtLocus(Locus locus)
+        {
+            SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
+        }
 
+        public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
+        {
+            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+        }
+
+        #endregion
+
+        #region Meta-donor only criteria
+        
         public void SetMatchingDonorType(DonorType donorType)
         {
             metaDonorSelectionCriteria.MatchingDonorType = donorType;
@@ -141,6 +160,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             metaDonorSelectionCriteria.MatchingRegistry = registry;
         }
+        
+        public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
+        {
+            var categories = new PhenotypeInfo<TgsHlaTypingCategory>(tgsCategory);
+            metaDonorSelectionCriteria.MatchingTgsTypingCategories = categories;
+        }
+        
+        public void SetMatchingDonorHomozygousAtLocus(Locus locus)
+        {
+            metaDonorSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
+        }
+        
+        #endregion
+
+        #region Meta-donor and Patient criteria
 
         public void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel)
         {
@@ -148,14 +182,24 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             SetMatchLevels(matchLevels);
         }
 
-        /// <summary>
-        /// Will set the desired tgs typing category at all positions
-        /// </summary>
-        public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
+        public void SetPatientHomozygousAtLocus(Locus locus)
         {
-            var categories = new PhenotypeInfo<TgsHlaTypingCategory>(tgsCategory);
-            metaDonorSelectionCriteria.MatchingTgsTypingCategories = categories;
+            var matchesAtLocus = patientHlaSelectionCriteria.HlaMatches.DataAtLocus(locus);
+            if (matchesAtLocus.Item1 && matchesAtLocus.Item2)
+            {
+                // For an exact match to exist, if the patient is homozygous the donor must implicitly also be homozygous
+                SetMatchingDonorHomozygousAtLocus(locus);
+            }
+
+            patientHlaSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
+
+            // For a homozygous locus, typing resolution must be single allele (TGS)
+            SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Tgs);
         }
+
+        #endregion
+
+        #region Meta-donor and database donor criteria
 
         public void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions)
         {
@@ -187,35 +231,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
         }
 
-        public void SetMatchingDonorHomozygousAtLocus(Locus locus)
-        {
-            metaDonorSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
-        }
+        #endregion
 
-        public void SetPatientUntypedAtLocus(Locus locus)
-        {
-            SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
-        }
-
-        public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
-        {
-            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
-        }
-
-        public void SetPatientHomozygousAtLocus(Locus locus)
-        {
-            var matchesAtLocus = patientHlaSelectionCriteria.HlaMatches.DataAtLocus(locus);
-            if (matchesAtLocus.Item1 && matchesAtLocus.Item2)
-            {
-                // For an exact match to exist, if the patient is homozygous the donor must implicitly also be homozygous
-                SetMatchingDonorHomozygousAtLocus(locus);
-            }
-
-            patientHlaSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
-
-            // For a homozygous locus, typing resolution must be single allele (TGS)
-            SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Tgs);
-        }
+        #region Selected Data
 
         public PhenotypeInfo<string> GetPatientHla()
         {
@@ -227,6 +245,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             return databaseDonorSelectionCriteriaSet.Select(c => databaseDonorSelector.GetExpectedMatchingDonorId(GetMetaDonor(), c));
         }
+
+        #endregion
 
         /// <summary>
         /// Should only be called when all criteria are set up.
