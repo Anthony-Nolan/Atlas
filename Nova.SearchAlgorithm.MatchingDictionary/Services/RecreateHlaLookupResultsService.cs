@@ -22,17 +22,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IHlaScoringLookupRepository hlaScoringLookupRepository;
+        private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
 
         public RecreateHlaLookupResultsService(
             IHlaLookupResultsService hlaLookupResultsService,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
-            IHlaScoringLookupRepository hlaScoringLookupRepository)
+            IHlaScoringLookupRepository hlaScoringLookupRepository,
+            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository)
         {
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.hlaScoringLookupRepository = hlaScoringLookupRepository;
+            this.dpb1TceGroupsLookupRepository = dpb1TceGroupsLookupRepository;
         }
 
         public async Task RecreateAllHlaLookupResults()
@@ -57,7 +60,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             await Task.WhenAll(
                 PersistAlleleNamesLookupResults(resultCollections.AlleleNameLookupResults),
                 PersistHlaMatchingLookupResults(resultCollections.HlaMatchingLookupResults),
-                PersistHlaScoringLookupResults(resultCollections.HlaScoringLookupResults)
+                PersistHlaScoringLookupResults(resultCollections.HlaScoringLookupResults),
+                PersistDpb1TceGroupLookupResults(resultCollections.Dpb1TceGroupLookupResults)
             );            
         }
 
@@ -66,14 +70,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             await alleleNamesLookupRepository.RecreateHlaLookupTable(alleleNames);
         }
 
-        private async Task PersistHlaMatchingLookupResults(IEnumerable<IHlaLookupResult> hlaLookupResults)
+        private async Task PersistHlaMatchingLookupResults(IEnumerable<IHlaLookupResult> hlaMatchingLookupResults)
         {
-            await hlaMatchingLookupRepository.RecreateHlaLookupTable(hlaLookupResults);
+            await hlaMatchingLookupRepository.RecreateHlaLookupTable(hlaMatchingLookupResults);
         }
 
-        private async Task PersistHlaScoringLookupResults(IEnumerable<IHlaLookupResult> hlaLookupResults)
+        private async Task PersistHlaScoringLookupResults(IEnumerable<IHlaLookupResult> hlaScoringLookupResults)
         {
-            await hlaScoringLookupRepository.RecreateHlaLookupTable(hlaLookupResults);
+            await hlaScoringLookupRepository.RecreateHlaLookupTable(hlaScoringLookupResults);
+        }
+
+        private async Task PersistDpb1TceGroupLookupResults(IEnumerable<IHlaLookupResult> dpb1TceGroupLookupResults)
+        {
+            await dpb1TceGroupsLookupRepository.RecreateHlaLookupTable(dpb1TceGroupLookupResults);
         }
     }
 }

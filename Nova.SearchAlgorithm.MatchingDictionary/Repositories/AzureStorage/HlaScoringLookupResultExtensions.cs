@@ -6,14 +6,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public static class HlaScoringLookupResultExtensions
     {
-        public static HlaLookupTableEntity ToTableEntity(this IHlaScoringLookupResult lookupResult)
-        {
-            return new HlaLookupTableEntity(lookupResult)
-            {
-                LookupNameCategoryAsString = lookupResult.LookupNameCategory.ToString()
-            };
-        }
-
         public static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
         {
             var scoringInfo = GetPreCalculatedScoringInfo(entity);
