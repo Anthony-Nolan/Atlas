@@ -177,6 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             if (matchesAtLocus.Item1 && matchesAtLocus.Item2)
             {
                 // For an exact match to exist, if the patient is homozygous the donor must implicitly also be homozygous
+                // TODO: NOVA-1188: This assumption is not true when considering null alleles. Update when null matching is implemented
                 SetMatchingDonorHomozygousAtLocus(locus);
             }
             

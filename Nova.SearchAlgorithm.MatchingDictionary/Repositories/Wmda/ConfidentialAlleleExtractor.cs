@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
     internal class ConfidentialAlleleExtractor : WmdaDataExtractor<ConfidentialAllele>
     {
-        private const string FileName = "version_report";
+        private const string FileName = "version_report.txt";
         private const string RegexPattern = @"^Confidential,(\w+\*)([\w:]+),";
 
         public ConfidentialAlleleExtractor() : base(FileName)
