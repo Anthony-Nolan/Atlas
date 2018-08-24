@@ -33,8 +33,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         protected ILogger Logger;
         protected TService LookupService;
 
-        protected const MolecularLocusType MolecularLocus = MolecularLocusType.A;
-        protected const MatchLocus MatchedLocus = MatchLocus.A;
+        protected MolecularLocusType MolecularLocus = MolecularLocusType.A;
+        protected MatchLocus MatchedLocus = MatchLocus.A;
 
         [SetUp]
         public void SetUpBeforeEachTest()

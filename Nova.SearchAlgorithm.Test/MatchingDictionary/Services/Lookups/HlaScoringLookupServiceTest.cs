@@ -146,7 +146,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             };
         }
 
-        private static IHlaScoringLookupResult BuildMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
+        private IHlaScoringLookupResult BuildMultipleAlleleLookupResult(string lookupName, IEnumerable<string> alleleNames)
         {
             var scoringInfo = new MultipleAlleleScoringInfo(
                 alleleNames.Select(BuildSingleAlleleScoringInfo),
@@ -160,7 +160,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             );
         }
 
-        private static IHlaScoringLookupResult BuildConsolidatedMolecularLookupResult(string lookupName, IEnumerable<string> alleleNames)
+        private IHlaScoringLookupResult BuildConsolidatedMolecularLookupResult(string lookupName, IEnumerable<string> alleleNames)
         {
             var scoringInfo = new ConsolidatedMolecularScoringInfo(
                 alleleNames.Select(ToPGroup),
