@@ -72,6 +72,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return MatchGrade.PGroup;
                 case "g-group":
                     return MatchGrade.GGroup;
+                case "cDna":
+                case "CDna":
+                case "cDNA":
+                    return MatchGrade.CDna;
+                case "protein":
+                    return MatchGrade.Protein;
                 default:
                     ScenarioContext.Current.Pending();
                     return null;

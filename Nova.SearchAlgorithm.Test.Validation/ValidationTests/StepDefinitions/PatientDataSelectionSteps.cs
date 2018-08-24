@@ -266,20 +266,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            switch (matchLevel)
-            {
-                case "p-group":
-                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
-                    break;
-                case "g-group":
-                    patientDataSelector.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
+            patientDataSelector.SetMatchLevelAtAllLoci(matchLevel);
             ScenarioContext.Current.Set(patientDataSelector);
         }
     }

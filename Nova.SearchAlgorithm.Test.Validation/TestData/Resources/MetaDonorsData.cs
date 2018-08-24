@@ -106,6 +106,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build(),
             },
+            
+            // Three field matching (fourth field difference)
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele)
+                    .WithThreeFieldMatchPossibleAtAllLoci()
+                    .Build(),
+            },
+            
+            // Two field matching (third field difference)
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
+                    .WithTwoFieldMatchPossibleAtAllLoci()
+                    .Build(),
+            },
 
             // Homozygous at A
             new MetaDonor

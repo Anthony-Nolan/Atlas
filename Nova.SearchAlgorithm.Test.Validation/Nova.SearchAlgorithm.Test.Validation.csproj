@@ -349,7 +349,9 @@
     <Compile Include="TestData\Builders\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
     <Compile Include="TestData\Exceptions\HlaSelectionException.cs" />
+    <Compile Include="TestData\Exceptions\InvalidTestDataException.cs" />
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
+    <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
     <Compile Include="TestData\Models\Hla\Genotype.cs" />
@@ -365,12 +367,13 @@
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
-    <Compile Include="TestData\Resources\Alleles\FourFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\Alleles\AllelesWithDifferentThirdField.cs" />
     <Compile Include="TestData\Resources\Alleles\GGroupMatchingAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\NonMatchingAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\PGroupMatchingAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\ThreeFieldAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\TwoFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\Alleles\TGS\FourFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\Alleles\TGS\ThreeFieldAlleles.cs" />
+    <Compile Include="TestData\Resources\Alleles\TGS\TwoFieldAlleles.cs" />
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
     <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />

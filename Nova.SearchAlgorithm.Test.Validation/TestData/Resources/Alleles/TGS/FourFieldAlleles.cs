@@ -374,6 +374,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new AlleleTestData {AlleleName = "*07:04:01:01", PGroup = "07:04P", GGroup = "07:04:01G", NmdpCode = "*07:ET", Serology = "7"},
                     new AlleleTestData {AlleleName = "*07:06:01:01", PGroup = "07:01P", GGroup = "07:01:01G", NmdpCode = "*07:BBTA", Serology = "7"},
                 },
+            // Note that none of the DPB1 TGS 4-field alleles have a serology association.
+            // DPB1 cannot be tested at this resolution
             DPB1_1 =
                 new List<AlleleTestData>
                 {

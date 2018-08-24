@@ -22,6 +22,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// </summary>
         public PhenotypeInfo<bool> GGroupMatchPossible { get; set; }
         
+        /// <summary>
+        /// Will be used to determine whether a three-field match is possible for the selected allele
+        /// i.e. allele is four field, multiple alleles with same first three fields exist in dataset
+        /// </summary>
+        public PhenotypeInfo<bool> ThreeFieldMatchPossible { get; set; }
+        
+        /// <summary>
+        /// Will be used to determine whether a three-field match is possible for the selected allele
+        /// i.e. allele is three or four field, multiple alleles with same first two fields exist in dataset
+        /// </summary>
+        public PhenotypeInfo<bool> TwoFieldMatchPossible { get; set; }
+        
         public LocusInfo<bool> IsHomozygous { get; set; }
     }
 }

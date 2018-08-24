@@ -74,9 +74,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
 //                new AlleleTestData {AlleleName = "*05:37", PGroup = "05:01P", GGroup = "05:01:01G", NmdpCode = "*05:HUEP", Serology = "5"},
                 new AlleleTestData {AlleleName = "*07:18", PGroup = "07:01P", GGroup = "07:01:01G", NmdpCode = "*07:BBTA", Serology = "7"},
             },
-            // Note that none of the DPB1 TGS 3-field alleles had a g-group, nmdp code, and serology association - all of which are currently needed to be valid as test data
-            DPB1_1 = new List<AlleleTestData> { },
-            DPB1_2 = new List<AlleleTestData> { },
+            // Note that none of the DPB1 TGS 3-field alleles have a serology association.
+            // DPB1 cannot be tested at this resolution
+            DPB1_1 = new List<AlleleTestData>
+            {
+                new AlleleTestData {AlleleName = "*01:01", NmdpCode = "CXC"},
+                new AlleleTestData {AlleleName = "*09:01", NmdpCode = "ANZW"},
+                new AlleleTestData {AlleleName = "*104:01", NmdpCode = "ADNSR"},
+            },
+            DPB1_2 = new List<AlleleTestData>
+            {
+                new AlleleTestData {AlleleName = "*01:01", NmdpCode = "CXC"},
+                new AlleleTestData {AlleleName = "*09:01", NmdpCode = "ANZW"},
+                new AlleleTestData {AlleleName = "*104:01", NmdpCode = "ADNSR"},
+            },
             DQB1_1 =
                 new List<AlleleTestData>
                 {

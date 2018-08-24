@@ -10,7 +10,7 @@ Feature: Eight out of Eight Aligned Registry Search
     And the matching donor is in registry: Anthony Nolan
     And the search type is adult
     And the search is run for aligned registries
-    When I run a 8/8 search
+    When I run an 8/8 search
     Then the results should contain the specified donor  
     
   Scenario: 8/8 Aligned Registry Search - DKMS
@@ -21,7 +21,7 @@ Feature: Eight out of Eight Aligned Registry Search
     And the matching donor is in registry: DKMS
     And the search type is adult
     And the search is run for aligned registries
-    When I run a 8/8 search
+    When I run an 8/8 search
     Then the results should contain the specified donor
     
   Scenario: 8/8 Aligned Registry Search - BBMR
@@ -32,7 +32,7 @@ Feature: Eight out of Eight Aligned Registry Search
     And the matching donor is in registry: BBMR
     And the search type is adult
     And the search is run for aligned registries
-    When I run a 8/8 search
+    When I run an 8/8 search
     Then the results should contain the specified donor
     
   Scenario: 8/8 Aligned Registry Search - WBMDR
@@ -43,5 +43,5 @@ Feature: Eight out of Eight Aligned Registry Search
     And the matching donor is in registry: WBMDR
     And the search type is adult
     And the search is run for aligned registries
-    When I run a 8/8 search
+    When I run an 8/8 search
     Then the results should contain the specified donor

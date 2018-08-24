@@ -1,6 +1,7 @@
 ﻿using System;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -142,12 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)
         {
-            var categories = new PhenotypeInfo<bool>().Map((locus, p, noop) =>
-                locus == Locus.Dpb1
-                    //There is no DPB1 test data with fewer than 4 fields
-                    ? TgsHlaTypingCategory.FourFieldAllele
-                    : tgsCategory
-            );
+            var categories = new PhenotypeInfo<TgsHlaTypingCategory>(tgsCategory);
             metaDonorSelectionCriteria.MatchingTgsTypingCategories = categories;
         }
 
@@ -165,7 +161,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
         }
-        
+
         public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
             patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
@@ -180,7 +176,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 // TODO: NOVA-1188: This assumption is not true when considering null alleles. Update when null matching is implemented
                 SetMatchingDonorHomozygousAtLocus(locus);
             }
-            
+
             patientHlaSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
 
             // For a homozygous locus, typing resolution must be single allele (TGS)
@@ -189,12 +185,46 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public PhenotypeInfo<string> GetPatientHla()
         {
+            ValidateCriteria();
             return patientHlaSelector.GetPatientHla(GetMetaDonor(), patientHlaSelectionCriteria);
         }
 
         public int GetExpectedMatchingDonorId()
         {
             return databaseDonorSelector.GetExpectedMatchingDonorId(GetMetaDonor(), databaseDonorSelectionCriteria);
+        }
+
+        /// <summary>
+        /// Should only be called when all criteria are set up.
+        /// If there are any logical inconsitencies in the criteria specified, they should be raised here as an Exception to aid debugging
+        /// </summary>
+        private void ValidateCriteria()
+        {
+            patientHlaSelectionCriteria.MatchLevels.EachPosition((l, p, matchLevel) =>
+            {
+                if (matchLevel == MatchLevel.FirstThreeFieldAllele
+                    && metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p) != TgsHlaTypingCategory.FourFieldAllele)
+                {
+                    throw new InvalidTestDataException(
+                        "Cannot generate data for a patient with a three field (not fourth field) match if the matching donor is not four field TGS typed");
+                }
+
+                if (matchLevel == MatchLevel.FirstTwoFieldAllele)
+                {
+                    var tgsTypingCategory = metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
+                    if (tgsTypingCategory == TgsHlaTypingCategory.FourFieldAllele)
+                    {
+                        throw new InvalidTestDataException(
+                            "No test data has been curated for four-field alleles matching at the first two fields only. Please add this test data if necessary");
+                    }
+
+                    if (tgsTypingCategory != TgsHlaTypingCategory.ThreeFieldAllele)
+                    {
+                        throw new InvalidTestDataException(
+                            "Cannot generate data for a patient with a two field match if the matching donor is not guaranteed to have at least three fields");
+                    }
+                }
+            });
         }
 
         private MetaDonor GetMetaDonor()
