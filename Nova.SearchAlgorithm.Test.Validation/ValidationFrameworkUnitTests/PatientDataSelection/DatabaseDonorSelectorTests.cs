@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             const int donorIdMatching = 1;
             const int donorIdNotMatching = 2;
-            var matchingTypingResolutions = new PhenotypeInfo<bool>().Map((l, p, noop) => HlaTypingResolution.XxCode);
+            var matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.XxCode);
             
             var metaDonor = new MetaDonor
             {

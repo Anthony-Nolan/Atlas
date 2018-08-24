@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
@@ -14,7 +15,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     /// </summary>
     public static class GenotypeGenerator
     {
-        private static readonly Random Random = new Random();
         private static readonly IAlleleRepository AlleleRepository = new AlleleRepository();
         private static readonly GenotypeCriteria DefaultCriteria = new GenotypeCriteriaBuilder().Build();
 
@@ -82,10 +82,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                         .TwoFieldAlleles()
                         .DataAtPosition(locus, position);
                     break;
+                case TgsHlaTypingCategory.Arbitrary:
+                    // Randomly choose dataset here rather than randomly choosing alleles from full dataset,
+                    // as otherwise the data is skewed towards the larger dataset (4-field)
+                    alleles =
+                        new List<List<AlleleTestData>>
+                        {
+                            AlleleRepository.FourFieldAlleles().DataAtPosition(locus, position),
+                            AlleleRepository.ThreeFieldAlleles().DataAtPosition(locus, position),
+                            AlleleRepository.TwoFieldAlleles().DataAtPosition(locus, position)
+                        }.GetRandomElement();
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
-            return TgsAllele.FromTestDataAllele(GetRandomElement(alleles), locus);
+
+            return TgsAllele.FromTestDataAllele(alleles.GetRandomElement(), locus);
         }
 
         /// <summary>
@@ -98,8 +110,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             {
                 Hla = AlleleRepository.DonorAllelesForPGroupMatching().ToPhenotypeInfo((l, alleles) =>
                 {
-                    var allele1 = GetRandomElement(alleles);
-                    var allele2 = GetRandomElement(alleles);
+                    var allele1 = alleles.GetRandomElement();
+                    var allele2 = alleles.GetRandomElement();
 
                     return new Tuple<TgsAllele, TgsAllele>(
                         TgsAllele.FromTestDataAllele(allele1, l),
@@ -108,7 +120,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 })
             };
         }
-        
+
         /// <summary>
         /// Creates a full Genotype from the available dataset curated to give g-group level matches.
         /// </summary>
@@ -118,7 +130,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             {
                 Hla = AlleleRepository.AllelesForGGroupMatching().Map((l, p, alleles) =>
                 {
-                    var allele = GetRandomElement(alleles);
+                    var allele = alleles.GetRandomElement();
                     return TgsAllele.FromTestDataAllele(allele, l);
                 })
             };
@@ -133,10 +145,5 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromTestDataAllele(a, l))
         };
-
-        private static T GetRandomElement<T>(IReadOnlyList<T> data)
-        {
-            return data[Random.Next(data.Count)];
-        }
     }
 }

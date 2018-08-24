@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.Remoting.Messaging;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
@@ -111,39 +113,69 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
-        [Given(@"the matching donor is (.*) typed")]
-        public void GivenTheMatchingDonorIsHlaTyped(string typingCategory)
+        [Given(@"the matching donor is (.*) typed at (.*)")]
+        public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
 
+            if (locus == "each locus")
+            {
+                patientDataSelector = SetTypingCategoryAtAllLoci(patientDataSelector, typingCategory);
+            }
+            else
+            {
+                ScenarioContext.Current.Pending();
+            }
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        private static IPatientDataSelector SetTypingCategoryAtAllLoci(IPatientDataSelector patientDataSelector, string typingCategory)
+        {
             switch (typingCategory)
             {
-                case "TGS":
-                case "TGS (four field)":
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
+                case "differently":
+                    // Mixed resolution must have 4-field TGS alleles, as one of the resolution options is three field truncated
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
+                    {
+                        patientDataSelector.SetMatchingTypingResolutionAtLocus(resolution.Key, resolution.Value);
+                    }
+                    break;
+                case "TGS":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
+                    break;
+                case "TGS (four field)":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "TGS (three field)":
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "TGS (two field)":
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
+                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
                     break;
                 case "three field truncated allele":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele);
                     break;
                 case "two field truncated allele":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele);
                     break;
                 case "XX code":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.XxCode);
                     break;
                 case "NMDP code":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.NmdpCode);
                     break;
                 case "serology":
+                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Serology);
                     break;
                 default:
@@ -151,7 +183,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataSelector);
+            return patientDataSelector;
         }
 
         [Given(@"the matching donor is in registry: (.*)")]

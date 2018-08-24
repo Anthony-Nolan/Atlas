@@ -348,6 +348,7 @@
     <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
+    <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
     <Compile Include="TestData\Models\Hla\Genotype.cs" />
     <Compile Include="TestData\Models\Hla\GenotypeCriteria.cs" />
@@ -368,6 +369,7 @@
     <Compile Include="TestData\Resources\Alleles\ThreeFieldAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\TwoFieldAlleles.cs" />
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
+    <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DatabaseDonorSelector.cs" />

@@ -6,7 +6,7 @@
     Given a patient has a match
 	And the patient is untyped at Locus C
     And the matching donor is a 6/6 match    
-    And the matching donor is TGS typed
+    And the matching donor is TGS typed at each locus
     And the matching donor is of type adult
     And the matching donor is in registry: Anthony Nolan
     And the search type is adult
@@ -18,7 +18,7 @@
     Given a patient has a match
     And the patient is untyped at Locus Dqb1
     And the matching donor is a 6/6 match    
-    And the matching donor is TGS typed
+    And the matching donor is TGS typed at each locus
     And the matching donor is of type adult
     And the matching donor is in registry: Anthony Nolan
     And the search type is adult
@@ -31,7 +31,7 @@
 	And the patient is untyped at Locus C
     And the patient is untyped at Locus Dqb1
     And the matching donor is a 6/6 match    
-    And the matching donor is TGS typed
+    And the matching donor is TGS typed at each locus
     And the matching donor is of type adult
     And the matching donor is in registry: Anthony Nolan
     And the search type is adult
