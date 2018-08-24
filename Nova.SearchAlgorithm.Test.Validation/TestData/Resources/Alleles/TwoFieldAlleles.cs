@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new AlleleTestData {AlleleName = "*03:09", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*03:VDUX", Serology = "3"},
                     new AlleleTestData {AlleleName = "*03:191", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*03:AUXZT", Serology = "3"},
 //                    new AlleleTestData {AlleleName = "*05:04", PGroup = "05:04P", GGroup = "05:04:01G", NmdpCode = "*05:ANNV", Serology = "5"},
-                    new AlleleTestData {AlleleName = "*05:10", PGroup = "05:03P", GGroup = "05:03:01G", NmdpCode = "*05:ACSRM", Serology = "5"},
+//                    new AlleleTestData {AlleleName = "*05:10", PGroup = "05:03P", GGroup = "05:03:01G", NmdpCode = "*05:ACSRM", Serology = "5"},
 //                    new AlleleTestData {AlleleName = "*05:103", PGroup = "05:01P", GGroup = "05:01:01G", NmdpCode = "*05:ASXHK", Serology = "5"},
 //                    new AlleleTestData {AlleleName = "*05:107", PGroup = "05:01P", GGroup = "05:01:01G", NmdpCode = "*05:ASXHK", Serology = "5"},
                     new AlleleTestData {AlleleName = "*06:110", PGroup = "06:03P", GGroup = "06:03:01G", NmdpCode = "*06:ACSRM", Serology = "6"},

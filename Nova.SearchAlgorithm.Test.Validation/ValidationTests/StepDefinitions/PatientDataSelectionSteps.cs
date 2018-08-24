@@ -130,6 +130,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
+        [Given(@"the matching donor homozygous at (.*)")]
+        public void GivenTheMatchingDonorIsHomozygousAt(string locus)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+
+            switch (locus)
+            {
+                case "locus A":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.A);
+                    break;
+                case "locus B":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.B);
+                    break;
+                case "locus C":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.C);
+                    break;
+                case "locus DPB1":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dpb1);
+                    break;
+                case "locus DQB1":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dqb1);
+                    break;
+                case "locus DRB1":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
+                    break;
+                case "all loci":
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.A);
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.B);
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.C);
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dpb1);
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Dqb1);
+                    patientDataSelector.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
         private static IPatientDataSelector SetTypingCategoryAtAllLoci(IPatientDataSelector patientDataSelector, string typingCategory)
         {
             switch (typingCategory)

@@ -28,7 +28,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
                     DQB1_2 = TgsHlaTypingCategory.Arbitrary,
                     DRB1_1 = TgsHlaTypingCategory.Arbitrary,
                     DRB1_2 = TgsHlaTypingCategory.Arbitrary,
-                }
+                },
+                IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false),
             };
         }
 
@@ -63,6 +64,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
         {
             genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>(true);
+            return this;
+        }
+
+        public GenotypeCriteriaBuilder HomozygousAtLocus(Locus locus)
+        {
+            genotypeCriteria.IsHomozygous.SetAtLocus(locus, true);
             return this;
         }
         
