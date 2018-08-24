@@ -498,6 +498,95 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NineOutO
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("9/10 Search at A with a mismatched donor at DPB1")]
+        public virtual void _910SearchAtAWithAMismatchedDonorAtDPB1()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("9/10 Search at A with a mismatched donor at DPB1", ((string[])(null)));
+#line 171
+  this.ScenarioSetup(scenarioInfo);
+#line 172
+    testRunner.Given("a patient and a donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 173
+    testRunner.And("the donor has a single mismatch at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 174
+    testRunner.And("the donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 175
+    testRunner.And("the donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 176
+    testRunner.And("the donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 177
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 178
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 179
+    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 180
+    testRunner.Then("the results should not contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("9/10 Search at A with a doubly mismatched donor at DPB1")]
+        public virtual void _910SearchAtAWithADoublyMismatchedDonorAtDPB1()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("9/10 Search at A with a doubly mismatched donor at DPB1", ((string[])(null)));
+#line 182
+  this.ScenarioSetup(scenarioInfo);
+#line 183
+    testRunner.Given("a patient and a donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 184
+    testRunner.And("the donor has a double mismatch at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 185
+    testRunner.And("the donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 186
+    testRunner.And("the donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 187
+    testRunner.And("the donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 188
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 189
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 190
+    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 191
+    testRunner.Then("the results should not contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("9/10 Search at A with mismatches at A and DPB1")]
+        public virtual void _910SearchAtAWithMismatchesAtAAndDPB1()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("9/10 Search at A with mismatches at A and DPB1", ((string[])(null)));
+#line 193
+  this.ScenarioSetup(scenarioInfo);
+#line 194
+    testRunner.Given("a patient and a donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 195
+    testRunner.And("the donor has a single mismatch at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 196
+    testRunner.And("the donor has a single mismatch at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 197
+    testRunner.And("the donor is of type adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 198
+    testRunner.And("the donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 199
+    testRunner.And("the donor is in registry: Anthony Nolan", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 200
+    testRunner.And("the search type is adult", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 201
+    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 202
+    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 203
+    testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

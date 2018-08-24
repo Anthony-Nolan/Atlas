@@ -167,3 +167,37 @@ Feature: Nine Out Of Ten Search - mismatches
     And the search is run against the Anthony Nolan registry only
     When I run a 9/10 search at locus DQB1
     Then the results should not contain the specified donor
+    
+  Scenario: 9/10 Search at A with a mismatched donor at DPB1
+    Given a patient and a donor
+    And the donor has a single mismatch at locus DPB1
+    And the donor is of type adult
+    And the donor is TGS typed at each locus
+    And the donor is in registry: Anthony Nolan
+    And the search type is adult
+    And the search is run against the Anthony Nolan registry only
+    When I run a 9/10 search at locus A
+    Then the results should not contain the specified donor
+    
+  Scenario: 9/10 Search at A with a doubly mismatched donor at DPB1
+    Given a patient and a donor
+    And the donor has a double mismatch at locus DPB1
+    And the donor is of type adult
+    And the donor is TGS typed at each locus
+    And the donor is in registry: Anthony Nolan
+    And the search type is adult
+    And the search is run against the Anthony Nolan registry only
+    When I run a 9/10 search at locus A
+    Then the results should not contain the specified donor
+    
+  Scenario: 9/10 Search at A with mismatches at A and DPB1
+    Given a patient and a donor
+    And the donor has a single mismatch at locus A
+    And the donor has a single mismatch at locus DPB1
+    And the donor is of type adult
+    And the donor is TGS typed at each locus
+    And the donor is in registry: Anthony Nolan
+    And the search type is adult
+    And the search is run against the Anthony Nolan registry only
+    When I run a 9/10 search at locus A
+    Then the results should contain the specified donor
