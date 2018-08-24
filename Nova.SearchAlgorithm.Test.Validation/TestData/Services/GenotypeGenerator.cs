@@ -78,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var threeFieldMatchPossible = criteria.ThreeFieldMatchPossible.DataAtPosition(locus, position);
             var twoFieldMatchPossible = criteria.TwoFieldMatchPossible.DataAtPosition(locus, position);
             var alleles = GetDataset(locus, position, tgsHlaTypingCategory, threeFieldMatchPossible, twoFieldMatchPossible);
-            return TgsAllele.FromTestDataAllele(alleles.GetRandomElement(), locus);
+            return TgsAllele.FromTestDataAllele(alleles.GetRandomElement());
         }
 
         private static List<AlleleTestData> GetDataset(
@@ -160,8 +160,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     var allele2 = alleles.GetRandomElement();
 
                     return new Tuple<TgsAllele, TgsAllele>(
-                        TgsAllele.FromTestDataAllele(allele1, l),
-                        TgsAllele.FromTestDataAllele(allele2, l)
+                        TgsAllele.FromTestDataAllele(allele1),
+                        TgsAllele.FromTestDataAllele(allele2)
                     );
                 })
             };
@@ -177,7 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 Hla = AlleleRepository.AllelesForGGroupMatching().Map((l, p, alleles) =>
                 {
                     var allele = alleles.GetRandomElement();
-                    return TgsAllele.FromTestDataAllele(allele, l);
+                    return TgsAllele.FromTestDataAllele(allele);
                 })
             };
         }
@@ -189,7 +189,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// As we're randomly selecting alleles for donors, there's a chance this will actually match
         public static readonly Genotype NonMatchingGenotype = new Genotype
         {
-            Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromTestDataAllele(a, l))
+            Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromTestDataAllele(a))
         };
     }
 }

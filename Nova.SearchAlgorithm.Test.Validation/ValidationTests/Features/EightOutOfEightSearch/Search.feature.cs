@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOutOfEightSearch
 {
     using TechTalk.SpecFlow;
     
@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
         
-#line 1 "EightOutOfEightSearch.feature"
+#line 1 "Search.feature"
 #line hidden
         
         [NUnit.Framework.OneTimeSetUpAttribute()]
