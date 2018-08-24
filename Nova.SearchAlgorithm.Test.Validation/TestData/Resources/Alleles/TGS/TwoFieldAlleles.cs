@@ -78,15 +78,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             // DPB1 cannot be tested at this resolution
             DPB1_1 = new List<AlleleTestData>
             {
-                new AlleleTestData {AlleleName = "*01:01", NmdpCode = "CXC"},
-                new AlleleTestData {AlleleName = "*09:01", NmdpCode = "ANZW"},
-                new AlleleTestData {AlleleName = "*104:01", NmdpCode = "ADNSR"},
+                new AlleleTestData {AlleleName = "*01:01", NmdpCode = "*01:CXC"},
+                new AlleleTestData {AlleleName = "*09:01", NmdpCode = "*09:ANZW"},
+                new AlleleTestData {AlleleName = "*104:01", NmdpCode = "*104:ADNSR"},
             },
             DPB1_2 = new List<AlleleTestData>
             {
-                new AlleleTestData {AlleleName = "*01:01", NmdpCode = "CXC"},
-                new AlleleTestData {AlleleName = "*09:01", NmdpCode = "ANZW"},
-                new AlleleTestData {AlleleName = "*104:01", NmdpCode = "ADNSR"},
+                new AlleleTestData {AlleleName = "*01:01", NmdpCode = "*01:CXC"},
+                new AlleleTestData {AlleleName = "*09:01", NmdpCode = "*09:ANZW"},
+                new AlleleTestData {AlleleName = "*104:01", NmdpCode = "*104:ADNSR"},
             },
             DQB1_1 =
                 new List<AlleleTestData>
