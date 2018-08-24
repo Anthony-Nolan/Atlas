@@ -3,9 +3,9 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelectio
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
-    public class PatientResultSet
+    public class PatientApiResult
     {
         public IPatientDataFactory PatientDataFactory;
-        public SearchResultSet SearchResultSet;
+        public SearchAlgorithmApiResult ApiResult;
     }
 }

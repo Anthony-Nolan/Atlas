@@ -353,6 +353,7 @@
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
     <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
+    <Compile Include="TestData\Models\SearchAlgorithmApiResult.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
     <Compile Include="TestData\Models\Hla\Dataset.cs" />
     <Compile Include="TestData\Models\Hla\Genotype.cs" />
@@ -364,7 +365,7 @@
     <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\PatientHlaSelectionCriteria.cs" />
-    <Compile Include="TestData\Models\PatientResultSet.cs" />
+    <Compile Include="TestData\Models\PatientApiResult.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />

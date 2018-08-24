@@ -118,7 +118,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var selector = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
 
-            var patientResults = new List<PatientResultSet>();
+            var patientResults = new List<PatientApiResult>();
             
             foreach (var patientDataSelector in selector.PatientDataFactories)
             {
@@ -136,10 +136,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     .Build();
 
                 var results = await AlgorithmTestingService.Search(searchRequest);
-                patientResults.Add(new PatientResultSet
+                patientResults.Add(new PatientApiResult
                 {
                     PatientDataFactory = patientDataSelector,
-                    SearchResultSet = results,
+                    ApiResult = results,
                 });
             }
 
@@ -207,28 +207,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then(@"The result should contain at least one donor")]
         public void ThenTheResultShouldContainAtLeastOneDonor()
         {
-            var results = ScenarioContext.Current.Get<SearchResultSet>();
-            results.SearchResults.Count().Should().BeGreaterThan(0);
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
+            apiResult.Results.SearchResults.Count().Should().BeGreaterThan(0);
         }
         
         [Then(@"the results should contain the specified donor")]
         public void ThenTheResultShouldContainTheSpecifiedDonor()
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
             
-            results.SearchResults.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
+            apiResult.Results.SearchResults.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
         } 
         
         [Then(@"the results should contain all specified donors")]
         public void ThenTheResultShouldContainAllSpecifiedDonors()
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
 
             foreach (var donorId in patientDataSelector.GetExpectedMatchingDonorIds())
             {
-                results.SearchResults.Should().Contain(r => r.DonorId == donorId);                
+                apiResult.Results.SearchResults.Should().Contain(r => r.DonorId == donorId);                
             }
         } 
         
@@ -236,20 +239,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void ThenTheResultShouldNotContainTheSpecifiedDonor()
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
             
-            results.SearchResults.Should().NotContain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
+            apiResult.Results.SearchResults.Should().NotContain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
         }
         
         [Then(@"each set of results should contain the specified donor")]
         public void ThenEachSetOfResultsShouldContainTheSpecifiedDonor()
         {
-            var patientResultSets = ScenarioContext.Current.Get<List<PatientResultSet>>();
+            var patientApiResults = ScenarioContext.Current.Get<List<PatientApiResult>>();
 
-            foreach (var resultSet in patientResultSets)
+            foreach (var apiResult in patientApiResults)
             {
-                var searchResultsForPatient = resultSet.SearchResultSet.SearchResults;
-                var patientDataSelector = resultSet.PatientDataFactory;
+                apiResult.ApiResult.IsSuccess.Should().BeTrue();
+                var searchResultsForPatient = apiResult.ApiResult.Results.SearchResults;
+                var patientDataSelector = apiResult.PatientDataFactory;
                 searchResultsForPatient.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
             }
         }
@@ -257,8 +262,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then(@"The result should contain no donors")]
         public void ThenTheResultShouldContainNoDonors()
         {
-            var results = ScenarioContext.Current.Get<SearchResultSet>();
-            results.SearchResults.Count().Should().Be(0);
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
+            apiResult.Results.SearchResults.Count().Should().Be(0);
         }
     }
 }
