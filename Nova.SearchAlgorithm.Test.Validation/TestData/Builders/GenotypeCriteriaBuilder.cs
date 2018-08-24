@@ -39,6 +39,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
         
+        public GenotypeCriteriaBuilder WithAlleleStringOfSubtypesPossibleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.AlleleStringOfSubtypesPossible);
+            return this;
+        }
+        
         public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
         {
             genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.PGroupMatchPossible);

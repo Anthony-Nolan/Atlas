@@ -63,17 +63,40 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var dataset = criteria.AlleleSources.DataAtPosition(locus, position);
 
             var alleles = GetDataset(locus, position, dataset);
-            var allelesSharingFirstField = alleles
-                .GroupBy(a => AlleleSplitter.FirstField(a.AlleleName))
-                .Where(g => g.Count() > 1)
-                .SelectMany(g => g)
-                .ToList();
+            var selectedAllele = alleles.GetRandomElement();
+
+            var allelesForAlleleStringOfSubtypes = new List<AlleleTestData>();
+            if (dataset == Dataset.AlleleStringOfSubtypesPossible)
+            {
+                var allelesValidForAlleleStringOfSubtypes = GetAllelesValidForAlleleStringOfSubtypes(alleles, selectedAllele);
+                allelesForAlleleStringOfSubtypes = allelesValidForAlleleStringOfSubtypes.GetRandomSelection(1, 10).ToList();
+            }
 
             return TgsAllele.FromTestDataAllele(
-                alleles.GetRandomElement(),
+                selectedAllele,
                 alleles.GetRandomSelection(1, 10),
-                allelesSharingFirstField.GetRandomSelection(1, 10)
+                allelesForAlleleStringOfSubtypes
             );
+        }
+
+        /// <summary>
+        /// Returns which test alleles from a list are valid for use in the allele string of subtypes
+        /// The dataset selection will guarantee that such alleles must exist
+        /// This method must select the alleles that
+        /// (a) match the first field of the selected allele
+        /// (b) do not match the second field of the selected allele (so we do not repeat subtypes in the string)
+        /// </summary>
+        private static List<AlleleTestData> GetAllelesValidForAlleleStringOfSubtypes(List<AlleleTestData> alleles, AlleleTestData selectedAllele)
+        {
+            var allelesWithCorrectFirstField = alleles
+                .Where(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(selectedAllele.AlleleName))
+                .Where(a => AlleleSplitter.SecondField(a.AlleleName) != AlleleSplitter.SecondField(selectedAllele.AlleleName));
+
+            return allelesWithCorrectFirstField
+                .GroupBy(a => AlleleSplitter.FirstTwoFieldsAsString(a.AlleleName))
+                .Select(gg => gg.Key)
+                .Select(a => new AlleleTestData {AlleleName = a})
+                .ToList();
         }
 
         private static List<AlleleTestData> GetDataset(Locus locus, TypePositions position, Dataset dataset)
