@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data
         public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {
             return new WebClient()
-                .DownloadString($"{WmdaFileUri}{hlaDatabaseVersion}/{fileName}.txt")
+                .DownloadString($"{WmdaFileUri}{hlaDatabaseVersion}/{fileName}")
                 .Split('\n')
                 .SkipWhile(line => line.StartsWith("#"));
         }

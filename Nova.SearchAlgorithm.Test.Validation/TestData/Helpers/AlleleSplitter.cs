@@ -5,6 +5,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
 {
     public static class AlleleSplitter
     {
+        private const char AlleleSeparator = ':';
+
         public static int NumberOfFields(string allele)
         {
             return SplitToFields(allele).Count();
@@ -44,12 +46,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
         private static IEnumerable<string> SplitToFields(string alleleString)
         {
             // TODO: NOVA-1571: Handle alleles with an expression suffix. This truncation will remove expression suffix.
-            return alleleString.Split(':');
+            return alleleString.Split(AlleleSeparator);
         }
 
         private static string JoinFields(IEnumerable<string> fields)
         {
-            return string.Join(":", fields);
+            return string.Join(AlleleSeparator.ToString(), fields);
         }
     }
 }
