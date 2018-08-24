@@ -16,11 +16,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
             return data[random.Next(data.Count)];
         }
 
-        public static IEnumerable<T> GetRandomSelection<T>(this IReadOnlyList<T> data)
-        {
-            return data.Take(random.Next(data.Count));
-        }
-
         public static IEnumerable<T> GetRandomSelection<T>(this IList<T> data, int min, int max)
         {
             var randomMax = Math.Min(max, data.Count);

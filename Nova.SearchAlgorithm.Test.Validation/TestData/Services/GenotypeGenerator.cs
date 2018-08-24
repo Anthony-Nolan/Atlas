@@ -71,8 +71,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
             return TgsAllele.FromTestDataAllele(
                 alleles.GetRandomElement(),
-                alleles.GetRandomSelection(),
-                allelesSharingFirstField.GetRandomSelection()
+                alleles.GetRandomSelection(1, 10),
+                allelesSharingFirstField.GetRandomSelection(1, 10)
             );
         }
 
