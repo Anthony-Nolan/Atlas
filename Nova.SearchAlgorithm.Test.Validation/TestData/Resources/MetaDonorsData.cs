@@ -48,6 +48,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfSubtypes).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
@@ -71,6 +73,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfSubtypes).Build(),
                     new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),
                 }
             },

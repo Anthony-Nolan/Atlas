@@ -4,6 +4,7 @@ using System.Linq;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
@@ -16,8 +17,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-            var results = ScenarioContext.Current.Get<SearchResultSet>();
-            var donorResult = results.SearchResults.Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
+            var donorResult = apiResult.Results.SearchResults.Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
 
             var matchGrade = ParseMatchGrade(grade);
             var expectedLoci = ParseExpectedLoci(locus);
