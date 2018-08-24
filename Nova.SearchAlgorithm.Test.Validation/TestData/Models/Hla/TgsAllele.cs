@@ -92,7 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         {
             return otherAllelesInAlleleString.IsNullOrEmpty()
                 ? null
-                : $"{alleleTestData.AlleleName}/{string.Join("/", otherAllelesInAlleleString.Select(a => a.AlleleName))}";
+                : $"{alleleTestData.AlleleName}/{string.Join("/", otherAllelesInAlleleString.Select(a => a.AlleleName.Replace("*", "")))}";
         }
 
         private static string GenerateAlleleStringOfSubtypes(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)

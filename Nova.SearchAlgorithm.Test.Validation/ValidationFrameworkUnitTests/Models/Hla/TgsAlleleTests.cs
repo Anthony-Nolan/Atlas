@@ -246,6 +246,26 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
         }
         
         [Test]
+        public void FromTestDataAllele_WhenOtherAllelesProvided_TrimsAsterisksInStringOfNames()
+        {
+            const string alleleName = "*01:01";
+            const string otherAlleleName1 = "*02:02:02";
+            const string otherAlleleName2 = "*03:03:03:03";
+            const string expectedAlleleString = "*01:01/02:02:02/03:03:03:03";
+            
+            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+            var otherAlleles = new List<AlleleTestData>
+            {
+                new AlleleTestData {AlleleName = otherAlleleName1},
+                new AlleleTestData {AlleleName = otherAlleleName2}
+            };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
+
+            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
+        }
+        
+        [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvided_CreatesAlleleStringOfSubtypes()
         {
             const string alleleName = "01:01:01";
