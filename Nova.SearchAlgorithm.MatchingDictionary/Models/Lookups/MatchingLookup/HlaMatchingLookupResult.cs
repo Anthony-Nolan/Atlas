@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return this.ToTableEntity();
+            return new HlaLookupTableEntity(this);
         }
         
         public bool Equals(HlaMatchingLookupResult other)
