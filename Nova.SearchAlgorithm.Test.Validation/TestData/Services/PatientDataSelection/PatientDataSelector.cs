@@ -22,7 +22,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetMatchingDonorUntypedAtLocus(Locus locus);
         void SetMatchingDonorHomozygousAtLocus(Locus locus);
 
-        void SetPatientUntypedAt(Locus locus);
+        void SetPatientUntypedAtLocus(Locus locus);
+        void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
+        void SetPatientHomozygousAtLocus(Locus locus);
 
         PhenotypeInfo<string> GetPatientHla();
         int GetExpectedMatchingDonorId();
@@ -140,9 +142,30 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             metaDonorSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
         }
 
-        public void SetPatientUntypedAt(Locus locus)
+        public void SetPatientUntypedAtLocus(Locus locus)
         {
-            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, HlaTypingResolution.Untyped);
+            SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Untyped);
+        }
+        
+        public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
+        {
+            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+        }
+
+        public void SetPatientHomozygousAtLocus(Locus locus)
+        {
+            var matchesAtLocus = patientHlaSelectionCriteria.HlaMatches.DataAtLocus(locus);
+            if (matchesAtLocus.Item1 && matchesAtLocus.Item2)
+            {
+                // For an exact match to exist, if the patient is homozygous the donor must implicitly also be homozygous
+                // TODO: NOVA-1188: This assumption is not true when considering null alleles. Update when null matching is implemented
+                SetMatchingDonorHomozygousAtLocus(locus);
+            }
+            
+            patientHlaSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
+
+            // For a homozygous locus, typing resolution must be single allele (TGS)
+            SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Tgs);
         }
 
         public PhenotypeInfo<string> GetPatientHla()

@@ -30,18 +30,59 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (locus)
             {
                 case "C":
-                    patientDataSelector.SetPatientUntypedAt(Locus.C);
+                    patientDataSelector.SetPatientUntypedAtLocus(Locus.C);
                     break;
                 case "Dpb1":
-                    patientDataSelector.SetPatientUntypedAt(Locus.Dpb1);
+                    patientDataSelector.SetPatientUntypedAtLocus(Locus.Dpb1);
                     break;
                 case "Dqb1":
-                    patientDataSelector.SetPatientUntypedAt(Locus.Dqb1);
+                    patientDataSelector.SetPatientUntypedAtLocus(Locus.Dqb1);
                     break;
                 case "A":
                 case "B":
                 case "Drb1":
                     throw new Exception("Loci A, B, DRB1 cannot be untyped");
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"the patient is homozygous at (.*)")]
+        public void GivenThePatientIsHomozygousAt(string locus)
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+
+            switch (locus)
+            {
+                case "locus A":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.A);
+                    break;
+                case "locus B":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.B);
+                    break;
+                case "locus C":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.C);
+                    break;
+                case "locus DPB1":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dpb1);
+                    break;
+                case "locus DQB1":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dqb1);
+                    break;
+                case "locus DRB1":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Drb1);
+                    break;
+                case "all loci":
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.A);
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.B);
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.C);
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dpb1);
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Dqb1);
+                    patientDataSelector.SetPatientHomozygousAtLocus(Locus.Drb1);
+                    break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;
@@ -130,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
-        [Given(@"the matching donor homozygous at (.*)")]
+        [Given(@"the matching donor is homozygous at (.*)")]
         public void GivenTheMatchingDonorIsHomozygousAt(string locus)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();

@@ -19,5 +19,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// This may converge with MatchGrades in the future
         /// </summary>
         public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
+        
+        /// <summary>
+        /// Determines whether the patient should be homozygous at each locus
+        /// </summary>
+        public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>().Map((l, noop) => false);
     }
 }
