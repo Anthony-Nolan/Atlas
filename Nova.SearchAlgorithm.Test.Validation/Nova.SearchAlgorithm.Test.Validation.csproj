@@ -354,6 +354,7 @@
     <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
+    <Compile Include="TestData\Models\Hla\Dataset.cs" />
     <Compile Include="TestData\Models\Hla\Genotype.cs" />
     <Compile Include="TestData\Models\Hla\GenotypeCriteria.cs" />
     <Compile Include="TestData\Models\Hla\HlaTypingResolution.cs" />

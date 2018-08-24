@@ -8,31 +8,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
     public class GenotypeCriteria
     {
         /// <summary>
-        /// Determines what length of TGS alleles are used generating the Genotype
+        /// Determines which dataset to draw each allele from
         /// </summary>
-        public PhenotypeInfo<TgsHlaTypingCategory> TgsHlaCategories { get; set; }
-        
-        /// <summary>
-        /// Will be used to determine whether to draw test data from the specially curated dataset that allows for p-group level matching
-        /// </summary>
-        public PhenotypeInfo<bool> PGroupMatchPossible { get; set; }
-        
-        /// <summary>
-        /// Will be used to determine whether to draw test data from the specially curated dataset that allows for g-group level matching
-        /// </summary>
-        public PhenotypeInfo<bool> GGroupMatchPossible { get; set; }
-        
-        /// <summary>
-        /// Will be used to determine whether a three-field match is possible for the selected allele
-        /// i.e. allele is four field, multiple alleles with same first three fields exist in dataset
-        /// </summary>
-        public PhenotypeInfo<bool> ThreeFieldMatchPossible { get; set; }
-        
-        /// <summary>
-        /// Will be used to determine whether a three-field match is possible for the selected allele
-        /// i.e. allele is three or four field, multiple alleles with same first two fields exist in dataset
-        /// </summary>
-        public PhenotypeInfo<bool> TwoFieldMatchPossible { get; set; }
+        public PhenotypeInfo<Dataset> AlleleSources { get; set; }
         
         public LocusInfo<bool> IsHomozygous { get; set; }
     }
