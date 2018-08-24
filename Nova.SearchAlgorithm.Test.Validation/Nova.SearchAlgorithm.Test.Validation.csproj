@@ -413,6 +413,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EightOutOfTenMatches.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\EightOutOfTenSearch\WorseMatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WorseMatches.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -481,6 +486,7 @@
     <Content Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\EightOutOfTenSearch\BetterMatches.feature" />
     <Content Include="ValidationTests\Features\EightOutOfTenSearch\EightOutOfTenMatches.feature" />
+    <Content Include="ValidationTests\Features\EightOutOfTenSearch\WorseMatches.feature" />
     <Content Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature" />
     <Content Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature" />
