@@ -403,6 +403,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Search.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mismatches.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\Scoring.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -459,6 +464,7 @@
   <ItemGroup>
     <Content Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature" />

@@ -63,12 +63,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.C);
                     break;
                 case "locus Dpb1":
+                case "locus DPB1":
                     patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.Dpb1);
                     break;
                 case "locus Dqb1":
+                case "locus DQB1":
                     patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.Dqb1);
                     break;
                 case "locus Drb1":
+                case "locus DRB1":
                     patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.Drb1);
                     break;
                 default:
