@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -20,6 +21,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+        
+        [Given(@"a set of (.*) patients with matching donors")]
+        public void GivenASetOfXPatientsWithMatchingDonors(string numberOfPatientsString)
+        {
+            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            var numberOfPatients = int.Parse(numberOfPatientsString);
+            multiplePatientDataSelector.SetNumberOfPatients(numberOfPatients);
+            ScenarioContext.Current.Set(multiplePatientDataSelector);
+        }   
+        
+        [Given(@"a set of patients with matching donors")]
+        public void GivenASetOfPatientsWithMatchingDonors()
+        {
+            var multiplePatientDataSelector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            ScenarioContext.Current.Set(multiplePatientDataSelector);
         }
 
         [Given(@"the patient is untyped at Locus (.*)")]
@@ -95,24 +112,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            switch (matchType)
-            {
-                case "10/10":
-                    patientDataSelector.SetAsTenOutOfTenMatch();
-                    break;
-                case "8/8":
-                    patientDataSelector.SetAsEightOutOfEightMatch();
-                    break;
-                case "6/6":
-                    patientDataSelector.SetAsSixOutOfSixMatch();
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
+            patientDataSelector.SetMatchType(matchType);
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is a (.*) match")]
+        public void GivenEachMatchingDonorIsOfMatchType(string matchType)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => s.SetMatchType(matchType)).ToList();
+            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the matching donor is untyped at Locus (.*)")]
@@ -144,31 +153,35 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         }
 
         [Given(@"the matching donor is of type (.*)")]
-        public void GivenTheMatchingDonorIsOfDonorType(string donorTypeString)
+        public void GivenTheMatchingDonorIsOfDonorType(string donorType)
         {
-            var donorType = (DonorType) Enum.Parse(typeof(DonorType), donorTypeString, true);
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            patientDataSelector.SetMatchingDonorType(donorType);
-
+            patientDataSelector.SetMatchDonorType(donorType);
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is of type (.*)")]
+        public void GivenEachMatchingDonorIsOfDonorType(string donorType)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => s.SetMatchDonorType(donorType)).ToList();
+            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the matching donor is (.*) typed at (.*)")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            if (locus == "each locus")
-            {
-                patientDataSelector = SetTypingCategoryAtAllLoci(patientDataSelector, typingCategory);
-            }
-            else
-            {
-                ScenarioContext.Current.Pending();
-            }
-
+            patientDataSelector.SetMatchTypingCategories(typingCategory, locus);
             ScenarioContext.Current.Set(patientDataSelector);
+        }
+
+        [Given(@"each matching donor is (.*) typed at (.*)")]
+        public void GivenEachMatchingDonorIsHlaTyped(string typingCategory, string locus)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => s.SetMatchTypingCategories(typingCategory, locus)).ToList();
+            ScenarioContext.Current.Set(selector);
         }
 
         [Given(@"the matching donor is homozygous at (.*)")]
@@ -212,80 +225,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataSelector);
         }
 
-        private static IPatientDataSelector SetTypingCategoryAtAllLoci(IPatientDataSelector patientDataSelector, string typingCategory)
-        {
-            switch (typingCategory)
-            {
-                case "differently":
-                    // Mixed resolution must have 4-field TGS alleles, as one of the resolution options is three field truncated
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
-                    {
-                        patientDataSelector.SetMatchingTypingResolutionAtLocus(resolution.Key, resolution.Value);
-                    }
-                    break;
-                case "TGS":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
-                    break;
-                case "TGS (four field)":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
-                    break;
-                case "TGS (three field)":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
-                    break;
-                case "TGS (two field)":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Tgs);
-                    break;
-                case "three field truncated allele":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele);
-                    break;
-                case "two field truncated allele":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele);
-                    break;
-                case "XX code":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.XxCode);
-                    break;
-                case "NMDP code":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.NmdpCode);
-                    break;
-                case "serology":
-                    patientDataSelector.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
-                    patientDataSelector.SetFullMatchingTypingResolution(HlaTypingResolution.Serology);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
-            return patientDataSelector;
-        }
-
         [Given(@"the matching donor is in registry: (.*)")]
-        public void GivenTheMatchingDonorIsInRegistry(string registryString)
+        public void GivenTheMatchingDonorIsInRegistry(string registry)
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
-
-            switch (registryString)
-            {
-                case "Anthony Nolan":
-                    patientDataSelector.SetMatchingRegistry(RegistryCode.AN);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
+            patientDataSelector.SetMatchDonorRegistry(registry);
             ScenarioContext.Current.Set(patientDataSelector);
         }
-        
+
+        [Given(@"each matching donor is in registry: (.*)")]
+        public void GivenEachMatchingDonorIsInRegistry(string registry)
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+            selector.PatientDataSelectors = selector.PatientDataSelectors.Select(s => s.SetMatchDonorRegistry(registry)).ToList();
+            ScenarioContext.Current.Set(selector);
+        }
+
         [Given(@"the match level is (.*)")]
         public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
         {

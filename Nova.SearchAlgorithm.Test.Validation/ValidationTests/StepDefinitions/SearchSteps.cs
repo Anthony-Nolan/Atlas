@@ -5,8 +5,10 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
@@ -123,6 +125,38 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }   
         
+        [When(@"I run a 10/10 search for each patient")]
+        public async Task WhenIRunATenOutOfTenSearchForEachPatient()
+        {
+            var selector = ScenarioContext.Current.Get<IMultiplePatientDataSelector>();
+
+            var patientResults = new List<PatientResultSet>();
+            
+            foreach (var patientDataSelector in selector.PatientDataSelectors)
+            {
+                var searchHla = patientDataSelector.GetPatientHla();
+            
+                var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                    .WithTotalMismatchCount(0)
+                    .WithLocusMismatchCount(Locus.A, 0)
+                    .WithLocusMismatchCount(Locus.B, 0)
+                    .WithLocusMismatchCount(Locus.Drb1, 0)
+                    .WithLocusMismatchCount(Locus.C, 0)
+                    .WithLocusMismatchCount(Locus.Dqb1, 0)
+                    .WithSearchHla(searchHla)
+                    .Build();
+
+                var results = await AlgorithmTestingService.Search(searchRequest);
+                patientResults.Add(new PatientResultSet
+                {
+                    PatientDataSelector = patientDataSelector,
+                    SearchResultSet = results,
+                });
+            }
+
+            ScenarioContext.Current.Set(patientResults);
+        }   
+        
         [When(@"I run a 9/10 search at locus (.*)")]
         public async Task WhenIRunANineOutOfTenSearchAtLocus(string locusString)
         {
@@ -165,6 +199,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var results = ScenarioContext.Current.Get<SearchResultSet>();
             
             results.SearchResults.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
+        }
+        
+        [Then(@"each set of results should contain the specified donor")]
+        public void ThenEachSetOfResultsShouldContainTheSpecifiedDonor()
+        {
+            var patientResultSets = ScenarioContext.Current.Get<List<PatientResultSet>>();
+
+            foreach (var resultSet in patientResultSets)
+            {
+                var searchResultsForPatient = resultSet.SearchResultSet.SearchResults;
+                var patientDataSelector = resultSet.PatientDataSelector;
+                searchResultsForPatient.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
+            }
         }
         
         [Then(@"The result should contain no donors")]

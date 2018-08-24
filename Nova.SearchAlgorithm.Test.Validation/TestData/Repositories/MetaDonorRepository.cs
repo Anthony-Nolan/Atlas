@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
@@ -19,7 +20,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
     /// </summary>
     public class MetaDonorRepository: IMetaDonorRepository
     {
-        private readonly IEnumerable<MetaDonor> metaDonors = MetaDonorsData.MetaDonors;
+        private readonly IEnumerable<MetaDonor> metaDonors;
+
+        public MetaDonorRepository(IMetaDonorsData metaDonorsData)
+        {
+            metaDonors = metaDonorsData.MetaDonors.ToList();
+        }
         
         public IEnumerable<MetaDonor> AllMetaDonors()
         {

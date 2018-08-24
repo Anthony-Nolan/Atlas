@@ -183,7 +183,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             // Cache the selected meta-donor to ensure we do not have to perform this calculation multiple times
             if (selectedMetaDonor == null)
             {
-                selectedMetaDonor = metaDonorSelector.GetMetaDonor(metaDonorSelectionCriteria);
+                selectedMetaDonor = metaDonorSelector.GetNextMetaDonor(metaDonorSelectionCriteria);
             }
 
             return selectedMetaDonor;
