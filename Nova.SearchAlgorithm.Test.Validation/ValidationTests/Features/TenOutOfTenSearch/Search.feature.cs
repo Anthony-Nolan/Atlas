@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
         
-#line 1 "TenOutOfTenSearch.feature"
+#line 1 "Search.feature"
 #line hidden
         
         [NUnit.Framework.OneTimeSetUpAttribute()]

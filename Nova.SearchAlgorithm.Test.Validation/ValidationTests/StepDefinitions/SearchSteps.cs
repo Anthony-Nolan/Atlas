@@ -172,6 +172,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
         }
         
+        [When(@"I run a 8/10 search")]
         [When(@"I run an 8/10 search")]
         public async Task WhenIRunAnEightOutOfTenSearch()
         {
@@ -199,6 +200,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var results = ScenarioContext.Current.Get<SearchResultSet>();
             
             results.SearchResults.Should().Contain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
+        } 
+        
+        [Then(@"the results should not contain the specified donor")]
+        public void ThenTheResultShouldNotContainTheSpecifiedDonor()
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataSelector>();
+            var results = ScenarioContext.Current.Get<SearchResultSet>();
+            
+            results.SearchResults.Should().NotContain(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorId());
         }
         
         [Then(@"each set of results should contain the specified donor")]

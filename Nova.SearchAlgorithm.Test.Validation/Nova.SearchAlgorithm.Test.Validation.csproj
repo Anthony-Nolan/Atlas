@@ -390,6 +390,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mismatches.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\EightOutOfEightSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -415,6 +420,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mismatches.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\Mismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mismatches.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch\MultiplePatients.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -438,8 +453,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\TenOutOfTenSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\MultiplePatients.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\TypingResolutions.feature" />
@@ -463,7 +481,7 @@
     </None>
     <None Include="ValidationTests\Features\Scoring.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
+      <LastGenOutput>Scoring.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
