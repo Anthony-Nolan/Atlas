@@ -40,6 +40,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
         {
             return SplitToFields(allele).First();
         }
+        
+        public static string SecondField(string allele)
+        {
+            return SplitToFields(allele).ToList()[1];
+        }
 
         private static IEnumerable<string> SplitToFields(string alleleString)
         {

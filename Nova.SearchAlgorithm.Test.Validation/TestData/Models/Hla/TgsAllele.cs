@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using NUnit.Framework;
 
@@ -26,6 +27,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// </param>
         public static TgsAllele FromTestDataAllele(AlleleTestData allele, IEnumerable<AlleleTestData> otherAllelesInAlleleString = null)
         {
+            otherAllelesInAlleleString = otherAllelesInAlleleString ?? new List<AlleleTestData>();
+
             var fieldCount = AlleleSplitter.NumberOfFields(allele.AlleleName);
             switch (fieldCount)
             {
@@ -52,6 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             };
             var tgsAllele = FromThreeFieldAllele(threeFieldAllele, otherAllelesInAlleleString);
             tgsAllele.FourFieldAllele = fourFieldAllele.AlleleName;
+            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(fourFieldAllele, otherAllelesInAlleleString);
             return tgsAllele;
         }
 
@@ -67,6 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             };
             var tgsAllele = FromTwoFieldAllele(twoFieldAllele, otherAllelesInAlleleString);
             tgsAllele.ThreeFieldAllele = threeFieldAllele.AlleleName;
+            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(threeFieldAllele, otherAllelesInAlleleString);
             return tgsAllele;
         }
 
@@ -78,7 +83,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 NmdpCode = twoFieldAllele.NmdpCode,
                 Serology = twoFieldAllele.Serology,
                 XxCode = $"{AlleleSplitter.FirstField(twoFieldAllele.AlleleName)}:XX",
+                AlleleStringOfSubtypes = GenerateAlleleStringOfSubtypes(twoFieldAllele, otherAllelesInAlleleString),
+                AlleleStringOfNames = GenerateAlleleStringOfNames(twoFieldAllele, otherAllelesInAlleleString)
             };
+        }
+
+        private static string GenerateAlleleStringOfNames(AlleleTestData alleleTestData, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        {
+            return otherAllelesInAlleleString.IsNullOrEmpty()
+                ? null
+                : $"{alleleTestData.AlleleName}/{string.Join("/", otherAllelesInAlleleString.Select(a => a.AlleleName))}";
+        }
+
+        private static string GenerateAlleleStringOfSubtypes(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        {
+            var otherAllelesWithSameFirstField = otherAllelesInAlleleString
+                .Where(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(twoFieldAllele.AlleleName))
+                .ToList();
+
+            if (!otherAllelesWithSameFirstField.Any())
+            {
+                return null;
+            }
+
+            var otherSubFields = string.Join("/", otherAllelesWithSameFirstField.Select(x => AlleleSplitter.SecondField(x.AlleleName)));
+            return $"{twoFieldAllele.AlleleName}/{otherSubFields}";
         }
 
         /// <summary>
@@ -94,7 +123,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         private string XxCode { get; set; }
 
         private string Serology { get; set; }
-        
+
         private string AlleleStringOfNames { get; set; }
         private string AlleleStringOfSubtypes { get; set; }
 
@@ -122,7 +151,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                     // TODO: NOVA-1665: Weight this such that NMDP codes / XX codes are less frequent, to reduce time spent running hla update
                     var options = new List<string>
                     {
-                        FourFieldAllele, ThreeFieldAllele, TwoFieldAllele, Serology, NmdpCode, XxCode
+                        FourFieldAllele,
+                        ThreeFieldAllele,
+                        TwoFieldAllele,
+                        Serology,
+                        NmdpCode,
+                        XxCode
                     }.Where(x => x != null).ToList();
 
                     return options.GetRandomElement();
