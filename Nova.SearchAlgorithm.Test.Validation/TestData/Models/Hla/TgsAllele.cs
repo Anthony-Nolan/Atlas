@@ -22,28 +22,40 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// The test data to use when creating this allele model
         /// Should contain Serology and NMDP code if these resolutions are to be used
         /// </param>
-        /// <param name="otherAllelesInAlleleString">
-        /// Dictates other alleles to include in an allele string representation of this TGS allele
+        /// <param name="otherAllelesInNameString">
+        /// Dictates other alleles to include in an allele string (of names) representation of this TGS allele
         /// </param>
-        public static TgsAllele FromTestDataAllele(AlleleTestData allele, IEnumerable<AlleleTestData> otherAllelesInAlleleString = null)
+        /// <param name="otherAllelesInSubtypeString">
+        /// Dictates other alleles to include in an allele string (of subtypes) representation of this TGS allele
+        /// </param>
+        public static TgsAllele FromTestDataAllele(
+            AlleleTestData allele,
+            IEnumerable<AlleleTestData> otherAllelesInNameString = null,
+            IEnumerable<AlleleTestData> otherAllelesInSubtypeString = null
+            )
         {
-            otherAllelesInAlleleString = otherAllelesInAlleleString ?? new List<AlleleTestData>();
+            otherAllelesInNameString = otherAllelesInNameString ?? new List<AlleleTestData>();
+            otherAllelesInSubtypeString = otherAllelesInSubtypeString ?? new List<AlleleTestData>();
 
             var fieldCount = AlleleSplitter.NumberOfFields(allele.AlleleName);
             switch (fieldCount)
             {
                 case 4:
-                    return FromFourFieldAllele(allele, otherAllelesInAlleleString);
+                    return FromFourFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
                 case 3:
-                    return FromThreeFieldAllele(allele, otherAllelesInAlleleString);
+                    return FromThreeFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
                 case 2:
-                    return FromTwoFieldAllele(allele, otherAllelesInAlleleString);
+                    return FromTwoFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
                 default:
                     throw new ArgumentOutOfRangeException("TGS test allele of unexpected field count found: " + allele.AlleleName);
             }
         }
 
-        private static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        private static TgsAllele FromFourFieldAllele(
+            AlleleTestData fourFieldAllele,
+            IEnumerable<AlleleTestData> otherAllelesInNameString,
+            IEnumerable<AlleleTestData> otherAllelesInSubtypeString
+        )
         {
             var threeFieldAllele = new AlleleTestData
             {
@@ -53,13 +65,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 NmdpCode = fourFieldAllele.NmdpCode,
                 Serology = fourFieldAllele.Serology
             };
-            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, otherAllelesInAlleleString);
+            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, otherAllelesInNameString, otherAllelesInSubtypeString);
             tgsAllele.FourFieldAllele = fourFieldAllele.AlleleName;
-            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(fourFieldAllele, otherAllelesInAlleleString);
+            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(fourFieldAllele, otherAllelesInNameString);
             return tgsAllele;
         }
 
-        private static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        private static TgsAllele FromThreeFieldAllele(
+            AlleleTestData threeFieldAllele,
+            IEnumerable<AlleleTestData> otherAllelesInNameString,
+            IEnumerable<AlleleTestData> otherAllelesInSubtypeString
+        )
         {
             var twoFieldAllele = new AlleleTestData
             {
@@ -69,13 +85,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 NmdpCode = threeFieldAllele.NmdpCode,
                 Serology = threeFieldAllele.Serology
             };
-            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, otherAllelesInAlleleString);
+            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, otherAllelesInNameString, otherAllelesInSubtypeString);
             tgsAllele.ThreeFieldAllele = threeFieldAllele.AlleleName;
-            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(threeFieldAllele, otherAllelesInAlleleString);
+            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(threeFieldAllele, otherAllelesInNameString);
             return tgsAllele;
         }
 
-        private static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        private static TgsAllele FromTwoFieldAllele(
+            AlleleTestData twoFieldAllele,
+            IEnumerable<AlleleTestData> otherAllelesInNameString,
+            IEnumerable<AlleleTestData> otherAllelesInSubtypeString
+        )
         {
             return new TgsAllele
             {
@@ -83,8 +103,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 NmdpCode = twoFieldAllele.NmdpCode,
                 Serology = twoFieldAllele.Serology,
                 XxCode = $"{AlleleSplitter.FirstField(twoFieldAllele.AlleleName)}:XX",
-                AlleleStringOfSubtypes = GenerateAlleleStringOfSubtypes(twoFieldAllele, otherAllelesInAlleleString),
-                AlleleStringOfNames = GenerateAlleleStringOfNames(twoFieldAllele, otherAllelesInAlleleString)
+                AlleleStringOfSubtypes = GenerateAlleleStringOfSubtypes(twoFieldAllele, otherAllelesInSubtypeString),
+                AlleleStringOfNames = GenerateAlleleStringOfNames(twoFieldAllele, otherAllelesInNameString)
             };
         }
 
