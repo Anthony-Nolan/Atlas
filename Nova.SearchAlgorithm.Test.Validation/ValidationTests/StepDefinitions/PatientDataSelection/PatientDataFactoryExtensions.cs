@@ -160,16 +160,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.TwoFieldTruncatedAllele);
                     break;
                 case "XX code":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.XxCode);
                     break;
                 case "NMDP code":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.NmdpCode);
                     break;
                 case "serology":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Serology);
+                    break;
+                case "allele string":
+                case "allele string (of names)":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNames);
+                    break;
+                case "allele string (of subtypes)":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
@@ -178,7 +182,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             return patientDataFactory;
         }
-        
+
         public static IPatientDataFactory SetMatchDonorType(this IPatientDataFactory singleDonorPatientDataSelector, string matchDonorType)
         {
             switch (matchDonorType)

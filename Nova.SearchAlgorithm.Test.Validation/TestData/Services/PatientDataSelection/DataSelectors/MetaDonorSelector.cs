@@ -111,7 +111,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
                         return matchLevelRequired == MatchLevel.FirstTwoFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
                     case Dataset.AlleleStringOfSubtypesPossible:
-                        return false;
+                        return criteria.TypingResolutionSets.Any(res => res.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
