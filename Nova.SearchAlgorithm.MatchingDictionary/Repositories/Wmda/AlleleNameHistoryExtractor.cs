@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
     internal class AlleleHistoryExtractor : WmdaDataExtractor<AlleleNameHistory>
     {
-        private const string FileName = "Allelelist_history";
+        private const string FileName = "Allelelist_history.txt";
         private const string ColumnDelimiter = ",";
         private const string OldestHlaDatabaseVersionToImport = "3000";
         private const string ColumnNamesRegexPattern =
