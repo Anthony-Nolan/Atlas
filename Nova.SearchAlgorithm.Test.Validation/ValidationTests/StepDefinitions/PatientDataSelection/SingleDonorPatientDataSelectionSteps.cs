@@ -156,6 +156,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataFactory);
         }
 
+        [Given(@"the donor's allele string contains different antigen groups at (.*)")]
+        [Given(@"the matching donor's allele string contains different antigen groups at (.*)")]
+        public void GivenTheMatchingDonorsAlleleStringContainsDifferentAntigenGroupsAt(string locus)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetAlleleStringShouldContainDifferentGroupsAt(locus);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
+
         [Given(@"the donor is homozygous at (.*)")]
         [Given(@"the matching donor is homozygous at (.*)")]
         public void GivenTheMatchingDonorIsHomozygousAt(string locus)
