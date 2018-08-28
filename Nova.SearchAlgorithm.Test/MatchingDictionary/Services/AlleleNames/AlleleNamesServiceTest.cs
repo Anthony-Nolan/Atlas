@@ -1,19 +1,17 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
-using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
     public class AlleleNamesServiceTest
     {
-        private List<AlleleNameLookupResult> alleleNameLookupResults;
+        private List<IAlleleNameLookupResult> alleleNameLookupResults;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -23,10 +21,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             var fromExtractorExtractor = new AlleleNamesFromHistoriesExtractor(historiesConsolidator, dataRepository);
             var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
             var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
-            var alleleNamesRepository = Substitute.For<IAlleleNamesLookupRepository>();
 
             alleleNameLookupResults = new AlleleNamesService(
-                    fromExtractorExtractor, variantsExtractor, reservedNamesExtractor, alleleNamesRepository)
+                    fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
                 .GetAlleleNamesAndTheirVariants()
                 .ToList();
         }
@@ -82,7 +79,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             actualAlleleName.CurrentAlleleNames.ShouldBeEquivalentTo(expectedCurrentAlleleNames);
         }
 
-        private AlleleNameLookupResult GetAlleleNameLookupResult(MatchLocus matchLocus, string lookupName)
+        private IAlleleNameLookupResult GetAlleleNameLookupResult(MatchLocus matchLocus, string lookupName)
         {
             return alleleNameLookupResults
                 .First(alleleName =>

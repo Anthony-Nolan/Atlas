@@ -33,7 +33,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return this.ToTableEntity();
+            return new HlaLookupTableEntity(this)
+            {
+                LookupNameCategoryAsString = LookupNameCategory.ToString()
+            };
         }
 
         public bool Equals(HlaScoringLookupResult other)
