@@ -52,8 +52,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                     .OrderByDescending(c => (int) c.Item1 + (int) c.Item2)
                     .First();
 
-                confidenceResults.SetAtLocus(locus, TypePositions.One, selectedConfidences.Item1);
-                confidenceResults.SetAtLocus(locus, TypePositions.Two, selectedConfidences.Item2);
+                confidenceResults.SetAtPosition(locus, TypePositions.One, selectedConfidences.Item1);
+                confidenceResults.SetAtPosition(locus, TypePositions.Two, selectedConfidences.Item2);
             });
 
             return confidenceResults;

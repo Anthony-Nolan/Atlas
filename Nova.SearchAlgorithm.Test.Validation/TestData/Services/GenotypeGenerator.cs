@@ -39,16 +39,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             foreach (var locus in LocusHelpers.AllLoci())
             {
                 var randomTgsAllele1 = RandomTgsAllele(locus, TypePositions.One, criteria);
-                hla.SetAtLocus(locus, TypePositions.One, randomTgsAllele1);
+                hla.SetAtPosition(locus, TypePositions.One, randomTgsAllele1);
 
                 if (criteria.IsHomozygous.DataAtLocus(locus))
                 {
-                    hla.SetAtLocus(locus, TypePositions.Two, randomTgsAllele1);
+                    hla.SetAtPosition(locus, TypePositions.Two, randomTgsAllele1);
                 }
                 else
                 {
                     var randomTgsAllele2 = RandomTgsAllele(locus, TypePositions.Two, criteria);
-                    hla.SetAtLocus(locus, TypePositions.Two, randomTgsAllele2);
+                    hla.SetAtPosition(locus, TypePositions.Two, randomTgsAllele2);
                 }
             }
 

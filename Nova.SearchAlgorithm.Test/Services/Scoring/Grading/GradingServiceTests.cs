@@ -1249,14 +1249,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            patientLookupResults.SetAtLocus(Locus.A, TypePositions.Both, singleAlleleAtA);
-            patientLookupResults.SetAtLocus(Locus.B, TypePositions.Both, consolidatedMolecularAtB);
-            patientLookupResults.SetAtLocus(Locus.Drb1, TypePositions.Both, serologyAtDrb1);
+            patientLookupResults.SetAtPosition(Locus.A, TypePositions.Both, singleAlleleAtA);
+            patientLookupResults.SetAtPosition(Locus.B, TypePositions.Both, consolidatedMolecularAtB);
+            patientLookupResults.SetAtPosition(Locus.Drb1, TypePositions.Both, serologyAtDrb1);
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtLocus(Locus.A, TypePositions.Both, singleAlleleAtA);
-            donorLookupResults.SetAtLocus(Locus.B, TypePositions.Both, consolidatedMolecularAtB);
-            donorLookupResults.SetAtLocus(Locus.Drb1, TypePositions.Both, serologyAtDrb1);
+            donorLookupResults.SetAtPosition(Locus.A, TypePositions.Both, singleAlleleAtA);
+            donorLookupResults.SetAtPosition(Locus.B, TypePositions.Both, consolidatedMolecularAtB);
+            donorLookupResults.SetAtPosition(Locus.Drb1, TypePositions.Both, serologyAtDrb1);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -1282,8 +1282,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             IHlaScoringLookupResult positionTwoResult)
         {
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtLocus(MatchedLocus, TypePositions.One, positionOneResult);
-            donorLookupResults.SetAtLocus(MatchedLocus, TypePositions.Two, positionTwoResult);
+            donorLookupResults.SetAtPosition(MatchedLocus, TypePositions.One, positionOneResult);
+            donorLookupResults.SetAtPosition(MatchedLocus, TypePositions.Two, positionTwoResult);
 
             return donorLookupResults;
         }
