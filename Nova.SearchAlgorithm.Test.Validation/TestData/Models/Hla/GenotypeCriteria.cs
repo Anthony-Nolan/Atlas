@@ -13,5 +13,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         public PhenotypeInfo<Dataset> AlleleSources { get; set; }
         
         public LocusInfo<bool> IsHomozygous { get; set; }
+        
+        /// <summary>
+        /// When set, the alleles used to generate an allele string (of names) will be guaranteed to contain
+        /// at least one allele with a first field different to the selected allele
+        /// e.g. 01:01/02:01
+        /// </summary>
+        public PhenotypeInfo<bool> AlleleStringContainsDifferentAntigenGroups { get; set; }
     }
 }

@@ -65,6 +65,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var alleles = GetDataset(locus, position, dataset);
             var selectedAllele = alleles.GetRandomElement();
 
+            var shouldContainDifferentAlleleGroups = criteria.AlleleStringContainsDifferentAntigenGroups.DataAtPosition(locus, position);
+
+            return TgsAllele.FromTestDataAllele(
+                selectedAllele,
+                GetAllelesForAlleleStringOfNames(selectedAllele, alleles, shouldContainDifferentAlleleGroups),
+                GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles)
+            );
+        }
+
+        /// <summary>
+        /// Selects a set of alleles to be used when generating an allele string of subtypes for the selected allele
+        /// </summary>
+        /// <param name="dataset">The selected dataset type. If not 'AlleleStringOfSubtypesPossible', no additional alleles can be selected</param>
+        /// <param name="selectedAllele">The selected allele</param>
+        /// <param name="alleles">The dataset of alleles the selected allele was chosen from</param>
+        /// <returns></returns>
+        private static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfSubtypes(
+            Dataset dataset,
+            AlleleTestData selectedAllele,
+            List<AlleleTestData> alleles
+        )
+        {
             var allelesForAlleleStringOfSubtypes = new List<AlleleTestData>();
             if (dataset == Dataset.AlleleStringOfSubtypesPossible)
             {
@@ -72,11 +94,54 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 allelesForAlleleStringOfSubtypes = allelesValidForAlleleStringOfSubtypes.GetRandomSelection(1, 10).ToList();
             }
 
-            return TgsAllele.FromTestDataAllele(
-                selectedAllele,
-                alleles.GetRandomSelection(1, 10),
-                allelesForAlleleStringOfSubtypes
-            );
+            return allelesForAlleleStringOfSubtypes;
+        }
+
+        /// <summary>
+        /// By default, alleles sharing a first field with the selected allele are preferred, but not required
+        /// Selects a set of alleles to be used when generating an allele string of names for the selected allele
+        /// </summary>
+        /// <param name="selectedAllele">The selected allele</param>
+        /// <param name="alleles">The dataset of alleles the selected allele was chosen from</param>
+        /// <param name="shouldContainDifferentAlleleGroups">
+        ///     When true, enforces that at least two first fields are represented among alleles in string
+        /// </param>
+        private static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNames(
+            AlleleTestData selectedAllele,
+            IEnumerable<AlleleTestData> alleles,
+            bool shouldContainDifferentAlleleGroups
+        )
+        {
+            var selectedFirstField = AlleleSplitter.FirstField(selectedAllele.AlleleName);
+
+            // Same allele should not appear twice in allele string
+            var nonMatchingAlleles = alleles.Where(a => a.AlleleName != selectedAllele.AlleleName).ToList();
+
+            var isUniqueFirstField = nonMatchingAlleles.All(a => AlleleSplitter.FirstField(a.AlleleName) != selectedFirstField);
+
+            var validAlleles = nonMatchingAlleles.Where(a =>
+            {
+                // Allow any alleles to be selected if:
+                // (a) No other alleles share a first field with the selected allele
+                // (we could enforce this at the time of data selection, but this isn't currently necessary, and feels like a duplication of the allele string of subtypes logic)
+                // (b) The allele string should explicitly contain multiple first fields
+                if (isUniqueFirstField || shouldContainDifferentAlleleGroups)
+                {
+                    return true;
+                }
+
+                return AlleleSplitter.FirstField(a.AlleleName) == selectedFirstField;
+            }).ToList();
+
+            var allelesForString = validAlleles.GetRandomSelection(1, 10).ToList();
+
+            // If random selection has only picked alleles with the same first field, ensure an allele with a different first field is used
+            if (shouldContainDifferentAlleleGroups && allelesForString.All(a => AlleleSplitter.FirstField(a.AlleleName) == selectedFirstField))
+            {
+                allelesForString.Add(validAlleles.First(a => AlleleSplitter.FirstField(a.AlleleName) != selectedFirstField));
+            }
+
+            return allelesForString;
         }
 
         /// <summary>
