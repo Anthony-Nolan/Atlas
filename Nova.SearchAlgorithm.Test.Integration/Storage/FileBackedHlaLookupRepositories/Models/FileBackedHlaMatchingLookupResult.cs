@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return this.ToTableEntity();
+            return new HlaLookupTableEntity(this);
         }
     }
 }

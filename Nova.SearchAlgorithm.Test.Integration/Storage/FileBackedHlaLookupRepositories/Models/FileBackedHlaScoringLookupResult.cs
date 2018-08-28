@@ -32,7 +32,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return this.ToTableEntity();
+            return new HlaLookupTableEntity(this)
+            {
+                LookupNameCategoryAsString = LookupNameCategory.ToString()
+            };
         }
 
         private static IHlaScoringInfo GetHlaScoringInfo(
