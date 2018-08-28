@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     {
         IEnumerable<MetaDonor> MetaDonors { get; }
     }
-    
+
     /// <summary>
     /// This class contains the static test data for the 'meta-donors'.
     /// Each 'meta-donor' corresponds to a donor with fully TGS typed HLA (i.e. Genotype)
@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     /// When adding new tests, it is likely that new meta donors and/or resolutions for existing meta-donors will need to be added.
     /// The tests should fail with an appropriate error message if no suitable meta-donor was found - if this happens new donors should be added here
     /// </summary>
-    public class MetaDonorsData: IMetaDonorsData
+    public class MetaDonorsData : IMetaDonorsData
     {
         /// <summary>
         /// The number of meta-donors to create when testing a range of donors
@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfSubtypes).Build(),
                 }
             },
-            
+
             // P Group matching
             new MetaDonor
             {
@@ -124,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build(),
             },
-            
+
             // Three field matching (fourth field difference)
             new MetaDonor
             {
@@ -134,7 +134,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .WithThreeFieldMatchPossibleAtAllLoci()
                     .Build(),
             },
-            
+
             // Two field matching (third field difference)
             new MetaDonor
             {
@@ -204,6 +204,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtAllLoci().Build(),
             },
+
+            // Non null alleles with an expression suffix
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithNonNullExpressionSuffixAtLocus(Locus.A)
+                    .WithNonNullExpressionSuffixAtLocus(Locus.B)
+                    .WithNonNullExpressionSuffixAtLocus(Locus.C)
+                    .WithNonNullExpressionSuffixAtLocus(Locus.Dpb1)
+                    .WithNonNullExpressionSuffixAtLocus(Locus.Dqb1)
+                    .Build(),
+            },
         };
 
         /// <summary>
@@ -239,12 +253,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         /// <summary>
         /// Used when testing a selection of TGS meta-donors with an arbitrary number of fields
         /// </summary>
-        private static readonly IEnumerable<MetaDonor> ArbitraryFieldCountDonorRange = Enumerable.Range(0, DonorRangeCount + 1).Select(i => new MetaDonor
-        {
-            DonorType = DonorType.Adult,
-            Registry = RegistryCode.AN,
-            GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
-        });
+        private static readonly IEnumerable<MetaDonor> ArbitraryFieldCountDonorRange = Enumerable.Range(0, DonorRangeCount + 1).Select(i =>
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
+            });
 
         public IEnumerable<MetaDonor> MetaDonors
         {

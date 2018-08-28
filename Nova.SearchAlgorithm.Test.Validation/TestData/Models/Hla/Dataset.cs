@@ -22,7 +22,9 @@
         // Allele string of subtypes can be created
         // i.e. multiple alleles with same first field, and within that group multiple second fields exist
         AlleleStringOfSubtypesPossible,
-        // Null expressing single alleles
+        // Null expressing single alleles. (AKA the allele expression suffix is 'N')
         NullAlleles,
+        // Alleles with an expression suffix that is not 'N'
+        AllelesWithNonNullExpressionSuffix,
     }
 }

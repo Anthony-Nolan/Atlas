@@ -370,6 +370,7 @@
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithDifferentThirdField.cs" />
+    <Compile Include="TestData\Resources\Alleles\AllelesWithNonNullExpressionSuffix.cs" />
     <Compile Include="TestData\Resources\Alleles\GGroupMatchingAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\NonMatchingAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\NullAlleles.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
@@ -73,6 +74,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public GenotypeCriteriaBuilder WithNullAlleleAtAllLoci()
         {
             genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.NullAlleles);
+            return this;
+        }
+
+        public GenotypeCriteriaBuilder WithNonNullExpressionSuffixAtLocus(Locus locus)
+        {
+            if (locus == Locus.Drb1)
+            {
+                throw new InvalidTestDataException("No test data exists with a non-null expression suffix at DRB1");
+            }
+            genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.AllelesWithNonNullExpressionSuffix);
             return this;
         }
 

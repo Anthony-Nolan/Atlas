@@ -131,6 +131,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     case Dataset.NullAlleles:
                         // TODO: NOVA-1188: Allow matching on meta donors with null alleles when null matching implemented
                         return false;
+                    // TODO: NOVA-1571: Implement this
+                    case Dataset.AllelesWithNonNullExpressionSuffix:
+                        return true;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
