@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// Determines to what resolutions the expected matched donor is typed
         /// Necessary for meta-donor selection to ensure the selected meta-donor contains donors at the expected resolution
         /// </summary>
-        public List<PhenotypeInfo<HlaTypingResolution>> TypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+        public List<PhenotypeInfo<HlaTypingResolution>> TypingResolutionSets { get; set; } = new List<PhenotypeInfo<HlaTypingResolution>>
         {
             new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs)
         };
@@ -35,6 +35,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// <summary>
         /// Determines whether the expected meta-donor should be homozygous at each locus
         /// </summary>
-        public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>(false);
+        public LocusInfo<bool> IsHomozygous { get; set; } = new LocusInfo<bool>(false);
+
+        /// <summary>
+        /// Determines how many matching meta-donors to ignore
+        /// To be used in the case when multiple patients are to be tested, each against a meta-donor with otherwise identical criteria
+        /// Note: This assumes the meta donor selection implementation will always return the meta-donors in the same order
+        /// </summary>
+        public int MetaDonorsToSkip { get; set; }
     }
 }

@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchingDonorType = donorType,
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchingRegistry = registry,
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.ThreeFieldAllele)
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.PGroup),
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<bool>().Map((l, p, noop) => MatchLevel.GGroup),
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.FirstThreeFieldAllele),
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -203,7 +203,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.FirstTwoFieldAllele),
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -225,7 +225,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -257,7 +257,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
-            var metaDonor = metaDonorSelector.GetNextMetaDonor(criteria);
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
             metaDonor.Registry.Should().Be(registryCode);
         }
@@ -291,7 +291,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
             };
 
-            var metaDonor = metaDonorSelector.GetNextMetaDonor(criteria);
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
             metaDonor.DonorType.Should().Be(donorType);
         }
@@ -320,7 +320,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 IsHomozygous = new LocusInfo<bool>(false)
             };
 
-            var metaDonor = metaDonorSelector.GetNextMetaDonor(criteria);
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
             metaDonor.Should().NotBeNull();
         }
@@ -349,7 +349,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 IsHomozygous = new LocusInfo<bool>(true)
             };
 
-            var metaDonor = metaDonorSelector.GetNextMetaDonor(criteria);
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
             metaDonor.Should().NotBeNull();
         }
@@ -378,7 +378,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 IsHomozygous = new LocusInfo<bool>(true)
             };
 
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
@@ -400,18 +400,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new MetaDonorSelectionCriteria
             {
                 MatchingDonorType = donorType,
-
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                MetaDonorsToSkip = metaDonors.Count,
             };
 
-            // Selecting first meta donor will work, as there is a matching meta-donor
-            metaDonorSelector.GetNextMetaDonor(criteria);
-            // Selecting second donor should not, as only one matching meta-donor exists
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetNextMetaDonor(criteria));
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
 
         [Test]
-        public void GetNextMetaDonor_DoesNotReturnSameMetaDonorMultipleTimes()
+        public void GetNextMetaDonor_SkipsSpecifiedNumberOfMetaDonors()
         {
             const DonorType donorType = DonorType.Adult;
 
@@ -434,14 +431,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new MetaDonorSelectionCriteria
             {
                 MatchingDonorType = donorType,
-
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                MetaDonorsToSkip = 1,
             };
 
-            var metaDonor1 = metaDonorSelector.GetNextMetaDonor(criteria);
-            var metaDonor2 = metaDonorSelector.GetNextMetaDonor(criteria);
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
-            metaDonor1.Should().NotBe(metaDonor2);
+            metaDonor.Should().Be(metaDonors[1]);
         }
     }
 }
