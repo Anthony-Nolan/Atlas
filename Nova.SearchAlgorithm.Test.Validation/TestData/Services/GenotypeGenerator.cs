@@ -138,7 +138,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             // If random selection has only picked alleles with the same first field, ensure an allele with a different first field is used
             if (shouldContainDifferentAlleleGroups && allelesForString.All(a => AlleleSplitter.FirstField(a.AlleleName) == selectedFirstField))
             {
-                allelesForString.Add(validAlleles.First(a => AlleleSplitter.FirstField(a.AlleleName) != selectedFirstField));
+                var alleleWithSharedFirstField = validAlleles.FirstOrDefault(a => AlleleSplitter.FirstField(a.AlleleName) != selectedFirstField);
+                if (alleleWithSharedFirstField == null)
+                {
+                    throw new InvalidTestDataException($"No other alleles sharing a first field were found. Selected allele: {selectedAllele.AlleleName}");
+                }
+                allelesForString.Add(alleleWithSharedFirstField);
             }
 
             return allelesForString;
