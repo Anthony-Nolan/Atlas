@@ -309,7 +309,6 @@
     <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Config\LoggingConfig.cs" />
     <Compile Include="Controllers\DonorController.cs" />
-    <Compile Include="Controllers\AlleleNamesController.cs" />
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />

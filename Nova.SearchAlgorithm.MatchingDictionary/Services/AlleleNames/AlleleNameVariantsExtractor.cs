@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     public interface IAlleleNameVariantsExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames(IEnumerable<AlleleNameLookupResult> originalAlleleNames);
+        IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames);
     }
 
     public class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
@@ -18,13 +18,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(IEnumerable<AlleleNameLookupResult> originalAlleleNames)
+        public IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames)
         {
             var variantsNotFoundInHistories = originalAlleleNames.SelectMany(GetAlleleNameVariantsNotFoundInHistories);
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
         }
 
-        private IEnumerable<AlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(AlleleNameLookupResult alleleName)
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName)
         {
             var typingFromCurrentName = new AlleleTyping(
                 alleleName.MatchLocus,
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
                     alleleName.CurrentAlleleNames));
         }
 
-        private static IEnumerable<AlleleNameLookupResult> GroupAlleleNamesByLocusAndLookupName(IEnumerable<AlleleNameLookupResult> alleleNameVariants)
+        private static IEnumerable<IAlleleNameLookupResult> GroupAlleleNamesByLocusAndLookupName(IEnumerable<IAlleleNameLookupResult> alleleNameVariants)
         {
             var groupedEntries = alleleNameVariants
                 .GroupBy(e => new { e.MatchLocus, e.LookupName })

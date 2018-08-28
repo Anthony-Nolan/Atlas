@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data
         public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {           
             return File
-                .ReadAllLines($"{TestDir}{FilePath}{hlaDatabaseVersion}\\{fileName}.txt")
+                .ReadAllLines($"{TestDir}{FilePath}{hlaDatabaseVersion}\\{fileName}")
                 .SkipWhile(line => line.StartsWith("#"));
         }
     }

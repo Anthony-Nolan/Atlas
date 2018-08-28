@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
     internal class AlleleStatusExtractor : WmdaDataExtractor<AlleleStatus>
     {
-        private const string FileName = "Allele_status";
+        private const string FileName = "Allele_status.txt";
         private const string RegexPattern = @"^(\w+\*)([\w:]+),.+,(Full|Partial),(cDNA|gDNA)$";
 
         public AlleleStatusExtractor() : base(FileName)
