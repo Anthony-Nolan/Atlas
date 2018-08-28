@@ -21,14 +21,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         /// Does not include manually curated test data used for e.g. p-group/g-group matching
         /// </returns>
         PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles();
-        
+                
         PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
-        PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
+
         PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible();
+        
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
+        PhenotypeInfo<List<AlleleTestData>> NullAlleles();
     }
 
     /// <summary>
@@ -82,6 +85,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             });
         }
 
+        public PhenotypeInfo<List<AlleleTestData>> NullAlleles()
+        {
+            return Resources.NullAlleles.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
+        }
+
         public PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()
         {
             return FourFieldAlleles().Map((locus, position, alleles) =>
@@ -119,8 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible()
         {
-            return Resources.AllelesWithDifferentThirdFields.Alleles.ToPhenotypeInfo((l, alleles) => 
-                new Tuple<List<AlleleTestData>, List<AlleleTestData>>(alleles, alleles));
+            return Resources.AllelesWithDifferentThirdFields.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()

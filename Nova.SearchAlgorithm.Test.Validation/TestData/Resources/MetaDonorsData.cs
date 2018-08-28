@@ -196,6 +196,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 Registry = RegistryCode.WBS,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
+
+            // Null alleles
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtAllLoci().Build(),
+            },
         };
 
         /// <summary>

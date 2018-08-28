@@ -19,7 +19,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         private static readonly IAlleleRepository AlleleRepository = new AlleleRepository();
         private static readonly GenotypeCriteria DefaultCriteria = new GenotypeCriteriaBuilder().Build();
 
-
         public static Genotype GenerateGenotype(GenotypeCriteria criteria)
         {
             if (criteria == null)
@@ -84,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         private static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfSubtypes(
             Dataset dataset,
             AlleleTestData selectedAllele,
-            List<AlleleTestData> alleles
+            IEnumerable<AlleleTestData> alleles
         )
         {
             var allelesForAlleleStringOfSubtypes = new List<AlleleTestData>();
@@ -141,8 +140,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 var alleleWithSharedFirstField = validAlleles.FirstOrDefault(a => AlleleSplitter.FirstField(a.AlleleName) != selectedFirstField);
                 if (alleleWithSharedFirstField == null)
                 {
-                    throw new InvalidTestDataException($"No other alleles sharing a first field were found. Selected allele: {selectedAllele.AlleleName}");
+                    throw new InvalidTestDataException(
+                        $"No other alleles sharing a first field were found. Selected allele: {selectedAllele.AlleleName}");
                 }
+
                 allelesForString.Add(alleleWithSharedFirstField);
             }
 
@@ -156,7 +157,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// (a) match the first field of the selected allele
         /// (b) do not match the second field of the selected allele (so we do not repeat subtypes in the string)
         /// </summary>
-        private static List<AlleleTestData> GetAllelesValidForAlleleStringOfSubtypes(List<AlleleTestData> alleles, AlleleTestData selectedAllele)
+        private static List<AlleleTestData> GetAllelesValidForAlleleStringOfSubtypes(
+            IEnumerable<AlleleTestData> alleles,
+            AlleleTestData selectedAllele
+        )
         {
             var allelesWithCorrectFirstField = alleles
                 .Where(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(selectedAllele.AlleleName))
@@ -198,6 +202,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     return AlleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
                 case Dataset.AlleleStringOfSubtypesPossible:
                     return AlleleRepository.AllelesWithAlleleStringOfSubtypesPossible().DataAtPosition(locus, position);
+                case Dataset.NullAlleles:
+                    return AlleleRepository.NullAlleles().DataAtPosition(locus, position);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }

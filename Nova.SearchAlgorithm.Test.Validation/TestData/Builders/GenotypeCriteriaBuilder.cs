@@ -69,6 +69,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
             return this;
         }
+        
+        public GenotypeCriteriaBuilder WithNullAlleleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.NullAlleles);
+            return this;
+        }
 
         public GenotypeCriteriaBuilder HomozygousAtLocus(Locus locus)
         {
