@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLooku
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return this.ToTableEntity();
+            return new HlaLookupTableEntity(this);
         }
 
         public bool Equals(AlleleNameLookupResult other)

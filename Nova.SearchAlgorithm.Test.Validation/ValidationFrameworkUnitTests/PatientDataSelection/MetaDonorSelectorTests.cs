@@ -299,7 +299,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetMetaDonor_WhenNoLocusShouldBeHomozygous_AndMetaDonorIsHomozygous_ReturnsMetaDonor()
+        public void GetMetaDonor_WhenNoLocusRequiredToBeHomozygous_AndMetaDonorIsHomozygous_ReturnsMetaDonor()
         {
             const DonorType donorType = DonorType.Adult;
 
@@ -328,7 +328,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetMetaDonor_WhenLocusShouldBeHomozygous_AndMetaDonorIsHomozygous_ReturnsMetaDonor()
+        public void GetMetaDonor_WhenLocusRequiredToBeHomozygous_AndMetaDonorIsHomozygous_ReturnsMetaDonor()
         {
             const DonorType donorType = DonorType.Adult;
 
@@ -357,7 +357,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetMetaDonor_WhenLocusShouldBeHomozygous_AndMetaDonorIsNotHomozygous_ThrowsException()
+        public void GetMetaDonor_WhenLocusRequiredToBeHomozygous_AndMetaDonorIsNotHomozygous_ThrowsException()
         {
             const DonorType donorType = DonorType.Adult;
 
