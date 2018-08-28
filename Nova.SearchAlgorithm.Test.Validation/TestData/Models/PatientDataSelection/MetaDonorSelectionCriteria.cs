@@ -37,6 +37,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// </summary>
         public LocusInfo<bool> IsHomozygous { get; set; } = new LocusInfo<bool>(false);
 
+        
+        /// <summary>
+        /// Determines whether the expected meta-donor should have allele strings guaranteed to contain different groups
+        /// </summary>
+        public PhenotypeInfo<bool> AlleleStringContainsDifferentAntigenGroups { get; set; } = new PhenotypeInfo<bool>(false);
+        
         /// <summary>
         /// Determines how many matching meta-donors to ignore
         /// To be used in the case when multiple patients are to be tested, each against a meta-donor with otherwise identical criteria
