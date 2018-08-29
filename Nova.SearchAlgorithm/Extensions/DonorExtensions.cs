@@ -1,5 +1,5 @@
 ﻿using System;
-using Nova.DonorService.Client.Models;
+using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Exceptions;
@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Extensions
 {
     public static class DonorExtensions
     {
-        public static RawInputDonor ToRawImportDonor(this Donor donor)
+        public static RawInputDonor ToRawImportDonor(this DonorInfoForSearchAlgorithm donor)
         {
             return new RawInputDonor
             {
@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Extensions
             };
         }
 
-        public static PhenotypeInfo<string> HlaAsPhenotype(this Donor donor)
+        public static PhenotypeInfo<string> HlaAsPhenotype(this DonorInfoForSearchAlgorithm donor)
         {
             return new PhenotypeInfo<string>
             {
