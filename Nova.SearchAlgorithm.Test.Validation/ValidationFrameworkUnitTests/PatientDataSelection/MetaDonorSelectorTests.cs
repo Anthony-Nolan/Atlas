@@ -8,7 +8,6 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using NSubstitute;
 using NUnit.Framework;
@@ -494,6 +493,86 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
 
             metaDonor.Should().Be(metaDonors[1]);
+        }
+
+        [Test]
+        public void GetMetaDonor_WhenShouldHaveExpressionSuffix_MatchesDonorFromExpressionSuffixDataset()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteriaBuilder().WithNonNullExpressionSuffixAtLocus(Locus.A).Build(),
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                HasNonNullExpressionSuffix = new PhenotypeInfo<bool>().Map((l, p, noop) => l == Locus.A),
+            };
+
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
+
+            metaDonor.Should().NotBeNull();
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenShouldHaveExpressionSuffix_AndNoDonorHasExpressionSuffix_ThrowsException()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                HasNonNullExpressionSuffix = new PhenotypeInfo<bool>(true),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenShouldNotHaveExpressionSuffix_AndAllDonorHasExpressionSuffix_ThrowsException()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteriaBuilder().WithNonNullExpressionSuffixAtLocus(Locus.A).Build(),
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                HasNonNullExpressionSuffix = new PhenotypeInfo<bool>(false),
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
     }
 }

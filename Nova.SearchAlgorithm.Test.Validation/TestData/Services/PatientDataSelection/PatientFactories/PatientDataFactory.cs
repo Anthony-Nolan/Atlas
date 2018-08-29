@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Documents.Spatial;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
@@ -40,6 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
         void SetNumberOfMetaDonorsToSkip(int numberToSkip);
         void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
+        void SetHasExpressionSuffixAtLocus(Locus locus);
 
         // Meta-donor and database-donor criteria
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
@@ -178,6 +178,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus)
         {
             metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetAtLocus(locus, true);
+        }
+
+        public void SetHasExpressionSuffixAtLocus(Locus locus)
+        {
+            metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)

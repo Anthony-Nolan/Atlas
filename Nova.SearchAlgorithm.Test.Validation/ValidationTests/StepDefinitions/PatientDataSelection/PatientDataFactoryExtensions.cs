@@ -1,5 +1,7 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
@@ -35,7 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             return patientDataFactory;
         }
 
-        public static IPatientDataFactory SetMismatches(this IPatientDataFactory patientDataFactory, string mismatchType, string locus)
+        public static IPatientDataFactory SetMismatches(this IPatientDataFactory patientDataFactory, string mismatchType, string locusType)
         {
             var mismatchCount = 0;
             switch (mismatchType)
@@ -51,32 +53,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     break;
             }
 
-            switch (locus)
+            var loci = ParseLoci(locusType);
+
+            foreach (var locus in loci)
             {
-                case "locus A":
-                    patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.A);
-                    break;
-                case "locus B":
-                    patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.B);
-                    break;
-                case "locus C":
-                    patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.C);
-                    break;
-                case "locus Dpb1":
-                case "locus DPB1":
-                    patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.Dpb1);
-                    break;
-                case "locus Dqb1":
-                case "locus DQB1":
-                    patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.Dqb1);
-                    break;
-                case "locus Drb1":
-                case "locus DRB1":
-                    patientDataFactory.SetMismatchesAtLocus(mismatchCount, Locus.Drb1);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                patientDataFactory.SetMismatchesAtLocus(mismatchCount, locus);
             }
 
             return patientDataFactory;
@@ -112,68 +93,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     break;
                 case "two field (different third field)":
                     patientDataFactory.SetAsMatchLevelAtAllLoci(MatchLevel.FirstTwoFieldAllele);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
-            }
-
-            return patientDataFactory;
-        }
-
-        private static IPatientDataFactory SetTypingCategoryAtAllLoci(this IPatientDataFactory patientDataFactory, string typingCategory)
-        {
-            switch (typingCategory)
-            {
-                case "differently":
-                    // Mixed resolution must have 4-field TGS alleles, as one of the resolution options is three field truncated
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
-                    {
-                        patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(resolution.Key, resolution.Value);
-                    }
-
-                    break;
-                case "TGS":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
-                    break;
-                case "TGS (four field)":
-                case "TGS (four-field)":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
-                    break;
-                case "TGS (three field)":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
-                    break;
-                case "TGS (two field)":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
-                    break;
-                case "three field truncated allele":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.ThreeFieldTruncatedAllele);
-                    break;
-                case "two field truncated allele":
-                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.TwoFieldTruncatedAllele);
-                    break;
-                case "XX code":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.XxCode);
-                    break;
-                case "NMDP code":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.NmdpCode);
-                    break;
-                case "serology":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Serology);
-                    break;
-                case "allele string":
-                case "allele string (of names)":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNames);
-                    break;
-                case "allele string (of subtypes)":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
@@ -240,6 +159,125 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                         patientDataFactory.SetAlleleStringShouldContainDifferentGroupsAtLocus(locus);
                     }
 
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataFactory;
+        }
+
+        public static IPatientDataFactory SetExpressionSuffixAt(
+            this IPatientDataFactory patientDataFactory,
+            string expressionSuffix,
+            string locusType
+        )
+        {
+            var loci = ParseLoci(locusType);
+
+            switch (expressionSuffix)
+            {
+                case "any":
+
+                    foreach (var locus in loci)
+                    {
+                        patientDataFactory.SetHasExpressionSuffixAtLocus(locus);
+                    }
+                    break;
+                case "an 'S'":
+                case "an 'Q'":
+                case "an 'L'":
+                    throw new InvalidTestDataException("Cannot select a specific non-null expression suffix - this functionality will need adding");
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataFactory;
+        }
+
+        private static IEnumerable<Locus> ParseLoci(string locus)
+        {
+            switch (locus)
+            {
+                case "each locus":
+                case "all loci":
+                    return LocusHelpers.AllLoci();
+                case "locus A":
+                    return new[] {Locus.A};
+                case "locus B":
+                    return new[] {Locus.B};
+                case "locus C":
+                    return new[] {Locus.C};
+                case "locus Dpb1":
+                case "locus DPB1":
+                    return new[] {Locus.Dpb1};
+                case "locus Dqb1":
+                case "locus DQB1":
+                    return new[] {Locus.Dqb1};
+                case "locus Drb1":
+                case "locus DRB1":
+                    return new[] {Locus.Drb1};
+                default:
+                    ScenarioContext.Current.Pending();
+                    return new List<Locus>();
+            }
+        }
+
+        private static IPatientDataFactory SetTypingCategoryAtAllLoci(this IPatientDataFactory patientDataFactory, string typingCategory)
+        {
+            switch (typingCategory)
+            {
+                case "differently":
+                    // Mixed resolution must have 4-field TGS alleles, as one of the resolution options is three field truncated
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
+                    {
+                        patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(resolution.Key, resolution.Value);
+                    }
+
+                    break;
+                case "TGS":
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
+                    break;
+                case "TGS (four field)":
+                case "TGS (four-field)":
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
+                    break;
+                case "TGS (three field)":
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
+                    break;
+                case "TGS (two field)":
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
+                    break;
+                case "three field truncated allele":
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.ThreeFieldTruncatedAllele);
+                    break;
+                case "two field truncated allele":
+                    patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.TwoFieldTruncatedAllele);
+                    break;
+                case "XX code":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.XxCode);
+                    break;
+                case "NMDP code":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.NmdpCode);
+                    break;
+                case "serology":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Serology);
+                    break;
+                case "allele string":
+                case "allele string (of names)":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNames);
+                    break;
+                case "allele string (of subtypes)":
+                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
                     break;
                 default:
                     ScenarioContext.Current.Pending();

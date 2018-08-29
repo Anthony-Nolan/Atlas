@@ -57,9 +57,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private static bool FulfilsDonorHlaCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
             return FulfilsHomozygousCriteria(criteria, metaDonor)
+                   && FulfilsExpressionSuffixCriteria(criteria, metaDonor)
                    && FulfilsAlleleStringCriteria(criteria, metaDonor)
                    && FulfilsDatasetCriteria(criteria, metaDonor)
                    && FulfilsTypingResolutionCriteria(criteria, metaDonor);
+        }
+
+        private static bool FulfilsExpressionSuffixCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            var perLocusFulfilment = criteria.HasNonNullExpressionSuffix.Map((locus, position, shouldHaveSuffix) =>
+                !shouldHaveSuffix
+                || metaDonor.GenotypeCriteria.AlleleSources.DataAtPosition(locus, position) == Dataset.AllelesWithNonNullExpressionSuffix);
+
+            return perLocusFulfilment.ToEnumerable().All(x => x);
         }
 
         private static bool FulfilsHomozygousCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
@@ -77,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
             return perLocusFulfilment.ToEnumerable().All(x => x);
         }
-        
+
         private static bool FulfilsAlleleStringCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
             var perLocusFulfilment = criteria.AlleleStringContainsDifferentAntigenGroups.Map((locus, position, shouldHaveDifferentAlleleGroups) =>
@@ -131,9 +141,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     case Dataset.NullAlleles:
                         // TODO: NOVA-1188: Allow matching on meta donors with null alleles when null matching implemented
                         return false;
-                    // TODO: NOVA-1571: Implement this
                     case Dataset.AllelesWithNonNullExpressionSuffix:
-                        return true;
+                        return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
