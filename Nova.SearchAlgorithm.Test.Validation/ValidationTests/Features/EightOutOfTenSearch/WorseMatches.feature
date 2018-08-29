@@ -3,7 +3,7 @@ Feature: Eight Out Of Ten Search - worse matches
   I want to be able to run a 8/10 search
   And not see worse matches than 8/10 in the results
 
-  Scenario: 8/10 Search with a three mismatches across two loci
+  Scenario: 8/10 Search with three mismatches across two loci
     Given a patient and a donor
     And the donor has a single mismatch at locus A
     And the donor has a double mismatch at locus B
@@ -15,7 +15,7 @@ Feature: Eight Out Of Ten Search - worse matches
     When I run an 8/10 search
     Then the results should not contain the specified donor
 
-  Scenario: 8/10 Search with a three mismatches across three loci
+  Scenario: 8/10 Search with three mismatches across three loci
     Given a patient and a donor
     And the donor has a single mismatch at locus A
     And the donor has a single mismatch at locus B
@@ -28,7 +28,7 @@ Feature: Eight Out Of Ten Search - worse matches
     When I run an 8/10 search
     Then the results should not contain the specified donor
 
-  Scenario: 8/10 Search with a mismatches at all loci
+  Scenario: 8/10 Search with mismatches at all loci
     Given a patient and a donor
     And the donor has a single mismatch at locus A
     And the donor has a single mismatch at locus B
