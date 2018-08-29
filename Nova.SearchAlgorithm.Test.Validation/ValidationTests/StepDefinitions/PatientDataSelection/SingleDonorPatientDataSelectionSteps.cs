@@ -49,6 +49,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             ScenarioContext.Current.Set(patientDataFactory);
         }
+        
+        [Given(@"the patient is (.*) typed at (.*)")]
+        public void GivenThePatientIsUntypedAt(string typingCategory, string locus)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetPatientTypingCategoryAt(typingCategory, locus);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
 
         [Given(@"the patient is homozygous at (.*)")]
         public void GivenThePatientIsHomozygousAt(string locus)
