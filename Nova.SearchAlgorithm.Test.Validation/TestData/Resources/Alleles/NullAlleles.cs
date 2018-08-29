@@ -7,8 +7,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     /// <summary>
     /// This test data was manually curated from null expressing alleles found in the SOLAR database
     ///
-    /// No NMDP codes are selected for the selected alleles, it is assumed this data will only be used for allele level resolution.
-    /// If NMDP resolution tests are necessary, a new dataset will need to be curated
+    /// No NMDP codes are selected for the selected alleles, so this data can currently only be used for allele level resolution.
+    /// When NMDP resolution tests are added, the dataset will need to be updated/replaced
+    /// TODO: NOVA-1681: Add NMDP Codes
     /// </summary>
     public static class NullAlleles
     {
