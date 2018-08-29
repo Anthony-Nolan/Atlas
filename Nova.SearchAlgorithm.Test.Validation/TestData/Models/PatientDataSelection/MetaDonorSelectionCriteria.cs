@@ -7,8 +7,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
 {
     public class MetaDonorSelectionCriteria
     {
-        public DonorType MatchingDonorType { get; set; }
-        public RegistryCode MatchingRegistry { get; set; }
+        public DonorType MatchingDonorType { get; set; } = DonorType.Adult;
+        public RegistryCode MatchingRegistry { get; set; } = RegistryCode.AN;
 
         /// <summary>
         /// Determines how many fields the matching meta-donor's genotype should have at each position
@@ -37,7 +37,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// </summary>
         public LocusInfo<bool> IsHomozygous { get; set; } = new LocusInfo<bool>(false);
 
-        
         /// <summary>
         /// Determines whether the expected meta-donor should have allele strings guaranteed to contain different groups
         /// </summary>
