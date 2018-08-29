@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetMismatchesAtLocus(int numberOfMismatches, Locus locus);
         void SetPatientUntypedAtLocus(Locus locus);
         void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
+        void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation);
 
         // Meta-donor and patient criteria
         void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
@@ -148,6 +149,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
             patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, resolution);
+        }
+
+        public void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
+        {
+            patientHlaSelectionCriteria.Orientations.SetAtLocus(locus, orientation);
         }
 
         #endregion

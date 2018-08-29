@@ -56,7 +56,7 @@ Feature: Four out of eight Search - single mismatch
     And the donor is in registry: Anthony Nolan
     And the search type is cord
     And the search is run against the Anthony Nolan registry only
-    When I run an 4/8 search
+    When I run a 4/8 search
     Then the results should contain the specified donor
 
   Scenario: 4/8 Search with one mismatch each at locus B and DQB1
@@ -68,7 +68,7 @@ Feature: Four out of eight Search - single mismatch
     And the donor is in registry: Anthony Nolan
     And the search type is cord
     And the search is run against the Anthony Nolan registry only
-    When I run an 4/8 search
+    When I run a 4/8 search
     Then the results should contain the specified donor
 
   Scenario: 4/8 Search with one mismatch each at locus C and DQB1
@@ -80,7 +80,7 @@ Feature: Four out of eight Search - single mismatch
     And the donor is in registry: Anthony Nolan
     And the search type is cord
     And the search is run against the Anthony Nolan registry only
-    When I run an 4/8 search
+    When I run a 4/8 search
     Then the results should contain the specified donor
 
   Scenario: 4/8 Search with one mismatch each at locus DRB1 and DQB1
@@ -92,5 +92,5 @@ Feature: Four out of eight Search - single mismatch
     And the donor is in registry: Anthony Nolan
     And the search type is cord
     And the search is run against the Anthony Nolan registry only
-    When I run an 4/8 search
+    When I run a 4/8 search
     Then the results should contain the specified donor

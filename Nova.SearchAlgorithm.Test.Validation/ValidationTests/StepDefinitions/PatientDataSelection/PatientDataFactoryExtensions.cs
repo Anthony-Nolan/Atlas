@@ -78,6 +78,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             return patientDataFactory;
         }
 
+        public static IPatientDataFactory SetMatchOrientationsAt(
+            this IPatientDataFactory patientDataFactory,
+            string orientationString,
+            string locusType
+        )
+        {
+            var loci = ParseLoci(locusType);
+            var orientation = ParseOrientation(orientationString);
+
+            foreach (var locus in loci)
+            {
+                patientDataFactory.SetMatchOrientationAtLocus(locus, orientation);
+            }
+
+            return patientDataFactory;
+        }
+
         public static IPatientDataFactory SetMatchLevelAtAllLoci(this IPatientDataFactory patientDataFactory, string matchLevel)
         {
             switch (matchLevel)
@@ -184,6 +201,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     {
                         patientDataFactory.SetHasNonNullExpressionSuffixAtLocus(locus);
                     }
+
                     break;
                 case "an 'S'":
                 case "an 'Q'":
@@ -222,6 +240,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 default:
                     ScenarioContext.Current.Pending();
                     return new List<Locus>();
+            }
+        }
+
+        private static MatchOrientation ParseOrientation(string orientation)
+        {
+            switch (orientation)
+            {
+                case "cross":
+                    return MatchOrientation.Cross;
+                case "direct":
+                    return MatchOrientation.Direct;
+                default:
+                    ScenarioContext.Current.Pending();
+                    return MatchOrientation.Arbitrary;
             }
         }
 
