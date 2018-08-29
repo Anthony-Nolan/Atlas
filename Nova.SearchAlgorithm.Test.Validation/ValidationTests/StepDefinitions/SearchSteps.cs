@@ -10,7 +10,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.Utils.Models;
 using TechTalk.SpecFlow;
+using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {
@@ -58,10 +60,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public async Task WhenIRunASixOutOfSixSearch()
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-
+            var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
             var searchHla = patientDataSelector.GetPatientHla();
 
-            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+            var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
@@ -77,10 +79,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public async Task WhenIRunAnEightOutOfEightSearch()
         {
             var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-
+            var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
             var searchHla = patientDataSelector.GetPatientHla();
 
-            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+            var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
@@ -95,37 +97,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 4/8 search")]
         public async Task WhenIRunAFourOutOfEightSearch()
         {
-            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            var searchHla = patientDataSelector.GetPatientHla();
+
+            var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(4)
                 .WithLocusMismatchCount(Locus.A, 2)
                 .WithLocusMismatchCount(Locus.B, 2)
                 .WithLocusMismatchCount(Locus.Drb1, 2)
                 .WithLocusMismatchCount(Locus.C, 2)
-                .Build();
-
-            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
-        }
-        
-        [When(@"I run a 10/10 search")]
-        public async Task WhenIRunATenOutOfTenSearch()
-        {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-
-            var searchHla = patientDataSelector.GetPatientHla();
-            
-            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
-                .WithTotalMismatchCount(0)
-                .WithLocusMismatchCount(Locus.A, 0)
-                .WithLocusMismatchCount(Locus.B, 0)
-                .WithLocusMismatchCount(Locus.Drb1, 0)
-                .WithLocusMismatchCount(Locus.C, 0)
-                .WithLocusMismatchCount(Locus.Dqb1, 0)
                 .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
-        }   
-        
+        }
+
         [When(@"I run a 10/10 search for each patient")]
         public async Task WhenIRunATenOutOfTenSearchForEachPatient()
         {
@@ -136,8 +123,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             foreach (var patientDataSelector in selector.PatientDataFactories)
             {
                 var searchHla = patientDataSelector.GetPatientHla();
-            
-                var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+                var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
+
+                var searchRequest = searchRequestBuilder
                     .WithTotalMismatchCount(0)
                     .WithLocusMismatchCount(Locus.A, 0)
                     .WithLocusMismatchCount(Locus.B, 0)
@@ -156,18 +144,43 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
 
             ScenarioContext.Current.Set(patientResults);
-        }   
-        
+        }
+
+        [When(@"I run a 10/10 search")]
+        public async Task WhenIRunATenOutOfTenSearch()
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            var searchHla = patientDataSelector.GetPatientHla();
+
+            var searchRequest = searchRequestBuilder
+                .WithTotalMismatchCount(0)
+                .WithLocusMismatchCount(Locus.A, 0)
+                .WithLocusMismatchCount(Locus.B, 0)
+                .WithLocusMismatchCount(Locus.Drb1, 0)
+                .WithLocusMismatchCount(Locus.C, 0)
+                .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .WithSearchHla(searchHla)
+                .Build();
+
+            ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
+        }
+
         [When(@"I run a 9/10 search at locus (.*)")]
         public async Task WhenIRunANineOutOfTenSearchAtLocus(string locusString)
         {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
+
+            var searchHla = patientDataSelector.GetPatientHla();
             var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
             var fullyMatchedLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
-            
-            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+
+            var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(1)
                 .WithLocusMismatchCount(locus, 1)
                 .WithMismatchCountAtLoci(fullyMatchedLoci, 0)
+                .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
@@ -177,11 +190,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run an 8/10 search")]
         public async Task WhenIRunAnEightOutOfTenSearch()
         {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
+            var searchHla = patientDataSelector.GetPatientHla();
             var allowedMismatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
-            
-            var searchRequest = ScenarioContext.Current.Get<SearchRequestBuilder>()
+
+            var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(2)
                 .WithMismatchCountAtLoci(allowedMismatchLoci, 2)
+                .WithSearchHla(searchHla)
                 .Build();
 
             ScenarioContext.Current.Set(await AlgorithmTestingService.Search(searchRequest));
