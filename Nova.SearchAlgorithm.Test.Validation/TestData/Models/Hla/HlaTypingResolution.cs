@@ -17,6 +17,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         TwoFieldTruncatedAllele,
         XxCode,
         NmdpCode,
+        // A `/` separated list of possible allele names
+        // e.g. 02:03:01/02:07:01/11:02:01
+        AlleleStringOfNames,
+        // A known first field, followed by a `/` separated list of possible second fields
+        // This is what NMDP codes correspond to 
+        // e.g. 01:01/02/03
+        AlleleStringOfSubtypes,
         Serology,
         Untyped,
         // Used to indicate that any underlying typing resolution is acceptable

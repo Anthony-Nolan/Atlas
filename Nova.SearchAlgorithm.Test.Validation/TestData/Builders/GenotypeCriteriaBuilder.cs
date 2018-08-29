@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
@@ -11,62 +12,60 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             genotypeCriteria = new GenotypeCriteria
             {
-                PGroupMatchPossible = new PhenotypeInfo<bool>(false),
-                GGroupMatchPossible = new PhenotypeInfo<bool>(false),
-                ThreeFieldMatchPossible = new PhenotypeInfo<bool>(false),
-                TwoFieldMatchPossible = new PhenotypeInfo<bool>(false),
-                TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.Arbitrary),
+                AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles),
                 IsHomozygous = new LocusInfo<bool>(false),
             };
         }
 
         public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory category)
         {
-            genotypeCriteria.TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>(category);
+            switch (category)
+            {
+                case TgsHlaTypingCategory.FourFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldTgsAlleles);
+                    break;
+                case TgsHlaTypingCategory.ThreeFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldTgsAlleles);
+                    break;
+                case TgsHlaTypingCategory.TwoFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TwoFieldTgsAlleles);
+                    break;
+                case TgsHlaTypingCategory.Arbitrary:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(category), category, null);
+            }
             return this;
         }
         
-        /// <summary>
-        /// Option to exlucde DPB1, as it is a special case in some scenarios.
-        /// This is because test data is incomplete, e.g. two field DPB1 alleles have no serology data
-        /// </summary>
-        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLociExceptDpb1(TgsHlaTypingCategory category)
+        public GenotypeCriteriaBuilder WithAlleleStringOfSubtypesPossibleAtAllLoci()
         {
-            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.A, TypePositions.Both, category);
-            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.B, TypePositions.Both, category);
-            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.C, TypePositions.Both, category);
-            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.Dqb1, TypePositions.Both, category);
-            genotypeCriteria.TgsHlaCategories.SetAtLocus(Locus.Drb1, TypePositions.Both, category);
-            return this;
-        }
-
-        public GenotypeCriteriaBuilder WithTgsTypingCategoryAtLocus(Locus locus, TgsHlaTypingCategory category)
-        {
-            genotypeCriteria.TgsHlaCategories.SetAtLocus(locus, TypePositions.Both, category);
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.AlleleStringOfSubtypesPossible);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>(true);
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.PGroupMatchPossible);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>(true);
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.GGroupMatchPossible);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithThreeFieldMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.ThreeFieldMatchPossible = new PhenotypeInfo<bool>(true);
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithTwoFieldMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.TwoFieldMatchPossible = new PhenotypeInfo<bool>(true);
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
             return this;
         }
 

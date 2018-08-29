@@ -122,6 +122,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void SetMismatchesAtLocus(int numberOfMismatches, Locus locus)
         {
+            // TODO: NOVA-1713: Allow mismatches to be specified by locus
             switch (numberOfMismatches)
             {
                 case 1:

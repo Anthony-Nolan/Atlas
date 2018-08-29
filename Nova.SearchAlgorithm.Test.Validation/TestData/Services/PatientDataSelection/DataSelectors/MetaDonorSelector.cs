@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
+using NSubstitute.Routing.Handlers;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {
@@ -56,9 +58,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private static bool FulfilsDonorHlaCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return FulfilsTgsTypingCategoryCriteria(criteria, metaDonor)
-                   && FulfilsHomozygousCriteria(criteria, metaDonor)
-                   && FulfilsMatchLevelCriteria(criteria, metaDonor)
+            return FulfilsHomozygousCriteria(criteria, metaDonor)
+                   && FulfilsDatasetCriteria(criteria, metaDonor)
                    && FulfilsTypingResolutionCriteria(criteria, metaDonor);
         }
 
@@ -83,32 +84,38 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return criteria.TypingResolutionSets.All(resolutionSet => metaDonor.HlaTypingResolutionSets.Any(resolutionSet.Equals));
         }
 
-        private static bool FulfilsMatchLevelCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        private static bool FulfilsDatasetCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
             // Maps to a list of booleans - each one indicates whether the criteria are met at that locus/position
-            return criteria.MatchLevels.Map((l, p, matchLevel) =>
+            return metaDonor.GenotypeCriteria.AlleleSources.Map((l, p, dataset) =>
             {
-                switch (matchLevel)
+                var tgsTypingRequired = criteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
+                var matchLevelRequired = criteria.MatchLevels.DataAtPosition(l, p);
+
+                switch (dataset)
                 {
-                    case MatchLevel.Allele:
-                        return true;
-                    case MatchLevel.FirstThreeFieldAllele:
-                        return metaDonor.GenotypeCriteria.ThreeFieldMatchPossible.DataAtPosition(l, p);
-                    case MatchLevel.PGroup:
-                        return metaDonor.GenotypeCriteria.PGroupMatchPossible.DataAtPosition(l, p);
-                    case MatchLevel.GGroup:
-                        return metaDonor.GenotypeCriteria.GGroupMatchPossible.DataAtPosition(l, p);
-                    case MatchLevel.FirstTwoFieldAllele:
-                        return metaDonor.GenotypeCriteria.TwoFieldMatchPossible.DataAtPosition(l, p);
+                    case Dataset.FourFieldTgsAlleles:
+                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
+                    case Dataset.ThreeFieldTgsAlleles:
+                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
+                    case Dataset.TwoFieldTgsAlleles:
+                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.TwoFieldAllele;
+                    case Dataset.TgsAlleles:
+                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.Arbitrary;
+                    case Dataset.PGroupMatchPossible:
+                        return matchLevelRequired == MatchLevel.PGroup;
+                    case Dataset.GGroupMatchPossible:
+                        return matchLevelRequired == MatchLevel.GGroup;
+                    case Dataset.FourFieldAllelesWithThreeFieldMatchPossible:
+                        return matchLevelRequired == MatchLevel.FirstThreeFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
+                    case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
+                        return matchLevelRequired == MatchLevel.FirstTwoFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
+                    case Dataset.AlleleStringOfSubtypesPossible:
+                        return criteria.TypingResolutionSets.Any(res => res.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(matchLevel), matchLevel, null);
+                        throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
             }).ToEnumerable().All(x => x);
-        }
-
-        private static bool FulfilsTgsTypingCategoryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
-        {
-            return criteria.MatchingTgsTypingCategories.Equals(metaDonor.GenotypeCriteria.TgsHlaCategories);
         }
 
         private static bool FulfilsRegistryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)

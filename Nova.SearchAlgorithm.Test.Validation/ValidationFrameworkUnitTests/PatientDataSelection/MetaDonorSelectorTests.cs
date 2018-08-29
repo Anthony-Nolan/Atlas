@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using NSubstitute;
 using NUnit.Framework;
@@ -90,7 +91,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var criteria = new MetaDonorSelectionCriteria
             {
-                MatchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.ThreeFieldAllele)
+                MatchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.ThreeFieldAllele),
+                MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.GGroup),
             };
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));

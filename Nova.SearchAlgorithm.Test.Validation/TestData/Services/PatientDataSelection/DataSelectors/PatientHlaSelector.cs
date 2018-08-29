@@ -119,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().DataAtLocus(locus);
 
-            return TgsAllele.FromTestDataAllele(alleleAtLocus, locus);
+            return TgsAllele.FromTestDataAllele(alleleAtLocus);
         }
 
         private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
@@ -127,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
             var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele);
 
-            return TgsAllele.FromTestDataAllele(allele, locus);
+            return TgsAllele.FromTestDataAllele(allele);
         }
 
         private TgsAllele GetThreeFieldMatchingTgsAllele(
@@ -161,7 +161,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
             
             var selectedAllele = validAlleles.GetRandomElement();
-            return TgsAllele.FromTestDataAllele(selectedAllele, locus);
+            return TgsAllele.FromTestDataAllele(selectedAllele);
         }
         
         private TgsAllele GetTwoFieldMatchingTgsAllele(
@@ -194,7 +194,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
             
             var selectedAllele = validAlleles.GetRandomElement();
-            return TgsAllele.FromTestDataAllele(selectedAllele, locus);
+            return TgsAllele.FromTestDataAllele(selectedAllele);
         }
     }
 }

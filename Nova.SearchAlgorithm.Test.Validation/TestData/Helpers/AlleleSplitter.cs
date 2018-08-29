@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
         
         public static string FirstThreeFieldsAsString(string allele)
         {
-            return FirstThreeFields(allele).Aggregate((agg, s) => agg + s);
+            return string.Join(AlleleSeparator.ToString(), FirstThreeFields(allele));
         }
         
         public static IEnumerable<string> FirstTwoFields(string allele)
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
         
         public static string FirstTwoFieldsAsString(string allele)
         {
-            return FirstTwoFields(allele).Aggregate((agg, s) => agg + s);
+            return string.Join(AlleleSeparator.ToString(), FirstTwoFields(allele));
         }
         
         public static string RemoveLastField(string allele)
@@ -41,6 +41,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Helpers
         public static string FirstField(string allele)
         {
             return SplitToFields(allele).First();
+        }
+        
+        public static string SecondField(string allele)
+        {
+            return SplitToFields(allele).ToList()[1];
         }
 
         private static IEnumerable<string> SplitToFields(string alleleString)

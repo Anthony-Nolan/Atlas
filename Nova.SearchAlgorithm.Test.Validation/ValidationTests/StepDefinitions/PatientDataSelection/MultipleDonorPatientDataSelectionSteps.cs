@@ -25,7 +25,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 HlaTypingResolution.NmdpCode,
                 HlaTypingResolution.XxCode,
                 HlaTypingResolution.Serology,
-                HlaTypingResolution.Arbitrary
+                HlaTypingResolution.Arbitrary,
+                HlaTypingResolution.AlleleStringOfNames,
             };
             var resolutionSets = allResolutions.Select(r => new PhenotypeInfo<HlaTypingResolution>(r));
             // Resolutions include 2/3 field truncated, so genotype must be four-field TGS typed

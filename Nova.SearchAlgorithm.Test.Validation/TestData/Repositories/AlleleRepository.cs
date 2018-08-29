@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
         PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible();
@@ -62,6 +63,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching()
         {
             return Resources.PGroupMatchingAlleles.PatientAlleles;
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible()
+        {
+            return AllTgsAlleles().Map((l, p, alleles) =>
+            {
+                var allelesGroupedByFirstField = alleles
+                    .GroupBy(a => AlleleSplitter.FirstField(a.AlleleName));
+
+                var groupsWithMoreThanOneSecondField = allelesGroupedByFirstField
+                    .Where(g => g.ToList().GroupBy(a => AlleleSplitter.SecondField(a.AlleleName)).Count() > 1);
+
+                var validFirstFields = groupsWithMoreThanOneSecondField.Select(x => x).Select(g => g.Key);
+
+                return alleles.Where(a => validFirstFields.Contains(AlleleSplitter.FirstField(a.AlleleName))).ToList();
+            });
         }
 
         public PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()
@@ -114,7 +131,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             );
         }
 
-        private static IEnumerable<IGrouping<string, AlleleTestData>> AlleleGroupsWithSharedFirstThreeFields(List<AlleleTestData> alleles)
+        private static IEnumerable<IGrouping<string, AlleleTestData>> AlleleGroupsWithSharedFirstThreeFields(IEnumerable<AlleleTestData> alleles)
         {
             var groupedAlleles = alleles
                 .GroupBy(a => AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName))

@@ -5,6 +5,7 @@ using Microsoft.Owin.Testing;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
 {
@@ -25,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
             server.Dispose();
         }
 
-        public static async Task<SearchResultSet> Search(SearchRequest searchRequest)
+        public static async Task<SearchAlgorithmApiResult> Search(SearchRequest searchRequest)
         {
             var result = await server.CreateRequest("/search")
                 .AddHeader(ApiKeyHeader, ApiKey)
@@ -34,7 +35,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
 
             var content = await result.Content.ReadAsStringAsync();
             var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
-            return deserialisedContent;
+            return new SearchAlgorithmApiResult
+            {
+                IsSuccess = result.IsSuccessStatusCode,
+                StatusCode = result.StatusCode,
+                ErrorMessage = result.IsSuccessStatusCode ? null : content,
+                Results = result.IsSuccessStatusCode ? deserialisedContent : null,
+            };
         }
 
         public static void RunHlaRefresh()

@@ -48,6 +48,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
@@ -71,6 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
                     new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),
                 }
             },
@@ -95,6 +97,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .Build(),
             },
 
+            // Allele string of subtypes
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build(),
+                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                {
+                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfSubtypes).Build(),
+                }
+            },
+            
             // P Group matching
             new MetaDonor
             {
@@ -117,7 +131,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele)
                     .WithThreeFieldMatchPossibleAtAllLoci()
                     .Build(),
             },
@@ -128,7 +141,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
                     .WithTwoFieldMatchPossibleAtAllLoci()
                     .Build(),
             },

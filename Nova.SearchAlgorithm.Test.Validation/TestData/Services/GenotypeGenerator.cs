@@ -27,20 +27,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 return RandomGenotype(DefaultCriteria);
             }
 
-            // Naive implementation - if any locus requires p-group match, ensure all loci set up from p-group matching dataset
-            // TODO: NOVA-1662: Allow specification per-locus
-            if (criteria.PGroupMatchPossible.ToEnumerable().Any(x => x))
-            {
-                return GenotypeForPGroupMatching();
-            }
-
-            // Naive implementation - if any locus requires g-group match, ensure all loci set up from g-group matching dataset
-            // TODO: NOVA-1662: Allow specification per-locus
-            if (criteria.GGroupMatchPossible.ToEnumerable().Any(x => x))
-            {
-                return GenotypeForGGroupMatching();
-            }
-
             return RandomGenotype(criteria);
         }
 
@@ -74,112 +60,77 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
         private static TgsAllele RandomTgsAllele(Locus locus, TypePositions position, GenotypeCriteria criteria)
         {
-            var tgsHlaTypingCategory = criteria.TgsHlaCategories.DataAtPosition(locus, position);
-            var threeFieldMatchPossible = criteria.ThreeFieldMatchPossible.DataAtPosition(locus, position);
-            var twoFieldMatchPossible = criteria.TwoFieldMatchPossible.DataAtPosition(locus, position);
-            var alleles = GetDataset(locus, position, tgsHlaTypingCategory, threeFieldMatchPossible, twoFieldMatchPossible);
-            return TgsAllele.FromTestDataAllele(alleles.GetRandomElement(), locus);
+            var dataset = criteria.AlleleSources.DataAtPosition(locus, position);
+
+            var alleles = GetDataset(locus, position, dataset);
+            var selectedAllele = alleles.GetRandomElement();
+
+            var allelesForAlleleStringOfSubtypes = new List<AlleleTestData>();
+            if (dataset == Dataset.AlleleStringOfSubtypesPossible)
+            {
+                var allelesValidForAlleleStringOfSubtypes = GetAllelesValidForAlleleStringOfSubtypes(alleles, selectedAllele);
+                allelesForAlleleStringOfSubtypes = allelesValidForAlleleStringOfSubtypes.GetRandomSelection(1, 10).ToList();
+            }
+
+            return TgsAllele.FromTestDataAllele(
+                selectedAllele,
+                alleles.GetRandomSelection(1, 10),
+                allelesForAlleleStringOfSubtypes
+            );
         }
 
-        private static List<AlleleTestData> GetDataset(
-            Locus locus,
-            TypePositions position,
-            TgsHlaTypingCategory tgsHlaTypingCategory,
-            bool threeFieldMatchPossible,
-            bool twoFieldMatchPossible
-        )
+        /// <summary>
+        /// Returns which test alleles from a list are valid for use in the allele string of subtypes
+        /// The dataset selection will guarantee that such alleles must exist
+        /// This method must select the alleles that
+        /// (a) match the first field of the selected allele
+        /// (b) do not match the second field of the selected allele (so we do not repeat subtypes in the string)
+        /// </summary>
+        private static List<AlleleTestData> GetAllelesValidForAlleleStringOfSubtypes(List<AlleleTestData> alleles, AlleleTestData selectedAllele)
         {
-            if (threeFieldMatchPossible)
+            var allelesWithCorrectFirstField = alleles
+                .Where(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(selectedAllele.AlleleName))
+                .Where(a => AlleleSplitter.SecondField(a.AlleleName) != AlleleSplitter.SecondField(selectedAllele.AlleleName));
+
+            return allelesWithCorrectFirstField
+                .GroupBy(a => AlleleSplitter.FirstTwoFieldsAsString(a.AlleleName))
+                .Select(gg => gg.Key)
+                .Select(a => new AlleleTestData {AlleleName = a})
+                .ToList();
+        }
+
+        private static List<AlleleTestData> GetDataset(Locus locus, TypePositions position, Dataset dataset)
+        {
+            switch (dataset)
             {
-                if (tgsHlaTypingCategory != TgsHlaTypingCategory.FourFieldAllele)
-                {
-                    throw new InvalidTestDataException("Genotype cannot have a three field match without being explicitly four-field TGS typed");
-                }
-
-                return AlleleRepository.DonorAllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
-            }
-
-            if (twoFieldMatchPossible)
-            {
-                if (tgsHlaTypingCategory != TgsHlaTypingCategory.ThreeFieldAllele)
-                {
-                    throw new InvalidTestDataException(
-                        "Two field (not third field) match required. But such test data only exists for three-field TGS alleles.");
-                }
-
-                return AlleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
-            }
-
-            List<AlleleTestData> alleles;
-            switch (tgsHlaTypingCategory)
-            {
-                case TgsHlaTypingCategory.FourFieldAllele:
-                    alleles = AlleleRepository
-                        .FourFieldAlleles()
-                        .DataAtPosition(locus, position);
-                    break;
-                case TgsHlaTypingCategory.ThreeFieldAllele:
-                    alleles = AlleleRepository
-                        .ThreeFieldAlleles()
-                        .DataAtPosition(locus, position);
-                    break;
-                case TgsHlaTypingCategory.TwoFieldAllele:
-                    alleles = AlleleRepository
-                        .TwoFieldAlleles()
-                        .DataAtPosition(locus, position);
-                    break;
-                case TgsHlaTypingCategory.Arbitrary:
+                case Dataset.FourFieldTgsAlleles:
+                    return AlleleRepository.FourFieldAlleles().DataAtPosition(locus, position);
+                case Dataset.ThreeFieldTgsAlleles:
+                    return AlleleRepository.ThreeFieldAlleles().DataAtPosition(locus, position);
+                case Dataset.TwoFieldTgsAlleles:
+                    return AlleleRepository.TwoFieldAlleles().DataAtPosition(locus, position);
+                case Dataset.TgsAlleles:
                     // Randomly choose dataset here rather than randomly choosing alleles from full dataset,
                     // as otherwise the data is skewed towards the larger dataset (4-field)
-                    alleles =
-                        new List<List<AlleleTestData>>
-                        {
-                            AlleleRepository.FourFieldAlleles().DataAtPosition(locus, position),
-                            AlleleRepository.ThreeFieldAlleles().DataAtPosition(locus, position),
-                            AlleleRepository.TwoFieldAlleles().DataAtPosition(locus, position)
-                        }.GetRandomElement();
-                    break;
+                    return new List<List<AlleleTestData>>
+                    {
+                        AlleleRepository.FourFieldAlleles().DataAtPosition(locus, position),
+                        AlleleRepository.ThreeFieldAlleles().DataAtPosition(locus, position),
+                        AlleleRepository.TwoFieldAlleles().DataAtPosition(locus, position)
+                    }.GetRandomElement();
+                case Dataset.PGroupMatchPossible:
+                    return AlleleRepository.DonorAllelesForPGroupMatching().DataAtLocus(locus);
+                case Dataset.GGroupMatchPossible:
+                    return AlleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
+                case Dataset.FourFieldAllelesWithThreeFieldMatchPossible:
+                    return AlleleRepository.DonorAllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+                case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
+                    return AlleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
+                case Dataset.AlleleStringOfSubtypesPossible:
+                    return AlleleRepository.AllelesWithAlleleStringOfSubtypesPossible().DataAtPosition(locus, position);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+                    throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }
-
-            return alleles;
-        }
-
-        /// <summary>
-        /// Creates a full Genotype from the available dataset curated to give p-group level matches.
-        /// The corresponding curated patient hla data must be used to guarantee a p-group level match
-        /// </summary>
-        private static Genotype GenotypeForPGroupMatching()
-        {
-            return new Genotype
-            {
-                Hla = AlleleRepository.DonorAllelesForPGroupMatching().ToPhenotypeInfo((l, alleles) =>
-                {
-                    var allele1 = alleles.GetRandomElement();
-                    var allele2 = alleles.GetRandomElement();
-
-                    return new Tuple<TgsAllele, TgsAllele>(
-                        TgsAllele.FromTestDataAllele(allele1, l),
-                        TgsAllele.FromTestDataAllele(allele2, l)
-                    );
-                })
-            };
-        }
-
-        /// <summary>
-        /// Creates a full Genotype from the available dataset curated to give g-group level matches.
-        /// </summary>
-        private static Genotype GenotypeForGGroupMatching()
-        {
-            return new Genotype
-            {
-                Hla = AlleleRepository.AllelesForGGroupMatching().Map((l, p, alleles) =>
-                {
-                    var allele = alleles.GetRandomElement();
-                    return TgsAllele.FromTestDataAllele(allele, l);
-                })
-            };
         }
 
         /// <summary>
@@ -189,7 +140,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// As we're randomly selecting alleles for donors, there's a chance this will actually match
         public static readonly Genotype NonMatchingGenotype = new Genotype
         {
-            Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromTestDataAllele(a, l))
+            Hla = NonMatchingAlleles.Alleles.Map((l, p, a) => TgsAllele.FromTestDataAllele(a))
         };
     }
 }
