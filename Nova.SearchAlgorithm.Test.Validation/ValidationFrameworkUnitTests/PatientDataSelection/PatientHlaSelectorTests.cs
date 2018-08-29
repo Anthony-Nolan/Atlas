@@ -48,11 +48,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 GetTestAllele(l, TypePositions.Both, MatchLevel.PGroup),
             });
 
-            gGroupAlleles = new PhenotypeInfo<bool>().Map((l, p, noop) => new List<AlleleTestData>
+            gGroupAlleles = new LocusInfo<bool>().Map((l, noop) => new List<AlleleTestData>
             {
-                GetTestAllele(l, p, MatchLevel.GGroup),
-                GetTestAllele(l, p, MatchLevel.GGroup),
-            });
+                GetTestAllele(l, TypePositions.Both, MatchLevel.GGroup),
+                GetTestAllele(l, TypePositions.Both, MatchLevel.GGroup),
+            }).ToPhenotypeInfo((l, a) => a);
 
             alleleRepository.AllelesForGGroupMatching().Returns(gGroupAlleles);
             alleleRepository.PatientAllelesForPGroupMatching().Returns(patientPGroupAlleles);
@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         [Test]
         public void GetPatientHla_ReturnsMatchingAlleleFromMetaDonorGenotype()
         {
-            var criteria = new PatientHlaSelectionCriteriaBuilder().Build();
+            var criteria = new PatientHlaSelectionCriteriaBuilder().WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Direct).Build();
 
             var metaDonor = new MetaDonor
             {
@@ -83,7 +83,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         [Test]
         public void GetPatientHla_ForPGroupMatchLevel_DoesNotSelectExactAlleleMatch()
         {
-            var criteria = new PatientHlaSelectionCriteriaBuilder().WithMatchLevelAtAllLoci(MatchLevel.PGroup).Build();
+            var criteria = new PatientHlaSelectionCriteriaBuilder()
+                .WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Direct)
+                .WithMatchLevelAtAllLoci(MatchLevel.PGroup)
+                .Build();
 
             var metaDonor = new MetaDonor
             {
@@ -104,7 +107,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         [Test]
         public void GetPatientHla_ForGGroupMatchLevel_DoesNotSelectExactAlleleMatch()
         {
-            var criteria = new PatientHlaSelectionCriteriaBuilder().WithMatchLevelAtAllLoci(MatchLevel.GGroup).Build();
+            var criteria = new PatientHlaSelectionCriteriaBuilder()
+                .WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Direct)
+                .WithMatchLevelAtAllLoci(MatchLevel.GGroup)
+                .Build();
 
             var metaDonor = new MetaDonor
             {
@@ -125,6 +131,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new PatientHlaSelectionCriteria
             {
                 PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Untyped),
+                Orientations = new LocusInfo<MatchOrientation>(MatchOrientation.Direct)
             };
 
             var metaDonor = new MetaDonor
@@ -148,6 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .MatchingAtPosition(locus, matchingPosition)
                 .NotMatchingAtPosition(locus, matchingPosition.Other())
+                .WithMatchOrientationAtLocus(locus, MatchOrientation.Direct)
                 .HomozygousAtLocus(locus)
                 .Build();
 
@@ -172,6 +180,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             const Locus locus = Locus.A;
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .NotMatchingAtPosition(locus, TypePositions.Both)
+                .WithMatchOrientationAtLocus(locus, MatchOrientation.Direct)
                 .HomozygousAtLocus(locus)
                 .Build();
 
@@ -195,6 +204,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             const Locus locus = Locus.A;
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .MatchingAtPosition(locus, TypePositions.Both)
+                .WithMatchOrientationAtLocus(locus, MatchOrientation.Direct)
                 .HomozygousAtLocus(locus)
                 .Build();
 
@@ -215,6 +225,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             const Locus locus = Locus.A;
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .MatchingAtPosition(locus, TypePositions.Both)
+                .WithMatchOrientationAtLocus(locus, MatchOrientation.Direct)
                 .HomozygousAtLocus(locus)
                 .Build();
 

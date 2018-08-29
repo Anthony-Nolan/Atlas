@@ -15,6 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
                 HlaMatches = new PhenotypeInfo<bool>(true),
                 MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele),
                 IsHomozygous = new LocusInfo<bool>(false),
+                Orientations = new LocusInfo<MatchOrientation>(MatchOrientation.Arbitrary),
             };
         }
 
@@ -39,6 +40,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public PatientHlaSelectionCriteriaBuilder HomozygousAtLocus(Locus locus)
         {
             criteria.IsHomozygous.SetAtLocus(locus, true);
+            return this;
+        }
+
+        public PatientHlaSelectionCriteriaBuilder WithMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
+        {
+            criteria.Orientations.SetAtLocus(locus, orientation);
             return this;
         }
         
