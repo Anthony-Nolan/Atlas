@@ -223,5 +223,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             patientDataFactory.SetMatchLevelAtAllLoci(matchLevel);
             ScenarioContext.Current.Set(patientDataFactory);
         }
+        
+        [Given(@"the donor has an allele with (.*) expression suffix at (.*)")]
+        [Given(@"the matching donor has an allele with (.*) expression suffix at (.*)")]
+        public void GivenTheMatchingDonorIsInRegistry(string expressionSuffixType, string locus)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetExpressionSuffixAt(expressionSuffixType, locus);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
     }
 }

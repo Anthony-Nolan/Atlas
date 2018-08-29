@@ -42,7 +42,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// Determines whether the expected meta-donor should have allele strings guaranteed to contain different groups
         /// </summary>
         public PhenotypeInfo<bool> AlleleStringContainsDifferentAntigenGroups { get; set; } = new PhenotypeInfo<bool>(false);
-        
+
+        /// <summary>
+        /// Determines whether the expected meta-donor should have alleles with a non null epxression suffix
+        /// </summary>
+        public PhenotypeInfo<bool> HasNonNullExpressionSuffix { get; set; } = new PhenotypeInfo<bool>(false);
+
         /// <summary>
         /// Determines how many matching meta-donors to ignore
         /// To be used in the case when multiple patients are to be tested, each against a meta-donor with otherwise identical criteria

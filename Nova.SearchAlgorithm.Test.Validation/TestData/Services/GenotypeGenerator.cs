@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
             return TgsAllele.FromTestDataAllele(
                 selectedAllele,
-                GetAllelesForAlleleStringOfNames(selectedAllele, alleles, shouldContainDifferentAlleleGroups),
+                GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
                 GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles)
             );
         }
@@ -100,17 +100,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// By default, alleles sharing a first field with the selected allele are preferred, but not required
         /// Selects a set of alleles to be used when generating an allele string of names for the selected allele
         /// </summary>
+        /// <param name="dataset">The selected dataset type.</param>
         /// <param name="selectedAllele">The selected allele</param>
         /// <param name="alleles">The dataset of alleles the selected allele was chosen from</param>
         /// <param name="shouldContainDifferentAlleleGroups">
         ///     When true, enforces that at least two first fields are represented among alleles in string
         /// </param>
         private static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNames(
+            Dataset dataset,
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles,
             bool shouldContainDifferentAlleleGroups
         )
         {
+            // This dataset does not have enough information to support building allele strings. 
+            // This simple check may need to be extended at some point if:
+            // (a) This is true for multiple datasets
+            // (b) We want to build allele strings from > 1 dataset (e.g. add alleles with an expression suffix to a TGS allele string)
+            if (dataset == Dataset.AllelesWithNonNullExpressionSuffix)
+            {
+                return new List<AlleleTestData>();
+            }
+            
             var selectedFirstField = AlleleSplitter.FirstField(selectedAllele.AlleleName);
 
             // Same allele should not appear twice in allele string
@@ -204,6 +215,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     return AlleleRepository.AllelesWithAlleleStringOfSubtypesPossible().DataAtPosition(locus, position);
                 case Dataset.NullAlleles:
                     return AlleleRepository.NullAlleles().DataAtPosition(locus, position);
+                case Dataset.AllelesWithNonNullExpressionSuffix:
+                    return AlleleRepository.AllelesWithNonNullExpressionSuffix().DataAtPosition(locus, position);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }

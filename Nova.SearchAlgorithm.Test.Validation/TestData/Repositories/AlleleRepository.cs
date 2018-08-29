@@ -31,6 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         
         PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
         PhenotypeInfo<List<AlleleTestData>> NullAlleles();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix();
     }
 
     /// <summary>
@@ -87,6 +88,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public PhenotypeInfo<List<AlleleTestData>> NullAlleles()
         {
             return Resources.NullAlleles.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix()
+        {
+            return Resources.AllelesWithNonNullExpressionSuffix.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
         public PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()
