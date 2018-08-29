@@ -8,7 +8,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     /// This test data was manually curated from alleles found in Allele_Status.txt (v3330)
     /// It is used when we need to guarantee that a cdna level match grade is possible
     ///
-    /// For each locus, alleles were selected with full  (NOT gDNA)
+    /// For each locus, alleles were selected with full CDna (NOT gDNA)
+    /// (Note that cDNA match is also possble with same first three fields and full cDNA/gDNA - this case is not covered by this dataset)
     /// </summary>
     public static class CDnaMatchingAlleles
     {
