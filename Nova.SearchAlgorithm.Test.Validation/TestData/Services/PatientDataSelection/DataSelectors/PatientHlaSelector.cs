@@ -75,19 +75,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var orientation = criteria.Orientations.DataAtLocus(locus);
 
+            // Some match level specific test data is curated independently for each position, with direct matches in mind.
+            // If cross matches were attempted, we may end up with a better match grade than desired, or without possible patient data
+            var directOnlyMatchLevels = new[] {MatchLevel.GGroup, MatchLevel.FirstThreeFieldAllele, MatchLevel.FirstTwoFieldAllele};
+
             if (orientation == MatchOrientation.Arbitrary)
             {
                 var matchLevels = criteria.MatchLevels.DataAtLocus(locus);
-                // G-group level test data is declared independently for each position, with direct matches in mind.
-                // If cross matches attempted, we may end up with a better match grade than desired
-                if (matchLevels.Item1 == MatchLevel.GGroup || matchLevels.Item2 == MatchLevel.GGroup)
-                {
-                    return MatchOrientation.Direct;
-                }
-                else
-                {
-                    return new[] {MatchOrientation.Cross, MatchOrientation.Direct}.GetRandomElement();
-                }
+                return new[] {matchLevels.Item1, matchLevels.Item2}.Intersect(directOnlyMatchLevels).Any() 
+                    ? MatchOrientation.Direct 
+                    : new[] {MatchOrientation.Cross, MatchOrientation.Direct}.GetRandomElement();
             }
 
             return orientation;
