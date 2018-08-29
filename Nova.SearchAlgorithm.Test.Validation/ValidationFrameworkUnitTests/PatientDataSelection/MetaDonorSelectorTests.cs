@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenNoMetaDonorsExistOfSpecifiedType_ThrowsException()
+        public void GetMetaDonor_WhenNoMetaDonorsExistOfSpecifiedType_ThrowsException()
         {
             const DonorType donorType = DonorType.Adult;
             const DonorType anotherDonorType = DonorType.Cord;
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenNoMetaDonorsExistAtSpecifiedRegistry_ThrowsException()
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedRegistry_ThrowsException()
         {
             const RegistryCode registry = RegistryCode.AN;
             const RegistryCode anotherRegistry = RegistryCode.DKMS;
@@ -78,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_ThrowsException()
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         /// meta-donors that also specifiy 'arbitrary' resolution
         /// </summary>
         [Test]
-        public void GetNextMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_AndCriteriaAllowsArbitraryResolution_ThrowsException()
+        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_AndCriteriaAllowsArbitraryResolution_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -129,7 +129,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenPGroupLevelMatchRequired_AndNoMetaDonorHasPGroupMatchPossible_ThrowsException()
+        public void GetMetaDonor_WhenPGroupLevelMatchRequired_AndNoMetaDonorHasPGroupMatchPossible_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -149,7 +149,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenGGroupLevelMatchRequired_AndNoMetaDonorHasGGroupMatchPossible_ThrowsException()
+        public void GetMetaDonor_WhenGGroupLevelMatchRequired_AndNoMetaDonorHasGGroupMatchPossible_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -169,7 +169,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenThreeFieldLevelMatchRequired_AndNoMetaDonorHasThreeFieldMatchPossible_ThrowsException()
+        public void GetMetaDonor_WhenThreeFieldLevelMatchRequired_AndNoMetaDonorHasThreeFieldMatchPossible_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -189,7 +189,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenTwoFieldLevelMatchRequired_AndNoMetaDonorHasThreeFieldMatchPossible_ThrowsException()
+        public void GetMetaDonor_WhenTwoFieldLevelMatchRequired_AndNoMetaDonorHasThreeFieldMatchPossible_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -209,7 +209,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenNoMetaDonorsContainDonorAtExpectedResolution_ThrowsException()
+        public void GetMetaDonor_WhenNoMetaDonorsContainDonorAtExpectedResolution_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
             {
@@ -231,7 +231,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_ReturnsMetaDonorAtMatchingRegistry()
+        public void GetMetaDonor_ReturnsMetaDonorAtMatchingRegistry()
         {
             const RegistryCode registryCode = RegistryCode.AN;
             const RegistryCode anotherRegistryCode = RegistryCode.DKMS;
@@ -265,7 +265,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_ReturnsMetaDonorOfMatchingType()
+        public void GetMetaDonor_ReturnsMetaDonorOfMatchingType()
         {
             const DonorType donorType = DonorType.Adult;
             const DonorType anotherDonorType = DonorType.Cord;
@@ -384,7 +384,61 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_WhenNoMoreMetaDonorsMatch_ThrowsException()
+        public void GetMetaDonor_WhenAlleleStringShouldHaveDifferentAlleleGroups_AndNoMetaDonorHasDifferentAlleleGroups_ThrowsException()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(true)
+            };
+
+            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenAlleleStringShouldHaveDifferentAlleleGroups_AndMetaDonorHasDifferentAlleleGroups_ReturnsMetaDonor()
+        {
+            const DonorType donorType = DonorType.Adult;
+
+            var metaDonors = new List<MetaDonor>
+            {
+                new MetaDonor
+                {
+                    GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringContainingDifferentGroupsAtAllLoci().Build(),
+                    DonorType = donorType,
+                }
+            };
+
+            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
+
+            var criteria = new MetaDonorSelectionCriteria
+            {
+                MatchingDonorType = donorType,
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
+                AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(true)
+            };
+
+            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
+
+            metaDonor.Should().NotBeNull();
+        }
+        
+        [Test]
+        public void GetMetaDonor_WhenNoMoreMetaDonorsMatch_ThrowsException()
         {
             const DonorType donorType = DonorType.Adult;
 
@@ -410,7 +464,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         }
 
         [Test]
-        public void GetNextMetaDonor_SkipsSpecifiedNumberOfMetaDonors()
+        public void GetMetaDonor_SkipsSpecifiedNumberOfMetaDonors()
         {
             const DonorType donorType = DonorType.Adult;
 

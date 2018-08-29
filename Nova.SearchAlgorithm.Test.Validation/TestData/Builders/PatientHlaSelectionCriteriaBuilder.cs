@@ -20,13 +20,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, TypePositions positions)
         {
-            criteria.HlaMatches.SetAtLocus(locus, positions, true);
+            criteria.HlaMatches.SetAtPosition(locus, positions, true);
             return this;
         }
         
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, TypePositions positions)
         {
-            criteria.HlaMatches.SetAtLocus(locus, positions, false);
+            criteria.HlaMatches.SetAtPosition(locus, positions, false);
             return this;
         }
         

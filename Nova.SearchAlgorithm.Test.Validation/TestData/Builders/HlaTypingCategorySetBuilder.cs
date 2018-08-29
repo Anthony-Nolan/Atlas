@@ -18,14 +18,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             foreach (var locus in LocusHelpers.AllLoci())
             {
-                resolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+                resolutions.SetAtLocus(locus, resolution);
             }
             return this;
         }
 
         public HlaTypingCategorySetBuilder WithTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            resolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+            resolutions.SetAtLocus(locus, resolution);
             return this;
         }
 
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
             {
-                resolutions.SetAtLocus(resolution.Key, TypePositions.Both, resolution.Value);
+                resolutions.SetAtLocus(resolution.Key, resolution.Value);
             }
 
             return this;

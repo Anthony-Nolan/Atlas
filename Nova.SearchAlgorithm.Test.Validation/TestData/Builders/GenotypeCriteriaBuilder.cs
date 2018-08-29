@@ -14,6 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             {
                 AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles),
                 IsHomozygous = new LocusInfo<bool>(false),
+                AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(false),
             };
         }
 
@@ -78,6 +79,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public GenotypeCriteriaBuilder HomozygousAtAllLoci()
         {
             genotypeCriteria.IsHomozygous = new LocusInfo<bool>(true);
+            return this;
+        }
+
+        public GenotypeCriteriaBuilder WithAlleleStringContainingDifferentGroupsAtAllLoci()
+        {
+            genotypeCriteria.AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(true);
             return this;
         }
         

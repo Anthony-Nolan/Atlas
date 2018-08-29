@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using NSubstitute.Routing.Handlers;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {
@@ -59,6 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private static bool FulfilsDonorHlaCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
             return FulfilsHomozygousCriteria(criteria, metaDonor)
+                   && FulfilsAlleleStringCriteria(criteria, metaDonor)
                    && FulfilsDatasetCriteria(criteria, metaDonor)
                    && FulfilsTypingResolutionCriteria(criteria, metaDonor);
         }
@@ -73,6 +72,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 }
 
                 // If we don't explicitly need a homozygous donor, we don't mind whether the donor is homozygous or not
+                return true;
+            });
+
+            return perLocusFulfilment.ToEnumerable().All(x => x);
+        }
+        
+        private static bool FulfilsAlleleStringCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            var perLocusFulfilment = criteria.AlleleStringContainsDifferentAntigenGroups.Map((locus, position, shouldHaveDifferentAlleleGroups) =>
+            {
+                if (shouldHaveDifferentAlleleGroups)
+                {
+                    return metaDonor.GenotypeCriteria.AlleleStringContainsDifferentAntigenGroups.DataAtPosition(locus, position);
+                }
+
+                // If we don't explicitly need a donor with different allele groups in it's allele string representation,
+                // we don't mind whether the donor fulfils this criteria or not
                 return true;
             });
 

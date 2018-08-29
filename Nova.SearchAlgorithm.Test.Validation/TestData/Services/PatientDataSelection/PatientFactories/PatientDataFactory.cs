@@ -38,6 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
         void SetNumberOfMetaDonorsToSkip(int numberToSkip);
+        void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
 
         // Meta-donor and database-donor criteria
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
@@ -126,10 +127,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             switch (numberOfMismatches)
             {
                 case 1:
-                    patientHlaSelectionCriteria.HlaMatches.SetAtLocus(locus, TypePositions.One, false);
+                    patientHlaSelectionCriteria.HlaMatches.SetAtPosition(locus, TypePositions.One, false);
                     break;
                 case 2:
-                    patientHlaSelectionCriteria.HlaMatches.SetAtLocus(locus, TypePositions.Both, false);
+                    patientHlaSelectionCriteria.HlaMatches.SetAtPosition(locus, TypePositions.Both, false);
                     break;
                 case 0:
                     break;
@@ -145,7 +146,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, resolution);
         }
 
         #endregion
@@ -171,6 +172,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetNumberOfMetaDonorsToSkip(int numberToSkip)
         {
             metaDonorSelectionCriteria.MetaDonorsToSkip = numberToSkip;
+        }
+
+        public void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus)
+        {
+            metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetAtLocus(locus, true);
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)
@@ -221,12 +227,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.TypingResolutionSets)
             {
-                resolutionSet.SetAtLocus(locus, TypePositions.Both, resolution);
+                resolutionSet.SetAtLocus(locus, resolution);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, TypePositions.Both, resolution);
+                databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
             }
         }
 

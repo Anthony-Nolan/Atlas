@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringContainingDifferentGroupsAtAllLoci().Build(),
                 HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
                 {
                     new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),

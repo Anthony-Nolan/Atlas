@@ -307,7 +307,7 @@ namespace Nova.SearchAlgorithm.Common.Models
             }
         }
 
-        public void SetAtLocus(Locus locus, TypePositions positions, T value)
+        public void SetAtPosition(Locus locus, TypePositions positions, T value)
         {
             switch (locus)
             {
@@ -386,6 +386,11 @@ namespace Nova.SearchAlgorithm.Common.Models
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
+        }
+
+        public void SetAtLocus(Locus locus, T value)
+        {
+            SetAtPosition(locus, TypePositions.Both, value);
         }
 
         #region Equality operators

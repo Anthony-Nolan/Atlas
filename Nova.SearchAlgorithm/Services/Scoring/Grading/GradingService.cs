@@ -76,8 +76,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                     patientLookupResultsAtLocus,
                     donorLookupResults.DataAtLocus(locus));
 
-                gradeResults.SetAtLocus(locus, TypePositions.One, locusGradeResults.Result1);
-                gradeResults.SetAtLocus(locus, TypePositions.Two, locusGradeResults.Result2);
+                gradeResults.SetAtPosition(locus, TypePositions.One, locusGradeResults.Result1);
+                gradeResults.SetAtPosition(locus, TypePositions.Two, locusGradeResults.Result2);
             });
 
             return gradeResults;

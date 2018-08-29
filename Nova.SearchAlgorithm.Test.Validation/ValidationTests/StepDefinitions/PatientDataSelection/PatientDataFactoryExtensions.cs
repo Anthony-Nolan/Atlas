@@ -226,5 +226,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             return singleDonorPatientDataSelector;
         }
+
+        public static IPatientDataFactory SetAlleleStringShouldContainDifferentGroupsAt(
+            this IPatientDataFactory patientDataFactory,
+            string locusString
+        )
+        {
+            switch (locusString)
+            {
+                case "each locus":
+                    foreach (var locus in LocusHelpers.AllLoci())
+                    {
+                        patientDataFactory.SetAlleleStringShouldContainDifferentGroupsAtLocus(locus);
+                    }
+
+                    break;
+                default:
+                    ScenarioContext.Current.Pending();
+                    break;
+            }
+
+            return patientDataFactory;
+        }
     }
 }
