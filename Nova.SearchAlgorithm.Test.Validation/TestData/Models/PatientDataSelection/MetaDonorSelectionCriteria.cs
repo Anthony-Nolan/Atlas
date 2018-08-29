@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
@@ -8,23 +9,50 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
     {
         public DonorType MatchingDonorType { get; set; }
         public RegistryCode MatchingRegistry { get; set; }
-        
+
         /// <summary>
         /// Determines how many fields the matching meta-donor's genotype should have at each position
         /// </summary>
-        public PhenotypeInfo<TgsHlaTypingCategory> MatchingTgsTypingCategories { get; set; } = new PhenotypeInfo<TgsHlaTypingCategory>();
-        
+        public PhenotypeInfo<TgsHlaTypingCategory> MatchingTgsTypingCategories { get; set; } =
+            new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.Arbitrary);
+
         /// <summary>
         /// The match level of the expected matching donor (if a match is expected)
         /// Necessary for meta-donor selection as we must ensure the genotype is valid for the specified match type
         /// e.g. for a p-group match, ensure that other alleles in the same p-group exist in our dataset
         /// </summary>
-        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; } 
-        
+        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
+
         /// <summary>
-        /// Determines to what resolution the expected matched donor is typed
+        /// Determines to what resolutions the expected matched donor is typed
         /// Necessary for meta-donor selection to ensure the selected meta-donor contains donors at the expected resolution
         /// </summary>
-        public PhenotypeInfo<HlaTypingResolution> TypingResolutions = new PhenotypeInfo<HlaTypingResolution>();
+        public List<PhenotypeInfo<HlaTypingResolution>> TypingResolutionSets { get; set; } = new List<PhenotypeInfo<HlaTypingResolution>>
+        {
+            new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs)
+        };
+
+        /// <summary>
+        /// Determines whether the expected meta-donor should be homozygous at each locus
+        /// </summary>
+        public LocusInfo<bool> IsHomozygous { get; set; } = new LocusInfo<bool>(false);
+
+        
+        /// <summary>
+        /// Determines whether the expected meta-donor should have allele strings guaranteed to contain different groups
+        /// </summary>
+        public PhenotypeInfo<bool> AlleleStringContainsDifferentAntigenGroups { get; set; } = new PhenotypeInfo<bool>(false);
+
+        /// <summary>
+        /// Determines whether the expected meta-donor should have alleles with a non null epxression suffix
+        /// </summary>
+        public PhenotypeInfo<bool> HasNonNullExpressionSuffix { get; set; } = new PhenotypeInfo<bool>(false);
+
+        /// <summary>
+        /// Determines how many matching meta-donors to ignore
+        /// To be used in the case when multiple patients are to be tested, each against a meta-donor with otherwise identical criteria
+        /// Note: This assumes the meta donor selection implementation will always return the meta-donors in the same order
+        /// </summary>
+        public int MetaDonorsToSkip { get; set; }
     }
 }

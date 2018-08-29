@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 
         public MatchResultBuilder WithHlaAtLocus(Locus locus, string hla)
         {
-            matchResult.Donor.HlaNames.SetAtLocus(locus, TypePositions.Both, hla);
+            matchResult.Donor.HlaNames.SetAtLocus(locus, hla);
             return this;
         }
 

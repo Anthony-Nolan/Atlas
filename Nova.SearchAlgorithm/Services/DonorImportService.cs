@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.DonorService.Client;
-using Nova.DonorService.Client.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
@@ -59,12 +57,11 @@ namespace Nova.SearchAlgorithm.Services
             stopwatch.Start();
             
             logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-            var page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
-
+            var page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
             
-            while (page.Donors.Any())
+            while (page.DonorsInfo.Any())
             {
-                await donorImportRepository.InsertBatchOfDonors(page.Donors.Select(d => d.ToRawImportDonor()));
+                await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToRawImportDonor()));
 
                 stopwatch.Stop();
                 logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
@@ -77,7 +74,7 @@ namespace Nova.SearchAlgorithm.Services
                 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
                 nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
-                page = await donorServiceClient.GetDonors(DonorPageSize, nextId);
+                page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
             }
             
             logger.SendTrace("Donor import is complete", LogLevel.Info);

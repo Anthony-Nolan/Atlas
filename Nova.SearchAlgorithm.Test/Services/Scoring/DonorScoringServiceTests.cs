@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             const Locus locus = Locus.B;
             const string patientHlaAtLocus = "patient-hla-locus-B";
             var patientHla = new PhenotypeInfo<string>();
-            patientHla.SetAtLocus(locus, TypePositions.Both, patientHlaAtLocus);
+            patientHla.SetAtLocus(locus, patientHlaAtLocus);
             var result1 = new MatchResultBuilder()
                 .WithHlaAtLocus(locus, null)
                 .Build();

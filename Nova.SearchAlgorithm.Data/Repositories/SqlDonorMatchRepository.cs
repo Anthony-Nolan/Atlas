@@ -103,7 +103,7 @@ WHERE DonorId = {donorId}
 ");
                     foreach (var pGroupGroup in pGroups.GroupBy(p => (TypePositions) p.TypePosition))
                     {
-                        result.SetAtLocus(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
+                        result.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
                     }
 
                     var dataAtPosition1 = result.DataAtPosition(locus, TypePositions.One);
@@ -114,7 +114,7 @@ WHERE DonorId = {donorId}
                         var sql = IsPositionTypedForDonor(donorId, locus, 1);
                         var isTyped = await conn.QuerySingleAsync<bool>(sql);
                         // In the case of a null allele, the position will be typed and explicitly have no p-groups. Untyped loci have unknown p-groups, and count as a match
-                        result.SetAtLocus(locus, TypePositions.One, isTyped ? new List<string>() : null);
+                        result.SetAtPosition(locus, TypePositions.One, isTyped ? new List<string>() : null);
                     }
                     
                     if (dataAtPosition2 == null)
@@ -122,7 +122,7 @@ WHERE DonorId = {donorId}
                         var sql = IsPositionTypedForDonor(donorId, locus, 2);
                         var isTyped = await conn.QuerySingleAsync<bool>(sql);
                         // In the case of a null allele, the position will be typed and explicitly have no p-groups. Untyped loci have unknown p-groups, and count as a match
-                        result.SetAtLocus(locus, TypePositions.Two, isTyped ? new List<string>() : null);
+                        result.SetAtPosition(locus, TypePositions.Two, isTyped ? new List<string>() : null);
                     }
                 }
             }

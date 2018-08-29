@@ -1,4 +1,6 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
@@ -11,87 +13,95 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             genotypeCriteria = new GenotypeCriteria
             {
-                PGroupMatchPossible = new PhenotypeInfo<bool>(),
-                GGroupMatchPossible = new PhenotypeInfo<bool>(),
-                TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
-                {
-                    A_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    A_2 = TgsHlaTypingCategory.FourFieldAllele,
-                    B_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    B_2 = TgsHlaTypingCategory.FourFieldAllele,
-                    C_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    C_2 = TgsHlaTypingCategory.FourFieldAllele,
-                    DPB1_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    DPB1_2 = TgsHlaTypingCategory.FourFieldAllele,
-                    DQB1_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    DQB1_2 = TgsHlaTypingCategory.FourFieldAllele,
-                    DRB1_1 = TgsHlaTypingCategory.FourFieldAllele,
-                    DRB1_2 = TgsHlaTypingCategory.FourFieldAllele,
-                }
+                AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles),
+                IsHomozygous = new LocusInfo<bool>(false),
+                AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(false),
             };
         }
 
         public GenotypeCriteriaBuilder WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory category)
         {
-            genotypeCriteria.TgsHlaCategories = new PhenotypeInfo<TgsHlaTypingCategory>
+            switch (category)
             {
-                A_1 = category,
-                A_2 = category,
-                B_1 = category,
-                B_2 = category,
-                C_1 = category,
-                C_2 = category,
-                // There is no test data for DPB1 that is less than four-field
-                DPB1_1 = TgsHlaTypingCategory.FourFieldAllele,
-                DPB1_2 = TgsHlaTypingCategory.FourFieldAllele,
-                DQB1_1 = category,
-                DQB1_2 = category,
-                DRB1_1 = category,
-                DRB1_2 = category
-            };
-
+                case TgsHlaTypingCategory.FourFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldTgsAlleles);
+                    break;
+                case TgsHlaTypingCategory.ThreeFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldTgsAlleles);
+                    break;
+                case TgsHlaTypingCategory.TwoFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TwoFieldTgsAlleles);
+                    break;
+                case TgsHlaTypingCategory.Arbitrary:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(category), category, null);
+            }
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder WithAlleleStringOfSubtypesPossibleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.AlleleStringOfSubtypesPossible);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.PGroupMatchPossible = new PhenotypeInfo<bool>
-            {
-                A_1 = true,
-                A_2 = true,
-                B_1 = true,
-                B_2 = true,
-                C_1 = true,
-                C_2 = true,
-                DPB1_1 = true,
-                DPB1_2 = true,
-                DQB1_1 = true,
-                DQB1_2 = true,
-                DRB1_1 = true,
-                DRB1_2 = true
-            };
-            
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.PGroupMatchPossible);
             return this;
         }
         
         public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
         {
-            genotypeCriteria.GGroupMatchPossible = new PhenotypeInfo<bool>
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.GGroupMatchPossible);
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder WithThreeFieldMatchPossibleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder WithTwoFieldMatchPossibleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder WithNullAlleleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.NullAlleles);
+            return this;
+        }
+
+        public GenotypeCriteriaBuilder WithNonNullExpressionSuffixAtLocus(Locus locus)
+        {
+            if (locus == Locus.Drb1)
             {
-                A_1 = true,
-                A_2 = true,
-                B_1 = true,
-                B_2 = true,
-                C_1 = true,
-                C_2 = true,
-                DPB1_1 = true,
-                DPB1_2 = true,
-                DQB1_1 = true,
-                DQB1_2 = true,
-                DRB1_1 = true,
-                DRB1_2 = true
-            };
-            
+                throw new InvalidTestDataException("No test data exists with a non-null expression suffix at DRB1");
+            }
+            genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.AllelesWithNonNullExpressionSuffix);
+            return this;
+        }
+
+        public GenotypeCriteriaBuilder HomozygousAtLocus(Locus locus)
+        {
+            genotypeCriteria.IsHomozygous.SetAtLocus(locus, true);
+            return this;
+        }
+        
+        public GenotypeCriteriaBuilder HomozygousAtAllLoci()
+        {
+            genotypeCriteria.IsHomozygous = new LocusInfo<bool>(true);
+            return this;
+        }
+
+        public GenotypeCriteriaBuilder WithAlleleStringContainingDifferentGroupsAtAllLoci()
+        {
+            genotypeCriteria.AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(true);
             return this;
         }
         
