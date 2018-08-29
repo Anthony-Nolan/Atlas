@@ -148,3 +148,21 @@ _e.g. Matches at a p-group, but not g-group, level._
 
 When adding new tests, relevant test data for that scenario may not yet exist. 
 If this is a case, a developer will need to add the appropriate test donors. 
+
+## Default Values
+
+To keep the test cases as short and readable as possible, certain values of the test data have some default values, that will be used if nothing else specified.
+
+These defaults include: 
+
+- Donor Type = `Adult`
+    - Both the expected matching donor, and search type defalt to `Adult`
+- Donor Registry = `Anthony Nolan`
+    - Expected matching donors will be in the AN registry by default, and the default search will run against this registry only
+- Typing Resolution = `TGS`
+    - For both donor and patient HLA values
+    - The number of fields of the TGS data will be arbitrarily chosen by default
+- Match Level = `Allele`
+    - By default, exact allele matches will be selected when a match is required.
+- Match Count = `10/10` (or equivalent best possible match)
+    - If a match is required, the expected donor will have no mismatches by default
