@@ -4,7 +4,7 @@ This README is intended to give an overview of the technical validation framewor
 
 _Note for developers: It should remain situated in the `Features` folder, such that all non technical aspects of the framework are co-located._
 
-_Any technical documentation additions shoudl not go in this file - please add them to the overall README, or the code itself_
+_Any technical documentation additions should not go in this file - please add them to the overall README, or the code itself_
 
 
 ##Feature Files
