@@ -45,12 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
             else
             {
-                var orientation = criteria.Orientations.DataAtLocus(locus);
-
-                if (orientation == MatchOrientation.Arbitrary)
-                {
-                    orientation = new[] {MatchOrientation.Cross, MatchOrientation.Direct}.GetRandomElement();
-                }
+                var orientation = GetDesiredMatchOrientation(locus, criteria);
 
                 switch (orientation)
                 {
@@ -74,6 +69,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var hla1 = allele1.GetHlaForCategory(typingResolution1);
             var hla2 = allele2.GetHlaForCategory(typingResolution2);
             return new Tuple<string, string>(hla1, hla2);
+        }
+
+        private static MatchOrientation GetDesiredMatchOrientation(Locus locus, PatientHlaSelectionCriteria criteria)
+        {
+            var orientation = criteria.Orientations.DataAtLocus(locus);
+
+            if (orientation == MatchOrientation.Arbitrary)
+            {
+                var matchLevels = criteria.MatchLevels.DataAtLocus(locus);
+                // G-group level test data is declared independently for each position, with direct matches in mind.
+                // If cross matches attempted, we may end up with a better match grade than desired
+                if (matchLevels.Item1 == MatchLevel.GGroup || matchLevels.Item2 == MatchLevel.GGroup)
+                {
+                    return MatchOrientation.Direct;
+                }
+                else
+                {
+                    return new[] {MatchOrientation.Cross, MatchOrientation.Direct}.GetRandomElement();
+                }
+            }
+
+            return orientation;
         }
 
         private static TgsAllele GetHomozygousAllele(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)
