@@ -65,10 +65,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("8/10 Search with a three mismatches across two loci")]
-        public virtual void _810SearchWithAThreeMismatchesAcrossTwoLoci()
+        [NUnit.Framework.DescriptionAttribute("8/10 Search with three mismatches across two loci")]
+        public virtual void _810SearchWithThreeMismatchesAcrossTwoLoci()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search with a three mismatches across two loci", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search with three mismatches across two loci", ((string[])(null)));
 #line 6
   this.ScenarioSetup(scenarioInfo);
 #line 7
@@ -96,10 +96,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("8/10 Search with a three mismatches across three loci")]
-        public virtual void _810SearchWithAThreeMismatchesAcrossThreeLoci()
+        [NUnit.Framework.DescriptionAttribute("8/10 Search with three mismatches across three loci")]
+        public virtual void _810SearchWithThreeMismatchesAcrossThreeLoci()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search with a three mismatches across three loci", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search with three mismatches across three loci", ((string[])(null)));
 #line 18
   this.ScenarioSetup(scenarioInfo);
 #line 19
@@ -129,10 +129,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("8/10 Search with a mismatches at all loci")]
-        public virtual void _810SearchWithAMismatchesAtAllLoci()
+        [NUnit.Framework.DescriptionAttribute("8/10 Search with mismatches at all loci")]
+        public virtual void _810SearchWithMismatchesAtAllLoci()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search with a mismatches at all loci", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/10 Search with mismatches at all loci", ((string[])(null)));
 #line 31
   this.ScenarioSetup(scenarioInfo);
 #line 32
