@@ -24,5 +24,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// Determines whether the patient should be homozygous at each locus
         /// </summary>
         public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>(false);
+        
+        /// <summary>
+        /// Determines which match grade will be used when selecting patient hla
+        /// If arbitrary, either Direct or Cross will be chosen and used consistently
+        /// </summary>
+        public LocusInfo<MatchOrientation> Orientations { get; set; } = new LocusInfo<MatchOrientation>(MatchOrientation.Arbitrary);
     }
 }
