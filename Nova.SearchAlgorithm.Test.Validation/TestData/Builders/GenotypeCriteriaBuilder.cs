@@ -104,7 +104,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             genotypeCriteria.AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(true);
             return this;
         }
-        
+
+        public GenotypeCriteriaBuilder WithCDnaMatchPossibleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.CDnaMatchPossible);
+            return this;
+        }
+
         public GenotypeCriteria Build()
         {
             return genotypeCriteria;

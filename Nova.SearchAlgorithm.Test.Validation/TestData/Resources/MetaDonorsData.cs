@@ -125,6 +125,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build(),
             },
 
+            // CDna matching
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithCDnaMatchPossibleAtAllLoci().Build(),
+            },
+
             // Three field matching (fourth field difference)
             new MetaDonor
             {

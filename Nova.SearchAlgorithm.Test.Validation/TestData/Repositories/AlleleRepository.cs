@@ -14,21 +14,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
         PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles();
-        
+
         /// <returns>
         /// All 2, 3, and 4 field alleles from the datasets generated from TGS-typed donors in Solar.
         /// Does not include manually curated test data used for e.g. p-group/g-group matching
         /// </returns>
         PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles();
-                
+
         PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
+        LocusInfo<List<AlleleTestData>> AllelesForCDnaMatching();
 
         PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible();
-        
+
         PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
         PhenotypeInfo<List<AlleleTestData>> NullAlleles();
         PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix();
@@ -67,6 +68,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching()
         {
             return Resources.PGroupMatchingAlleles.PatientAlleles;
+        }
+
+        public LocusInfo<List<AlleleTestData>> AllelesForCDnaMatching()
+        {
+            return Resources.CDnaMatchingAlleles.Alleles;
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible()
