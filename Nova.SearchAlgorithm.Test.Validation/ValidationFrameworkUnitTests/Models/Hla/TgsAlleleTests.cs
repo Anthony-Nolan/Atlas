@@ -2,6 +2,7 @@
 using System.Web.SessionState;
 using System.Web.UI;
 using FluentAssertions;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using NUnit.Framework;
 
@@ -308,7 +309,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
         }
         
         [Test]
-        public void FromTestDataAllele_WhenOtherAllelesProvidedDoNotShareAFirstFieldWithPrimaryAllele_DoesNotCreateAlleleStringOfSubtypes()
+        public void FromTestDataAllele_WhenOtherAllelesProvided_DoesNotCreateAlleleStringOfSubtypes()
+        {
+            const string alleleName = "01:01:01";
+            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: new List<AlleleTestData>());
+
+            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
+        }
+        
+        [Test]
+        public void FromTestDataAllele_WhenOtherAllelesProvidedDoNotShareAFirstFieldWithPrimaryAllele_ThrowsException()
         {
             const string alleleName = "01:01:01";
             const string otherAlleleName1 = "02:02:02";
@@ -321,18 +333,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles);
-
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
+            Assert.Throws<InvalidTestDataException>(() => TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles));
         }
         
         [Test]
-        public void FromTestDataAllele_WhenOtherAllelesProvidedDoNotShareAFirstField_OnlyCreatesAlleleStringWithAllelesMatchingFirstFieldOfPrimaryAllele()
+        public void FromTestDataAllele_WhenOtherAllelesProvidedDoNotShareAFirstField_ThrowsException()
         {
             const string alleleName = "01:01:01";
             const string otherAlleleName1 = "01:02:02";
             const string otherAlleleName2 = "02:03:03:03";
-            const string expectedAlleleString = "01:01/02";
             
             var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
             var otherAlleles = new List<AlleleTestData>
@@ -341,9 +350,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles);
-
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfSubtypes).Should().Be(expectedAlleleString);
+            Assert.Throws<InvalidTestDataException>(() => TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles));
         }
     }
 }
