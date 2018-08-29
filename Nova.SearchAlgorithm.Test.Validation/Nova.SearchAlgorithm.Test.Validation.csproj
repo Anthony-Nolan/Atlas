@@ -391,6 +391,36 @@
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
+    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FourMismatches.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MoreThanFourMismatches.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Search.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SingleMismatch.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ThreeMismatches.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TwoMismatches.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -485,6 +515,12 @@
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature" />
+    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature" />
+    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature" />
+    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature" />
+    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature" />
+    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature" />
     <Content Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\EightOutOfTenSearch\BetterMatches.feature" />
