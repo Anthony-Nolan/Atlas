@@ -120,7 +120,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             return FourFieldAlleles().Map((locus, position, alleles) =>
             {
                 var groupedAlleles = AlleleGroupsWithSharedFirstThreeFields(alleles);
-                return alleles.Where(a => groupedAlleles.Any(g => Equals(g.Key, AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName)))).ToList(); 
+                return groupedAlleles.SelectMany(g => g).ToList();
             });
         }
 
