@@ -195,11 +195,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             switch (expressionSuffix)
             {
-                case "any":
+                case "any (non-null)":
 
                     foreach (var locus in loci)
                     {
-                        patientDataFactory.SetHasExpressionSuffixAtLocus(locus);
+                        patientDataFactory.SetHasNonNullExpressionSuffixAtLocus(locus);
                     }
 
                     break;
