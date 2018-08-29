@@ -128,6 +128,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                         return matchLevelRequired == MatchLevel.FirstTwoFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
                     case Dataset.AlleleStringOfSubtypesPossible:
                         return criteria.TypingResolutionSets.Any(res => res.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
+                    case Dataset.NullAlleles:
+                        // TODO: NOVA-1188: Allow matching on meta donors with null alleles when null matching implemented
+                        return false;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
