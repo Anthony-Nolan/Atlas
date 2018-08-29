@@ -539,6 +539,7 @@
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\MultiplePatients.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\TypingResolutions.feature" />
+    <Content Include="ValidationTests\Features\ValidationREADME.md" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
