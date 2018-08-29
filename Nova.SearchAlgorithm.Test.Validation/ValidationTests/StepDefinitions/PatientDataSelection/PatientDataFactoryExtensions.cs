@@ -105,6 +105,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "g-group":
                     patientDataFactory.SetAsMatchLevelAtAllLoci(MatchLevel.GGroup);
                     break;
+                case "cdna":
+                case "cDna":
+                case "CDNA":
+                    patientDataFactory.SetAsMatchLevelAtAllLoci(MatchLevel.CDna);
+                    break;
                 case "three field (different fourth field)":
                     patientDataFactory.SetAsMatchLevelAtAllLoci(MatchLevel.FirstThreeFieldAllele);
                     break;

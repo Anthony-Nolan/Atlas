@@ -12,5 +12,6 @@
         PGroup,
         // Alleles in same g-group
         GGroup,
+        CDna,
     }
 }
