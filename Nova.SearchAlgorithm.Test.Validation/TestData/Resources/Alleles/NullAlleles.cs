@@ -9,6 +9,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     ///
     /// No NMDP codes are selected for the selected alleles, so this data can currently only be used for allele level resolution.
     /// When NMDP resolution tests are added, the dataset will need to be updated/replaced
+    /// TODO: NOVA-1681: Add NMDP Codes
     /// </summary>
     public static class NullAlleles
     {
