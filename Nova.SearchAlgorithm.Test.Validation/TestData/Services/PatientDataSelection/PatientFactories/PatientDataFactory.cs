@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
         void SetNumberOfMetaDonorsToSkip(int numberToSkip);
         void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
-        void SetHasExpressionSuffixAtLocus(Locus locus);
+        void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
 
         // Meta-donor and database-donor criteria
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
@@ -186,7 +186,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetAtLocus(locus, true);
         }
 
-        public void SetHasExpressionSuffixAtLocus(Locus locus)
+        public void SetHasNonNullExpressionSuffixAtLocus(Locus locus)
         {
             metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
         }
