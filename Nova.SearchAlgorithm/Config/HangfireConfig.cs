@@ -21,6 +21,7 @@ namespace Nova.SearchAlgorithm.Config
             BackgroundJob.Enqueue<IHlaMatchingLookupRepository>(hlaMatchingLookupRepository => hlaMatchingLookupRepository.LoadDataIntoMemory());
             BackgroundJob.Enqueue<IAlleleNamesLookupRepository>(alleleNamesLookupRepository => alleleNamesLookupRepository.LoadDataIntoMemory());
             BackgroundJob.Enqueue<IHlaScoringLookupRepository>(hlaScoringLookupRepository => hlaScoringLookupRepository.LoadDataIntoMemory());
+            BackgroundJob.Enqueue<IDpb1TceGroupsLookupRepository>(dpb1TceGroupsLookupRepository => dpb1TceGroupsLookupRepository.LoadDataIntoMemory());
         }
     }
 }

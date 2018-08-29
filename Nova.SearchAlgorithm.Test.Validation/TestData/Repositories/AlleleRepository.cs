@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Documents.Spatial;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
@@ -127,7 +126,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             return FourFieldAlleles().Map((locus, position, alleles) =>
             {
                 var groupedAlleles = AlleleGroupsWithSharedFirstThreeFields(alleles);
-                return alleles.Where(a => groupedAlleles.Any(g => Equals(g.Key, AlleleSplitter.FirstThreeFieldsAsString(a.AlleleName)))).ToList(); 
+                return groupedAlleles.SelectMany(g => g).ToList();
             });
         }
 

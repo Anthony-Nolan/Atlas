@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 {
     internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
     {
-        private const string FileName = WmdaFilePathPrefix + "hla_nom";
+        private const string FileName = WmdaFilePathPrefix + "hla_nom.txt";
         private const string RegexPattern = @"^(\w+\*{0,1})\;([\w:]+)\;\d+\;(\d*)\;([\w:]*)\;";
         private readonly TypingMethod typingMethod;
 

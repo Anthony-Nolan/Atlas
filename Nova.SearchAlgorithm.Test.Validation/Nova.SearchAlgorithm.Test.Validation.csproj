@@ -473,11 +473,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mismatches.feature</DependentUpon>
-    </Compile>
     <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -487,6 +482,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\Features\TenOutOfTenSearch\Mismatches.feature.cs">
       <AutoGen>True</AutoGen>
@@ -557,7 +557,7 @@
     </None>
     <None Include="ValidationTests\Features\Scoring.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>EightOutOfEightSearch.feature.cs</LastGenOutput>
+      <LastGenOutput>Scoring.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
