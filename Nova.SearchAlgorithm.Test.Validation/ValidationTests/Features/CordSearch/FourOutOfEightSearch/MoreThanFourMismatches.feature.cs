@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.CordSear
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Four out of eight Search - more than four mismatches", "  As a member of the search team\r\n  I want to be able to run a 4/8 cord search\r\n " +
-                    " And not see donors with more than four mismatches in the results", ProgrammingLanguage.CSharp, ((string[])(null)));
+                    " And not see results with more than four mismatches", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
