@@ -80,8 +80,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return new[] {MatchGrade.GGroup};
                 case "cDna":
                 case "CDna":
+                case "CDNA":
                 case "cDNA":
                     return new[] {MatchGrade.CDna};
+                case "gDna":
+                case "GDna":
+                case "gDNA":
+                case "GDNA":
+                    return new[] {MatchGrade.GDna};
                 case "protein":
                     return new[] {MatchGrade.Protein};
                 case "serology":

@@ -107,7 +107,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "cdna":
                 case "cDna":
                 case "CDNA":
+                case "cDNA":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.CDna);
+                    break;
+                case "gdna":
+                case "gDna":
+                case "gDNA":
+                case "GDNA":
+                    factory.SetAsMatchLevelAtAllLoci(MatchLevel.Allele);
                     break;
                 case "three field (different fourth field)":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.FirstThreeFieldAllele);
