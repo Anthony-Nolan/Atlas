@@ -1,7 +1,7 @@
 Feature: Four out of eight Search - more than four mismatches
   As a member of the search team
   I want to be able to run a 4/8 cord search
-  And not see donors with more than four mismatches in the results
+  And not see results with more than four mismatches
 
   Scenario: 4/8 Search with five mismatches 
     Given a patient and a donor
