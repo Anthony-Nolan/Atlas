@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Castle.Core.Internal;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using NUnit.Framework;
 
@@ -15,6 +16,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
     /// </summary>
     public class TgsAllele
     {
+        private const string AlleleNamePrefix = "*";
+        private const string AlleleSeparator = "/";
+
         /// <summary>
         /// Creates a new TGS allele from test data source
         /// </summary>
@@ -32,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             AlleleTestData allele,
             IEnumerable<AlleleTestData> otherAllelesInNameString = null,
             IEnumerable<AlleleTestData> otherAllelesInSubtypeString = null
-            )
+        )
         {
             otherAllelesInNameString = otherAllelesInNameString ?? new List<AlleleTestData>();
             otherAllelesInSubtypeString = otherAllelesInSubtypeString ?? new List<AlleleTestData>();
@@ -112,22 +116,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         {
             return otherAllelesInAlleleString.IsNullOrEmpty()
                 ? null
-                : $"{alleleTestData.AlleleName}/{string.Join("/", otherAllelesInAlleleString.Select(a => a.AlleleName.Replace("*", "")))}";
+                : $"{alleleTestData.AlleleName}{AlleleSeparator}{string.Join(AlleleSeparator, otherAllelesInAlleleString.Select(a => a.AlleleName.Replace(AlleleNamePrefix, "")))}";
         }
 
         private static string GenerateAlleleStringOfSubtypes(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
         {
-            var otherAllelesWithSameFirstField = otherAllelesInAlleleString
-                .Where(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(twoFieldAllele.AlleleName))
-                .ToList();
-
-            if (!otherAllelesWithSameFirstField.Any())
+            if (otherAllelesInAlleleString.IsNullOrEmpty())
             {
                 return null;
             }
+            
+            if (!otherAllelesInAlleleString.All(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(twoFieldAllele.AlleleName)))
+            {
+                throw new InvalidTestDataException("Cannot create allele string of subtypes from alleles that do not share a first field");
+            }
 
-            var otherSubFields = string.Join("/", otherAllelesWithSameFirstField.Select(x => AlleleSplitter.SecondField(x.AlleleName)));
-            return $"{twoFieldAllele.AlleleName}/{otherSubFields}";
+            var otherSubFields = string.Join(AlleleSeparator, otherAllelesInAlleleString.Select(x => AlleleSplitter.SecondField(x.AlleleName)));
+            return $"{twoFieldAllele.AlleleName}{AlleleSeparator}{otherSubFields}";
         }
 
         /// <summary>
