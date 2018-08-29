@@ -3,7 +3,7 @@ Service for AN's HSC Search Algorithm.
 
 ## Start Up Guide
 
-####Authentication
+#### Authentication
 
 The app is authenticated via an api key header present in requests.
 
@@ -13,7 +13,7 @@ The top level node of this project should be `<appSettings>`, and all keys speci
 `<add key="apiKey:example-key" value="true" />` is an example of how to add a local api key.
 
 
-####Storage
+#### Storage
 
 The service uses two storage methods for different data, SQL and Azure Cloud Tables.
 
@@ -32,17 +32,17 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
       migration runner has been known to struggle to cope with large migrations of existing data. 
      In such cases the data may need to be manually migrated
      
-####Dependencies
+#### Dependencies
 
 The service has external dependencies on two services, the `DonorService` and `HlaService`. By default the configuration points to the 
 deployed development instances of these service - locally the api keys for these services will need adding to the `Settings/SecureSettings` file.
 
 
-##Pre-Processing 
+## Pre-Processing 
 
 The service has three pre-processing stages that will need to be run locally before it will be posisble to run a search.
 
-###(1) Matching Dictionary
+### (1) Matching Dictionary
 
 The "Matching Dictionary" is a set of azure cloud storage tables containing nomenclature information about HLA.
 The pre-processing job fetches up to date information from WMDA, and populates these tables with the information necessary to run a search
@@ -53,7 +53,7 @@ The pre-processing job fetches up to date information from WMDA, and populates t
   - (a) The schema is changed
   - (b) The data from WMDA is updated (every 3 months)
 
-###(2) Donor Import
+### (2) Donor Import
 
 The donors against which we run searches are imported from Anthony Nolan's `Solar` Oracle database, via the `DonorService`.
 We only store as much information as is needed for a search - ID, Registry, Donor Type, and HLA information.
@@ -63,7 +63,7 @@ We only store as much information as is needed for a search - ID, Registry, Dono
 - The job should never need re-running in full. 
     - A smaller donor import of only new/changed donors should be configured to run overnight (at time of writing, 07/08/2018, this is yet to be implemented)
 
-###(3) Hla Refresh
+### (3) Hla Refresh
 
 For each donor, we expand all hla into corresponding p-groups, and store a relation in the appropriate `<MatchingHlaAt<Locus>` table
 
@@ -77,13 +77,13 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 
 The solution has three levels of testing: Unit, Integration, Validation
 
-###Unit Testing
+### Unit Testing
 
 Contained within the `Nova.SearchAlgorithm.Test` project.
 
 No external dependencies or storage, testing indiviual code units. 
 
-###Integration Testing
+### Integration Testing
 
 Contained within the `Nova.SearchAlgorithm.Test.Integration` project.
 
@@ -95,7 +95,7 @@ Contained within the `Nova.SearchAlgorithm.Test.Integration` project.
 
 These tests are especially useful for matching, where some logic is contained within the database layer and not covered in unit tests.
 
-###Validation Testing
+### Validation Testing
 
 Contained within the `Nova.SearchAlgorithm.Test.Validation` project.
 
