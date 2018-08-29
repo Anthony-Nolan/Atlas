@@ -207,6 +207,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataFactory);
         }
 
+        [Given(@"the match orientation is (.*) at (.*)")]
+        public void GivenTheMatchOrientationIs(string orientation, string locus)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMatchOrientationsAt(orientation, locus);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
+
         [Given(@"the donor is in registry: (.*)")]
         [Given(@"the matching donor is in registry: (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string registry)
