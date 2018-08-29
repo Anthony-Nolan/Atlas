@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
@@ -47,30 +49,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
         
-        public GenotypeCriteriaBuilder WithPGroupMatchPossibleAtAllLoci()
-        {
-            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.PGroupMatchPossible);
-            return this;
-        }
-        
-        public GenotypeCriteriaBuilder WithGGroupMatchPossibleAtAllLoci()
-        {
-            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.GGroupMatchPossible);
-            return this;
-        }
-        
-        public GenotypeCriteriaBuilder WithThreeFieldMatchPossibleAtAllLoci()
-        {
-            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
-            return this;
-        }
-        
-        public GenotypeCriteriaBuilder WithTwoFieldMatchPossibleAtAllLoci()
-        {
-            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
-            return this;
-        }
-        
         public GenotypeCriteriaBuilder WithNullAlleleAtAllLoci()
         {
             genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.NullAlleles);
@@ -105,10 +83,41 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
 
-        public GenotypeCriteriaBuilder WithCDnaMatchPossibleAtAllLoci()
+        public GenotypeCriteriaBuilder WithMatchLevelPossibleAtLocus(MatchLevel matchLevel, Locus locus)
         {
-            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.CDnaMatchPossible);
+            switch (matchLevel)
+            {
+                case MatchLevel.Allele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles);
+                    break;
+                case MatchLevel.FirstThreeFieldAllele:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
+                    break;
+                case MatchLevel.FirstTwoFieldAllele:           
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
+                    break;
+                case MatchLevel.PGroup:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.PGroupMatchPossible);
+                    break;
+                case MatchLevel.GGroup:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.GGroupMatchPossible);
+                    break;
+                case MatchLevel.Protein:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ProteinMatchPossible);
+                    break;
+                case MatchLevel.CDna:
+                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.CDnaMatchPossible);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(matchLevel), matchLevel, null);
+            }
+
             return this;
+        }
+
+        public GenotypeCriteriaBuilder WithMatchLevelPossibleAtAllLoci(MatchLevel matchLevel)
+        {
+            return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
         }
 
         public GenotypeCriteria Build()

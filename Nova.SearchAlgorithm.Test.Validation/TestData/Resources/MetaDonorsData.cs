@@ -114,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithPGroupMatchPossibleAtAllLoci().Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.PGroup).Build(),
             },
 
             // G Group matching
@@ -122,7 +122,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithGGroupMatchPossibleAtAllLoci().Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.GGroup).Build(),
             },
 
             // CDna matching
@@ -130,7 +130,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithCDnaMatchPossibleAtAllLoci().Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.CDna).Build(),
+            },
+
+            // Protein matching
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.Protein).Build(),
             },
 
             // Three field matching (fourth field difference)
@@ -139,7 +147,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithThreeFieldMatchPossibleAtAllLoci()
+                    .WithMatchLevelPossibleAtAllLoci(MatchLevel.FirstThreeFieldAllele)
                     .Build(),
             },
 
@@ -149,7 +157,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithTwoFieldMatchPossibleAtAllLoci()
+                    .WithMatchLevelPossibleAtAllLoci(MatchLevel.FirstTwoFieldAllele)
                     .Build(),
             },
 

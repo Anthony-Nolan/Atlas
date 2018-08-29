@@ -25,6 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching();
         LocusInfo<List<AlleleTestData>> AllelesForCDnaMatching();
+        PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching();
 
         PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
         PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
@@ -73,6 +74,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public LocusInfo<List<AlleleTestData>> AllelesForCDnaMatching()
         {
             return Resources.CDnaMatchingAlleles.Alleles;
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching()
+        {
+            // 2-field (different 3rd field) dataset curated such that all alleles are full sequences, so they are also valid for protein match grade tests
+            return AllelesWithTwoFieldMatchPossible();
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible()

@@ -219,6 +219,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     return AlleleRepository.AllelesWithNonNullExpressionSuffix().DataAtPosition(locus, position);
                 case Dataset.CDnaMatchPossible:
                     return AlleleRepository.AllelesForCDnaMatching().DataAtLocus(locus);
+                case Dataset.ProteinMatchPossible:
+                    return AlleleRepository.AllelesForProteinMatching().DataAtPosition(locus, position);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }
