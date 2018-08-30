@@ -15,6 +15,10 @@
         PGroupMatchPossible,
         // g-group (not allele) match possible
         GGroupMatchPossible,
+        // cdna (not gdna) match possible
+        CDnaMatchPossible,
+        // protein level match possible
+        ProteinMatchPossible,
         // Three field (but not fourth field) match possible. AKA fourth field difference
         FourFieldAllelesWithThreeFieldMatchPossible,
         // Two field (but not third field) match possible. AKA third field difference

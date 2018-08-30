@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             apiResult.IsSuccess.Should().BeTrue();
             var donorResult = apiResult.Results.SearchResults.Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
 
-            var matchGrade = ParseMatchGrade(grade);
+            var validMatchGrades = ParseExpectedMatchGrades(grade).ToList();
             var expectedLoci = ParseExpectedLoci(locus);
             var expectedPosition = ParseExpectedPositions(position);
 
@@ -30,22 +30,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 switch (expectedLocus)
                 {
                     case Locus.A:
-                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusA, matchGrade);
+                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusA, validMatchGrades);
                         break;
                     case Locus.B:
-                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusB, matchGrade);
+                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusB, validMatchGrades);
                         break;
                     case Locus.C:
-                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusC, matchGrade);
+                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusC, validMatchGrades);
                         break;
                     case Locus.Dpb1:
                         ScenarioContext.Current.Pending();
                         break;
                     case Locus.Dqb1:
-                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDqb1, matchGrade);
+                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDqb1, validMatchGrades);
                         break;
                     case Locus.Drb1:
-                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDrb1, matchGrade);
+                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDrb1, validMatchGrades);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -53,36 +53,48 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
-        private static void AssertMatchGrade(TypePositions? expectedPosition, LocusSearchResult locusSearchResult, MatchGrade? matchGrade)
+        private static void AssertMatchGrade(
+            TypePositions? expectedPosition,
+            LocusSearchResult locusSearchResult,
+            IReadOnlyCollection<MatchGrade> validMatchGrades
+        )
         {
             if (expectedPosition == TypePositions.One || expectedPosition == TypePositions.Both)
             {
-                locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(matchGrade);
+                validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade);
             }
 
             if (expectedPosition == TypePositions.Two || expectedPosition == TypePositions.Both)
             {
-                locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(matchGrade);
+                validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade);
             }
         }
 
-        private static MatchGrade? ParseMatchGrade(string grade)
+        private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
         {
-            switch (grade)
+            switch (grades)
             {
                 case "p-group":
-                    return MatchGrade.PGroup;
+                    return new[] {MatchGrade.PGroup};
                 case "g-group":
-                    return MatchGrade.GGroup;
+                    return new[] {MatchGrade.GGroup};
                 case "cDna":
                 case "CDna":
+                case "CDNA":
                 case "cDNA":
-                    return MatchGrade.CDna;
+                    return new[] {MatchGrade.CDna};
+                case "gDna":
+                case "GDna":
+                case "gDNA":
+                case "GDNA":
+                    return new[] {MatchGrade.GDna};
                 case "protein":
-                    return MatchGrade.Protein;
+                    return new[] {MatchGrade.Protein};
+                case "serology":
+                    return new[] {MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split};
                 default:
                     ScenarioContext.Current.Pending();
-                    return null;
+                    return new List<MatchGrade>();
             }
         }
 

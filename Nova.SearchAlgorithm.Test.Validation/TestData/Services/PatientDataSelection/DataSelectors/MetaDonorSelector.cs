@@ -143,6 +143,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                         return false;
                     case Dataset.AllelesWithNonNullExpressionSuffix:
                         return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
+                    case Dataset.CDnaMatchPossible:
+                        return matchLevelRequired == MatchLevel.CDna;
+                    case Dataset.ProteinMatchPossible:
+                        return matchLevelRequired == MatchLevel.Protein;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }

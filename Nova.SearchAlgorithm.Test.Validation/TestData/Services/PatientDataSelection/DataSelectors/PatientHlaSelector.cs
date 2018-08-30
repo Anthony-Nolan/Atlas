@@ -133,8 +133,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     return GetGGroupMatchLevelTgsAllele(locus, position, genotypeAllele);
                 case MatchLevel.FirstThreeFieldAllele:
                     return GetThreeFieldMatchingTgsAllele(locus, position, genotypeAllele, otherGenotypeAllele);
+                case MatchLevel.CDna:
                 case MatchLevel.Allele:
                     return genotypeAllele;
+                case MatchLevel.Protein:
                 case MatchLevel.FirstTwoFieldAllele:
                     return GetTwoFieldMatchingTgsAllele(locus, position, genotypeAllele, otherGenotypeAllele);
                 default:
