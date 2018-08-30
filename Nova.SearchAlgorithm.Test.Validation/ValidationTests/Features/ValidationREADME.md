@@ -156,7 +156,7 @@ To keep the test cases as short and readable as possible, certain values of the 
 These defaults include: 
 
 - Donor Type = `Adult`
-    - Both the expected matching donor, and search type defalt to `Adult`
+    - Both the expected matching donor, and search type default to `Adult`
 - Donor Registry = `Anthony Nolan`
     - Expected matching donors will be in the AN registry by default, and the default search will run against this registry only
 - Typing Resolution = `TGS`
