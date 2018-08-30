@@ -152,7 +152,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         private string AlleleStringOfNames { get; set; }
         private string AlleleStringOfSubtypes { get; set; }
 
-        public string GetHlaForCategory(HlaTypingResolution typingResolution)
+        public string GetHlaForResolution(HlaTypingResolution typingResolution)
         {
             switch (typingResolution)
             {

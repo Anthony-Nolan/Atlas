@@ -1,18 +1,14 @@
-﻿using FluentAssertions;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
-using Nova.Utils.Models;
 using TechTalk.SpecFlow;
-using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {

@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
@@ -57,19 +58,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
         /// <summary>
         /// Determines to what typing levels each hla will be set at in the database
         /// </summary>
-        public List<PhenotypeInfo<HlaTypingResolution>> HlaTypingResolutionSets { get; set; } = new List<PhenotypeInfo<HlaTypingResolution>>
+        public List<DatabaseDonorSpecification> DatabaseDonorSpecifications { get; set; } = new List<DatabaseDonorSpecification>
         {
-            new HlaTypingCategorySetBuilder().Build()
+            new DatabaseDonorSpecification
+            {
+                MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs),
+            }
         };
 
         public IEnumerable<Donor> GetDatabaseDonors()
         {
             if (databaseDonors == null)
             {
-                DatabaseDonors = HlaTypingResolutionSets.Select(typingCategorySet => new DonorBuilder(Genotype)
+                DatabaseDonors = DatabaseDonorSpecifications.Select(databaseDonorCriteria => new DonorBuilder(Genotype)
                         .AtRegistry(Registry)
                         .OfType(DonorType)
-                        .WithTypingCategories(typingCategorySet)
+                        .WithTypingCategories(databaseDonorCriteria.MatchingTypingResolutions)
                         .Build())
                     .ToList();
             }

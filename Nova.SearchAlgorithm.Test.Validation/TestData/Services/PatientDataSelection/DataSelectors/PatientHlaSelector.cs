@@ -66,8 +66,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var typingResolution1 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.One);
             var typingResolution2 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.Two);
 
-            var hla1 = allele1.GetHlaForCategory(typingResolution1);
-            var hla2 = allele2.GetHlaForCategory(typingResolution2);
+            var hla1 = allele1.GetHlaForResolution(typingResolution1);
+            var hla2 = allele2.GetHlaForResolution(typingResolution2);
             return new Tuple<string, string>(hla1, hla2);
         }
 

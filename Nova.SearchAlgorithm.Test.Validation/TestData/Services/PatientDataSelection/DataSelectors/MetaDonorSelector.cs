@@ -107,7 +107,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private static bool FulfilsTypingResolutionCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return criteria.TypingResolutionSets.All(resolutionSet => metaDonor.HlaTypingResolutionSets.Any(resolutionSet.Equals));
+            return criteria.DatabaseDonorDetailsSets
+                .All(donorDetails => metaDonor.DatabaseDonorSpecifications
+                    .Any(d => donorDetails.MatchingTypingResolutions == d.MatchingTypingResolutions));
         }
 
         private static bool FulfilsDatasetCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
@@ -137,7 +139,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                     case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
                         return matchLevelRequired == MatchLevel.FirstTwoFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
                     case Dataset.AlleleStringOfSubtypesPossible:
-                        return criteria.TypingResolutionSets.Any(res => res.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
+                        return criteria.DatabaseDonorDetailsSets
+                            .Any(d => d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
                     case Dataset.NullAlleles:
                         // TODO: NOVA-1188: Allow matching on meta donors with null alleles when null matching implemented
                         return false;

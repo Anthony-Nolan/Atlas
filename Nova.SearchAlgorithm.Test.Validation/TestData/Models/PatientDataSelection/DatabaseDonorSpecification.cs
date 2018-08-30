@@ -4,14 +4,20 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection
 {
     /// <summary>
-    /// A set of criteria used to select a database donor
+    /// A set of criteria used to generate/select a database donor
     /// (i.e. a 'Donor' in algorithm terminology. 'Database Donor' used to distinguish from 'Meta-Donor's)
     /// </summary>
-    public class DatabaseDonorSelectionCriteria
+    public class DatabaseDonorSpecification
     {
         /// <summary>
         /// Determines to what resolution the expected matched donor is typed
         /// </summary>
         public PhenotypeInfo<HlaTypingResolution> MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
+        
+        /// <summary>
+        /// Determines whether the hla at each position should match the meta-donor's genotype.
+        /// If false, the hla will be instead selected from a 'non-matching' hla allele source
+        /// </summary>
+        public PhenotypeInfo<bool> ShouldMatchGenotype { get; set; } = new PhenotypeInfo<bool>(true);
     }
 }

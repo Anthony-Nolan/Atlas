@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                     }
                 }
             };
-            var criteria = new DatabaseDonorSelectionCriteria();
+            var criteria = new DatabaseDonorSpecification();
 
             var id = donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria);
 
@@ -62,13 +62,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                         DonorId = donorIdMatching
                     }
                 },
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new PhenotypeInfo<HlaTypingResolution>(),
-                    matchingTypingResolutions
+                    new DatabaseDonorSpecification(),
+                    new DatabaseDonorSpecification
+                    {
+                        MatchingTypingResolutions = matchingTypingResolutions,
+                    }
                 }
             };
-            var criteria = new DatabaseDonorSelectionCriteria
+            var criteria = new DatabaseDonorSpecification
             {
                 MatchingTypingResolutions = matchingTypingResolutions
             };
@@ -92,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                     }
                 }
             };
-            var criteria = new DatabaseDonorSelectionCriteria
+            var criteria = new DatabaseDonorSpecification
             {
                 MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
                 {

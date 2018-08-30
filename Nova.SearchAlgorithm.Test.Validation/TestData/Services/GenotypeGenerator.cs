@@ -233,7 +233,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         /// As we're randomly selecting alleles for donors, there's a chance this will actually match
         public static readonly Genotype NonMatchingGenotype = new Genotype
         {
-            Hla = NonMatchingAlleles.Alleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
+            Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
         };
     }
 }
