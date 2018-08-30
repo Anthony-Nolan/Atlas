@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                    && FulfilsExpressionSuffixCriteria(criteria, metaDonor)
                    && FulfilsAlleleStringCriteria(criteria, metaDonor)
                    && FulfilsDatasetCriteria(criteria, metaDonor)
-                   && FulfilsTypingResolutionCriteria(criteria, metaDonor);
+                   && FulfilsDatabaseDonorCriteria(criteria, metaDonor);
         }
 
         private static bool FulfilsExpressionSuffixCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
@@ -105,11 +105,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return perLocusFulfilment.ToEnumerable().All(x => x);
         }
 
-        private static bool FulfilsTypingResolutionCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        private static bool FulfilsDatabaseDonorCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return criteria.DatabaseDonorDetailsSets
-                .All(donorDetails => metaDonor.DatabaseDonorSpecifications
-                    .Any(d => donorDetails.MatchingTypingResolutions == d.MatchingTypingResolutions));
+            return criteria.DatabaseDonorDetailsSets.All(donorDetails =>
+                metaDonor.DatabaseDonorSpecifications.Any(d => donorDetails == d)
+            );
         }
 
         private static bool FulfilsDatasetCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
