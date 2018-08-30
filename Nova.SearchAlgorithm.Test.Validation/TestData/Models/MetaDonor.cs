@@ -74,6 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
                         .AtRegistry(Registry)
                         .OfType(DonorType)
                         .WithTypingCategories(databaseDonorCriteria.MatchingTypingResolutions)
+                        .WithShouldMatchGenotype(databaseDonorCriteria.ShouldMatchGenotype)
                         .Build())
                     .ToList();
             }

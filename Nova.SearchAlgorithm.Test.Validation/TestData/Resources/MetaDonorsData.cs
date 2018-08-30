@@ -53,6 +53,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.B).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.Drb1).Build(),
                 }
             },
 

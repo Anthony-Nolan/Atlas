@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         private readonly Genotype genotype;
 
         private PhenotypeInfo<HlaTypingResolution> typingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
-        private readonly PhenotypeInfo<bool> shouldMatchGenotype = new PhenotypeInfo<bool>(true);
+        private PhenotypeInfo<bool> shouldMatchGenotype = new PhenotypeInfo<bool>(true);
         
         public DonorBuilder(Genotype genotype)
         {
@@ -37,6 +37,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public DonorBuilder WithTypingCategories(PhenotypeInfo<HlaTypingResolution> resolutions)
         {
             typingResolutions = resolutions;
+            return this;
+        }
+
+        public DonorBuilder WithShouldMatchGenotype(PhenotypeInfo<bool> shouldMatchGenotypeData)
+        {
+            shouldMatchGenotype = shouldMatchGenotypeData;
             return this;
         }
 
