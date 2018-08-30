@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
 {
     /// <summary>
     /// Contains step definitions for selecting patient data when a single patient corresponds to a multiple (database level) donors
