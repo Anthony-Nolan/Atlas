@@ -72,15 +72,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 5
   this.ScenarioSetup(scenarioInfo);
 #line 6
-    testRunner.Given("a patient has multiple matches at different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 8
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
-    testRunner.Then("the results should contain all specified donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("the 8/8 result should be returned above the 7", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

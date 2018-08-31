@@ -53,9 +53,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
-                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
-                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.B).Build(),
-                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.Drb1).Build(),
                 }
             },
 
@@ -237,6 +234,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .WithNonNullExpressionSuffixAtLocus(Locus.Dpb1)
                     .WithNonNullExpressionSuffixAtLocus(Locus.Dqb1)
                     .Build(),
+            },
+
+            // Cord with mismatches from the  genotypew ith an expression suffix
+            new MetaDonor
+            {
+                DonorType = DonorType.Cord,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                {
+                    new DatabaseDonorSelectionCriteriaBuilder().Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, TypePositions.One).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithNonGenotypeAlleleAtLocus(Locus.A)
+                        .WithNonGenotypeAlleleAtPosition(Locus.B, TypePositions.One)
+                        .Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithNonGenotypeAlleleAtLocus(Locus.A)
+                        .WithNonGenotypeAlleleAtLocus(Locus.B)
+                        .Build(),
+                }
             },
         };
 
