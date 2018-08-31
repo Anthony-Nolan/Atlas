@@ -74,12 +74,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 6
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
-    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 8
-    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 9
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 10
+#line 8
     testRunner.Then("the match confidence should be Definite at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -90,17 +86,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_DonorAlleleStringTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - donor allele string typed", ((string[])(null)));
-#line 12
+#line 10
   this.ScenarioSetup(scenarioInfo);
-#line 13
+#line 11
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 14
+#line 12
     testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 15
-    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 16
+#line 13
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 17
+#line 14
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -111,17 +105,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_PatientAlleleStringTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - patient allele string typed", ((string[])(null)));
-#line 19
+#line 16
   this.ScenarioSetup(scenarioInfo);
-#line 20
+#line 17
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 21
-    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 22
+#line 18
     testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 23
+#line 19
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 24
+#line 20
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -132,17 +124,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_DonorAndPatientAlleleStringTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - donor and patient allele string typed", ((string[])(null)));
-#line 26
+#line 22
   this.ScenarioSetup(scenarioInfo);
-#line 27
+#line 23
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 28
+#line 24
     testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 29
+#line 25
     testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 30
+#line 26
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 31
+#line 27
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -153,17 +145,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_DonorNMDPCodeTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - donor NMDP code typed", ((string[])(null)));
-#line 33
+#line 29
   this.ScenarioSetup(scenarioInfo);
-#line 34
+#line 30
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 35
+#line 31
     testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 36
-    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 37
+#line 32
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 38
+#line 33
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -174,17 +164,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_PatientNMDPCodeTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - patient NMDP code typed", ((string[])(null)));
-#line 40
+#line 35
   this.ScenarioSetup(scenarioInfo);
-#line 41
+#line 36
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 42
-    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 43
+#line 37
     testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 44
+#line 38
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 45
+#line 39
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -195,17 +183,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_DonorAndPatientNMDPCodeTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - donor and patient NMDP code typed", ((string[])(null)));
-#line 47
+#line 41
   this.ScenarioSetup(scenarioInfo);
-#line 48
+#line 42
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 49
+#line 43
     testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 50
+#line 44
     testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 51
+#line 45
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 52
+#line 46
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -216,17 +204,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_DonorNMDPCodeTypedAndPatientAlleleStringTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - donor NMDP code typed and patient allele string typed", ((string[])(null)));
-#line 54
+#line 48
   this.ScenarioSetup(scenarioInfo);
-#line 55
+#line 49
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 56
+#line 50
     testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 57
+#line 51
     testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 58
+#line 52
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 59
+#line 53
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -237,17 +225,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void ExactMatchAtAllLoci_DonorAlleleStringTypedAndPatientNMDPCodeTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Exact match at all loci - donor allele string typed and patient NMDP code typed", ((string[])(null)));
-#line 61
+#line 55
   this.ScenarioSetup(scenarioInfo);
-#line 62
+#line 56
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 63
+#line 57
     testRunner.And("the matching donor is allele string (single P group) at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 64
+#line 58
     testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 65
+#line 59
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 66
+#line 60
     testRunner.Then("the match confidence should be Exact at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -258,17 +246,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_PatientTGSTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - patient TGS typed", ((string[])(null)));
-#line 68
+#line 62
   this.ScenarioSetup(scenarioInfo);
-#line 69
+#line 63
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 70
+#line 64
     testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 71
-    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 72
+#line 65
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 73
+#line 66
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -279,17 +265,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_DonorTGSTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - donor TGS typed", ((string[])(null)));
-#line 75
+#line 68
   this.ScenarioSetup(scenarioInfo);
-#line 76
+#line 69
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 77
-    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 78
+#line 70
     testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 79
+#line 71
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 80
+#line 72
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -300,17 +284,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_PatientAlleleStringTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - patient allele string typed", ((string[])(null)));
-#line 82
+#line 74
   this.ScenarioSetup(scenarioInfo);
-#line 83
+#line 75
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 84
+#line 76
     testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 85
+#line 77
     testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 86
+#line 78
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 87
+#line 79
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -321,17 +305,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_DonorAlleleStringTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - donor allele string typed", ((string[])(null)));
-#line 89
+#line 81
   this.ScenarioSetup(scenarioInfo);
-#line 90
+#line 82
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 91
+#line 83
     testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 92
+#line 84
     testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 93
+#line 85
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 94
+#line 86
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -342,17 +326,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_PatientNMDPCodeTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - patient NMDP code typed", ((string[])(null)));
-#line 96
+#line 88
   this.ScenarioSetup(scenarioInfo);
-#line 97
+#line 89
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 98
+#line 90
     testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 99
+#line 91
     testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 100
+#line 92
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 101
+#line 93
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -363,17 +347,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_DonorNMDPCodeTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - donor NMDP code typed", ((string[])(null)));
-#line 103
+#line 95
   this.ScenarioSetup(scenarioInfo);
-#line 104
+#line 96
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 105
+#line 97
     testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 106
+#line 98
     testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 107
+#line 99
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 108
+#line 100
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -384,17 +368,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatchAtAllLoci_DonorAndPatientLowResolutionTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at all loci - donor and patient low resolution typed", ((string[])(null)));
-#line 110
+#line 102
   this.ScenarioSetup(scenarioInfo);
-#line 111
+#line 103
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 112
+#line 104
     testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 113
+#line 105
     testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 114
+#line 106
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 115
+#line 107
     testRunner.Then("the match confidence should be Potential at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -405,15 +389,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatch_DonorUntypedAtC()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match - donor untyped at C", ((string[])(null)));
-#line 117
+#line 109
   this.ScenarioSetup(scenarioInfo);
-#line 118
+#line 110
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 119
+#line 111
     testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 120
+#line 112
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 121
+#line 113
     testRunner.Then("the match confidence should be Potential at C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -424,15 +408,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatch_PatientUntypedAtC()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match - patient untyped at C", ((string[])(null)));
-#line 123
+#line 115
   this.ScenarioSetup(scenarioInfo);
-#line 124
+#line 116
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 125
+#line 117
     testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 126
+#line 118
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 127
+#line 119
     testRunner.Then("the match confidence should be Potential at C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -443,17 +427,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void PotentialMatch_DonorAndPatientUntypedAtC()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match - donor and patient untyped at C", ((string[])(null)));
-#line 129
+#line 121
   this.ScenarioSetup(scenarioInfo);
-#line 130
+#line 122
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 131
+#line 123
     testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 132
+#line 124
     testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 133
+#line 125
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 134
+#line 126
     testRunner.Then("the match confidence should be Potential at C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -464,15 +448,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         public virtual void MismatchConfidence_DoubleMismatchAtLocusA()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Mismatch confidence - double mismatch at locus A", ((string[])(null)));
-#line 136
+#line 128
   this.ScenarioSetup(scenarioInfo);
-#line 137
+#line 129
     testRunner.Given("a patient and a donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 138
+#line 130
     testRunner.And("the donor has a double mismatch at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 139
+#line 131
     testRunner.When("I run an 8/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 140
+#line 132
     testRunner.Then("the match confidence should be Mismatch at A at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
