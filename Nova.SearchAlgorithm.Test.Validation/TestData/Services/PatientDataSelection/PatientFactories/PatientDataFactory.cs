@@ -104,6 +104,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private readonly List<DatabaseDonorSpecification> databaseDonorSelectionCriteriaSet = new List<DatabaseDonorSpecification>
         {
+            // TODO: Do not always assume a fully TGS typed match?
             new DatabaseDonorSpecification
             {
                 MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(DefaultTypingResolution)

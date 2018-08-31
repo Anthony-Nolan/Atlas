@@ -18,20 +18,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "2.3.2.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [NUnit.Framework.TestFixtureAttribute()]
-    [NUnit.Framework.DescriptionAttribute("Scoring - Ranking")]
-    public partial class Scoring_RankingFeature
+    [NUnit.Framework.DescriptionAttribute("Scoring - Ranking (match counts)")]
+    public partial class Scoring_RankingMatchCountsFeature
     {
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
         
-#line 1 "MatchCounts.feature"
+#line 1 "MatchCountRanking.feature"
 #line hidden
         
         [NUnit.Framework.OneTimeSetUpAttribute()]
         public virtual void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Scoring - Ranking", "  As a member of the search team\r\n  I want search results to be returned in an ap" +
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Scoring - Ranking (match counts)", "  As a member of the search team\r\n  I want search results to be returned in an ap" +
                     "propriate order based on differing match counts", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }

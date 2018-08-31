@@ -159,10 +159,44 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return results.Find(r => r.TotalMatchCount == 5 && NumberOfLociSearched(r) == 4);
                 case "a 4/8 result":
                     return results.Find(r => r.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
+                case "a full gDNA match":
+                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.GDna));
+                case "a full cDNA match":
+                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.CDna));
+                case "a full protein match":
+                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.Protein));
+                case "a full g-group match":
+                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.GGroup));
+                case "a full p-group match":
+                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.PGroup));
+                case "a full serology match":
+                    return results.Find(r => IsMatchGradeAtAllPositions(r, new[]{MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split}));
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
             }
+        }
+
+        private static bool IsMatchGradeAtAllPositions(SearchResult result, MatchGrade matchGrade)
+        {
+            return IsMatchGradeAtAllPositions(result, new[] {matchGrade});
+        }
+
+        private static bool IsMatchGradeAtAllPositions(SearchResult result, IEnumerable<MatchGrade> matchGrades)
+        {
+            return new[]
+            {
+                result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade,
+                result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade,
+                result.SearchResultAtLocusB.ScoreDetailsAtPositionOne.MatchGrade,
+                result.SearchResultAtLocusB.ScoreDetailsAtPositionTwo.MatchGrade,
+                result.SearchResultAtLocusC.ScoreDetailsAtPositionOne.MatchGrade,
+                result.SearchResultAtLocusC.ScoreDetailsAtPositionTwo.MatchGrade,
+                result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchGrade,
+                result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionTwo.MatchGrade,
+                result.SearchResultAtLocusDrb1.ScoreDetailsAtPositionOne.MatchGrade,
+                result.SearchResultAtLocusDrb1.ScoreDetailsAtPositionTwo.MatchGrade,
+            }.All(matchGrades.Contains);
         }
 
         private static int NumberOfLociSearched(SearchResult searchResult)

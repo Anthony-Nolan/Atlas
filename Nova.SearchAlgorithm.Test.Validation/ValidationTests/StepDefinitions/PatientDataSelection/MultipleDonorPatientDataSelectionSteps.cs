@@ -78,6 +78,41 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(patientDataFactory);
         }
         
+        [Given(@"a patient has multiple matches with different match grades")]
+        public void GivenAPatientHasMultipleMatchesWithDifferentMatchGrades()
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+
+            patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+            
+            var expectedDatabaseDonors = new List<DatabaseDonorSpecification>
+            {
+                new DatabaseDonorSpecification
+                {
+                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.ThreeFieldTruncatedAllele),
+                },
+                new DatabaseDonorSpecification
+                {
+                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.TwoFieldTruncatedAllele),
+                },
+                new DatabaseDonorSpecification
+                {
+                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Serology),
+                },
+                new DatabaseDonorSpecification
+                {
+                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.NmdpCode),
+                },
+            };
+            
+            foreach (var databaseDonor in expectedDatabaseDonors)
+            {
+                patientDataFactory.AddExpectedDatabaseDonor(databaseDonor);
+            }
+
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
+        
         [Given(@"all matching donors are of type (.*)")]
         public void GivenAllMatchingDonorsAreOfDonorType(string donorType)
         {
