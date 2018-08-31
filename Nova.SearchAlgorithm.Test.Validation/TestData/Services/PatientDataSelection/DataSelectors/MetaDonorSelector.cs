@@ -118,7 +118,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return metaDonor.GenotypeCriteria.AlleleSources.Map((l, p, dataset) =>
             {
                 var tgsTypingRequired = criteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
-                var matchLevelRequired = criteria.MatchLevels.DataAtPosition(l, p);
+                // TODO: NOVA-1684: Ensure *all* requested match grades present
+                var matchLevelRequired = criteria.MatchLevels.Single().DataAtPosition(l, p);
 
                 switch (dataset)
                 {

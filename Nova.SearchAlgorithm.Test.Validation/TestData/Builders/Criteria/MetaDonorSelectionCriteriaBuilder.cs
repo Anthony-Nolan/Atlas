@@ -1,0 +1,94 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
+
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
+{
+    public class MetaDonorSelectionCriteriaBuilder
+    {
+        private MetaDonorSelectionCriteria criteria;
+
+        public MetaDonorSelectionCriteriaBuilder()
+        {
+            criteria = new MetaDonorSelectionCriteria
+            {
+                MatchLevels = new List<PhenotypeInfo<MatchLevel>> {new PhenotypeInfo<MatchLevel>()},
+                IsHomozygous = new LocusInfo<bool>(false),
+                AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(false),
+                HasNonNullExpressionSuffix = new PhenotypeInfo<bool>(false)
+            };
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithMatchingDonorType(DonorType donorType)
+        {
+            criteria.MatchingDonorType = donorType;
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithMatchingRegistry(RegistryCode registry)
+        {
+            criteria.MatchingRegistry = registry;
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithMatchLevelAtAllPositions(MatchLevel matchLevel)
+        {
+            criteria.MatchLevels = new List<PhenotypeInfo<MatchLevel>>
+            {
+                new PhenotypeInfo<MatchLevel>(matchLevel),
+            };
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithTgsTypingCategoryAtAllPositions(TgsHlaTypingCategory typingCategory)
+        {
+            criteria.MatchingTgsTypingCategories = new PhenotypeInfo<TgsHlaTypingCategory>(typingCategory);
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithDatabaseDonorSpecifications(IEnumerable<DatabaseDonorSpecification> databaseDonorSpecifications)
+        {
+            criteria.DatabaseDonorDetailsSets = databaseDonorSpecifications.ToList();
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder HomozygousAtAllLoci()
+        {
+            criteria.IsHomozygous = new LocusInfo<bool>(true);
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder ShouldContainDifferentAntigenGroupsAtAllPositions()
+        {
+            criteria.AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(true);
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithNumberOfDonorsToSkip(int numberOfDonors)
+        {
+            criteria.MetaDonorsToSkip = numberOfDonors;
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAt(Locus locus)
+        {
+            criteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()
+        {
+            return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithNonNullExpressionSuffixAt(locus));
+        }
+
+        public MetaDonorSelectionCriteria Build()
+        {
+            return criteria;
+        }
+    }
+}

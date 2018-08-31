@@ -343,11 +343,12 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\Builders\DatabaseDonorSelectionCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\DatabaseDonorSelectionCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\GenotypeCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\MetaDonorSelectionCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
-    <Compile Include="TestData\Builders\GenotypeCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\MetaDonorBuilder.cs" />
-    <Compile Include="TestData\Builders\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
     <Compile Include="TestData\Exceptions\HlaSelectionException.cs" />
     <Compile Include="TestData\Exceptions\InvalidTestDataException.cs" />

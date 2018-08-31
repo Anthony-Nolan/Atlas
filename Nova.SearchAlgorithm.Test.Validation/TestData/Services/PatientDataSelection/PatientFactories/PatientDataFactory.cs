@@ -45,13 +45,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
 
         // Meta-donor and database-donor criteria
-        
+
         /// <summary>
         /// Adds an expected database donor at the given resolution
         /// Will assume database donor matches genotype at all positions
         /// </summary>
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
-        
+
         /// <summary>
         /// Adds an expected database donor with the given criteria
         /// </summary>
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// Be careful that this is definitely what you want if matching multiple donors
         /// </summary>
         void UpdateMatchingDonorTypingResolutionsAtLocus(Locus locus, HlaTypingResolution resolution);
-        
+
         /// <summary>
         /// Will update all expected matching donor genotype match data at the specified locus/position.
         /// i.e. whether the database donor's hla at that position matches the Genotype of the meta-donor
@@ -95,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
         {
-            MatchLevels = new PhenotypeInfo<MatchLevel>(DefaultMatchLevel),
+            MatchLevels = new List<PhenotypeInfo<MatchLevel>> {new PhenotypeInfo<MatchLevel>(DefaultMatchLevel),},
             DatabaseDonorDetailsSets = new List<DatabaseDonorSpecification>
             {
                 new DatabaseDonorSpecification {MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(DefaultTypingResolution)}
@@ -366,7 +366,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         private void SetMatchLevels(PhenotypeInfo<MatchLevel> matchLevels)
         {
-            metaDonorSelectionCriteria.MatchLevels = matchLevels;
+            metaDonorSelectionCriteria.MatchLevels = new List<PhenotypeInfo<MatchLevel>> {matchLevels};
             patientHlaSelectionCriteria.MatchLevels = matchLevels;
         }
     }
