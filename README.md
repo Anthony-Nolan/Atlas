@@ -90,7 +90,7 @@ A search request requires the following criteria:
 - Search Hla Data
     - The HLA data to search against. (Usually the hla of a patient - but occasionally searches will be run against modified HLA)
     -  All known HLA should be provided, even if that locus is omitted from matching 
-        - This is because scoring will still be run againsty that locus, even if mismatches at it are not considered when matching donors
+        - This is because scoring will still be run against that locus, even if mismatches at it are not considered when matching donors
     
 The search process can be broken down as follows:
         
@@ -138,14 +138,9 @@ However, extensive research into the best approach has yet to be performed, so t
 
 #### (c) Further filtering
 
-Finally, additional filtering is performed on the donors by e.g. regsitry, donor type.
+Finally, additional filtering is performed on the donors by e.g. registry, donor type.
 
-This is performed last as fetching all donor information for matcehs should be avoided as long as possible, as until this point we have only had need of donors p-group information
-
-*Performance Optimisation* 
-
-It could be that performing the donor level filtering is quicker if done via a JOIN at the SQL matcing stage.
-This is something else that should be investigated, and updated if it leads to an improved search performance.
+This is performed last as fetching all donor information for matches should be avoided as long as possible, as until this point we have only had need of donors p-group information
 
 ### (2) Scoring
 
