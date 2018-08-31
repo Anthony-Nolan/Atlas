@@ -118,27 +118,36 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return metaDonor.GenotypeCriteria.AlleleSources.Map((l, p, dataset) =>
             {
                 var tgsTypingRequired = criteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
-                // TODO: NOVA-1684: Ensure *all* requested match grades present
-                var matchLevelRequired = criteria.MatchLevels.Single().DataAtPosition(l, p);
+                var matchLevelsRequired = criteria.MatchLevels.Select(ml => ml.DataAtPosition(l, p));
 
                 switch (dataset)
                 {
-                    case Dataset.FourFieldTgsAlleles:
-                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
-                    case Dataset.ThreeFieldTgsAlleles:
-                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
-                    case Dataset.TwoFieldTgsAlleles:
-                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.TwoFieldAllele;
-                    case Dataset.TgsAlleles:
-                        return matchLevelRequired == MatchLevel.Allele && tgsTypingRequired == TgsHlaTypingCategory.Arbitrary;
                     case Dataset.PGroupMatchPossible:
-                        return matchLevelRequired == MatchLevel.PGroup;
+                        return matchLevelsRequired.Contains(MatchLevel.PGroup);
                     case Dataset.GGroupMatchPossible:
-                        return matchLevelRequired == MatchLevel.GGroup;
+                        return matchLevelsRequired.Contains(MatchLevel.GGroup);
+                    case Dataset.CDnaMatchPossible:
+                        return matchLevelsRequired.Contains(MatchLevel.CDna);
+                    case Dataset.ProteinMatchPossible:
+                        return matchLevelsRequired.Contains(MatchLevel.Protein);
                     case Dataset.FourFieldAllelesWithThreeFieldMatchPossible:
-                        return matchLevelRequired == MatchLevel.FirstThreeFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
+                        return matchLevelsRequired.Contains(MatchLevel.FirstThreeFieldAllele) 
+                               && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
                     case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
-                        return matchLevelRequired == MatchLevel.FirstTwoFieldAllele && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
+                        return matchLevelsRequired.Contains(MatchLevel.FirstTwoFieldAllele)
+                               && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
+                    case Dataset.FourFieldTgsAlleles:
+                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                               && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
+                    case Dataset.ThreeFieldTgsAlleles:
+                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                               && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
+                    case Dataset.TwoFieldTgsAlleles:
+                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                               && tgsTypingRequired == TgsHlaTypingCategory.TwoFieldAllele;
+                    case Dataset.TgsAlleles:
+                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                               && tgsTypingRequired == TgsHlaTypingCategory.Arbitrary;
                     case Dataset.AlleleStringOfSubtypesPossible:
                         return criteria.DatabaseDonorDetailsSets
                             .Any(d => d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
@@ -147,10 +156,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                         return false;
                     case Dataset.AllelesWithNonNullExpressionSuffix:
                         return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
-                    case Dataset.CDnaMatchPossible:
-                        return matchLevelRequired == MatchLevel.CDna;
-                    case Dataset.ProteinMatchPossible:
-                        return matchLevelRequired == MatchLevel.Protein;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
