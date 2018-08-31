@@ -74,9 +74,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 6
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
- testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 8
- testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
@@ -95,9 +95,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 13
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 14
- testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 15
- testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 16
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 17
@@ -116,9 +116,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 20
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 21
- testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 22
- testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 23
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 24
@@ -137,9 +137,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 27
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 28
- testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 29
- testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 30
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 31
@@ -158,9 +158,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 34
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 35
- testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 36
- testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 37
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 38
@@ -179,9 +179,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 41
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 42
- testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 43
- testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 44
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 45
@@ -200,9 +200,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 48
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 49
- testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 50
- testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 51
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 52
@@ -221,9 +221,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 55
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 56
- testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 57
- testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 58
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 59
@@ -242,9 +242,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 62
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 63
- testRunner.And("the matching donor is allele string (single P group) at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is allele string (single P group) at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 64
- testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 65
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 66
@@ -263,9 +263,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 69
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 70
- testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 71
- testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is TGS typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 72
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 73
@@ -284,9 +284,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 76
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 77
- testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 78
- testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 79
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 80
@@ -305,9 +305,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 83
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 84
- testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 85
- testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is allele string (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 86
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 87
@@ -326,9 +326,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 90
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 91
- testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is allele string (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 92
- testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 93
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 94
@@ -347,9 +347,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 97
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 98
- testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 99
- testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is NMDP code (single P group) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 100
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 101
@@ -368,9 +368,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 104
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 105
- testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is NMDP code (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 106
- testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 107
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 108
@@ -389,9 +389,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 111
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 112
- testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is low resolution (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 113
- testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is low resolution (multiple P groups) typed at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 114
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 115
@@ -429,7 +429,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 124
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 125
- testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 126
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 127
@@ -450,7 +450,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 131
     testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 132
- testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 133
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 134

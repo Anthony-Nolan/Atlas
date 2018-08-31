@@ -147,29 +147,32 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var expectedLoci = new List<Locus>();
 
-            switch (locus)
+            switch (locus.ToUpper())
             {
-                case "all loci":
+                case "ALL LOCI":
                     expectedLoci.Add(Locus.A);
                     expectedLoci.Add(Locus.B);
                     expectedLoci.Add(Locus.C);
                     expectedLoci.Add(Locus.Dqb1);
                     expectedLoci.Add(Locus.Drb1);
                     break;
+                case "LOCUS A":
                 case "A":
                     expectedLoci.Add(Locus.A);
                     break;
+                case "LOCUS B":
                 case "B":
                     expectedLoci.Add(Locus.B);
                     break;
+                case "LOCUS C":
                 case "C":
                     expectedLoci.Add(Locus.C);
                     break;
-                case "Dqb1":
+                case "LOCUS DQB1":
                 case "DQB1":
                     expectedLoci.Add(Locus.Dqb1);
                     break;
-                case "Drb1":
+                case "LOCUS DRB1":
                 case "DRB1":
                     expectedLoci.Add(Locus.Drb1);
                     break;
