@@ -471,10 +471,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatchGrades.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\Scoring\Ranking.feature.cs">
+    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchCounts.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Ranking.feature</DependentUpon>
+      <DependentUpon>MatchCounts.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
@@ -568,9 +568,9 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Ranking.feature.cs</LastGenOutput>
     </None>
-    <None Include="ValidationTests\Features\Scoring\Ranking.feature">
+    <None Include="ValidationTests\Features\Scoring\Ranking\MatchCounts.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Ranking.feature.cs</LastGenOutput>
+      <LastGenOutput>MatchCounts.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

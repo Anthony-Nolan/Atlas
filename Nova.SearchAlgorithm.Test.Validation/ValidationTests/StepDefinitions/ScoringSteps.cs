@@ -153,6 +153,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return results.Find(r => r.TotalMatchCount == 8 && NumberOfLociSearched(r) == 4);
                 case "a 7/8 result":
                     return results.Find(r => r.TotalMatchCount == 7 && NumberOfLociSearched(r) == 4);
+                case "a 6/8 result":
+                    return results.Find(r => r.TotalMatchCount == 6 && NumberOfLociSearched(r) == 4);
+                case "a 5/8 result":
+                    return results.Find(r => r.TotalMatchCount == 5 && NumberOfLociSearched(r) == 4);
+                case "a 4/8 result":
+                    return results.Find(r => r.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
