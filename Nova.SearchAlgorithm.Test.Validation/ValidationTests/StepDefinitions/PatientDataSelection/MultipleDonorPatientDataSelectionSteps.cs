@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
