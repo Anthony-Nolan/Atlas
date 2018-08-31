@@ -88,25 +88,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             switch (matchLevel)
             {
                 case MatchLevel.Allele:
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.TgsAlleles);
                     break;
                 case MatchLevel.FirstThreeFieldAllele:
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
                     break;
                 case MatchLevel.FirstTwoFieldAllele:           
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
                     break;
                 case MatchLevel.PGroup:
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.PGroupMatchPossible);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.PGroupMatchPossible);
                     break;
                 case MatchLevel.GGroup:
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.GGroupMatchPossible);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.GGroupMatchPossible);
                     break;
                 case MatchLevel.Protein:
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.ProteinMatchPossible);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.ProteinMatchPossible);
                     break;
                 case MatchLevel.CDna:
-                    genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.CDnaMatchPossible);
+                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.CDnaMatchPossible);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(matchLevel), matchLevel, null);

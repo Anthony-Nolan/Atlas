@@ -23,16 +23,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             if (criteria == null)
             {
-                return RandomGenotype(DefaultCriteria);
+                return CreateGenotype(DefaultCriteria);
             }
-
-            return RandomGenotype(criteria);
+            
+            return CreateGenotype(criteria);
         }
 
         /// <summary>
         /// Creates a random full Genotype from the available TGS allele names
         /// </summary>
-        private static Genotype RandomGenotype(GenotypeCriteria criteria)
+        private static Genotype CreateGenotype(GenotypeCriteria criteria)
         {
             var hla = new PhenotypeInfo<TgsAllele>();
             foreach (var locus in LocusHelpers.AllLoci())

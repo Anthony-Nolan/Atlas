@@ -78,11 +78,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution resolution);
 
         // Selected Data
-        PhenotypeInfo<string> GetPatientHla();
         IEnumerable<int> GetExpectedMatchingDonorIds();
     }
 
-    public class PatientDataFactory : IPatientDataFactory
+    public class PatientDataFactory : IPatientDataFactory, IPatientDataProvider
     {
         private readonly IMetaDonorSelector metaDonorSelector;
         private readonly IDatabaseDonorSelector databaseDonorSelector;

@@ -34,7 +34,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public static void BeforeScenario()
         {
             ScenarioContext.Current.Set(new SearchRequestBuilder());
-            ScenarioContext.Current.Set(container.Resolve<IPatientDataFactory>());
+            var patientDataFactory = container.Resolve<IPatientDataFactory>();
+            ScenarioContext.Current.Set(patientDataFactory);
+            ScenarioContext.Current.Set((IPatientDataProvider) patientDataFactory);
             ScenarioContext.Current.Set(container.Resolve<IMultiplePatientDataFactory>());
         }
         

@@ -386,6 +386,7 @@
     <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
+    <Compile Include="TestData\Services\IPatientDataProvider.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\DatabaseDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\MetaDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
