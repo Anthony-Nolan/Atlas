@@ -236,7 +236,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .Build(),
             },
 
-            // Cord with mismatches from the  genotype with an expression suffix
+            // Cord with mismatches from the genotype with an expression suffix
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
