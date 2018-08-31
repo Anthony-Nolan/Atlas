@@ -1,5 +1,4 @@
-﻿using System;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
+﻿using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
@@ -7,16 +6,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 {
     public interface IDatabaseDonorSelector
     {
-        int GetExpectedMatchingDonorId(MetaDonor metaDonor, DatabaseDonorSelectionCriteria criteria);
+        int GetExpectedMatchingDonorId(MetaDonor metaDonor, DatabaseDonorSpecification criteria);
     }
     
     public class DatabaseDonorSelector: IDatabaseDonorSelector
     {
-        public int GetExpectedMatchingDonorId(MetaDonor metaDonor, DatabaseDonorSelectionCriteria criteria)
+        public int GetExpectedMatchingDonorId(MetaDonor metaDonor, DatabaseDonorSpecification criteria)
         {
-            for (var i = 0; i < metaDonor.HlaTypingResolutionSets.Count; i++)
+            for (var i = 0; i < metaDonor.DatabaseDonorSpecifications.Count; i++)
             {
-                if (metaDonor.HlaTypingResolutionSets[i].Equals(criteria.MatchingTypingResolutions))
+                if (metaDonor.DatabaseDonorSpecifications[i].MatchingTypingResolutions == criteria.MatchingTypingResolutions)
                 {
                     return metaDonor.DatabaseDonors[i].DonorId;
                 }

@@ -24,13 +24,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
 
         /// <summary>
-        /// Determines to what resolutions the expected matched donor is typed
+        /// Determines to what resolutions / match levels the expected matched donor is typed
         /// Necessary for meta-donor selection to ensure the selected meta-donor contains donors at the expected resolution
         /// </summary>
-        public List<PhenotypeInfo<HlaTypingResolution>> TypingResolutionSets { get; set; } = new List<PhenotypeInfo<HlaTypingResolution>>
-        {
-            new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs)
-        };
+        public List<DatabaseDonorSpecification> DatabaseDonorDetailsSets { get; set; } = new List<DatabaseDonorSpecification>();
 
         /// <summary>
         /// Determines whether the expected meta-donor should be homozygous at each locus

@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
 {
@@ -42,16 +43,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringContainingDifferentGroupsAtAllLoci().Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
-                    new HlaTypingCategorySetBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
                 }
             },
 
@@ -63,17 +64,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele)
                     .Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Arbitrary).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
-                    new HlaTypingCategorySetBuilder().WithDifferentlyTypedLoci().Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Arbitrary).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithDifferentlyTypedLoci().Build(),
                 }
             },
 
@@ -103,9 +104,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfSubtypes).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfSubtypes).Build(),
                 }
             },
 
@@ -167,9 +168,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().HomozygousAtLocus(Locus.A).Build(),
-                HlaTypingResolutionSets = new List<PhenotypeInfo<HlaTypingResolution>>
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new HlaTypingCategorySetBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build()
                 }
             },
 
@@ -233,6 +234,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     .WithNonNullExpressionSuffixAtLocus(Locus.Dpb1)
                     .WithNonNullExpressionSuffixAtLocus(Locus.Dqb1)
                     .Build(),
+            },
+
+            // Cord with mismatches from the genotype with an expression suffix
+            new MetaDonor
+            {
+                DonorType = DonorType.Cord,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                {
+                    new DatabaseDonorSelectionCriteriaBuilder().Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, TypePositions.One).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithNonGenotypeAlleleAtLocus(Locus.A)
+                        .WithNonGenotypeAlleleAtPosition(Locus.B, TypePositions.One)
+                        .Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithNonGenotypeAlleleAtLocus(Locus.A)
+                        .WithNonGenotypeAlleleAtLocus(Locus.B)
+                        .Build(),
+                }
             },
         };
 

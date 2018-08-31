@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.Tgs).Should().Be(fourFieldName);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Tgs).Should().Be(fourFieldName);
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().Be(expectedThreeFieldTruncation);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().Be(expectedThreeFieldTruncation);
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Should().Be(expectedTwoFieldTruncation);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Should().Be(expectedTwoFieldTruncation);
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.Tgs).Should().Be(threeFieldName);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Tgs).Should().Be(threeFieldName);
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Should().Be(expectedTwoFieldTruncation);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Should().Be(expectedTwoFieldTruncation);
         }
 
         [Test]
@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().BeNull();
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().BeNull();
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.Tgs).Should().Be(twoFieldName);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Tgs).Should().Be(twoFieldName);
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().BeNull();
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().BeNull();
         }
 
         [Test]
@@ -141,7 +141,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.TwoFieldTruncatedAllele).Should().BeNull();
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Should().BeNull();
         }
 
         [Test]
@@ -156,7 +156,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.NmdpCode).Should().Be(nmdpCode);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.NmdpCode).Should().Be(nmdpCode);
         }
 
         [Test]
@@ -171,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.Serology).Should().Be(serology);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Serology).Should().Be(serology);
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(testData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.XxCode).Should().Be(expectedXxCode);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.XxCode).Should().Be(expectedXxCode);
         }
 
         [Test]
@@ -203,7 +203,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
         
         [Test]
@@ -223,7 +223,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
              
         [Test]
@@ -243,7 +243,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
         
         [Test]
@@ -263,7 +263,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
         
         [Test]
@@ -283,7 +283,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfSubtypes).Should().Be(expectedAlleleString);
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().Be(expectedAlleleString);
         }
         
         [Test]
@@ -294,7 +294,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfNames).Should().BeNull();
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().BeNull();
         }
         
         [Test]
@@ -305,7 +305,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData);
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
         }
         
         [Test]
@@ -316,7 +316,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: new List<AlleleTestData>());
 
-            tgsAllele.GetHlaForCategory(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
         }
         
         [Test]

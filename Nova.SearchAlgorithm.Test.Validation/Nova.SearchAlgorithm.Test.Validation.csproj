@@ -343,9 +343,9 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\Builders\DatabaseDonorSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
     <Compile Include="TestData\Builders\GenotypeCriteriaBuilder.cs" />
-    <Compile Include="TestData\Builders\HlaTypingCategorySetBuilder.cs" />
     <Compile Include="TestData\Builders\MetaDonorBuilder.cs" />
     <Compile Include="TestData\Builders\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
@@ -364,7 +364,7 @@
     <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
     <Compile Include="TestData\Models\MatchLevel.cs" />
     <Compile Include="TestData\Models\MetaDonor.cs" />
-    <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSelectionCriteria.cs" />
+    <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSpecification.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientDataSelection\PatientHlaSelectionCriteria.cs" />
     <Compile Include="TestData\Models\PatientApiResult.cs" />
@@ -471,10 +471,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatchGrades.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\Scoring\Ranking.feature.cs">
+    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchCounts.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Ranking.feature</DependentUpon>
+      <DependentUpon>MatchCounts.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
@@ -568,9 +568,9 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Ranking.feature.cs</LastGenOutput>
     </None>
-    <None Include="ValidationTests\Features\Scoring\Ranking.feature">
+    <None Include="ValidationTests\Features\Scoring\Ranking\MatchCounts.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Ranking.feature.cs</LastGenOutput>
+      <LastGenOutput>MatchCounts.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

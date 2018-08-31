@@ -53,6 +53,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
+        [Then("(.*) should be returned above (.*)")]
+        public void ThenXShouldBeReturnedAboveY(string higherResultType, string lowerResultType)
+        {
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
+
+            var results = apiResult.Results.SearchResults.ToList();
+
+            var higherResult = ParseResultType(results, higherResultType);
+            var lowerResult = ParseResultType(results, lowerResultType);
+
+            results.Should().ContainInOrder(new List<SearchResult> {higherResult, lowerResult});
+        }
+
         private static void AssertMatchGrade(
             TypePositions? expectedPosition,
             LocusSearchResult locusSearchResult,
@@ -129,6 +143,39 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     ScenarioContext.Current.Pending();
                     return null;
             }
+        }
+
+        private static SearchResult ParseResultType(List<SearchResult> results, string resultType)
+        {
+            switch (resultType)
+            {
+                case "an 8/8 result":
+                    return results.Find(r => r.TotalMatchCount == 8 && NumberOfLociSearched(r) == 4);
+                case "a 7/8 result":
+                    return results.Find(r => r.TotalMatchCount == 7 && NumberOfLociSearched(r) == 4);
+                case "a 6/8 result":
+                    return results.Find(r => r.TotalMatchCount == 6 && NumberOfLociSearched(r) == 4);
+                case "a 5/8 result":
+                    return results.Find(r => r.TotalMatchCount == 5 && NumberOfLociSearched(r) == 4);
+                case "a 4/8 result":
+                    return results.Find(r => r.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
+                default:
+                    ScenarioContext.Current.Pending();
+                    return null;
+            }
+        }
+
+        private static int NumberOfLociSearched(SearchResult searchResult)
+        {
+            var loci = new[]
+            {
+                searchResult.SearchResultAtLocusA.MatchCount,
+                searchResult.SearchResultAtLocusB.MatchCount,
+                searchResult.SearchResultAtLocusC.MatchCount,
+                searchResult.SearchResultAtLocusDqb1.MatchCount,
+                searchResult.SearchResultAtLocusDrb1.MatchCount,
+            };
+            return loci.Count(x => x != null);
         }
     }
 }

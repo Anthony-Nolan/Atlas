@@ -1,7 +1,9 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
@@ -11,6 +13,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         private readonly Donor donor;
         private readonly Genotype genotype;
 
+        private PhenotypeInfo<HlaTypingResolution> typingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
+        private PhenotypeInfo<bool> shouldMatchGenotype = new PhenotypeInfo<bool>(true);
+        
         public DonorBuilder(Genotype genotype)
         {
             this.genotype = genotype;
@@ -29,26 +34,52 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
 
-        public DonorBuilder WithTypingCategories(PhenotypeInfo<HlaTypingResolution> typingCategorySet)
+        public DonorBuilder WithTypingCategories(PhenotypeInfo<HlaTypingResolution> resolutions)
         {
-            donor.A_1 = genotype.Hla.A_1.GetHlaForCategory(typingCategorySet.A_1);
-            donor.A_2 = genotype.Hla.A_2.GetHlaForCategory(typingCategorySet.A_2);
-            donor.B_1 = genotype.Hla.B_1.GetHlaForCategory(typingCategorySet.B_1);
-            donor.B_2 = genotype.Hla.B_2.GetHlaForCategory(typingCategorySet.B_2);
-            donor.DRB1_1 = genotype.Hla.DRB1_1.GetHlaForCategory(typingCategorySet.DRB1_1);
-            donor.DRB1_2 = genotype.Hla.DRB1_2.GetHlaForCategory(typingCategorySet.DRB1_2);
-            donor.C_1 = genotype.Hla.C_1.GetHlaForCategory(typingCategorySet.C_1);
-            donor.C_2 = genotype.Hla.C_2.GetHlaForCategory(typingCategorySet.C_2);
-            donor.DQB1_1 = genotype.Hla.DQB1_1.GetHlaForCategory(typingCategorySet.DQB1_1);
-            donor.DQB1_2 = genotype.Hla.DQB1_2.GetHlaForCategory(typingCategorySet.DQB1_2);
-            donor.DPB1_1 = genotype.Hla.DPB1_1.GetHlaForCategory(typingCategorySet.DPB1_1);
-            donor.DPB1_2 = genotype.Hla.DPB1_2.GetHlaForCategory(typingCategorySet.DPB1_2);
+            typingResolutions = resolutions;
+            return this;
+        }
+
+        public DonorBuilder WithShouldMatchGenotype(PhenotypeInfo<bool> shouldMatchGenotypeData)
+        {
+            shouldMatchGenotype = shouldMatchGenotypeData;
             return this;
         }
 
         public Donor Build()
         {
+            donor.A_1 = GetHla(Locus.A, TypePositions.One);
+            donor.A_2 = GetHla(Locus.A, TypePositions.Two);
+            donor.B_1 = GetHla(Locus.B, TypePositions.One);
+            donor.B_2 = GetHla(Locus.B, TypePositions.Two);
+            donor.C_1 = GetHla(Locus.C, TypePositions.One);
+            donor.C_2 = GetHla(Locus.C, TypePositions.Two);
+            donor.DPB1_1 = GetHla(Locus.Dpb1, TypePositions.One);
+            donor.DPB1_2 = GetHla(Locus.Dpb1, TypePositions.Two);
+            donor.DQB1_1 = GetHla(Locus.Dqb1, TypePositions.One);
+            donor.DQB1_2 = GetHla(Locus.Dqb1, TypePositions.Two);
+            donor.DRB1_1 = GetHla(Locus.Drb1, TypePositions.One);
+            donor.DRB1_2 = GetHla(Locus.Drb1, TypePositions.Two);
             return donor;
+        }
+
+        private string GetHla(Locus locus, TypePositions position)
+        {
+            var shouldMatchGenotypeAtPosition = shouldMatchGenotype.DataAtPosition(locus, position);
+            var resolution = typingResolutions.DataAtPosition(locus, position);
+
+            return shouldMatchGenotypeAtPosition ? GetMatchingHla(locus, position, resolution) : GetNonMatchingHla(locus, resolution);
+        }
+
+        private string GetMatchingHla(Locus locus, TypePositions position, HlaTypingResolution resolution)
+        {
+            return genotype.Hla.DataAtPosition(locus, position).GetHlaForResolution(resolution);
+        }
+
+        private static string GetNonMatchingHla(Locus locus, HlaTypingResolution resolution)
+        {
+            var tgsAllele = TgsAllele.FromTestDataAllele(NonMatchingAlleles.NonMatchingDonorAlleles.DataAtLocus(locus));
+            return tgsAllele.GetHlaForResolution(resolution);
         }
     }
 }
