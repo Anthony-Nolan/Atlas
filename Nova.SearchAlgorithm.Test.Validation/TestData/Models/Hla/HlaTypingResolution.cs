@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         Untyped,
         // Used to indicate that any underlying typing resolution is acceptable
         // When comparing enum values, 'arbitary' should only match 'arbitrary', not any other values
-        Arbitrary,
+        Arbitrary
     }
     
     /// <summary>

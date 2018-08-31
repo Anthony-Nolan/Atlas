@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories
 {
     /// <summary>
     /// Used to specify multiple patients with the same criteria.
