@@ -9,7 +9,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
     /// </summary>
     public class DatabaseDonorSpecification
     {
-
         /// <summary>
         /// Determines to what resolution the expected matched donor is typed
         /// </summary>
