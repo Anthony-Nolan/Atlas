@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -16,11 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then("the match grade should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
-            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
-            apiResult.IsSuccess.Should().BeTrue();
-            var donorResult = apiResult.Results.SearchResults.Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
-
+            var donorResult = GetSearchResultForSingleDonor();
             var validMatchGrades = ParseExpectedMatchGrades(grade).ToList();
             var expectedLoci = ParseExpectedLoci(locus);
             var expectedPosition = ParseExpectedPositions(position);
@@ -67,21 +63,52 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             results.Should().ContainInOrder(new List<SearchResult> {higherResult, lowerResult});
         }
 
-        private static void AssertMatchGrade(
-            TypePositions? expectedPosition,
-            LocusSearchResult locusSearchResult,
-            IReadOnlyCollection<MatchGrade> validMatchGrades
-        )
+        [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
+        public void ThenTheMatchConfidenceShouldBe(string confidence, string locus, string position)
         {
-            if (expectedPosition == TypePositions.One || expectedPosition == TypePositions.Both)
-            {
-                validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade);
-            }
+            var donorResult = GetSearchResultForSingleDonor();
+            var validMatchConfidence = ParseExpectedMatchConfidence(confidence);
+            var expectedLoci = ParseExpectedLoci(locus);
+            var expectedPosition = ParseExpectedPositions(position);
 
-            if (expectedPosition == TypePositions.Two || expectedPosition == TypePositions.Both)
+            foreach (var expectedLocus in expectedLoci)
             {
-                validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade);
+                switch (expectedLocus)
+                {
+                    case Locus.A:
+                        AssertMatchConfidence(expectedPosition, donorResult.SearchResultAtLocusA, validMatchConfidence);
+                        break;
+                    case Locus.B:
+                        AssertMatchConfidence(expectedPosition, donorResult.SearchResultAtLocusB, validMatchConfidence);
+                        break;
+                    case Locus.C:
+                        AssertMatchConfidence(expectedPosition, donorResult.SearchResultAtLocusC, validMatchConfidence);
+                        break;
+                    case Locus.Dpb1:
+                        ScenarioContext.Current.Pending();
+                        break;
+                    case Locus.Dqb1:
+                        AssertMatchConfidence(expectedPosition, donorResult.SearchResultAtLocusDqb1, validMatchConfidence);
+                        break;
+                    case Locus.Drb1:
+                        AssertMatchConfidence(expectedPosition, donorResult.SearchResultAtLocusDrb1, validMatchConfidence);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
+        }
+
+        private static SearchResult GetSearchResultForSingleDonor()
+        {
+            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            apiResult.IsSuccess.Should().BeTrue();
+
+            return apiResult
+                .Results
+                .SearchResults
+                .Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
         }
 
         private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
@@ -112,17 +139,55 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
+        private static MatchConfidence? ParseExpectedMatchConfidence(string confidence)
+        {
+            switch (confidence)
+            {
+                case "Definite":
+                    return MatchConfidence.Definite;
+                case "Exact":
+                    return MatchConfidence.Exact;
+                case "Potential":
+                    return MatchConfidence.Potential;
+                case "Mismatch":
+                    return MatchConfidence.Mismatch;
+                default:
+                    ScenarioContext.Current.Pending();
+                    return null;
+            }
+        }
+
         private static IEnumerable<Locus> ParseExpectedLoci(string locus)
         {
             var expectedLoci = new List<Locus>();
 
-            switch (locus)
+            switch (locus.ToUpper())
             {
-                case "all loci":
+                case "ALL LOCI":
                     expectedLoci.Add(Locus.A);
                     expectedLoci.Add(Locus.B);
                     expectedLoci.Add(Locus.C);
                     expectedLoci.Add(Locus.Dqb1);
+                    expectedLoci.Add(Locus.Drb1);
+                    break;
+                case "LOCUS A":
+                case "A":
+                    expectedLoci.Add(Locus.A);
+                    break;
+                case "LOCUS B":
+                case "B":
+                    expectedLoci.Add(Locus.B);
+                    break;
+                case "LOCUS C":
+                case "C":
+                    expectedLoci.Add(Locus.C);
+                    break;
+                case "LOCUS DQB1":
+                case "DQB1":
+                    expectedLoci.Add(Locus.Dqb1);
+                    break;
+                case "LOCUS DRB1":
+                case "DRB1":
                     expectedLoci.Add(Locus.Drb1);
                     break;
                 default:
@@ -176,6 +241,40 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 searchResult.SearchResultAtLocusDrb1.MatchCount,
             };
             return loci.Count(x => x != null);
+        }
+
+        private static void AssertMatchGrade(
+            TypePositions? expectedPosition,
+            LocusSearchResult locusSearchResult,
+            IReadOnlyCollection<MatchGrade> validMatchGrades
+        )
+        {
+            if (expectedPosition == TypePositions.One || expectedPosition == TypePositions.Both)
+            {
+                validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade);
+            }
+
+            if (expectedPosition == TypePositions.Two || expectedPosition == TypePositions.Both)
+            {
+                validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade);
+            }
+        }
+
+        private static void AssertMatchConfidence(
+            TypePositions? expectedPosition,
+            LocusSearchResult locusSearchResult,
+            MatchConfidence? validMatchConfidence
+        )
+        {
+            if (expectedPosition == TypePositions.One || expectedPosition == TypePositions.Both)
+            {
+                validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionOne.MatchConfidence);
+            }
+
+            if (expectedPosition == TypePositions.Two || expectedPosition == TypePositions.Both)
+            {
+                validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionTwo.MatchConfidence);
+            }
         }
     }
 }

@@ -466,6 +466,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\Scoring\MatchConfidences.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MatchConfidences.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\Scoring\MatchGrades.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -563,6 +568,10 @@
     <None Include="ValidationTests\Features\EightOutOfEightSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Search.feature.cs</LastGenOutput>
+    </None>
+    <None Include="ValidationTests\Features\Scoring\MatchConfidences.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>MatchConfidences.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\Scoring\MatchGrades.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

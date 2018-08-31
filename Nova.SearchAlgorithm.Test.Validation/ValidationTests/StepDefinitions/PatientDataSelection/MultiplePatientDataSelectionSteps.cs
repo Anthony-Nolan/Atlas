@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
 {
     /// <summary>
     /// Contains step definitions for selecting patient data when searches should be run for multiple patients

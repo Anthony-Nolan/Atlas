@@ -8,7 +8,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
 {
     /// <summary>
     /// Contains a set of extension methods that allow for easy manipulation of a patient data factory based on string inputs from the test steps.
