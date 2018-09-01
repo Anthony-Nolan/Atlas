@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// Will update all expected matching donor genotype match data at the specified locus/position.
         /// i.e. whether the database donor's hla at that position matches the Genotype of the meta-donor
         /// </summary>
-        void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool resolution);
+        void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool shouldMatchGenotype);
 
         /// <summary>
         /// Will update all expected matching donor resolutions, at all loci.
@@ -277,16 +277,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
         }
 
-        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool resolution)
+        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool shouldMatchGenotype)
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, positions, resolution);
+                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, positions, shouldMatchGenotype);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, positions, resolution);
+                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, positions, shouldMatchGenotype);
             }
         }
 

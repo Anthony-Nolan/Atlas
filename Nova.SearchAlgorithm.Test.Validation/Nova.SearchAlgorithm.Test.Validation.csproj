@@ -398,9 +398,10 @@
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\DatabaseDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\MetaDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\PatientHlaSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientFactories\PatientDataFactoryTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature.cs">
       <AutoGen>True</AutoGen>
