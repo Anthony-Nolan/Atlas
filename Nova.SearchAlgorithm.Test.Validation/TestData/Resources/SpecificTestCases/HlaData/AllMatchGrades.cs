@@ -4,15 +4,18 @@ using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases.HlaData
 {
+    /// <summary>
+    /// No DQB data was found that has botha p-group and protein level match possible.
+    /// We have not ruled out the possibility of such test data - but an 8/8 search is enough to run the ranking tests, so it is not necessary
+    /// </summary>
     public class AllMatchGrades
     {
         public static PhenotypeInfo<string> PatientHla { get; } = new LocusInfo<string>
         {
             A = "*11:01:01:01",
-            B = "*27:04:01",
+            B = "*35:01:01:01",
             C = "*02:02:02:02",
             DPB1 = "*04:01:01:01",
-            DQB1 = "*05:03:01:01",
             DRB1 = "*13:01:01:01",
         }.ToPhenotypeInfo((l, hla) => hla);
         
@@ -22,10 +25,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCa
             new LocusInfo<string>
             {
                 A = "*11:01:01:01",
-                B = "*27:04:01",
+                B = "*35:01:01:01",
                 C = "*02:02:02:02",
                 DPB1 = "*04:01:01:01",
-                DQB1 = "*05:03:01:01",
                 DRB1 = "*13:01:01:01",
             },
             
@@ -33,10 +35,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCa
             new LocusInfo<string>
             {
                 A = "*11:01",
-                B = "*27:04",
+                B = "*35:01:01:02",
                 C = "*02:02",
                 DPB1 = "*04:01",
-                DQB1 = "*05:03",
                 DRB1 = "*13:01",
             },
             
@@ -44,10 +45,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCa
             new LocusInfo<string>
             {
                 A = "*11:01:75",
-                B = "*27:04:05",
+                B = "*35:01:02",
                 C = "*02:02:01",
                 DPB1 = "*04:01:02",
-                DQB1 = "*05:03:17",
                 DRB1 = "*13:01:22",
             },
             
@@ -55,10 +55,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCa
             new LocusInfo<string>
             {
                 A = "*11:86",
-                B = "*27:69",
+                B = "*35:336",
                 C = "*02:69",
                 DPB1 = "*415:01",
-                DQB1 = "*05:42",
                 DRB1 = "*13:215",
             },
             
@@ -66,10 +65,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCa
             new LocusInfo<string>
             {
                 A = "*11:107",
-                B = "*27:112",
+                B = "*35:330",
                 C = "*02:10:02",
                 DPB1 = "*677:01",
-                DQB1 = "*05:43:01",
                 DRB1 = "*13:238",
             },
             
@@ -77,10 +75,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCa
             new LocusInfo<string>
             {
                 A = "11",
-                B = "27",
+                B = "35",
                 C = "2",
                 DPB1 = "4",
-                DQB1 = "5",
                 DRB1 = "13",
             },
         }.Select(locusInfo => locusInfo.ToPhenotypeInfo((l, hla) => hla));

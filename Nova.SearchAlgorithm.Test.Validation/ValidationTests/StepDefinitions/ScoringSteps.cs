@@ -160,43 +160,50 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "a 4/8 result":
                     return results.Find(r => r.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
                 case "a full gDNA match":
-                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.GDna));
+                    return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.GDna));
                 case "a full cDNA match":
-                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.CDna));
+                    return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.CDna));
                 case "a full protein match":
-                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.Protein));
+                    return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.Protein));
                 case "a full g-group match":
-                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.GGroup));
+                    return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.GGroup));
                 case "a full p-group match":
-                    return results.Find(r => IsMatchGradeAtAllPositions(r, MatchGrade.PGroup));
+                    return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.PGroup));
                 case "a full serology match":
-                    return results.Find(r => IsMatchGradeAtAllPositions(r, new[]{MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split}));
+                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] {MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split}));
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
             }
         }
 
-        private static bool IsMatchGradeAtAllPositions(SearchResult result, MatchGrade matchGrade)
+        private static bool IsMatchGradeAtMatchedLoci(SearchResult result, MatchGrade matchGrade)
         {
-            return IsMatchGradeAtAllPositions(result, new[] {matchGrade});
+            return IsOneOfMatchGradesAtMatchedLoci(result, new[] {matchGrade});
         }
 
-        private static bool IsMatchGradeAtAllPositions(SearchResult result, IEnumerable<MatchGrade> matchGrades)
+        private static bool IsOneOfMatchGradesAtMatchedLoci(SearchResult result, IEnumerable<MatchGrade> matchGrades)
         {
-            return new[]
+            var positionResults = new[]
             {
-                result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade,
-                result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade,
-                result.SearchResultAtLocusB.ScoreDetailsAtPositionOne.MatchGrade,
-                result.SearchResultAtLocusB.ScoreDetailsAtPositionTwo.MatchGrade,
-                result.SearchResultAtLocusC.ScoreDetailsAtPositionOne.MatchGrade,
-                result.SearchResultAtLocusC.ScoreDetailsAtPositionTwo.MatchGrade,
-                result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchGrade,
-                result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionTwo.MatchGrade,
-                result.SearchResultAtLocusDrb1.ScoreDetailsAtPositionOne.MatchGrade,
-                result.SearchResultAtLocusDrb1.ScoreDetailsAtPositionTwo.MatchGrade,
-            }.All(matchGrades.Contains);
+                result.SearchResultAtLocusA,
+                result.SearchResultAtLocusA,
+                result.SearchResultAtLocusB,
+                result.SearchResultAtLocusB,
+                result.SearchResultAtLocusC,
+                result.SearchResultAtLocusC,
+                result.SearchResultAtLocusDqb1,
+                result.SearchResultAtLocusDqb1,
+                result.SearchResultAtLocusDrb1,
+                result.SearchResultAtLocusDrb1,
+            };
+
+            return positionResults.All(r =>
+                // null match count implies not matched at that locus - we only want to assert grades of searched loci
+                r.MatchCount == null
+                || (matchGrades.Contains(r.ScoreDetailsAtPositionOne.MatchGrade) &&
+                    matchGrades.Contains(r.ScoreDetailsAtPositionTwo.MatchGrade))
+            );
         }
 
         private static int NumberOfLociSearched(SearchResult searchResult)

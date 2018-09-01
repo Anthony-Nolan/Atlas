@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 6
     testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 8
     testRunner.Then("a full gDNA match should be returned above a full cDNA match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -91,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 11
     testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 12
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 13
     testRunner.Then("a full gDNA match should be returned above a full protein match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 16
     testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 17
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 18
     testRunner.Then("a full gDNA match should be returned above a full g-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -125,7 +125,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 21
     testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 22
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 23
     testRunner.Then("a full gDNA match should be returned above a full p-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -142,7 +142,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 26
     testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 27
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 28
     testRunner.Then("a full gDNA match should be returned above a full serology match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
