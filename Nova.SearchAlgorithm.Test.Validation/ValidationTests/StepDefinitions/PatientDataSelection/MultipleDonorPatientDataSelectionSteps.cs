@@ -3,6 +3,7 @@ using System.Linq;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
@@ -81,36 +82,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Given(@"a patient has multiple matches with different match grades")]
         public void GivenAPatientHasMultipleMatchesWithDifferentMatchGrades()
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
-
-            patientDataFactory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+            var patientDataProvider = ScenarioContext.Current.Get<IStaticPatientDataProvider>();
+            patientDataProvider.SetTestCase(StaticDataTestCase.MatchingDonorsAtEachMatchGrade);
             
-            var expectedDatabaseDonors = new List<DatabaseDonorSpecification>
-            {
-                new DatabaseDonorSpecification
-                {
-                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.ThreeFieldTruncatedAllele),
-                },
-                new DatabaseDonorSpecification
-                {
-                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.TwoFieldTruncatedAllele),
-                },
-                new DatabaseDonorSpecification
-                {
-                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Serology),
-                },
-                new DatabaseDonorSpecification
-                {
-                    MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.NmdpCode),
-                },
-            };
-            
-            foreach (var databaseDonor in expectedDatabaseDonors)
-            {
-                patientDataFactory.AddExpectedDatabaseDonor(databaseDonor);
-            }
-
-            ScenarioContext.Current.Set(patientDataFactory);
+            ScenarioContext.Current.Set(patientDataProvider);
+            ScenarioContext.Current.Set((IPatientDataProvider) patientDataProvider);
         }
         
         [Given(@"all matching donors are of type (.*)")]

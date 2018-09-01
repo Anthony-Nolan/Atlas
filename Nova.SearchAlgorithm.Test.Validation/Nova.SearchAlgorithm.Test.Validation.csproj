@@ -371,6 +371,7 @@
     <Compile Include="TestData\Models\PatientApiResult.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
+    <Compile Include="TestData\Repositories\StaticTestHlaRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithDifferentThirdField.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithNonNullExpressionSuffix.cs" />
@@ -383,6 +384,7 @@
     <Compile Include="TestData\Resources\Alleles\TGS\ThreeFieldAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\TGS\TwoFieldAlleles.cs" />
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
+    <Compile Include="TestData\Resources\SpecificTestCases\HlaData\AllMatchGrades.cs" />
     <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
@@ -392,6 +394,8 @@
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataFactory.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataTestCase.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
