@@ -148,6 +148,176 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - cDNA vs protein")]
+        public virtual void MatchGradeRanking_CDNAVsProtein()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - cDNA vs protein", ((string[])(null)));
+#line 30
+  this.ScenarioSetup(scenarioInfo);
+#line 31
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 32
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 33
+    testRunner.Then("a full cDNA match should be returned above a full protein match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - cDNA vs g-group")]
+        public virtual void MatchGradeRanking_CDNAVsG_Group()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - cDNA vs g-group", ((string[])(null)));
+#line 35
+  this.ScenarioSetup(scenarioInfo);
+#line 36
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 37
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 38
+    testRunner.Then("a full cDNA match should be returned above a full g-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - cDNA vs p-group")]
+        public virtual void MatchGradeRanking_CDNAVsP_Group()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - cDNA vs p-group", ((string[])(null)));
+#line 40
+  this.ScenarioSetup(scenarioInfo);
+#line 41
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 42
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 43
+    testRunner.Then("a full cDNA match should be returned above a full p-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - cDNA vs serology")]
+        public virtual void MatchGradeRanking_CDNAVsSerology()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - cDNA vs serology", ((string[])(null)));
+#line 45
+  this.ScenarioSetup(scenarioInfo);
+#line 46
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 47
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 48
+    testRunner.Then("a full cDNA match should be returned above a full serology match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - protein vs g-group")]
+        public virtual void MatchGradeRanking_ProteinVsG_Group()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - protein vs g-group", ((string[])(null)));
+#line 50
+  this.ScenarioSetup(scenarioInfo);
+#line 51
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 52
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 53
+    testRunner.Then("a full protein match should be returned above a full g-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - protein vs p-group")]
+        public virtual void MatchGradeRanking_ProteinVsP_Group()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - protein vs p-group", ((string[])(null)));
+#line 55
+  this.ScenarioSetup(scenarioInfo);
+#line 56
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 57
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 58
+    testRunner.Then("a full protein match should be returned above a full p-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - protein vs serology")]
+        public virtual void MatchGradeRanking_ProteinVsSerology()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - protein vs serology", ((string[])(null)));
+#line 60
+  this.ScenarioSetup(scenarioInfo);
+#line 61
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 62
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 63
+    testRunner.Then("a full protein match should be returned above a full serology match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - g-group vs p-group")]
+        public virtual void MatchGradeRanking_G_GroupVsP_Group()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - g-group vs p-group", ((string[])(null)));
+#line 65
+  this.ScenarioSetup(scenarioInfo);
+#line 66
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 67
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 68
+    testRunner.Then("a full g-group match should be returned above a full p-group match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - g-group vs serology")]
+        public virtual void MatchGradeRanking_G_GroupVsSerology()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - g-group vs serology", ((string[])(null)));
+#line 70
+  this.ScenarioSetup(scenarioInfo);
+#line 71
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 72
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 73
+    testRunner.Then("a full g-group match should be returned above a full serology match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Match grade ranking - p-group vs serology")]
+        public virtual void MatchGradeRanking_P_GroupVsSerology()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Match grade ranking - p-group vs serology", ((string[])(null)));
+#line 75
+  this.ScenarioSetup(scenarioInfo);
+#line 76
+    testRunner.Given("a patient has multiple matches with different match grades", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 77
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 78
+    testRunner.Then("a full p-group match should be returned above a full serology match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
