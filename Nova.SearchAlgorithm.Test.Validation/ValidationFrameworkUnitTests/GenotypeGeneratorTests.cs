@@ -3,6 +3,7 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
@@ -35,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             new AlleleTestData {AlleleName = "02:02:01:test-allele-pos-2"},
         };
 
-        private static readonly LocusInfo<List<AlleleTestData>> lociAlleles = new LocusInfo<List<AlleleTestData>>(Alleles1);
+        private static readonly LocusInfo<List<AlleleTestData>> LociAlleles = new LocusInfo<List<AlleleTestData>>(Alleles1);
 
         private static PhenotypeInfo<List<AlleleTestData>> AllelesPhenotype
         {
@@ -50,7 +51,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             alleleRepository.FourFieldAlleles().Returns(AllelesPhenotype);
             alleleRepository.ThreeFieldAlleles().Returns(AllelesPhenotype);
             alleleRepository.TwoFieldAlleles().Returns(AllelesPhenotype);
+            
             alleleRepository.AllelesWithAlleleStringOfSubtypesPossible().Returns(AllelesPhenotype);
+            alleleRepository.AllelesWithTwoFieldMatchPossible().Returns(AllelesPhenotype);
+            alleleRepository.DonorAllelesWithThreeFieldMatchPossible().Returns(AllelesPhenotype);
+            
+            alleleRepository.AllelesWithNonNullExpressionSuffix().Returns(AllelesPhenotype);
+            alleleRepository.NullAlleles().Returns(AllelesPhenotype);
+            
+            alleleRepository.AllelesForCDnaMatching().Returns(LociAlleles);
+            alleleRepository.AllelesForGGroupMatching().Returns(AllelesPhenotype);
+            alleleRepository.AllelesForProteinMatching().Returns(AllelesPhenotype);
+            alleleRepository.DonorAllelesForPGroupMatching().Returns(LociAlleles);
 
             genotypeGenerator = new GenotypeGenerator(alleleRepository);
         }
@@ -125,6 +137,133 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build();
 
             Assert.Throws<InvalidTestDataException>(() => genotypeGenerator.GenerateGenotype(criteria));
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenDataDoesNotExistForAlleleStringOfNames_ThrowsException()
+        {
+            alleleRepository.AllelesWithAlleleStringOfSubtypesPossible()
+                .Returns(new PhenotypeInfo<List<AlleleTestData>>(new List<AlleleTestData>
+                {
+                    new AlleleTestData{AlleleName = "01:01:01:01"},
+                }));
+            var criteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build();
+
+            Assert.Throws<InvalidTestDataException>(() => genotypeGenerator.GenerateGenotype(criteria));
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenFourFieldTgsAlleleRequested_UsesAllelesFromFourFieldDataSetOnly()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().FourFieldAlleles();
+            alleleRepository.DidNotReceive().ThreeFieldAlleles();
+            alleleRepository.DidNotReceive().TwoFieldAlleles();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenThreeFieldTgsAlleleRequested_UsesAllelesFromFourFieldDataSetOnly()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().ThreeFieldAlleles();
+            alleleRepository.DidNotReceive().FourFieldAlleles();
+            alleleRepository.DidNotReceive().TwoFieldAlleles();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenTwoFieldTgsAlleleRequested_UsesAllelesFromFourFieldDataSetOnly()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().TwoFieldAlleles();
+            alleleRepository.DidNotReceive().ThreeFieldAlleles();
+            alleleRepository.DidNotReceive().FourFieldAlleles();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenPGroupMatchRequested_UsesAllelesFromPGroupDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.PGroup).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().DonorAllelesForPGroupMatching();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenGGroupMatchRequested_UsesAllelesFromGPGroupDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.GGroup).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesForGGroupMatching();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenThreeFieldMatchRequested_UsesAllelesFromThreeFieldMatchDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.FirstThreeFieldAllele).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().DonorAllelesWithThreeFieldMatchPossible();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenTwoFieldMatchRequested_UsesAllelesFromTwoFieldMatchDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.FirstTwoFieldAllele).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesWithTwoFieldMatchPossible();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenAlleleStringOfSubtypesPossible_UsesAllelesFromAlleleStringOfSubtypesDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesWithAlleleStringOfSubtypesPossible();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenNullAllelesRequested_UsesAllelesFromNullDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithNullAlleleAtAllLoci().Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().NullAlleles();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenNonNullExpressionSuffixAllelesRequested_UsesAllelesFromNonNullExpressionSuffixDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithNonNullExpressionSuffixAtLocus(Locus.A).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesWithNonNullExpressionSuffix();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenCDnaMatchRequested_UsesAllelesFromCDnaDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.CDna).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesForCDnaMatching();
+        }
+        
+        [Test]
+        public void GenerateGenotype_WhenProteinMatchRequested_UsesAllelesFromProteinMatchDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.Protein).Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesForProteinMatching();
         }
     }
 }

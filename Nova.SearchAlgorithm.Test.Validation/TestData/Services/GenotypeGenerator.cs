@@ -152,6 +152,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 return AlleleSplitter.FirstField(a.AlleleName) == selectedFirstField;
             }).ToList();
 
+            if (validAlleles.IsNullOrEmpty())
+            {
+                throw new InvalidTestDataException($"No alleles valid for use in an allele string (of names) found in dataset: {dataset}");
+            }
+            
             var allelesForString = validAlleles.GetRandomSelection(1, 10).ToList();
 
             // If random selection has only picked alleles with the same first field, ensure an allele with a different first field is used
@@ -234,15 +239,5 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }
         }
-
-        /// <summary>
-        /// A Genotype for which all hla values do not match any others in the repository
-        /// </summary>
-        ///  TODO: NOVA-1590: Create more robust method of guaranteeing a mismatch
-        /// As we're randomly selecting alleles for donors, there's a chance this will actually match
-        public static readonly Genotype NonMatchingGenotype = new Genotype
-        {
-            Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
-        };
     }
 }
