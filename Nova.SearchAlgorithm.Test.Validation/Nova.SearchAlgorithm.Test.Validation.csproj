@@ -391,11 +391,20 @@
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataFactory.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FullMatches.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
@@ -407,6 +416,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature" />
+    <Content Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\ValidationREADME.md" />
     <None Include="app.config">
       <SubType>Designer</SubType>
