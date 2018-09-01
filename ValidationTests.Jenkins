@@ -46,7 +46,8 @@ node('windows') {
         bat "${msBuild} ${solutionFile} /p:Configuration=Debug /v:minimal"
     }
     stage('Run Validation Tests') {
-        def testOutput = 'ValidationTestResult.xml'
+        // Specflow assumes this as the default test result name. It's theoretically overridable with a parameter, but when passing in the parameter we get errors
+        def testOutput = 'TestResult.xml'
 
         // Get a list of all of the test assembly paths
         def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.Validation.dll')
@@ -55,7 +56,7 @@ node('windows') {
         bat "${nunitRunner} ${testAssemblies.join(' ')} --out=TestReport.txt --result=${testOutput};format=nunit2 --noheader"
 
         // Generate reports
-        bat "${specFlowRunner} nunitexecutionreport ${projectFile} -t ${testOutput}"
+        bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
         bat "${picklesRunner} --feature-directory=./ValidationTests/Features --output-directory=./documentation --link-results-file=./${testOutput}"
     }
 }
