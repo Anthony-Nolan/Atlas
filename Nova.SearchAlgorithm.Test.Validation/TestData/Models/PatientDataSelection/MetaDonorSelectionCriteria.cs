@@ -17,13 +17,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
             new PhenotypeInfo<TgsHlaTypingCategory>(TgsHlaTypingCategory.Arbitrary);
 
         /// <summary>
-        /// The match level(s) of the expected matching donor (if a match is expected)
+        /// The match level of the expected matching donor (if a match is expected)
         /// Necessary for meta-donor selection as we must ensure the genotype is valid for the specified match type
         /// e.g. for a p-group match, ensure that other alleles in the same p-group exist in our dataset
-        ///
-        /// Multiple sets of match levels can be specified, indicating that results of multiple grades should be returned
         /// </summary>
-        public IEnumerable<PhenotypeInfo<MatchLevel>> MatchLevels { get; set; }
+        public PhenotypeInfo<MatchLevel> MatchLevels { get; set; }
 
         /// <summary>
         /// Determines to what resolutions / match levels the expected matched donor is typed

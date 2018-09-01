@@ -118,35 +118,35 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return metaDonor.GenotypeCriteria.AlleleSources.Map((l, p, dataset) =>
             {
                 var tgsTypingRequired = criteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
-                var matchLevelsRequired = criteria.MatchLevels.Select(ml => ml.DataAtPosition(l, p));
+                var matchLevel = criteria.MatchLevels.DataAtPosition(l, p);
 
                 switch (dataset)
                 {
                     case Dataset.PGroupMatchPossible:
-                        return matchLevelsRequired.Contains(MatchLevel.PGroup);
+                        return matchLevel == MatchLevel.PGroup;
                     case Dataset.GGroupMatchPossible:
-                        return matchLevelsRequired.Contains(MatchLevel.GGroup);
+                        return matchLevel == MatchLevel.GGroup;
                     case Dataset.CDnaMatchPossible:
-                        return matchLevelsRequired.Contains(MatchLevel.CDna);
+                        return matchLevel == MatchLevel.CDna;
                     case Dataset.ProteinMatchPossible:
-                        return matchLevelsRequired.Contains(MatchLevel.Protein);
+                        return matchLevel == MatchLevel.Protein;
                     case Dataset.FourFieldAllelesWithThreeFieldMatchPossible:
-                        return matchLevelsRequired.Contains(MatchLevel.FirstThreeFieldAllele) 
+                        return matchLevel == MatchLevel.FirstThreeFieldAllele
                                && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
                     case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
-                        return matchLevelsRequired.Contains(MatchLevel.FirstTwoFieldAllele)
+                        return matchLevel == MatchLevel.FirstTwoFieldAllele
                                && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
                     case Dataset.FourFieldTgsAlleles:
-                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                        return matchLevel == MatchLevel.Allele
                                && tgsTypingRequired == TgsHlaTypingCategory.FourFieldAllele;
                     case Dataset.ThreeFieldTgsAlleles:
-                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                        return matchLevel == MatchLevel.Allele
                                && tgsTypingRequired == TgsHlaTypingCategory.ThreeFieldAllele;
                     case Dataset.TwoFieldTgsAlleles:
-                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                        return matchLevel == MatchLevel.Allele
                                && tgsTypingRequired == TgsHlaTypingCategory.TwoFieldAllele;
                     case Dataset.TgsAlleles:
-                        return matchLevelsRequired.Contains(MatchLevel.Allele)
+                        return matchLevel == MatchLevel.Allele
                                && tgsTypingRequired == TgsHlaTypingCategory.Arbitrary;
                     case Dataset.AlleleStringOfSubtypesPossible:
                         return criteria.DatabaseDonorDetailsSets

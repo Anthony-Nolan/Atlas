@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             criteria = new MetaDonorSelectionCriteria
             {
-                MatchLevels = new List<PhenotypeInfo<MatchLevel>> {new PhenotypeInfo<MatchLevel>()},
+                MatchLevels = new PhenotypeInfo<MatchLevel>(),
                 IsHomozygous = new LocusInfo<bool>(false),
                 AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(false),
                 HasNonNullExpressionSuffix = new PhenotypeInfo<bool>(false)
@@ -38,10 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 
         public MetaDonorSelectionCriteriaBuilder WithMatchLevelAtAllPositions(MatchLevel matchLevel)
         {
-            criteria.MatchLevels = new List<PhenotypeInfo<MatchLevel>>
-            {
-                new PhenotypeInfo<MatchLevel>(matchLevel),
-            };
+            criteria.MatchLevels = new PhenotypeInfo<MatchLevel>(matchLevel);
             return this;
         }
 

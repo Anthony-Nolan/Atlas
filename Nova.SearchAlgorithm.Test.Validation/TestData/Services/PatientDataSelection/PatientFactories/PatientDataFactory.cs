@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private readonly MetaDonorSelectionCriteria metaDonorSelectionCriteria = new MetaDonorSelectionCriteria
         {
-            MatchLevels = new List<PhenotypeInfo<MatchLevel>> {new PhenotypeInfo<MatchLevel>(DefaultMatchLevel),},
+            MatchLevels = new PhenotypeInfo<MatchLevel>(DefaultMatchLevel),
             DatabaseDonorDetailsSets = new List<DatabaseDonorSpecification>
             {
                 new DatabaseDonorSpecification {MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(DefaultTypingResolution)}
@@ -365,7 +365,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         private void SetMatchLevels(PhenotypeInfo<MatchLevel> matchLevels)
         {
-            metaDonorSelectionCriteria.MatchLevels = new List<PhenotypeInfo<MatchLevel>> {matchLevels};
+            metaDonorSelectionCriteria.MatchLevels = matchLevels;
             patientHlaSelectionCriteria.MatchLevels = matchLevels;
         }
     }
