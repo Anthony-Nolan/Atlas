@@ -68,12 +68,12 @@ def findNunitRunner() {
 
 def findSpecFlowRunner() {
     // Version-agnostic way of finding the specflow runner
-    return findSingleFile('packages/packages/SpecFlow.*/tools/specflow.exe')
+    return findSingleFile('packages/SpecFlow.*/tools/specflow.exe')
 }
 
 def findPicklesRunner() {
     // Version-agnostic way of finding the pickles runner
-    return findSingleFile('packages/packages/Pickles.CommandLine.2.19.0/tools/pickles.exe')
+    return findSingleFile('packages/Pickles.CommandLine.2.19.0/tools/pickles.exe')
 }
 
 def findMigrate() {
