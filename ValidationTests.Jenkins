@@ -57,7 +57,7 @@ node('windows') {
 
         // Generate reports
         bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
-        bat "${picklesRunner} --feature-directory=./ValidationTests/Features --output-directory=./documentation --link-results-file=./${testOutput}"
+        bat "${picklesRunner} --feature-directory=${projectName}/ValidationTests/Features --output-directory=./documentation --link-results-file=./${testOutput}"
     }
 }
 
