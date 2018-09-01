@@ -52,7 +52,7 @@ node('windows') {
         def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.Validation.dll')
 
         //Run the tests
-        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit2 --noheader"
+        bat "${nunitRunner} ${testAssemblies.join(' ')} --out=TestReport.txt --result=${testOutput};format=nunit2 --noheader"
 
         // Generate reports
         bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
