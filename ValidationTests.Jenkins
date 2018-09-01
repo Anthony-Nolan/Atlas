@@ -1,5 +1,5 @@
 node('windows') {
-    def projectName = "Nova.SearchAlgorithm"
+    def projectName = "Nova.SearchAlgorithm.Test.Validation"
     def solutionName = "Nova.SearchAlgorithm"
     def projectFile = ".\\${projectName}\\${projectName}.csproj"
     def solutionFile = "${solutionName}.sln"
@@ -7,6 +7,8 @@ node('windows') {
     def msBuildPath;
     def msBuild;
     def nunitRunner;
+    def specFlowRunner;
+    def picklesRunner;
     def migrate;
 
     stage('Checkout') {
@@ -32,6 +34,8 @@ node('windows') {
     }
     stage('Verify tools') {
         nunitRunner = findNunitRunner()
+        specFlowRunner = findSpecFlowRunner()
+        picklesRunner = findPicklesRunner()
         migrate = findMigrate()
     }
     stage('Clean') {
@@ -48,16 +52,28 @@ node('windows') {
         def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.Validation.dll')
 
         //Run the tests
-        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
+        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit2 --noheader"
 
         // Generate reports
-        nunit testResultsPattern: testOutput
+        bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
+        bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
+        bat "${picklesRunner} --feature-directory=./ValidationTests/Features --output-directory=./documentation --link-results-file=./${testOutput}"
     }
 }
 
 def findNunitRunner() {
     // Version-agnostic way of finding the nunit runner
     return findSingleFile('packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe')
+}
+
+def findSpecFlowRunner() {
+    // Version-agnostic way of finding the specflow runner
+    return findSingleFile('packages/packages/SpecFlow.*/tools/specflow.exe')
+}
+
+def findPicklesRunner() {
+    // Version-agnostic way of finding the pickles runner
+    return findSingleFile('packages/packages/Pickles.CommandLine.2.19.0/tools/pickles.exe')
 }
 
 def findMigrate() {
