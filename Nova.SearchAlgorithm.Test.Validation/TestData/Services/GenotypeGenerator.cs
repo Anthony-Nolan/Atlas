@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
@@ -26,12 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         
         public Genotype GenerateGenotype(GenotypeCriteria criteria)
         {
-            if (criteria == null)
-            {
-                return CreateGenotype(DefaultCriteria);
-            }
-            
-            return CreateGenotype(criteria);
+            return CreateGenotype(criteria ?? DefaultCriteria);
         }
 
         /// <summary>
@@ -67,6 +63,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var dataset = criteria.AlleleSources.DataAtPosition(locus, position);
 
             var alleles = GetDataset(locus, position, dataset);
+            if (alleles.IsNullOrEmpty())
+            {
+                throw new InvalidTestDataException($"No alleles found in dataset: {dataset}");
+            }
             var selectedAllele = alleles.GetRandomElement();
 
             var shouldContainDifferentAlleleGroups = criteria.AlleleStringContainsDifferentAntigenGroups.DataAtPosition(locus, position);
@@ -95,6 +95,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             if (dataset == Dataset.AlleleStringOfSubtypesPossible)
             {
                 var allelesValidForAlleleStringOfSubtypes = GetAllelesValidForAlleleStringOfSubtypes(alleles, selectedAllele);
+                if (allelesValidForAlleleStringOfSubtypes.IsNullOrEmpty())
+                {
+                    throw new InvalidTestDataException("Allele string of subtypes required, but no valid alleles to use in the string exist");
+                }
                 allelesForAlleleStringOfSubtypes = allelesValidForAlleleStringOfSubtypes.GetRandomSelection(1, 10).ToList();
             }
 

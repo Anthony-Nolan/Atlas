@@ -397,6 +397,7 @@
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataTestCase.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\GenotypeGeneratorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\DatabaseDonorSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\MetaDonorSelectorTests.cs" />
