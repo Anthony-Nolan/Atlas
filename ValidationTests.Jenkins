@@ -4,6 +4,9 @@ node('windows') {
     def projectFile = ".\\${projectName}\\${projectName}.csproj"
     def solutionFile = "${solutionName}.sln"
 
+    // TODO: Drive this from an environment specific environment variable set by Jenkins
+    def picklesOutputDirectoryName = "develop";
+
     def msBuildPath;
     def msBuild;
     def nunitRunner;
@@ -57,11 +60,11 @@ node('windows') {
 
         // Generate reports
         bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
-        bat "${picklesRunner} --feature-directory=${projectName}/ValidationTests/Features --output-directory=./documentation --link-results-file=./${testOutput}"
+        bat "${picklesRunner} --feature-directory=${projectName}/ValidationTests/Features --output-directory=./${picklesOutputDirectoryName} --link-results-file=./${testOutput}"
     }
     stage('Deploy results') {
-        def ftpConfigName = 'DEV Nova Search Algorithm Validation Results'
-        def sourceFiles = 'documentation/**'
+        def ftpConfigName = 'Nova Search Algorithm Validation Results'
+        def sourceFiles = "${picklesOutputDirectoryName}/**"
         ftpPublisher publishers: [
                 [configName: "${ftpConfigName}", transfers: [
                     [asciiMode: false, cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "", remoteDirectorySDF: false, removePrefix: '', sourceFiles: "${sourceFiles}"]
