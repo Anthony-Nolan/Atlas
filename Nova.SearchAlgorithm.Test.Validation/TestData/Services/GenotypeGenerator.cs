@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         {
             this.alleleRepository = alleleRepository;
         }
-        
+
         public Genotype GenerateGenotype(GenotypeCriteria criteria)
         {
             return CreateGenotype(criteria ?? DefaultCriteria);
@@ -67,15 +67,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             {
                 throw new InvalidTestDataException($"No alleles found in dataset: {dataset}");
             }
+
             var selectedAllele = alleles.GetRandomElement();
 
             var shouldContainDifferentAlleleGroups = criteria.AlleleStringContainsDifferentAntigenGroups.DataAtPosition(locus, position);
 
             return TgsAllele.FromTestDataAllele(
                 selectedAllele,
-                GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
-                GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles)
-            );
+                new AlleleStringAlleles
+                {
+                    OtherAllelesInNameString = GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
+                    OtherAllelesInSubtypeString = GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles)
+                });
         }
 
         /// <summary>
@@ -99,6 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 {
                     throw new InvalidTestDataException("Allele string of subtypes required, but no valid alleles to use in the string exist");
                 }
+
                 allelesForAlleleStringOfSubtypes = allelesValidForAlleleStringOfSubtypes.GetRandomSelection(1, 10).ToList();
             }
 
@@ -130,7 +134,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             {
                 return new List<AlleleTestData>();
             }
-            
+
             var selectedFirstField = AlleleSplitter.FirstField(selectedAllele.AlleleName);
 
             // Same allele should not appear twice in allele string
@@ -156,7 +160,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             {
                 throw new InvalidTestDataException($"No alleles valid for use in an allele string (of names) found in dataset: {dataset}");
             }
-            
+
             var allelesForString = validAlleles.GetRandomSelection(1, 10).ToList();
 
             // If random selection has only picked alleles with the same first field, ensure an allele with a different first field is used

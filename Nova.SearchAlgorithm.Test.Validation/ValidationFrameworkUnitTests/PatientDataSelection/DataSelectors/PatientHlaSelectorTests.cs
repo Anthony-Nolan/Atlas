@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                 }
             };
 
@@ -93,7 +93,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 Genotype =
                 {
                     Hla = donorPGroupAlleles.Map((locus, all) =>
-                            TgsAllele.FromTestDataAllele(all.First()))
+                            TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                         .ToPhenotypeInfo(((locus, allele) => new Tuple<TgsAllele, TgsAllele>(allele, allele))
                         )
                 }
@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = gGroupAlleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                    Hla = gGroupAlleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                 }
             };
 
@@ -138,7 +138,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                 }
             };
 
@@ -163,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = alleles.Map((l, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                    Hla = alleles.Map((l, p, all) => TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                 }
             };
 
@@ -188,7 +188,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = alleles.Map((l, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                    Hla = alleles.Map((l, p, all) => TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                 }
             };
 
@@ -212,7 +212,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 Genotype =
                 {
-                    Hla = alleles.Map((l, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                    Hla = alleles.Map((l, p, all) => TgsAllele.FromTestDataAllele(all.First(), new AlleleStringAlleles()))
                 }
             };
 
@@ -235,7 +235,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 {
                     Hla = alleles.MapByLocus((l, all1, all2) =>
                     {
-                        var allele = TgsAllele.FromTestDataAllele(all1.First());
+                        var allele = TgsAllele.FromTestDataAllele(all1.First(), new AlleleStringAlleles());
                         return new Tuple<TgsAllele, TgsAllele>(allele, allele);
                     }),
                 }

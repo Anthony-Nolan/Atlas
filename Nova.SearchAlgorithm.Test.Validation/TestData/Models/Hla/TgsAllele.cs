@@ -23,33 +23,24 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// Creates a new TGS allele from test data source
         /// </summary>
         /// <param name="allele">
-        /// The test data to use when creating this allele model
-        /// Should contain Serology and NMDP code if these resolutions are to be used
+        ///     The test data to use when creating this allele model
+        ///     Should contain Serology and NMDP code if these resolutions are to be used
         /// </param>
-        /// <param name="otherAllelesInNameString">
-        /// Dictates other alleles to include in an allele string (of names) representation of this TGS allele
-        /// </param>
-        /// <param name="otherAllelesInSubtypeString">
-        /// Dictates other alleles to include in an allele string (of subtypes) representation of this TGS allele
-        /// </param>
-        public static TgsAllele FromTestDataAllele(
-            AlleleTestData allele,
-            IEnumerable<AlleleTestData> otherAllelesInNameString = null,
-            IEnumerable<AlleleTestData> otherAllelesInSubtypeString = null
-        )
+        /// <param name="alleleStringAlleles">Alleles to use in the various generated allele strings</param>
+        public static TgsAllele FromTestDataAllele(AlleleTestData allele, AlleleStringAlleles alleleStringAlleles)
         {
-            otherAllelesInNameString = otherAllelesInNameString ?? new List<AlleleTestData>();
-            otherAllelesInSubtypeString = otherAllelesInSubtypeString ?? new List<AlleleTestData>();
+            alleleStringAlleles.OtherAllelesInNameString = alleleStringAlleles.OtherAllelesInNameString ?? new List<AlleleTestData>();
+            alleleStringAlleles.OtherAllelesInSubtypeString = alleleStringAlleles.OtherAllelesInSubtypeString ?? new List<AlleleTestData>();
 
             var fieldCount = AlleleSplitter.NumberOfFields(allele.AlleleName);
             switch (fieldCount)
             {
                 case 4:
-                    return FromFourFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
+                    return FromFourFieldAllele(allele, alleleStringAlleles.OtherAllelesInNameString, alleleStringAlleles.OtherAllelesInSubtypeString);
                 case 3:
-                    return FromThreeFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
+                    return FromThreeFieldAllele(allele, alleleStringAlleles.OtherAllelesInNameString, alleleStringAlleles.OtherAllelesInSubtypeString);
                 case 2:
-                    return FromTwoFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
+                    return FromTwoFieldAllele(allele, alleleStringAlleles.OtherAllelesInNameString, alleleStringAlleles.OtherAllelesInSubtypeString);
                 default:
                     throw new ArgumentOutOfRangeException("TGS test allele of unexpected field count found: " + allele.AlleleName);
             }

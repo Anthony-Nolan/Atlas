@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Web.SessionState;
-using System.Web.UI;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -24,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = fourFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.Tgs).Should().Be(fourFieldName);
         }
@@ -39,7 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = fourFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().Be(expectedThreeFieldTruncation);
         }
@@ -54,7 +52,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = fourFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Should().Be(expectedTwoFieldTruncation);
         }
@@ -68,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = threeFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.Tgs).Should().Be(threeFieldName);
         }
@@ -83,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = threeFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Should().Be(expectedTwoFieldTruncation);
         }
@@ -97,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = threeFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().BeNull();
         }
@@ -111,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = twoFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.Tgs).Should().Be(twoFieldName);
         }
@@ -125,7 +123,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = twoFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Should().BeNull();
         }
@@ -139,7 +137,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 AlleleName = twoFieldName,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Should().BeNull();
         }
@@ -154,7 +152,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 NmdpCode = nmdpCode,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.NmdpCode).Should().Be(nmdpCode);
         }
@@ -169,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
                 Serology = serology,
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.Serology).Should().Be(serology);
         }
@@ -181,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
             const string expectedXxCode = "01:XX";
             var testData = new AlleleTestData {AlleleName = alleleString};
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.XxCode).Should().Be(expectedXxCode);
         }
@@ -193,19 +191,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
             const string otherAlleleName1 = "02:02:02:02";
             const string otherAlleleName2 = "03:03:03";
             const string expectedAlleleString = "01:01:01:01/02:02:02:02/03:03:03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles {OtherAllelesInNameString = otherAlleles});
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvided_ForThreeFieldAllele_CreatesAlleleStringOfNames()
         {
@@ -213,19 +211,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
             const string otherAlleleName1 = "02:02";
             const string otherAlleleName2 = "03:03:03:03";
             const string expectedAlleleString = "01:01:01/02:02/03:03:03:03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles {OtherAllelesInNameString = otherAlleles});
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
-             
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvided_ForTwoFieldAllele_CreatesAlleleStringOfNames()
         {
@@ -233,19 +231,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
             const string otherAlleleName1 = "02:02:02";
             const string otherAlleleName2 = "03:03:03:03";
             const string expectedAlleleString = "01:01/02:02:02/03:03:03:03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles {OtherAllelesInNameString = otherAlleles});
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvided_TrimsAsterisksInStringOfNames()
         {
@@ -253,19 +251,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
             const string otherAlleleName1 = "*02:02:02";
             const string otherAlleleName2 = "*03:03:03:03";
             const string expectedAlleleString = "*01:01/02:02:02/03:03:03:03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAlleles);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles {OtherAllelesInNameString = otherAlleles});
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().Be(expectedAlleleString);
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvided_CreatesAlleleStringOfSubtypes()
         {
@@ -273,84 +271,91 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
             const string otherAlleleName1 = "01:02:02";
             const string otherAlleleName2 = "01:03:03:03";
             const string expectedAlleleString = "01:01/02/03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles {OtherAllelesInSubtypeString = otherAlleles});
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().Be(expectedAlleleString);
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenNoOtherAllelesProvided_DoesNotCreateAlleleStringOfNames()
         {
             const string alleleName = "01:01:01";
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNames).Should().BeNull();
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenNoOtherAllelesProvided_DoesNotCreateAlleleStringOfSubtypes()
         {
             const string alleleName = "01:01:01";
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData);
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvided_DoesNotCreateAlleleStringOfSubtypes()
         {
             const string alleleName = "01:01:01";
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
 
-            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: new List<AlleleTestData>());
+            var tgsAllele = TgsAllele.FromTestDataAllele(alleleTestData, new AlleleStringAlleles());
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNull();
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvidedDoNotShareAFirstFieldWithPrimaryAllele_ThrowsException()
         {
             const string alleleName = "01:01:01";
             const string otherAlleleName1 = "02:02:02";
             const string otherAlleleName2 = "02:03:03:03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            Assert.Throws<InvalidTestDataException>(() => TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles));
+            Assert.Throws<InvalidTestDataException>(() => TgsAllele.FromTestDataAllele(
+                alleleTestData,
+                new AlleleStringAlleles {OtherAllelesInSubtypeString = otherAlleles}
+            ));
         }
-        
+
         [Test]
         public void FromTestDataAllele_WhenOtherAllelesProvidedDoNotShareAFirstField_ThrowsException()
         {
             const string alleleName = "01:01:01";
             const string otherAlleleName1 = "01:02:02";
             const string otherAlleleName2 = "02:03:03:03";
-            
-            var alleleTestData = new AlleleTestData{ AlleleName = alleleName };
+
+            var alleleTestData = new AlleleTestData {AlleleName = alleleName};
             var otherAlleles = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = otherAlleleName1},
                 new AlleleTestData {AlleleName = otherAlleleName2}
             };
 
-            Assert.Throws<InvalidTestDataException>(() => TgsAllele.FromTestDataAllele(alleleTestData, otherAllelesInSubtypeString: otherAlleles));
+            Assert.Throws<InvalidTestDataException>(() =>
+                TgsAllele.FromTestDataAllele(
+                    alleleTestData,
+                    new AlleleStringAlleles {OtherAllelesInSubtypeString = otherAlleles}
+                ));
         }
     }
 }
