@@ -59,6 +59,15 @@ node('windows') {
         bat "${specFlowRunner} nunitexecutionreport ${projectFile}"
         bat "${picklesRunner} --feature-directory=${projectName}/ValidationTests/Features --output-directory=./documentation --link-results-file=./${testOutput}"
     }
+    stage('Deploy results') {
+        def ftpConfigName = 'DEV Nova Search Algorithm Validation Results'
+        def sourceFiles = 'documentation/**'
+        ftpPublisher publishers: [
+                [configName: "${ftpConfigName}", transfers: [
+                    [asciiMode: false, cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "", remoteDirectorySDF: false, removePrefix: '', sourceFiles: "${sourceFiles}"]
+                ], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]
+            ]
+    }
 }
 
 def findNunitRunner() {
