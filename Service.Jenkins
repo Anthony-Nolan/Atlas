@@ -11,14 +11,7 @@ node('windows') {
 
     stage('Checkout') {
         checkout scm
-    }
-    
-    // This must be done before the build step, or else the validation tests build will fail
-    stage('Prepare Validation Test Config') {
-        configFileProvider([configFile(fileId: 'Search Algorithm Validation Tests Settings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/SecureSettings.config')]) {}
-        configFileProvider([configFile(fileId: 'Search Algorithm Validation Tests Connection Strings', targetLocation: 'Nova.SearchAlgorithm.Test.Validation/Settings/ConnectionStrings.config')]) {}
-    }
-    
+    }    
     stage('Prepare Nuget') {
         withCredentials([usernamePassword(credentialsId: env.NUGET_CREDENTIALS_ID, passwordVariable: 'password', usernameVariable: 'username')]) {
             bat "init.cmd"
@@ -46,18 +39,6 @@ node('windows') {
 
         // Get a list of all of the test assembly paths
         def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.dll')
-
-        //Run the tests
-        bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
-
-        // Generate reports
-        nunit testResultsPattern: testOutput
-    }
-    stage('Run Validation Tests') {
-        def testOutput = 'ValidationTestResult.xml'
-
-        // Get a list of all of the test assembly paths
-        def testAssemblies = findFilePaths('**/bin/Debug/Nova.*.Test.Validation.dll')
 
         //Run the tests
         bat "${nunitRunner} ${testAssemblies.join(' ')} --result=${testOutput};format=nunit3 --noheader"
