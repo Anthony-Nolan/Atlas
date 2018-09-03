@@ -341,7 +341,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 case "allele string (of subtypes)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
                     break;
-                case "low resolution (multiple P groups)":
+                case "ambiguously (multiple P groups)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups);
                     break;
                 default:

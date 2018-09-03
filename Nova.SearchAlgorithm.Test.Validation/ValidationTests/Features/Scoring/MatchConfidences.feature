@@ -7,102 +7,55 @@
     When I run a 10/10 search
     Then the match confidence should be Definite at each locus at both positions
 
-  Scenario: Exact match at each locus - donor allele string typed
+  Scenario: Exact match at each locus - patient TGS typed and donor ambiguously (single P group) typed
     Given a patient has a match
-    And the matching donor is allele string (single P group) typed at each locus
+    And the matching donor is ambiguously (single P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Exact at each locus at both positions
 
-  Scenario: Exact match at each locus - patient allele string typed
+  Scenario: Exact match at each locus - patient ambiguously (single P group) typed and donor TGS typed
     Given a patient has a match
-    And the patient is allele string (single P group) typed at each locus
+    And the patient is ambiguously (single P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Exact at each locus at both positions
 
-  Scenario: Exact match at each locus - donor and patient allele string typed
+  Scenario: Exact match at each locus - donor and patient ambiguously (single P group) typed
     Given a patient has a match
-    And the matching donor is allele string (single P group) typed at each locus
-    And the patient is allele string (single P group) typed at each locus
+    And the matching donor is ambiguously (single P group) typed at each locus
+    And the patient is ambiguously (single P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Exact at each locus at both positions
 
-  Scenario: Exact match at each locus - donor NMDP code typed
+  Scenario: Potential match at each locus - patient TGS typed and donor ambiguously (multiple P group) typed
     Given a patient has a match
-    And the matching donor is NMDP code (single P group) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Exact at each locus at both positions
-
-  Scenario: Exact match at each locus - patient NMDP code typed
-    Given a patient has a match
-    And the patient is NMDP code (single P group) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Exact at each locus at both positions
-
-  Scenario: Exact match at each locus - donor and patient NMDP code typed
-    Given a patient has a match
-    And the matching donor is NMDP code (single P group) typed at each locus
-    And the patient is NMDP code (single P group) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Exact at each locus at both positions
-
-  Scenario: Exact match at each locus - donor NMDP code typed and patient allele string typed
-    Given a patient has a match
-    And the matching donor is NMDP code (single P group) typed at each locus
-    And the patient is allele string (single P group) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Exact at each locus at both positions
-
-  Scenario: Exact match at each locus - donor allele string typed and patient NMDP code typed
-    Given a patient has a match
-    And the matching donor is allele string (single P group) at each locus
-    And the patient is NMDP code (single P group) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Exact at each locus at both positions
-
-  Scenario: Potential match at each locus - patient TGS typed
-    Given a patient has a match
-    And the matching donor is low resolution (multiple P groups) typed at each locus
+    And the matching donor is ambiguously (multiple P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - donor TGS typed
+  Scenario: Potential match at each locus - patient ambiguously (multiple P group) typed and donor TGS typed
     Given a patient has a match
-    And the patient is low resolution (multiple P groups) typed at each locus
+    And the patient is ambiguously (multiple P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - patient allele string typed
+  Scenario: Potential match at each locus - patient ambiguously (single P group) typed and donor ambiguously (multiple P group) typed
     Given a patient has a match
-    And the matching donor is low resolution (multiple P groups) typed at each locus
-    And the patient is allele string (single P group) typed at each locus
+    And the matching donor is ambiguously (multiple P group) typed at each locus
+    And the patient is ambiguously (single P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - donor allele string typed
+  Scenario: Potential match at each locus - patient ambiguously (multiple P group) typed and donor ambiguously (single P group) typed
     Given a patient has a match
-    And the matching donor is allele string (single P group) typed at each locus
-    And the patient is low resolution (multiple P groups) typed at each locus
+    And the matching donor is ambiguously (single P group) typed at each locus
+    And the patient is ambiguously (multiple P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - patient NMDP code typed
+  Scenario: Potential match at each locus - donor and patient ambiguously (multiple P group) typed
     Given a patient has a match
-    And the matching donor is low resolution (multiple P groups) typed at each locus
-    And the patient is NMDP code (single P group) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Potential at each locus at both positions
-
-  Scenario: Potential match at each locus - donor NMDP code typed
-    Given a patient has a match
-    And the matching donor is NMDP code (single P group) typed at each locus
-    And the patient is low resolution (multiple P groups) typed at each locus
-    When I run a 10/10 search
-    Then the match confidence should be Potential at each locus at both positions
-
-  Scenario: Potential match at each locus - donor and patient low resolution typed
-    Given a patient has a match
-    And the matching donor is low resolution (multiple P groups) typed at each locus
-    And the patient is low resolution (multiple P groups) typed at each locus
+    And the matching donor is ambiguously (multiple P group) typed at each locus
+    And the patient is ambiguously (multiple P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
