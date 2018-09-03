@@ -164,6 +164,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (locus.ToUpper())
             {
                 case "ALL LOCI":
+                case "EACH LOCUS":
                     expectedLoci.Add(Locus.A);
                     expectedLoci.Add(Locus.B);
                     expectedLoci.Add(Locus.C);

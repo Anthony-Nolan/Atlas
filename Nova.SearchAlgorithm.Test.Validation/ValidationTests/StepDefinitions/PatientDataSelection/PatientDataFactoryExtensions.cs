@@ -68,6 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             switch (locus)
             {
                 case "each locus":
+                case "all loci":
                     factory = SetDonorTypingCategoryAtAllLoci(factory, typingCategory);
                     break;
                 default:
@@ -339,6 +340,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     break;
                 case "allele string (of subtypes)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
+                    break;
+                case "low resolution (multiple P groups)":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups);
                     break;
                 default:
                     ScenarioContext.Current.Pending();
