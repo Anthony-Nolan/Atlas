@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         public void GivenEachMatchingDonorIsOfMatchType(string matchType)
         {
             var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
-            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchType(matchType)).ToList();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => (PatientDataFactory) s.SetMatchType(matchType)).ToList();
             ScenarioContext.Current.Set(factory);
         }
 
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         public void GivenEachMatchingDonorIsOfDonorType(string donorType)
         {
             var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
-            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchDonorType(donorType)).ToList();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => (PatientDataFactory) s.SetMatchDonorType(donorType)).ToList();
             ScenarioContext.Current.Set(factory);
         }
 
@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         public void GivenEachMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
             var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
-            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchTypingCategories(typingCategory, locus)).ToList();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => (PatientDataFactory) s.SetMatchTypingCategories(typingCategory, locus)).ToList();
             ScenarioContext.Current.Set(factory);
         }
 
@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         public void GivenEachMatchingDonorIsInRegistry(string registry)
         {
             var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
-            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => s.SetMatchDonorRegistry(registry)).ToList();
+            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => (PatientDataFactory) s.SetMatchDonorRegistry(registry)).ToList();
             ScenarioContext.Current.Set(factory);
         }
     }

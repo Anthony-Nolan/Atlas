@@ -343,11 +343,12 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\Builders\DatabaseDonorSelectionCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\DatabaseDonorSelectionCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\GenotypeCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\MetaDonorSelectionCriteriaBuilder.cs" />
+    <Compile Include="TestData\Builders\Criteria\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\DonorBuilder.cs" />
-    <Compile Include="TestData\Builders\GenotypeCriteriaBuilder.cs" />
     <Compile Include="TestData\Builders\MetaDonorBuilder.cs" />
-    <Compile Include="TestData\Builders\PatientHlaSelectionCriteriaBuilder.cs" />
     <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
     <Compile Include="TestData\Exceptions\HlaSelectionException.cs" />
     <Compile Include="TestData\Exceptions\InvalidTestDataException.cs" />
@@ -370,6 +371,7 @@
     <Compile Include="TestData\Models\PatientApiResult.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
+    <Compile Include="TestData\Repositories\StaticTestHlaRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithDifferentThirdField.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithNonNullExpressionSuffix.cs" />
@@ -382,19 +384,25 @@
     <Compile Include="TestData\Resources\Alleles\TGS\ThreeFieldAlleles.cs" />
     <Compile Include="TestData\Resources\Alleles\TGS\TwoFieldAlleles.cs" />
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
+    <Compile Include="TestData\Resources\SpecificTestCases\HlaData\AllMatchGrades.cs" />
     <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
+    <Compile Include="TestData\Services\IPatientDataProvider.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\DatabaseDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\MetaDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataFactory.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataTestCase.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\GenotypeGeneratorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DatabaseDonorSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\MetaDonorSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientHlaSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\DatabaseDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\MetaDonorSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\PatientHlaSelectorTests.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientFactories\PatientDataFactoryTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
     <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature.cs">
       <AutoGen>True</AutoGen>
@@ -476,10 +484,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatchGrades.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchCounts.feature.cs">
+    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>MatchCounts.feature</DependentUpon>
+      <DependentUpon>MatchCountRanking.feature</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchGradeRanking.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MatchGradeRanking.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
@@ -577,9 +590,13 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Ranking.feature.cs</LastGenOutput>
     </None>
-    <None Include="ValidationTests\Features\Scoring\Ranking\MatchCounts.feature">
+    <None Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>MatchCounts.feature.cs</LastGenOutput>
+      <LastGenOutput>MatchCountRanking.feature.cs</LastGenOutput>
+    </None>
+    <None Include="ValidationTests\Features\Scoring\Ranking\MatchGradeRanking.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>MatchCountRanking.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

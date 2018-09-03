@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Ranking
+﻿Feature: Scoring - Ranking (match counts)
   As a member of the search team
   I want search results to be returned in an appropriate order based on differing match counts
 

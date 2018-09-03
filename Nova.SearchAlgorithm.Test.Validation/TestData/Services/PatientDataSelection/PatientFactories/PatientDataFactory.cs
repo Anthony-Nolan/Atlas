@@ -45,13 +45,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
 
         // Meta-donor and database-donor criteria
-        
+
         /// <summary>
         /// Adds an expected database donor at the given resolution
         /// Will assume database donor matches genotype at all positions
         /// </summary>
         void AddFullDonorTypingResolution(PhenotypeInfo<HlaTypingResolution> resolutions);
-        
+
         /// <summary>
         /// Adds an expected database donor with the given criteria
         /// </summary>
@@ -63,12 +63,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// Be careful that this is definitely what you want if matching multiple donors
         /// </summary>
         void UpdateMatchingDonorTypingResolutionsAtLocus(Locus locus, HlaTypingResolution resolution);
-        
+
         /// <summary>
         /// Will update all expected matching donor genotype match data at the specified locus/position.
         /// i.e. whether the database donor's hla at that position matches the Genotype of the meta-donor
         /// </summary>
-        void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool resolution);
+        void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool shouldMatchGenotype);
 
         /// <summary>
         /// Will update all expected matching donor resolutions, at all loci.
@@ -78,11 +78,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution resolution);
 
         // Selected Data
-        PhenotypeInfo<string> GetPatientHla();
         IEnumerable<int> GetExpectedMatchingDonorIds();
     }
 
-    public class PatientDataFactory : IPatientDataFactory
+    public class PatientDataFactory : IPatientDataFactory, IPatientDataProvider
     {
         private readonly IMetaDonorSelector metaDonorSelector;
         private readonly IDatabaseDonorSelector databaseDonorSelector;
@@ -104,6 +103,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private readonly List<DatabaseDonorSpecification> databaseDonorSelectionCriteriaSet = new List<DatabaseDonorSpecification>
         {
+            // TODO: Do not always assume a fully TGS typed match?
             new DatabaseDonorSpecification
             {
                 MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(DefaultTypingResolution)
@@ -277,16 +277,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
         }
 
-        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool resolution)
+        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool shouldMatchGenotype)
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, positions, resolution);
+                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, positions, shouldMatchGenotype);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, positions, resolution);
+                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, positions, shouldMatchGenotype);
             }
         }
 
