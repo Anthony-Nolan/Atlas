@@ -164,7 +164,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         }
         
         [Test]
-        public void GenerateGenotype_WhenThreeFieldTgsAlleleRequested_UsesAllelesFromFourFieldDataSetOnly()
+        public void GenerateGenotype_WhenThreeFieldTgsAlleleRequested_UsesAllelesFromThreeFieldDataSetOnly()
         {
             var criteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele).Build();
             genotypeGenerator.GenerateGenotype(criteria);
@@ -175,7 +175,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         }
         
         [Test]
-        public void GenerateGenotype_WhenTwoFieldTgsAlleleRequested_UsesAllelesFromFourFieldDataSetOnly()
+        public void GenerateGenotype_WhenTwoFieldTgsAlleleRequested_UsesAllelesFromTwoFieldDataSetOnly()
         {
             var criteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele).Build();
             genotypeGenerator.GenerateGenotype(criteria);
