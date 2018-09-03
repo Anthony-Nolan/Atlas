@@ -79,6 +79,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     NameString = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
                     SubtypeString = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles),
                     NameStringWithMultiplePGroups = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNamesWithMultiplePGroups(dataset, selectedAllele, alleles),
+                    NameStringWithSinglePGroup = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNamesWithSinglePGroup(selectedAllele, alleles),
                 });
         }
 

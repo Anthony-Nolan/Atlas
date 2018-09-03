@@ -47,6 +47,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             return GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, true);
         }
 
+        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithSinglePGroup(
+            AlleleTestData selectedAllele,
+            IEnumerable<AlleleTestData> alleles
+            )
+        {
+            // If we do not know the p-group for the selected allele, this string cannot be generated
+            if (selectedAllele.PGroup == null)
+            {
+                return new List<AlleleTestData>();
+            }
+
+            var allelesSharingPGroup = alleles.Where(a => a.PGroup == selectedAllele.PGroup && a.AlleleName != selectedAllele.AlleleName);
+
+            // If no alleles share a p-group with the selected allele, this string cannot be generated
+            if (allelesSharingPGroup.IsNullOrEmpty())
+            {
+                return new List<AlleleTestData>();
+            }
+
+            return allelesSharingPGroup.ToList().GetRandomSelection(1, 10);
+        }
+
         /// <summary>
         /// By default, alleles sharing a first field with the selected allele are preferred, but not required
         /// Selects a set of alleles to be used when generating an allele string of names for the selected allele
