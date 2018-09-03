@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         private static readonly Genotype NonMatchingGenotype = new Genotype
         {
-            Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a, new AlleleStringAlleles())).ToPhenotypeInfo((l, a) => a),
+            Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a, new AlleleStringOtherAlleles())).ToPhenotypeInfo((l, a) => a),
         };
         
         public PatientHlaSelector(IAlleleRepository alleleRepository)
@@ -163,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().DataAtLocus(locus);
 
-            return TgsAllele.FromTestDataAllele(alleleAtLocus, new AlleleStringAlleles());
+            return TgsAllele.FromTestDataAllele(alleleAtLocus, new AlleleStringOtherAlleles());
         }
 
         private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
@@ -171,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
             var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele);
 
-            return TgsAllele.FromTestDataAllele(allele, new AlleleStringAlleles());
+            return TgsAllele.FromTestDataAllele(allele, new AlleleStringOtherAlleles());
         }
 
         private TgsAllele GetThreeFieldMatchingTgsAllele(
@@ -206,7 +206,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
 
             var selectedAllele = validAlleles.GetRandomElement();
-            return TgsAllele.FromTestDataAllele(selectedAllele, new AlleleStringAlleles());
+            return TgsAllele.FromTestDataAllele(selectedAllele, new AlleleStringOtherAlleles());
         }
 
         private TgsAllele GetTwoFieldMatchingTgsAllele(
@@ -240,7 +240,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
 
             var selectedAllele = validAlleles.GetRandomElement();
-            return TgsAllele.FromTestDataAllele(selectedAllele, new AlleleStringAlleles());
+            return TgsAllele.FromTestDataAllele(selectedAllele, new AlleleStringOtherAlleles());
         }
     }
 }

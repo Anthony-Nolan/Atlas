@@ -74,10 +74,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 
             return TgsAllele.FromTestDataAllele(
                 selectedAllele,
-                new AlleleStringAlleles
+                new AlleleStringOtherAlleles
                 {
-                    OtherAllelesInNameString = GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
-                    OtherAllelesInSubtypeString = GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles)
+                    NameString = GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
+                    SubtypeString = GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles)
                 });
         }
 

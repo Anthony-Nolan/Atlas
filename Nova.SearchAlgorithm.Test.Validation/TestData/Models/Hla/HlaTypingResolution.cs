@@ -20,6 +20,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         // A `/` separated list of possible allele names
         // e.g. 02:03:01/02:07:01/11:02:01
         AlleleStringOfNames,
+        // An allele string of names, with alleles sharing a p-group
+        AlleleStringOfNamesWithSinglePGroup,
+        // An allele string of names, with at least two p-groups represented
+        AlleleStringOfNamesWithMultiplePGroups,
         // A known first field, followed by a `/` separated list of possible second fields
         // This is what NMDP codes correspond to 
         // e.g. 01:01/02/03
