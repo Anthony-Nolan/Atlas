@@ -34,6 +34,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
         PhenotypeInfo<List<AlleleTestData>> NullAlleles();
         PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix();
+
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithStringsOfSingleAndMultiplePGroupsPossible();
     }
 
     /// <summary>
@@ -155,6 +157,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
                     .Concat(TwoFieldAlleles().DataAtPosition(l, p))
                     .ToList()
             );
+        }
+
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithStringsOfSingleAndMultiplePGroupsPossible()
+        {
+            return FourFieldAlleles().Map((l, p, alleles) =>
+            {
+                var pGroupsWithMultipleAlleles = alleles.GroupBy(a => a.PGroup).Where(g => g.Count() > 1).ToList();
+                if (pGroupsWithMultipleAlleles.Count() < 2)
+                {
+                    throw new InvalidTestDataException("Not enough p-groups with more than one allele in dataset");
+                }
+
+                return pGroupsWithMultipleAlleles.SelectMany(a => a).ToList();
+            });
         }
 
         private static IEnumerable<IGrouping<string, AlleleTestData>> AlleleGroupsWithSharedFirstThreeFields(IEnumerable<AlleleTestData> alleles)

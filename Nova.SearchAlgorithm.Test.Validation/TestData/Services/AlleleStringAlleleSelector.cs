@@ -31,26 +31,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     throw new InvalidTestDataException("Allele string of subtypes required, but no valid alleles to use in the string exist");
                 }
 
-                allelesForAlleleStringOfSubtypes = RandomSelectionHelper.GetRandomSelection<AlleleTestData>(allelesValidForAlleleStringOfSubtypes, 1, 10).ToList();
+                allelesForAlleleStringOfSubtypes =
+                    RandomSelectionHelper.GetRandomSelection<AlleleTestData>(allelesValidForAlleleStringOfSubtypes, 1, 10).ToList();
             }
 
             return allelesForAlleleStringOfSubtypes;
         }
 
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithMultiplePGroups(
-            Dataset dataset,
-            AlleleTestData selectedAllele,
-            IEnumerable<AlleleTestData> alleles
-            )
-        {
-            // Different first fields (aka allele groups) will ensure that different p-groups are represented
-            return GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, true);
-        }
-
         public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithSinglePGroup(
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles
-            )
+        )
         {
             // If we do not know the p-group for the selected allele, this string cannot be generated
             if (selectedAllele.PGroup == null)
@@ -137,6 +128,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             }
 
             return allelesForString;
+        }
+
+        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithMultiplePGroups(
+            Dataset dataset,
+            AlleleTestData selectedAllele,
+            IEnumerable<AlleleTestData> alleles
+        )
+        {
+            try
+            {
+                // Different first fields (aka allele groups) will ensure that different p-groups are represented
+                return GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, true);
+            }
+            catch (InvalidTestDataException)
+            {
+                return new List<AlleleTestData>();
+            }
         }
 
         /// <summary>

@@ -120,6 +120,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                     return alleleRepository.AllelesForCDnaMatching().DataAtLocus(locus);
                 case Dataset.ProteinMatchPossible:
                     return alleleRepository.AllelesForProteinMatching().DataAtPosition(locus, position);
+                case Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible:
+                    return alleleRepository.AllelesWithStringsOfSingleAndMultiplePGroupsPossible().DataAtPosition(locus, position);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }

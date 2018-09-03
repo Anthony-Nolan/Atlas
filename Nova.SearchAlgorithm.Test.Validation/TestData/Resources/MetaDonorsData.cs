@@ -257,6 +257,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                         .Build(),
                 }
             },
+
+            // Donors With Allele Strings containing multiple/single p-groups - needed for confidence tests
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithStringOfMultiplePGroupsPossibleAtAllLoci()
+                    .WithStringOfSinglePGroupPossibleAtAllLoci()
+                .Build(),
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                {
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Build(),
+                }
+            },
         };
 
         /// <summary>
