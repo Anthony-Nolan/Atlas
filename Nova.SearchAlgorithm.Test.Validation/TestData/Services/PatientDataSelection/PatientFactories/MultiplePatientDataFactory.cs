@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     public interface IMultiplePatientDataFactory
     {
         void SetNumberOfPatients(int numberOfPatients);
-        List<IPatientDataFactory> PatientDataFactories { get; set; }
+        List<PatientDataFactory> PatientDataFactories { get; set; }
     }
 
     public class MultiplePatientDataFactory: IMultiplePatientDataFactory
@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         private readonly IDatabaseDonorSelector databaseDonorSelector;
         private readonly IPatientHlaSelector patientHlaSelector;
 
-        public List<IPatientDataFactory> PatientDataFactories { get; set; } = new List<IPatientDataFactory>();
+        public List<PatientDataFactory> PatientDataFactories { get; set; } = new List<PatientDataFactory>();
 
         public MultiplePatientDataFactory(
             IMetaDonorSelector metaDonorSelector,

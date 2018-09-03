@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {
@@ -22,6 +23,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
     {
         private readonly IAlleleRepository alleleRepository;
 
+        /// <summary>
+        /// A Genotype for which all hla values do not match any others in the repository
+        /// </summary>
+        private static readonly Genotype NonMatchingGenotype = new Genotype
+        {
+            Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
+        };
+        
         public PatientHlaSelector(IAlleleRepository alleleRepository)
         {
             this.alleleRepository = alleleRepository;
@@ -147,7 +156,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         // TODO: NOVA-1654: Remove static dependency on GenotypeGenerator so we can unit test this
         private static TgsAllele GetNonMatchingAllele(Locus locus, TypePositions position)
         {
-            return GenotypeGenerator.NonMatchingGenotype.Hla.DataAtPosition(locus, position);
+            return NonMatchingGenotype.Hla.DataAtPosition(locus, position);
         }
 
         private TgsAllele GetPGroupMatchLevelTgsAllele(Locus locus)

@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
@@ -19,14 +20,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
     {
         private Genotype genotype;
         private List<Donor> databaseDonors;
+        private readonly GenotypeGenerator genotypeGenerator;
 
+        public MetaDonor()
+        {
+            var alleleRepository = new AlleleRepository();
+            genotypeGenerator = new GenotypeGenerator(alleleRepository);
+        }
+        
         public Genotype Genotype
         {
             get
             {
                 if (genotype == null)
                 {
-                    genotype = GenotypeGenerator.GenerateGenotype(GenotypeCriteria);
+                    genotype = genotypeGenerator.GenerateGenotype(GenotypeCriteria);
                 }
 
                 return genotype;

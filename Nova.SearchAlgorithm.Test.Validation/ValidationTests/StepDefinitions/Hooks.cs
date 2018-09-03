@@ -34,9 +34,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [BeforeScenario]
         public static void BeforeScenario()
         {
+            var patientDataFactory = container.Resolve<IPatientDataFactory>();
+            var staticPatientDataProvider = container.Resolve<IStaticPatientDataProvider>();
+
             ScenarioContext.Current.Set(new SearchRequestBuilder());
-            ScenarioContext.Current.Set(container.Resolve<IPatientDataFactory>());
+            ScenarioContext.Current.Set(patientDataFactory);
+            ScenarioContext.Current.Set(staticPatientDataProvider);
             ScenarioContext.Current.Set(container.Resolve<IMultiplePatientDataFactory>());
+
+            // By default, inject the patient data factory as the patient data provider.
+            // If using specific test case hla data, this should be overridden in a step definition
+            ScenarioContext.Current.Set((IPatientDataProvider) patientDataFactory);
         }
         
         private static IContainer CreateContainer()
@@ -49,12 +57,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             builder.RegisterType<MetaDonorRepository>().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<AlleleRepository>().AsImplementedInterfaces();
+            builder.RegisterType<StaticTestHlaRepository>().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<TestDataService>().AsImplementedInterfaces();
             
             builder.RegisterType<PatientDataFactory>().AsImplementedInterfaces();
             builder.RegisterType<MultiplePatientDataFactory>().AsImplementedInterfaces();
-            
+            builder.RegisterType<StaticPatientDataProvider>().AsImplementedInterfaces();
+
             builder.RegisterType<MetaDonorSelector>().AsImplementedInterfaces();
             builder.RegisterType<DatabaseDonorSelector>().AsImplementedInterfaces();
             builder.RegisterType<PatientHlaSelector>().AsImplementedInterfaces();

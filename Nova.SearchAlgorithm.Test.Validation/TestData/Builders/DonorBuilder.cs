@@ -8,6 +8,9 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 {
+    /// <summary>
+    /// Builds a donor froma given meta-donor's genotype
+    /// </summary>
     public class DonorBuilder
     {
         private readonly Donor donor;

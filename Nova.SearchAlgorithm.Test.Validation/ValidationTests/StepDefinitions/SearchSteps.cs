@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System;
 using System.Collections.Generic;
@@ -55,9 +56,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 6/6 search")]
         public async Task WhenIRunASixOutOfSixSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
-            var searchHla = patientDataSelector.GetPatientHla();
+            var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(0)
@@ -74,9 +75,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run an 8/8 search")]
         public async Task WhenIRunAnEightOutOfEightSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
-            var searchHla = patientDataSelector.GetPatientHla();
+            var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(0)
@@ -93,9 +94,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 4/8 search")]
         public async Task WhenIRunAFourOutOfEightSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
-            var searchHla = patientDataSelector.GetPatientHla();
+            var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(4)
@@ -145,9 +146,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 10/10 search")]
         public async Task WhenIRunATenOutOfTenSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
-            var searchHla = patientDataSelector.GetPatientHla();
+            var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(0)
@@ -165,10 +166,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run a 9/10 search at locus (.*)")]
         public async Task WhenIRunANineOutOfTenSearchAtLocus(string locusString)
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
 
-            var searchHla = patientDataSelector.GetPatientHla();
+            var searchHla = patientDataProvider.GetPatientHla();
             var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
             var fullyMatchedLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
 
@@ -186,9 +187,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [When(@"I run an 8/10 search")]
         public async Task WhenIRunAnEightOutOfTenSearch()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
-            var searchHla = patientDataSelector.GetPatientHla();
+            var searchHla = patientDataProvider.GetPatientHla();
             var allowedMismatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
 
             var searchRequest = searchRequestBuilder
