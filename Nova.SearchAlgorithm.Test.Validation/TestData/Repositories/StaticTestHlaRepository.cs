@@ -18,6 +18,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 
     public class StaticTestHlaRepository : IStaticTestHlaRepository
     {
+        private static readonly IEnumerable<PhenotypeInfo<string>>[] DonorsForAllTestCases = {
+            Resources.SpecificTestCases.HlaData.AllMatchGrades.DonorHlaSets
+        };
+
         public PhenotypeInfo<string> GetPatientHlaData(StaticDataTestCase testCase)
         {
             switch (testCase)
@@ -31,9 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 
         public IEnumerable<Donor> GetAllDonors()
         {
-            var testDataSets = new[] {Resources.SpecificTestCases.HlaData.AllMatchGrades.DonorHlaSets};
-
-            return testDataSets
+            return DonorsForAllTestCases
                 .SelectMany(x => x)
                 .Select(hla => new Donor
                 {
