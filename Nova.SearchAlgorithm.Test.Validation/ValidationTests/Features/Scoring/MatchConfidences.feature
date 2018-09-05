@@ -26,36 +26,36 @@
     When I run a 10/10 search
     Then the match confidence should be Exact at each locus at both positions
 
-  Scenario: Potential match at each locus - patient TGS typed and donor ambiguously (multiple P group) typed
+  Scenario: Potential match at each locus - patient TGS typed and donor ambiguously (multiple P groups) typed
     Given a patient has a match
-    And the matching donor is ambiguously (multiple P group) typed at each locus
+    And the matching donor is ambiguously (multiple P groups) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - patient ambiguously (multiple P group) typed and donor TGS typed
+  Scenario: Potential match at each locus - patient ambiguously (multiple P groups) typed and donor TGS typed
     Given a patient has a match
-    And the patient is ambiguously (multiple P group) typed at each locus
+    And the patient is ambiguously (multiple P groups) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - patient ambiguously (single P group) typed and donor ambiguously (multiple P group) typed
+  Scenario: Potential match at each locus - patient ambiguously (single P group) typed and donor ambiguously (multiple P groups) typed
     Given a patient has a match
-    And the matching donor is ambiguously (multiple P group) typed at each locus
+    And the matching donor is ambiguously (multiple P groups) typed at each locus
     And the patient is ambiguously (single P group) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - patient ambiguously (multiple P group) typed and donor ambiguously (single P group) typed
+  Scenario: Potential match at each locus - patient ambiguously (multiple P groups) typed and donor ambiguously (single P group) typed
     Given a patient has a match
     And the matching donor is ambiguously (single P group) typed at each locus
-    And the patient is ambiguously (multiple P group) typed at each locus
+    And the patient is ambiguously (multiple P groups) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 
-  Scenario: Potential match at each locus - donor and patient ambiguously (multiple P group) typed
+  Scenario: Potential match at each locus - donor and patient ambiguously (multiple P groups) typed
     Given a patient has a match
-    And the matching donor is ambiguously (multiple P group) typed at each locus
-    And the patient is ambiguously (multiple P group) typed at each locus
+    And the matching donor is ambiguously (multiple P groups) typed at each locus
+    And the patient is ambiguously (multiple P groups) typed at each locus
     When I run a 10/10 search
     Then the match confidence should be Potential at each locus at both positions
 

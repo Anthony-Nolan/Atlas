@@ -233,6 +233,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             {
                 case "serology":
                     return HlaTypingResolution.Serology;
+                case "ambiguously (multiple P groups)":
+                    return HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups;
                 default:
                     ScenarioContext.Current.Pending();
                     return HlaTypingResolution.Tgs;

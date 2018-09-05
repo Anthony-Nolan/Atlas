@@ -146,17 +146,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Potential match at each locus - patient TGS typed and donor ambiguously (multiple" +
-            " P group) typed")]
-        public virtual void PotentialMatchAtEachLocus_PatientTGSTypedAndDonorAmbiguouslyMultiplePGroupTyped()
+            " P groups) typed")]
+        public virtual void PotentialMatchAtEachLocus_PatientTGSTypedAndDonorAmbiguouslyMultiplePGroupsTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - patient TGS typed and donor ambiguously (multiple" +
-                    " P group) typed", ((string[])(null)));
+                    " P groups) typed", ((string[])(null)));
 #line 29
   this.ScenarioSetup(scenarioInfo);
 #line 30
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 31
-    testRunner.And("the matching donor is ambiguously (multiple P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is ambiguously (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 32
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 33
@@ -166,18 +166,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Potential match at each locus - patient ambiguously (multiple P group) typed and " +
-            "donor TGS typed")]
-        public virtual void PotentialMatchAtEachLocus_PatientAmbiguouslyMultiplePGroupTypedAndDonorTGSTyped()
+        [NUnit.Framework.DescriptionAttribute("Potential match at each locus - patient ambiguously (multiple P groups) typed and" +
+            " donor TGS typed")]
+        public virtual void PotentialMatchAtEachLocus_PatientAmbiguouslyMultiplePGroupsTypedAndDonorTGSTyped()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - patient ambiguously (multiple P group) typed and " +
-                    "donor TGS typed", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - patient ambiguously (multiple P groups) typed and" +
+                    " donor TGS typed", ((string[])(null)));
 #line 35
   this.ScenarioSetup(scenarioInfo);
 #line 36
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 37
-    testRunner.And("the patient is ambiguously (multiple P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is ambiguously (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 38
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 39
@@ -188,17 +188,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Potential match at each locus - patient ambiguously (single P group) typed and do" +
-            "nor ambiguously (multiple P group) typed")]
-        public virtual void PotentialMatchAtEachLocus_PatientAmbiguouslySinglePGroupTypedAndDonorAmbiguouslyMultiplePGroupTyped()
+            "nor ambiguously (multiple P groups) typed")]
+        public virtual void PotentialMatchAtEachLocus_PatientAmbiguouslySinglePGroupTypedAndDonorAmbiguouslyMultiplePGroupsTyped()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - patient ambiguously (single P group) typed and do" +
-                    "nor ambiguously (multiple P group) typed", ((string[])(null)));
+                    "nor ambiguously (multiple P groups) typed", ((string[])(null)));
 #line 41
   this.ScenarioSetup(scenarioInfo);
 #line 42
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 43
-    testRunner.And("the matching donor is ambiguously (multiple P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is ambiguously (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 44
     testRunner.And("the patient is ambiguously (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 45
@@ -210,12 +210,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Potential match at each locus - patient ambiguously (multiple P group) typed and " +
-            "donor ambiguously (single P group) typed")]
-        public virtual void PotentialMatchAtEachLocus_PatientAmbiguouslyMultiplePGroupTypedAndDonorAmbiguouslySinglePGroupTyped()
+        [NUnit.Framework.DescriptionAttribute("Potential match at each locus - patient ambiguously (multiple P groups) typed and" +
+            " donor ambiguously (single P group) typed")]
+        public virtual void PotentialMatchAtEachLocus_PatientAmbiguouslyMultiplePGroupsTypedAndDonorAmbiguouslySinglePGroupTyped()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - patient ambiguously (multiple P group) typed and " +
-                    "donor ambiguously (single P group) typed", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - patient ambiguously (multiple P groups) typed and" +
+                    " donor ambiguously (single P group) typed", ((string[])(null)));
 #line 48
   this.ScenarioSetup(scenarioInfo);
 #line 49
@@ -223,7 +223,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 50
     testRunner.And("the matching donor is ambiguously (single P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 51
-    testRunner.And("the patient is ambiguously (multiple P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is ambiguously (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 52
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 53
@@ -233,20 +233,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Potential match at each locus - donor and patient ambiguously (multiple P group) " +
-            "typed")]
-        public virtual void PotentialMatchAtEachLocus_DonorAndPatientAmbiguouslyMultiplePGroupTyped()
+        [NUnit.Framework.DescriptionAttribute("Potential match at each locus - donor and patient ambiguously (multiple P groups)" +
+            " typed")]
+        public virtual void PotentialMatchAtEachLocus_DonorAndPatientAmbiguouslyMultiplePGroupsTyped()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - donor and patient ambiguously (multiple P group) " +
-                    "typed", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Potential match at each locus - donor and patient ambiguously (multiple P groups)" +
+                    " typed", ((string[])(null)));
 #line 55
   this.ScenarioSetup(scenarioInfo);
 #line 56
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 57
-    testRunner.And("the matching donor is ambiguously (multiple P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is ambiguously (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 58
-    testRunner.And("the patient is ambiguously (multiple P group) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is ambiguously (multiple P groups) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 59
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 60
