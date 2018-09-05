@@ -113,21 +113,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
         {
-            switch (grades)
+            switch (grades.ToLower())
             {
                 case "p-group":
                     return new[] {MatchGrade.PGroup};
                 case "g-group":
                     return new[] {MatchGrade.GGroup};
-                case "cDna":
-                case "CDna":
-                case "CDNA":
-                case "cDNA":
+                case "cdna":
                     return new[] {MatchGrade.CDna};
-                case "gDna":
-                case "GDna":
-                case "gDNA":
-                case "GDNA":
+                case "gdna":
                     return new[] {MatchGrade.GDna};
                 case "protein":
                     return new[] {MatchGrade.Protein};

@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetMatchLevelAtAllLoci(this IPatientDataFactory factory, string matchLevel)
         {
-            switch (matchLevel)
+            switch (matchLevel.ToLower())
             {
                 case "p-group":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
@@ -106,15 +106,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.Protein);
                     break;
                 case "cdna":
-                case "cDna":
-                case "CDNA":
-                case "cDNA":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.CDna);
                     break;
                 case "gdna":
-                case "gDna":
-                case "gDNA":
-                case "GDNA":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.Allele);
                     break;
                 case "three field (different fourth field)":
