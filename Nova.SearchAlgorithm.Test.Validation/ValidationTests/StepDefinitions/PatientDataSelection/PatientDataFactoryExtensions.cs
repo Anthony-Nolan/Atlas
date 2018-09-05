@@ -233,6 +233,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             {
                 case "serology":
                     return HlaTypingResolution.Serology;
+                case "unambiguously":
+                    return HlaTypingResolution.Tgs;
+                case "ambiguously (single P group)":
+                    return HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup;
                 case "ambiguously (multiple P groups)":
                     return HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups;
                 default:
@@ -300,6 +304,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
                     break;
+                // only 4-field allele names can be guaranteed to be unambiguous
+                case "unambiguously":
                 case "TGS (four field)":
                 case "TGS (four-field)":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
@@ -336,6 +342,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     break;
                 case "allele string (of subtypes)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
+                    break;
+                case "ambiguously (single P group)":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup);
                     break;
                 case "ambiguously (multiple P groups)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups);
