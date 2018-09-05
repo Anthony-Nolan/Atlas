@@ -17,6 +17,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         TwoFieldTruncatedAllele,
         XxCode,
         NmdpCode,
+        /// <summary>
+        /// Typing that is guaranteed to map to a single allele.
+        /// Is more specific than 'TGS' option, as some typings in the TGS dataset actually map to multiple alleles.
+        /// Required for Match Confidence tests.
+        /// </summary>
+        Unambiguous,
         // A `/` separated list of possible allele names
         // e.g. 02:03:01/02:07:01/11:02:01
         AlleleStringOfNames,

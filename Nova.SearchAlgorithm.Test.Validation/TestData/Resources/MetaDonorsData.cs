@@ -258,7 +258,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 }
             },
 
-            // Donors With Allele Strings containing multiple/single p-groups - needed for confidence tests
+            // Donors with unambiguous typings, as well as ambiguous allele strings containing multiple/single p-groups - needed for confidence tests
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
@@ -269,7 +269,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 .Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Unambiguous).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Build(),
                 }

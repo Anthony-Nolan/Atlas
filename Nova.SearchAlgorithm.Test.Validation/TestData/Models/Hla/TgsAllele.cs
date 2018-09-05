@@ -186,6 +186,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                     return AlleleStringOfNames;
                 case HlaTypingResolution.AlleleStringOfSubtypes:
                     return AlleleStringOfSubtypes;
+                case HlaTypingResolution.Unambiguous:
+                    // only name guaranteed to be unambiguous
+                    return FourFieldAllele;
                 case HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup:
                     return AlleleStringOfNamesWithSinglePGroup;
                 case HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups:

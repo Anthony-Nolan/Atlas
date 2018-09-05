@@ -158,7 +158,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                         return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
                     case Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible:
                         return criteria.DatabaseDonorDetailsSets
-                            .Any(d => d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups
+                            .Any(d => d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.Unambiguous
+                                      || d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups
                                       || d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup);
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
