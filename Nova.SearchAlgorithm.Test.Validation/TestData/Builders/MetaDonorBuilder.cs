@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 

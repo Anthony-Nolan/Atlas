@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 {
     public class GenotypeCriteriaBuilder
     {

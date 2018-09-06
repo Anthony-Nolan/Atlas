@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Castle.Core.Internal;
+﻿using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
+using System;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {

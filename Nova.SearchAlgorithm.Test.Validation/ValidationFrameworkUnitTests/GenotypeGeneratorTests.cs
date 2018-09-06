@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -9,6 +8,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
 {
@@ -22,10 +22,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         // Neither the allele splitter nor TgsAllele class are mocked, making this a necessity
         private static readonly List<AlleleTestData> Alleles1 = new List<AlleleTestData>
         {
-            new AlleleTestData {AlleleName = "01:01:01:test-allele-pos-1"},
-            new AlleleTestData {AlleleName = "01:02:01:test-allele-pos-1"},
-            new AlleleTestData {AlleleName = "02:01:01:test-allele-pos-1"},
-            new AlleleTestData {AlleleName = "02:02:01:test-allele-pos-1"},
+            new AlleleTestData {AlleleName = "01:01:01:test-allele-pos-1", PGroup = "01:01P"},
+            new AlleleTestData {AlleleName = "01:02:01:test-allele-pos-1", PGroup = "01:01P"},
+            new AlleleTestData {AlleleName = "02:01:01:test-allele-pos-1", PGroup = "02:02P"},
+            new AlleleTestData {AlleleName = "02:02:01:test-allele-pos-1", PGroup = "02:02P"},
         };
 
         private static readonly List<AlleleTestData> Alleles2 = new List<AlleleTestData>
@@ -63,6 +63,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             alleleRepository.AllelesForGGroupMatching().Returns(AllelesPhenotype);
             alleleRepository.AllelesForProteinMatching().Returns(AllelesPhenotype);
             alleleRepository.DonorAllelesForPGroupMatching().Returns(LociAlleles);
+
+            alleleRepository.AllelesWithStringsOfSingleAndMultiplePGroupsPossible().Returns(AllelesPhenotype);
 
             genotypeGenerator = new GenotypeGenerator(alleleRepository);
         }
@@ -264,6 +266,52 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             genotypeGenerator.GenerateGenotype(criteria);
 
             alleleRepository.Received().AllelesForProteinMatching();
+        }
+
+        [Test]
+        public void GenerateGenotype_WhenAlleleStringOfNamesWithSinglePGroupPossible_SetsAlleleString()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfSinglePGroupPossibleAtAllLoci().Build();
+            var genotype = genotypeGenerator.GenerateGenotype(criteria);
+
+            genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().NotBeNullOrEmpty();
+        }
+
+        [Test]
+        public void GenerateGenotype_WhenAlleleStringOfNamesWithSinglePGroupPossible_UsesAllelesWithStringsOfSingleAndMultiplePGroupsPossibleDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfSinglePGroupPossibleAtAllLoci().Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesWithStringsOfSingleAndMultiplePGroupsPossible();
+        }
+
+        [Test]
+        public void GenerateGenotype_WhenAlleleStringOfNamesWithSinglePGroupNotPossible_DoesNotSetAlleleString()
+        {
+            var criteria = new GenotypeCriteriaBuilder().Build();
+            var genotype = genotypeGenerator.GenerateGenotype(criteria);
+
+            // No P groups listed in A_2 test data, so no allele string of single P group can be built at this position
+            genotype.Hla.A_2.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().BeNullOrEmpty();
+        }
+
+        [Test]
+        public void GenerateGenotype_WhenAlleleStringOfNamesWithMultiplePGroupPossible_SetsAlleleString()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfMultiplePGroupsPossibleAtAllLoci().Build();
+            var genotype = genotypeGenerator.GenerateGenotype(criteria);
+
+            genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Should().NotBeNullOrEmpty();
+        }
+
+        [Test]
+        public void GenerateGenotype_WhenAlleleStringOfNamesWithMultiplePGroupsPossible_UsesAllelesWithStringsOfMultipleAndMultiplePGroupsPossibleDataset()
+        {
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfMultiplePGroupsPossibleAtAllLoci().Build();
+            genotypeGenerator.GenerateGenotype(criteria);
+
+            alleleRepository.Received().AllelesWithStringsOfSingleAndMultiplePGroupsPossible();
         }
     }
 }
