@@ -421,5 +421,47 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Mode
 
             tgsAllele.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Should().BeNullOrEmpty();
         }
+
+        [Test]
+        public void FromTestDataAllele_WithFourFieldTestData_AndUnambiguousResolution_GetsFourFieldName()
+        {
+            const string fourFieldName = "01:02:03:04";
+            var testData = new AlleleTestData
+            {
+                AlleleName = fourFieldName
+            };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringOtherAlleles());
+
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Unambiguous).Should().Be(fourFieldName);
+        }
+
+        [Test]
+        public void FromTestDataAllele_WithThreeFieldTestData_AndUnambiguousResolution_ReturnsNull()
+        {
+            const string threeFieldName = "01:02:03";
+            var testData = new AlleleTestData
+            {
+                AlleleName = threeFieldName
+            };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringOtherAlleles());
+
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Unambiguous).Should().BeNullOrEmpty();
+        }
+
+        [Test]
+        public void FromTestDataAllele_WithTwoFieldTestData_AndUnambiguousResolution_ReturnsNull()
+        {
+            const string twoFieldName = "01:02";
+            var testData = new AlleleTestData
+            {
+                AlleleName = twoFieldName
+            };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData, new AlleleStringOtherAlleles());
+
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.Unambiguous).Should().BeNullOrEmpty();
+        }
     }
 }
