@@ -240,6 +240,84 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("P-group match - donor untyped at C")]
+        public virtual void P_GroupMatch_DonorUntypedAtC()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("P-group match - donor untyped at C", ((string[])(null)));
+#line 62
+  this.ScenarioSetup(scenarioInfo);
+#line 63
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 64
+    testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 65
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 66
+    testRunner.Then("the match grade should be p-group at C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("P-group match - patient untyped at C")]
+        public virtual void P_GroupMatch_PatientUntypedAtC()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("P-group match - patient untyped at C", ((string[])(null)));
+#line 68
+  this.ScenarioSetup(scenarioInfo);
+#line 69
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 70
+    testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 71
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 72
+    testRunner.Then("the match grade should be p-group at C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("P-group match - patient and donor untyped at C")]
+        public virtual void P_GroupMatch_PatientAndDonorUntypedAtC()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("P-group match - patient and donor untyped at C", ((string[])(null)));
+#line 74
+  this.ScenarioSetup(scenarioInfo);
+#line 75
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 76
+    testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 77
+    testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 78
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 79
+    testRunner.Then("the match grade should be p-group at C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Mismatch grade - double mismatch at locus A")]
+        public virtual void MismatchGrade_DoubleMismatchAtLocusA()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Mismatch grade - double mismatch at locus A", ((string[])(null)));
+#line 81
+  this.ScenarioSetup(scenarioInfo);
+#line 82
+    testRunner.Given("a patient and a donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 83
+    testRunner.And("the donor has a double mismatch at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 84
+    testRunner.When("I run an 8/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 85
+    testRunner.Then("the match grade should be mismatch at A at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
