@@ -101,6 +101,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.HlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<MatchingDictionary.Services.LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchingDictionary.Services.Dpb1TceGroupsLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();

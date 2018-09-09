@@ -3,9 +3,8 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -28,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     public class ScoringTests : IntegrationTestBase
     {
         private ISearchService searchService;
-        private IHlaMatchingLookupService matchingLookupService;
+        private ILocusHlaMatchingLookupService matchingLookupService;
 
         private ITestHlaSet defaultHlaSet;
         private ITestHlaSet mismatchHlaSet;
@@ -38,16 +37,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            matchingLookupService = Container.Resolve<IHlaMatchingLookupService>();
+            matchingLookupService = Container.Resolve<ILocusHlaMatchingLookupService>();
 
             // source of donor HLA phenotypes
             defaultHlaSet = new TestHla.HeterozygousSet1();
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
             // build test donors
+            var matchingHlaPhenotype = defaultHlaSet
+                .FiveLocus_SingleExpressingAlleles
+                .ToExpandedHlaPhenotype(matchingLookupService)
+                .Result;
+
             donor_FiveLocus_SingleAlleles = new InputDonorBuilder(DonorIdGenerator.NextId())
-            .WithMatchingHla(BuildMatchingHlaPhenotype(defaultHlaSet.FiveLocus_SingleExpressingAlleles))
-            .Build();
+                .WithMatchingHla(matchingHlaPhenotype)
+                .Build();
 
             // add test donors to repository
             var donorRepository = Container.Resolve<IDonorImportRepository>();
@@ -290,20 +294,5 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         #endregion
-
-        private PhenotypeInfo<ExpandedHla> BuildMatchingHlaPhenotype(PhenotypeInfo<string> hlas)
-        {
-            return hlas.Map((locus, positions, hlaName) => GetExpandedHla(locus, hlaName));
-        }
-
-        private ExpandedHla GetExpandedHla(Locus locus, string hlaName)
-        {
-            return hlaName == null
-                ? null
-                : matchingLookupService
-                    .GetHlaLookupResult(locus.ToMatchLocus(), hlaName)
-                    .Result
-                    .ToExpandedHla(hlaName);
-        }
     }
 }

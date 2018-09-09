@@ -114,6 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();

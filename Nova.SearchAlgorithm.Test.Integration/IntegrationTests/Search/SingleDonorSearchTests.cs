@@ -1,15 +1,14 @@
-﻿using System.Linq;
-using Autofac;
+﻿using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
@@ -46,15 +45,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var lookupService = Container.Resolve<IHlaMatchingLookupService>();
+            var lookupService = Container.Resolve<ILocusHlaMatchingLookupService>();
             var donorRepository = Container.Resolve<IDonorImportRepository>();
-            
+
             donor = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = donorHlas.Map((l, p, h) => h == null ? null : lookupService.GetHlaLookupResult(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
+                MatchingHla = donorHlas.ToExpandedHlaPhenotype(lookupService).Result
             };
             donorRepository.AddOrUpdateDonorWithHla(donor).Wait();
         }

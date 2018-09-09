@@ -371,6 +371,7 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleToSerology\AlleleToSerologyMatchingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToSerology\SerologyToSerologyMatchingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\Dpb1TceGroupsLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Lookups\LocusHlaMatchingLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaScoringLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaSearchingLookupServiceTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaMatchingLookupServiceTest.cs" />

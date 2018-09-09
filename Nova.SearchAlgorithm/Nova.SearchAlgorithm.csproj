@@ -320,6 +320,7 @@
     <Compile Include="Extensions\BatchEnumerable.cs" />
     <Compile Include="Extensions\DonorExtensions.cs" />
     <Compile Include="Extensions\ExpandedHlaExtensions.cs" />
+    <Compile Include="Extensions\HlaPhenotypeExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\LocusExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchLocusExtensions.cs" />
