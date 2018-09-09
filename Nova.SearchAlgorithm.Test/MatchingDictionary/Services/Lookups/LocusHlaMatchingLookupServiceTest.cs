@@ -56,5 +56,71 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }
+
+        [TestCase(TypingMethod.Molecular)]
+        [TestCase(TypingMethod.Serology)]
+        public async Task GetHlaMatchingLookupResultForLocus_WhenPositionOneIsExpressedTyping_AndPositionTwoIsNullAllele_PGroupOfOneCopiedToTwo(
+            TypingMethod expressedHlaTypingMethod)
+        {
+            const string typingInPosition1 = "expressed-hla";
+            const string typingInPosition2 = "null-allele";
+            const string pGroup = "expressed-hla-p-group";
+
+            var expressedHlaResult =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, expressedHlaTypingMethod, new[] { pGroup });
+            var nullAlleleResult =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new string[]{});
+
+            matchingLookupService
+                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>())
+                .Returns(expressedHlaResult, nullAlleleResult);
+
+            var nullAlleleResultWithExpressedPGroup =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new[] { pGroup });
+
+            var expectedResults =
+                new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
+                    expressedHlaResult,
+                    nullAlleleResultWithExpressedPGroup);
+
+            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResultForLocus(
+                MatchedLocus,
+                new Tuple<string, string>(typingInPosition1, typingInPosition2));
+
+            actualResults.ShouldBeEquivalentTo(expectedResults);
+        }
+
+        [TestCase(TypingMethod.Molecular)]
+        [TestCase(TypingMethod.Serology)]
+        public async Task GetHlaMatchingLookupResultForLocus_WhenPositionOneIsNullAllele_AndPositionTwoIsExpressedTyping_PGroupOfTwoCopiedToOne(
+            TypingMethod expressedHlaTypingMethod)
+        {
+            const string typingInPosition1 = "null-allele";
+            const string typingInPosition2 = "expressed-hla";
+            const string pGroup = "expressed-hla-p-group";
+
+            var expressedHlaResult =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] { pGroup });
+            var nullAlleleResult =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new string[] { });
+
+            matchingLookupService
+                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>())
+                .Returns(expressedHlaResult, nullAlleleResult);
+
+            var nullAlleleResultWithExpressedPGroup =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new[] { pGroup });
+
+            var expectedResults =
+                new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
+                    nullAlleleResultWithExpressedPGroup,
+                    expressedHlaResult);
+
+            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResultForLocus(
+                MatchedLocus,
+                new Tuple<string, string>(typingInPosition1, typingInPosition2));
+
+            actualResults.ShouldBeEquivalentTo(expectedResults);
+        }
     }
 }
