@@ -99,14 +99,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             const string typingInPosition2 = "expressed-hla";
             const string pGroup = "expressed-hla-p-group";
 
-            var expressedHlaResult =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] { pGroup });
             var nullAlleleResult =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new string[] { });
+            var expressedHlaResult =
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] { pGroup });
 
             matchingLookupService
                 .GetHlaLookupResult(MatchedLocus, Arg.Any<string>())
-                .Returns(expressedHlaResult, nullAlleleResult);
+                .Returns(nullAlleleResult, expressedHlaResult);
 
             var nullAlleleResultWithExpressedPGroup =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new[] { pGroup });
