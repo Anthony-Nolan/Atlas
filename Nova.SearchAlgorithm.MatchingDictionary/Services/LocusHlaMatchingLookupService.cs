@@ -1,6 +1,8 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
@@ -26,14 +28,38 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResultForLocus(
-            MatchLocus matchLocus, 
+            MatchLocus matchLocus,
             Tuple<string, string> locusTyping)
         {
-            var lookupResult = await Task.WhenAll(
+            var locusLookupResult = await Task.WhenAll(
                 singleHlaLookupService.GetHlaLookupResult(matchLocus, locusTyping.Item1),
                 singleHlaLookupService.GetHlaLookupResult(matchLocus, locusTyping.Item2));
 
-            return new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(lookupResult[0], lookupResult[1]);
+            var result1 = GetSingleHlaLookupResult(locusLookupResult[0], locusLookupResult[1].MatchingPGroups);
+            var result2 = GetSingleHlaLookupResult(locusLookupResult[1], locusLookupResult[0].MatchingPGroups);
+
+            return new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(result1, result2);
+        }
+
+        private static IHlaMatchingLookupResult GetSingleHlaLookupResult(
+            IHlaMatchingLookupResult lookupResult,
+            IEnumerable<string> additionalPGroups)
+        {
+            // TODO: NOVA-1723 - Replace Result.PGroups.Any() with Result.ContainsNullAllele
+            return lookupResult.MatchingPGroups.Any()
+                ? lookupResult
+                : AddPGroupsToLookupResult(lookupResult, additionalPGroups);
+        }
+
+        private static IHlaMatchingLookupResult AddPGroupsToLookupResult(
+            IHlaMatchingLookupResult result,
+            IEnumerable<string> pGroupsToAdd)
+        {
+            return new HlaMatchingLookupResult(
+                result.MatchLocus,
+                result.LookupName,
+                result.TypingMethod,
+                result.MatchingPGroups.Union(pGroupsToAdd));
         }
     }
 }
