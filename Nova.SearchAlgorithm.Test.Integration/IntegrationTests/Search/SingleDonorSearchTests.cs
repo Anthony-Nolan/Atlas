@@ -32,8 +32,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         // A selection of valid hla strings that do not match the donor's
         private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
         {
-            A_1 = "01:01:01:02N",
-            A_2 = "01:01:01:02N",
+            A_1 = "02:01:01:01",
+            A_2 = "02:01:01:01",
             B_1 = "07:02:01:01",
             B_2 = "07:02:13",
             DRB1_1 = "14:190",
