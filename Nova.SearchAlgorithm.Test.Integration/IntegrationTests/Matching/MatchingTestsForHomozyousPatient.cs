@@ -105,7 +105,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var criteria = GetDefaultCriteriaBuilder();
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
-            matchingDonors.Should().NotBeNullOrEmpty().ShouldBeEquivalentTo(twoOutOfTwoMatchCountDonors);
+            matchingDonors.ShouldBeEquivalentTo(twoOutOfTwoMatchCountDonors);
         }
 
         [Test]
@@ -117,7 +117,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(LocusUnderTest, GetPatientLocusMatchCriteria(LocusUnderTest, mismatchCount));
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
-            matchingDonors.Should().NotBeNullOrEmpty().ShouldBeEquivalentTo(oneOutOfTwoMatchCountDonors);
+            matchingDonors.ShouldBeEquivalentTo(oneOutOfTwoMatchCountDonors);
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(LocusUnderTest, GetPatientLocusMatchCriteria(LocusUnderTest, mismatchCount));
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
-            matchingDonors.Should().NotBeNullOrEmpty().ShouldBeEquivalentTo(zeroOutOfTwoMatchCountDonors);
+            matchingDonors.ShouldBeEquivalentTo(zeroOutOfTwoMatchCountDonors);
         }
 
         private void SetSourceHlaPhenotypes()
