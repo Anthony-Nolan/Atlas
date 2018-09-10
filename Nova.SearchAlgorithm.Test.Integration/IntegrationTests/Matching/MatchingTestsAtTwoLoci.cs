@@ -233,7 +233,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = matchingPGroups
                 })
                 .WithSearchType(DefaultDonorType)
-                .WithTotalMismatchCount(0);
+                .WithDonorMismatchCount(0);
         }
 
         private class TwoLociTestsInputDonorBuilder
@@ -256,7 +256,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusOne_PositionTwo : NonMatchingPGroup;
 
                 inputDonorBuilder = inputDonorBuilder
-                    .WithHlaAtLocus(
+                    .WithMatchingHlaAtLocus(
                         locus1,
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition1}},
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition2}});
@@ -270,7 +270,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusTwo_PositionTwo : NonMatchingPGroup;
 
                 inputDonorBuilder = inputDonorBuilder
-                    .WithHlaAtLocus(
+                    .WithMatchingHlaAtLocus(
                         locus2,
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition1}},
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition2}});

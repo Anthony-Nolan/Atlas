@@ -27,17 +27,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     public class ScoringTests : IntegrationTestBase
     {
         private ISearchService searchService;
-        private ILocusHlaMatchingLookupService matchingLookupService;
-
         private ITestHlaSet defaultHlaSet;
         private ITestHlaSet mismatchHlaSet;
-
         private InputDonor donor_FiveLocus_SingleAlleles;
 
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            matchingLookupService = Container.Resolve<ILocusHlaMatchingLookupService>();
+            var matchingLookupService = Container.Resolve<ILocusHlaMatchingLookupService>();
 
             // source of donor HLA phenotypes
             defaultHlaSet = new TestHla.HeterozygousSet1();
