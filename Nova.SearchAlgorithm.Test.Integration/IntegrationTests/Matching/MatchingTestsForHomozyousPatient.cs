@@ -31,8 +31,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     /// Expected match counts are determined by the decision to use position 1 of the source phenotype
     /// as the expressed typing within the homozygous patient locus.
     /// </summary>
-    [TestFixture(Zygosity.HomozygousByTyping)]
-    [TestFixture(Zygosity.HomozygousByExpression)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusSingleExpressingAlleles)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusExpressingAllelesWithTruncatedNames)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusXxCodes)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusSerologies)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSingleExpressingAlleles)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusExpressingAllelesWithTruncatedNames)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusXxCodes)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSerologies)]
     public class MatchingTestsForHomozygousPatient : IntegrationTestBase
     {
         private class LocusTypingInfo
@@ -59,6 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private const string DifferentNullAllele = "11:21N";
 
         private readonly Zygosity patientZygosity;
+        private readonly TestHlaPhenotypeCategory patientTestCategory;
 
         private PhenotypeInfo<string> originalHlaPhenotype;
         private Tuple<string, string> originalHlaAtLocusUnderTest;
@@ -72,9 +79,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private IEnumerable<int> oneOutOfTwoMatchCountDonors;
         private IEnumerable<int> zeroOutOfTwoMatchCountDonors;
 
-        public MatchingTestsForHomozygousPatient(Zygosity patientZygosity)
+        public MatchingTestsForHomozygousPatient(
+            Zygosity patientZygosity,
+            TestHlaPhenotypeCategory patientTestCategory)
         {
             this.patientZygosity = patientZygosity;
+            this.patientTestCategory = patientTestCategory;
         }
 
         [OneTimeSetUp]
@@ -134,8 +144,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void SetSourceHlaPhenotypes()
         {
-            originalHlaPhenotype = new TestHla.HeterozygousSet1().FiveLocus_SingleExpressingAlleles;
-            var mismatchedHlaPhenotype = new TestHla.HeterozygousSet2().FiveLocus_SingleExpressingAlleles;
+            originalHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new TestHla.HeterozygousSet1(), patientTestCategory);
+            var mismatchedHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new TestHla.HeterozygousSet2(), patientTestCategory);
 
             originalHlaAtLocusUnderTest = originalHlaPhenotype.DataAtLocus(LocusUnderTest);
             mismatchedHlaAtLocusUnderTest = mismatchedHlaPhenotype.DataAtLocus(LocusUnderTest);

@@ -355,6 +355,8 @@
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaScoringLookupResult.cs" />
     <Compile Include="TestData\ITestHlaSet.cs" />
     <Compile Include="TestData\TestHla.cs" />
+    <Compile Include="TestData\TestHlaPhenotypeCategory.cs" />
+    <Compile Include="TestData\TestHlaPhenotypeSelector.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\HlaNamePhenotypeBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestFromHlasBuilder.cs" />
