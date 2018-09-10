@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
     /// <summary>
     /// Check that the matching service returns expected donors for a patient
-    /// that is either has the same expressed HLA at both positions (homozygous by typing)
+    /// that either has the same expressed HLA at both positions (homozygous by typing)
     /// or that has one expressing typing and one unambiguously null typing (homozygous by expression).
     /// Only one locus is under test to keep things simple.
     /// Both patient and donor typings are based on the same source HLA phenotype.
@@ -355,12 +355,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = GetOriginalHlasAt(locus, TypePositions.One),
-                PGroupsToMatchInPositionTwo = GetOriginalHlasAt(locus, TypePositions.Two)
+                PGroupsToMatchInPositionOne = GetPatientPGroupsAt(locus, TypePositions.One),
+                PGroupsToMatchInPositionTwo = GetPatientPGroupsAt(locus, TypePositions.Two)
             };
         }
 
-        private IEnumerable<string> GetOriginalHlasAt(Locus locus, TypePositions typePosition)
+        private IEnumerable<string> GetPatientPGroupsAt(Locus locus, TypePositions typePosition)
         {
             return patientMatchingHlaPhenotype.DataAtPosition(locus, typePosition).PGroups;
         }
