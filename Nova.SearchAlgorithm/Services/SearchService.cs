@@ -1,15 +1,15 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
@@ -21,17 +21,17 @@ namespace Nova.SearchAlgorithm.Services
 
     public class SearchService : ISearchService
     {
-        private readonly IHlaMatchingLookupService hlaMatchingLookupService;
+        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
         private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
 
         public SearchService(
-            IHlaMatchingLookupService hlaMatchingLookupService, 
+            ILocusHlaMatchingLookupService locusHlaMatchingLookupService, 
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService
             )
         {
-            this.hlaMatchingLookupService = hlaMatchingLookupService;
+            this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
         }
@@ -78,15 +78,15 @@ namespace Nova.SearchAlgorithm.Services
                 return null;
             }
 
-            var lookupResult = await Task.WhenAll(
-                hlaMatchingLookupService.GetHlaLookupResult(locus.ToMatchLocus(), searchHla.SearchHla1),
-                hlaMatchingLookupService.GetHlaLookupResult(locus.ToMatchLocus(), searchHla.SearchHla2));
+            var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
+                locus.ToMatchLocus(),
+                new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2));
 
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCriteria.MismatchCount,
-                PGroupsToMatchInPositionOne = lookupResult[0].MatchingPGroups,
-                PGroupsToMatchInPositionTwo = lookupResult[1].MatchingPGroups,
+                PGroupsToMatchInPositionOne = lookupResult.Item1.MatchingPGroups,
+                PGroupsToMatchInPositionTwo = lookupResult.Item2.MatchingPGroups
             };
         }
 

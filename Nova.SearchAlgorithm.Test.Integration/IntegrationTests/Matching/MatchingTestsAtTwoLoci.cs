@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
-using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -234,7 +233,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                     PGroupsToMatchInPositionTwo = matchingPGroups
                 })
                 .WithSearchType(DefaultDonorType)
-                .WithTotalMismatchCount(0);
+                .WithDonorMismatchCount(0);
         }
 
         private class TwoLociTestsInputDonorBuilder
@@ -257,7 +256,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusOne_PositionTwo : NonMatchingPGroup;
 
                 inputDonorBuilder = inputDonorBuilder
-                    .WithHlaAtLocus(
+                    .WithMatchingHlaAtLocus(
                         locus1,
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition1}},
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition2}});
@@ -271,7 +270,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusTwo_PositionTwo : NonMatchingPGroup;
 
                 inputDonorBuilder = inputDonorBuilder
-                    .WithHlaAtLocus(
+                    .WithMatchingHlaAtLocus(
                         locus2,
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition1}},
                         new ExpandedHla {PGroups = new List<string> {pGroupAtPosition2}});

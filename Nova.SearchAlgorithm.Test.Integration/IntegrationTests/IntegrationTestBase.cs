@@ -2,16 +2,11 @@
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
@@ -21,14 +16,13 @@ using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Models;
 using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using Nova.Utils.Models;
-using Configuration = Nova.SearchAlgorithm.Config.Configuration;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {
@@ -96,6 +90,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchCriteriaAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ExpandHlaPhenotypeService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             // Scoring Services
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -114,6 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();

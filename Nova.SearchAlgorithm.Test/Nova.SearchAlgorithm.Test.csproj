@@ -357,6 +357,7 @@
     <Compile Include="Controllers\SearchRequestsControllerTests.cs" />
     <Compile Include="MatchingDictionary\Data\WmdaTestFileImporter.cs" />
     <Compile Include="MatchingDictionary\Models\HlaTypings\AlleleTypingTestCaseSources.cs" />
+    <Compile Include="MatchingDictionary\Models\Lookups\HlaMatchingLookupResultTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTest.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\AlleleNameHistoriesTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\Dpb1TceGroupAssignmentTest.cs" />
@@ -371,6 +372,7 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleToSerology\AlleleToSerologyMatchingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToSerology\SerologyToSerologyMatchingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\Dpb1TceGroupsLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Lookups\LocusHlaMatchingLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaScoringLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaSearchingLookupServiceTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaMatchingLookupServiceTest.cs" />

@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             };
         }
         
-        public AlleleLevelMatchCriteriaBuilder WithTotalMismatchCount(int mismatchCount)
+        public AlleleLevelMatchCriteriaBuilder WithDonorMismatchCount(int mismatchCount)
         {
             criteria.DonorMismatchCount = mismatchCount;
             return this;
@@ -98,12 +98,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         public AlleleLevelMatchCriteriaBuilder WithRegistries(IEnumerable<RegistryCode> registries)
         {
             criteria.RegistriesToSearch = registries;
-            return this;
-        }
-        
-        public AlleleLevelMatchCriteriaBuilder WithDonorMismatchCount(int donorMismatchCount)
-        {
-            criteria.DonorMismatchCount = donorMismatchCount;
             return this;
         }
         
