@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Castle.Core.Internal;
+﻿using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
-using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 {
@@ -27,14 +26,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         ///     Should contain Serology and NMDP code if these resolutions are to be used
         /// </param>
         /// <param name="alleleStringOtherAlleles">Alleles to use in the various generated allele strings</param>
-        public static TgsAllele FromTestDataAllele(AlleleTestData allele, AlleleStringOtherAlleles alleleStringOtherAlleles)
+        public static TgsAllele FromTestDataAllele(
+            AlleleTestData allele, 
+            AlleleStringOtherAlleles alleleStringOtherAlleles)
         {
-            alleleStringOtherAlleles.NameString = alleleStringOtherAlleles.NameString ?? new List<AlleleTestData>();
-            alleleStringOtherAlleles.SubtypeString = alleleStringOtherAlleles.SubtypeString ?? new List<AlleleTestData>();
+            TgsAllele tgsAllele;
 
             var fieldCount = AlleleSplitter.NumberOfFields(allele.AlleleName);
-            TgsAllele tgsAllele;
-            
             switch (fieldCount)
             {
                 case 4:
@@ -54,6 +52,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             tgsAllele.AlleleStringOfNamesWithSinglePGroup = GenerateAlleleStringOfNames(allele, alleleStringOtherAlleles.NameStringWithSinglePGroup);
             tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(allele, alleleStringOtherAlleles.NameString);
             return tgsAllele;
+        }
+
+        /// <summary>
+        /// Create TGS Allele from test data source without setting the allele string properties.
+        /// </summary>
+        public static TgsAllele FromTestDataAllele(AlleleTestData allele)
+        {
+            return FromTestDataAllele(allele, new AlleleStringOtherAlleles());
         }
 
         private static TgsAllele FromFourFieldAllele(
