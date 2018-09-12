@@ -7,5 +7,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
     /// </summary>
     public interface IHlaMatchingLookupResult : IHlaLookupResult, IMatchingPGroups
     {
+        bool IsNullExpressingTyping { get; }
     }
 }

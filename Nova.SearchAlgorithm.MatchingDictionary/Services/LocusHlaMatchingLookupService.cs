@@ -51,10 +51,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IHlaMatchingLookupResult lookupResult,
             IHlaMatchingLookupResult otherLookupResult)
         {
-            // TODO: NOVA-1723 - Replace Result.PGroups.Any() with Result.ContainsNullAllele
-            return lookupResult.MatchingPGroups.Any()
-                ? lookupResult
-                : MergeMatchingHla(lookupResult, otherLookupResult);
+            return lookupResult.IsNullExpressingTyping
+                ? MergeMatchingHla(lookupResult, otherLookupResult)
+                : lookupResult;
         }
 
         private static IHlaMatchingLookupResult MergeMatchingHla(
