@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public InputDonorBuilder WithHlaAtLocus(Locus locus, ExpandedHla hla1, ExpandedHla hla2)
+        public InputDonorBuilder WithMatchingHlaAtLocus(Locus locus, ExpandedHla hla1, ExpandedHla hla2)
         {
             switch (locus)
             {

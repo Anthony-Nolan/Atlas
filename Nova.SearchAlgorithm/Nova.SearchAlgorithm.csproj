@@ -330,6 +330,7 @@
     <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
     <Compile Include="Services\Matching\MatchCriteriaAnalyser.cs" />
     <Compile Include="Services\Matching\MatchFilteringService.cs" />
+    <Compile Include="Services\ExpandHlaPhenotypeService.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceCalculator.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceService.cs" />
     <Compile Include="Services\Scoring\DonorScoringService.cs" />

@@ -171,6 +171,33 @@ namespace Nova.SearchAlgorithm.Common.Models
                 action(Locus.Drb1, DRB1_1, DRB1_2));
         }
 
+        public async Task<PhenotypeInfo<R>> WhenAllLoci<R>(Func<Locus, T, T, Task<Tuple<R, R>>> action)
+        {
+            var results = await Task.WhenAll(
+                action(Locus.A, A_1, A_2),
+                action(Locus.B, B_1, B_2),
+                action(Locus.C, C_1, C_2),
+                action(Locus.Dpb1, DPB1_1, DPB1_2),
+                action(Locus.Dqb1, DQB1_1, DQB1_2),
+                action(Locus.Drb1, DRB1_1, DRB1_2));
+
+            return new PhenotypeInfo<R>
+            {
+                A_1 = results[0].Item1,
+                A_2 = results[0].Item2,
+                B_1 = results[1].Item1,
+                B_2 = results[1].Item2,
+                C_1 = results[2].Item1,
+                C_2 = results[2].Item2,
+                DPB1_1 = results[3].Item1,
+                DPB1_2 = results[3].Item2,
+                DQB1_1 = results[4].Item1,
+                DQB1_2 = results[4].Item2,
+                DRB1_1 = results[5].Item1,
+                DRB1_2 = results[5].Item2
+            };
+        }
+
         public async Task<PhenotypeInfo<R>> WhenAllPositions<R>(Func<Locus, TypePositions, T, Task<R>> action)
         {
             R[] results = await Task.WhenAll(
