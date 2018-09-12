@@ -120,13 +120,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
             return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
         }
 
-        public GenotypeCriteriaBuilder WithStringOfMultiplePGroupsPossibleAtAllLoci()
-        {
-            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible);
-            return this;
-        }
-
-        public GenotypeCriteriaBuilder WithStringOfSinglePGroupPossibleAtAllLoci()
+        public GenotypeCriteriaBuilder WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()
         {
             genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible);
             return this;
