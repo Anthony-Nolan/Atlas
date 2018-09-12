@@ -3,8 +3,6 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -34,16 +32,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var matchingLookupService = Container.Resolve<ILocusHlaMatchingLookupService>();
+            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
 
             // source of donor HLA phenotypes
             defaultHlaSet = new TestHla.HeterozygousSet1();
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
             // build test donors
-            var matchingHlaPhenotype = defaultHlaSet
-                .FiveLocus_SingleExpressingAlleles
-                .ToExpandedHlaPhenotype(matchingLookupService)
+            var matchingHlaPhenotype = expandHlaPhenotypeService
+                .GetPhenotypeOfExpandedHla(defaultHlaSet.FiveLocus_SingleExpressingAlleles)
                 .Result;
 
             donor_FiveLocus_SingleAlleles = new InputDonorBuilder(DonorIdGenerator.NextId())

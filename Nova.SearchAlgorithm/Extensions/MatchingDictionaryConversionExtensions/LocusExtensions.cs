@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
-namespace Nova.SearchAlgorithm.MatchingDictionaryConversions
+namespace Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions
 {
     public static class LocusExtensions
     {

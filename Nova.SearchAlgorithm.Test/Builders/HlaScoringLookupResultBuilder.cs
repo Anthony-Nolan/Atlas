@@ -1,8 +1,8 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 
 namespace Nova.SearchAlgorithm.Test.Builders

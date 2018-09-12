@@ -2,8 +2,7 @@
 using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -72,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private Tuple<string, string> mismatchedHlaAtLocusUnderTest;
         private PhenotypeInfo<ExpandedHla> patientMatchingHlaPhenotype;
 
-        private ILocusHlaMatchingLookupService matchingHlaLookupService;
+        private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IDonorMatchingService donorMatchingService;
 
         private IEnumerable<int> twoOutOfTwoMatchCountDonors;
@@ -90,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            matchingHlaLookupService = Container.Resolve<ILocusHlaMatchingLookupService>();
+            expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
 
             SetSourceHlaPhenotypes();
             SetPatientMatchingHlaPhenotype();
@@ -160,7 +159,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             var patientHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestConditions);
 
-            patientMatchingHlaPhenotype = patientHlaPhenotype.ToExpandedHlaPhenotype(matchingHlaLookupService).Result;
+            patientMatchingHlaPhenotype = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(patientHlaPhenotype).Result;
         }
 
         private void AddDonorsToRepository()
@@ -300,7 +299,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<ExpandedHla> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
         {
             var donorHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestTypingInfo);
-            return donorHlaPhenotype.ToExpandedHlaPhenotype(matchingHlaLookupService).Result;
+            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlaPhenotype).Result;
         }
 
         private static PhenotypeInfo<string> GetHlaPhenotype(

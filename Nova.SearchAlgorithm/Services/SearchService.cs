@@ -2,8 +2,8 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
 using System;
@@ -78,7 +78,7 @@ namespace Nova.SearchAlgorithm.Services
                 return null;
             }
 
-            var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResultForLocus(
+            var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 locus.ToMatchLocus(),
                 new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2));
 

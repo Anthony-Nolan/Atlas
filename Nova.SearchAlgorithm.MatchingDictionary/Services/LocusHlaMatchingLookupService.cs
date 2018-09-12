@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface ILocusHlaMatchingLookupService
     {
-        Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResultForLocus(
+        Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
             MatchLocus matchLocus, Tuple<string, string> locusTyping);
     }
 
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.singleHlaLookupService = singleHlaLookupService;
         }
 
-        public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResultForLocus(
+        public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
             MatchLocus matchLocus,
             Tuple<string, string> locusTyping)
         {

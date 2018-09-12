@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Builders;
 using NUnit.Framework;

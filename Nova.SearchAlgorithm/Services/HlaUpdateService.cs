@@ -1,9 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +17,7 @@ namespace Nova.SearchAlgorithm.Services
 
     public class HlaUpdateService : IHlaUpdateService
     {
-        private readonly ILocusHlaMatchingLookupService lookupService;
+        private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
@@ -28,7 +26,7 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
 
         public HlaUpdateService(
-            ILocusHlaMatchingLookupService lookupService,
+            IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             ILogger logger,
@@ -37,7 +35,7 @@ namespace Nova.SearchAlgorithm.Services
             IAlleleNamesLookupRepository alleleNamesLookupRepository
         )
         {
-            this.lookupService = lookupService;
+            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.donorInspectionRepository = donorInspectionRepository;
             this.donorImportRepository = donorImportRepository;
             this.logger = logger;
@@ -96,7 +94,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             try
             {
-                var matchingHla = await donor.HlaNames.ToExpandedHlaPhenotype(lookupService);
+                var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames);
 
                 return new InputDonor
                 {

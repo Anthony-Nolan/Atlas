@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                     lookupResult1,
                     lookupResult2);
 
-            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResultForLocus(
+            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                     MatchedLocus,
                     new Tuple<string, string>(hlaString1, hlaString2));
 
@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                     expressedHlaResult,
                     nullAlleleResultWithExpressedPGroup);
 
-            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResultForLocus(
+            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
                 new Tuple<string, string>(typingInPosition1, typingInPosition2));
 
@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                     nullAlleleResultWithExpressedPGroup,
                     expressedHlaResult);
 
-            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResultForLocus(
+            var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
                 new Tuple<string, string>(typingInPosition1, typingInPosition2));
 
