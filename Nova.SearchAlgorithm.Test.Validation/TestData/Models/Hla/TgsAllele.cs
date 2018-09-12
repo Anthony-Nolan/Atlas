@@ -25,10 +25,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         ///     The test data to use when creating this allele model
         ///     Should contain Serology and NMDP code if these resolutions are to be used
         /// </param>
-        /// <param name="alleleStringOtherAlleles">Alleles to use in the various generated allele strings</param>
+        /// <param name="alleleStringOptions">Alleles to use in the various generated allele strings</param>
         public static TgsAllele FromTestDataAllele(
             AlleleTestData allele, 
-            AlleleStringOtherAlleles alleleStringOtherAlleles)
+            AlleleStringOptions alleleStringOptions)
         {
             TgsAllele tgsAllele;
 
@@ -36,21 +36,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
             switch (fieldCount)
             {
                 case 4:
-                    tgsAllele = FromFourFieldAllele(allele, alleleStringOtherAlleles.SubtypeString);
+                    tgsAllele = FromFourFieldAllele(allele, alleleStringOptions.SubtypeString);
                     break;
                 case 3:
-                    tgsAllele = FromThreeFieldAllele(allele, alleleStringOtherAlleles.SubtypeString);
+                    tgsAllele = FromThreeFieldAllele(allele, alleleStringOptions.SubtypeString);
                     break;
                 case 2:
-                    tgsAllele = FromTwoFieldAllele(allele, alleleStringOtherAlleles.SubtypeString);
+                    tgsAllele = FromTwoFieldAllele(allele, alleleStringOptions.SubtypeString);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("TGS test allele of unexpected field count found: " + allele.AlleleName);
             }
 
-            tgsAllele.AlleleStringOfNamesWithMultiplePGroups = GenerateAlleleStringOfNames(allele, alleleStringOtherAlleles.NameStringWithMultiplePGroups);
-            tgsAllele.AlleleStringOfNamesWithSinglePGroup = GenerateAlleleStringOfNames(allele, alleleStringOtherAlleles.NameStringWithSinglePGroup);
-            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(allele, alleleStringOtherAlleles.NameString);
+            tgsAllele.AlleleStringOfNamesWithMultiplePGroups = GenerateAlleleStringOfNames(allele, alleleStringOptions.NameStringWithMultiplePGroups);
+            tgsAllele.AlleleStringOfNamesWithSinglePGroup = GenerateAlleleStringOfNames(allele, alleleStringOptions.NameStringWithSinglePGroup);
+            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(allele, alleleStringOptions.NameString);
             return tgsAllele;
         }
 
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// </summary>
         public static TgsAllele FromTestDataAllele(AlleleTestData allele)
         {
-            return FromTestDataAllele(allele, new AlleleStringOtherAlleles());
+            return FromTestDataAllele(allele, new AlleleStringOptions());
         }
 
         private static TgsAllele FromFourFieldAllele(

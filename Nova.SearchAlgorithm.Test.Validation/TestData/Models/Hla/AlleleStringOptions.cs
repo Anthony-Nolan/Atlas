@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
     /// <summary>
     /// Constains lists of alleles to be used when generating allele strings for a given test data allele
     /// </summary>
-    public class AlleleStringOtherAlleles
+    public class AlleleStringOptions
     {
         /// <summary>
         /// Dictates other alleles to include in an allele string (of names) representation of this TGS allele
