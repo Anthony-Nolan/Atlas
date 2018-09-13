@@ -41,6 +41,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
         }
 
+        private const MatchGrade DefaultMatchGradeForUntypedLocus = MatchGrade.PGroup;
+
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
@@ -117,10 +119,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
-            // If either result is missing, default grade is PGroup
             if (patientLookupResult == null || donorLookupResult == null)
             {
-                return MatchGrade.PGroup;
+                return DefaultMatchGradeForUntypedLocus;
             }
 
             var calculator = GetGradingCalculator(patientLookupResult.HlaScoringInfo, donorLookupResult.HlaScoringInfo);
