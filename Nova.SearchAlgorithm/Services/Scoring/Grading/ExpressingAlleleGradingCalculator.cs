@@ -4,9 +4,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
-    public class ExpressingAlleleGradingCalculator
+    public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
-        public MatchGrade GetExpressingVsExpressingMatchGrade(
+        public override MatchGrade GetMatchGrade(
             AlleleGradingInfo patientInfo,
             AlleleGradingInfo donorInfo)
         {
@@ -41,10 +41,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// </summary>
         private static bool IsGDnaMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
-            return
-                patientInfo.ScoringInfo.Equals(donorInfo.ScoringInfo) &&
-                AreBothSequencesFullLength(patientInfo.ScoringInfo, donorInfo.ScoringInfo) &&
-                donorInfo.ScoringInfo.AlleleTypingStatus.DnaCategory == DnaCategory.GDna;
+            return AreSameAllele(patientInfo, donorInfo) && 
+                IsFullGDnaSequence(patientInfo.ScoringInfo.AlleleTypingStatus);
         }
 
         /// <summary>
@@ -60,7 +58,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 return false;
             }
 
-            if (patientInfo.ScoringInfo.Equals(donorInfo.ScoringInfo))
+            if (AreSameAllele(patientInfo, donorInfo))
             {
                 return true;
             }
@@ -100,7 +98,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return string.Equals(patientInfo.ScoringInfo.MatchingPGroup, donorInfo.ScoringInfo.MatchingPGroup);
         }
 
-        private static bool AreBothSequencesFullLength(
+        protected static bool AreBothSequencesFullLength(
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo
         )

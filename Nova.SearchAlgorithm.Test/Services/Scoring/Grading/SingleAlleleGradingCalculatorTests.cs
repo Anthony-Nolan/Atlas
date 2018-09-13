@@ -269,6 +269,112 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
         #endregion
 
-        // TODO: NOVA-1479 - Add tests for scoring null vs. null alleles
+        #region Tests: Both Alleles Are Null Expressing
+
+        [Test]
+        public void CalculateGrade_BothTypingsAreNullAlleles_WithSameName_AndFullGDnaSequences_ReturnsNullGDna()
+        {
+            const string sharedAlleleName = "999:999N";
+
+            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(patientAlleleStatus)
+                    .WithMatchingPGroup(null).Build())
+                .Build();
+
+            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(donorAlleleStatus)
+                    .WithMatchingPGroup(null).Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.NullGDna);
+        }
+
+        [Test]
+        public void CalculateGrade_BothTypingsAreNullAlleles_WithSameName_AndFullCDnaSequences_ReturnsNullCDna()
+        {
+            const string sharedAlleleName = "999:999N";
+
+            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(patientAlleleStatus)
+                    .WithMatchingPGroup(null).Build())
+                .Build();
+
+            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(donorAlleleStatus)
+                    .WithMatchingPGroup(null).Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.NullCDna);
+        }
+
+        [TestCase(DnaCategory.GDna)]
+        [TestCase(DnaCategory.CDna)]
+        public void CalculateGrade_BothTypingsAreNullAlleles_WithSameName_AndPartialSequences_ReturnsNullPartial(
+            DnaCategory dnaCategory)
+        {
+            const string sharedAlleleName = "999:999N";
+
+            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Partial, dnaCategory);
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(patientAlleleStatus)
+                    .WithMatchingPGroup(null).Build())
+                .Build();
+
+            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Partial, dnaCategory);
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(donorAlleleStatus)
+                    .WithMatchingPGroup(null).Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.NullPartial);
+        }
+
+        [Test]
+        public void CalculateGrade_BothTypingsAreNullAlleles_WithDifferentNames_ReturnsNullMismatch()
+        {
+            const string patientAlleleName = "111:111N";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .WithMatchingPGroup(null)
+                    .Build())
+                .Build();
+
+            const string donorAlleleName = "999:999N";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .WithMatchingPGroup(null)
+                    .Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.NullMismatch);
+        }
+
+        #endregion
     }
 }

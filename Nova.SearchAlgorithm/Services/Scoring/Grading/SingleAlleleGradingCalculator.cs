@@ -1,6 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using System;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -15,13 +14,6 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         ISingleAlleleGradingCalculator
     {
-        private enum ExpressionStatus
-        {
-            BothExpressing,
-            BothNull,
-            OneExpressingOneNull
-        }
-
         protected override bool ScoringInfosAreOfPermittedTypes(
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo)
@@ -42,35 +34,26 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 donorLookupResult.MatchLocus,
                 donorLookupResult.HlaScoringInfo);
 
-            var expressionStatus = GetExpressionStatus(patientInfo, donorInfo);
+            var alleleGradingCalculator = GetAlleleGradingCalculator(patientInfo, donorInfo);
 
-            switch (expressionStatus)
-            {
-                case ExpressionStatus.OneExpressingOneNull:
-                    return MatchGrade.Mismatch;
-                case ExpressionStatus.BothExpressing:
-                    return new ExpressingAlleleGradingCalculator().GetExpressingVsExpressingMatchGrade(patientInfo, donorInfo);
-                case ExpressionStatus.BothNull:
-                default:
-                    throw new ArgumentOutOfRangeException($"Cannot grade expression status: {expressionStatus}.");
-            }
+            return alleleGradingCalculator.GetMatchGrade(patientInfo, donorInfo);
         }
 
-        private static ExpressionStatus GetExpressionStatus(
+        private static AlleleGradingCalculatorBase GetAlleleGradingCalculator(
             AlleleGradingInfo patientInfo, 
             AlleleGradingInfo donorInfo)
         {
-            if (!patientInfo.Allele.IsNullExpresser == !donorInfo.Allele.IsNullExpresser)
+            if (!patientInfo.Allele.IsNullExpresser && !donorInfo.Allele.IsNullExpresser)
             {
-                return ExpressionStatus.BothExpressing;
+                return new ExpressingAlleleGradingCalculator();
             }
 
-            if (patientInfo.Allele.IsNullExpresser == donorInfo.Allele.IsNullExpresser)
+            if (patientInfo.Allele.IsNullExpresser && donorInfo.Allele.IsNullExpresser)
             {
-                return ExpressionStatus.BothNull;
+                return new NullAlleleGradingCalculator();
             }
 
-            return ExpressionStatus.OneExpressingOneNull;
+            return new ExpressingVsNullAlleleGradingCalculator();
         }
     }
 }

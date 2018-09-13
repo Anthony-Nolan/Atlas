@@ -12,13 +12,22 @@
         /// </summary>
         Mismatch = 0,
 
+        // Grades for Serology-level matches
         Broad = 11,
         Split = 12,
         Associated = 13,
-        PGroup = 14,
-        GGroup = 15,
-        Protein = 16,
-        CDna = 17,
-        GDna = 18
+
+        // Grades for Null vs. Null allele matches
+        NullMismatch = 14,
+        NullPartial = 15,
+        NullCDna = 16,
+        NullGDna = 17,
+
+        // Grades for Expressing vs. Expressing allele matches
+        PGroup = 18,
+        GGroup = 19,
+        Protein = 20,
+        CDna = 21,
+        GDna = 22
     }
 }
