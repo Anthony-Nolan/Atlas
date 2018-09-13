@@ -30,5 +30,8 @@
         NullAlleles,
         // Alleles with an expression suffix that is not 'N'
         AllelesWithNonNullExpressionSuffix,
+        // For some test cases, it must be possible to generate both an allele string with the same p group as the selected allele,
+        // and one with at least one different p-group
+        AllelesWithStringsOfSingleAndMultiplePGroupsPossible
     }
 }

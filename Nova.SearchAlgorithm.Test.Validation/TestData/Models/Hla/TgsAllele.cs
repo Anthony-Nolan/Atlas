@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Castle.Core.Internal;
+﻿using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Helpers;
-using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
 {
@@ -23,41 +22,48 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         /// Creates a new TGS allele from test data source
         /// </summary>
         /// <param name="allele">
-        /// The test data to use when creating this allele model
-        /// Should contain Serology and NMDP code if these resolutions are to be used
+        ///     The test data to use when creating this allele model
+        ///     Should contain Serology and NMDP code if these resolutions are to be used
         /// </param>
-        /// <param name="otherAllelesInNameString">
-        /// Dictates other alleles to include in an allele string (of names) representation of this TGS allele
-        /// </param>
-        /// <param name="otherAllelesInSubtypeString">
-        /// Dictates other alleles to include in an allele string (of subtypes) representation of this TGS allele
-        /// </param>
+        /// <param name="alleleStringOptions">Alleles to use in the various generated allele strings</param>
         public static TgsAllele FromTestDataAllele(
-            AlleleTestData allele,
-            IEnumerable<AlleleTestData> otherAllelesInNameString = null,
-            IEnumerable<AlleleTestData> otherAllelesInSubtypeString = null
-        )
+            AlleleTestData allele, 
+            AlleleStringOptions alleleStringOptions)
         {
-            otherAllelesInNameString = otherAllelesInNameString ?? new List<AlleleTestData>();
-            otherAllelesInSubtypeString = otherAllelesInSubtypeString ?? new List<AlleleTestData>();
+            TgsAllele tgsAllele;
 
             var fieldCount = AlleleSplitter.NumberOfFields(allele.AlleleName);
             switch (fieldCount)
             {
                 case 4:
-                    return FromFourFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
+                    tgsAllele = FromFourFieldAllele(allele, alleleStringOptions.SubtypeString);
+                    break;
                 case 3:
-                    return FromThreeFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
+                    tgsAllele = FromThreeFieldAllele(allele, alleleStringOptions.SubtypeString);
+                    break;
                 case 2:
-                    return FromTwoFieldAllele(allele, otherAllelesInNameString, otherAllelesInSubtypeString);
+                    tgsAllele = FromTwoFieldAllele(allele, alleleStringOptions.SubtypeString);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException("TGS test allele of unexpected field count found: " + allele.AlleleName);
             }
+
+            tgsAllele.AlleleStringOfNamesWithMultiplePGroups = GenerateAlleleStringOfNames(allele, alleleStringOptions.NameStringWithMultiplePGroups);
+            tgsAllele.AlleleStringOfNamesWithSinglePGroup = GenerateAlleleStringOfNames(allele, alleleStringOptions.NameStringWithSinglePGroup);
+            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(allele, alleleStringOptions.NameString);
+            return tgsAllele;
+        }
+
+        /// <summary>
+        /// Create TGS Allele from test data source without setting the allele string properties.
+        /// </summary>
+        public static TgsAllele FromTestDataAllele(AlleleTestData allele)
+        {
+            return FromTestDataAllele(allele, new AlleleStringOptions());
         }
 
         private static TgsAllele FromFourFieldAllele(
             AlleleTestData fourFieldAllele,
-            IEnumerable<AlleleTestData> otherAllelesInNameString,
             IEnumerable<AlleleTestData> otherAllelesInSubtypeString
         )
         {
@@ -69,15 +75,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 NmdpCode = fourFieldAllele.NmdpCode,
                 Serology = fourFieldAllele.Serology
             };
-            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, otherAllelesInNameString, otherAllelesInSubtypeString);
+            var tgsAllele = FromThreeFieldAllele(threeFieldAllele, otherAllelesInSubtypeString);
             tgsAllele.FourFieldAllele = fourFieldAllele.AlleleName;
-            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(fourFieldAllele, otherAllelesInNameString);
             return tgsAllele;
         }
 
         private static TgsAllele FromThreeFieldAllele(
             AlleleTestData threeFieldAllele,
-            IEnumerable<AlleleTestData> otherAllelesInNameString,
             IEnumerable<AlleleTestData> otherAllelesInSubtypeString
         )
         {
@@ -89,15 +93,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 NmdpCode = threeFieldAllele.NmdpCode,
                 Serology = threeFieldAllele.Serology
             };
-            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, otherAllelesInNameString, otherAllelesInSubtypeString);
+            var tgsAllele = FromTwoFieldAllele(twoFieldAllele, otherAllelesInSubtypeString);
             tgsAllele.ThreeFieldAllele = threeFieldAllele.AlleleName;
-            tgsAllele.AlleleStringOfNames = GenerateAlleleStringOfNames(threeFieldAllele, otherAllelesInNameString);
             return tgsAllele;
         }
 
         private static TgsAllele FromTwoFieldAllele(
             AlleleTestData twoFieldAllele,
-            IEnumerable<AlleleTestData> otherAllelesInNameString,
             IEnumerable<AlleleTestData> otherAllelesInSubtypeString
         )
         {
@@ -108,7 +110,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                 Serology = twoFieldAllele.Serology,
                 XxCode = $"{AlleleSplitter.FirstField(twoFieldAllele.AlleleName)}:XX",
                 AlleleStringOfSubtypes = GenerateAlleleStringOfSubtypes(twoFieldAllele, otherAllelesInSubtypeString),
-                AlleleStringOfNames = GenerateAlleleStringOfNames(twoFieldAllele, otherAllelesInNameString)
             };
         }
 
@@ -150,6 +151,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         private string Serology { get; set; }
 
         private string AlleleStringOfNames { get; set; }
+        private string AlleleStringOfNamesWithSinglePGroup { get; set; }
+        private string AlleleStringOfNamesWithMultiplePGroups { get; set; }
         private string AlleleStringOfSubtypes { get; set; }
 
         public string GetHlaForResolution(HlaTypingResolution typingResolution)
@@ -189,6 +192,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                     return AlleleStringOfNames;
                 case HlaTypingResolution.AlleleStringOfSubtypes:
                     return AlleleStringOfSubtypes;
+                case HlaTypingResolution.Unambiguous:
+                    // only name guaranteed to be unambiguous
+                    return FourFieldAllele;
+                case HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup:
+                    return AlleleStringOfNamesWithSinglePGroup;
+                case HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups:
+                    return AlleleStringOfNamesWithMultiplePGroups;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typingResolution), typingResolution, null);
             }

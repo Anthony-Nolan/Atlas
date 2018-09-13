@@ -1,7 +1,7 @@
-﻿using System;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using System;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection

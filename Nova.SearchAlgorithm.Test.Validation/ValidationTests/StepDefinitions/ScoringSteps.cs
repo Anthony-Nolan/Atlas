@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,21 +113,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
         {
-            switch (grades)
+            switch (grades.ToLower())
             {
                 case "p-group":
                     return new[] {MatchGrade.PGroup};
                 case "g-group":
                     return new[] {MatchGrade.GGroup};
-                case "cDna":
-                case "CDna":
-                case "CDNA":
-                case "cDNA":
+                case "cdna":
                     return new[] {MatchGrade.CDna};
-                case "gDna":
-                case "GDna":
-                case "gDNA":
-                case "GDNA":
+                case "gdna":
                     return new[] {MatchGrade.GDna};
                 case "protein":
                     return new[] {MatchGrade.Protein};
@@ -164,6 +158,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (locus.ToUpper())
             {
                 case "ALL LOCI":
+                case "EACH LOCUS":
                     expectedLoci.Add(Locus.A);
                     expectedLoci.Add(Locus.B);
                     expectedLoci.Add(Locus.C);

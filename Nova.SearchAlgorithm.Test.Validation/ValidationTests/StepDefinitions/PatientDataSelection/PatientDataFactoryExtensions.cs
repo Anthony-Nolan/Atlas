@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using System.Collections.Generic;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -68,6 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             switch (locus)
             {
                 case "each locus":
+                case "all loci":
                     factory = SetDonorTypingCategoryAtAllLoci(factory, typingCategory);
                     break;
                 default:
@@ -93,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetMatchLevelAtAllLoci(this IPatientDataFactory factory, string matchLevel)
         {
-            switch (matchLevel)
+            switch (matchLevel.ToLower())
             {
                 case "p-group":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.PGroup);
@@ -105,15 +106,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.Protein);
                     break;
                 case "cdna":
-                case "cDna":
-                case "CDNA":
-                case "cDNA":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.CDna);
                     break;
                 case "gdna":
-                case "gDna":
-                case "gDNA":
-                case "GDNA":
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.Allele);
                     break;
                 case "three field (different fourth field)":
@@ -238,6 +233,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             {
                 case "serology":
                     return HlaTypingResolution.Serology;
+                case "unambiguously":
+                    return HlaTypingResolution.Unambiguous;
+                case "ambiguously (single P group)":
+                    return HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup;
+                case "ambiguously (multiple P groups)":
+                    return HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups;
                 default:
                     ScenarioContext.Current.Pending();
                     return HlaTypingResolution.Tgs;
@@ -339,6 +340,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     break;
                 case "allele string (of subtypes)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfSubtypes);
+                    break;
+                case "unambiguously":
+                    // Only 4-field TGS alleles are guaranteed to be 'unambiguous' typings
+                    factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Unambiguous);
+                    break;
+                case "ambiguously (single P group)":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup);
+                    break;
+                case "ambiguously (multiple P groups)":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups);
                     break;
                 default:
                     ScenarioContext.Current.Pending();

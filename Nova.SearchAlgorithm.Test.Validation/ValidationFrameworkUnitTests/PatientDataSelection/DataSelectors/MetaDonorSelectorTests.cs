@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -11,8 +11,9 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.DataSelectors
 {
     [TestFixture]
     public class MetaDonorSelectorTests

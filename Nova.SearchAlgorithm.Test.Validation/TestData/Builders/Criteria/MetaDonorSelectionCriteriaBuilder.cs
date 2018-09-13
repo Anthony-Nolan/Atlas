@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 {
     public class MetaDonorSelectionCriteriaBuilder
     {

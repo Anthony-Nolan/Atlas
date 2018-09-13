@@ -355,6 +355,7 @@
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
     <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
+    <Compile Include="TestData\Models\Hla\AlleleStringOptions.cs" />
     <Compile Include="TestData\Models\MatchOrientation.cs" />
     <Compile Include="TestData\Models\SearchAlgorithmApiResult.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
@@ -386,6 +387,7 @@
     <Compile Include="TestData\Resources\MetaDonorsData.cs" />
     <Compile Include="TestData\Resources\SpecificTestCases\HlaData\AllMatchGrades.cs" />
     <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
+    <Compile Include="TestData\Services\AlleleStringAlleleSelector.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
     <Compile Include="TestData\Services\IPatientDataProvider.cs" />
@@ -397,6 +399,7 @@
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataTestCase.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
+    <Compile Include="ValidationFrameworkUnitTests\AlleleStringAlleleSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\GenotypeGeneratorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\DatabaseDonorSelectorTests.cs" />
