@@ -58,3 +58,28 @@
     And the patient is serology typed at all loci
     When I run a 10/10 search
     Then the match grade should be serology at all loci at both positions  
+
+  Scenario: P-group match - donor untyped at C
+    Given a patient has a match
+    And the matching donor is untyped at Locus C
+    When I run a 6/6 search
+    Then the match grade should be p-group at C at both positions
+
+  Scenario: P-group match - patient untyped at C
+    Given a patient has a match
+    And the patient is untyped at Locus C
+    When I run a 6/6 search
+    Then the match grade should be p-group at C at both positions
+
+  Scenario: P-group match - patient and donor untyped at C
+    Given a patient has a match
+    And the matching donor is untyped at Locus C
+    And the patient is untyped at Locus C
+    When I run a 6/6 search
+    Then the match grade should be p-group at C at both positions
+
+  Scenario: Mismatch grade - double mismatch at locus A
+    Given a patient and a donor
+    And the donor has a double mismatch at locus A
+    When I run an 8/10 search
+    Then the match grade should be mismatch at A at both positions

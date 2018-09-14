@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var higherResult = ParseResultType(results, higherResultType);
             var lowerResult = ParseResultType(results, lowerResultType);
 
-            results.Should().ContainInOrder(new List<SearchResult> {higherResult, lowerResult});
+            results.Should().ContainInOrder(new List<SearchResult> { higherResult, lowerResult });
         }
 
         [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
@@ -116,17 +116,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (grades.ToLower())
             {
                 case "p-group":
-                    return new[] {MatchGrade.PGroup};
+                    return new[] { MatchGrade.PGroup };
                 case "g-group":
-                    return new[] {MatchGrade.GGroup};
+                    return new[] { MatchGrade.GGroup };
                 case "cdna":
-                    return new[] {MatchGrade.CDna};
+                    return new[] { MatchGrade.CDna };
                 case "gdna":
-                    return new[] {MatchGrade.GDna};
+                    return new[] { MatchGrade.GDna };
                 case "protein":
-                    return new[] {MatchGrade.Protein};
+                    return new[] { MatchGrade.Protein };
                 case "serology":
-                    return new[] {MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split};
+                    return new[] { MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split };
+                case "mismatch":
+                    return new[] { MatchGrade.Mismatch };
                 default:
                     ScenarioContext.Current.Pending();
                     return new List<MatchGrade>();
@@ -230,7 +232,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "a full p-group match":
                     return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.PGroup));
                 case "a full serology match":
-                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] {MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split}));
+                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] { MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split }));
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
@@ -239,7 +241,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static bool IsMatchGradeAtMatchedLoci(SearchResult result, MatchGrade matchGrade)
         {
-            return IsOneOfMatchGradesAtMatchedLoci(result, new[] {matchGrade});
+            return IsOneOfMatchGradesAtMatchedLoci(result, new[] { matchGrade });
         }
 
         private static bool IsOneOfMatchGradesAtMatchedLoci(SearchResult result, IEnumerable<MatchGrade> matchGrades)
