@@ -4,6 +4,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
+    /// <summary>
+    /// Calculates match grades when both patient and donor alleles are expressing.
+    /// </summary>
     public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
         public override MatchGrade GetMatchGrade(
