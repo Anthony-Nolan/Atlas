@@ -265,8 +265,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithStringOfMultiplePGroupsPossibleAtAllLoci()
-                    .WithStringOfSinglePGroupPossibleAtAllLoci()
+                    .WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()
                 .Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {

@@ -12,18 +12,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise { get; }
         public IEnumerable<string> MatchingPGroups { get; }
+        public bool IsNullExpressingTyping { get; }
 
         public FileBackedHlaMatchingLookupResult(
             MatchLocus matchLocus,
             string lookupName,
             TypingMethod typingMethod,
-            IEnumerable<string> matchingPGroups)
+            IEnumerable<string> matchingPGroups, 
+            bool isNullExpressingTyping)
         {
             MatchLocus = matchLocus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             HlaInfoToSerialise = matchingPGroups;
             MatchingPGroups = matchingPGroups;
+            IsNullExpressingTyping = isNullExpressingTyping;
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()

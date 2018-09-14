@@ -206,6 +206,7 @@
     <Compile Include="Models\Lookups\Dpb1TceGroupLookup\Dpb1TceGroupsLookupResult.cs" />
     <Compile Include="Models\Lookups\HlaLookupResultCollections.cs" />
     <Compile Include="Models\Lookups\LookupNameCategory.cs" />
+    <Compile Include="Models\Lookups\MatchingLookup\HlaMatchingLookupResult.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\MultipleAlleleScoringInfo.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\SingleAlleleScoringInfo.cs" />
     <Compile Include="Models\Lookups\ScoringLookup\ConsolidatedMolecularScoringInfo.cs" />
@@ -250,7 +251,6 @@
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
     <Compile Include="Models\Lookups\IHlaLookupResultSource.cs" />
     <Compile Include="Models\Lookups\MatchingLookup\IHlaMatchingLookupResult.cs" />
-    <Compile Include="Models\Lookups\MatchingLookup\HlaMatchingLookupResult.cs" />
     <Compile Include="Models\HLATypings\HlaTyping.cs" />
     <Compile Include="Models\HLATypings\MatchLocus.cs" />
     <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
@@ -271,6 +271,7 @@
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\SerologyFamily.cs" />
     <Compile Include="Services\HlaSearchingLookupServiceBase.cs" />
     <Compile Include="Services\HlaScoringLookupService.cs" />
+    <Compile Include="Services\LocusHlaMatchingLookupService.cs" />
     <Compile Include="Services\LookupServiceBase.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoriesConsolidator.cs" />
     <Compile Include="Services\AlleleNames\AlleleNameHistoryExtensions.cs" />

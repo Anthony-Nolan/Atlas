@@ -1,15 +1,12 @@
-﻿using System.Linq;
-using Autofac;
+﻿using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.MatchingDictionaryConversions;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
@@ -33,8 +30,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         // A selection of valid hla strings that do not match the donor's
         private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
         {
-            A_1 = "01:01:01:02N",
-            A_2 = "01:01:01:02N",
+            A_1 = "02:01:01:01",
+            A_2 = "02:01:01:01",
             B_1 = "07:02:01:01",
             B_2 = "07:02:13",
             DRB1_1 = "14:190",
@@ -46,15 +43,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var lookupService = Container.Resolve<IHlaMatchingLookupService>();
+            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
             var donorRepository = Container.Resolve<IDonorImportRepository>();
-            
+
             donor = new InputDonor
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
-                MatchingHla = donorHlas.Map((l, p, h) => h == null ? null : lookupService.GetHlaLookupResult(l.ToMatchLocus(), h).Result.ToExpandedHla(h))
+                MatchingHla = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlas).Result
             };
             donorRepository.AddOrUpdateDonorWithHla(donor).Wait();
         }

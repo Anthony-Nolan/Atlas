@@ -271,7 +271,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         [Test]
         public void GenerateGenotype_WhenAlleleStringOfNamesWithSinglePGroupPossible_SetsAlleleString()
         {
-            var criteria = new GenotypeCriteriaBuilder().WithStringOfSinglePGroupPossibleAtAllLoci().Build();
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
             genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().NotBeNullOrEmpty();
@@ -280,7 +280,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         [Test]
         public void GenerateGenotype_WhenAlleleStringOfNamesWithSinglePGroupPossible_UsesAllelesWithStringsOfSingleAndMultiplePGroupsPossibleDataset()
         {
-            var criteria = new GenotypeCriteriaBuilder().WithStringOfSinglePGroupPossibleAtAllLoci().Build();
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build();
             genotypeGenerator.GenerateGenotype(criteria);
 
             alleleRepository.Received().AllelesWithStringsOfSingleAndMultiplePGroupsPossible();
@@ -299,7 +299,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         [Test]
         public void GenerateGenotype_WhenAlleleStringOfNamesWithMultiplePGroupPossible_SetsAlleleString()
         {
-            var criteria = new GenotypeCriteriaBuilder().WithStringOfMultiplePGroupsPossibleAtAllLoci().Build();
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
             genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Should().NotBeNullOrEmpty();
@@ -308,7 +308,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
         [Test]
         public void GenerateGenotype_WhenAlleleStringOfNamesWithMultiplePGroupsPossible_UsesAllelesWithStringsOfMultipleAndMultiplePGroupsPossibleDataset()
         {
-            var criteria = new GenotypeCriteriaBuilder().WithStringOfMultiplePGroupsPossibleAtAllLoci().Build();
+            var criteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build();
             genotypeGenerator.GenerateGenotype(criteria);
 
             alleleRepository.Received().AllelesWithStringsOfSingleAndMultiplePGroupsPossible();

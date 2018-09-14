@@ -355,7 +355,7 @@
     <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
     <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
-    <Compile Include="TestData\Models\Hla\AlleleStringOtherAlleles.cs" />
+    <Compile Include="TestData\Models\Hla\AlleleStringOptions.cs" />
     <Compile Include="TestData\Models\MatchOrientation.cs" />
     <Compile Include="TestData\Models\SearchAlgorithmApiResult.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />

@@ -14,6 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public IEnumerable<string> MatchingPGroups { get; }
+        public bool IsNullExpressingTyping => TypingMethod == TypingMethod.Molecular && !MatchingPGroups.Any();
         public object HlaInfoToSerialise => MatchingPGroups;
 
         public HlaMatchingLookupResult(

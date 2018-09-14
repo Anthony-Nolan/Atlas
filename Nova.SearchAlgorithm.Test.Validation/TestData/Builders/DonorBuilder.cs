@@ -81,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 
         private static string GetNonMatchingHla(Locus locus, HlaTypingResolution resolution)
         {
-            var tgsAllele = TgsAllele.FromTestDataAllele(NonMatchingAlleles.NonMatchingDonorAlleles.DataAtLocus(locus), new AlleleStringOtherAlleles());
+            var tgsAllele = TgsAllele.FromTestDataAllele(NonMatchingAlleles.NonMatchingDonorAlleles.DataAtLocus(locus));
             return tgsAllele.GetHlaForResolution(resolution);
         }
     }
