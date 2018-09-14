@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection

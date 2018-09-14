@@ -17,9 +17,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         TwoFieldTruncatedAllele,
         XxCode,
         NmdpCode,
+        /// <summary>
+        /// Typing that is guaranteed to map to a single allele.
+        /// Is more specific than 'TGS' option, as some typings in the TGS dataset actually map to multiple alleles.
+        /// Required for Match Confidence tests.
+        /// </summary>
+        Unambiguous,
         // A `/` separated list of possible allele names
         // e.g. 02:03:01/02:07:01/11:02:01
         AlleleStringOfNames,
+        // An allele string of names, with alleles sharing a p-group
+        AlleleStringOfNamesWithSinglePGroup,
+        // An allele string of names, with at least two p-groups represented
+        AlleleStringOfNamesWithMultiplePGroups,
         // A known first field, followed by a `/` separated list of possible second fields
         // This is what NMDP codes correspond to 
         // e.g. 01:01/02/03
@@ -28,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
         Untyped,
         // Used to indicate that any underlying typing resolution is acceptable
         // When comparing enum values, 'arbitary' should only match 'arbitrary', not any other values
-        Arbitrary,
+        Arbitrary
     }
     
     /// <summary>

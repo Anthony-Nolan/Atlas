@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
@@ -156,6 +157,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                         return false;
                     case Dataset.AllelesWithNonNullExpressionSuffix:
                         return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
+                    case Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible:
+                        var resolutions = new List<HlaTypingResolution>
+                        {
+                            HlaTypingResolution.Unambiguous,
+                            HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups,
+                            HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup
+                        };
+                        return criteria.DatabaseDonorDetailsSets.Any(d => resolutions.Contains(d.MatchingTypingResolutions.DataAtPosition(l, p)));
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }

@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var higherResult = ParseResultType(results, higherResultType);
             var lowerResult = ParseResultType(results, lowerResultType);
 
-            results.Should().ContainInOrder(new List<SearchResult> {higherResult, lowerResult});
+            results.Should().ContainInOrder(new List<SearchResult> { higherResult, lowerResult });
         }
 
         [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
@@ -113,26 +113,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
         {
-            switch (grades)
+            switch (grades.ToLower())
             {
                 case "p-group":
-                    return new[] {MatchGrade.PGroup};
+                    return new[] { MatchGrade.PGroup };
                 case "g-group":
-                    return new[] {MatchGrade.GGroup};
-                case "cDna":
-                case "CDna":
-                case "CDNA":
-                case "cDNA":
-                    return new[] {MatchGrade.CDna};
-                case "gDna":
-                case "GDna":
-                case "gDNA":
-                case "GDNA":
-                    return new[] {MatchGrade.GDna};
+                    return new[] { MatchGrade.GGroup };
+                case "cdna":
+                    return new[] { MatchGrade.CDna };
+                case "gdna":
+                    return new[] { MatchGrade.GDna };
                 case "protein":
-                    return new[] {MatchGrade.Protein};
+                    return new[] { MatchGrade.Protein };
                 case "serology":
-                    return new[] {MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split};
+                    return new[] { MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split };
+                case "mismatch":
+                    return new[] { MatchGrade.Mismatch };
                 default:
                     ScenarioContext.Current.Pending();
                     return new List<MatchGrade>();
@@ -164,6 +160,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (locus.ToUpper())
             {
                 case "ALL LOCI":
+                case "EACH LOCUS":
                     expectedLoci.Add(Locus.A);
                     expectedLoci.Add(Locus.B);
                     expectedLoci.Add(Locus.C);
@@ -235,7 +232,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "a full p-group match":
                     return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.PGroup));
                 case "a full serology match":
-                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] {MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split}));
+                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] { MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split }));
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
@@ -244,7 +241,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static bool IsMatchGradeAtMatchedLoci(SearchResult result, MatchGrade matchGrade)
         {
-            return IsOneOfMatchGradesAtMatchedLoci(result, new[] {matchGrade});
+            return IsOneOfMatchGradesAtMatchedLoci(result, new[] { matchGrade });
         }
 
         private static bool IsOneOfMatchGradesAtMatchedLoci(SearchResult result, IEnumerable<MatchGrade> matchGrades)

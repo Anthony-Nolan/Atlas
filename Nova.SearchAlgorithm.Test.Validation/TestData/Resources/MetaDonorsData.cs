@@ -3,6 +3,7 @@ using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Builders;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -255,6 +256,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
                         .WithNonGenotypeAlleleAtLocus(Locus.B)
                         .Build(),
+                }
+            },
+
+            // Donors with unambiguous typings, as well as ambiguous allele strings containing multiple/single p-groups - needed for confidence tests
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder()
+                    .WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()
+                .Build(),
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                {
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Unambiguous).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Build(),
                 }
             },
         };

@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 {
     public class GenotypeCriteriaBuilder
     {
@@ -120,6 +120,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
         }
 
+        public GenotypeCriteriaBuilder WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()
+        {
+            genotypeCriteria.AlleleSources = new PhenotypeInfo<Dataset>(Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible);
+            return this;
+        }
+        
         public GenotypeCriteria Build()
         {
             return genotypeCriteria;

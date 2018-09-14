@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.PatientFactories
 {

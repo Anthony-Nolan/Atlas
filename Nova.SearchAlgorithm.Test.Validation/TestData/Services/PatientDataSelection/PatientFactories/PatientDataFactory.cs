@@ -8,7 +8,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
-namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
+namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories
 {
     /// <summary>
     /// Stores various search criteria from the feature file, and selects appropriate patient data.

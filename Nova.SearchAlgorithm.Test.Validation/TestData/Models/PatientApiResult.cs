@@ -1,5 +1,4 @@
-﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+﻿using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
