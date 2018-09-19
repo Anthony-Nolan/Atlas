@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         {
             if (nonMatchingHlas == null)
             {
-                throw new Exception("Non-matching HLA data has not been provided.");
+                throw new InvalidOperationException("Non-matching HLA data has not been provided.");
             }
 
             searchRequestBuilder = searchRequestBuilder
