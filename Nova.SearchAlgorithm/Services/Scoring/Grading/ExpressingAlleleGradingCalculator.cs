@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// </summary>
     public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
-        public override MatchGrade GetMatchGrade(
+        protected override MatchGrade GetAlleleMatchGrade(
             AlleleGradingInfo patientInfo,
             AlleleGradingInfo donorInfo)
         {

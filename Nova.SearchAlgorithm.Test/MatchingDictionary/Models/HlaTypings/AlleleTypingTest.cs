@@ -57,6 +57,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             actualAlleleTyping.IsNullExpresser.Should().Be(expectedIsNullExpresser);
         }
 
+        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedIsNullExpresser))]
+        public void AlleleTyping_IsAlleleNull_ReturnsExpectedResult(object[] alleleToTest, bool expectedResult)
+        {
+            var alleleName = GetAlleleName(alleleToTest);
+            var actualResult = AlleleTyping.IsAlleleNull(alleleName);
+
+            actualResult.Should().Be(expectedResult);
+        }
+
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFields))]
         public void AlleleTyping_WhenNew_FieldsSetCorrectly(object[] alleleToTest, IEnumerable<string> expectedFields)
         {
@@ -91,7 +100,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 
         private static AlleleTyping GetActualAlleleTyping(IReadOnlyList<object> alleleToTest)
         {
-            return new AlleleTyping((MatchLocus)alleleToTest[0], alleleToTest[1].ToString());
+            return new AlleleTyping((MatchLocus)alleleToTest[0], GetAlleleName(alleleToTest));
+        }
+
+        private static string GetAlleleName(IReadOnlyList<object> alleleToTest)
+        {
+            return alleleToTest[1].ToString();
         }
     }
 }

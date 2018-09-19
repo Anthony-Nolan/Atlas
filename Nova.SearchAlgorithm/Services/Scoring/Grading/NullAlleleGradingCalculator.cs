@@ -8,7 +8,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// </summary>
     public class NullAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
-        public override MatchGrade GetMatchGrade(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
+        protected override MatchGrade GetAlleleMatchGrade(
+            AlleleGradingInfo patientInfo, 
+            AlleleGradingInfo donorInfo)
         {
             return AreSameAllele(patientInfo, donorInfo) 
                 ? GetNullAlleleMatchGrade(patientInfo.ScoringInfo.AlleleTypingStatus) 

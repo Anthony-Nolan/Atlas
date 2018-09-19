@@ -22,8 +22,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
                 : base(TypingMethod.Molecular, locus, name, isDeleted)
         {
             Status = status;
-            ExpressionSuffix = GetExpressionSuffix();
-            IsNullExpresser = NullExpressionSuffixes.Contains(ExpressionSuffix);
+            ExpressionSuffix = GetExpressionSuffix(name);
+            IsNullExpresser = IsAlleleNull(name);
             Fields = GetFields();
             TwoFieldName = BuildAlleleNameAndAddExpressionSuffix(2);
             FirstField = Fields.First();
@@ -33,6 +33,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public AlleleTyping(MatchLocus matchLocus, string name, bool isDeleted = false)
             : this(matchLocus.ToMolecularLocusNameIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
         {
+        }
+
+        public static bool IsAlleleNull(string name)
+        {
+            var expressionSuffix = GetExpressionSuffix(name);
+            return NullExpressionSuffixes.Contains(expressionSuffix);
         }
 
         public bool TryGetThreeFieldName(out string threeFieldName)
@@ -48,9 +54,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             return true;
         }
 
-        private string GetExpressionSuffix()
+        private static string GetExpressionSuffix(string name)
         {
-            return new Regex(@"[A-Z]$").Match(Name).Value;
+            return new Regex(@"[A-Z]$").Match(name).Value;
         }
 
         private IEnumerable<string> GetFields()

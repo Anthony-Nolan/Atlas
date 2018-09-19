@@ -49,9 +49,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             var patientAlleles = GetSingleAlleleLookupResults(patientLookupResult);
             var donorAlleles = GetSingleAlleleLookupResults(donorLookupResult);
 
-            var singleAlleleCalculator = new SingleAlleleGradingCalculator();
-            var allGrades = patientAlleles.SelectMany(patientAllele => donorAlleles,
-                (patientAllele, donorAllele) => singleAlleleCalculator.CalculateGrade(patientAllele, donorAllele));
+            var allGrades = patientAlleles.SelectMany(patientAllele => donorAlleles, GetSingleAlleleMatchGrade);
 
             return allGrades.Max();
         }
@@ -82,6 +80,17 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private static MatchGrade GetSingleAlleleMatchGrade(
+            IHlaScoringLookupResult patientLookupResult,
+            IHlaScoringLookupResult donorLookupResult)
+        {
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(
+                patientLookupResult.HlaScoringInfo,
+                donorLookupResult.HlaScoringInfo);
+
+            return calculator.CalculateGrade(patientLookupResult, donorLookupResult);
         }
     }
 }

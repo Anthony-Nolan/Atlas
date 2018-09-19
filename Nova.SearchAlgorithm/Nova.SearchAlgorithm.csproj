@@ -337,13 +337,13 @@
     <Compile Include="Services\Scoring\Grading\AlleleGradingInfo.cs" />
     <Compile Include="Services\Scoring\Grading\AlleleGradingCalculatorBase.cs" />
     <Compile Include="Services\Scoring\Grading\ExpressingVsNullAlleleGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\GradingCalculatorFactory.cs" />
     <Compile Include="Services\Scoring\Grading\NullAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\MultipleAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\ConsolidatedMolecularGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorBase.cs" />
     <Compile Include="Services\Scoring\Grading\SerologyGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\ExpressingAlleleGradingCalculator.cs" />
-    <Compile Include="Services\Scoring\Grading\SingleAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\GradingService.cs" />
     <Compile Include="Services\DonorImport\HlaUpdateService.cs" />
     <Compile Include="Services\Scoring\Grading\IGradingCalculator.cs" />
