@@ -1,0 +1,67 @@
+﻿using FluentAssertions;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.Services.Scoring.Grading;
+using Nova.SearchAlgorithm.Test.Builders;
+using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
+using NUnit.Framework;
+using System;
+
+namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
+{
+    [TestFixture]
+    public class ExpressingVsNullAlleleGradingCalculatorTests :
+        GradingCalculatorTestsBase<ExpressingVsNullAlleleGradingCalculator>
+    {
+        #region Tests: Exception Cases
+
+        [TestCase(typeof(SingleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(SerologyScoringInfo), typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        public override void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
+            Type patientScoringInfoType,
+            Type donorScoringInfoType
+            )
+        {
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
+                .Build();
+
+            Assert.Throws<ArgumentException>(() =>
+                GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult));
+        }
+
+        #endregion
+
+        #region Tests: One Allele Expressing & Other Null
+
+        [TestCase("999:999", "999:999N")]
+        [TestCase("999:999N", "999:999")]
+        public void CalculateGrade_OneAlleleIsExpressingAndOtherIsNullExpresser_ReturnsMismatch(
+            string patientAlleleName,
+            string donorAlleleName)
+        {
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .Build())
+                .Build();
+
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        #endregion
+    }
+}

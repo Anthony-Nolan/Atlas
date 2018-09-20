@@ -29,21 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
         {
             var confidenceCalculator = new ConfidenceCalculator();
             confidenceService = new ConfidenceService(confidenceCalculator);
-            defaultGradingResults = new PhenotypeInfo<MatchGradeResult>
-            {
-                A_1 = defaultGradingResult,
-                A_2 = defaultGradingResult,
-                B_1 = defaultGradingResult,
-                B_2 = defaultGradingResult,
-                C_1 = defaultGradingResult,
-                C_2 = defaultGradingResult,
-                DPB1_1 = defaultGradingResult,
-                DPB1_2 = defaultGradingResult,
-                DQB1_1 = defaultGradingResult,
-                DQB1_2 = defaultGradingResult,
-                DRB1_1 = defaultGradingResult,
-                DRB1_2 = defaultGradingResult,
-            };
+            defaultGradingResults = new PhenotypeInfo<MatchGradeResult>(defaultGradingResult);
         }
 
         [Test]

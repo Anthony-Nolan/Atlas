@@ -5,55 +5,17 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
     /// <summary>
-    /// To be used when comparing two original allele typings.
+    /// Calculates match grades when both patient and donor alleles are expressing.
     /// </summary>
-    public interface ISingleAlleleGradingCalculator : IGradingCalculator
+    public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
-    }
-
-    public class SingleAlleleGradingCalculator :
-        GradingCalculatorBase,
-        ISingleAlleleGradingCalculator
-    {
-        private class AlleleGradingInfo
+        protected override MatchGrade GetAlleleMatchGrade(
+            AlleleGradingInfo patientInfo,
+            AlleleGradingInfo donorInfo)
         {
-            public SingleAlleleScoringInfo ScoringInfo { get; }
-            public AlleleTyping Allele { get; }
-
-            public AlleleGradingInfo(MatchLocus matchLocus, IHlaScoringInfo scoringInfo)
-            {
-                ScoringInfo = (SingleAlleleScoringInfo) scoringInfo;
-                Allele = new AlleleTyping(matchLocus, ScoringInfo.AlleleName);
-            }
-        }
-
-        protected override bool ScoringInfosAreOfPermittedTypes(
-            IHlaScoringInfo patientInfo,
-            IHlaScoringInfo donorInfo)
-        {
-            return patientInfo is SingleAlleleScoringInfo &&
-                   donorInfo is SingleAlleleScoringInfo;
-        }
-
-        protected override MatchGrade GetMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
-        {
-            var patientInfo = new AlleleGradingInfo( 
-                patientLookupResult.MatchLocus,
-                patientLookupResult.HlaScoringInfo);
-
-            var donorInfo = new AlleleGradingInfo(
-                donorLookupResult.MatchLocus,
-                donorLookupResult.HlaScoringInfo);
-
             // Order of the following checks is critical to the grade outcome
 
-            if (IsExpressingVsNullMismatch(patientInfo, donorInfo))
-            {
-                return MatchGrade.Mismatch;
-            }
-            else if (IsGDnaMatch(patientInfo, donorInfo))
+            if (IsGDnaMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.GDna;
             }
@@ -78,22 +40,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         /// <summary>
-        /// Is one allele expressing and the other null expressing?
-        /// </summary>
-        private static bool IsExpressingVsNullMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
-        {
-            return !patientInfo.Allele.IsNullExpresser == donorInfo.Allele.IsNullExpresser;
-        }
-
-        /// <summary>
         /// Do both alleles have same name & full gDNA sequences?
         /// </summary>
         private static bool IsGDnaMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
-            return
-                patientInfo.ScoringInfo.Equals(donorInfo.ScoringInfo) &&
-                AreBothSequencesFullLength(patientInfo.ScoringInfo, donorInfo.ScoringInfo) &&
-                donorInfo.ScoringInfo.AlleleTypingStatus.DnaCategory == DnaCategory.GDna;
+            return AreSameAllele(patientInfo, donorInfo) && 
+                IsFullGDnaSequence(patientInfo.ScoringInfo.AlleleTypingStatus);
         }
 
         /// <summary>
@@ -109,7 +61,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 return false;
             }
 
-            if (patientInfo.ScoringInfo.Equals(donorInfo.ScoringInfo))
+            if (AreSameAllele(patientInfo, donorInfo))
             {
                 return true;
             }
@@ -129,9 +81,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// </summary>
         private static bool IsProteinMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
-            return
-                AreBothAllelesExpressing(patientInfo.Allele, donorInfo.Allele) &&
-                string.Equals(patientInfo.Allele.TwoFieldName, donorInfo.Allele.TwoFieldName) &&
+            return string.Equals(patientInfo.Allele.TwoFieldName, donorInfo.Allele.TwoFieldName) &&
                 AreBothSequencesFullLength(patientInfo.ScoringInfo, donorInfo.ScoringInfo);
         }
 
@@ -140,9 +90,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// </summary>
         private static bool IsGGroupMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
-            return
-                 AreBothAllelesExpressing(patientInfo.Allele, donorInfo.Allele) &&
-                 string.Equals(patientInfo.ScoringInfo.MatchingGGroup, donorInfo.ScoringInfo.MatchingGGroup);
+            return string.Equals(patientInfo.ScoringInfo.MatchingGGroup, donorInfo.ScoringInfo.MatchingGGroup);
         }
 
         /// <summary>
@@ -150,12 +98,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         /// </summary>
         private static bool IsPGroupMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
-            return
-                AreBothAllelesExpressing(patientInfo.Allele, donorInfo.Allele) &&
-                string.Equals(patientInfo.ScoringInfo.MatchingPGroup, donorInfo.ScoringInfo.MatchingPGroup);
+            return string.Equals(patientInfo.ScoringInfo.MatchingPGroup, donorInfo.ScoringInfo.MatchingPGroup);
         }
 
-        private static bool AreBothSequencesFullLength(
+        protected static bool AreBothSequencesFullLength(
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo
         )
@@ -163,13 +109,6 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return
                 patientInfo.AlleleTypingStatus.SequenceStatus == SequenceStatus.Full &&
                 donorInfo.AlleleTypingStatus.SequenceStatus == SequenceStatus.Full;
-        }
-
-        private static bool AreBothAllelesExpressing(
-            AlleleTyping patientAllele,
-            AlleleTyping donorAllele)
-        {
-            return !patientAllele.IsNullExpresser && !donorAllele.IsNullExpresser;
         }
     }
 }

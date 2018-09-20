@@ -32,20 +32,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
-
             // source of donor HLA phenotypes
             defaultHlaSet = new TestHla.HeterozygousSet1();
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
-            // build test donors
-            var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(defaultHlaSet.FiveLocus_SingleExpressingAlleles)
-                .Result;
-
-            donor_FiveLocus_SingleAlleles = new InputDonorBuilder(DonorIdGenerator.NextId())
-                .WithMatchingHla(matchingHlaPhenotype)
-                .Build();
+            donor_FiveLocus_SingleAlleles = BuildTestDonor();
 
             // add test donors to repository
             var donorRepository = Container.Resolve<IDonorImportRepository>();
@@ -288,5 +279,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         #endregion
+
+        private InputDonor BuildTestDonor()
+        {
+            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
+
+            var matchingHlaPhenotype = expandHlaPhenotypeService
+                .GetPhenotypeOfExpandedHla(defaultHlaSet.FiveLocus_SingleExpressingAlleles)
+                .Result;
+
+            return new InputDonorBuilder(DonorIdGenerator.NextId())
+                .WithMatchingHla(matchingHlaPhenotype)
+                .Build();
+        }
     }
 }

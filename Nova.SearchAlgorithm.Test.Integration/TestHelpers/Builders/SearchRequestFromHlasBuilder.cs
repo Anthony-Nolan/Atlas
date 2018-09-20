@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+﻿using System;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
@@ -16,7 +17,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         /// <param name="nonMatchingHlas">A selection of valid hla strings that do not match the search HLA.</param>
         public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas)
         {
-            this.nonMatchingHlas = nonMatchingHlas;
             searchRequestBuilder = new SearchRequestBuilder()
                 .WithLocusMatchHla(Locus.A, TypePositions.One, searchHlas.A_1)
                 .WithLocusMatchHla(Locus.A, TypePositions.Two, searchHlas.A_2)
@@ -28,6 +28,17 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, searchHlas.DQB1_2)
                 .WithLocusMatchHla(Locus.Drb1, TypePositions.One, searchHlas.DRB1_1)
                 .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHlas.DRB1_2);
+
+            this.nonMatchingHlas = nonMatchingHlas;
+        }
+
+        /// <summary>
+        /// Builds search request from HLAs without setting the non-matching HLA phenotype.
+        /// Do not use for mismatch searches.
+        /// </summary>
+        public static SearchRequestFromHlasBuilder WithoutNonMatchingHlas(PhenotypeInfo<string> searchHlas)
+        {
+            return new SearchRequestFromHlasBuilder(searchHlas, null);
         }
 
         public SearchRequestFromHlasBuilder TenOutOfTen()
@@ -70,6 +81,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder WithPositionOneOfSearchHlaMismatchedAt(Locus locus)
         {
+            if (nonMatchingHlas == null)
+            {
+                throw new InvalidOperationException("Non-matching HLA data has not been provided.");
+            }
+
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);
             return this;

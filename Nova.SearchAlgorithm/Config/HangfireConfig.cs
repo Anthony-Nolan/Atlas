@@ -1,9 +1,9 @@
-﻿using System.Configuration;
-using Autofac;
+﻿using Autofac;
 using Hangfire;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.DonorImport;
 using Owin;
+using System.Configuration;
 
 namespace Nova.SearchAlgorithm.Config
 {

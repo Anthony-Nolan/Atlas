@@ -11,8 +11,8 @@ using System;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class SingleAlleleGradingCalculatorTests :
-        GradingCalculatorTestsBase<SingleAlleleGradingCalculator>
+    public class ExpressingAlleleGradingCalculatorTests :
+        GradingCalculatorTestsBase<ExpressingAlleleGradingCalculator>
     {
         #region Tests: Exception Cases
 
@@ -241,34 +241,5 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         #endregion
-
-        #region Tests: One Allele Expressing & Other Null
-
-        [TestCase("999:999", "999:999N")]
-        [TestCase("999:999N", "999:999")]
-        public void CalculateGrade_OneAlleleIsExpressingAndOtherIsNullExpresser_ReturnsMismatch(
-            string patientAlleleName,
-            string donorAlleleName)
-        {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientAlleleName)
-                    .Build())
-                .Build();
-
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorAlleleName)
-                    .Build())
-                .Build();
-
-            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.Mismatch);
-        }
-
-        #endregion
-
-        // TODO: NOVA-1479 - Add tests for scoring null vs. null alleles
     }
 }

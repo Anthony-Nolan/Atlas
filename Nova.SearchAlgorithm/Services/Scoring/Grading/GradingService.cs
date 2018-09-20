@@ -41,6 +41,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
         }
 
+        private const MatchGrade DefaultMatchGradeForUntypedLocus = MatchGrade.PGroup;
+
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
@@ -117,37 +119,16 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
-            // If either result is missing, default grade is PGroup
             if (patientLookupResult == null || donorLookupResult == null)
             {
-                return MatchGrade.PGroup;
+                return DefaultMatchGradeForUntypedLocus;
             }
 
-            var calculator = GetGradingCalculator(patientLookupResult.HlaScoringInfo, donorLookupResult.HlaScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(
+                patientLookupResult.HlaScoringInfo,
+                donorLookupResult.HlaScoringInfo);
+
             return calculator.CalculateGrade(patientLookupResult, donorLookupResult);
-        }
-
-        private static GradingCalculatorBase GetGradingCalculator(
-            IHlaScoringInfo patientInfo,
-            IHlaScoringInfo donorInfo
-        )
-        {
-            // order of checks is critical to which calculator is returned
-
-            if (patientInfo is SerologyScoringInfo || donorInfo is SerologyScoringInfo)
-            {
-                return new SerologyGradingCalculator();
-            }
-            else if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
-            {
-                return new ConsolidatedMolecularGradingCalculator();
-            }
-            else if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
-            {
-                return new MultipleAlleleGradingCalculator();
-            }
-
-            return new SingleAlleleGradingCalculator();
         }
 
         private static LocusMatchGradeResults GetGradeResultsInBestOrientations(
@@ -183,7 +164,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
         private static int SumGrades(LocusMatchGrades grades)
         {
-            return (int) grades.Grade1 + (int) grades.Grade2;
+            return (int)grades.Grade1 + (int)grades.Grade2;
         }
 
         private static MatchGradeResult GetBestMatchGradeResult(

@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
         }
 
         [Test]
-        public void CalculateConfidence_BothTypingsMolecularAndSingleAllele_ReturnsDefininte()
+        public void CalculateConfidence_BothTypingsMolecularAndSingleAllele_ReturnsDefinite()
         {
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
@@ -334,6 +334,112 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
 
             confidence.Should().Be(MatchConfidence.Mismatch);
         }
+
+        #region Single Null Allele vs. Expressing
+
+        [TestCase(typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(ConsolidatedMolecularScoringInfo))]
+        public void CalculateConfidence_PatientHasSingleNullAllele_DonorHasExpressingMolecularTyping_ReturnsMismatch(Type donorScoringInfoType)
+        {
+            const string patientPGroup = null;
+            var patientLookupResult = BuildScoringLookupResultWithSinglePGroup(typeof(SingleAlleleScoringInfo), patientPGroup);
+
+            const string donorPGroup = "p-group";
+            var donorLookupResult = BuildScoringLookupResultWithSinglePGroup(donorScoringInfoType, donorPGroup);
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [TestCase(typeof(SingleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(ConsolidatedMolecularScoringInfo))]
+        public void CalculateConfidence_PatientHasExpressingMolecularTyping_DonorHasSingleNullAllele_ReturnsMismatch(Type patientScoringInfoType)
+        {
+            const string patientPGroup = "p-group";
+            var patientLookupResult = BuildScoringLookupResultWithSinglePGroup(patientScoringInfoType, patientPGroup);
+
+            const string donorPGroup = null;
+            var donorLookupResult = BuildScoringLookupResultWithSinglePGroup(typeof(SingleAlleleScoringInfo), donorPGroup);
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [Test]
+        public void CalculateConfidence_PatientHasSingleNullAllele_DonorHasSerology_ReturnsMismatch()
+        {
+            var patientSerologyEntries = new SerologyEntry[] { };
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingPGroup(null)
+                    .WithMatchingSerologies(patientSerologyEntries)
+                    .Build())
+                .Build();
+
+            var donorSerologyEntries = new List<SerologyEntry> { new SerologyEntry("serology-donor", SerologySubtype.Associated, true) };
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithMatchingSerologies(donorSerologyEntries)
+                    .Build())
+                .Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [Test]
+        public void CalculateConfidence_PatientHasSerology_DonorHasSingleNullAllele_ReturnsMismatch()
+        {
+            var patientSerologyEntries = new List<SerologyEntry> { new SerologyEntry("serology-patient", SerologySubtype.Associated, true) };
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
+                    .WithMatchingSerologies(patientSerologyEntries)
+                    .Build())
+                .Build();
+
+            var donorSerologyEntries = new SerologyEntry[]{};
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingPGroup(null)
+                    .WithMatchingSerologies(donorSerologyEntries)
+                    .Build())
+                .Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        #endregion
+
+        #region Single Null Allele vs. Single Null Allele
+
+        [Test]
+        public void CalculateConfidence_BothTypingsMolecular_AndSingleNullAllele_ReturnsDefinite()
+        {
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingPGroup(null)
+                    .Build())
+                .Build();
+
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithMatchingPGroup(null)
+                    .Build())
+                .Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        #endregion
 
         [Test]
         public void CalculateConfidence_DonorUntyped_ReturnsPotential()

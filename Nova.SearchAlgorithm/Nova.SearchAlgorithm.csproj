@@ -324,7 +324,7 @@
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchLocusExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\AntigenCachingService.cs" />
+    <Compile Include="Services\DonorImport\AntigenCachingService.cs" />
     <Compile Include="Services\Matching\DonorMatchingService.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingService.cs" />
     <Compile Include="Services\Matching\DonorMatchCalculator.cs" />
@@ -334,18 +334,23 @@
     <Compile Include="Services\Scoring\Confidence\ConfidenceCalculator.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceService.cs" />
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
+    <Compile Include="Services\Scoring\Grading\AlleleGradingInfo.cs" />
+    <Compile Include="Services\Scoring\Grading\AlleleGradingCalculatorBase.cs" />
+    <Compile Include="Services\Scoring\Grading\ExpressingVsNullAlleleGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\GradingCalculatorFactory.cs" />
+    <Compile Include="Services\Scoring\Grading\NullAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\MultipleAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\ConsolidatedMolecularGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorBase.cs" />
     <Compile Include="Services\Scoring\Grading\SerologyGradingCalculator.cs" />
-    <Compile Include="Services\Scoring\Grading\SingleAlleleGradingCalculator.cs" />
+    <Compile Include="Services\Scoring\Grading\ExpressingAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\GradingService.cs" />
-    <Compile Include="Services\HlaUpdateService.cs" />
+    <Compile Include="Services\DonorImport\HlaUpdateService.cs" />
     <Compile Include="Services\Scoring\Grading\IGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Ranking\ScoreCalculator.cs" />
     <Compile Include="Services\Scoring\Ranking\RankingService.cs" />
     <Compile Include="Services\SearchService.cs" />
-    <Compile Include="Services\DonorImportService.cs" />
+    <Compile Include="Services\DonorImport\DonorImportService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
