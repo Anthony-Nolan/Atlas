@@ -92,7 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithDifferentNamesAndGGroups_ButIntersectingPGroups_ReturnsGGroup()
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithDifferentNamesAndGGroups_ButIntersectingPGroups_ReturnsPGroup()
         {
             const string sharedPGroup = "shared-p-group";
 
