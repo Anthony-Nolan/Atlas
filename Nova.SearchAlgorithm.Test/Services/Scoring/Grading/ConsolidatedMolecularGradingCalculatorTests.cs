@@ -327,7 +327,65 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
         #endregion
 
-        // TODO: NOVA-1479 - Add tests for scoring Consolidated Molecular vs. null allele & vice versa
+        #region Tests: Consolidated Molecular vs. Null Allele & Vice Versa
+
+        [Test]
+        public void CalculateGrade_ConsolidatedMolecularVsNullAllele_ReturnsMismatch()
+        {
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorAlleleName = "999:999N";
+            const string donorGGroup = null;
+            const string donorPGroup = null;
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .WithMatchingGGroup(donorGGroup)
+                    .WithMatchingPGroup(donorPGroup)
+                    .Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_NullAlleleVsConsolidatedMolecular_ReturnsMismatch()
+        {
+            const string patientAlleleName = "999:999N";
+            const string patientGGroup = null;
+            const string patientPGroup = null;
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .WithMatchingGGroup(patientGGroup)
+                    .WithMatchingPGroup(patientPGroup)
+                    .Build())
+                .Build();
+
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        #endregion
 
         #region Tests: Consolidated Molecular vs. Multiple Alleles
 
