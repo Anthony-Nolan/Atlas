@@ -1,6 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -8,62 +7,59 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
     {
         private readonly Locus locusUnderTest;
         private readonly DonorType donorType;
-        private readonly PhenotypeInfo<ExpandedHla> phenotype;
 
         public AlleleLevelMatchCriteriaFromExpandedHla(
             Locus locusUnderTest,
-            DonorType donorType,
-            PhenotypeInfo<ExpandedHla> phenotype)
+            DonorType donorType)
         {
             this.locusUnderTest = locusUnderTest;
             this.donorType = donorType;
-            this.phenotype = phenotype;
         }
 
         /// <summary>
         /// Uses AlleleLevelMatchCriteriaBuilder to build criteria with 
         /// the specified number of mismatches at the locus under test.
         /// </summary>
-        public AlleleLevelMatchCriteria GetAlleleLevelMatchCriteria(int mismatchCount = 0)
+        public AlleleLevelMatchCriteria GetAlleleLevelMatchCriteria(
+            PhenotypeInfo<ExpandedHla> phenotype,
+            int mismatchCount = 0)
         {
-            var builder = GetDefaultBuilder();
+            var builder = GetDefaultBuilder(phenotype);
 
             if (mismatchCount > 0)
             {
+                var locusUnderTestCriteria = GetLocusMatchCriteria(locusUnderTest, mismatchCount, phenotype);
+
                 builder
                     .WithDonorMismatchCount(mismatchCount)
-                    .WithLocusMatchCriteria(locusUnderTest, GetLocusMatchCriteria(locusUnderTest, mismatchCount));
+                    .WithLocusMatchCriteria(locusUnderTest, locusUnderTestCriteria);
             }
                               
             return builder.Build();
         }
 
-        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder()
+        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<ExpandedHla> phenotype)
         {
             const int zeroMismatchCount = 0;
             return new AlleleLevelMatchCriteriaBuilder()
                 .WithSearchType(donorType)
-                .WithLocusMatchCriteria(Locus.A, GetLocusMatchCriteria(Locus.A, zeroMismatchCount))
-                .WithLocusMatchCriteria(Locus.B, GetLocusMatchCriteria(Locus.B, zeroMismatchCount))
-                .WithLocusMatchCriteria(Locus.Drb1, GetLocusMatchCriteria(Locus.Drb1, zeroMismatchCount))
+                .WithLocusMatchCriteria(Locus.A, GetLocusMatchCriteria(Locus.A, zeroMismatchCount, phenotype))
+                .WithLocusMatchCriteria(Locus.B, GetLocusMatchCriteria(Locus.B, zeroMismatchCount, phenotype))
+                .WithLocusMatchCriteria(Locus.Drb1, GetLocusMatchCriteria(Locus.Drb1, zeroMismatchCount, phenotype))
                 .WithDonorMismatchCount(zeroMismatchCount);
         }
 
-        private AlleleLevelLocusMatchCriteria GetLocusMatchCriteria(
+        private static AlleleLevelLocusMatchCriteria GetLocusMatchCriteria(
             Locus locus,
-            int mismatchCount)
+            int mismatchCount,
+            PhenotypeInfo<ExpandedHla> phenotype)
         {
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = GetPGroupsAt(locus, TypePositions.One),
-                PGroupsToMatchInPositionTwo = GetPGroupsAt(locus, TypePositions.Two)
+                PGroupsToMatchInPositionOne = phenotype.DataAtPosition(locus, TypePositions.One).PGroups,
+                PGroupsToMatchInPositionTwo = phenotype.DataAtPosition(locus, TypePositions.Two).PGroups
             };
-        }
-
-        private IEnumerable<string> GetPGroupsAt(Locus locus, TypePositions typePosition)
-        {
-            return phenotype.DataAtPosition(locus, typePosition).PGroups;
         }
     }
 }
