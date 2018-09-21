@@ -10,6 +10,14 @@ namespace Nova.SearchAlgorithm.Common.Models
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
     public class PhenotypeInfo<T> : Utils.PhenoTypeInfo.PhenotypeInfo<T>
     {
+        public PhenotypeInfo()
+        {
+        }
+
+        public PhenotypeInfo(T initialValue) : base(initialValue)
+        {
+        }
+
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> Map<R>(Func<Locus, TypePositions, T, R> mapping)
         {
