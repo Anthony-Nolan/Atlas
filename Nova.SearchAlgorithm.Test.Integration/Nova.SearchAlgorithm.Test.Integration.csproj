@@ -343,6 +343,7 @@
     <Compile Include="IntegrationTests\Matching\MatchingTestsForNullAlleleInString.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsForHomozyousPatient.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsAtTwoLoci.cs" />
+    <Compile Include="IntegrationTests\Search\ScoringTestsForNullAlleleInString.cs" />
     <Compile Include="IntegrationTests\Search\ScoringTestsForSingleNullAllele.cs" />
     <Compile Include="IntegrationTests\Search\ScoringTests.cs" />
     <Compile Include="IntegrationTests\Search\SingleDonorSearchTests.cs" />
