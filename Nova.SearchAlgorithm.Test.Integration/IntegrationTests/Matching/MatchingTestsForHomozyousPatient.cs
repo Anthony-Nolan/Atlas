@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -60,6 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         private const Locus LocusUnderTest = Locus.A;
+        private const DonorType MatchingDonorType = DonorType.Adult;
         private const string OriginalNullAllele = "02:15N";
         private const string DifferentNullAllele = "11:21N";
 
@@ -73,6 +75,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IDonorMatchingService donorMatchingService;
+        private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
 
         private IEnumerable<int> twoOutOfTwoMatchCountDonors;
         private IEnumerable<int> oneOutOfTwoMatchCountDonors;
@@ -90,6 +93,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         public void OneTimeSetUp()
         {
             expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
+            criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(
+                LocusUnderTest,
+                MatchingDonorType);
 
             SetSourceHlaPhenotypes();
             SetPatientMatchingHlaPhenotype();
@@ -109,33 +115,27 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_HomozygousPatient_WithNoAllowedMismatches_MatchesTwoOutOfTwoMatchCountDonors()
+        public async Task Search_WithNoAllowedMismatches_HomozygousPatient_MatchesTwoOutOfTwoMatchCountDonors()
         {
-            var criteria = GetDefaultCriteriaBuilder();
+            var criteria = criteriaFromExpandedHla.GetAlleleLevelMatchCriteria(patientMatchingHlaPhenotype);
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
             matchingDonors.ShouldBeEquivalentTo(twoOutOfTwoMatchCountDonors);
         }
 
         [Test]
-        public async Task Search_HomozygousPatient_WithOneAllowedMismatchAtLocus_MatchesOneOutOfTwoMatchCountDonors()
+        public async Task Search_WithOneAllowedMismatchAtLocus_HomozygousPatient_MatchesOneOutOfTwoMatchCountDonors()
         {
-            const int mismatchCount = 1;
-            var criteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(mismatchCount)
-                .WithLocusMatchCriteria(LocusUnderTest, GetPatientLocusMatchCriteria(LocusUnderTest, mismatchCount));
+            var criteria = criteriaFromExpandedHla.GetAlleleLevelMatchCriteria(patientMatchingHlaPhenotype, 1);
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
             matchingDonors.ShouldBeEquivalentTo(oneOutOfTwoMatchCountDonors);
         }
 
         [Test]
-        public async Task Search_HomozygousPatient_WithTwoAllowedMismatchesAtLocus_MatchesZeroOutOfTwoMatchCountDonors()
+        public async Task Search_WithTwoAllowedMismatchesAtLocus_HomozygousPatient_MatchesZeroOutOfTwoMatchCountDonors()
         {
-            const int mismatchCount = 2;
-            var criteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(mismatchCount)
-                .WithLocusMatchCriteria(LocusUnderTest, GetPatientLocusMatchCriteria(LocusUnderTest, mismatchCount));
+            var criteria = criteriaFromExpandedHla.GetAlleleLevelMatchCriteria(patientMatchingHlaPhenotype, 2);
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
             matchingDonors.ShouldBeEquivalentTo(zeroOutOfTwoMatchCountDonors);
@@ -336,41 +336,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             }
         }
 
-        /// <returns> A criteria builder pre-populated with default criteria data of an exact search.</returns>
-        private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
-        {
-            const int mismatchCount = 0;
-            return new AlleleLevelMatchCriteriaBuilder()
-                .WithDonorMismatchCount(mismatchCount)
-                .WithLocusMatchCriteria(Locus.A, GetPatientLocusMatchCriteria(Locus.A, mismatchCount))
-                .WithLocusMatchCriteria(Locus.B, GetPatientLocusMatchCriteria(Locus.B, mismatchCount))
-                .WithLocusMatchCriteria(Locus.Drb1, GetPatientLocusMatchCriteria(Locus.Drb1, mismatchCount));
-        }
-
-        private AlleleLevelLocusMatchCriteria GetPatientLocusMatchCriteria(
-            Locus locus,
-            int mismatchCount)
-        {
-            return new AlleleLevelLocusMatchCriteria
-            {
-                MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = GetPatientPGroupsAt(locus, TypePositions.One),
-                PGroupsToMatchInPositionTwo = GetPatientPGroupsAt(locus, TypePositions.Two)
-            };
-        }
-
-        private IEnumerable<string> GetPatientPGroupsAt(Locus locus, TypePositions typePosition)
-        {
-            return patientMatchingHlaPhenotype.DataAtPosition(locus, typePosition).PGroups;
-        }
-
         /// <summary>
         /// Runs the matching service based on match criteria.
         /// </summary>
         /// <returns>List of matching donor IDs.</returns>
-        private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteriaBuilder alleleLevelMatchCriteriaBuilder)
+        private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteria alleleLevelMatchCriteria)
         {
-            var results = await donorMatchingService.GetMatches(alleleLevelMatchCriteriaBuilder.Build());
+            var results = await donorMatchingService.GetMatches(alleleLevelMatchCriteria);
             return results.Select(d => d.DonorId);
         }
     }

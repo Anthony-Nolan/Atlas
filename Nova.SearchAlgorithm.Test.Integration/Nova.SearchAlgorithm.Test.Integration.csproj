@@ -340,6 +340,7 @@
   <ItemGroup>
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
+    <Compile Include="IntegrationTests\Matching\MatchingTestsForNullAlleleInString.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsForHomozyousPatient.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsAtTwoLoci.cs" />
     <Compile Include="IntegrationTests\Search\ScoringTestsForSingleNullAllele.cs" />
@@ -359,6 +360,7 @@
     <Compile Include="TestData\TestHlaPhenotypeCategory.cs" />
     <Compile Include="TestData\TestHlaPhenotypeSelector.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilderFromExpandedHla.cs" />
     <Compile Include="TestHelpers\Builders\HlaNamePhenotypeBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestFromHlasBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />

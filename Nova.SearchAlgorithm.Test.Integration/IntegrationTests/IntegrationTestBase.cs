@@ -49,8 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         {
             StorageEmulator.Start();
             Container = CreateContainer();
-            ClearDatabase();
-            SetupDatabase();
+            ResetDatabase();
         }
 
         [OneTimeTearDown]
@@ -58,7 +57,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         {
             StorageEmulator.Stop();
         }
-        
+
+        protected void ResetDatabase()
+        {
+            ClearDatabase();
+            SetupDatabase();
+        }
+
         private void SetupDatabase()
         {
             if (Container.TryResolve(out SearchAlgorithmContext context))
