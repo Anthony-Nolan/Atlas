@@ -74,12 +74,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             actualAlleleTyping.Fields.ShouldBeEquivalentTo(expectedFields);
         }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldNames))]
-        public void AlleleTyping_WhenNew_TwoFieldNameSetCorrectly(object[] alleleToTest, string expectedTwoFieldName)
+        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldWithExpressionSuffixNames))]
+        public void AlleleTyping_WhenNew_TwoFieldNameWithExpressionSuffixSetCorrectly(object[] alleleToTest, string expectedTwoFieldName)
         {
             var actualAlleleTyping = GetActualAlleleTyping(alleleToTest);
 
-            actualAlleleTyping.TwoFieldName.Should().Be(expectedTwoFieldName);
+            actualAlleleTyping.TwoFieldNameWithExpressionSuffix.Should().Be(expectedTwoFieldName);
+        }
+
+        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldWithoutExpressionSuffixNames))]
+        public void AlleleTyping_WhenNew_TwoFieldNameWithoutExpressionSuffixSetCorrectly(object[] alleleToTest, string expectedTwoFieldName)
+        {
+            var actualAlleleTyping = GetActualAlleleTyping(alleleToTest);
+
+            actualAlleleTyping.TwoFieldNameWithoutExpressionSuffix.Should().Be(expectedTwoFieldName);
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFirstField))]

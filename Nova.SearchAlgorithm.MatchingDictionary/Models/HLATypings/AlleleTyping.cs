@@ -10,7 +10,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public IEnumerable<string> Fields { get; }
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
-        public string TwoFieldName { get; }
+        public string TwoFieldNameWithExpressionSuffix { get; }
+        public string TwoFieldNameWithoutExpressionSuffix { get; }
         public string FirstField { get; }
         public IEnumerable<string> NameVariantsTruncatedByFieldAndOrExpressionSuffix { get; }
         public AlleleTypingStatus Status { get; }
@@ -25,7 +26,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             ExpressionSuffix = GetExpressionSuffix(name);
             IsNullExpresser = IsAlleleNull(name);
             Fields = GetFields();
-            TwoFieldName = BuildAlleleNameAndAddExpressionSuffix(2);
+            TwoFieldNameWithExpressionSuffix = BuildAlleleNameAndAddExpressionSuffix(2);
+            TwoFieldNameWithoutExpressionSuffix = BuildAlleleNameWithoutExpressionSuffix(2);
             FirstField = Fields.First();
             NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
         }

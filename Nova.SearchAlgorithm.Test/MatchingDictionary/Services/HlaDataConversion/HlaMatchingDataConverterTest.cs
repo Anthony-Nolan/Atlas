@@ -43,9 +43,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             var expectedLookupResults = new List<IHlaLookupResult>
             {
                 BuildMolecularHlaLookupResult(alleleName),
-                BuildMolecularHlaLookupResult(nmdpCodeLookupName + expressionSuffix, new []{alleleName}),
+                BuildMolecularHlaLookupResult(nmdpCodeLookupName, new []{alleleName}),
                 BuildMolecularHlaLookupResult(xxCodeLookupName, new[] {alleleName})
             };
+
+            if (!string.IsNullOrEmpty(expressionSuffix))
+            {
+                expectedLookupResults.Add(
+                    BuildMolecularHlaLookupResult(nmdpCodeLookupName + expressionSuffix, new[] {alleleName}));
+            }
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
@@ -67,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
                 BuildMolecularHlaLookupResult(alleles[1]),
                 BuildMolecularHlaLookupResult(alleles[2]),
                 BuildMolecularHlaLookupResult(alleles[3]),
-                BuildMolecularHlaLookupResult(nmdpCodeLookupName, new[] {alleles[0], alleles[1], alleles[2]}),
+                BuildMolecularHlaLookupResult(nmdpCodeLookupName, new[] {alleles[0], alleles[1], alleles[2], alleles[3]}),
                 BuildMolecularHlaLookupResult(nmdpCodeLookupNameWithExpressionSuffix, new[] {alleles[3]}),
                 BuildMolecularHlaLookupResult(xxCodeLookupName, alleles)
             };

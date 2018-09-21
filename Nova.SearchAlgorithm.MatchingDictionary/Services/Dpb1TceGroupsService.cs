@@ -49,7 +49,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private static IEnumerable<string> GetLookupNames(IWmdaHlaTyping tceGroup)
         {
             var allele = new AlleleTyping(MatchLocus.Dpb1, tceGroup.Name);
-            return new[] {allele.Name, allele.ToNmdpCodeAlleleLookupName(), allele.ToXxCodeLookupName()};
+            return new[]
+            {
+                allele.Name,
+                allele.ToXxCodeLookupName()
+            }
+            .Concat(allele.ToNmdpCodeAlleleLookupNames());
         }
 
         private static IEnumerable<string> GetTceGroups(Dpb1TceGroupAssignment tceGroupAssignment)
