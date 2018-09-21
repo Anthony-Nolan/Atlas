@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Common.Models
@@ -9,45 +8,8 @@ namespace Nova.SearchAlgorithm.Common.Models
     /// Data type to hold one instance of T for each of the supported HLA loci and each type position within.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
-    public class PhenotypeInfo<T>
+    public class PhenotypeInfo<T> : Utils.PhenoTypeInfo.PhenotypeInfo<T>
     {
-        public T A_1 { get; set; }
-        public T A_2 { get; set; }
-        public T B_1 { get; set; }
-        public T B_2 { get; set; }
-        public T C_1 { get; set; }
-        public T C_2 { get; set; }
-        public T DPB1_1 { get; set; }
-        public T DPB1_2 { get; set; }
-        public T DQB1_1 { get; set; }
-        public T DQB1_2 { get; set; }
-        public T DRB1_1 { get; set; }
-        public T DRB1_2 { get; set; }
-
-        public PhenotypeInfo()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new PhenotypeInfo with all inner values set to the same starting value
-        /// </summary>
-        /// <param name="initialValue">The initial value all inner locus position values should be given</param>
-        public PhenotypeInfo(T initialValue)
-        {
-            A_1 = initialValue;
-            A_2 = initialValue;
-            B_1 = initialValue;
-            B_2 = initialValue;
-            C_1 = initialValue;
-            C_2 = initialValue;
-            DPB1_1 = initialValue;
-            DPB1_2 = initialValue;
-            DQB1_1 = initialValue;
-            DQB1_2 = initialValue;
-            DRB1_1 = initialValue;
-            DRB1_2 = initialValue;
-        }
-        
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> Map<R>(Func<Locus, TypePositions, T, R> mapping)
         {
@@ -127,11 +89,6 @@ namespace Nova.SearchAlgorithm.Common.Models
                 mapping(Locus.Dqb1, DQB1_1, DQB1_2),
                 mapping(Locus.Drb1, DRB1_1, DRB1_2),
             };
-        }
-
-        public IEnumerable<T> ToEnumerable()
-        {
-            return new List<T> {A_1, A_2, B_1, B_2, C_1, C_2, DPB1_1, DPB1_2, DRB1_1, DRB1_2, DQB1_1, DQB1_2};
         }
 
         public void EachPosition(Action<Locus, TypePositions, T> action)
@@ -419,57 +376,5 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             SetAtPosition(locus, TypePositions.Both, value);
         }
-
-        #region Equality operators
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((PhenotypeInfo<T>) obj);
-        }
-
-        private bool Equals(PhenotypeInfo<T> other)
-        {
-            return EqualityComparer<T>.Default.Equals(A_1, other.A_1) && EqualityComparer<T>.Default.Equals(A_2, other.A_2) &&
-                   EqualityComparer<T>.Default.Equals(B_1, other.B_1) && EqualityComparer<T>.Default.Equals(B_2, other.B_2) &&
-                   EqualityComparer<T>.Default.Equals(C_1, other.C_1) && EqualityComparer<T>.Default.Equals(C_2, other.C_2) &&
-                   EqualityComparer<T>.Default.Equals(DPB1_1, other.DPB1_1) && EqualityComparer<T>.Default.Equals(DPB1_2, other.DPB1_2) &&
-                   EqualityComparer<T>.Default.Equals(DQB1_1, other.DQB1_1) && EqualityComparer<T>.Default.Equals(DQB1_2, other.DQB1_2) &&
-                   EqualityComparer<T>.Default.Equals(DRB1_1, other.DRB1_1) && EqualityComparer<T>.Default.Equals(DRB1_2, other.DRB1_2);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = EqualityComparer<T>.Default.GetHashCode(A_1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(A_2);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B_1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B_2);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C_1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C_2);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DPB1_1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DPB1_2);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DQB1_1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DQB1_2);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DRB1_1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(DRB1_2);
-                return hashCode;
-            }
-        }
-
-        public static bool operator ==(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
-        {
-            return !Equals(left, right);
-        }
-
-        #endregion
     }
 }
