@@ -70,12 +70,28 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestFromHlasBuilder FourOutOfSix()
+        {
+            searchRequestBuilder = searchRequestBuilder
+                .WithTotalMismatchCount(2);
+            return this;
+        }
+
         public SearchRequestFromHlasBuilder WithSingleMismatchRequestedAt(Locus locus)
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
                 .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 1 : 0)
                 .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0);
+            return this;
+        }
+
+        public SearchRequestFromHlasBuilder WithDoubleMismatchRequestedAt(Locus locus)
+        {
+            searchRequestBuilder = searchRequestBuilder
+                .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 2 : 0)
+                .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 2 : 0)
+                .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 2 : 0);
             return this;
         }
 
