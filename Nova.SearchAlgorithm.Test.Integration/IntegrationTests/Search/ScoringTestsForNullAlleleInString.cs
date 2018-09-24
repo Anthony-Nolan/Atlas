@@ -33,27 +33,28 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         // should only map this null allele.
         // The truncated name variants that have NO suffix should return the relevant
         // expressing alleles, as well as the null allele.
-        private const string ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele = "01:01:01:01";
+        private const string ExpressingAlleleFromSameGGroupAsNullAllele = "01:01:01:01";
         private const string NullAllele = "01:01:01:02N";
         private const string NullAlleleAsTwoFieldNameNoSuffix = "01:01";
         private const string NullAlleleAsTwoFieldNameWithSuffix = "01:01N";
         private const string NullAlleleAsThreeFieldNameNoSuffix = "01:01:01";
         private const string NullAlleleAsThreeFieldNameWithSuffix = "01:01:01N";
-        private const string NullAlleleAsStringWithMatchingExpressingAllele = 
-            NullAllele + "/" + ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele;
-        private const string NullAlleleAsStringWithNonMatchingExpressingAllele = NullAllele + "/01:09:01:01";
+        private const string NullAlleleAsStringWithExpressingAlleleOfSameGGroup = 
+            NullAllele + "/" + ExpressingAlleleFromSameGGroupAsNullAllele;
+        private const string NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup = NullAllele + "/01:09:01:01";
         private const string NullAlleleAsXxCode = "01:XX";
         private const string DifferentNullAllele = "03:01:01:02N";
 
-        private List<MatchGrade> matchGradesForMatchingExpressingAlleles;
+        private List<MatchGrade> matchGradesForExpressingAlleleOfSameGGroups;
         private List<MatchGrade> matchGradesForMatchingNullAlleles;
         private PhenotypeInfo<string> originalHlaPhenotype;
         private PhenotypeInfo<string> patientWithNullAlleleAsTwoFieldNameNoSuffix;
         private PhenotypeInfo<string> patientWithNullAlleleAsTwoFieldNameWithSuffix;
         private PhenotypeInfo<string> patientWithNullAlleleAsThreeFieldNameNoSuffix;
         private PhenotypeInfo<string> patientWithNullAlleleAsThreeFieldNameWithSuffix;
-        private PhenotypeInfo<string> patientWithNullAlleleAsStringWithMatchingExpressingAllele;
-        private PhenotypeInfo<string> patientWithNullAlleleAsStringWithNonMatchingExpressingAllele;
+        private PhenotypeInfo<string> patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup;
+        private PhenotypeInfo<string> patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup;
+        private PhenotypeInfo<string> patientWithNullAlleleAsXxCode;
 
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IDonorImportRepository donorRepository;
@@ -65,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
             donorRepository = Container.Resolve<IDonorImportRepository>();
 
-            matchGradesForMatchingExpressingAlleles = new List<MatchGrade>
+            matchGradesForExpressingAlleleOfSameGGroups = new List<MatchGrade>
             {
                 MatchGrade.PGroup,
                 MatchGrade.GGroup,
@@ -96,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_NullAlleleAsTwoFieldNameNoSuffixVsOneCopyOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
             
             var searchRequest = SearchRequestFromHlasBuilder
@@ -108,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -120,8 +121,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameNoSuffixVsTwoCopiesOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
-            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -134,7 +135,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -206,7 +207,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -254,7 +255,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -288,9 +289,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsTwoFieldNameNoSuffixVsNullAlleleAsStringWithMatchingExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsTwoFieldNameNoSuffixVsNullAlleleAsStringWithExpressingAlleleOfSameGGroup_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -302,7 +303,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -312,9 +313,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameNoSuffixVsNullAlleleAsStringWithNonMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameNoSuffixVsNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -350,7 +351,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
@@ -366,7 +367,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameWithSuffixVsOneCopyOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -390,8 +391,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FourOutOfSix_NullAlleleAsTwoFieldNameWithSuffixVsTwoCopiesOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
-            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -553,9 +554,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameWithSuffixVsNullAlleleAsStringWithMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameWithSuffixVsNullAlleleAsStringWithExpressingAlleleOfSameGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -577,9 +578,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameWithSuffixVsNullAlleleAsStringWithNonMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsTwoFieldNameWithSuffixVsNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -631,7 +632,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_NullAlleleAsThreeFieldNameNoSuffixVsOneCopyOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -643,7 +644,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -655,8 +656,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameNoSuffixVsTwoCopiesOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
-            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -669,7 +670,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -741,7 +742,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -789,7 +790,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -823,9 +824,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsThreeFieldNameNoSuffixVsNullAlleleAsStringWithMatchingExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsThreeFieldNameNoSuffixVsNullAlleleAsStringWithExpressingAlleleOfSameGGroup_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -837,7 +838,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -847,9 +848,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameNoSuffixVsNullAlleleAsStringWithNonMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameNoSuffixVsNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -885,7 +886,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
@@ -901,7 +902,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameWithSuffixVsOneCopyOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -925,8 +926,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_FourOutOfSix_NullAlleleAsThreeFieldNameWithSuffixVsTwoCopiesOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
-            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -1088,9 +1089,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameWithSuffixVsNullAlleleAsStringWithMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameWithSuffixVsNullAlleleAsStringWithExpressingAlleleOfSameGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -1112,9 +1113,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameWithSuffixVsNullAlleleAsStringWithNonMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsThreeFieldNameWithSuffixVsNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
@@ -1164,13 +1165,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         #region Allele String, With Matching Expressing Allele
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsOneCopyOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsOneCopyOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1178,7 +1179,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -1188,14 +1189,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsTwoCopiesOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsTwoCopiesOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
-            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1204,7 +1205,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -1214,13 +1215,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1238,13 +1239,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsDifferentNullAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsDifferentNullAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(DifferentNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1262,13 +1263,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsItself_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsItself_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1276,7 +1277,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -1286,13 +1287,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAlleleAsTwoFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAlleleAsTwoFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsTwoFieldNameWithSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1310,13 +1311,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAlleleAsTwoFieldNameNoSuffix_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAlleleAsTwoFieldNameNoSuffix_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsTwoFieldNameNoSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1324,7 +1325,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -1334,13 +1335,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAlleleAsThreeFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAlleleAsThreeFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsThreeFieldNameWithSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1358,13 +1359,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAlleleAsThreeFieldNameNoSuffix_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAlleleAsThreeFieldNameNoSuffix_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsThreeFieldNameNoSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1372,7 +1373,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -1382,13 +1383,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAlleleAsStringWithNonMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1406,13 +1407,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithMatchingExpressingAlleleVsNullAlleleAsXxCode_ThenExpressingMatchGradeAndPotentialConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsNullAlleleAsXxCode_ThenExpressingMatchGradeAndPotentialConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsXxCode);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1420,7 +1421,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
@@ -1434,13 +1435,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         #region Allele String, With Non-Matching Expressing Allele
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsOneCopyOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsOneCopyOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1458,14 +1459,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FourOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsTwoCopiesOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FourOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsTwoCopiesOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
-            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleWithSameFirstThreeFieldsAsNullAllele);
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FourOutOfSix()
                 .WithDoubleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1483,13 +1484,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1507,13 +1508,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsDifferentNullAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsDifferentNullAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(DifferentNullAllele);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1531,13 +1532,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsItself_ThenExpressingMatchGradeAndExactConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsItself_ThenExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1545,7 +1546,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should()
+            matchGradesForExpressingAlleleOfSameGGroups.Should()
                 .Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
 
@@ -1555,13 +1556,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAlleleAsTwoFieldNameNoSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAlleleAsTwoFieldNameNoSuffix_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsTwoFieldNameNoSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1579,13 +1580,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAlleleAsThreeFieldNameNoSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAlleleAsThreeFieldNameNoSuffix_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsThreeFieldNameNoSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1603,13 +1604,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAlleleAsTwoFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAlleleAsTwoFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsTwoFieldNameWithSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1627,13 +1628,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAlleleAsThreeFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAlleleAsThreeFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsThreeFieldNameWithSuffix);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1651,13 +1652,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAlleleAsStringWithMatchingExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()
+        public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAlleleAsStringWithExpressingAlleleOfSameGGroup_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
@@ -1675,13 +1676,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_NullAlleleAsStringWithNonMatchingExpressingAlleleVsNullAlleleAsXxCode_ThenExpressingMatchGradeAndPotentialConfidenceAssigned()
+        public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsNullAlleleAsXxCode_ThenExpressingMatchGradeAndPotentialConfidenceAssigned()
         {
             var donorPhenotype = BuildPhenotype(NullAlleleAsXxCode);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithNonMatchingExpressingAllele)
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup)
                 .SixOutOfSix()
                 .Build();
 
@@ -1689,7 +1690,270 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == donorId);
 
             // Position under test
-            matchGradesForMatchingExpressingAlleles.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        #endregion
+
+        #region XX Code
+
+        [Test]
+        public async Task Search_SixOutOfSix_NullAlleleAsXxCodeVsOneCopyOfExpressingAllele_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_FiveOutOfSix_NullAlleleAsXxCodeVsTwoCopiesOfExpressingAllele_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(ExpressingAlleleFromSameGGroupAsNullAllele);
+            donorPhenotype.SetAtPosition(LocusUnderTest, OtherPosition, ExpressingAlleleFromSameGGroupAsNullAllele);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .FiveOutOfSix()
+                .WithSingleMismatchRequestedAt(LocusUnderTest)
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [Test]
+        public async Task Search_FiveOutOfSix_NullAlleleAsXxCodeVsNullAllele_ThenMismatchGradeAndConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAllele);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .FiveOutOfSix()
+                .WithSingleMismatchRequestedAt(LocusUnderTest)
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_FiveOutOfSix_NullAlleleAsXxCodeVsDifferentNullAllele_ThenMismatchGradeAndConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(DifferentNullAllele);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .FiveOutOfSix()
+                .WithSingleMismatchRequestedAt(LocusUnderTest)
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_NullAlleleAsXxCodeVsItself_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsXxCode);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_NullAlleleAsXxCodeVsNullAlleleAsTwoFieldNameNoSuffix_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsTwoFieldNameNoSuffix);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_FiveOutOfSix_NullAlleleAsXxCodeVsNullAlleleAsTwoFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsTwoFieldNameWithSuffix);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .FiveOutOfSix()
+                .WithSingleMismatchRequestedAt(LocusUnderTest)
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_NullAlleleAsXxCodeVsNullAlleleAsThreeFieldNameNoSuffix_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsThreeFieldNameNoSuffix);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_FiveOutOfSix_NullAlleleAsXxCodeVsNullAlleleAsThreeFieldNameWithSuffix_ThenMismatchGradeAndConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsThreeFieldNameWithSuffix);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .FiveOutOfSix()
+                .WithSingleMismatchRequestedAt(LocusUnderTest)
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_NullAlleleAsXxCodeVsNullAlleleAsStringWithExpressingAlleleOfSameGGroup_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Other position at same locus
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_NullAlleleAsXxCodeVsNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_ThenGGroupMatchGradeAndPotentialConfidenceAssigned()
+        {
+            var donorPhenotype = BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
+            var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
+
+            var searchRequest = SearchRequestFromHlasBuilder
+                .WithoutNonMatchingHlas(patientWithNullAlleleAsXxCode)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.DonorId == donorId);
+
+            // Position under test
+            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             // Other position at same locus
@@ -1714,11 +1978,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             patientWithNullAlleleAsThreeFieldNameWithSuffix =
                 BuildPhenotype(NullAlleleAsThreeFieldNameWithSuffix);
 
-            patientWithNullAlleleAsStringWithMatchingExpressingAllele =
-                BuildPhenotype(NullAlleleAsStringWithMatchingExpressingAllele);
+            patientWithNullAlleleAsStringWithExpressingAlleleOfSameGGroup =
+                BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfSameGGroup);
 
-            patientWithNullAlleleAsStringWithNonMatchingExpressingAllele =
-                BuildPhenotype(NullAlleleAsStringWithNonMatchingExpressingAllele);
+            patientWithNullAlleleAsStringWithExpressingAlleleOfDifferentGGroup =
+                BuildPhenotype(NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup);
+
+            patientWithNullAlleleAsXxCode =
+                BuildPhenotype(NullAlleleAsXxCode);
         }
 
         private PhenotypeInfo<string> BuildPhenotype(string hlaForPositionUnderTest)
