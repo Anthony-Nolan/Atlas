@@ -233,6 +233,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.PGroup));
                 case "a full serology match":
                     return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] { MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split }));
+                case "a full definite match":
+                    return results.Find(r => IsMatchConfidenceAtMatchedLoci(r, MatchConfidence.Definite));
+                case "a full exact match":
+                    return results.Find(r => IsMatchConfidenceAtMatchedLoci(r, MatchConfidence.Exact));
+                case "a full potential match":
+                    return results.Find(r => IsMatchConfidenceAtMatchedLoci(r, MatchConfidence.Potential));
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
@@ -242,6 +248,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         private static bool IsMatchGradeAtMatchedLoci(SearchResult result, MatchGrade matchGrade)
         {
             return IsOneOfMatchGradesAtMatchedLoci(result, new[] { matchGrade });
+        }
+        
+        private static bool IsMatchConfidenceAtMatchedLoci(SearchResult result, MatchConfidence matchConfidence)
+        {
+            return IsOneOfMatchConfidencesAtMatchedLoci(result, new[] { matchConfidence });
         }
 
         private static bool IsOneOfMatchGradesAtMatchedLoci(SearchResult result, IEnumerable<MatchGrade> matchGrades)
@@ -265,6 +276,30 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 r.MatchCount == null
                 || (matchGrades.Contains(r.ScoreDetailsAtPositionOne.MatchGrade) &&
                     matchGrades.Contains(r.ScoreDetailsAtPositionTwo.MatchGrade))
+            );
+        }
+
+        private static bool IsOneOfMatchConfidencesAtMatchedLoci(SearchResult result, IEnumerable<MatchConfidence> matchConfidences)
+        {
+            var positionResults = new[]
+            {
+                result.SearchResultAtLocusA,
+                result.SearchResultAtLocusA,
+                result.SearchResultAtLocusB,
+                result.SearchResultAtLocusB,
+                result.SearchResultAtLocusC,
+                result.SearchResultAtLocusC,
+                result.SearchResultAtLocusDqb1,
+                result.SearchResultAtLocusDqb1,
+                result.SearchResultAtLocusDrb1,
+                result.SearchResultAtLocusDrb1,
+            };
+
+            return positionResults.All(r =>
+                // null match count implies not matched at that locus - we only want to assert grades of searched loci
+                r.MatchCount == null
+                || (matchConfidences.Contains(r.ScoreDetailsAtPositionOne.MatchConfidence) &&
+                    matchConfidences.Contains(r.ScoreDetailsAtPositionTwo.MatchConfidence))
             );
         }
 

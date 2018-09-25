@@ -264,11 +264,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder()
-                    .WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()
-                .Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Unambiguous).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Build(),

@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
             ScenarioContext.Current.Set(patientDataFactory);
         }
-        
+
         [Given(@"a patient has multiple matches with different match counts")]
         public void GivenAPatientHasMultipleMatchesWithDifferentMatchCounts()
         {
@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.A && l != Locus.B),
                 }
             };
-            
+
             foreach (var databaseDonor in expectedDatabaseDonors)
             {
                 patientDataFactory.AddExpectedDatabaseDonor(databaseDonor);
@@ -79,17 +79,37 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
             ScenarioContext.Current.Set(patientDataFactory);
         }
-        
+
         [Given(@"a patient has multiple matches with different match grades")]
         public void GivenAPatientHasMultipleMatchesWithDifferentMatchGrades()
         {
             var patientDataProvider = ScenarioContext.Current.Get<IStaticPatientDataProvider>();
             patientDataProvider.SetTestCase(StaticDataTestCase.MatchingDonorsAtEachMatchGrade);
-            
+
             ScenarioContext.Current.Set(patientDataProvider);
             ScenarioContext.Current.Set((IPatientDataProvider) patientDataProvider);
         }
-        
+
+        [Given(@"a patient has multiple matches with different match confidences")]
+        public void GivenAPatientHasMultipleMatchesWithDifferentMatchConfidences()
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+
+            var resolutions = new[]
+            {
+                HlaTypingResolution.Unambiguous,
+                HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups,
+                HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup
+            };
+
+            foreach (var resolution in resolutions)
+            {
+                patientDataFactory.AddFullDonorTypingResolution(new PhenotypeInfo<HlaTypingResolution>(resolution));
+            }
+
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
+
         [Given(@"all matching donors are of type (.*)")]
         public void GivenAllMatchingDonorsAreOfDonorType(string donorType)
         {
@@ -97,7 +117,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             patientDataFactory.SetMatchDonorType(donorType);
             ScenarioContext.Current.Set(patientDataFactory);
         }
-        
+
         [Given(@"all matching donors are in registry: (.*)")]
         public void GivenAllMatchingDonorsAreInRegistry(string registry)
         {
