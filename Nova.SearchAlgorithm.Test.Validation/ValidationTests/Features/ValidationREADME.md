@@ -63,7 +63,7 @@ Scenario: Name of the scenario
 ```
 
 **Name**
-- The first line of the scanrio must start with `Scenario:`
+- The first line of the scenario must start with `Scenario:`
 - Following this is the name of the scenario
 - The name will show up in test reports
 - All names must be unique within a scenario
