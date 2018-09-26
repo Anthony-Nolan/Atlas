@@ -65,12 +65,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void UpdateMatchingDonorTypingResolutionsAtLocus(Locus locus, HlaTypingResolution resolution);
 
         /// <summary>
-        /// Will update all expected matching donor genotype match data at the specified locus/position.
-        /// i.e. whether the database donor's hla at that position matches the Genotype of the meta-donor
-        /// </summary>
-        void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool shouldMatchGenotype);
-
-        /// <summary>
         /// Will update all expected matching donor resolutions, at all loci.
         /// This is intended for use with a single matching donor.
         /// Be careful that this is definitely what you want if matching multiple donors

@@ -487,6 +487,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatchGrades.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchConfidenceRanking.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MatchConfidenceRanking.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -592,6 +597,10 @@
     <None Include="ValidationTests\Features\Scoring\MatchGrades.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Ranking.feature.cs</LastGenOutput>
+    </None>
+    <None Include="ValidationTests\Features\Scoring\Ranking\MatchConfidenceRanking.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>MatchCountRanking.feature.cs</LastGenOutput>
     </None>
     <None Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
