@@ -1162,7 +1162,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
         #endregion
 
-        #region Allele String, With Matching Expressing Allele
+        #region Allele String, With Expressing Allele From Same G Group
 
         [Test]
         public async Task Search_SixOutOfSix_NullAlleleAsStringWithExpressingAlleleOfSameGGroupVsOneCopyOfExpressingAllele_ThenExpressingMatchGradeAndExactConfidenceAssigned()
@@ -1432,7 +1432,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
         #endregion
 
-        #region Allele String, With Non-Matching Expressing Allele
+        #region Allele String, With Expressing Allele From Different G Group
 
         [Test]
         public async Task Search_FiveOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroupVsOneCopyOfExpressingAllele_ThenMismatchGradeAndConfidenceAssigned()

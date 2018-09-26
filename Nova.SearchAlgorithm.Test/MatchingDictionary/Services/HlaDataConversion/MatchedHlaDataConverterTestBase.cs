@@ -52,11 +52,13 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
 
         #region Tests To Implement
 
-        public abstract void ConvertToHlaLookupResults_WhenTwoFieldAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
+        public abstract void ConvertToHlaLookupResults_WhenTwoFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
             string alleleName, string xxCodeLookupName);
 
-        public abstract void ConvertToHlaLookupResults_WhenThreeOrFourFieldAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
+        public abstract void ConvertToHlaLookupResults_WhenThreeOrFourFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
             string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName);
+
+        public abstract void ConvertToHlaLookupResults_WhenNullAllele_GeneratesLookupResults_ForOriginalNameOnly(string alleleName);
 
         public abstract void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_GeneratesLookupResult_ForEachUniqueLookupName();
 

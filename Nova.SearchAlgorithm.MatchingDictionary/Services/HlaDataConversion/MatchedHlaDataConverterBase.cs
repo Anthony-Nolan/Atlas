@@ -33,15 +33,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return matchedSerologies.Select(GetSerologyLookupResult);
         }
 
+        /// <summary>
+        /// For building single allele lookups, all alleles must be used.
+        /// For building allele string lookups, only expressing alleles should be used.
+        /// </summary>
         private IEnumerable<IHlaLookupResult> GetHlaLookupResultsFromMatchedAlleles(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
-            var resultsSource = matchedAlleles.ToList();
+            var singleAlleleLookupSource = matchedAlleles.ToList();
+
+            var alleleStringLookupSource = singleAlleleLookupSource
+                .Where(allele => !allele.TypingForHlaLookupResult.IsNullExpresser)
+                .ToList();
 
             return
-                GetLookupResultsForSingleAlleles(resultsSource)
-                    .Concat(GetLookupResultsForNmdpCodeAlleleNames(resultsSource))
-                    .Concat(GetLookupResultsForXxCodeNames(resultsSource));
+                GetLookupResultsForSingleAlleles(singleAlleleLookupSource)
+                    .Concat(GetLookupResultsForNmdpCodeAlleleNames(alleleStringLookupSource))
+                    .Concat(GetLookupResultsForXxCodeNames(alleleStringLookupSource));
         }
 
         /// <summary>
