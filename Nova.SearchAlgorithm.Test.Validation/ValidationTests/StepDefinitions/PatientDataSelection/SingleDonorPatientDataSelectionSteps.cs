@@ -248,5 +248,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             patientDataFactory.SetExpressionSuffixAt(expressionSuffixType, locus);
             ScenarioContext.Current.Set(patientDataFactory);
         }
+        
+        [Given(@"the donor has a null allele at (.*) at (.*)")]
+        [Given(@"the matching donor has a null allele at (.*) at (.*)")]
+        public void GivenTheMatchingDonorHasANullAllele(string locus, string position)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetNullAlleleAt(locus, position);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
     }
 }

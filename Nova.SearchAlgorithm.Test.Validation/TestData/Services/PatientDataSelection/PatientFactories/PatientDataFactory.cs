@@ -40,9 +40,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
 
-        void SetNumberOfMetaDonorsToSkip(int numberToSkip);
         void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
         void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
+        void SetHasNullAlleleAtPosition(Locus locus, TypePositions position);
 
         // Meta-donor and database-donor criteria
 
@@ -212,6 +212,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetHasNonNullExpressionSuffixAtLocus(Locus locus)
         {
             metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
+        }
+
+        public void SetHasNullAlleleAtPosition(Locus locus, TypePositions position)
+        {
+            metaDonorSelectionCriteria.IsNullExpressing.SetAtPosition(locus, position, true);
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)

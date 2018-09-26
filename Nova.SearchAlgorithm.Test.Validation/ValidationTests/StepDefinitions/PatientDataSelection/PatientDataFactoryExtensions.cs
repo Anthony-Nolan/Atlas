@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
@@ -6,6 +7,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System.Collections.Generic;
+using System.Linq;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -169,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             return factory;
         }
 
-        public static IPatientDataFactory SetAlleleStringShouldContainDifferentGroupsAt(this IPatientDataFactory factory,string locusString)
+        public static IPatientDataFactory SetAlleleStringShouldContainDifferentGroupsAt(this IPatientDataFactory factory, string locusString)
         {
             switch (locusString)
             {
@@ -214,11 +216,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             return factory;
         }
 
+        public static IPatientDataFactory SetNullAlleleAt(this IPatientDataFactory factory, string locusType, string positionType)
+        {
+            var loci = ParseLoci(locusType);
+            var positions = ParsePositions(positionType).ToList();
+
+            foreach (var locus in loci)
+            {
+                foreach (var position in positions)
+                {
+                    factory.SetHasNullAlleleAtPosition(locus, position);
+                }
+            }
+
+            return factory;
+        }
+
         public static IPatientDataFactory SetPatientTypingCategoryAt(this IPatientDataFactory factory, string typingCategory, string locusType)
         {
             var loci = ParseLoci(locusType);
             var typingResolution = ParsePatientTypingResolution(typingCategory);
-            
+
             foreach (var locus in loci)
             {
                 factory.SetPatientTypingResolutionAtLocus(locus, typingResolution);
@@ -270,6 +288,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 default:
                     ScenarioContext.Current.Pending();
                     return new List<Locus>();
+            }
+        }
+
+        private static IEnumerable<TypePositions> ParsePositions(string positionType)
+        {
+            switch (positionType)
+            {
+                case "position 1":
+                case "position one":
+                    return new[] {TypePositions.One};
+                case "position 2":
+                case "position two":
+                    return new[] {TypePositions.Two};
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
