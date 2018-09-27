@@ -17,6 +17,7 @@ using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.Utils.WebApi.Filters;
 using System.Configuration;
 using System.Reflection;
+using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -77,6 +78,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
         private static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
         {
+            builder.RegisterType<FeatureFlags>().AsImplementedInterfaces().SingleInstance();
+            
             builder.RegisterType<MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MatchingDictionary.Repositories.HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();

@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {
@@ -80,6 +81,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 lookupNameCategory,
                 getScoringInfo(sources)
             );
+        }
+
+        public HlaScoringDataConverter(IFeatureFlags featureFlags) : base(featureFlags)
+        {
         }
     }
 }

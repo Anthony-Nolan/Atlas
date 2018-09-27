@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {
@@ -16,6 +17,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
     /// </summary>
     public abstract class MatchedHlaDataConverterBase : IMatchedHlaDataConverterBase
     {
+        private readonly IFeatureFlags featureFlags;
+
+        protected MatchedHlaDataConverterBase(IFeatureFlags featureFlags)
+        {
+            this.featureFlags = featureFlags;
+        }
+
         public IEnumerable<IHlaLookupResult> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla)
         {
             var matchedHlaList = matchedHla.ToList();
@@ -33,18 +41,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             return matchedSerologies.Select(GetSerologyLookupResult);
         }
 
-        /// <summary>
-        /// For building single allele lookups, all alleles must be used.
-        /// For building allele string lookups, only expressing alleles should be used.
-        /// </summary>
         private IEnumerable<IHlaLookupResult> GetHlaLookupResultsFromMatchedAlleles(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             var singleAlleleLookupSource = matchedAlleles.ToList();
 
-            var alleleStringLookupSource = singleAlleleLookupSource
-                .Where(allele => !allele.TypingForHlaLookupResult.IsNullExpresser)
-                .ToList();
+            // If feature flag is turned on: 
+            // For building single allele lookups, all alleles must be used.
+            // For building allele string lookups, only expressing alleles should be used.
+            var alleleStringLookupSource = featureFlags.ShouldIgnoreNullAllelesInAlleleStrings
+                ? singleAlleleLookupSource
+                    .Where(allele => !allele.TypingForHlaLookupResult.IsNullExpresser)
+                    .ToList()
+                : singleAlleleLookupSource;
 
             return
                 GetLookupResultsForSingleAlleles(singleAlleleLookupSource)
