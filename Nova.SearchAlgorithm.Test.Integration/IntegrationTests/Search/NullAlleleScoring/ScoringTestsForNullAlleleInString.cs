@@ -1,4 +1,7 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
@@ -7,13 +10,10 @@ using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
-namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
+namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlleleScoring
 {
     /// <summary>
     /// Confirm that scoring on allele strings with a null allele is as expected 
@@ -27,12 +27,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private const TypePositions OtherPosition = TypePositions.Two;
 
         // Matching & scoring assertions are based on the following assumptions:
-        // In v.3.3.0 of HLA db, the null allele below is the only null member of the group 
-        // of alleles beginning with the same first two fields.
-        // Therefore, the two- and three-field truncated name variants - WITH suffix -
-        // should only map this null allele.
-        // The truncated name variants that have NO suffix should return the relevant
-        // expressing alleles, as well as the null allele.
+        // In v.3.3.0 of HLA db, the null allele below is the only null member of the group of alleles beginning with the same first two fields.
+        // Therefore, the two- and three-field truncated name variants - WITH suffix - should only map this null allele.
+        // The truncated name variants that have NO suffix should return the relevant expressing alleles, as well as the null allele.
         private const string ExpressingAlleleFromSameGGroupAsNullAllele = "01:01:01:01";
         private const string NullAllele = "01:01:01:02N";
         private const string NullAlleleAsTwoFieldNameNoSuffix = "01:01";
@@ -45,8 +42,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private const string NullAlleleAsXxCode = "01:XX";
         private const string DifferentNullAllele = "03:01:01:02N";
 
-        private List<MatchGrade> matchGradesForExpressingAlleleOfSameGGroups;
-        private List<MatchGrade> matchGradesForMatchingNullAlleles;
+        private readonly List<MatchGrade> matchGradesForExpressingAlleleOfSameGGroups = new List<MatchGrade>
+        {
+            MatchGrade.PGroup,
+            MatchGrade.GGroup,
+            MatchGrade.Protein,
+            MatchGrade.CDna,
+            MatchGrade.GDna
+        };
+
+        private readonly List<MatchGrade> matchGradesForMatchingNullAlleles = new List<MatchGrade>
+        {
+            MatchGrade.NullGDna,
+            MatchGrade.NullCDna,
+            MatchGrade.NullPartial
+        };
+        
         private PhenotypeInfo<string> originalHlaPhenotype;
         private PhenotypeInfo<string> patientWithNullAlleleAsTwoFieldNameNoSuffix;
         private PhenotypeInfo<string> patientWithNullAlleleAsTwoFieldNameWithSuffix;
@@ -61,27 +72,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private ISearchService searchService;
 
         [OneTimeSetUp]
-        public void ImportTestDonor()
+        public void OneTimeSetUp()
         {
             expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
             donorRepository = Container.Resolve<IDonorImportRepository>();
-
-            matchGradesForExpressingAlleleOfSameGGroups = new List<MatchGrade>
-            {
-                MatchGrade.PGroup,
-                MatchGrade.GGroup,
-                MatchGrade.Protein,
-                MatchGrade.CDna,
-                MatchGrade.GDna
-            };
-
-            matchGradesForMatchingNullAlleles = new List<MatchGrade>
-            {
-                MatchGrade.NullGDna,
-                MatchGrade.NullCDna,
-                MatchGrade.NullPartial
-            };
-
             originalHlaPhenotype = new TestHla.HeterozygousSet1().FiveLocus_SingleExpressingAlleles;
             SetPatientPhenotypes();
         }
