@@ -82,9 +82,5 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 getScoringInfo(sources)
             );
         }
-
-        public HlaScoringDataConverter(IFeatureFlags featureFlags) : base(featureFlags)
-        {
-        }
     }
 }

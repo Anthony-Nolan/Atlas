@@ -225,7 +225,7 @@
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
-    <Compile Include="Properties\FeatureFlags.cs" />
+    <Compile Include="Properties\StaticFeatureFlags.cs" />
     <Compile Include="Repositories\AzureStorage\Dpb1TceGroupLookupResultExtension.cs" />
     <Compile Include="Repositories\AzureStorage\AlleleNameLookupResultExtensions.cs" />
     <Compile Include="Repositories\AlleleNamesLookupRepository.cs" />

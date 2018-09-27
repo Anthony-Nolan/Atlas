@@ -77,9 +77,5 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 pGroups
                 );
         }
-
-        public HlaMatchingDataConverter(IFeatureFlags featureFlags) : base(featureFlags)
-        {
-        }
     }
 }

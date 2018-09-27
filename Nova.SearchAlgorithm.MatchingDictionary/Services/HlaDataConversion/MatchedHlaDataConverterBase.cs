@@ -17,13 +17,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
     /// </summary>
     public abstract class MatchedHlaDataConverterBase : IMatchedHlaDataConverterBase
     {
-        private readonly IFeatureFlags featureFlags;
-
-        protected MatchedHlaDataConverterBase(IFeatureFlags featureFlags)
-        {
-            this.featureFlags = featureFlags;
-        }
-
         public IEnumerable<IHlaLookupResult> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla)
         {
             var matchedHlaList = matchedHla.ToList();
@@ -49,7 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             // If feature flag is turned on: 
             // For building single allele lookups, all alleles must be used.
             // For building allele string lookups, only expressing alleles should be used.
-            var alleleStringLookupSource = featureFlags.ShouldIgnoreNullAllelesInAlleleStrings
+            var alleleStringLookupSource = StaticFeatureFlags.ShouldIgnoreNullAllelesInAlleleStrings
                 ? singleAlleleLookupSource
                     .Where(allele => !allele.TypingForHlaLookupResult.IsNullExpresser)
                     .ToList()

@@ -78,8 +78,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
         private static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
         {
-            builder.RegisterType<FeatureFlags>().AsImplementedInterfaces().SingleInstance();
-            
             builder.RegisterType<MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<MatchingDictionary.Repositories.HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
