@@ -145,8 +145,31 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(patientAlleleName).Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(donorAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
+
+            calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
+        }
+
+        [Test]
+        public void GetGradingCalculator_WhenOneAlleleConsolidatedAndOtherNull_ReturnsExpressingVsNullAlleleGradingCalculator()
+        {
+            const string nullAlleleName = "01:01N";
+            var patientScoringInfo = new ConsolidatedMolecularScoringInfoBuilder().Build();
+            var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
+
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
+
+            calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
+        }
+
+        [Test]
+        public void GetGradingCalculator_WhenOneHlaMultipleAllelesAndOtherNull_ReturnsExpressingVsNullAlleleGradingCalculator()
+        {
+            const string nullAlleleName = "01:01N";
+            var patientScoringInfo = new MultipleAlleleScoringInfoBuilder().Build();
+            var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
+
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }
@@ -157,10 +180,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             {
                 return new SingleAlleleScoringInfoBuilder().Build();
             }
+
             if (scoringInfoType == typeof(ConsolidatedMolecularScoringInfo))
             {
                 return new ConsolidatedMolecularScoringInfoBuilder().Build();
             }
+
             if (scoringInfoType == typeof(MultipleAlleleScoringInfo))
             {
                 return new MultipleAlleleScoringInfoBuilder()
@@ -170,6 +195,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     })
                     .Build();
             }
+
             if (scoringInfoType == typeof(SerologyScoringInfo))
             {
                 return new SerologyScoringInfoBuilder().Build();
