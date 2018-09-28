@@ -60,8 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [Test]
         public async Task Search_SixOutOfSix_WhenPatientAndDonorHaveSameSingleNullAllele_ThenMatchingNullGradeAndDefiniteConfidenceAssigned()
         {
-            var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(originalNullAlleleAtOnePositionPhenotype)
+            var searchRequest = new SearchRequestFromHlasBuilder(originalNullAlleleAtOnePositionPhenotype)
                 .SixOutOfSix()
                 .Build();
 
@@ -80,8 +79,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [Test]
         public async Task Search_SixOutOfSix_WhenPatientAndDonorHaveDifferentSingleNullAllele_ThenNullMismatchGradeAndDefiniteConfidenceAssigned()
         {
-            var searchRequest = SearchRequestFromHlasBuilder
-                    .WithoutNonMatchingHlas(differentNullAlleleAtOnePositionPhenotype)
+            var searchRequest = new SearchRequestFromHlasBuilder(differentNullAlleleAtOnePositionPhenotype)
                 .SixOutOfSix()
                 .Build();
 
@@ -100,8 +98,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [Test]
         public async Task Search_SixOutOfSix_WhenPatientIsHomozygousAndDonorHasSingleNullAllele_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(homozygousByTypingAtOneLocusPhenotype)
+            var searchRequest = new SearchRequestFromHlasBuilder(homozygousByTypingAtOneLocusPhenotype)
                 .SixOutOfSix()
                 .Build();
 
@@ -120,8 +117,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [Test]
         public async Task Search_SixOutOfSix_WhenPatientHasSingleNullAlleleAndDonorIsHomozygous_ThenMismatchGradeAndConfidenceAssigned()
         {
-            var searchRequest = SearchRequestFromHlasBuilder
-                .WithoutNonMatchingHlas(originalNullAlleleAtOnePositionPhenotype)
+            var searchRequest = new SearchRequestFromHlasBuilder(originalNullAlleleAtOnePositionPhenotype)
                 .SixOutOfSix()
                 .Build();
 
