@@ -11,6 +11,7 @@ using Nova.Utils.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -61,7 +62,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
             var results = lookupResults.ToList();
             var scoringInfos = results.Select(result => result.HlaScoringInfo);
-            
+
             switch (hlaTypingCategory)
             {
                 case HlaTypingCategory.Allele:
@@ -127,14 +128,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             );
         }
 
-        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(
-            IEnumerable<IHlaScoringInfo> scoringInfos)
+        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(IEnumerable<IHlaScoringInfo> scoringInfos)
         {
             var infos = scoringInfos.ToList();
 
-            return infos.OfType<SingleAlleleScoringInfo>()
+            var singleAlleleInfos = infos.OfType<SingleAlleleScoringInfo>()
                 .Union(infos.OfType<MultipleAlleleScoringInfo>()
                     .SelectMany(multiple => multiple.AlleleScoringInfos));
+
+            return StaticFeatureFlags.ShouldIgnoreNullAllelesInAlleleStrings
+                ? singleAlleleInfos.Where(i => !ExpressionSuffixParser.IsAlleleNull(i.AlleleName))
+                : singleAlleleInfos;
         }
 
         private static IEnumerable<string> GetMatchingPGroups(

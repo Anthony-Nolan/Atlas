@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using System;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -56,7 +57,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         private static bool IsAlleleNull(SingleAlleleScoringInfo scoringInfo)
         {
             var alleleName = scoringInfo.AlleleName;
-            return AlleleTyping.IsAlleleNull(alleleName);
+            return ExpressionSuffixParser.IsAlleleNull(alleleName);
         }
     }
 }

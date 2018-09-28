@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
@@ -61,7 +62,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         public void AlleleTyping_IsAlleleNull_ReturnsExpectedResult(object[] alleleToTest, bool expectedResult)
         {
             var alleleName = GetAlleleName(alleleToTest);
-            var actualResult = AlleleTyping.IsAlleleNull(alleleName);
+            var actualResult = ExpressionSuffixParser.IsAlleleNull(alleleName);
 
             actualResult.Should().Be(expectedResult);
         }
