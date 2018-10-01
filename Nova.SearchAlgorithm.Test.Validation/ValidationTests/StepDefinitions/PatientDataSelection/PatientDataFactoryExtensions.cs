@@ -232,6 +232,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             return factory;
         }
 
+        public static IPatientDataFactory SetPatientNonMatchingNullAlleleAt(this IPatientDataFactory factory, string locusType, string positionType)
+        {
+            var loci = ParseLoci(locusType);
+            var positions = ParsePositions(positionType).ToList();
+
+            foreach (var locus in loci)
+            {
+                foreach (var position in positions)
+                {
+                    factory.SetPatientNonMatchingNullAlleleAtPosition(locus, position);
+                }
+            }
+
+            return factory;
+        }
+
         public static IPatientDataFactory SetPatientTypingCategoryAt(this IPatientDataFactory factory, string typingCategory, string locusType)
         {
             var loci = ParseLoci(locusType);

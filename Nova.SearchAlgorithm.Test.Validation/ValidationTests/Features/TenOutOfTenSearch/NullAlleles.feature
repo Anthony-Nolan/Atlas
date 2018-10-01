@@ -6,4 +6,11 @@ Feature: Ten Out Of Ten Search - Null Alleles
     Given a patient has a match
     And the donor has a null allele at locus A at position 1
     When I run a 10/10 search
-    Then the results should contain the specified donor  
+    Then the results should contain the specified donor 
+    
+  Scenario: Null Alleles - Same expressing allele, different null allele
+    Given a patient has a match
+    And the donor has a null allele at locus A at position 1
+    And the patient has a different null allele at locus A at position 1
+    When I run a 10/10 search
+    Then the results should contain the specified donor

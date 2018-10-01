@@ -248,8 +248,95 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             hlaAtLocus.Item1.Should().Be(donorHla1);
             hlaAtLocus.Item2.Should().Be(donorHla2);
             donorHla1.Should().Be(donorHla2);
-        }     
+        }
 
+        [Test]
+        public void GetPatientHla_ForExpressingMismatch_ReturnsHlaNotMatchingDonor()
+        {
+            var criteria = new PatientHlaSelectionCriteriaBuilder()
+                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.ExpressingAlleleMismatch)
+                .Build();
+
+            var metaDonor = new MetaDonor
+            {
+                Genotype =
+                {
+                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                }
+            };
+
+            var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+        }
+        
+        [Test]
+        public void GetPatientHla_ForNullMismatch_ReturnsAlleleNotMatchingDonor()
+        {
+            var criteria = new PatientHlaSelectionCriteriaBuilder()
+                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.NullAlleleMismatch)
+                .Build();
+
+            var metaDonor = new MetaDonor
+            {
+                Genotype =
+                {
+                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                }
+            };
+
+            var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+        }
+        
+        [Test]
+        public void GetPatientHla_ForNullMismatch_ReturnsNullAllele()
+        {
+            var criteria = new PatientHlaSelectionCriteriaBuilder()
+                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.NullAlleleMismatch)
+                .Build();
+
+            var metaDonor = new MetaDonor
+            {
+                Genotype =
+                {
+                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                }
+            };
+
+            var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+            patientHla.A_1.Should().Contain("N");
+        }
+        
+        [Test]
+        public void GetPatientHla_IncludingNullMismatch_NeverReturnsCrossMatchWhenArbitraryMatchOrientationRequested()
+        {
+            var criteria = new PatientHlaSelectionCriteriaBuilder()
+                .WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Arbitrary)
+                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.NullAlleleMismatch)
+                .Build();
+
+            var metaDonor = new MetaDonor
+            {
+                Genotype =
+                {
+                    Hla = alleles.Map((locus, p, all) => TgsAllele.FromTestDataAllele(all.First()))
+                }
+            };
+
+            // There is a random element to the orientation selection
+            // To avoid false positives, we repeat this test multiple time to ensure that the result does not change
+            for (var i = 0; i < 10; i++)
+            {
+                var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
+
+                patientHla.A_1.Should().Contain("N");
+                patientHla.A_2.Should().NotContain("N");
+            }
+        }
+        
         private AlleleTestData GetTestAllele(Locus locus, TypePositions positions, MatchLevel matchLevel)
         {
             string positionString;

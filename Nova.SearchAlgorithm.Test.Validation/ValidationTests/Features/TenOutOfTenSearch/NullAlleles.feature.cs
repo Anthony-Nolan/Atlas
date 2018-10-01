@@ -82,6 +82,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Null Alleles - Same expressing allele, different null allele")]
+        public virtual void NullAlleles_SameExpressingAlleleDifferentNullAllele()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Same expressing allele, different null allele", ((string[])(null)));
+#line 11
+  this.ScenarioSetup(scenarioInfo);
+#line 12
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 13
+    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 14
+    testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 15
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 16
+    testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

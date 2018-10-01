@@ -257,5 +257,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             patientDataFactory.SetNullAlleleAt(locus, position);
             ScenarioContext.Current.Set(patientDataFactory);
         }
+        
+        [Given(@"the patient has a different null allele at (.*) at (.*)")]
+        public void GivenThePatientHasADifferentNullAllele(string locus, string position)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetPatientNonMatchingNullAlleleAt(locus, position);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
     }
 }
