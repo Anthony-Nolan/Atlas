@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
         void SetAsTenOutOfTenMatch();
-        void SetMismatchesAtLocus(int numberOfMismatches, Locus locus);
+        void SetMismatchAtPosition(Locus locus, TypePositions position);
         void SetPatientUntypedAtLocus(Locus locus);
         void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation);
@@ -151,22 +151,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 locus == Locus.Dpb1 ? PatientHlaSource.ExpressingAlleleMismatch: PatientHlaSource.Match);
         }
 
-        public void SetMismatchesAtLocus(int numberOfMismatches, Locus locus)
+        public void SetMismatchAtPosition(Locus locus, TypePositions position)
         {
-            // TODO: NOVA-1713: Allow mismatches to be specified by locus
-            switch (numberOfMismatches)
-            {
-                case 1:
-                    patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, TypePositions.One, PatientHlaSource.ExpressingAlleleMismatch);
-                    break;
-                case 2:
-                    patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, TypePositions.Both, PatientHlaSource.ExpressingAlleleMismatch);
-                    break;
-                case 0:
-                    break;
-                default:
-                    throw new Exception("Cannot have fewer than 0 or more than 2 mismatches");
-            }
+            patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
         }
 
         public void SetPatientUntypedAtLocus(Locus locus)

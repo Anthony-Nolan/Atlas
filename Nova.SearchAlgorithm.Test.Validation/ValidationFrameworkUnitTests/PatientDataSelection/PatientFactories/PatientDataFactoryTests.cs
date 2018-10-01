@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void SetPatientHomozygousAtLocus_WhenMismatchAllowed_DoesNotSetDonorAsHomozygous()
         {
             const Locus locus = Locus.A;
-            patientDataFactory.SetMismatchesAtLocus(1, locus);
+            patientDataFactory.SetMismatchAtPosition(locus, TypePositions.One);
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             CaptureCriteria();

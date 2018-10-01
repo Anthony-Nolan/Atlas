@@ -59,7 +59,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
             foreach (var locus in loci)
             {
-                factory.SetMismatchesAtLocus(mismatchCount, locus);
+                if (mismatchCount > 0)
+                {
+                    factory.SetMismatchAtPosition(locus, TypePositions.One);
+                }
+
+                if (mismatchCount > 1)
+                {
+                    factory.SetMismatchAtPosition(locus, TypePositions.Two);
+                }
+            }
+
+            return factory;
+        }
+
+        public static IPatientDataFactory SetMismatchAt(this IPatientDataFactory factory, string locusType, string positionType)
+        {
+            var loci = ParseLoci(locusType);
+            var positions = ParsePositions(positionType).ToList();
+            
+            foreach (var locus in loci)
+            {
+                foreach (var position in positions)
+                {
+                    factory.SetMismatchAtPosition(locus, position);
+                }
             }
 
             return factory;

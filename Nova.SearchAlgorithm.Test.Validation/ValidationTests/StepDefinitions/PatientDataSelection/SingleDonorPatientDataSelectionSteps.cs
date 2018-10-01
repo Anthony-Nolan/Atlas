@@ -117,6 +117,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             ScenarioContext.Current.Set(patientDataFactory);
         }
 
+        [Given(@"the donor has a mismatch at (.*) at (.*)")]
+        [Given(@"the matching donor has a mismatch at (.*) at (.*)")]
+        public void GivenTheMatchingDonorHasAMismatchAtPosition(string locus, string position)
+        {
+            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            patientDataFactory.SetMismatchAt(locus, position);
+            ScenarioContext.Current.Set(patientDataFactory);
+        }
+
         [Given(@"the donor is untyped at Locus (.*)")]
         [Given(@"the matching donor is untyped at Locus (.*)")]
         public void GivenTheMatchingDonorIsUntypedAt(string locus)
@@ -258,6 +267,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             ScenarioContext.Current.Set(patientDataFactory);
         }
         
+        [Given(@"the patient has a null allele at (.*) at (.*)")]
         [Given(@"the patient has a different null allele at (.*) at (.*)")]
         public void GivenThePatientHasADifferentNullAllele(string locus, string position)
         {
