@@ -29,9 +29,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     public class MetaDonorsData : IMetaDonorsData
     {
         /// <summary>
-        /// The number of meta-donors to create when testing a range of donors
+        /// The number of meta-donors to create when testing a small range of donors
         /// </summary>
-        private const int DonorRangeCount = 50;
+        private const int SmallDonorRangeCount = 10;
+
+        /// <summary>
+        /// The number of meta-donors to create when testing a large range of donors
+        /// </summary>
+        private const int LargeDonorRangeCount = 100;
 
         /// <summary>
         /// Individual meta-donors. The majority of test data will be in here
@@ -269,8 +274,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 {
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Tgs).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Unambiguous).Build(),
-                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Build(),
-                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup)
+                        .Build(),
                 }
             },
         };
@@ -278,7 +285,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         /// <summary>
         /// Used when testing a selection of four-field TGS typed meta-donors
         /// </summary>
-        private static readonly IEnumerable<MetaDonor> FourFieldDonorRange = Enumerable.Range(0, DonorRangeCount + 1).Select(i => new MetaDonor
+        private static readonly IEnumerable<MetaDonor> FourFieldDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i => new MetaDonor
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
@@ -288,7 +295,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         /// <summary>
         /// Used when testing a selection of three-field TGS typed meta-donors
         /// </summary>
-        private static readonly IEnumerable<MetaDonor> ThreeFieldDonorRange = Enumerable.Range(0, DonorRangeCount + 1).Select(i => new MetaDonor
+        private static readonly IEnumerable<MetaDonor> ThreeFieldDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i => new MetaDonor
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
@@ -298,7 +305,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         /// <summary>
         /// Used when testing a selection of two-field TGS meta-donors
         /// </summary>
-        private static readonly IEnumerable<MetaDonor> TwoFieldDonorRange = Enumerable.Range(0, DonorRangeCount + 1).Select(i => new MetaDonor
+        private static readonly IEnumerable<MetaDonor> TwoFieldDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i => new MetaDonor
         {
             DonorType = DonorType.Adult,
             Registry = RegistryCode.AN,
@@ -308,12 +315,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
         /// <summary>
         /// Used when testing a selection of TGS meta-donors with an arbitrary number of fields
         /// </summary>
-        private static readonly IEnumerable<MetaDonor> ArbitraryFieldCountDonorRange = Enumerable.Range(0, DonorRangeCount + 1).Select(i =>
+        private static readonly IEnumerable<MetaDonor> ArbitraryFieldCountDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i =>
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
+            });
+
+        /// <summary>
+        /// Used when testing a selection of meta-donors with an arbitrary typing resolution at all loci
+        /// </summary>
+        private static readonly IEnumerable<MetaDonor> ArbitraryResolutionDonorRange = Enumerable.Range(0, LargeDonorRangeCount + 1).Select(i =>
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                {
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Arbitrary).Build(),
+                }
             });
 
         public IEnumerable<MetaDonor> MetaDonors
@@ -322,7 +344,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 .Concat(FourFieldDonorRange)
                 .Concat(ThreeFieldDonorRange)
                 .Concat(TwoFieldDonorRange)
-                .Concat(ArbitraryFieldCountDonorRange);
+                .Concat(ArbitraryFieldCountDonorRange)
+                .Concat(ArbitraryResolutionDonorRange);
         }
     }
 }

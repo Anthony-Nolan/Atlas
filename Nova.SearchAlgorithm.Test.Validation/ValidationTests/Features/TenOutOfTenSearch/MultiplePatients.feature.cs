@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 6
   this.ScenarioSetup(scenarioInfo);
 #line 7
-    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a set of 10 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 8
     testRunner.And("each matching donor is \'TGS derived data at four-field resolution\' typed at each " +
                     "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
@@ -92,7 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 12
   this.ScenarioSetup(scenarioInfo);
 #line 13
-    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a set of 10 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 14
     testRunner.And("each matching donor is \'TGS derived data at three-field resolution\' typed at each" +
                     " locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
@@ -112,7 +112,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 18
   this.ScenarioSetup(scenarioInfo);
 #line 19
-    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a set of 10 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 20
     testRunner.And("each matching donor is \'TGS derived data at two-field resolution\' typed at each l" +
                     "ocus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
@@ -134,12 +134,31 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 25
   this.ScenarioSetup(scenarioInfo);
 #line 26
-    testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a set of 10 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 27
     testRunner.And("each matching donor is \'TGS derived data\' typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 28
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 29
+    testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of variously typed donors")]
+        public virtual void _1010SearchForASelectionOfVariouslyTypedDonors()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of variously typed donors", ((string[])(null)));
+#line 31
+  this.ScenarioSetup(scenarioInfo);
+#line 32
+    testRunner.Given("a set of 100 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 33
+    testRunner.And("each matching donor is arbitrarily typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 34
+    testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 35
     testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
