@@ -121,15 +121,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .Returns(alleleNames);
             
             var firstEntry = BuildTableEntityForSingleAllele(expressingAlleleName);
-            var thirdEntry = BuildTableEntityForSingleAllele(nullAlleleName);
+            var secondEntry = BuildTableEntityForSingleAllele(nullAlleleName);
 
             HlaLookupRepository
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular)
-                .Returns(firstEntry, thirdEntry);
+                .Returns(firstEntry, secondEntry);
             
             var result = await LookupService.GetHlaLookupResult(MatchedLocus, lookupName);
 
-            result.HlaScoringInfo.MatchingGGroups.Count().Should().Be(1);
+            result.HlaScoringInfo.MatchingGGroups.Single().Should().Be($"{expressingAlleleName}G");
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]

@@ -19,19 +19,19 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
             // If compaing a single null allele to a non-single allele,
             // as we are ignoring null alleles within allele strings, we can consider this a null vs. expressing comparison
-            else if (IsSingleNullAllele(patientInfo) ^ IsSingleNullAllele(donorInfo))
+            if (IsSingleNullAllele(patientInfo) ^ IsSingleNullAllele(donorInfo))
             {
                 return new ExpressingVsNullAlleleGradingCalculator();
             }
-            else if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
+            if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
             {
                 return new ConsolidatedMolecularGradingCalculator();
             }
-            else if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
+            if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
             {
                 return new MultipleAlleleGradingCalculator();
             }
-            else if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
+            if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
             {
                 return GetSingleAlleleGradingCalculator(pInfo, dInfo);
             }

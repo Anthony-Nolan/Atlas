@@ -58,15 +58,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
             actualAlleleTyping.IsNullExpresser.Should().Be(expectedIsNullExpresser);
         }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedIsNullExpresser))]
-        public void AlleleTyping_IsAlleleNull_ReturnsExpectedResult(object[] alleleToTest, bool expectedResult)
-        {
-            var alleleName = GetAlleleName(alleleToTest);
-            var actualResult = ExpressionSuffixParser.IsAlleleNull(alleleName);
-
-            actualResult.Should().Be(expectedResult);
-        }
-
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFields))]
         public void AlleleTyping_WhenNew_FieldsSetCorrectly(object[] alleleToTest, IEnumerable<string> expectedFields)
         {

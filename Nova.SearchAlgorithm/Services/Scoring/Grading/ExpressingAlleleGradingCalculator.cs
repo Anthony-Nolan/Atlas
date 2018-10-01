@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         private static bool IsProteinMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
             return string.Equals(
-                patientInfo.Allele.TwoFieldNameWithoutExpressionSuffix, 
+                patientInfo.Allele.TwoFieldNameWithoutExpressionSuffix,
                 donorInfo.Allele.TwoFieldNameWithoutExpressionSuffix) &&
                 AreBothSequencesFullLength(patientInfo.ScoringInfo, donorInfo.ScoringInfo);
         }

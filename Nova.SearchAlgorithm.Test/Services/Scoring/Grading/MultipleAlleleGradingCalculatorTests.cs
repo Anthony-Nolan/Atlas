@@ -660,62 +660,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
         #endregion
 
-        #region Tests: Multiple vs. Null Allele & Vice Versa
-
-        [Test]
-        public void CalculateGrade_MultipleAlleleVsNullAllele_ReturnsMismatch()
-        {
-            const string patientExpressingAllele = "999:999";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[]
-                    {
-                        new SingleAlleleScoringInfoBuilder()
-                            .WithAlleleName(patientExpressingAllele)
-                            .Build()
-                    }).Build())
-                .Build();
-
-            const string donorNullAllele = "111:111N";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(donorNullAllele)
-                    .Build())
-                .Build();
-
-            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.Mismatch);
-        }
-
-        [Test]
-        public void CalculateGrade_NullAlleleVsMultipleAllele_ReturnsMismatch()
-        {
-            const string patientNullAllele = "111:111N";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
-                    .WithAlleleName(patientNullAllele)
-                    .Build())
-                .Build();
-
-            const string donorExpressingAllele = "999:999";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
-                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[]
-                    {
-                        new SingleAlleleScoringInfoBuilder()
-                            .WithAlleleName(donorExpressingAllele)
-                            .Build()
-                    }).Build())
-                .Build();
-
-            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
-
-            grade.Should().Be(MatchGrade.Mismatch);
-        }
-
-        #endregion
-
         [Test]
         public void CalculateGrade_MoreThanOnePossibleMatchGrade_BestGradeReturned()
         {

@@ -62,6 +62,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             var allelesGroupedByMatchLocusAndLookupName = matchedAlleles
+                // We must use names both with and without the expression suffix. This is because truncated allele names with a null suffix mean a different thing than those without:
+                // e.g. 01:01 can refer to all 3/4 field alleles starting with 01:01, 01:01N refers only to the null alleles in this group
+                // Both can be used for lookup, so we must treat then independently
                 .SelectMany(allele => allele.TypingForHlaLookupResult.ToNmdpCodeAlleleLookupNames(),
                     (allele, nmdpLookupName) => new {allele, nmdpLookupName})
                 .Where(x => x.allele.TypingForHlaLookupResult.Fields.Count() > 2)
