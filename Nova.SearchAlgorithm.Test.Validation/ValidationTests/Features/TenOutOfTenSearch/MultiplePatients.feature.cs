@@ -74,7 +74,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 7
     testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 8
-    testRunner.And("each matching donor is TGS (four field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("each matching donor is \'TGS derived data at four-field resolution\' typed at each " +
+                    "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
@@ -93,7 +94,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 13
     testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 14
-    testRunner.And("each matching donor is TGS (three field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("each matching donor is \'TGS derived data at three-field resolution\' typed at each" +
+                    " locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 15
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 16
@@ -112,7 +114,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 19
     testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 20
-    testRunner.And("each matching donor is TGS (two field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("each matching donor is \'TGS derived data at two-field resolution\' typed at each l" +
+                    "ocus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
     testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 22
@@ -133,7 +136,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 26
     testRunner.Given("a set of 50 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 27
-    testRunner.And("each matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("each matching donor is \'TGS derived data\' typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 28
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 29

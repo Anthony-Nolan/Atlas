@@ -130,7 +130,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 24
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 25
-    testRunner.And("the matching donor is TGS (four field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is \'TGS derived data at four-field resolution\' typed at each l" +
+                    "ocus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 26
     testRunner.And("the match level is three field (different fourth field)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 27
@@ -151,7 +152,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
 #line 31
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 32
-    testRunner.And("the matching donor is TGS (three field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is \'TGS derived data at three-field resolution\' typed at each " +
+                    "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 33
     testRunner.And("the match level is two field (different third field)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 34
