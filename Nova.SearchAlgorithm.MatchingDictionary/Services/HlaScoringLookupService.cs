@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
@@ -8,10 +11,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.Utils.ApplicationInsights;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -136,9 +135,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 .Union(infos.OfType<MultipleAlleleScoringInfo>()
                     .SelectMany(multiple => multiple.AlleleScoringInfos));
 
-            return StaticFeatureFlags.ShouldIgnoreNullAllelesInAlleleStrings
-                ? singleAlleleInfos.Where(i => !ExpressionSuffixParser.IsAlleleNull(i.AlleleName))
-                : singleAlleleInfos;
+            return MultipleAlleleNullFilter.Filter(singleAlleleInfos);
         }
 
         private static IEnumerable<string> GetMatchingPGroups(

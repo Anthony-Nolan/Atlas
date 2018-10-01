@@ -379,6 +379,7 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MultipleAlleleNullFilterTests.cs" />
     <Compile Include="MatchingDictionary\SharedTestDataCache.cs" />
     <Compile Include="Models\SearchResults\MatchAndScoreResultTests.cs" />
     <Compile Include="Models\SearchResults\ScoreResultTests.cs" />

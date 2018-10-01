@@ -1,10 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Properties;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {

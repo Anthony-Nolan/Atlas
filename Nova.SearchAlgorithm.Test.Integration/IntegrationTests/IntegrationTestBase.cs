@@ -1,4 +1,7 @@
-﻿using Autofac;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using Autofac;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
@@ -21,10 +24,6 @@ using Nova.Utils.Models;
 using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {

@@ -1,9 +1,8 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Properties;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {
@@ -38,15 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             var singleAlleleLookupSource = matchedAlleles.ToList();
-
-            // If feature flag is turned on: 
-            // For building single allele lookups, all alleles must be used.
-            // For building allele string lookups, only expressing alleles should be used.
-            var alleleStringLookupSource = StaticFeatureFlags.ShouldIgnoreNullAllelesInAlleleStrings
-                ? singleAlleleLookupSource
-                    .Where(allele => !allele.TypingForHlaLookupResult.IsNullExpresser)
-                    .ToList()
-                : singleAlleleLookupSource;
+            var alleleStringLookupSource = MultipleAlleleNullFilter.Filter(singleAlleleLookupSource).ToList();
 
             return
                 GetLookupResultsForSingleAlleles(singleAlleleLookupSource)
@@ -60,8 +51,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
         private IEnumerable<IHlaLookupResult> GetLookupResultsForSingleAlleles(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
-            return matchedAlleles
-                .Select(GetSingleAlleleLookupResult);
+            return matchedAlleles.Select(GetSingleAlleleLookupResult);
         }
 
         /// <summary>
