@@ -65,10 +65,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 4-field TGS typed donors")]
-        public virtual void _1010SearchForASelectionOf4_FieldTGSTypedDonors()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 4-field \'TGS derived data\' typed donors")]
+        public virtual void _1010SearchForASelectionOf4_FieldTGSDerivedDataTypedDonors()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 4-field TGS typed donors", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 4-field \'TGS derived data\' typed donors", ((string[])(null)));
 #line 6
   this.ScenarioSetup(scenarioInfo);
 #line 7
@@ -85,10 +85,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 3-field TGS typed donors")]
-        public virtual void _1010SearchForASelectionOf3_FieldTGSTypedDonors()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 3-field \'TGS derived data\' typed donors")]
+        public virtual void _1010SearchForASelectionOf3_FieldTGSDerivedDataTypedDonors()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 3-field TGS typed donors", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 3-field \'TGS derived data\' typed donors", ((string[])(null)));
 #line 12
   this.ScenarioSetup(scenarioInfo);
 #line 13
@@ -105,10 +105,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 2-field TGS typed donors")]
-        public virtual void _1010SearchForASelectionOf2_FieldTGSTypedDonors()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of 2-field \'TGS derived data\' typed donors")]
+        public virtual void _1010SearchForASelectionOf2_FieldTGSDerivedDataTypedDonors()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 2-field TGS typed donors", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of 2-field \'TGS derived data\' typed donors", ((string[])(null)));
 #line 18
   this.ScenarioSetup(scenarioInfo);
 #line 19
@@ -127,10 +127,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of TGS typed donors")]
-        public virtual void _1010SearchForASelectionOfTGSTypedDonors()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search for a selection of \'TGS derived data\' typed donors")]
+        public virtual void _1010SearchForASelectionOfTGSDerivedDataTypedDonors()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of TGS typed donors", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of \'TGS derived data\' typed donors", ((string[])(null)));
 #line 25
   this.ScenarioSetup(scenarioInfo);
 #line 26

@@ -125,10 +125,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a TGS typed match")]
-        public virtual void _1010SearchWithATGSTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a \'TGS derived data\' typed match")]
+        public virtual void _1010SearchWithATGSDerivedDataTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a TGS typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data\' typed match", ((string[])(null)));
 #line 24
   this.ScenarioSetup(scenarioInfo);
 #line 25

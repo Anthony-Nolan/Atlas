@@ -21,7 +21,7 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
     When I run a 10/10 search
     Then the results should contain the specified donor
      
-  Scenario: 10/10 Search with a TGS typed match
+  Scenario: 10/10 Search with a 'TGS derived data' typed match
     Given a patient has a match
     And the matching donor is 'TGS derived data' typed at each locus
     When I run a 10/10 search
