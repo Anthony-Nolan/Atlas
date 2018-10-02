@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {
@@ -42,11 +42,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
         }
 
         protected override IHlaLookupResult GetNmdpCodeAlleleLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
+            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
+            string nmdpLookupName)
         {
             return GetMolecularLookupResult(
                 lookupResultSources,
-                allele => allele.ToNmdpCodeAlleleLookupName(),
+                allele => nmdpLookupName,
                 LookupNameCategory.NmdpCodeAllele,
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }

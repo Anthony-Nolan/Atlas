@@ -11,7 +11,7 @@ using System;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class MultipleAlleleGradingCalculatorTests : 
+    public class MultipleAlleleGradingCalculatorTests :
         GradingCalculatorTestsBase<MultipleAlleleGradingCalculator>
     {
         #region Tests: Exception Cases
@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[]{sharedAllele})
+                    .WithAlleleScoringInfos(new[] { sharedAllele })
                     .Build())
                 .Build();
 
@@ -118,7 +118,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] {donorAllele })
+                    .WithAlleleScoringInfos(new[] { donorAllele })
                     .Build())
                 .Build();
 
@@ -664,7 +664,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void CalculateGrade_MoreThanOnePossibleMatchGrade_BestGradeReturned()
         {
             const string sharedPGroup = "shared-p-group";
-            
+
             var sharedGDnaAllele = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("111:111")
                 .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
@@ -697,7 +697,5 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             // Possible grades are GDna, PGroup, or Mismatch; GDna should be returned.
             grade.Should().Be(MatchGrade.GDna);
         }
-
-        // TODO: NOVA-1479 - Add tests for scoring Multiple Allele vs. null allele & vice versa
     }
 }

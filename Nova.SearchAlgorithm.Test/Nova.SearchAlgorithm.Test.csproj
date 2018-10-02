@@ -366,6 +366,7 @@
     <Compile Include="MatchingDictionary\Services\Dpb1TceGroups\Dpb1TceGroupsServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\AlleleNames\AlleleNamesLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\ExpressionSuffixParserTests.cs" />
     <Compile Include="MatchingDictionary\Services\HlaDataConversion\HlaScoringDataConverterTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaDataConversion\MatchedHlaDataConverterTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\HlaDataConversion\HlaMatchingDataConverterTest.cs" />
@@ -379,6 +380,7 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleInfoForMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedOnTestBase.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
+    <Compile Include="MatchingDictionary\Services\MultipleAlleleNullFilterTests.cs" />
     <Compile Include="MatchingDictionary\SharedTestDataCache.cs" />
     <Compile Include="Models\SearchResults\MatchAndScoreResultTests.cs" />
     <Compile Include="Models\SearchResults\ScoreResultTests.cs" />

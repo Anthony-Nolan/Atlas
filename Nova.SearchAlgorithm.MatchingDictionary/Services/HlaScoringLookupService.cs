@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
@@ -8,9 +11,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.Utils.ApplicationInsights;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
             var results = lookupResults.ToList();
             var scoringInfos = results.Select(result => result.HlaScoringInfo);
-            
+
             switch (hlaTypingCategory)
             {
                 case HlaTypingCategory.Allele:
@@ -127,14 +127,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             );
         }
 
-        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(
-            IEnumerable<IHlaScoringInfo> scoringInfos)
+        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(IEnumerable<IHlaScoringInfo> scoringInfos)
         {
             var infos = scoringInfos.ToList();
 
-            return infos.OfType<SingleAlleleScoringInfo>()
+            var singleAlleleInfos = infos.OfType<SingleAlleleScoringInfo>()
                 .Union(infos.OfType<MultipleAlleleScoringInfo>()
                     .SelectMany(multiple => multiple.AlleleScoringInfos));
+
+            return MultipleAlleleNullFilter.Filter(singleAlleleInfos);
         }
 
         private static IEnumerable<string> GetMatchingPGroups(

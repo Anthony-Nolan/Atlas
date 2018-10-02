@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
 
         [TestCase("999:999", "999")]
         [TestCase("999:999Q", "999")]
-        public override void ConvertToHlaLookupResults_WhenTwoFieldAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
+        public override void ConvertToHlaLookupResults_WhenTwoFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
             string alleleName, string xxCodeLookupName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
@@ -36,8 +36,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         [TestCase("999:999:999", "", "999:999", "999")]
         [TestCase("999:999:999:999", "", "999:999", "999")]
         [TestCase("999:999:999L", "L", "999:999", "999")]
-        [TestCase("999:999:999:999N", "N", "999:999", "999")]
-        public override void ConvertToHlaLookupResults_WhenThreeOrFourFieldAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
+        public override void ConvertToHlaLookupResults_WhenThreeOrFourFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
             string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
@@ -46,8 +45,31 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             var expectedLookupResults = new List<IHlaLookupResult>
             {
                 BuildSingleAlleleLookupResult(alleleName),
-                BuildMultipleAlleleLookupResult(nmdpCodeLookupName + expressionSuffix, new []{alleleName}),
+                BuildMultipleAlleleLookupResult(nmdpCodeLookupName, new []{alleleName}),
                 BuildXxCodeLookupResult(new []{alleleName}, xxCodeLookupName)
+            };
+
+            if (!string.IsNullOrEmpty(expressionSuffix))
+            {
+                expectedLookupResults.Add(
+                    BuildMultipleAlleleLookupResult(nmdpCodeLookupName + expressionSuffix, new[] { alleleName }));
+            }
+
+            actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
+        }
+
+        [TestCase("999:999N")]
+        [TestCase("999:999:999N")]
+        [TestCase("999:999:999:999N")]
+        public override void ConvertToHlaLookupResults_WhenNullAllele_GeneratesLookupResults_ForOriginalNameOnly(
+            string alleleName)
+        {
+            var matchedAllele = BuildMatchedAllele(alleleName);
+            var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedAllele });
+
+            var expectedLookupResults = new List<IHlaLookupResult>
+            {
+                BuildSingleAlleleLookupResult(alleleName)
             };
 
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
@@ -56,9 +78,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         [Test]
         public override void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_GeneratesLookupResult_ForEachUniqueLookupName()
         {
-            string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02", "999:999:999:03N" };
+            string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02" };
             const string nmdpCodeLookupName = "999:999";
-            const string nmdpCodeLookupNameWithExpressionSuffix = "999:999N";
             const string xxCodeLookupName = "999";
 
             var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
@@ -69,9 +90,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
                 BuildSingleAlleleLookupResult(alleles[0]),
                 BuildSingleAlleleLookupResult(alleles[1]),
                 BuildSingleAlleleLookupResult(alleles[2]),
-                BuildSingleAlleleLookupResult(alleles[3]),
                 BuildMultipleAlleleLookupResult(nmdpCodeLookupName, new[]{ alleles[0], alleles[1], alleles[2]}),
-                BuildMultipleAlleleLookupResult(nmdpCodeLookupNameWithExpressionSuffix, new []{alleles[3]}),
                 BuildXxCodeLookupResult(alleles, xxCodeLookupName)
             };
 

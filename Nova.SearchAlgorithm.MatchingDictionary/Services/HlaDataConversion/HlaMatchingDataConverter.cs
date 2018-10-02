@@ -37,11 +37,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
         }
 
         protected override IHlaLookupResult GetNmdpCodeAlleleLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
+            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
+            string nmdpLookupName)
         {
             return GetMolecularLookupResult(
                 lookupResultSources,
-                allele => allele.ToNmdpCodeAlleleLookupName()
+                allele => nmdpLookupName
             );
         }
 

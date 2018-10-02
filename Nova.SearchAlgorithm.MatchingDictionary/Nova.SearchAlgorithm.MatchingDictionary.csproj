@@ -256,7 +256,9 @@
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
     <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
+    <Compile Include="Services\MultipleAlleleNullFilter.cs" />
     <Compile Include="Services\Dpb1TceGroupsService.cs" />
+    <Compile Include="Services\ExpressionSuffixParser.cs" />
     <Compile Include="Services\HlaDataConversion\AlleleTypingExtensions.cs" />
     <Compile Include="Services\HlaDataConversion\HlaScoringDataConverter.cs" />
     <Compile Include="Services\HlaDataConversion\MatchedHlaDataConverterBase.cs" />

@@ -15,9 +15,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
     {
         #region Tests: Exception Cases
 
-        [TestCase(typeof(SingleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
-        [TestCase(typeof(SerologyScoringInfo), typeof(SingleAlleleScoringInfo))]
         [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(ConsolidatedMolecularScoringInfo))]
+        [TestCase(typeof(MultipleAlleleScoringInfo), typeof(SerologyScoringInfo))]
         public override void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
             Type patientScoringInfoType,
             Type donorScoringInfoType

@@ -1,9 +1,17 @@
-﻿using Autofac;
+﻿using System.Configuration;
+using System.Reflection;
+using Autofac;
 using Autofac.Integration.WebApi;
 using Microsoft.ApplicationInsights;
+using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Data;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.DonorImport;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -15,8 +23,6 @@ using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Auth;
 using Nova.Utils.WebApi.ApplicationInsights;
 using Nova.Utils.WebApi.Filters;
-using System.Configuration;
-using System.Reflection;
 using Module = Autofac.Module;
 
 namespace Nova.SearchAlgorithm.Config.Modules
@@ -60,8 +66,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<RankingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchScoreCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
-            builder.RegisterType<HLAService.Client.Services.AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<HLAService.Client.Services.HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
@@ -77,36 +83,36 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
         private static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
         {
-            builder.RegisterType<MatchingDictionary.Data.WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Repositories.HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.Dpb1TceGroupsLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Repositories.WmdaDataRepository>()
+            builder.RegisterType<HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Dpb1TceGroupsLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<WmdaDataRepository>()
                 .AsImplementedInterfaces()
                 .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
                 .InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.AlleleNames.ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNameVariantsExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ReservedAlleleNamesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Services.AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.Dpb1TceGroupsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.HlaDataConversion.HlaMatchingDataConverter>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.HlaDataConversion.HlaScoringDataConverter>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaMatchPreCalculationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Dpb1TceGroupsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaMatchingDataConverter>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaScoringDataConverter>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Services.RecreateHlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<RecreateHlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<MatchingDictionary.Services.AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.HlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchingDictionary.Services.Dpb1TceGroupsLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaLookupResultsService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Dpb1TceGroupsLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

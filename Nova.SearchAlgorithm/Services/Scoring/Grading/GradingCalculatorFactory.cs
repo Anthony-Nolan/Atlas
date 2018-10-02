@@ -1,6 +1,6 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using System;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using System;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -17,15 +17,21 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return new SerologyGradingCalculator();
             }
-            else if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
+            // If compaing a single null allele to a non-single allele,
+            // as we are ignoring null alleles within allele strings, we can consider this a null vs. expressing comparison
+            if (IsSingleNullAllele(patientInfo) ^ IsSingleNullAllele(donorInfo))
+            {
+                return new ExpressingVsNullAlleleGradingCalculator();
+            }
+            if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
             {
                 return new ConsolidatedMolecularGradingCalculator();
             }
-            else if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
+            if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
             {
                 return new MultipleAlleleGradingCalculator();
             }
-            else if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
+            if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
             {
                 return GetSingleAlleleGradingCalculator(pInfo, dInfo);
             }
@@ -37,9 +43,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo)
         {
-            var patientAlleleIsNull = IsAlleleNull(patientInfo);
-            var donorAlleleIsNull = IsAlleleNull(donorInfo);
-            
+            var patientAlleleIsNull = ExpressionSuffixParser.IsAlleleNull(patientInfo.AlleleName);
+            var donorAlleleIsNull = ExpressionSuffixParser.IsAlleleNull(donorInfo.AlleleName);
+
             if (!patientAlleleIsNull && !donorAlleleIsNull)
             {
                 return new ExpressingAlleleGradingCalculator();
@@ -53,10 +59,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return new ExpressingVsNullAlleleGradingCalculator();
         }
 
-        private static bool IsAlleleNull(SingleAlleleScoringInfo scoringInfo)
+        private static bool IsSingleNullAllele(IHlaScoringInfo scoringInfo)
         {
-            var alleleName = scoringInfo.AlleleName;
-            return AlleleTyping.IsAlleleNull(alleleName);
+            return scoringInfo is SingleAlleleScoringInfo info && ExpressionSuffixParser.IsAlleleNull(info.AlleleName);
         }
     }
 }

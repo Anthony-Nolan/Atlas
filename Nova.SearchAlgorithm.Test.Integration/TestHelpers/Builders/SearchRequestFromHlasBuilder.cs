@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         /// <param name="searchHlas">A selection of valid HLA data.</param>
         /// <param name="nonMatchingHlas">A selection of valid hla strings that do not match the search HLA.</param>
-        public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas)
+        public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas = null)
         {
             searchRequestBuilder = new SearchRequestBuilder()
                 .WithLocusMatchHla(Locus.A, TypePositions.One, searchHlas.A_1)
@@ -30,15 +30,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHlas.DRB1_2);
 
             this.nonMatchingHlas = nonMatchingHlas;
-        }
-
-        /// <summary>
-        /// Builds search request from HLAs without setting the non-matching HLA phenotype.
-        /// Do not use for mismatch searches.
-        /// </summary>
-        public static SearchRequestFromHlasBuilder WithoutNonMatchingHlas(PhenotypeInfo<string> searchHlas)
-        {
-            return new SearchRequestFromHlasBuilder(searchHlas, null);
         }
 
         public SearchRequestFromHlasBuilder TenOutOfTen()
@@ -70,12 +61,28 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestFromHlasBuilder FourOutOfSix()
+        {
+            searchRequestBuilder = searchRequestBuilder
+                .WithTotalMismatchCount(2);
+            return this;
+        }
+
         public SearchRequestFromHlasBuilder WithSingleMismatchRequestedAt(Locus locus)
         {
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
                 .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 1 : 0)
                 .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0);
+            return this;
+        }
+
+        public SearchRequestFromHlasBuilder WithDoubleMismatchRequestedAt(Locus locus)
+        {
+            searchRequestBuilder = searchRequestBuilder
+                .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 2 : 0)
+                .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 2 : 0)
+                .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 2 : 0);
             return this;
         }
 
