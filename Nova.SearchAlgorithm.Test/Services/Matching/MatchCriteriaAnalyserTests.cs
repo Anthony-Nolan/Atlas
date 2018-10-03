@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Builders;
@@ -31,8 +32,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B, Locus.Drb1});
         }
 
+        // The logic in this test especially is based on an unproved hypothesis, and is likely to change based on performance investigations
         [Test]
-        public void LociToMatchInDatabase_WithSingleAllowedMismatchesAtBAndDrb1_ReturnsBAndDrb1()
+        public void LociToMatchInDatabase_WithSingleAllowedMismatchesAtBAndDrb1_ReturnsA()
         {
             var criteria = new DonorMatchCriteriaBuilder()
                 .WithLocusMismatchA("", "", 0)
@@ -40,9 +42,52 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 1)
                 .Build();
 
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria).ToList();
+
+            lociToMatchInDatabase.Should().Contain(Locus.A);
+            lociToMatchInDatabase.Count().Should().Be(2);
+        }
+        
+        [Test]
+        public void LociToMatchInDatabase_WithSingleAllowedMismatchAtA_ReturnsBAndDrb1()
+        {
+            var criteria = new DonorMatchCriteriaBuilder()
+                .WithLocusMismatchA("", "", 1)
+                .WithLocusMismatchB("", "", 0)
+                .WithLocusMismatchDRB1("", "", 0)
+                .Build();
+
             var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B, Locus.Drb1});
+        }
+        
+        [Test]
+        public void LociToMatchInDatabase_WithSingleAllowedMismatchAtB_ReturnsAAndDrb1()
+        {
+            var criteria = new DonorMatchCriteriaBuilder()
+                .WithLocusMismatchA("", "", 0)
+                .WithLocusMismatchB("", "", 1)
+                .WithLocusMismatchDRB1("", "", 0)
+                .Build();
+
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+
+            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.Drb1});
+        }
+        
+        [Test]
+        public void LociToMatchInDatabase_WithSingleAllowedMismatchAtDrb1_ReturnsAAndB()
+        {
+            var criteria = new DonorMatchCriteriaBuilder()
+                .WithLocusMismatchA("", "", 0)
+                .WithLocusMismatchB("", "", 0)
+                .WithLocusMismatchDRB1("", "", 1)
+                .Build();
+
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+
+            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.B});
         }
 
         [Test]
