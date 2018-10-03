@@ -114,10 +114,12 @@
     <Compile Include="Models\Environment.cs" />
     <Compile Include="Models\SearchMetrics.cs" />
     <Compile Include="Models\SearchType.cs" />
+    <Compile Include="Models\TestInput.cs" />
     <Compile Include="Models\TestOutput.cs" />
     <Compile Include="PerformanceHarness.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchTimingService.cs" />
+    <Compile Include="TestCases.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
