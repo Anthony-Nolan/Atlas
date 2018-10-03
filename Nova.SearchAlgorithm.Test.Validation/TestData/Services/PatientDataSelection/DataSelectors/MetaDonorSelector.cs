@@ -59,6 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             return FulfilsHomozygousCriteria(criteria, metaDonor)
                    && FulfilsExpressionSuffixCriteria(criteria, metaDonor)
+                   && FulfilsNullAlleleCriteria(criteria, metaDonor)
                    && FulfilsAlleleStringCriteria(criteria, metaDonor)
                    && FulfilsDatasetCriteria(criteria, metaDonor)
                    && FulfilsDatabaseDonorCriteria(criteria, metaDonor);
@@ -69,6 +70,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             var perLocusFulfilment = criteria.HasNonNullExpressionSuffix.Map((locus, position, shouldHaveSuffix) =>
                 !shouldHaveSuffix
                 || metaDonor.GenotypeCriteria.AlleleSources.DataAtPosition(locus, position) == Dataset.AllelesWithNonNullExpressionSuffix);
+
+            return perLocusFulfilment.ToEnumerable().All(x => x);
+        }
+
+        private static bool FulfilsNullAlleleCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
+        {
+            var perLocusFulfilment = criteria.IsNullExpressing.Map((locus, position, shouldBeNullExpressing) =>
+                !shouldBeNullExpressing
+                || metaDonor.GenotypeCriteria.AlleleSources.DataAtPosition(locus, position) == Dataset.NullAlleles);
 
             return perLocusFulfilment.ToEnumerable().All(x => x);
         }
@@ -153,8 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                         return criteria.DatabaseDonorDetailsSets
                             .Any(d => d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
                     case Dataset.NullAlleles:
-                        // TODO: NOVA-1188: Allow matching on meta donors with null alleles when null matching implemented
-                        return false;
+                        return criteria.IsNullExpressing.DataAtPosition(l, p);
                     case Dataset.AllelesWithNonNullExpressionSuffix:
                         return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
                     case Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible:

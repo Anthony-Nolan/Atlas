@@ -222,6 +222,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtAllLoci().Build(),
             },
+            
+            // Single null allele at A
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePositions.One).Build(),
+            },
 
             // Non null alleles with an expression suffix
             new MetaDonor
