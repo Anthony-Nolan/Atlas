@@ -31,6 +31,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
         };
         
+        /// <summary>
+        /// A Genotype for which all hla values are null alleles, and are not the same as any other null alleles in the repository
+        /// </summary>
+        private static readonly Genotype NonMatchingNullAlleleGenotype = new Genotype
+        {
+            Hla = NonMatchingAlleles.NonMatchingNullAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
+        };
+        
         public PatientHlaSelector(IAlleleRepository alleleRepository)
         {
             this.alleleRepository = alleleRepository;
@@ -84,14 +92,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         {
             var orientation = criteria.Orientations.DataAtLocus(locus);
 
-            // Some match level specific test data is curated independently for each position, with direct matches in mind.
-            // If cross matches were attempted, we may end up with a better match grade than desired, or without possible patient data
-            var directOnlyMatchLevels = new[] {MatchLevel.GGroup, MatchLevel.FirstThreeFieldAllele, MatchLevel.FirstTwoFieldAllele};
-
             if (orientation == MatchOrientation.Arbitrary)
             {
+                // Some match level specific test data is curated independently for each position, with direct matches in mind.
+                // If cross matches were attempted, we may end up with a better match grade than desired, or without possible patient data
+                var directOnlyMatchLevels = new[] {MatchLevel.GGroup, MatchLevel.FirstThreeFieldAllele, MatchLevel.FirstTwoFieldAllele};
                 var matchLevels = criteria.MatchLevels.DataAtLocus(locus);
-                return new[] {matchLevels.Item1, matchLevels.Item2}.Intersect(directOnlyMatchLevels).Any() 
+            
+                var hlaSourceAtLocus = criteria.HlaSources.DataAtLocus(locus);
+                // Null mismatches are specified at a specific locus - if one is specified, and a cross orientation chosen,
+                // we can end up with two null alleles selected (which causes a mismatch result, where a single null allele would be a match)
+                var isMismatchedNullAlleleAtLocus = hlaSourceAtLocus.Item1 == PatientHlaSource.NullAlleleMismatch ||
+                                                    hlaSourceAtLocus.Item2 == PatientHlaSource.NullAlleleMismatch;
+
+                var shouldForceDirectOrientation = new[] {matchLevels.Item1, matchLevels.Item2}.Intersect(directOnlyMatchLevels).Any() ||
+                                                   isMismatchedNullAlleleAtLocus;
+                return shouldForceDirectOrientation
                     ? MatchOrientation.Direct 
                     : new[] {MatchOrientation.Cross, MatchOrientation.Direct}.GetRandomElement();
             }
@@ -128,10 +144,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             PatientHlaSelectionCriteria criteria
         )
         {
-            // patient should be mismatched at this position
-            if (!criteria.HlaMatches.DataAtPosition(locus, position))
+            switch (criteria.HlaSources.DataAtPosition(locus, position))
             {
-                return GetNonMatchingAllele(locus, position);
+                case PatientHlaSource.ExpressingAlleleMismatch:
+                    return GetNonMatchingAllele(locus, position);
+                case PatientHlaSource.NullAlleleMismatch:
+                    return GetNonMatchingNullAllele(locus, position);
+                case PatientHlaSource.Match:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             switch (criteria.MatchLevels.DataAtPosition(locus, position))
@@ -153,10 +175,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
         }
 
-        // TODO: NOVA-1654: Remove static dependency on GenotypeGenerator so we can unit test this
         private static TgsAllele GetNonMatchingAllele(Locus locus, TypePositions position)
         {
             return NonMatchingGenotype.Hla.DataAtPosition(locus, position);
+        }
+
+        private static TgsAllele GetNonMatchingNullAllele(Locus locus, TypePositions position)
+        {
+            return NonMatchingNullAlleleGenotype.Hla.DataAtPosition(locus, position);
         }
 
         private TgsAllele GetPGroupMatchLevelTgsAllele(Locus locus)

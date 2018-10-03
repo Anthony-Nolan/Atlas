@@ -11,7 +11,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelect
         /// <summary>
         /// Determines whether each position should have a donor match
         /// </summary>
-        public PhenotypeInfo<bool> HlaMatches { get; set; } = new PhenotypeInfo<bool>(true);
+        public PhenotypeInfo<PatientHlaSource> HlaSources { get; set; } = new PhenotypeInfo<PatientHlaSource>(PatientHlaSource.Match);
+
+        public PhenotypeInfo<bool> HlaMatches => HlaSources.Map((l, p, source) => source == PatientHlaSource.Match);
         
         /// <summary>
         /// The match level of the expected matching donor (if a match is expected)

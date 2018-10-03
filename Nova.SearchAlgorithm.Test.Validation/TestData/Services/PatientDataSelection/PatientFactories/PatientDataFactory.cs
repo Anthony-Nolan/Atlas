@@ -21,10 +21,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
         void SetAsTenOutOfTenMatch();
-        void SetMismatchesAtLocus(int numberOfMismatches, Locus locus);
+        void SetMismatchAtPosition(Locus locus, TypePositions position);
         void SetPatientUntypedAtLocus(Locus locus);
         void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation);
+        void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePositions position);
 
         // Meta-donor and patient criteria
         void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
@@ -40,9 +41,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// </summary>
         void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory);
 
-        void SetNumberOfMetaDonorsToSkip(int numberToSkip);
         void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
         void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
+        void SetHasNullAlleleAtPosition(Locus locus, TypePositions position);
 
         // Meta-donor and database-donor criteria
 
@@ -124,38 +125,29 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void SetAsSixOutOfSixMatch()
         {
-            var matches = new PhenotypeInfo<bool>().Map((locus, p, noop) => locus != Locus.C || locus != Locus.Dqb1 || locus != Locus.Dpb1);
-            patientHlaSelectionCriteria.HlaMatches = matches;
+            var mismatchedLoci = new[] {Locus.C, Locus.Dqb1, Locus.Dpb1}.ToList();
+            patientHlaSelectionCriteria.HlaSources = new PhenotypeInfo<bool>().Map((locus, p, noop) => mismatchedLoci.Contains(locus)
+                ? PatientHlaSource.ExpressingAlleleMismatch
+                : PatientHlaSource.Match);
         }
 
         public void SetAsEightOutOfEightMatch()
         {
-            var matches = new PhenotypeInfo<bool>().Map((locus, p, noop) => locus != Locus.Dqb1 || locus != Locus.Dpb1);
-            patientHlaSelectionCriteria.HlaMatches = matches;
+            var mismatchedLoci = new[] {Locus.Dqb1, Locus.Dpb1}.ToList();
+            patientHlaSelectionCriteria.HlaSources = new PhenotypeInfo<bool>().Map((locus, p, noop) => mismatchedLoci.Contains(locus)
+                ? PatientHlaSource.ExpressingAlleleMismatch
+                : PatientHlaSource.Match);
         }
 
         public void SetAsTenOutOfTenMatch()
         {
-            var matches = new PhenotypeInfo<bool>().Map((locus, p, noop) => locus != Locus.Dpb1);
-            patientHlaSelectionCriteria.HlaMatches = matches;
+            patientHlaSelectionCriteria.HlaSources = new PhenotypeInfo<bool>().Map((locus, p, noop) =>
+                locus == Locus.Dpb1 ? PatientHlaSource.ExpressingAlleleMismatch: PatientHlaSource.Match);
         }
 
-        public void SetMismatchesAtLocus(int numberOfMismatches, Locus locus)
+        public void SetMismatchAtPosition(Locus locus, TypePositions position)
         {
-            // TODO: NOVA-1713: Allow mismatches to be specified by locus
-            switch (numberOfMismatches)
-            {
-                case 1:
-                    patientHlaSelectionCriteria.HlaMatches.SetAtPosition(locus, TypePositions.One, false);
-                    break;
-                case 2:
-                    patientHlaSelectionCriteria.HlaMatches.SetAtPosition(locus, TypePositions.Both, false);
-                    break;
-                case 0:
-                    break;
-                default:
-                    throw new Exception("Cannot have fewer than 0 or more than 2 mismatches");
-            }
+            patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
         }
 
         public void SetPatientUntypedAtLocus(Locus locus)
@@ -171,6 +163,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
         {
             patientHlaSelectionCriteria.Orientations.SetAtLocus(locus, orientation);
+        }
+
+        public void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePositions position)
+        {
+            patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.NullAlleleMismatch);
         }
 
         #endregion
@@ -206,6 +203,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         public void SetHasNonNullExpressionSuffixAtLocus(Locus locus)
         {
             metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
+        }
+
+        public void SetHasNullAlleleAtPosition(Locus locus, TypePositions position)
+        {
+            metaDonorSelectionCriteria.IsNullExpressing.SetAtPosition(locus, position, true);
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)

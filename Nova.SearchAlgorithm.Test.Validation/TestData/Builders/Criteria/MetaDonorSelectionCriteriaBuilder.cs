@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 {
     public class MetaDonorSelectionCriteriaBuilder
     {
-        private MetaDonorSelectionCriteria criteria;
+        private readonly MetaDonorSelectionCriteria criteria;
 
         public MetaDonorSelectionCriteriaBuilder()
         {
@@ -75,6 +75,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
         {
             criteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
             return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePositions position)
+        {
+            criteria.IsNullExpressing.SetAtPosition(locus, position, true);
+            return this;
+        }
+
+        public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtAllPositions()
+        {
+            return LocusHelpers.AllLoci().Aggregate(this,
+                (current, locus) => current.WithNullAlleleAtPosition(locus, TypePositions.One).WithNullAlleleAtPosition(locus, TypePositions.Two));
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()

@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         {
             criteria = new PatientHlaSelectionCriteria
             {
-                HlaMatches = new PhenotypeInfo<bool>(true),
+                HlaSources = new PhenotypeInfo<PatientHlaSource>(PatientHlaSource.Match),
                 MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele),
                 IsHomozygous = new LocusInfo<bool>(false),
                 Orientations = new LocusInfo<MatchOrientation>(MatchOrientation.Arbitrary),
@@ -21,13 +21,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, TypePositions positions)
         {
-            criteria.HlaMatches.SetAtPosition(locus, positions, true);
+            criteria.HlaSources.SetAtPosition(locus, positions, PatientHlaSource.Match);
             return this;
         }
         
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, TypePositions positions)
         {
-            criteria.HlaMatches.SetAtPosition(locus, positions, false);
+            criteria.HlaSources.SetAtPosition(locus, positions, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
         
@@ -46,6 +46,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         public PatientHlaSelectionCriteriaBuilder WithMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
         {
             criteria.Orientations.SetAtLocus(locus, orientation);
+            return this;
+        }
+
+        public PatientHlaSelectionCriteriaBuilder WithHlaSourceAtPosition(Locus locus, TypePositions position, PatientHlaSource hlaSource)
+        {
+            criteria.HlaSources.SetAtPosition(locus, position, hlaSource);
             return this;
         }
         

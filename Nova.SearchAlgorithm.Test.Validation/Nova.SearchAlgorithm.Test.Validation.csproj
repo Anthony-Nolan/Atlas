@@ -357,6 +357,7 @@
     <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
     <Compile Include="TestData\Models\Hla\AlleleStringOptions.cs" />
     <Compile Include="TestData\Models\MatchOrientation.cs" />
+    <Compile Include="TestData\Models\PatientHlaSource.cs" />
     <Compile Include="TestData\Models\SearchAlgorithmApiResult.cs" />
     <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
     <Compile Include="TestData\Models\Hla\Dataset.cs" />
@@ -477,6 +478,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\NullAlleles\NullAlleles.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>NullAlleles.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\Scoring\MatchConfidences.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -564,6 +570,7 @@
     <Content Include="ValidationTests\Features\EightOutOfTenSearch\WorseMatches.feature" />
     <Content Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature" />
     <Content Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
     <Content Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature" />
