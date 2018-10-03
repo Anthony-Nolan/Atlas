@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
             AzureStorageEnvironment = Environment.Local,
         };
 
-        public static IEnumerable<TestInput> TestInputs = new List<TestInput>
+        public static readonly IEnumerable<TestInput> TestInputs = new List<TestInput>
         {
             new TestInput
             {
@@ -65,6 +65,100 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 SearchType = SearchType.ThreeLocusMismatchAtA,
                 SolarSearchElapsedMilliseconds = 48000,
                 SolarSearchMatchedDonors = 845
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                Hla = new PhenotypeInfo<string>
+                {
+                    A_1 = "*24:02",
+                    A_2 = "*29:02",
+                    B_1 = "*45:01",
+                    B_2 = "*15:01",
+                    C_1 = "*03:03",
+                    C_2 = "*06:02",
+                    Drb1_1 = "*04:01",
+                    Drb1_2 = "*11:01",
+                    Dqb1_1 = "*03:01",
+                    Dqb1_2 = "*03:02",
+                },
+                DonorId = "489252",
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.ThreeLocusMismatchAtDrb1,
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                Hla = new PhenotypeInfo<string>
+                {
+                    A_1 = "*03:01:01:01",
+                    A_2 = "*66:01:01:01",
+                    B_1 = "*07:02:01:01",
+                    B_2 = "*35:01:01",
+                    C_1 = "*04:01:01",
+                    C_2 = "*07:02:01:03",
+                    Drb1_1 = "*11:01:01",
+                    Drb1_2 = "*10:01:01",
+                    Dqb1_1 = "*05:01",
+                    Dqb1_2 = "*05:02:01",
+                },
+                DonorId = "495317 (Live)",
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.SixOutOfSix,
+                SolarSearchElapsedMilliseconds = 0,
+                SolarSearchMatchedDonors = 0,
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                Hla = new PhenotypeInfo<string>
+                {
+                    A_1 = "*03:01:01:01",
+                    A_2 = "*66:01:01:01",
+                    B_1 = "*07:02:01:01",
+                    B_2 = "*35:01:01",
+                    C_1 = "*04:01:01",
+                    C_2 = "*07:02:01:03",
+                    Drb1_1 = "*11:01:01",
+                    Drb1_2 = "*10:01:01",
+                    Dqb1_1 = "*05:01",
+                    Dqb1_2 = "*05:02:01",
+                },
+                DonorId = "495317 (Live)",
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.ThreeLocusMismatchAtA,
+                SolarSearchElapsedMilliseconds = 5000,
+                SolarSearchMatchedDonors = 30,
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                Hla = new PhenotypeInfo<string>
+                {
+                    A_1 = "*03:01:01:01",
+                    A_2 = "*66:01:01:01",
+                    B_1 = "*07:02:01:01",
+                    B_2 = "*35:01:01",
+                    C_1 = "*04:01:01",
+                    C_2 = "*07:02:01:03",
+                    Drb1_1 = "*11:01:01",
+                    Drb1_2 = "*10:01:01",
+                    Dqb1_1 = "*05:01",
+                    Dqb1_2 = "*05:02:01",
+                },
+                DonorId = "495317 (Live)",
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.ThreeLocusMismatchAtDrb1,
+                SolarSearchElapsedMilliseconds = 6000,
+                SolarSearchMatchedDonors = 95,
             },
         };
     }

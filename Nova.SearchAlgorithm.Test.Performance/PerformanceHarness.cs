@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -17,11 +18,14 @@ namespace Nova.SearchAlgorithm.Test.Performance
         public static async Task Main(string[] args)
         {
             var results = new List<TestOutput>();
-
+            var testsRun = 0;
+            
             foreach (var testInput in TestCases.TestInputs)
             {
                 var testOutput = await RunSearch(testInput);
                 results.Add(testOutput);
+                testsRun++;
+                Console.WriteLine($"Run {testsRun}/{TestCases.TestInputs.Count()} tests");
             }
 
             WriteResultsToCsv(results);
@@ -50,9 +54,15 @@ namespace Nova.SearchAlgorithm.Test.Performance
                         .WithLocusMismatchCount(Locus.A, 1);
                     break;
                 case SearchType.ThreeLocusMismatchAtB:
-                    throw new NotImplementedException();
+                    searchRequestBuilder = searchRequestBuilder
+                        .WithTotalMismatchCount(1)
+                        .WithLocusMismatchCount(Locus.B, 1);
+                    break;
                 case SearchType.ThreeLocusMismatchAtDrb1:
-                    throw new NotImplementedException();
+                    searchRequestBuilder = searchRequestBuilder
+                        .WithTotalMismatchCount(1)
+                        .WithLocusMismatchCount(Locus.Drb1, 1);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -78,8 +88,9 @@ namespace Nova.SearchAlgorithm.Test.Performance
         private static void WriteResultsToCsv(IEnumerable<TestOutput> results)
         {
             var baseDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)?.Replace("\\bin\\Debug", "");
-            using (TextWriter writer = new StreamWriter($"{baseDirectory}/PerformanceTestResults{DateTime.UtcNow:yyyyMMddhhmm}.csv", false,
-                Encoding.UTF8))
+            var outputFileName = $"{baseDirectory}/PerformanceTestResults{DateTime.UtcNow:yyyyMMddhhmm}.csv";
+            using (var fileStream = new FileStream(outputFileName, FileMode.Append, FileAccess.Write))
+            using (TextWriter writer = new StreamWriter(fileStream))
             {
                 var csv = new CsvWriter(writer);
                 csv.WriteRecords(results);
