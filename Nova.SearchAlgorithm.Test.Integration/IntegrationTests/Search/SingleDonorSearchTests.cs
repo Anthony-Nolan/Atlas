@@ -129,7 +129,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromSearchHaveNullMatchCounts()
+        public async Task Search_SixOutOfSix_LociExcludedFromSearchHaveMatchCounts()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
@@ -138,9 +138,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
 
-            // C & DQB1 should both be null in a 6/6 only search
-            result?.SearchResultAtLocusC.MatchCount.Should().BeNull();
-            result?.SearchResultAtLocusDqb1.MatchCount.Should().BeNull();
+            // C & DQB1 should both be populated from scoring data in a 6/6 only search
+            result?.SearchResultAtLocusC.MatchCount.Should().Be(2);
+            result?.SearchResultAtLocusDqb1.MatchCount.Should().Be(2);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_LociExcludedFromSearchAreNotIncludedInTotalMatchCount()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+
+            result?.TotalMatchCount.Should().Be(6);
         }
         
         [Test]

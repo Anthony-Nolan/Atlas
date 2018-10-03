@@ -6,6 +6,13 @@
         /// Reports whether this locus is typed for the given donor.
         /// </summary>
         public bool IsLocusTyped { get; set; }
+        
+        /// <summary>
+        /// Determined by whether matching was requested for this locus or not.
+        /// e.g. In a 6/6 search, loci C and DQB1 will have their individual match counts populated via the scoring process,
+        /// and these match grades will not be included in the total Match Count in the api response
+        /// </summary>
+        public bool IsLocusMatchCountIncludedInTotal { get; set; }
 
         /// <summary>
         /// The number of matches within this locus.

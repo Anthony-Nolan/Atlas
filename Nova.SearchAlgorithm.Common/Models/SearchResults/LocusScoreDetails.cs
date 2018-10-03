@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.SearchResults
@@ -42,5 +43,19 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 
         public bool IsPotentialMatch => ScoreDetailsAtPosition1.MatchConfidence == MatchConfidence.Potential &&
                                         ScoreDetailsAtPosition2.MatchConfidence == MatchConfidence.Potential;
+
+        /// <summary>
+        /// Calculates the match count based on the assigned grades. Used in the case where matching has not been run for a locus
+        /// e.g. C and DQB1 in a 6/6 search
+        /// </summary>
+        public int MatchCount()
+        {
+            return new[]
+                {
+                    ScoreDetailsAtPosition1.MatchGrade != MatchGrade.Mismatch,
+                    ScoreDetailsAtPosition2.MatchGrade != MatchGrade.Mismatch
+                }.AsEnumerable()
+                .Count(x => x);
+        }
     }
 }
