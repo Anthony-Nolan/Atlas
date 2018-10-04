@@ -23,12 +23,12 @@ namespace Nova.SearchAlgorithm.Services.Matching
             var lociToSearchInDatabase = new List<Locus>();
 
             // Prefer to avoid searching for Locus A as it is the largest dataset, and takes longest to query
-            if (criteria.LocusMismatchB.MismatchCount < 2)
+            if (criteria.LocusMismatchB.MismatchCount == 0)
             {
                 lociToSearchInDatabase.Add(Locus.B);
             }
 
-            if (criteria.LocusMismatchDRB1.MismatchCount < 2)
+            if (criteria.LocusMismatchDRB1.MismatchCount == 0)
             {
                 lociToSearchInDatabase.Add(Locus.Drb1);
             }
@@ -39,6 +39,16 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 lociToSearchInDatabase.Add(Locus.A);
             }
 
+            if (!lociToSearchInDatabase.Contains(Locus.B) && lociToSearchInDatabase.Count() < 2 && criteria.LocusMismatchB.MismatchCount < 2)
+            {
+                lociToSearchInDatabase.Add(Locus.B);
+            }
+
+            if (!lociToSearchInDatabase.Contains(Locus.Drb1) && lociToSearchInDatabase.Count() < 2 && criteria.LocusMismatchDRB1.MismatchCount < 2)
+            {
+                lociToSearchInDatabase.Add(Locus.Drb1);
+            }
+            
             if (!lociToSearchInDatabase.Any())
             {
                 // Unless we allow 6+ mismatches total across A, B, DRB1, at least one of them must have at least one match
