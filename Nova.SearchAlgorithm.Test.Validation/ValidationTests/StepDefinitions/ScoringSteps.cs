@@ -272,10 +272,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             };
 
             return positionResults.All(r =>
-                // null match count implies not matched at that locus - we only want to assert grades of searched loci
-                r.MatchCount == null
-                || (matchGrades.Contains(r.ScoreDetailsAtPositionOne.MatchGrade) &&
-                    matchGrades.Contains(r.ScoreDetailsAtPositionTwo.MatchGrade))
+                    // we only want to assert grades of searched loci
+                    !r.IsLocusMatchCountIncludedInTotal
+                    || (matchGrades.Contains(r.ScoreDetailsAtPositionOne.MatchGrade) &&
+                        matchGrades.Contains(r.ScoreDetailsAtPositionTwo.MatchGrade))
             );
         }
 
@@ -296,10 +296,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             };
 
             return positionResults.All(r =>
-                // null match count implies not matched at that locus - we only want to assert grades of searched loci
-                r.MatchCount == null
-                || (matchConfidences.Contains(r.ScoreDetailsAtPositionOne.MatchConfidence) &&
-                    matchConfidences.Contains(r.ScoreDetailsAtPositionTwo.MatchConfidence))
+                    // we only want to assert grades of searched loci
+                    !r.IsLocusMatchCountIncludedInTotal
+                    || (matchConfidences.Contains(r.ScoreDetailsAtPositionOne.MatchConfidence) &&
+                        matchConfidences.Contains(r.ScoreDetailsAtPositionTwo.MatchConfidence))
             );
         }
 
@@ -307,13 +307,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             var loci = new[]
             {
-                searchResult.SearchResultAtLocusA.MatchCount,
-                searchResult.SearchResultAtLocusB.MatchCount,
-                searchResult.SearchResultAtLocusC.MatchCount,
-                searchResult.SearchResultAtLocusDqb1.MatchCount,
-                searchResult.SearchResultAtLocusDrb1.MatchCount,
+                searchResult.SearchResultAtLocusA.IsLocusMatchCountIncludedInTotal,
+                searchResult.SearchResultAtLocusB.IsLocusMatchCountIncludedInTotal,
+                searchResult.SearchResultAtLocusC.IsLocusMatchCountIncludedInTotal,
+                searchResult.SearchResultAtLocusDqb1.IsLocusMatchCountIncludedInTotal,
+                searchResult.SearchResultAtLocusDrb1.IsLocusMatchCountIncludedInTotal,
             };
-            return loci.Count(x => x != null);
+            return loci.Count(x => x);
         }
 
         private static void AssertMatchGrade(

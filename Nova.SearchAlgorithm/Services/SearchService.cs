@@ -137,7 +137,8 @@ namespace Nova.SearchAlgorithm.Services
             return new LocusSearchResult
             {
                 IsLocusTyped = scoreDetailsForLocus.IsLocusTyped,
-                MatchCount = matchDetailsForLocus?.MatchCount,
+                MatchCount = matchDetailsForLocus?.MatchCount ?? scoreDetailsForLocus.MatchCount(),
+                IsLocusMatchCountIncludedInTotal = matchDetailsForLocus != null,
                 MatchGradeScore = scoreDetailsForLocus.MatchGradeScore,
                 MatchConfidenceScore = scoreDetailsForLocus.MatchConfidenceScore,
                 ScoreDetailsAtPositionOne = new LocusPositionScoreDetails
