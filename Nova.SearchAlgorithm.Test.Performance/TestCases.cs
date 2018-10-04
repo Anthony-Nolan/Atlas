@@ -19,25 +19,49 @@ namespace Nova.SearchAlgorithm.Test.Performance
             AzureStorageEnvironment = Environment.Local,
         };
 
+        private static readonly PatientInfo UatPatient489252 = new PatientInfo
+        {
+            PatientId = "489252",
+            Hla = new PhenotypeInfo<string>
+            {
+                A_1 = "*24:02",
+                A_2 = "*29:02",
+                B_1 = "*45:01",
+                B_2 = "*15:01",
+                C_1 = "*03:03",
+                C_2 = "*06:02",
+                Drb1_1 = "*04:01",
+                Drb1_2 = "*11:01",
+                Dqb1_1 = "*03:01",
+                Dqb1_2 = "*03:02",
+            },
+        };
+        
+        private static readonly PatientInfo LivePatient495317 = new PatientInfo
+        {
+            PatientId = "495317",
+            Hla = new PhenotypeInfo<string>
+            {
+                A_1 = "*03:01:01:01",
+                A_2 = "*66:01:01:01",
+                B_1 = "*07:02:01:01",
+                B_2 = "*35:01:01",
+                C_1 = "*04:01:01",
+                C_2 = "*07:02:01:03",
+                Drb1_1 = "*11:01:01",
+                Drb1_2 = "*10:01:01",
+                Dqb1_1 = "*05:01",
+                Dqb1_2 = "*05:02:01",
+            },
+        };
+
         public static readonly IEnumerable<TestInput> TestInputs = new List<TestInput>
         {
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                Hla = new PhenotypeInfo<string>
-                {
-                    A_1 = "*24:02",
-                    A_2 = "*29:02",
-                    B_1 = "*45:01",
-                    B_2 = "*15:01",
-                    C_1 = "*03:03",
-                    C_2 = "*06:02",
-                    Drb1_1 = "*04:01",
-                    Drb1_2 = "*11:01",
-                    Dqb1_1 = "*03:01",
-                    Dqb1_2 = "*03:02",
-                },
-                DonorId = "489252",
+                PatientId = UatPatient489252.PatientId,
+                Hla = UatPatient489252.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
                 SearchType = SearchType.SixOutOfSix,
@@ -46,20 +70,8 @@ namespace Nova.SearchAlgorithm.Test.Performance
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                Hla = new PhenotypeInfo<string>
-                {
-                    A_1 = "*24:02",
-                    A_2 = "*29:02",
-                    B_1 = "*45:01",
-                    B_2 = "*15:01",
-                    C_1 = "*03:03",
-                    C_2 = "*06:02",
-                    Drb1_1 = "*04:01",
-                    Drb1_2 = "*11:01",
-                    Dqb1_1 = "*03:01",
-                    Dqb1_2 = "*03:02",
-                },
-                DonorId = "489252",
+                PatientId = UatPatient489252.PatientId,
+                Hla = UatPatient489252.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
                 SearchType = SearchType.ThreeLocusMismatchAtA,
@@ -70,20 +82,8 @@ namespace Nova.SearchAlgorithm.Test.Performance
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                Hla = new PhenotypeInfo<string>
-                {
-                    A_1 = "*24:02",
-                    A_2 = "*29:02",
-                    B_1 = "*45:01",
-                    B_2 = "*15:01",
-                    C_1 = "*03:03",
-                    C_2 = "*06:02",
-                    Drb1_1 = "*04:01",
-                    Drb1_2 = "*11:01",
-                    Dqb1_1 = "*03:01",
-                    Dqb1_2 = "*03:02",
-                },
-                DonorId = "489252",
+                PatientId = UatPatient489252.PatientId,
+                Hla = UatPatient489252.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
                 SearchType = SearchType.ThreeLocusMismatchAtDrb1,
@@ -92,20 +92,8 @@ namespace Nova.SearchAlgorithm.Test.Performance
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                Hla = new PhenotypeInfo<string>
-                {
-                    A_1 = "*03:01:01:01",
-                    A_2 = "*66:01:01:01",
-                    B_1 = "*07:02:01:01",
-                    B_2 = "*35:01:01",
-                    C_1 = "*04:01:01",
-                    C_2 = "*07:02:01:03",
-                    Drb1_1 = "*11:01:01",
-                    Drb1_2 = "*10:01:01",
-                    Dqb1_1 = "*05:01",
-                    Dqb1_2 = "*05:02:01",
-                },
-                DonorId = "495317 (Live)",
+                PatientId = LivePatient495317.PatientId,
+                Hla = LivePatient495317.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
                 SearchType = SearchType.SixOutOfSix,
@@ -116,20 +104,8 @@ namespace Nova.SearchAlgorithm.Test.Performance
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                Hla = new PhenotypeInfo<string>
-                {
-                    A_1 = "*03:01:01:01",
-                    A_2 = "*66:01:01:01",
-                    B_1 = "*07:02:01:01",
-                    B_2 = "*35:01:01",
-                    C_1 = "*04:01:01",
-                    C_2 = "*07:02:01:03",
-                    Drb1_1 = "*11:01:01",
-                    Drb1_2 = "*10:01:01",
-                    Dqb1_1 = "*05:01",
-                    Dqb1_2 = "*05:02:01",
-                },
-                DonorId = "495317 (Live)",
+                PatientId = LivePatient495317.PatientId,
+                Hla = LivePatient495317.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
                 SearchType = SearchType.ThreeLocusMismatchAtA,
@@ -140,20 +116,8 @@ namespace Nova.SearchAlgorithm.Test.Performance
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                Hla = new PhenotypeInfo<string>
-                {
-                    A_1 = "*03:01:01:01",
-                    A_2 = "*66:01:01:01",
-                    B_1 = "*07:02:01:01",
-                    B_2 = "*35:01:01",
-                    C_1 = "*04:01:01",
-                    C_2 = "*07:02:01:03",
-                    Drb1_1 = "*11:01:01",
-                    Drb1_2 = "*10:01:01",
-                    Dqb1_1 = "*05:01",
-                    Dqb1_2 = "*05:02:01",
-                },
-                DonorId = "495317 (Live)",
+                PatientId = LivePatient495317.PatientId,
+                Hla = LivePatient495317.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
                 SearchType = SearchType.ThreeLocusMismatchAtDrb1,

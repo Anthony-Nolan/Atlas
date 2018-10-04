@@ -4,7 +4,7 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
 {
     public class TestOutput
     {
-        public string DonorId { get; set; }
+        public string PatientId { get; set; }
 
         public long ElapsedMilliseconds { get; set; }
         public int MatchedDonors { get; set; }
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
 
         public TestOutput(TestInput input, SearchMetrics metrics)
         {
-            DonorId = input.DonorId;
+            PatientId = input.PatientId;
             SearchType = input.SearchType;
             DonorType = input.DonorType;
             IsAlignedRegistriesSearch = input.IsAlignedRegistriesSearch;

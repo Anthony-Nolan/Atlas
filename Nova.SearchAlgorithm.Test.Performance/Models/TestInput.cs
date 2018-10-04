@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
     {
         public AlgorithmInstanceInfo AlgorithmInstanceInfo { get; set; }
         
-        public string DonorId { get; set; }
+        public string PatientId { get; set; }
     
         public SearchType SearchType { get; set; }
         public DonorType DonorType { get; set; }

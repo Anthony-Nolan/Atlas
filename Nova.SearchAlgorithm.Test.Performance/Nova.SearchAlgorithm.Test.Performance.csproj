@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\AlgorithmInstanceInfo.cs" />
+    <Compile Include="Models\PatientInfo.cs" />
     <Compile Include="Models\Environment.cs" />
     <Compile Include="Models\SearchMetrics.cs" />
     <Compile Include="Models\SearchType.cs" />
@@ -139,6 +140,9 @@
     <None Include="App.config" />
     <None Include="ApplicationInsights.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
