@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, lociToMatchInDatabase);
 
-            var matchesWithPGroupsPopulated = (await Task.WhenAll(matches.Select(PopulatePGroupsForMatch))).AsEnumerable();
+            var matchesWithPGroupsPopulated = (await PopulatePGroups(matches)).ToList();
             
             var matchesAtAllLoci = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
 
@@ -88,11 +88,15 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matches;
         }
 
-        private async Task<MatchResult> PopulatePGroupsForMatch(MatchResult matchResult)
+        private async Task<IEnumerable<MatchResult>> PopulatePGroups(IEnumerable<MatchResult> matchResults)
         {
-            var pGroups = await donorInspectionRepository.GetPGroupsForDonor(matchResult.DonorId);
-            matchResult.DonorPGroups = pGroups;
-            return matchResult;
+            matchResults = matchResults.ToList();
+            var pGroups = await donorInspectionRepository.GetPGroupsForDonors(matchResults.Select(r => r.DonorId));
+            foreach (var donorIdWithPGroupNames in pGroups)
+            {
+                matchResults.Single(r => r.DonorId == donorIdWithPGroupNames.DonorId).DonorPGroups = donorIdWithPGroupNames.PGroupNames;
+            }
+            return matchResults;
         }
 
         private async Task<MatchResult> PopulateDonorDataForMatch(MatchResult matchResult)

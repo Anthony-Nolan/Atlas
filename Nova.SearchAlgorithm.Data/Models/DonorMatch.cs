@@ -5,7 +5,7 @@ namespace Nova.SearchAlgorithm.Data.Models
 {
     public class DonorMatch
     {
-        private int DonorId { get; set; }
+        public int DonorId { get; set; }
         public int TypePosition { get; set; }
         
         public PotentialHlaMatchRelation ToPotentialHlaMatchRelation(TypePositions searchTypePosition, Locus locus)
