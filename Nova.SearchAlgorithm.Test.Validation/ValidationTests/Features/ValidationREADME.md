@@ -110,25 +110,25 @@ If lower typing resolutions are specified, this TGS typed dataset will be 'dumbe
 
 The typing resolutions available are: 
 
-- TGS
+- TGS derived data
   - As above
-- TGS (four field) 
+- TGS derived data at four-field resolution
   - As above, with all alleles required to be 4-field
-- TGS (three field)
+- TGS derived data at three-field resolution
   - As above, with all alleles required to be 3-field
-- TGS (two field)
+- TGS derived data at two-field resolution
   - As above, with all alleles required to be 2-field
 - Three field truncated
   - A four field allele will be truncated to give a 3-field one
 - Two field truncated
   - A three or four field allele will be truncated to give a 2-field one
 - XX code
-  - The XX code corresponding to the TGS alleles' first field 
+  - The XX code corresponding to the TGS dervied alleles' first field 
 - NMDP code
-  - An NMDP corresponding to the TGS allele
-  - A single NMDP code has been selected for each TGS allele, from the SOLAR database
+  - An NMDP corresponding to the TGS dervied allele
+  - A single NMDP code has been selected for each TGS dervied allele, from the SOLAR database
 - Serology
-  - The serology value corresponding to the selected TGS allele
+  - The serology value corresponding to the selected TGS dervied allele
   - (No serology data has been found for DPB1 alleles)
 - Untyped 
   - No data will be set for the corresponding locus
@@ -159,9 +159,9 @@ These defaults include:
     - Both the expected matching donor, and search type default to `Adult`
 - Donor Registry = `Anthony Nolan`
     - Expected matching donors will be in the AN registry by default, and the default search will run against this registry only
-- Typing Resolution = `TGS`
+- Typing Resolution = `TGS dervied data`
     - For both donor and patient HLA values
-    - The number of fields of the TGS data will be arbitrarily chosen by default
+    - The number of fields of the TGS dervied data will be arbitrarily chosen by default
 - Match Level = `Allele`
     - By default, exact allele matches will be selected when a match is required.
 - Match Count = `10/10` (or equivalent best possible match)

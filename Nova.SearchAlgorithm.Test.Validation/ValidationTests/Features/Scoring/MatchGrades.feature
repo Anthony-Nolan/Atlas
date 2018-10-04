@@ -4,7 +4,7 @@
 
   Scenario: gDNA match at all loci
     Given a patient has a match
-    And the matching donor is TGS (four field) typed at each locus
+    And the matching donor is 'TGS derived data at four-field resolution' typed at each locus
     And the match level is gDNA
     When I run a 10/10 search
     Then the match grade should be gDNA at all loci at both positions
@@ -17,7 +17,7 @@
 
   Scenario: Three field (not fourth field) match at all loci
     Given a patient has a match
-    And the matching donor is TGS (four field) typed at each locus
+    And the matching donor is 'TGS derived data at four-field resolution' typed at each locus
     And the match level is three field (different fourth field)
     When I run a 10/10 search
     Then the match grade should be cDNA at all loci at both positions

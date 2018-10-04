@@ -3,27 +3,27 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
   I want to be able to run a 10/10 search
   For a variety of different typing resolutions
 
-  Scenario: 10/10 Search with a TGS (4-field) typed match
+  Scenario: 10/10 Search with a 'TGS derived data at four-field resolution' typed match
     Given a patient has a match
-    And the matching donor is TGS (four field) typed at each locus
+    And the matching donor is 'TGS derived data at four-field resolution' typed at each locus
     When I run a 10/10 search
     Then the results should contain the specified donor
     
-  Scenario: 10/10 Search with a TGS (3-field) typed match
+  Scenario: 10/10 Search with a 'TGS derived data at three-field resolution' typed match
     Given a patient has a match
-    And the matching donor is TGS (three field) typed at each locus
+    And the matching donor is 'TGS derived data at three-field resolution' typed at each locus
     When I run a 10/10 search
     Then the results should contain the specified donor
     
-  Scenario: 10/10 Search with a TGS (2-field) typed match
+  Scenario: 10/10 Search with a 'TGS derived data at two-field resolution' typed match
     Given a patient has a match
-    And the matching donor is TGS (two field) typed at each locus
+    And the matching donor is 'TGS derived data at three-field resolution' typed at each locus
     When I run a 10/10 search
     Then the results should contain the specified donor
      
-  Scenario: 10/10 Search with a TGS typed match
+  Scenario: 10/10 Search with a 'TGS derived data' typed match
     Given a patient has a match
-    And the matching donor is TGS typed at each locus
+    And the matching donor is 'TGS derived data' typed at each locus
     When I run a 10/10 search
     Then the results should contain the specified donor
     

@@ -373,28 +373,29 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     }
 
                     break;
-                case "TGS":
+                case "'TGS derived data'":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.Arbitrary);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
                     break;
-                case "TGS (four field)":
-                case "TGS (four-field)":
+                case "'TGS derived data at four-field resolution'":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
                     break;
-                case "TGS (three field)":
+                case "'TGS derived data at three-field resolution'":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.ThreeFieldAllele);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
                     break;
-                case "TGS (two field)":
+                case "'TGS derived data at two-field resolution'":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.TwoFieldAllele);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Tgs);
                     break;
                 case "three field truncated allele":
+                case "three-field truncated allele":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.ThreeFieldTruncatedAllele);
                     break;
                 case "two field truncated allele":
+                case "two-field truncated allele":
                     factory.SetFullMatchingTgsCategory(TgsHlaTypingCategory.FourFieldAllele);
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.TwoFieldTruncatedAllele);
                     break;
