@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NullAlle
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
         
-#line 1 "PatientHasSingleNull.feature"
+#line 1 "NullAlleles.feature"
 #line hidden
         
         [NUnit.Framework.OneTimeSetUpAttribute()]
@@ -77,8 +77,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NullAlle
 #line 8
     testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 10
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 11
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -89,17 +91,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NullAlle
         public virtual void NullAlleles_SameExpressingAlleleDifferentNullAllele()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Same expressing allele, different null allele", ((string[])(null)));
-#line 12
-  this.ScenarioSetup(scenarioInfo);
 #line 13
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+  this.ScenarioSetup(scenarioInfo);
 #line 14
-    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 15
-    testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 16
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 17
+    testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 18
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 19
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -110,17 +114,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NullAlle
         public virtual void NullAlleles_HomozygousDonor()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Homozygous donor", ((string[])(null)));
-#line 19
-  this.ScenarioSetup(scenarioInfo);
-#line 20
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 21
-    testRunner.And("the donor is homozygous at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+  this.ScenarioSetup(scenarioInfo);
 #line 22
-    testRunner.And("the patient has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 23
-    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.And("the donor is homozygous at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 24
+    testRunner.And("the patient has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 25
+    testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 26
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 27
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -131,17 +137,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NullAlle
         public virtual void NullAlleles_SameNullAlleleDifferentExpressingAllele()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Same null allele, different expressing allele", ((string[])(null)));
-#line 26
-  this.ScenarioSetup(scenarioInfo);
-#line 27
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 28
-    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 29
-    testRunner.And("the donor has a mismatch at locus A at position 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+  this.ScenarioSetup(scenarioInfo);
 #line 30
-    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 31
+    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 32
+    testRunner.And("the donor has a mismatch at locus A at position 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 33
+    testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 34
+    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 35
     testRunner.Then("the results should not contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -152,19 +160,21 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.NullAlle
         public virtual void NullAlleles_DifferentNullAlleleDifferentExpressingAllele()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Different null allele, different expressing allele", ((string[])(null)));
-#line 33
-  this.ScenarioSetup(scenarioInfo);
-#line 34
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 35
-    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 36
-    testRunner.And("the donor has a mismatch at locus A at position 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 37
-    testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+  this.ScenarioSetup(scenarioInfo);
 #line 38
-    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 39
+    testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 40
+    testRunner.And("the donor has a mismatch at locus A at position 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 41
+    testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 42
+    testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 43
+    testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 44
     testRunner.Then("the results should not contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
