@@ -426,6 +426,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 case "ambiguously (multiple P groups)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups);
                     break;
+                case "arbitrarily":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Arbitrary);
+                    break;
                 default:
                     ScenarioContext.Current.Pending();
                     break;

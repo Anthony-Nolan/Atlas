@@ -6,6 +6,7 @@ Feature: Ten Out Of Ten Search - Null Alleles - patient has single null allele
   Scenario: Null Alleles - Same typing
     Given a patient has a match
     And the donor has a null allele at locus A at position 1
+    And the match orientation is direct at locus A
     When I run a 10/10 search
     Then the results should contain the specified donor 
     
@@ -13,6 +14,7 @@ Feature: Ten Out Of Ten Search - Null Alleles - patient has single null allele
     Given a patient has a match
     And the donor has a null allele at locus A at position 1
     And the patient has a different null allele at locus A at position 1
+    And the match orientation is direct at locus A
     When I run a 10/10 search
     Then the results should contain the specified donor
     
@@ -20,6 +22,7 @@ Feature: Ten Out Of Ten Search - Null Alleles - patient has single null allele
     Given a patient has a match
     And the donor is homozygous at locus A
     And the patient has a null allele at locus A at position 1
+    And the match orientation is direct at locus A
     When I run a 10/10 search
     Then the results should contain the specified donor
     
@@ -27,6 +30,7 @@ Feature: Ten Out Of Ten Search - Null Alleles - patient has single null allele
     Given a patient has a match
     And the donor has a null allele at locus A at position 1
     And the donor has a mismatch at locus A at position 2
+    And the match orientation is direct at locus A
     When I run a 9/10 search at locus A
     Then the results should not contain the specified donor
     
@@ -35,5 +39,6 @@ Feature: Ten Out Of Ten Search - Null Alleles - patient has single null allele
     And the donor has a null allele at locus A at position 1
     And the donor has a mismatch at locus A at position 2
     And the patient has a different null allele at locus A at position 1
+    And the match orientation is direct at locus A
     When I run a 9/10 search at locus A
     Then the results should not contain the specified donor

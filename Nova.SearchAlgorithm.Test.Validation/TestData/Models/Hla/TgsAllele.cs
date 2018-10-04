@@ -184,7 +184,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla
                         TwoFieldAllele,
                         Serology,
                         NmdpCode,
-                        XxCode
+                        XxCode,
+                        AlleleStringOfNames,
+                        AlleleStringOfSubtypes
                     }.Where(x => x != null).ToList();
 
                     return options.GetRandomElement();
