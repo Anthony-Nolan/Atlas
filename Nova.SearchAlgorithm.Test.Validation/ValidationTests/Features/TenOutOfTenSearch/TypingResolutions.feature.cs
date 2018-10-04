@@ -65,16 +65,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a TGS (4-field) typed match")]
-        public virtual void _1010SearchWithATGS4_FieldTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a \'TGS derived data at four-field resolution\' typed match")]
+        public virtual void _1010SearchWithATGSDerivedDataAtFour_FieldResolutionTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a TGS (4-field) typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data at four-field resolution\' typed match", ((string[])(null)));
 #line 6
   this.ScenarioSetup(scenarioInfo);
 #line 7
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 8
-    testRunner.And("the matching donor is TGS (four field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is \'TGS derived data at four-field resolution\' typed at each l" +
+                    "ocus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
@@ -84,16 +85,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a TGS (3-field) typed match")]
-        public virtual void _1010SearchWithATGS3_FieldTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a \'TGS derived data at three-field resolution\' typed match")]
+        public virtual void _1010SearchWithATGSDerivedDataAtThree_FieldResolutionTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a TGS (3-field) typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data at three-field resolution\' typed match", ((string[])(null)));
 #line 12
   this.ScenarioSetup(scenarioInfo);
 #line 13
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 14
-    testRunner.And("the matching donor is TGS (three field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is \'TGS derived data at three-field resolution\' typed at each " +
+                    "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 15
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 16
@@ -103,16 +105,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a TGS (2-field) typed match")]
-        public virtual void _1010SearchWithATGS2_FieldTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a \'TGS derived data at two-field resolution\' typed match")]
+        public virtual void _1010SearchWithATGSDerivedDataAtTwo_FieldResolutionTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a TGS (2-field) typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data at two-field resolution\' typed match", ((string[])(null)));
 #line 18
   this.ScenarioSetup(scenarioInfo);
 #line 19
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 20
-    testRunner.And("the matching donor is TGS (two field) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is \'TGS derived data at three-field resolution\' typed at each " +
+                    "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 22
@@ -122,16 +125,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.TenOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("10/10 Search with a TGS typed match")]
-        public virtual void _1010SearchWithATGSTypedMatch()
+        [NUnit.Framework.DescriptionAttribute("10/10 Search with a \'TGS derived data\' typed match")]
+        public virtual void _1010SearchWithATGSDerivedDataTypedMatch()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a TGS typed match", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data\' typed match", ((string[])(null)));
 #line 24
   this.ScenarioSetup(scenarioInfo);
 #line 25
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 26
-    testRunner.And("the matching donor is TGS typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is \'TGS derived data\' typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 27
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 28

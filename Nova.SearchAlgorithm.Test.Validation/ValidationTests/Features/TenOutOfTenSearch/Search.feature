@@ -22,14 +22,14 @@ Feature: Ten Out Of Ten Search
     
   Scenario: 10/10 Search with a match with differing fourth field
     Given a patient has a match
-    And the matching donor is TGS (four field) typed at each locus
+    And the matching donor is 'TGS derived data at four-field resolution' typed at each locus
     And the match level is three field (different fourth field)
     When I run a 10/10 search
     Then the results should contain the specified donor
     
   Scenario: 10/10 Search with a match with differing third field
     Given a patient has a match
-    And the matching donor is TGS (three field) typed at each locus
+    And the matching donor is 'TGS derived data at three-field resolution' typed at each locus
     And the match level is two field (different third field)
     When I run a 10/10 search
     Then the results should contain the specified donor
