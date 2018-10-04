@@ -85,7 +85,6 @@ GROUP BY DonorId, TypePosition";
 
         /// <summary>
         /// Fetches all PGroups for a donor from the MatchingHlaAt$Locus tables
-        /// If no p-groups are found an additional lookup to the donor table is necessary to distinguish between null alleles and untyped loci
         /// </summary>
         public async Task<PhenotypeInfo<IEnumerable<string>>> GetPGroupsForDonor(int donorId)
         {
@@ -105,38 +104,9 @@ WHERE DonorId = {donorId}
                     {
                         result.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
                     }
-
-                    var dataAtPosition1 = result.DataAtPosition(locus, TypePositions.One);
-                    var dataAtPosition2 = result.DataAtPosition(locus, TypePositions.Two);
-
-                    if (dataAtPosition1 == null)
-                    {
-                        var sql = IsPositionTypedForDonor(donorId, locus, 1);
-                        var isTyped = await conn.QuerySingleAsync<bool>(sql);
-                        // In the case of a null allele, the position will be typed and explicitly have no p-groups. Untyped loci have unknown p-groups, and count as a match
-                        result.SetAtPosition(locus, TypePositions.One, isTyped ? new List<string>() : null);
-                    }
-                    
-                    if (dataAtPosition2 == null)
-                    {
-                        var sql = IsPositionTypedForDonor(donorId, locus, 2);
-                        var isTyped = await conn.QuerySingleAsync<bool>(sql);
-                        // In the case of a null allele, the position will be typed and explicitly have no p-groups. Untyped loci have unknown p-groups, and count as a match
-                        result.SetAtPosition(locus, TypePositions.Two, isTyped ? new List<string>() : null);
-                    }
                 }
             }
-
             return result;
-        }
-
-        private static string IsPositionTypedForDonor(int donorId, Locus locus, int position)
-        {
-            return $@"
-SELECT 
-CASE WHEN({locus.ToString()}_{position} IS NULL) THEN 'false' ELSE 'true' END as IsLocusTyped
-FROM Donors
-WHERE DonorId = {donorId}";
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
