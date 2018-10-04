@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
@@ -20,23 +21,35 @@ namespace Nova.SearchAlgorithm.Test.Performance
             
             var httpRequest = GetSearchHttpRequest(request);
 
-            stopwatch.Start();
-            var result = await client.SendAsync(httpRequest);
-            stopwatch.Stop();
-            
-            var content = await result.Content.ReadAsStringAsync();
-            if (!result.IsSuccessStatusCode)
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(120000);
+            try
             {
-                throw new Exception($"Search request failed: {content}");
-            }
+                stopwatch.Start();
+                var result = await client.SendAsync(httpRequest, cts.Token);
+                stopwatch.Stop();
+                var content = await result.Content.ReadAsStringAsync();
+                if (!result.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Search request failed: {content}");
+                }
             
-            var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
+                var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
 
-            return new SearchMetrics
+                return new SearchMetrics
+                {
+                    ElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
+                    DonorsReturned = deserialisedContent.TotalResults,
+                };
+            }
+            catch (OperationCanceledException)
             {
-                ElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
-                DonorsReturned = deserialisedContent.TotalResults,
-            };
+                return new SearchMetrics
+                {
+                    ElapsedMilliseconds = -1,
+                    DonorsReturned = -1,
+                };
+            }
         }
         
         private static HttpClient GetClient(AlgorithmInstanceInfo algorithmInstanceInfo)
