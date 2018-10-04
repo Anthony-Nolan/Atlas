@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
         {
             var searchRequest = BuildSearchRequest(testInput);
             var metrics = await SearchTimingService.TimeSearchRequest(searchRequest, testInput.AlgorithmInstanceInfo);
-            return new TestOutput(testInput, metrics);
+            return new TestOutput(testInput, metrics, TestCases.Notes);
         }
 
         private static SearchRequest BuildSearchRequest(TestInput testInput)
@@ -98,7 +98,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
         private static void WriteResultsToCsv(IEnumerable<TestOutput> results, string outputFilePath)
         {
             var baseDirectory = outputFilePath ?? DefaultOutputDirectory;
-            var outputFileName = $"{baseDirectory}/PerformanceTestResults{DateTime.UtcNow:yyyyMMddhhmm}.csv";
+            var outputFileName = $"{baseDirectory}/PerformanceTestResults{DateTime.UtcNow:yyyyMMddHHmm}.csv";
             using (var fileStream = new FileStream(outputFileName, FileMode.Append, FileAccess.Write))
             using (TextWriter writer = new StreamWriter(fileStream))
             {

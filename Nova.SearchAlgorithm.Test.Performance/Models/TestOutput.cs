@@ -29,8 +29,10 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
         public string HlaDqb12 { get; set; }
         public string HlaDrb11 { get; set; }
         public string HlaDrb12 { get; set; }
+        
+        public string Notes { get; set; }
 
-        public TestOutput(TestInput input, SearchMetrics metrics)
+        public TestOutput(TestInput input, SearchMetrics metrics, string notes = "")
         {
             PatientId = input.PatientId;
             SearchType = input.SearchType;
@@ -56,6 +58,8 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
 
             SolarSearchElapsedMilliseconds = input.SolarSearchElapsedMilliseconds;
             SolarSearchMatchedDonors = input.SolarSearchMatchedDonors;
+
+            Notes = notes;
         }
     }
 }
