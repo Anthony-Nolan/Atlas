@@ -15,8 +15,12 @@ namespace Nova.SearchAlgorithm.Test.Performance
 {
     internal class Program
     {
+        private static readonly string DefaultOutputDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)?.Replace("\\bin\\Debug", "");
+
         public static async Task Main(string[] args)
         {
+            var outputFilePath = args.Length > 0 ? args[0] : null;
+            
             var results = new List<TestOutput>();
             var testsRun = 0;
             
@@ -28,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 Console.WriteLine($"Run {testsRun}/{TestCases.TestInputs.Count()} tests");
             }
 
-            WriteResultsToCsv(results);
+            WriteResultsToCsv(results, outputFilePath);
         }
 
         private static async Task<TestOutput> RunSearch(TestInput testInput)
@@ -48,20 +52,26 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 case SearchType.SixOutOfSix:
                     searchRequestBuilder = searchRequestBuilder.WithTotalMismatchCount(0);
                     break;
-                case SearchType.ThreeLocusMismatchAtA:
+                case SearchType.AMismatchThreeLocus:
                     searchRequestBuilder = searchRequestBuilder
                         .WithTotalMismatchCount(1)
                         .WithLocusMismatchCount(Locus.A, 1);
                     break;
-                case SearchType.ThreeLocusMismatchAtB:
+                case SearchType.BMismatchThreeLocus:
                     searchRequestBuilder = searchRequestBuilder
                         .WithTotalMismatchCount(1)
                         .WithLocusMismatchCount(Locus.B, 1);
                     break;
-                case SearchType.ThreeLocusMismatchAtDrb1:
+                case SearchType.Drb1MismatchThreeLocus:
                     searchRequestBuilder = searchRequestBuilder
                         .WithTotalMismatchCount(1)
                         .WithLocusMismatchCount(Locus.Drb1, 1);
+                    break;
+                case SearchType.TenOutOfTen:
+                    searchRequestBuilder = searchRequestBuilder
+                        .WithTotalMismatchCount(0)
+                        .WithLocusMismatchCount(Locus.C, 0)
+                        .WithLocusMismatchCount(Locus.Dqb1, 0);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -85,9 +95,9 @@ namespace Nova.SearchAlgorithm.Test.Performance
             return searchRequestBuilder.Build();
         }
 
-        private static void WriteResultsToCsv(IEnumerable<TestOutput> results)
+        private static void WriteResultsToCsv(IEnumerable<TestOutput> results, string outputFilePath)
         {
-            var baseDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)?.Replace("\\bin\\Debug", "");
+            var baseDirectory = outputFilePath ?? DefaultOutputDirectory;
             var outputFileName = $"{baseDirectory}/PerformanceTestResults{DateTime.UtcNow:yyyyMMddhhmm}.csv";
             using (var fileStream = new FileStream(outputFileName, FileMode.Append, FileAccess.Write))
             using (TextWriter writer = new StreamWriter(fileStream))

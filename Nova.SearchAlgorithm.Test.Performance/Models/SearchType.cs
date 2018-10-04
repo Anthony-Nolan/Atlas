@@ -3,8 +3,9 @@
     public enum SearchType
     {
         SixOutOfSix,
-        ThreeLocusMismatchAtA,
-        ThreeLocusMismatchAtB,
-        ThreeLocusMismatchAtDrb1,
+        AMismatchThreeLocus,
+        BMismatchThreeLocus,
+        Drb1MismatchThreeLocus,
+        TenOutOfTen
     }
 }

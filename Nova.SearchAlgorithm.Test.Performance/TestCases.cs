@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
         
         private static readonly PatientInfo LivePatient495317 = new PatientInfo
         {
-            PatientId = "495317",
+            PatientId = "495317 (live)",
             Hla = new PhenotypeInfo<string>
             {
                 A_1 = "*03:01:01:01",
@@ -54,18 +54,48 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 Dqb1_2 = "*05:02:01",
             },
         };
+        
+        private static readonly PatientInfo LivePatient496738 = new PatientInfo
+        {
+            PatientId = "496738 (live)",
+            Hla = new PhenotypeInfo<string>
+            {
+                A_1 = "*01:01",
+                A_2 = "*02:01",
+                B_1 = "*07:02",
+                B_2 = "*08:01",
+                C_1 = "*07:01",
+                C_2 = "*07:02",
+                Drb1_1 = "*15:01",
+                Drb1_2 = "*03:01",
+                Dqb1_1 = "*06:02",
+                Dqb1_2 = "*02:01",
+            },
+        };
 
         public static readonly IEnumerable<TestInput> TestInputs = new List<TestInput>
         {
-            new TestInput
-            {
-                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                PatientId = UatPatient489252.PatientId,
-                Hla = UatPatient489252.Hla,
-                DonorType = DonorType.Adult,
-                IsAlignedRegistriesSearch = true,
-                SearchType = SearchType.SixOutOfSix,
-            },
+//            new TestInput
+//            {
+//                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+//                PatientId = UatPatient489252.PatientId,
+//                Hla = UatPatient489252.Hla,
+//                DonorType = DonorType.Adult,
+//                IsAlignedRegistriesSearch = true,
+//                SearchType = SearchType.SixOutOfSix,
+//            },
+//            
+//            new TestInput
+//            {
+//                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+//                PatientId = UatPatient489252.PatientId,
+//                Hla = UatPatient489252.Hla,
+//                DonorType = DonorType.Adult,
+//                IsAlignedRegistriesSearch = true,
+//                SearchType = SearchType.AMismatchThreeLocus,
+//                SolarSearchElapsedMilliseconds = 48000,
+//                SolarSearchMatchedDonors = 845
+//            },
             
             new TestInput
             {
@@ -74,19 +104,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 Hla = UatPatient489252.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
-                SearchType = SearchType.ThreeLocusMismatchAtA,
-                SolarSearchElapsedMilliseconds = 48000,
-                SolarSearchMatchedDonors = 845
-            },
-            
-            new TestInput
-            {
-                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                PatientId = UatPatient489252.PatientId,
-                Hla = UatPatient489252.Hla,
-                DonorType = DonorType.Adult,
-                IsAlignedRegistriesSearch = true,
-                SearchType = SearchType.ThreeLocusMismatchAtDrb1,
+                SearchType = SearchType.Drb1MismatchThreeLocus,
             },
             
             new TestInput
@@ -108,7 +126,19 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 Hla = LivePatient495317.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
-                SearchType = SearchType.ThreeLocusMismatchAtA,
+                SearchType = SearchType.TenOutOfTen,
+                SolarSearchElapsedMilliseconds = 0,
+                SolarSearchMatchedDonors = 0,
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                PatientId = LivePatient495317.PatientId,
+                Hla = LivePatient495317.Hla,
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.AMismatchThreeLocus,
                 SolarSearchElapsedMilliseconds = 5000,
                 SolarSearchMatchedDonors = 30,
             },
@@ -120,9 +150,31 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 Hla = LivePatient495317.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
-                SearchType = SearchType.ThreeLocusMismatchAtDrb1,
+                SearchType = SearchType.BMismatchThreeLocus,
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                PatientId = LivePatient495317.PatientId,
+                Hla = LivePatient495317.Hla,
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.Drb1MismatchThreeLocus,
                 SolarSearchElapsedMilliseconds = 6000,
                 SolarSearchMatchedDonors = 95,
+            },
+            
+            new TestInput
+            {
+                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+                PatientId = LivePatient496738.PatientId,
+                Hla = LivePatient496738.Hla,
+                DonorType = DonorType.Adult,
+                IsAlignedRegistriesSearch = true,
+                SearchType = SearchType.SixOutOfSix,
+                SolarSearchElapsedMilliseconds = 65300,
+                SolarSearchMatchedDonors = 4980,
             },
         };
     }
