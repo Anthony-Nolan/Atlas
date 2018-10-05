@@ -111,14 +111,5 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             return filteredMatchesByMatchCriteria;
         }
-
-        private async Task<MatchResult> PopulateDonorDataForMatch(MatchResult matchResult)
-        {
-            // Augment each match with registry and other data from GetDonor(id)
-            // Performance could be improved here, but at least it happens in parallel,
-            // and only after filtering match results, not before.
-            matchResult.Donor = await donorInspectionRepository.GetDonor(matchResult.DonorId);
-            return matchResult;
-        }
     }
 }
