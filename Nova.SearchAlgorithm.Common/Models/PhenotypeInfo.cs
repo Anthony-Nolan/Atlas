@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Common.Models
                 new PositionInfo<T>(Locus.Drb1, TypePositions.Two, Drb1_2)
             };
 
-            var results = await Task.WhenAll(data.AsParallel().Select(async d =>
+            var results = await Task.WhenAll(data.Select(async d =>
             {
                 var result = await mapping(d.Locus, d.Position, d.Data);
                 return new PositionInfo<R>(d.Locus, d.Position, result);
@@ -107,7 +107,6 @@ namespace Nova.SearchAlgorithm.Common.Models
                 Drb1_2 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePositions.Two).Data,
             };
         }
-
 
         // Aggregates each locus alongside its two values
         public IEnumerable<R> FlatMap<R>(Func<Locus, T, T, R> mapping)
