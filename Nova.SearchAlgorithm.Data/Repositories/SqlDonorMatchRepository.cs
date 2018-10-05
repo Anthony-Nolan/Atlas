@@ -122,6 +122,24 @@ WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
             return results;
         }
 
+        public async Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds)
+        {
+            donorIds = donorIds.ToList();
+            if (!donorIds.Any())
+            {
+                return new List<DonorResult>();
+            }
+            
+            using (var conn = new SqlConnection(connectionString))
+            {
+                var donors = await conn.QueryAsync<Donor>($@"
+SELECT * FROM Donors 
+WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
+");
+                return donors.Select(d => d.ToDonorResult());
+            }
+        }
+
         public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
         {
             var rawInputDonors = donors.ToList();

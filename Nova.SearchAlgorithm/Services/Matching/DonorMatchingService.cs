@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             var filteredMatchesByMatchCriteria = matchesAtAllLoci
                 .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
             
-            var matchesWithDonorInfoPopulated = await Task.WhenAll(filteredMatchesByMatchCriteria.Select(PopulateDonorDataForMatch));
+            var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
 
             var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
                 .Where(m => matchFilteringService.FulfilsRegistryCriteria(m, criteria))
@@ -97,6 +97,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 matchResults.Single(r => r.DonorId == donorIdWithPGroupNames.DonorId).DonorPGroups = donorIdWithPGroupNames.PGroupNames;
             }
             return matchResults;
+        }
+
+        private async Task<IEnumerable<MatchResult>> PopulateDonorData(IEnumerable<MatchResult> filteredMatchesByMatchCriteria)
+        {
+            filteredMatchesByMatchCriteria = filteredMatchesByMatchCriteria.ToList();
+            var donorIds = filteredMatchesByMatchCriteria.Select(m => m.DonorId);
+            var donors = (await donorInspectionRepository.GetDonors(donorIds)).ToList();
+            foreach (var match in filteredMatchesByMatchCriteria)
+            {
+                match.Donor = donors.Single(d => d.DonorId == match.DonorId);
+            }
+
+            return filteredMatchesByMatchCriteria;
         }
 
         private async Task<MatchResult> PopulateDonorDataForMatch(MatchResult matchResult)

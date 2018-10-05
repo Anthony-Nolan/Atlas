@@ -12,5 +12,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         IBatchQueryAsync<DonorResult> AllDonors();
         Task<DonorResult> GetDonor(int donorId);
         Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
+        Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds);
     }
 }

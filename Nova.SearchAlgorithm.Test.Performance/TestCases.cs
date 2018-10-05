@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
         /// This can be used to add some test case specific notes to a set of results
         /// i.e. when testing various tweaks to the algorithm, this can help keep track of what changed
         /// </summary>
-        public static string Notes = "NOVA-1961: P groups batched (passing tests)";
+        public static string Notes = "NOVA-1961: Donors batched (passing tests)";
 
         private static readonly PatientInfo UatPatient489252 = new PatientInfo
         {
