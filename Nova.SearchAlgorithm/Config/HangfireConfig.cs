@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Config
     {
         public static void ConfigureHangfire(this IAppBuilder app, IContainer container)
         {
-            GlobalConfiguration.Configuration.UseSqlServerStorage(ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString);
+            GlobalConfiguration.Configuration.UseSqlServerStorage(ConfigurationManager.ConnectionStrings["HangfireSqlConnectionString"].ConnectionString);
             GlobalConfiguration.Configuration.UseAutofacActivator(container);
 
             app.UseHangfireDashboard();
