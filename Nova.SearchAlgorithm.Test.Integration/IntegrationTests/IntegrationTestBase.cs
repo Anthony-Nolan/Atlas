@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Entity.Migrations;
 using Autofac;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
@@ -70,6 +71,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             {
                 context.Database.CreateIfNotExists();
             }
+            var config = new Data.Migrations.Configuration();
+            var migrator = new DbMigrator(config);
+            migrator.Update();
         }
 
         // This is almost a duplicate of the container in 
@@ -84,6 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();

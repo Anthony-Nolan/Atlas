@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Entity;
@@ -15,6 +16,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             using (var context = new SearchAlgorithmContext())
             {
                 context.Database.CreateIfNotExists();
+                var config = new Data.Migrations.Configuration();
+                var migrator = new DbMigrator(config);
+                migrator.Update();
                 RemoveTestData();
             }
         }

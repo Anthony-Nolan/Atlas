@@ -166,7 +166,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\MatchingHla\MatchingHla.cs" />
+    <Compile Include="Entity\MatchingHla\MatchingHlaAtA.cs" />
+    <Compile Include="Entity\MatchingHla\MatchingHlaAtB.cs" />
+    <Compile Include="Entity\MatchingHla\MatchingHlaAtC.cs" />
+    <Compile Include="Entity\MatchingHla\MatchingHlaAtDqb1.cs" />
+    <Compile Include="Entity\MatchingHla\MatchingHlaAtDrb1.cs" />
+    <Compile Include="Entity\ScoringWeightings\ConfidenceWeighting.cs" />
+    <Compile Include="Entity\ScoringWeightings\GradeWeighting.cs" />
+    <Compile Include="Entity\ScoringWeightings\ScoringWeighting.cs" />
     <Compile Include="Exceptions\DataHttpException.cs" />
+    <Compile Include="Extensions\DbSetExtensions.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.Designer.cs">
       <DependentUpon>201806271340159_InitialCreate.cs</DependentUpon>
@@ -179,19 +189,18 @@
     <Compile Include="Migrations\201807161028192_Matches-Table-Id-To-BigInt.Designer.cs">
       <DependentUpon>201807161028192_Matches-Table-Id-To-BigInt.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201810091456157_AddScoringWeightingTables.cs" />
+    <Compile Include="Migrations\201810091456157_AddScoringWeightingTables.Designer.cs">
+      <DependentUpon>201810091456157_AddScoringWeightingTables.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\DonorMatch.cs" />
     <Compile Include="Models\DonorMatchWithName.cs" />
     <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
-    <Compile Include="Entity\MatchingHla.cs" />
-    <Compile Include="Entity\MatchingHlaAtDqb1.cs" />
-    <Compile Include="Entity\MatchingHlaAtDrb1.cs" />
-    <Compile Include="Entity\MatchingHlaAtC.cs" />
-    <Compile Include="Entity\MatchingHlaAtB.cs" />
     <Compile Include="Entity\HlaName.cs" />
-    <Compile Include="Entity\MatchingHlaAtA.cs" />
     <Compile Include="Entity\Donor.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\ScoringWeightingRepository.cs" />
     <Compile Include="Repositories\SqlDonorBatchQueryAsync.cs" />
     <Compile Include="Repositories\SqlDonorMatchRepository.cs" />
     <Compile Include="SearchAlgorithmContext.cs" />
@@ -222,6 +231,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201807161028192_Matches-Table-Id-To-BigInt.resx">
       <DependentUpon>201807161028192_Matches-Table-Id-To-BigInt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810091456157_AddScoringWeightingTables.resx">
+      <DependentUpon>201810091456157_AddScoringWeightingTables.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

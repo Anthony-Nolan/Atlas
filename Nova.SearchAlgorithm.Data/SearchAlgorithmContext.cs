@@ -20,6 +20,8 @@ namespace Nova.SearchAlgorithm.Data
         DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
         DbSet MatchingHlasAtLocus(Locus locus);
+        DbSet<GradeWeighting> GradeWeightings { get; set; }
+        DbSet<ConfidenceWeighting> ConfidenceWeightings { get; set; }
     }
 
     public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
@@ -56,6 +58,8 @@ namespace Nova.SearchAlgorithm.Data
         public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+        public DbSet<GradeWeighting> GradeWeightings { get; set; }
+        public DbSet<ConfidenceWeighting> ConfidenceWeightings { get; set; }
 
         public DbSet MatchingHlasAtLocus(Locus locus)
         {
