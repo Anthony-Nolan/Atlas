@@ -80,8 +80,8 @@ namespace Nova.SearchAlgorithm.Test.Performance
             if (testInput.IsAlignedRegistriesSearch)
             {
                 searchRequestBuilder = searchRequestBuilder
+                    .ForAdditionalRegistry(RegistryCode.DKMS)
                     .ForAdditionalRegistry(RegistryCode.NHSBT)
-                    .ForAdditionalRegistry(RegistryCode.NMDP)
                     .ForAdditionalRegistry(RegistryCode.WBS);
             }
 
