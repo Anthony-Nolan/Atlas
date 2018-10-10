@@ -5,13 +5,23 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
 {
     public class TestInput
     {
-        public AlgorithmInstanceInfo AlgorithmInstanceInfo { get; set; }
+        public TestInput()
+        {
+        }
+
+        public TestInput(PatientInfo patientInfo)
+        {
+            PatientId = patientInfo.PatientId;
+            Hla = patientInfo.Hla;
+        }
+
+        public AlgorithmInstanceInfo AlgorithmInstanceInfo { get; set; } = TestCases.LocalAlgorithmInstanceInfo;
         
         public string PatientId { get; set; }
     
         public SearchType SearchType { get; set; }
-        public DonorType DonorType { get; set; }
-        public bool IsAlignedRegistriesSearch { get; set; }
+        public DonorType DonorType { get; set; } = DonorType.Adult;
+        public bool IsAlignedRegistriesSearch { get; set; } = true;
 
         public PhenotypeInfo<string> Hla { get; set; }
         
