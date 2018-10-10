@@ -81,9 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
             {
                 searchRequestBuilder = searchRequestBuilder
                     .ForAdditionalRegistry(RegistryCode.DKMS)
-                    .ForAdditionalRegistry(RegistryCode.FRANCE)
                     .ForAdditionalRegistry(RegistryCode.NHSBT)
-                    .ForAdditionalRegistry(RegistryCode.NMDP)
                     .ForAdditionalRegistry(RegistryCode.WBS);
             }
 

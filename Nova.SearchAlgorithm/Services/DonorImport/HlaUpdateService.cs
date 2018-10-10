@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -7,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.ApplicationInsights;
+using Nova.Utils.ApplicationInsights.EventModels;
 
 namespace Nova.SearchAlgorithm.Services.DonorImport
 {
@@ -46,31 +49,47 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
         public async Task UpdateDonorHla()
         {
-            var batchedQuery = donorInspectionRepository.AllDonors();
-            var totalUpdated = 0;
-            var stopwatch = new Stopwatch();
-
-            await PerformUpfrontSetup();
-
-            while (batchedQuery.HasMoreResults)
+            try
             {
-                stopwatch.Start();
-                var resultsBatch = (await batchedQuery.RequestNextAsync()).ToList();
-
-                stopwatch.Restart();
-
-                var donorHlaData = await Task.WhenAll(resultsBatch.Select(FetchDonorHlaData));
-                var inputDonors = donorHlaData.Where(x => x != null);
-                await donorImportRepository.RefreshMatchingGroupsForExistingDonorBatch(inputDonors);
-
-                stopwatch.Stop();
-                totalUpdated += inputDonors.Count();
-                logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
-                {
-                    {"NumberOfDonors", totalUpdated.ToString()},
-                    {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
-                });
+                await PerformUpfrontSetup();
             }
+            catch (Exception e)
+            {
+                logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
+                throw;
+            }
+
+            try
+            {
+                var batchedQuery = donorInspectionRepository.AllDonors();
+                while (batchedQuery.HasMoreResults)
+                {
+                    var donorBatch = await batchedQuery.RequestNextAsync();
+                    await UpdateDonorBatch(donorBatch.ToList());
+                }
+            }
+            catch (Exception e)
+            {
+                logger.SendEvent(new HlaRefreshFailureEventModel(e));
+                throw;
+            }
+        }
+
+        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var donorHlaData = await Task.WhenAll(donorBatch.Select(FetchDonorHlaData));
+            var inputDonors = donorHlaData.Where(x => x != null).ToList();
+            await donorImportRepository.RefreshMatchingGroupsForExistingDonorBatch(inputDonors);
+
+            stopwatch.Stop();
+            logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"NumberOfDonors", inputDonors.Count().ToString()},
+                {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
+            });
         }
 
         private async Task PerformUpfrontSetup()
@@ -106,12 +125,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             }
             catch (MatchingDictionaryException e)
             {
-                logger.SendTrace("Donor Hla Update Failed", LogLevel.Error, new Dictionary<string, string>
-                {
-                    {"Reason", "Failed to fetch hla from matching dictionary"},
-                    {"DonorId", donor.DonorId.ToString()},
-                    {"Exception", e.ToString()},
-                });
+                logger.SendEvent(new HlaRefreshMatchingDictionaryLookupFailureEventModel(e, donor.DonorId.ToString()));
                 return null;
             }
         }
