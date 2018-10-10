@@ -165,6 +165,7 @@
     <Compile Include="Models\Locus.cs" />
     <Compile Include="Models\LocusInfo.cs" />
     <Compile Include="Models\LocusSearchCriteria.cs" />
+    <Compile Include="Models\Matching\DonorIdWithPGroupNames.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialHlaMatchRelation.cs" />
     <Compile Include="Models\RawInputDonor.cs" />

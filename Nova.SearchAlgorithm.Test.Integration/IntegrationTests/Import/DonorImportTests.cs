@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
         private IHlaUpdateService updateService;
-        
+
         // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
         private readonly Tuple<string, int> AHlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 213);
 
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         #region UpdateDonorHla
-        
+
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
@@ -63,12 +63,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 
             await updateService.UpdateDonorHla();
 
-            var pGroups = await inspectionRepo.GetPGroupsForDonor(inputDonor.DonorId);
-            pGroups.A_1.Count().Should().Be(AHlaWithKnownPGroups1.Item2);
+            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
+            pGroups.First().PGroupNames.A_1.Count().Should().Be(AHlaWithKnownPGroups1.Item2);
         }
-        
+
         #endregion
-        
+
         private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, RawInputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);

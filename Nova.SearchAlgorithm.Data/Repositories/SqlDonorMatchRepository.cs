@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
@@ -83,12 +84,19 @@ GROUP BY DonorId, TypePosition";
         }
 
         /// <summary>
-        /// Fetches all PGroups for a donor from the MatchingHlaAt$Locus tables
-        /// If no p-groups are found an additional lookup to the donor table is necessary to distinguish between null alleles and untyped loci
+        /// Fetches all PGroups for a batch of donors from the MatchingHlaAt$Locus tables
         /// </summary>
-        public async Task<PhenotypeInfo<IEnumerable<string>>> GetPGroupsForDonor(int donorId)
+        public async Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds)
         {
-            var result = new PhenotypeInfo<IEnumerable<string>>();
+            donorIds = donorIds.ToList();
+            if (!donorIds.Any())
+            {
+                return new List<DonorIdWithPGroupNames>();
+            }
+            
+            var results = donorIds
+                .Select(id => new DonorIdWithPGroupNames{ DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>()})
+                .ToList();
             using (var conn = new SqlConnection(connectionString))
             {
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
@@ -98,44 +106,37 @@ GROUP BY DonorId, TypePosition";
 SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableName(locus)} m
 JOIN PGroupNames p 
 ON m.PGroup_Id = p.Id
-WHERE DonorId = {donorId}
+WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
 ");
-                    foreach (var pGroupGroup in pGroups.GroupBy(p => (TypePositions) p.TypePosition))
+                    foreach (var donorGroups in pGroups.GroupBy(p => p.DonorId))
                     {
-                        result.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
-                    }
-
-                    var dataAtPosition1 = result.DataAtPosition(locus, TypePositions.One);
-                    var dataAtPosition2 = result.DataAtPosition(locus, TypePositions.Two);
-
-                    if (dataAtPosition1 == null)
-                    {
-                        var sql = IsPositionTypedForDonor(donorId, locus, 1);
-                        var isTyped = await conn.QuerySingleAsync<bool>(sql);
-                        // In the case of a null allele, the position will be typed and explicitly have no p-groups. Untyped loci have unknown p-groups, and count as a match
-                        result.SetAtPosition(locus, TypePositions.One, isTyped ? new List<string>() : null);
-                    }
-                    
-                    if (dataAtPosition2 == null)
-                    {
-                        var sql = IsPositionTypedForDonor(donorId, locus, 2);
-                        var isTyped = await conn.QuerySingleAsync<bool>(sql);
-                        // In the case of a null allele, the position will be typed and explicitly have no p-groups. Untyped loci have unknown p-groups, and count as a match
-                        result.SetAtPosition(locus, TypePositions.Two, isTyped ? new List<string>() : null);
+                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePositions) p.TypePosition))
+                        {
+                            var donorResult = results.Single(r => r.DonorId == donorGroups.Key);
+                            donorResult.PGroupNames.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
+                        }
                     }
                 }
             }
-
-            return result;
+            return results;
         }
 
-        private static string IsPositionTypedForDonor(int donorId, Locus locus, int position)
+        public async Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds)
         {
-            return $@"
-SELECT 
-CASE WHEN({locus.ToString()}_{position} IS NULL) THEN 'false' ELSE 'true' END as IsLocusTyped
-FROM Donors
-WHERE DonorId = {donorId}";
+            donorIds = donorIds.ToList();
+            if (!donorIds.Any())
+            {
+                return new List<DonorResult>();
+            }
+            
+            using (var conn = new SqlConnection(connectionString))
+            {
+                var donors = await conn.QueryAsync<Donor>($@"
+SELECT * FROM Donors 
+WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
+");
+                return donors.Select(d => d.ToDonorResult());
+            }
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
