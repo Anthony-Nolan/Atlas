@@ -295,6 +295,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationInsights\HlaRefreshMatchingDictionaryLookupFailureEventModel.cs" />
+    <Compile Include="ApplicationInsights\HlaRefreshFailureEventModel.cs" />
+    <Compile Include="ApplicationInsights\HlaRefreshSetUpFailureEventModel.cs" />
     <Compile Include="Config\AutomapperConfig.cs" />
     <Compile Include="Config\Configuration.cs" />
     <Compile Include="Config\HangfireConfig.cs" />
