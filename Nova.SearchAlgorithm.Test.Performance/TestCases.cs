@@ -19,6 +19,12 @@ namespace Nova.SearchAlgorithm.Test.Performance
             AzureStorageEnvironment = Environment.Local,
         };
 
+        /// <summary>
+        /// This can be used to add some test case specific notes to a set of results
+        /// i.e. when testing various tweaks to the algorithm, this can help keep track of what changed
+        /// </summary>
+        public static string Notes = "NOVA-1961: Donors batched (passing tests)";
+
         private static readonly PatientInfo UatPatient489252 = new PatientInfo
         {
             PatientId = "489252",
@@ -70,6 +76,24 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 Drb1_2 = "*03:01",
                 Dqb1_1 = "*06:02",
                 Dqb1_2 = "*02:01",
+            },
+        };
+        
+        private static readonly PatientInfo LivePatient496272 = new PatientInfo
+        {
+            PatientId = "496272 (live)",
+            Hla = new PhenotypeInfo<string>
+            {
+                A_1 = "*03:01",
+                A_2 = "*66:01",
+                B_1 = "*07:02",
+                B_2 = "*07:06",
+                C_1 = "*07:02",
+                C_2 = "*15:05",
+                Drb1_1 = "*15:01",
+                Drb1_2 = "*13:01",
+                Dqb1_1 = "*06:02",
+                Dqb1_2 = "*06:03",
             },
         };
 
@@ -168,14 +192,26 @@ namespace Nova.SearchAlgorithm.Test.Performance
             new TestInput
             {
                 AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-                PatientId = LivePatient496738.PatientId,
-                Hla = LivePatient496738.Hla,
+                PatientId = LivePatient496272.PatientId,
+                Hla = LivePatient496272.Hla,
                 DonorType = DonorType.Adult,
                 IsAlignedRegistriesSearch = true,
-                SearchType = SearchType.SixOutOfSix,
-                SolarSearchElapsedMilliseconds = 65300,
-                SolarSearchMatchedDonors = 4980,
+                SearchType = SearchType.AMismatchThreeLocus,
+                SolarSearchElapsedMilliseconds = 10550,
+                SolarSearchMatchedDonors = 656,
             },
+            
+//            new TestInput
+//            {
+//                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
+//                PatientId = LivePatient496738.PatientId,
+//                Hla = LivePatient496738.Hla,
+//                DonorType = DonorType.Adult,
+//                IsAlignedRegistriesSearch = true,
+//                SearchType = SearchType.SixOutOfSix,
+//                SolarSearchElapsedMilliseconds = 65300,
+//                SolarSearchMatchedDonors = 4980,
+//            },
         };
     }
 }

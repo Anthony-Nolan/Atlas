@@ -41,14 +41,14 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
             var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, lociToMatchInDatabase);
 
-            var matchesWithPGroupsPopulated = (await Task.WhenAll(matches.Select(PopulatePGroupsForMatch))).AsEnumerable();
+            var matchesWithPGroupsPopulated = (await PopulatePGroups(matches)).ToList();
             
             var matchesAtAllLoci = MatchInMemory(criteria, lociToMatchInMemory, matchesWithPGroupsPopulated);
 
             var filteredMatchesByMatchCriteria = matchesAtAllLoci
                 .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
             
-            var matchesWithDonorInfoPopulated = await Task.WhenAll(filteredMatchesByMatchCriteria.Select(PopulateDonorDataForMatch));
+            var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
 
             var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
                 .Where(m => matchFilteringService.FulfilsRegistryCriteria(m, criteria))
@@ -88,20 +88,28 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matches;
         }
 
-        private async Task<MatchResult> PopulatePGroupsForMatch(MatchResult matchResult)
+        private async Task<IEnumerable<MatchResult>> PopulatePGroups(IEnumerable<MatchResult> matchResults)
         {
-            var pGroups = await donorInspectionRepository.GetPGroupsForDonor(matchResult.DonorId);
-            matchResult.DonorPGroups = pGroups;
-            return matchResult;
+            matchResults = matchResults.ToList();
+            var pGroups = await donorInspectionRepository.GetPGroupsForDonors(matchResults.Select(r => r.DonorId));
+            foreach (var donorIdWithPGroupNames in pGroups)
+            {
+                matchResults.Single(r => r.DonorId == donorIdWithPGroupNames.DonorId).DonorPGroups = donorIdWithPGroupNames.PGroupNames;
+            }
+            return matchResults;
         }
 
-        private async Task<MatchResult> PopulateDonorDataForMatch(MatchResult matchResult)
+        private async Task<IEnumerable<MatchResult>> PopulateDonorData(IEnumerable<MatchResult> filteredMatchesByMatchCriteria)
         {
-            // Augment each match with registry and other data from GetDonor(id)
-            // Performance could be improved here, but at least it happens in parallel,
-            // and only after filtering match results, not before.
-            matchResult.Donor = await donorInspectionRepository.GetDonor(matchResult.DonorId);
-            return matchResult;
+            filteredMatchesByMatchCriteria = filteredMatchesByMatchCriteria.ToList();
+            var donorIds = filteredMatchesByMatchCriteria.Select(m => m.DonorId);
+            var donors = (await donorInspectionRepository.GetDonors(donorIds)).ToList();
+            foreach (var match in filteredMatchesByMatchCriteria)
+            {
+                match.Donor = donors.Single(d => d.DonorId == match.DonorId);
+            }
+
+            return filteredMatchesByMatchCriteria;
         }
     }
 }
