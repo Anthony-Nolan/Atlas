@@ -110,6 +110,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<ConfidenceCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<RankingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchScoreCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ScoringRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());

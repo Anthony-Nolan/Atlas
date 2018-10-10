@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Extensions;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
@@ -92,20 +93,7 @@ namespace Nova.SearchAlgorithm.Services
 
         private static PhenotypeInfo<string> GetPatientHla(SearchRequest searchRequest)
         {
-            var hlaData = searchRequest.SearchHlaData;
-            return new PhenotypeInfo<string>
-            {
-                A_1 = hlaData.LocusSearchHlaA.SearchHla1,
-                A_2 = hlaData.LocusSearchHlaA.SearchHla2,
-                B_1 = hlaData.LocusSearchHlaB.SearchHla1,
-                B_2 = hlaData.LocusSearchHlaB.SearchHla2,
-                C_1 = hlaData.LocusSearchHlaC?.SearchHla1,
-                C_2 = hlaData.LocusSearchHlaC?.SearchHla2,
-                DQB1_1 = hlaData.LocusSearchHlaDqb1?.SearchHla1,
-                DQB1_2 = hlaData.LocusSearchHlaDqb1?.SearchHla2,
-                DRB1_1 = hlaData.LocusSearchHlaDrb1.SearchHla1,
-                DRB1_2 = hlaData.LocusSearchHlaDrb1.SearchHla2
-            };
+            return searchRequest.SearchHlaData.ToPhenotypeInfo();
         }
 
         private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result)

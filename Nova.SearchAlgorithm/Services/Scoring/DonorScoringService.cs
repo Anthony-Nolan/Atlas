@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
     public interface IDonorScoringService
     {
         Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(IEnumerable<MatchResult> matchResults, PhenotypeInfo<string> patientHla);
+        Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(PhenotypeInfo<string> donorHla, PhenotypeInfo<string> patientHla);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -46,13 +47,14 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             IEnumerable<MatchResult> matchResults,
             PhenotypeInfo<string> patientHla)
         {
-            var patientScoringLookupResult = await patientHla.MapAsync(async (locus, pos, hla) => await GetHlaScoringResultsForLocus(locus, hla));
+            var patientScoringLookupResult = await GetHlaScoringResults(patientHla);
 
             var matchAndScoreResults = await Task.WhenAll(matchResults
                 .Select(async matchResult =>
                 {
-                    var lookupResult = await GetHlaScoringResults(matchResult);
-                    return CombineMatchAndScoreResults(matchResult, lookupResult, patientScoringLookupResult);
+                    var lookupResult = await GetHlaScoringResults(matchResult.Donor.HlaNames);
+                    var scoreResult = ScoreDonorAndPatient(lookupResult, patientScoringLookupResult);
+                    return CombineMatchAndScoreResults(matchResult, scoreResult);
                 })
                 .ToList()
             );
@@ -60,10 +62,26 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             return rankingService.RankSearchResults(matchAndScoreResults);
         }
 
-        private MatchAndScoreResult CombineMatchAndScoreResults(
-            MatchResult matchResult,
+        public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(PhenotypeInfo<string> donorHla, PhenotypeInfo<string> patientHla)
+        {
+            var patientLookupResult = await GetHlaScoringResults(patientHla);
+            var donorLookupResult = await GetHlaScoringResults(donorHla);
+            return ScoreDonorAndPatient(donorLookupResult, patientLookupResult);
+        }
+
+        private static MatchAndScoreResult CombineMatchAndScoreResults(MatchResult matchResult, ScoreResult scoreResult)
+        {
+            return new MatchAndScoreResult
+            {
+                MatchResult = matchResult,
+                ScoreResult = scoreResult
+            };
+        }
+
+        private ScoreResult ScoreDonorAndPatient(
             PhenotypeInfo<IHlaScoringLookupResult> donorScoringLookupResult,
-            PhenotypeInfo<IHlaScoringLookupResult> patientScoringLookupResult)
+            PhenotypeInfo<IHlaScoringLookupResult> patientScoringLookupResult
+        )
         {
             var grades = gradingService.CalculateGrades(patientScoringLookupResult, donorScoringLookupResult);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringLookupResult, donorScoringLookupResult, grades);
@@ -71,12 +89,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             var locusTypingInformation = donorScoringLookupResult.Map((l, p, result) => result != null);
 
             var scoreResult = BuildScoreResult(grades, confidences, locusTypingInformation);
-
-            return new MatchAndScoreResult
-            {
-                MatchResult = matchResult,
-                ScoreResult = scoreResult
-            };
+            return scoreResult;
         }
 
         private ScoreResult BuildScoreResult(
@@ -121,9 +134,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             };
         }
 
-        private async Task<PhenotypeInfo<IHlaScoringLookupResult>> GetHlaScoringResults(MatchResult matchResult)
+        private async Task<PhenotypeInfo<IHlaScoringLookupResult>> GetHlaScoringResults(PhenotypeInfo<string> hlaNames)
         {
-            return await matchResult.Donor.HlaNames.MapAsync(
+            return await hlaNames.MapAsync(
                 async (locus, position, hla) => await GetHlaScoringResultsForLocus(locus, hla)
             );
         }

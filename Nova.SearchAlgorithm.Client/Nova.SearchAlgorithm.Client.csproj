@@ -153,6 +153,8 @@
   <ItemGroup>
     <Compile Include="Models\DonorType.cs" />
     <Compile Include="Models\RegistryCode.cs" />
+    <Compile Include="Models\Scoring\ScoringRequest.cs" />
+    <Compile Include="Models\Scoring\ScoringResult.cs" />
     <Compile Include="Models\SearchRequests\LocusMismatchCriteria.cs" />
     <Compile Include="Models\SearchRequests\LocusSearchHla.cs" />
     <Compile Include="Models\SearchRequests\MismatchCriteria.cs" />

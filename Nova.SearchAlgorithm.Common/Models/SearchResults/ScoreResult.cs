@@ -13,12 +13,13 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         public MatchConfidence OverallMatchConfidence => AllConfidences.Min();
 
         public int TypedLociCount => LocusScoreDetails.Count(m => m.IsLocusTyped);
+        public int MatchCount => LocusScoreDetails.Select(s => s.MatchCount()).Sum();
+        public int PotentialMatchCount => LocusScoreDetails.Where(s => s.IsPotentialMatch).Select(s => s.MatchCount()).Sum();
         
         private IEnumerable<MatchConfidence> AllConfidences => LocusScoreDetails.SelectMany(locusScoreDetails => new List<MatchConfidence>
         {
             locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence,
             locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence
-
         });
         
         public LocusScoreDetails ScoreDetailsAtLocusA { get; set; }
