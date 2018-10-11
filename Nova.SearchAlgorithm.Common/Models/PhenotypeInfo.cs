@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Policy;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Common.Models
@@ -65,23 +67,44 @@ namespace Nova.SearchAlgorithm.Common.Models
             };
         }
 
-        // TODO: NOVA-1427: Running these tasks in parallel could likely improve performance
         public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, TypePositions, T, Task<R>> mapping)
         {
+            var data = new[]
+            {
+                new PositionInfo<T>(Locus.A, TypePositions.One, A_1),
+                new PositionInfo<T>(Locus.A, TypePositions.Two, A_2),
+                new PositionInfo<T>(Locus.B, TypePositions.One, B_1),
+                new PositionInfo<T>(Locus.B, TypePositions.Two, B_2),
+                new PositionInfo<T>(Locus.C, TypePositions.One, C_1),
+                new PositionInfo<T>(Locus.C, TypePositions.Two, C_2),
+                new PositionInfo<T>(Locus.Dpb1, TypePositions.One, Dpb1_1),
+                new PositionInfo<T>(Locus.Dpb1, TypePositions.Two, Dpb1_2),
+                new PositionInfo<T>(Locus.Dqb1, TypePositions.One, Dqb1_1),
+                new PositionInfo<T>(Locus.Dqb1, TypePositions.Two, Dqb1_2),
+                new PositionInfo<T>(Locus.Drb1, TypePositions.One, Drb1_1),
+                new PositionInfo<T>(Locus.Drb1, TypePositions.Two, Drb1_2)
+            };
+
+            var results = await Task.WhenAll(data.Select(async d =>
+            {
+                var result = await mapping(d.Locus, d.Position, d.Data);
+                return new PositionInfo<R>(d.Locus, d.Position, result);
+            }));
+
             return new PhenotypeInfo<R>
             {
-                A_1 = await mapping(Locus.A, TypePositions.One, A_1),
-                A_2 = await mapping(Locus.A, TypePositions.Two, A_2),
-                B_1 = await mapping(Locus.B, TypePositions.One, B_1),
-                B_2 = await mapping(Locus.B, TypePositions.Two, B_2),
-                C_1 = await mapping(Locus.C, TypePositions.One, C_1),
-                C_2 = await mapping(Locus.C, TypePositions.Two, C_2),
-                DPB1_1 = await mapping(Locus.Dpb1, TypePositions.One, DPB1_1),
-                DPB1_2 = await mapping(Locus.Dpb1, TypePositions.Two, DPB1_2),
-                DQB1_1 = await mapping(Locus.Dqb1, TypePositions.One, DQB1_1),
-                DQB1_2 = await mapping(Locus.Dqb1, TypePositions.Two, DQB1_2),
-                DRB1_1 = await mapping(Locus.Drb1, TypePositions.One, DRB1_1),
-                DRB1_2 = await mapping(Locus.Drb1, TypePositions.Two, DRB1_2),
+                A_1 = results.Single(r => r.Locus == Locus.A && r.Position == TypePositions.One).Data,
+                A_2 = results.Single(r => r.Locus == Locus.A && r.Position == TypePositions.Two).Data,
+                B_1 = results.Single(r => r.Locus == Locus.B && r.Position == TypePositions.One).Data,
+                B_2 = results.Single(r => r.Locus == Locus.B && r.Position == TypePositions.Two).Data,
+                C_1 = results.Single(r => r.Locus == Locus.C && r.Position == TypePositions.One).Data,
+                C_2 = results.Single(r => r.Locus == Locus.C && r.Position == TypePositions.Two).Data,
+                Dpb1_1 = results.Single(r => r.Locus == Locus.Dpb1 && r.Position == TypePositions.One).Data,
+                Dpb1_2 = results.Single(r => r.Locus == Locus.Dpb1 && r.Position == TypePositions.Two).Data,
+                Dqb1_1 = results.Single(r => r.Locus == Locus.Dqb1 && r.Position == TypePositions.One).Data,
+                Dqb1_2 = results.Single(r => r.Locus == Locus.Dqb1 && r.Position == TypePositions.Two).Data,
+                Drb1_1 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePositions.One).Data,
+                Drb1_2 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePositions.Two).Data,
             };
         }
 
@@ -160,39 +183,6 @@ namespace Nova.SearchAlgorithm.Common.Models
                 DQB1_2 = results[4].Item2,
                 DRB1_1 = results[5].Item1,
                 DRB1_2 = results[5].Item2
-            };
-        }
-
-        public async Task<PhenotypeInfo<R>> WhenAllPositions<R>(Func<Locus, TypePositions, T, Task<R>> action)
-        {
-            R[] results = await Task.WhenAll(
-                action(Locus.A, TypePositions.One, A_1),
-                action(Locus.A, TypePositions.Two, A_2),
-                action(Locus.B, TypePositions.One, B_1),
-                action(Locus.B, TypePositions.Two, B_2),
-                action(Locus.C, TypePositions.One, C_1),
-                action(Locus.C, TypePositions.Two, C_2),
-                action(Locus.Dpb1, TypePositions.One, DPB1_1),
-                action(Locus.Dpb1, TypePositions.Two, DPB1_2),
-                action(Locus.Dqb1, TypePositions.One, DQB1_1),
-                action(Locus.Dqb1, TypePositions.Two, DQB1_2),
-                action(Locus.Drb1, TypePositions.One, DRB1_1),
-                action(Locus.Drb1, TypePositions.Two, DRB1_2));
-
-            return new PhenotypeInfo<R>
-            {
-                A_1 = results[0],
-                A_2 = results[1],
-                B_1 = results[2],
-                B_2 = results[3],
-                C_1 = results[4],
-                C_2 = results[5],
-                DPB1_1 = results[6],
-                DPB1_2 = results[7],
-                DQB1_1 = results[8],
-                DQB1_2 = results[9],
-                DRB1_1 = results[10],
-                DRB1_2 = results[11]
             };
         }
 
@@ -383,6 +373,25 @@ namespace Nova.SearchAlgorithm.Common.Models
         public void SetAtLocus(Locus locus, T value)
         {
             SetAtPosition(locus, TypePositions.Both, value);
+        }
+
+        private class PositionInfo<R>
+        {
+            public Locus Locus { get; }
+            public TypePositions Position { get; }
+            public R Data { get; }
+
+            public PositionInfo(Locus locus, TypePositions position, R data)
+            {
+                if (position == TypePositions.Both || position == TypePositions.None)
+                {
+                    throw new ArgumentException("PositionInfo must be for a single position");
+                }
+                
+                Locus = locus;
+                Position = position;
+                Data = data;
+            }
         }
     }
 }
