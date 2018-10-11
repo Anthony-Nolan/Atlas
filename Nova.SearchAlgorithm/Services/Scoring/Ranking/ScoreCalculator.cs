@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Repositories;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
 {
@@ -18,16 +19,21 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
 
     public class MatchScoreCalculator: IMatchScoreCalculator
     {
-        // TODO: NOVA-1467: Apply appropriate weighting to match grade scores
+        private readonly IScoringWeightingRepository weightingRepository;
+
+        public MatchScoreCalculator(IScoringWeightingRepository weightingRepository)
+        {
+            this.weightingRepository = weightingRepository;
+        }
+        
         public int CalculateScoreForMatchGrade(MatchGrade matchGrade)
         {
-            return (int) matchGrade;
+            return weightingRepository.GetGradeWeighting(matchGrade);
         }
 
-        // TODO: NOVA-1467: Apply appropriate weighting to match confidence scores
         public int CalculateScoreForMatchConfidence(MatchConfidence matchConfidence)
         {
-            return (int) matchConfidence;
+            return weightingRepository.GetConfidenceWeighting(matchConfidence);
         }
     }
 }

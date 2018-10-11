@@ -63,14 +63,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
 
-            const int minPossibleGradeScore = 10 * (int) MatchGrade.PGroup;
-            const int maxPossibleGradeScore = 10 * (int) MatchGrade.GDna;
-            result.GradeScore.Should().BeInRange(minPossibleGradeScore, maxPossibleGradeScore);
-
-            const int minPossibleConfidenceScore = 10 * (int)MatchConfidence.Exact;
-            const int maxPossibleConfidenceScore = 10 * (int)MatchConfidence.Definite;
-            result.ConfidenceScore.Should().BeInRange(minPossibleConfidenceScore, maxPossibleConfidenceScore);
-
             var expectedMatchConfidences = new List<MatchConfidence> { MatchConfidence.Definite, MatchConfidence.Exact };
             expectedMatchConfidences.Should().Contain(result.OverallMatchConfidence);
         }
@@ -86,14 +78,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
-
-            const int minPossibleGradeScore = 10 * (int)MatchGrade.PGroup;
-            const int maxPossibleGradeScore = 10 * (int)MatchGrade.GDna;
-            result.GradeScore.Should().BeInRange(minPossibleGradeScore, maxPossibleGradeScore);
-
-            const int minPossibleConfidenceScore = 10 * (int)MatchConfidence.Exact;
-            const int maxPossibleConfidenceScore = 10 * (int)MatchConfidence.Definite;
-            result.ConfidenceScore.Should().BeInRange(minPossibleConfidenceScore, maxPossibleConfidenceScore);
 
             var expectedMatchConfidences = new List<MatchConfidence> { MatchConfidence.Definite, MatchConfidence.Exact };
             expectedMatchConfidences.Should().Contain(result.OverallMatchConfidence);
@@ -111,13 +95,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
 
-            const int minPossibleGradeScore = 10 * (int)MatchGrade.PGroup;
-            const int maxPossibleGradeScore = 10 * (int)MatchGrade.GGroup;
-            result.GradeScore.Should().BeInRange(minPossibleGradeScore, maxPossibleGradeScore);
-
-            const int expectedConfidenceScore = 10 * (int)MatchConfidence.Potential;
-            result.ConfidenceScore.Should().Be(expectedConfidenceScore);
-
             result.OverallMatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
@@ -132,13 +109,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
-
-            const int minPossibleGradeScore = 10 * (int)MatchGrade.Broad;
-            const int maxPossibleGradeScore = 10 * (int)MatchGrade.Associated;
-            result.GradeScore.Should().BeInRange(minPossibleGradeScore, maxPossibleGradeScore);
-
-            const int expectedConfidenceScore = 10 * (int)MatchConfidence.Potential;
-            result.ConfidenceScore.Should().Be(expectedConfidenceScore);
 
             result.OverallMatchConfidence.Should().Be(MatchConfidence.Potential);
         }
