@@ -22,6 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Performance
             var httpRequest = GetSearchHttpRequest(request);
 
             var cts = new CancellationTokenSource();
+            // Note that this does not stop the search on the server, so any subsequent searches will likely be slow 
             cts.CancelAfter(120000);
             try
             {

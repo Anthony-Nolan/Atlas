@@ -17,7 +17,6 @@ namespace Nova.SearchAlgorithm.Test.Performance
             BaseUrl = "http://localhost:30508",
             Apikey = "test-key",
             Environment = Environment.Local,
-            AzureStorageEnvironment = Environment.Local,
         };
 
         /// <summary>
@@ -118,28 +117,6 @@ namespace Nova.SearchAlgorithm.Test.Performance
 
         public static readonly IEnumerable<TestInput> TestInputs = new List<TestInput>
         {
-//            new TestInput
-//            {
-//                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-//                PatientId = UatPatient489252.PatientId,
-//                Hla = UatPatient489252.Hla,
-//                DonorType = DonorType.Adult,
-//                IsAlignedRegistriesSearch = true,
-//                SearchType = SearchType.SixOutOfSix,
-//            },
-//            
-//            new TestInput
-//            {
-//                AlgorithmInstanceInfo = AlgorithmInstanceInfo,
-//                PatientId = UatPatient489252.PatientId,
-//                Hla = UatPatient489252.Hla,
-//                DonorType = DonorType.Adult,
-//                IsAlignedRegistriesSearch = true,
-//                SearchType = SearchType.AMismatchThreeLocus,
-//                SolarSearchElapsedMilliseconds = 48000,
-//                SolarSearchMatchedDonors = 845
-//            },
-            
             new TestInput (UatPatient489252)
             {
                 SearchType = SearchType.Drb1MismatchThreeLocus,
@@ -218,12 +195,13 @@ namespace Nova.SearchAlgorithm.Test.Performance
                 SearchType = SearchType.TenOutOfTen,
             },
             
-            new TestInput (LivePatient496738)
-            {
-                SearchType = SearchType.SixOutOfSix,
-                SolarSearchElapsedMilliseconds = 65300,
-                SolarSearchMatchedDonors = 4980,
-            },
+            // SLOW!
+//            new TestInput (LivePatient496738)
+//            {
+//                SearchType = SearchType.SixOutOfSix,
+//                SolarSearchElapsedMilliseconds = 65300,
+//                SolarSearchMatchedDonors = 4980,
+//            },
         };
     }
 }
