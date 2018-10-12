@@ -9,9 +9,9 @@ using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
-using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
@@ -47,11 +47,11 @@ SELECT DonorId, TypePosition FROM {MatchingTableName(locus)} m
 JOIN PGroupNames p 
 ON m.PGroup_Id = p.Id
 INNER JOIN (
-    SELECT '{pGroups.FirstOrDefault()}' AS val
+    SELECT '{pGroups.FirstOrDefault()}' AS PGroupId
     UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", pGroups.Skip(1))}'
 )
-AS temp 
-ON p.Name = temp.val
+AS PGroupIds 
+ON p.Name = PGroupIds.PGroupId
 GROUP BY DonorId, TypePosition";
 
             using (var conn = new SqlConnection(connectionString))
@@ -102,12 +102,18 @@ GROUP BY DonorId, TypePosition";
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
                 foreach (var locus in LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1}))
                 {
-                    var pGroups = await conn.QueryAsync<DonorMatchWithName>($@"
+                    var sql = $@"
 SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableName(locus)} m
 JOIN PGroupNames p 
 ON m.PGroup_Id = p.Id
-WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
-");
+INNER JOIN (
+    SELECT '{donorIds.FirstOrDefault()}' AS Id
+    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
+)
+AS DonorIds 
+ON m.DonorId = DonorIds.Id
+";
+                    var pGroups = await conn.QueryAsync<DonorMatchWithName>(sql, commandTimeout: 300);
                     foreach (var donorGroups in pGroups.GroupBy(p => p.DonorId))
                     {
                         foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePositions) p.TypePosition))
@@ -131,10 +137,16 @@ WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
             
             using (var conn = new SqlConnection(connectionString))
             {
-                var donors = await conn.QueryAsync<Donor>($@"
+                var sql = $@"
 SELECT * FROM Donors 
-WHERE DonorId IN ({string.Join(",", donorIds.Select(id => id.ToString()))})
-");
+INNER JOIN (
+    SELECT '{donorIds.FirstOrDefault()}' AS Id
+    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
+)
+AS DonorIds 
+ON DonorId = DonorIds.Id
+";
+                var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
                 return donors.Select(d => d.ToDonorResult());
             }
         }
