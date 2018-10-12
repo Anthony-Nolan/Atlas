@@ -9,6 +9,5 @@
         
         public string DatabaseSize { get; set; } = "N/A";
         public string DonorDataSet { get; set; } = "Full UAT database";
-        public Environment AzureStorageEnvironment { get; set; }
     }
 }

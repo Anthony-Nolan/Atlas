@@ -8,9 +8,11 @@ using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.Utils.ApplicationInsights;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
@@ -25,25 +27,51 @@ namespace Nova.SearchAlgorithm.Services
         private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
         private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
+        private readonly ILogger logger;
 
         public SearchService(
             ILocusHlaMatchingLookupService locusHlaMatchingLookupService, 
             IDonorScoringService donorScoringService,
-            IDonorMatchingService donorMatchingService
+            IDonorMatchingService donorMatchingService,
+            ILogger logger
             )
         {
             this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
+            this.logger = logger;
         }
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             var criteria = await GetMatchCriteria(searchRequest);
             var patientHla = GetPatientHla(searchRequest);
+            
+            logger.SendTrace("Search timing: Looked up patient hla", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()}
+            });
+            stopwatch.Restart();
 
-            var matches = await donorMatchingService.GetMatches(criteria);
+            var matches = (await donorMatchingService.GetMatches(criteria)).ToList();
+            
+            logger.SendTrace("Search timing: Matching complete", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
+                {"MatchedDonors", matches.Count().ToString()}
+            });
+            stopwatch.Restart();
+            
             var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla);
+            
+            logger.SendTrace("Search timing: Scoring complete", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
+                {"MatchedDonors", matches.Count().ToString()}
+            });
             
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
