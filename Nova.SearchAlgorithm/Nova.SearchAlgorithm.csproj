@@ -314,6 +314,7 @@
     <Compile Include="Controllers\HlaUpdateController.cs" />
     <Compile Include="Controllers\DonorImportController.cs" />
     <Compile Include="Controllers\MatchingDictionaryController.cs" />
+    <Compile Include="Controllers\ScoringController.cs" />
     <Compile Include="Controllers\SearchRequestsController.cs" />
     <Compile Include="Exceptions\CloudStorageException.cs" />
     <Compile Include="Exceptions\DonorImportHttpException.cs" />
@@ -326,6 +327,7 @@
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\LocusExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchLocusExtensions.cs" />
+    <Compile Include="Extensions\SearchHlaDataExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\DonorImport\AntigenCachingService.cs" />
     <Compile Include="Services\Matching\DonorMatchingService.cs" />
@@ -352,6 +354,7 @@
     <Compile Include="Services\Scoring\Grading\IGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Ranking\ScoreCalculator.cs" />
     <Compile Include="Services\Scoring\Ranking\RankingService.cs" />
+    <Compile Include="Services\Scoring\ScoringRequestService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImport\DonorImportService.cs" />
     <Compile Include="Startup.cs" />
