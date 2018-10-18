@@ -44,11 +44,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             using (var context = new SearchAlgorithmContext())
             {
                 context.Donors.RemoveRange(context.Donors);
-                context.MatchingHlaAtA.SqlQuery("TRUNCATE TABLE MatchingHlaAtA");
-                context.MatchingHlaAtA.SqlQuery("TRUNCATE TABLE MatchingHlaAtB");
-                context.MatchingHlaAtA.SqlQuery("TRUNCATE TABLE MatchingHlaAtC");
-                context.MatchingHlaAtA.SqlQuery("TRUNCATE TABLE MatchingHlaAtDrb1");
-                context.MatchingHlaAtA.SqlQuery("TRUNCATE TABLE MatchingHlaAtDqb1");
+                context.MatchingHlaAtA.RemoveRange(context.MatchingHlaAtA);
+                context.MatchingHlaAtB.RemoveRange(context.MatchingHlaAtB);
+                context.MatchingHlaAtC.RemoveRange(context.MatchingHlaAtC);
+                context.MatchingHlaAtDrb1.RemoveRange(context.MatchingHlaAtDrb1);
+                context.MatchingHlaAtDqb1.RemoveRange(context.MatchingHlaAtDqb1);
                 context.SaveChanges();
             }
         }
