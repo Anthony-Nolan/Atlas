@@ -20,6 +20,12 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// A collection of PotentialSearchResults, with donor id populated. MatchDetails will be populated only for the specified loci
         /// </returns>
         Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci);
+
+        Task<IEnumerable<MatchResult>> FindMatchesForLociFromDonorSelection(
+            AlleleLevelMatchCriteria criteria,
+            IList<Locus> loci,
+            IEnumerable<MatchResult> matchResults
+        );
     }
 
     public class DatabaseDonorMatchingService : IDatabaseDonorMatchingService
@@ -37,8 +43,10 @@ namespace Nova.SearchAlgorithm.Services.Matching
         {
             if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
             {
-                // Currently the logic here will not suffice for these loci
-                // Donors with no typing for the locus should count as potential matches, but will not be returned by a search of the matching table
+                // Currently the logic here is not advised for these loci
+                // Donors can be untyped at these loci, which counts as a potential match
+                // so a simple search of the database would return a huge number of donors. 
+                // To avoid serialising that many results, we filter on these loci based on the results at other loci
                 throw new NotImplementedException();
             }
 
@@ -72,8 +80,54 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matches.ToList();
         }
 
-        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(DonorType searchType,
-            IEnumerable<RegistryCode> registriesToSearch, Locus locus, AlleleLevelLocusMatchCriteria criteria)
+        public async Task<IEnumerable<MatchResult>> FindMatchesForLociFromDonorSelection(
+            AlleleLevelMatchCriteria criteria,
+            IList<Locus> loci,
+            IEnumerable<MatchResult> matchResults
+        )
+        {
+            matchResults = matchResults.ToList();
+            var donorIds = matchResults.Select(m => m.DonorId).ToList();
+
+            foreach (var locus in loci)
+            {
+                var results = await FindMatchesAtLocusFromDonorSelection(
+                    criteria.SearchType,
+                    criteria.RegistriesToSearch,
+                    locus,
+                    criteria.MatchCriteriaForLocus(locus),
+                    donorIds
+                );
+
+                foreach (var matchesAtLocus in results)
+                {
+                    var locusMatchDetails = matchesAtLocus.Value != null
+                        ? matchesAtLocus.Value.Match
+                        : new LocusMatchDetails {MatchCount = 0};
+
+                    var matchResult = matchResults.FirstOrDefault(m => m.DonorId == matchesAtLocus.Key);
+                    matchResult?.SetMatchDetailsForLocus(locus, locusMatchDetails);
+                }
+
+                var mismatchDonorIds = donorIds.Except(results.Select(r => r.Key));
+                foreach (var mismatchDonorId in mismatchDonorIds)
+                {
+                    matchResults.Single(r => r.DonorId == mismatchDonorId).SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0});
+                }
+            }
+
+            return matchResults
+                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
+                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)))
+                .ToList();
+        }
+
+        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(
+            DonorType searchType,
+            IEnumerable<RegistryCode> registriesToSearch,
+            Locus locus,
+            AlleleLevelLocusMatchCriteria criteria
+        )
         {
             var repoCriteria = new LocusSearchCriteria
             {
@@ -90,7 +144,30 @@ namespace Nova.SearchAlgorithm.Services.Matching
             return matches;
         }
 
-        private DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
+        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocusFromDonorSelection(
+            DonorType searchType,
+            IEnumerable<RegistryCode> registriesToSearch,
+            Locus locus,
+            AlleleLevelLocusMatchCriteria criteria,
+            IEnumerable<int> donorIds
+        )
+        {
+            var repoCriteria = new LocusSearchCriteria
+            {
+                SearchType = searchType,
+                Registries = registriesToSearch,
+                PGroupsToMatchInPositionOne = criteria.PGroupsToMatchInPositionOne,
+                PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
+            };
+
+            var matches = (await donorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))
+                .GroupBy(m => m.DonorId)
+                .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
+
+            return matches;
+        }
+
+        private static DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
         {
             var donorId = group.Key;
             return new DonorAndMatchForLocus

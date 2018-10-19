@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B, Locus.Drb1});
         }
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 1)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria).ToList();
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria).ToList();
 
             lociToMatchInDatabase.Should().Contain(Locus.A);
             lociToMatchInDatabase.Count().Should().Be(2);
@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B, Locus.Drb1});
         }
@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.Drb1});
         }
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 1)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.B});
         }
@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().NotContain(Locus.B);
         }
@@ -113,7 +113,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 2)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().NotContain(Locus.Drb1);
         }
@@ -127,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 2)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().Contain(Locus.A);
         }
@@ -141,7 +141,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 2)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().Contain(Locus.A);
         }
@@ -155,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.Drb1});
         }
@@ -169,7 +169,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 2)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B});
         }
@@ -184,7 +184,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1("", "", 2)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchInDatabase(criteria);
+            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
 
             lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.B, Locus.Drb1});
         }
