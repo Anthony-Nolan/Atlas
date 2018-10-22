@@ -11,8 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {
         Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults);
-        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
-            MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
+        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
     }
 
     public abstract class HlaLookupRepositoryBase :
