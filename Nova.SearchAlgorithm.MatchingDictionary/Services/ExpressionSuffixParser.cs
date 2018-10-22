@@ -5,18 +5,49 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public static class ExpressionSuffixParser
     {
-        private static readonly string[] NullExpressionSuffixes = { "N" };
-        private static readonly Regex SuffixRegex = new Regex(@"[A-Z]$");
+        // This is done instead of Regex matching for performance reasons
+        private static readonly char[] AllSuffixes =
+        {
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H',
+            'I',
+            'J',
+            'K',
+            'L',
+            'M',
+            'N',
+            'O',
+            'P',
+            'Q',
+            'R',
+            'S',
+            'T',
+            'U',
+            'V',
+            'W',
+            'X',
+            'Y',
+            'Z',
+        };
+
+        private const char NullExpressionSuffix = 'N';
 
         public static string GetExpressionSuffix(string name)
         {
-            return SuffixRegex.Match(name).Value;
+            var finalCharacter = name[name.Length - 1];
+            return AllSuffixes.Contains(finalCharacter) ? finalCharacter.ToString() : "";
         }
         
         public static bool IsAlleleNull(string name)
         {
-            var expressionSuffix = GetExpressionSuffix(name);
-            return NullExpressionSuffixes.Contains(expressionSuffix);
+            var finalCharacter = name[name.Length - 1];
+            return NullExpressionSuffix == finalCharacter;
         }
     }
 }
