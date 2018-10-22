@@ -116,64 +116,74 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             switch (locus)
             {
                 case Locus.A:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (positions)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
+                        case TypePositions.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
+                            break;
+                        case TypePositions.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(positions), positions, null);
                     }
 
                     break;
                 case Locus.B:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (positions)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
+                        case TypePositions.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
+                            break;
+                        case TypePositions.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(positions), positions, null);
                     }
 
                     break;
                 case Locus.C:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (positions)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
+                        case TypePositions.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
+                            break;
+                        case TypePositions.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(positions), positions, null);
                     }
 
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (positions)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
+                        case TypePositions.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
+                            break;
+                        case TypePositions.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(positions), positions, null);
                     }
 
                     break;
                 case Locus.Drb1:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (positions)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
+                        case TypePositions.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
+                            break;
+                        case TypePositions.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(positions), positions, null);
                     }
 
                     break;

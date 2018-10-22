@@ -98,8 +98,6 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                     return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.Two));
                 case TypePositions.Two:
                     return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.One));
-                case TypePositions.None:
-                case TypePositions.Both:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }

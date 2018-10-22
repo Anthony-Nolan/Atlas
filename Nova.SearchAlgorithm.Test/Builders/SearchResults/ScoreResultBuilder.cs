@@ -113,16 +113,10 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
             switch (position)
             {
-                case TypePositions.None:
-                    break;
                 case TypePositions.One:
                     locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
                     break;
                 case TypePositions.Two:
-                    locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
-                    break;
-                case TypePositions.Both:
-                    locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
                     locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
                     break;
                 default:
