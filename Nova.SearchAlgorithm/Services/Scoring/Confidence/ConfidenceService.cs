@@ -42,8 +42,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                 var orientations = matchGradesAtLocus.Item1.Orientations;
 
                 var confidences = orientations.Select(o => new Tuple<MatchConfidence, MatchConfidence>(
-                    CalculateConfidenceForOrientation(locus, TypePositions.One, patientLookupResult1, donorLookupResults, o),
-                    CalculateConfidenceForOrientation(locus, TypePositions.Two, patientLookupResult2, donorLookupResults, o)
+                    CalculateConfidenceForOrientation(locus, TypePosition.One, patientLookupResult1, donorLookupResults, o),
+                    CalculateConfidenceForOrientation(locus, TypePosition.Two, patientLookupResult2, donorLookupResults, o)
                 ));
 
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
@@ -52,8 +52,8 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
                     .OrderByDescending(c => (int) c.Item1 + (int) c.Item2)
                     .First();
 
-                confidenceResults.SetAtPosition(locus, TypePositions.One, selectedConfidences.Item1);
-                confidenceResults.SetAtPosition(locus, TypePositions.Two, selectedConfidences.Item2);
+                confidenceResults.SetAtPosition(locus, TypePosition.One, selectedConfidences.Item1);
+                confidenceResults.SetAtPosition(locus, TypePosition.Two, selectedConfidences.Item2);
             });
 
             return confidenceResults;
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private MatchConfidence CalculateConfidenceForOrientation(
             Locus locus,
-            TypePositions position,
+            TypePosition position,
             IHlaScoringLookupResult patientLookupResult,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
             MatchOrientation matchOrientation)
@@ -79,7 +79,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private MatchConfidence CalculateConfidenceForDirectMatch(
             Locus locus,
-            TypePositions position,
+            TypePosition position,
             IHlaScoringLookupResult patientLookupResult,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
@@ -88,16 +88,16 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private MatchConfidence CalculateConfidenceForCrossMatch(
             Locus locus,
-            TypePositions position,
+            TypePosition position,
             IHlaScoringLookupResult patientLookupResult,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
             switch (position)
             {
-                case TypePositions.One:
-                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.Two));
-                case TypePositions.Two:
-                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePositions.One));
+                case TypePosition.One:
+                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePosition.Two));
+                case TypePosition.Two:
+                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePosition.One));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }

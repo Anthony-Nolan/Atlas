@@ -195,12 +195,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             return expectedLoci;
         }
 
-        private static TypePositions?[] ParseExpectedPositions(string position)
+        private static TypePosition?[] ParseExpectedPositions(string position)
         {
             switch (position)
             {
                 case "both positions":
-                    return new TypePositions?[] {TypePositions.One, TypePositions.Two};
+                    return new TypePosition?[] {TypePosition.One, TypePosition.Two};
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
@@ -317,34 +317,34 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         }
 
         private static void AssertMatchGrade(
-            TypePositions?[] expectedPositions,
+            TypePosition?[] expectedPosition,
             LocusSearchResult locusSearchResult,
             IReadOnlyCollection<MatchGrade> validMatchGrades
         )
         {
-            if (expectedPositions.Contains(TypePositions.One))
+            if (expectedPosition.Contains(TypePosition.One))
             {
                 validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade);
             }
 
-            if (expectedPositions.Contains(TypePositions.Two))
+            if (expectedPosition.Contains(TypePosition.Two))
             {
                 validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade);
             }
         }
 
         private static void AssertMatchConfidence(
-            TypePositions?[] expectedPositions,
+            TypePosition?[] expectedPosition,
             LocusSearchResult locusSearchResult,
             MatchConfidence? validMatchConfidence
         )
         {
-            if (expectedPositions.Contains(TypePositions.One))
+            if (expectedPosition.Contains(TypePosition.One))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionOne.MatchConfidence);
             }
 
-            if (expectedPositions.Contains(TypePositions.Two))
+            if (expectedPosition.Contains(TypePosition.Two))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionTwo.MatchConfidence);
             }

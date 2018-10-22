@@ -36,8 +36,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionTwo)
             );
 
-            return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
-                .Concat(results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.Two, locus)));
+            return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus))
+                .Concat(results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus)));
         }
 
         private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(Locus locus, IEnumerable<string> pGroups)
@@ -116,7 +116,7 @@ ON m.DonorId = DonorIds.Id
                     var pGroups = await conn.QueryAsync<DonorMatchWithName>(sql, commandTimeout: 300);
                     foreach (var donorGroups in pGroups.GroupBy(p => p.DonorId))
                     {
-                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePositions) p.TypePosition))
+                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePosition) p.TypePosition))
                         {
                             var donorResult = results.Single(r => r.DonorId == donorGroups.Key);
                             donorResult.PGroupNames.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));

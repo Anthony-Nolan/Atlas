@@ -35,9 +35,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
 
-        public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtPosition(Locus locus, TypePositions positions)
+        public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtPosition(Locus locus, TypePosition position)
         {
-            criteria.ShouldMatchGenotype.SetAtPosition(locus, positions, false);
+            criteria.ShouldMatchGenotype.SetAtPosition(locus, position, false);
             return this;
         }
 

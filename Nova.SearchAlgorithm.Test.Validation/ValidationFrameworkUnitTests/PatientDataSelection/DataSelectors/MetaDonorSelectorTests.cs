@@ -407,7 +407,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             
             metaDonorRepository.AllMetaDonors().Returns(metaDonors);
             
-            var criteria = new MetaDonorSelectionCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePositions.One).Build();
+            var criteria = new MetaDonorSelectionCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePosition.One).Build();
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
@@ -416,7 +416,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void GetMetaDonor_WhenShouldHaveNullAlleleAtOnePosition_AndDonorHasNullAlleleAtCorrectPosition_ReturnsMetaDonor()
         {
             const Locus locus = Locus.A;
-            const TypePositions position = TypePositions.One;
+            const TypePosition position = TypePosition.One;
             var metaDonors = new List<MetaDonor>()
             {
                 new MetaDonorBuilder()

@@ -51,8 +51,8 @@ namespace Nova.SearchAlgorithm.Test.Models.SearchResults
             const MatchConfidence lowerMatchConfidence = MatchConfidence.Potential;
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtLocus(Locus.A, higherMatchConfidence)
-                .WithMatchConfidenceAtLocusPosition(Locus.B, TypePositions.One, higherMatchConfidence)
-                .WithMatchConfidenceAtLocusPosition(Locus.B, TypePositions.Two, lowerMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, TypePosition.One, higherMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, TypePosition.Two, lowerMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.C, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, higherMatchConfidence)

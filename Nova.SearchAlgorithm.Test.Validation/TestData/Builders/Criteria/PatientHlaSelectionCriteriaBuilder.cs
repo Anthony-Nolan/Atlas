@@ -19,29 +19,29 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             };
         }
 
-        public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, TypePositions positions)
+        public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, TypePosition position)
         {
-            criteria.HlaSources.SetAtPosition(locus, positions, PatientHlaSource.Match);
+            criteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.Match);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtBothPositions(Locus locus)
         {
-            criteria.HlaSources.SetAtPosition(locus, TypePositions.One, PatientHlaSource.Match);
-            criteria.HlaSources.SetAtPosition(locus, TypePositions.Two, PatientHlaSource.Match);
+            criteria.HlaSources.SetAtPosition(locus, TypePosition.One, PatientHlaSource.Match);
+            criteria.HlaSources.SetAtPosition(locus, TypePosition.Two, PatientHlaSource.Match);
             return this;
         }
 
-        public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, TypePositions positions)
+        public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, TypePosition position)
         {
-            criteria.HlaSources.SetAtPosition(locus, positions, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtEitherPosition(Locus locus)
         {
-            criteria.HlaSources.SetAtPosition(locus, TypePositions.One, PatientHlaSource.ExpressingAlleleMismatch);
-            criteria.HlaSources.SetAtPosition(locus, TypePositions.Two, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetAtPosition(locus, TypePosition.One, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetAtPosition(locus, TypePosition.Two, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return this;
         }
 
-        public PatientHlaSelectionCriteriaBuilder WithHlaSourceAtPosition(Locus locus, TypePositions position, PatientHlaSource hlaSource)
+        public PatientHlaSelectionCriteriaBuilder WithHlaSourceAtPosition(Locus locus, TypePosition position, PatientHlaSource hlaSource)
         {
             criteria.HlaSources.SetAtPosition(locus, position, hlaSource);
             return this;

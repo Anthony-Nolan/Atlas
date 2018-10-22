@@ -36,17 +36,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             var hla = new PhenotypeInfo<TgsAllele>();
             foreach (var locus in LocusHelpers.AllLoci())
             {
-                var randomTgsAllele1 = RandomTgsAllele(locus, TypePositions.One, criteria);
-                hla.SetAtPosition(locus, TypePositions.One, randomTgsAllele1);
+                var randomTgsAllele1 = RandomTgsAllele(locus, TypePosition.One, criteria);
+                hla.SetAtPosition(locus, TypePosition.One, randomTgsAllele1);
 
                 if (criteria.IsHomozygous.DataAtLocus(locus))
                 {
-                    hla.SetAtPosition(locus, TypePositions.Two, randomTgsAllele1);
+                    hla.SetAtPosition(locus, TypePosition.Two, randomTgsAllele1);
                 }
                 else
                 {
-                    var randomTgsAllele2 = RandomTgsAllele(locus, TypePositions.Two, criteria);
-                    hla.SetAtPosition(locus, TypePositions.Two, randomTgsAllele2);
+                    var randomTgsAllele2 = RandomTgsAllele(locus, TypePosition.Two, criteria);
+                    hla.SetAtPosition(locus, TypePosition.Two, randomTgsAllele2);
                 }
             }
 
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             };
         }
 
-        private TgsAllele RandomTgsAllele(Locus locus, TypePositions position, GenotypeCriteria criteria)
+        private TgsAllele RandomTgsAllele(Locus locus, TypePosition position, GenotypeCriteria criteria)
         {
             var dataset = criteria.AlleleSources.DataAtPosition(locus, position);
 
@@ -81,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
                 });
         }
 
-        private List<AlleleTestData> GetDataset(Locus locus, TypePositions position, Dataset dataset)
+        private List<AlleleTestData> GetDataset(Locus locus, TypePosition position, Dataset dataset)
         {
             switch (dataset)
             {

@@ -1282,8 +1282,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             IHlaScoringLookupResult positionTwoResult)
         {
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtPosition(MatchedLocus, TypePositions.One, positionOneResult);
-            donorLookupResults.SetAtPosition(MatchedLocus, TypePositions.Two, positionTwoResult);
+            donorLookupResults.SetAtPosition(MatchedLocus, TypePosition.One, positionOneResult);
+            donorLookupResults.SetAtPosition(MatchedLocus, TypePosition.Two, positionTwoResult);
 
             return donorLookupResults;
         }

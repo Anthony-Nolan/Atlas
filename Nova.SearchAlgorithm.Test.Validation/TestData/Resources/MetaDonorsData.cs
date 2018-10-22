@@ -233,7 +233,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 DonorType = DonorType.Adult,
                 Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePositions.One).Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePosition.One).Build(),
             },
 
             // Non null alleles with an expression suffix
@@ -259,11 +259,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
                     new DatabaseDonorSelectionCriteriaBuilder().Build(),
-                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, TypePositions.One).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, TypePosition.One).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
-                        .WithNonGenotypeAlleleAtPosition(Locus.B, TypePositions.One)
+                        .WithNonGenotypeAlleleAtPosition(Locus.B, TypePosition.One)
                         .Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)

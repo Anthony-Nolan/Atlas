@@ -18,16 +18,16 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas = null)
         {
             searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchHla(Locus.A, TypePositions.One, searchHlas.A_1)
-                .WithLocusMatchHla(Locus.A, TypePositions.Two, searchHlas.A_2)
-                .WithLocusMatchHla(Locus.B, TypePositions.One, searchHlas.B_1)
-                .WithLocusMatchHla(Locus.B, TypePositions.Two, searchHlas.B_2)
-                .WithLocusMatchHla(Locus.C, TypePositions.One, searchHlas.C_1)
-                .WithLocusMatchHla(Locus.C, TypePositions.Two, searchHlas.C_2)
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, searchHlas.DQB1_1)
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, searchHlas.DQB1_2)
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, searchHlas.DRB1_1)
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHlas.DRB1_2);
+                .WithLocusMatchHla(Locus.A, TypePosition.One, searchHlas.A_1)
+                .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHlas.A_2)
+                .WithLocusMatchHla(Locus.B, TypePosition.One, searchHlas.B_1)
+                .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHlas.B_2)
+                .WithLocusMatchHla(Locus.C, TypePosition.One, searchHlas.C_1)
+                .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHlas.C_2)
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHlas.DQB1_1)
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHlas.DQB1_2)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHlas.DRB1_1)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHlas.DRB1_2);
 
             this.nonMatchingHlas = nonMatchingHlas;
         }
@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             }
 
             searchRequestBuilder = searchRequestBuilder
-                .WithLocusMatchHla(locus, TypePositions.One, nonMatchingHlas.DataAtLocus(locus).Item1);
+                .WithLocusMatchHla(locus, TypePosition.One, nonMatchingHlas.DataAtLocus(locus).Item1);
             return this;
         }
 

@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void SetPatientHomozygousAtLocus_WhenMismatchAllowed_DoesNotSetDonorAsHomozygous()
         {
             const Locus locus = Locus.A;
-            patientDataFactory.SetMismatchAtPosition(locus, TypePositions.One);
+            patientDataFactory.SetMismatchAtPosition(locus, TypePosition.One);
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             CaptureCriteria();
@@ -160,7 +160,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void UpdateDonorGenotypeMatchDataAtPosition_UpdatesMetaDonorAndDatabaseDonorCriteria()
         {
             const Locus locus = Locus.A;
-            const TypePositions position = TypePositions.One;
+            const TypePosition position = TypePosition.One;
             const bool shouldMatchGenotype = false;
             
             patientDataFactory.UpdateDonorGenotypeMatchDataAtPosition(locus, position, shouldMatchGenotype);
@@ -174,7 +174,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void UpdateDonorGenotypeMatchDataAtPosition_UpdatesAllDatabaseDonorCriteria()
         {
             const Locus locus = Locus.A;
-            const TypePositions position = TypePositions.One;
+            const TypePosition position = TypePosition.One;
             const bool shouldMatchGenotype = false;
             patientDataFactory.AddExpectedDatabaseDonor(new DatabaseDonorSpecification());
             

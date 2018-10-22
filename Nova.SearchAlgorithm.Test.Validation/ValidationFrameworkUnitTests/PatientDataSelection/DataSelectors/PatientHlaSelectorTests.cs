@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         private IPatientHlaSelector patientHlaSelector;
         private IAlleleRepository alleleRepository;
 
-        private readonly TypePositions[] bothPositions = { TypePositions.One, TypePositions.Two };
+        private readonly TypePosition[] bothPosition = { TypePosition.One, TypePosition.Two };
         
         private int alleleNumber;
         private PhenotypeInfo<List<AlleleTestData>> alleles;
@@ -41,18 +41,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
                 GetTestAllele(l, new[]{p}, MatchLevel.Allele),
             });
 
-            patientPGroupAlleles = new LocusInfo<bool>().Map((l, noop) => GetTestAllele(l, bothPositions, MatchLevel.PGroup));
+            patientPGroupAlleles = new LocusInfo<bool>().Map((l, noop) => GetTestAllele(l, bothPosition, MatchLevel.PGroup));
 
             donorPGroupAlleles = new LocusInfo<bool>().Map((l, noop) => new List<AlleleTestData>
             {
-                GetTestAllele(l, bothPositions, MatchLevel.PGroup),
-                GetTestAllele(l, bothPositions, MatchLevel.PGroup),
+                GetTestAllele(l, bothPosition, MatchLevel.PGroup),
+                GetTestAllele(l, bothPosition, MatchLevel.PGroup),
             });
 
             gGroupAlleles = new LocusInfo<bool>().Map((l, noop) => new List<AlleleTestData>
             {
-                GetTestAllele(l, bothPositions, MatchLevel.GGroup),
-                GetTestAllele(l, bothPositions, MatchLevel.GGroup),
+                GetTestAllele(l, bothPosition, MatchLevel.GGroup),
+                GetTestAllele(l, bothPosition, MatchLevel.GGroup),
             }).ToPhenotypeInfo((l, a) => a);
 
             alleleRepository.AllelesForGGroupMatching().Returns(gGroupAlleles);
@@ -148,9 +148,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             patientHla.ToEnumerable().All(x => x == null).Should().BeTrue();
         }
         
-        [TestCase(TypePositions.One)]
-        [TestCase(TypePositions.Two)]
-        public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtOnePosition_ReturnsMatchingAlleleAtEachPosition(TypePositions matchingPosition)
+        [TestCase(TypePosition.One)]
+        [TestCase(TypePosition.Two)]
+        public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtOnePosition_ReturnsMatchingAlleleAtEachPosition(TypePosition matchingPosition)
         {
             const Locus locus = Locus.A;
             var criteria = new PatientHlaSelectionCriteriaBuilder()
@@ -244,8 +244,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
             var hlaAtLocus = patientHla.DataAtLocus(locus);
-            var donorHla1 = metaDonor.Genotype.Hla.DataAtPosition(locus, TypePositions.One).TgsTypedAllele;
-            var donorHla2 = metaDonor.Genotype.Hla.DataAtPosition(locus, TypePositions.Two).TgsTypedAllele;
+            var donorHla1 = metaDonor.Genotype.Hla.DataAtPosition(locus, TypePosition.One).TgsTypedAllele;
+            var donorHla2 = metaDonor.Genotype.Hla.DataAtPosition(locus, TypePosition.Two).TgsTypedAllele;
             
             hlaAtLocus.Item1.Should().Be(donorHla1);
             hlaAtLocus.Item2.Should().Be(donorHla2);
@@ -256,7 +256,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void GetPatientHla_ForExpressingMismatch_ReturnsHlaNotMatchingDonor()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.ExpressingAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.ExpressingAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -276,7 +276,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void GetPatientHla_ForNullMismatch_ReturnsAlleleNotMatchingDonor()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -296,7 +296,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         public void GetPatientHla_ForNullMismatch_ReturnsNullAllele()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -317,7 +317,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Arbitrary)
-                .WithHlaSourceAtPosition(Locus.A, TypePositions.One, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -339,25 +339,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             }
         }
         
-        private AlleleTestData GetTestAllele(Locus locus, TypePositions[] positions, MatchLevel matchLevel)
+        private AlleleTestData GetTestAllele(Locus locus, TypePosition[] position, MatchLevel matchLevel)
         {
             string positionString;
-            switch (positions.Length)
+            switch (position.Length)
             {
-                case 1 when positions.Single() == TypePositions.One:
+                case 1 when position.Single() == TypePosition.One:
                     positionString = "1";
                     break;
-                case 1 when positions.Single() == TypePositions.Two:
+                case 1 when position.Single() == TypePosition.Two:
                     positionString = "2";
                     break;
                 default:
-                    if (positions.Contains(TypePositions.One) && positions.Contains(TypePositions.Two))
+                    if (position.Contains(TypePosition.One) && position.Contains(TypePosition.Two))
                     {
                         positionString = "1&2";
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException(nameof(positions), positions, null);
+                        throw new ArgumentOutOfRangeException(nameof(position), position, null);
                     }
 
                     break;

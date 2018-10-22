@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
             return this;
         }
 
-        public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePositions position)
+        public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePosition position)
         {
             criteria.IsNullExpressing.SetAtPosition(locus, position, true);
             return this;
@@ -86,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
         public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtAllPositions()
         {
             return LocusHelpers.AllLoci().Aggregate(this,
-                (current, locus) => current.WithNullAlleleAtPosition(locus, TypePositions.One).WithNullAlleleAtPosition(locus, TypePositions.Two));
+                (current, locus) => current.WithNullAlleleAtPosition(locus, TypePosition.One).WithNullAlleleAtPosition(locus, TypePosition.Two));
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()

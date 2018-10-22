@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
 
         private static PhenotypeInfo<List<AlleleTestData>> AllelesPhenotype
         {
-            get { return new PhenotypeInfo<bool>().Map((l, p, noop) => p == TypePositions.One ? Alleles1 : Alleles2); }
+            get { return new PhenotypeInfo<bool>().Map((l, p, noop) => p == TypePosition.One ? Alleles1 : Alleles2); }
         }
 
         [SetUp]
@@ -96,7 +96,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().HomozygousAtLocus(locus).Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.DataAtPosition(locus, TypePositions.One).Should().Be(genotype.Hla.DataAtPosition(locus, TypePositions.Two));
+            genotype.Hla.DataAtPosition(locus, TypePosition.One).Should().Be(genotype.Hla.DataAtPosition(locus, TypePosition.Two));
         }
 
         [Test]
@@ -106,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.DataAtPosition(locus, TypePositions.One).Should().NotBe(genotype.Hla.DataAtPosition(locus, TypePositions.Two));
+            genotype.Hla.DataAtPosition(locus, TypePosition.One).Should().NotBe(genotype.Hla.DataAtPosition(locus, TypePosition.Two));
         }
 
         [Test]

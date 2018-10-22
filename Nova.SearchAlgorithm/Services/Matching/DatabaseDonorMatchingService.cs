@@ -106,14 +106,14 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         private static bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
         {
-            return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.One))
-                   && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.Two));
+            return matches.Any(m => m.SearchTypePosition == TypePosition.One && m.MatchingTypePosition.HasFlag(TypePosition.One))
+                   && matches.Any(m => m.SearchTypePosition == TypePosition.Two && m.MatchingTypePosition.HasFlag(TypePosition.Two));
         }
 
         private static bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
         {
-            return matches.Any(m => m.SearchTypePosition == TypePositions.One && m.MatchingTypePositions.HasFlag(TypePositions.Two))
-                   && matches.Any(m => m.SearchTypePosition == TypePositions.Two && m.MatchingTypePositions.HasFlag(TypePositions.One));
+            return matches.Any(m => m.SearchTypePosition == TypePosition.One && m.MatchingTypePosition.HasFlag(TypePosition.Two))
+                   && matches.Any(m => m.SearchTypePosition == TypePosition.Two && m.MatchingTypePosition.HasFlag(TypePosition.One));
         }
 
         private class DonorAndMatchForLocus
