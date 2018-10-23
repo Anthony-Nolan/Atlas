@@ -57,8 +57,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = phenotype.DataAtPosition(locus, TypePositions.One).PGroups,
-                PGroupsToMatchInPositionTwo = phenotype.DataAtPosition(locus, TypePositions.Two).PGroups
+                PGroupsToMatchInPositionOne = phenotype.DataAtPosition(locus, TypePosition.One).PGroups,
+                PGroupsToMatchInPositionTwo = phenotype.DataAtPosition(locus, TypePosition.Two).PGroups
             };
         }
     }

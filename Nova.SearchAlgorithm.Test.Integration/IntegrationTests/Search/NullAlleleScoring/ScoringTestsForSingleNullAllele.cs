@@ -24,8 +24,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
     public class ScoringTestsForSingleNullAllele : IntegrationTestBase
     {
         private const Locus LocusUnderTest = Locus.A;
-        private const TypePositions PositionUnderTest = TypePositions.One;
-        private const TypePositions OtherPosition = TypePositions.Two;
+        private const TypePosition PositionUnderTest = TypePosition.One;
+        private const TypePosition OtherPosition = TypePosition.Two;
         private const string OriginalNullAllele = "02:43N";
         private const string DifferentNullAllele = "11:69N";
 

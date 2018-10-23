@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 // 1 mismatch at A
                 new DatabaseDonorSpecification
                 {
-                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => !(l == Locus.A && p == TypePositions.One)),
+                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => !(l == Locus.A && p == TypePosition.One)),
                 },
                 // 2 mismatches at A
                 new DatabaseDonorSpecification
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 // 2 mismatches at A, 1 at B 
                 new DatabaseDonorSpecification
                 {
-                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.A && !(l == Locus.B && p == TypePositions.One)),
+                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.A && !(l == Locus.B && p == TypePosition.One)),
                 },
                 // 2 mismatches at A, 2 at B
                 new DatabaseDonorSpecification

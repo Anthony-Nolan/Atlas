@@ -8,8 +8,8 @@ namespace Nova.SearchAlgorithm.Repositories.Donors
     public class PotentialHlaMatchRelation
     {
         public Locus Locus { get; set; }
-        public TypePositions SearchTypePosition { get; set; }
-        public TypePositions MatchingTypePositions { get; set; }
+        public TypePosition SearchTypePosition { get; set; }
+        public TypePosition MatchingTypePosition { get; set; }
         public string Name { get; set; }
 
         public int DonorId { get; set; }

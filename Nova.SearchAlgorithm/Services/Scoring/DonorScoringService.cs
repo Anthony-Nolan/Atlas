@@ -106,15 +106,15 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 
             foreach (var locus in scoredLoci)
             {
-                var gradeResultAtPosition1 = grades.DataAtPosition(locus, TypePositions.One).GradeResult;
-                var confidenceAtPosition1 = confidences.DataAtPosition(locus, TypePositions.One);
-                var gradeResultAtPosition2 = grades.DataAtPosition(locus, TypePositions.Two).GradeResult;
-                var confidenceAtPosition2 = confidences.DataAtPosition(locus, TypePositions.Two);
+                var gradeResultAtPosition1 = grades.DataAtPosition(locus, TypePosition.One).GradeResult;
+                var confidenceAtPosition1 = confidences.DataAtPosition(locus, TypePosition.One);
+                var gradeResultAtPosition2 = grades.DataAtPosition(locus, TypePosition.Two).GradeResult;
+                var confidenceAtPosition2 = confidences.DataAtPosition(locus, TypePosition.Two);
 
                 var scoreDetails = new LocusScoreDetails
                 {
                     // Either position can be used here, as the locus will either be typed at both positions or neither
-                    IsLocusTyped = locusTypingInformation.DataAtPosition(locus, TypePositions.One),
+                    IsLocusTyped = locusTypingInformation.DataAtPosition(locus, TypePosition.One),
                     ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
                     ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
                 };

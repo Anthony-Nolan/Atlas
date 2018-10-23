@@ -16,9 +16,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             hlaNamePhenotype = sourcePhenotype.Map((locus, positions, hlaName) => hlaName);
         }
 
-        public HlaNamePhenotypeBuilder WithHlaNameAt(Locus locus, TypePositions positions, string hlaName)
+        public HlaNamePhenotypeBuilder WithHlaNameAt(Locus locus, TypePosition position, string hlaName)
         {
-            hlaNamePhenotype.SetAtPosition(locus, positions, hlaName);
+            hlaNamePhenotype.SetAtPosition(locus, position, hlaName);
             return this;
         }
 
