@@ -22,10 +22,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestData
             };
 
             public PhenotypeInfo<string> FiveLocus_SingleExpressingAlleles => new HlaNamePhenotypeBuilder(ThreeLocus_SingleExpressingAlleles)
-                    .WithHlaNameAt(Locus.C, TypePositions.One, "01:02:01:01")
-                    .WithHlaNameAt(Locus.C, TypePositions.Two, "02:02:01")
-                    .WithHlaNameAt(Locus.Dqb1, TypePositions.One, "02:01:11")
-                    .WithHlaNameAt(Locus.Dqb1, TypePositions.Two, "03:01:01:01")
+                    .WithHlaNameAt(Locus.C, TypePosition.One, "01:02:01:01")
+                    .WithHlaNameAt(Locus.C, TypePosition.Two, "02:02:01")
+                    .WithHlaNameAt(Locus.Dqb1, TypePosition.One, "02:01:11")
+                    .WithHlaNameAt(Locus.Dqb1, TypePosition.Two, "03:01:01:01")
                     .Build();
 
             public PhenotypeInfo<string> FiveLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>
@@ -84,10 +84,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestData
             };
 
             public PhenotypeInfo<string> FiveLocus_SingleExpressingAlleles => new HlaNamePhenotypeBuilder(ThreeLocus_SingleExpressingAlleles)
-                .WithHlaNameAt(Locus.C, TypePositions.One, "03:02:01")
-                .WithHlaNameAt(Locus.C, TypePositions.Two, "04:42:01")
-                .WithHlaNameAt(Locus.Dqb1, TypePositions.One, "04:02:10")
-                .WithHlaNameAt(Locus.Dqb1, TypePositions.Two, "05:01:01:05")
+                .WithHlaNameAt(Locus.C, TypePosition.One, "03:02:01")
+                .WithHlaNameAt(Locus.C, TypePosition.Two, "04:42:01")
+                .WithHlaNameAt(Locus.Dqb1, TypePosition.One, "04:02:10")
+                .WithHlaNameAt(Locus.Dqb1, TypePosition.Two, "05:01:01:05")
                 .Build();
 
             public PhenotypeInfo<string> FiveLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>

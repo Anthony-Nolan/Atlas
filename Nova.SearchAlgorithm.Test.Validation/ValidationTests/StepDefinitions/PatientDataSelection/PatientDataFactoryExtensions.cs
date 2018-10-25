@@ -61,12 +61,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             {
                 if (mismatchCount > 0)
                 {
-                    factory.SetMismatchAtPosition(locus, TypePositions.One);
+                    factory.SetMismatchAtPosition(locus, TypePosition.One);
                 }
 
                 if (mismatchCount > 1)
                 {
-                    factory.SetMismatchAtPosition(locus, TypePositions.Two);
+                    factory.SetMismatchAtPosition(locus, TypePosition.Two);
                 }
             }
 
@@ -331,16 +331,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             }
         }
 
-        private static IEnumerable<TypePositions> ParsePositions(string positionType)
+        private static IEnumerable<TypePosition> ParsePositions(string positionType)
         {
             switch (positionType)
             {
                 case "position 1":
                 case "position one":
-                    return new[] {TypePositions.One};
+                    return new[] {TypePosition.One};
                 case "position 2":
                 case "position two":
-                    return new[] {TypePositions.Two};
+                    return new[] {TypePosition.Two};
                 default:
                     throw new ArgumentOutOfRangeException();
             }

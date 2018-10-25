@@ -21,11 +21,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
         void SetAsTenOutOfTenMatch();
-        void SetMismatchAtPosition(Locus locus, TypePositions position);
+        void SetMismatchAtPosition(Locus locus, TypePosition position);
         void SetPatientUntypedAtLocus(Locus locus);
         void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation);
-        void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePositions position);
+        void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePosition position);
 
         // Meta-donor and patient criteria
         void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
         void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
-        void SetHasNullAlleleAtPosition(Locus locus, TypePositions position);
+        void SetHasNullAlleleAtPosition(Locus locus, TypePosition position);
 
         // Meta-donor and database-donor criteria
 
@@ -145,7 +145,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 locus == Locus.Dpb1 ? PatientHlaSource.ExpressingAlleleMismatch: PatientHlaSource.Match);
         }
 
-        public void SetMismatchAtPosition(Locus locus, TypePositions position)
+        public void SetMismatchAtPosition(Locus locus, TypePosition position)
         {
             patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
         }
@@ -165,7 +165,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             patientHlaSelectionCriteria.Orientations.SetAtLocus(locus, orientation);
         }
 
-        public void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePositions position)
+        public void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePosition position)
         {
             patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.NullAlleleMismatch);
         }
@@ -205,7 +205,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
         }
 
-        public void SetHasNullAlleleAtPosition(Locus locus, TypePositions position)
+        public void SetHasNullAlleleAtPosition(Locus locus, TypePosition position)
         {
             metaDonorSelectionCriteria.IsNullExpressing.SetAtPosition(locus, position, true);
         }
@@ -273,16 +273,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
         }
 
-        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePositions positions, bool shouldMatchGenotype)
+        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePosition position, bool shouldMatchGenotype)
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, positions, shouldMatchGenotype);
+                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, position, shouldMatchGenotype);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, positions, shouldMatchGenotype);
+                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, position, shouldMatchGenotype);
             }
         }
 

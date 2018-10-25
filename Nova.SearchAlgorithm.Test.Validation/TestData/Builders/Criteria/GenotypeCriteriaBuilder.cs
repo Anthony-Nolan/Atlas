@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
             return this;
         }
         
-        public GenotypeCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePositions position)
+        public GenotypeCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePosition position)
         {
             genotypeCriteria.AlleleSources.SetAtPosition(locus, position, Dataset.NullAlleles);
             return this;

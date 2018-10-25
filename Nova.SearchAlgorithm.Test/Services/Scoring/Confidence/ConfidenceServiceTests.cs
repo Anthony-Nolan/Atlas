@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
     {
         // Unless specified otherwise, all tests will be at a shared locus + position, to reduce setup in the individual test cases
         private const Locus Locus = Common.Models.Locus.A;
-        private const TypePositions Position = TypePositions.One;
+        private const TypePosition Position = TypePosition.One;
         
         private IConfidenceService confidenceService;
         private readonly MatchGradeResult defaultGradingResult = new MatchGradeResult{Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }};
@@ -79,10 +79,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
                 .Build();
             
             
-            patientLookupResults.SetAtPosition(Locus, TypePositions.One, patientLookupResultSingleAllele1);
-            patientLookupResults.SetAtPosition(Locus, TypePositions.Two, patientLookupResultSingleAllele2);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.One, donorLookupResultSerology);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.Two, donorLookupResultSingleAllele);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.One, donorLookupResultSerology);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetAtPosition(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Cross }});
@@ -90,9 +90,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
             
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Definite);
+            confidences.DataAtPosition(Locus, TypePosition.One).Should().Be(MatchConfidence.Definite);
             // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Potential
-            confidences.DataAtPosition(Locus, TypePositions.Two).Should().Be(MatchConfidence.Potential);
+            confidences.DataAtPosition(Locus, TypePosition.Two).Should().Be(MatchConfidence.Potential);
         }
         
         [Test]
@@ -117,10 +117,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
                 .Build();
             
             
-            patientLookupResults.SetAtPosition(Locus, TypePositions.One, patientLookupResultSingleAllele1);
-            patientLookupResults.SetAtPosition(Locus, TypePositions.Two, patientLookupResultSingleAllele2);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.One, donorLookupResultSerology);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.Two, donorLookupResultSingleAllele);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.One, donorLookupResultSerology);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetAtPosition(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct }});
@@ -128,9 +128,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
             
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Potential);
+            confidences.DataAtPosition(Locus, TypePosition.One).Should().Be(MatchConfidence.Potential);
             // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Potential
-            confidences.DataAtPosition(Locus, TypePositions.Two).Should().Be(MatchConfidence.Definite);
+            confidences.DataAtPosition(Locus, TypePosition.Two).Should().Be(MatchConfidence.Definite);
         }
         
         [Test]
@@ -155,10 +155,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
                 .Build();
             
             
-            patientLookupResults.SetAtPosition(Locus, TypePositions.One, patientLookupResultSingleAllele1);
-            patientLookupResults.SetAtPosition(Locus, TypePositions.Two, patientLookupResultSingleAllele2);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.One, donorLookupResultSerology);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.Two, donorLookupResultSingleAllele);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.One, donorLookupResultSerology);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetAtPosition(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct, MatchOrientation.Cross }});
@@ -167,8 +167,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
 
             var confidencesAtLocus = new List<MatchConfidence>
             {
-                confidences.DataAtPosition(Locus, TypePositions.One),
-                confidences.DataAtPosition(Locus, TypePositions.Two)
+                confidences.DataAtPosition(Locus, TypePosition.One),
+                confidences.DataAtPosition(Locus, TypePosition.Two)
             };
             
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
@@ -200,10 +200,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
             
-            patientLookupResults.SetAtPosition(Locus, TypePositions.One, patientLookupResultSingleAllele);
-            patientLookupResults.SetAtPosition(Locus, TypePositions.Two, patientLookupResultSerology);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.One, donorLookupResultSerology);
-            donorLookupResults.SetAtPosition(Locus, TypePositions.Two, donorLookupResultSingleAllele);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.One, patientLookupResultSingleAllele);
+            patientLookupResults.SetAtPosition(Locus, TypePosition.Two, patientLookupResultSerology);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.One, donorLookupResultSerology);
+            donorLookupResults.SetAtPosition(Locus, TypePosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetAtPosition(Locus, Position, new MatchGradeResult{ Orientations = new List<MatchOrientation>{ MatchOrientation.Direct, MatchOrientation.Cross }});
@@ -214,8 +214,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
             // Direct confidence (P2: D2) is Potential, Cross (P2: D1) is Potential
             
             // Cross match has a higher confidence, so should be returned
-            confidences.DataAtPosition(Locus, TypePositions.One).Should().Be(MatchConfidence.Definite);
-            confidences.DataAtPosition(Locus, TypePositions.Two).Should().Be(MatchConfidence.Potential);
+            confidences.DataAtPosition(Locus, TypePosition.One).Should().Be(MatchConfidence.Definite);
+            confidences.DataAtPosition(Locus, TypePosition.Two).Should().Be(MatchConfidence.Potential);
         }
     }
 }

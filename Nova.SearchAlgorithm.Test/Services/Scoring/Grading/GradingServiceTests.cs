@@ -1249,14 +1249,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            patientLookupResults.SetAtPosition(Locus.A, TypePositions.Both, singleAlleleAtA);
-            patientLookupResults.SetAtPosition(Locus.B, TypePositions.Both, consolidatedMolecularAtB);
-            patientLookupResults.SetAtPosition(Locus.Drb1, TypePositions.Both, serologyAtDrb1);
-
+            patientLookupResults.SetAtLocus(Locus.A, singleAlleleAtA);
+            patientLookupResults.SetAtLocus(Locus.B, consolidatedMolecularAtB);
+            patientLookupResults.SetAtLocus(Locus.Drb1, serologyAtDrb1);        
+            
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtPosition(Locus.A, TypePositions.Both, singleAlleleAtA);
-            donorLookupResults.SetAtPosition(Locus.B, TypePositions.Both, consolidatedMolecularAtB);
-            donorLookupResults.SetAtPosition(Locus.Drb1, TypePositions.Both, serologyAtDrb1);
+            donorLookupResults.SetAtLocus(Locus.A, singleAlleleAtA);
+            donorLookupResults.SetAtLocus(Locus.B, consolidatedMolecularAtB);
+            donorLookupResults.SetAtLocus(Locus.Drb1, serologyAtDrb1);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -1282,8 +1282,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             IHlaScoringLookupResult positionTwoResult)
         {
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtPosition(MatchedLocus, TypePositions.One, positionOneResult);
-            donorLookupResults.SetAtPosition(MatchedLocus, TypePositions.Two, positionTwoResult);
+            donorLookupResults.SetAtPosition(MatchedLocus, TypePosition.One, positionOneResult);
+            donorLookupResults.SetAtPosition(MatchedLocus, TypePosition.Two, positionTwoResult);
 
             return donorLookupResults;
         }

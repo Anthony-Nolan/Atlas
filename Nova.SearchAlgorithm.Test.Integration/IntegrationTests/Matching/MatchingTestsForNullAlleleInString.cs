@@ -456,8 +456,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<ExpandedHla> BuildExpandedHlaPhenotype(string hla1, string hla2)
         {
             var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            newPhenotype.SetAtPosition(LocusUnderTest, TypePositions.One, hla1);
-            newPhenotype.SetAtPosition(LocusUnderTest, TypePositions.Two, hla2);
+            newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.One, hla1);
+            newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.Two, hla2);
 
             return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(newPhenotype).Result;
         }

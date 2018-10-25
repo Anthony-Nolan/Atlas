@@ -53,8 +53,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 )
             );
 
-            return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
-                .Concat(results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.Two, locus)));
+            return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus))
+                .Concat(results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus)));
         }
 
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocusFromDonorSelection(
@@ -71,17 +71,17 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             );
 
             var untypedDonorIds = await GetUntypedDonorsAtLocus(locus, donorIds);
-            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] {TypePositions.One, TypePositions.Two}.Select(position =>
+            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] {TypePosition.One, TypePosition.Two}.Select(position =>
                 new PotentialHlaMatchRelation
                 {
                     DonorId = id,
                     Locus = locus,
                     SearchTypePosition = position,
-                    MatchingTypePositions = position
+                    MatchingTypePosition = position
                 }));
 
-            return matchingPGroupResults[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
-                .Concat(matchingPGroupResults[1].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.Two, locus)))
+            return matchingPGroupResults[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus))
+                .Concat(matchingPGroupResults[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus)))
                 .Concat(untypedDonorResults);
         }
 
@@ -141,7 +141,7 @@ ON m.DonorId = DonorIds.Id
                     var pGroups = await conn.QueryAsync<DonorMatchWithName>(sql, commandTimeout: 300);
                     foreach (var donorGroups in pGroups.GroupBy(p => p.DonorId))
                     {
-                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePositions) p.TypePosition))
+                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePosition) p.TypePosition))
                         {
                             var donorResult = results.Single(r => r.DonorId == donorGroups.Key);
                             donorResult.PGroupNames.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
@@ -297,8 +297,8 @@ INNER JOIN (
 )
 AS DonorIds 
 ON DonorId = DonorIds.Id 
-WHERE {DonorHlaColumnAtLocus(locus, TypePositions.One)} IS NULL
-AND {DonorHlaColumnAtLocus(locus, TypePositions.Two)} IS NULL
+WHERE {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL
+AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
 ";
 
             using (var conn = new SqlConnection(connectionString))
@@ -455,9 +455,9 @@ GROUP BY m.DonorId, TypePosition";
             return "MatchingHlaAt" + locus;
         }
 
-        private static string DonorHlaColumnAtLocus(Locus locus, TypePositions positions)
+        private static string DonorHlaColumnAtLocus(Locus locus, TypePosition positions)
         {
-            var positionString = positions == TypePositions.One ? "1" : "2";
+            var positionString = positions == TypePosition.One ? "1" : "2";
             return $"{locus.ToString().ToUpper()}_{positionString}";
         }
 
