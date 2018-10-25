@@ -362,6 +362,7 @@
     <Compile Include="TestData\TestHlaPhenotypeSelector.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilderFromExpandedHla.cs" />
+    <Compile Include="TestHelpers\Builders\ExpandedHlaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\HlaNamePhenotypeBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestFromHlasBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
