@@ -56,63 +56,64 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var importRepo = Container.Resolve<IDonorImportRepository>();
 
+            var defaultRequiredHla = new ExpandedHla {PGroups = matchingPGroups};
             donorWithFullHomozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionOne}},
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, "non-matching-pgroup"}}
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne).Build(),
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup").Build()
                 )
-                .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
             donorWithFullExactHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, "non-matching-pgroup"}},
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionTwo, "non-matching-pgroup"}}
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup").Build(),
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup").Build()
                 )
-                .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
             donorWithFullCrossHeterozygousMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionTwo}},
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionOne}}
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionTwo).Build(),
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionOne).Build()
                 )
-                .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
             donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtBothPositions, "non-matching-pgroup"}},
-                    new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}}
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup").Build(),
+                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build()
                 )
-                .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
             donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHla {PGroups = new List<string> {PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo}},
-                    new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}}
+                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo).Build(),
+                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build()
                 )
-                .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
             donorWithNoMatchAtLocus = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}},
-                    new ExpandedHla {PGroups = new List<string> {"non-matching-pgroup", "non-matching-pgroup-2"}}
+                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build(),
+                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build()
                 )
-                .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
                 .Build();
 

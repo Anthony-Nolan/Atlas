@@ -42,16 +42,16 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     donor.MatchingHla.C_2 = hla2;
                     break;
                 case Locus.Dpb1:
-                    donor.MatchingHla.DPB1_1 = hla1;
-                    donor.MatchingHla.DPB1_2 = hla2;
+                    donor.MatchingHla.Dpb1_1 = hla1;
+                    donor.MatchingHla.Dpb1_2 = hla2;
                     break;
                 case Locus.Dqb1:
-                    donor.MatchingHla.DQB1_1 = hla1;
-                    donor.MatchingHla.DQB1_2 = hla2;
+                    donor.MatchingHla.Dqb1_1 = hla1;
+                    donor.MatchingHla.Dqb1_2 = hla2;
                     break;
                 case Locus.Drb1:
-                    donor.MatchingHla.DRB1_1 = hla1;
-                    donor.MatchingHla.DRB1_2 = hla2;
+                    donor.MatchingHla.Drb1_1 = hla1;
+                    donor.MatchingHla.Drb1_2 = hla2;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -59,15 +59,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        // Populates all null required hla positions (A, B, DRB1) with given hla values
+        // Populates all null required hla positions (A, B, Drb1) with given hla values
         public InputDonorBuilder WithDefaultRequiredHla(ExpandedHla hla)
         {
             donor.MatchingHla.A_1 = donor.MatchingHla.A_1 ?? hla;
             donor.MatchingHla.A_2 = donor.MatchingHla.A_2 ?? hla;
             donor.MatchingHla.B_1 = donor.MatchingHla.B_1 ?? hla;
             donor.MatchingHla.B_2 = donor.MatchingHla.B_2 ?? hla;
-            donor.MatchingHla.DRB1_1 = donor.MatchingHla.DRB1_1 ?? hla;
-            donor.MatchingHla.DRB1_2 = donor.MatchingHla.DRB1_2 ?? hla;
+            donor.MatchingHla.Drb1_1 = donor.MatchingHla.Drb1_1 ?? hla;
+            donor.MatchingHla.Drb1_2 = donor.MatchingHla.Drb1_2 ?? hla;
             return this;
         }
 
