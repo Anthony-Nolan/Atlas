@@ -21,7 +21,6 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public DonorMatchingService(
             IDatabaseDonorMatchingService databaseDonorMatchingService,
-            IDonorMatchCalculator donorMatchCalculator,
             IDonorInspectionRepository donorInspectionRepository,
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser)

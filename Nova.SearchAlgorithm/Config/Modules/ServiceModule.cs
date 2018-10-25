@@ -57,6 +57,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchCriteriaAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DatabaseFilteringAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ExpandHlaPhenotypeService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             // Scoring Services
