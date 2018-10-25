@@ -258,8 +258,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 inputDonorBuilder = inputDonorBuilder
                     .WithMatchingHlaAtLocus(
                         locus1,
-                        new ExpandedHla {PGroups = new List<string> {pGroupAtPosition1}},
-                        new ExpandedHla {PGroups = new List<string> {pGroupAtPosition2}});
+                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
+                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
 
                 return this;
             }
@@ -272,8 +272,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 inputDonorBuilder = inputDonorBuilder
                     .WithMatchingHlaAtLocus(
                         locus2,
-                        new ExpandedHla {PGroups = new List<string> {pGroupAtPosition1}},
-                        new ExpandedHla {PGroups = new List<string> {pGroupAtPosition2}});
+                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
+                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
 
                 return this;
             }
