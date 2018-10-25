@@ -87,7 +87,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 .AsImplementedInterfaces();
 
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorImportRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorInspectionRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<PGroupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
