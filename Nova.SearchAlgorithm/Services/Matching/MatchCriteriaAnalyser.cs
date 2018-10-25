@@ -12,13 +12,13 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// This takes into account mismatch counts - the database can only return results with at least one match, so it is pointless to query it for a locus with two allowed mismatches
         /// It may 
         /// </summary>
-        IEnumerable<Locus> LociToMatchInDatabase(AlleleLevelMatchCriteria criteria);
+        IEnumerable<Locus> LociToMatchFirst(AlleleLevelMatchCriteria criteria);
     }
 
     public class MatchCriteriaAnalyser : IMatchCriteriaAnalyser
     {
         // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
-        public IEnumerable<Locus> LociToMatchInDatabase(AlleleLevelMatchCriteria criteria)
+        public IEnumerable<Locus> LociToMatchFirst(AlleleLevelMatchCriteria criteria)
         {
             var lociToSearchInDatabase = new List<Locus>();
 

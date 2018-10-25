@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -29,14 +30,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             return lookupResult ?? throw new InvalidHlaException(matchLocus, lookupName);
         }
 
-        protected bool TryGetHlaLookupTableEntity(
-            MatchLocus matchLocus, string lookupName, TypingMethod typingMethod, out HlaLookupTableEntity lookupResult)
+        protected async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntity(
+            MatchLocus matchLocus,
+            string lookupName,
+            TypingMethod typingMethod
+        )
         {
-            var task = Task.Run(() =>
-                GetLookupResultFromRepository(matchLocus, lookupName, typingMethod));
-            // Note: use of Task.Result means that any exceptions raised will be wrapped in an AggregateException
-            lookupResult = task.Result;
-            return lookupResult != null;
+            return await GetLookupResultFromRepository(matchLocus, lookupName, typingMethod);
         }
 
         private async Task<HlaLookupTableEntity> GetLookupResultFromRepository(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)

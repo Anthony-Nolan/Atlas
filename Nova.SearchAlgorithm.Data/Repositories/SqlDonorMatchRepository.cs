@@ -40,24 +40,32 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 .Concat(results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus)));
         }
 
-        private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(Locus locus, IEnumerable<string> pGroups)
+        public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocusFromDonorSelection(
+            Locus locus,
+            LocusSearchCriteria criteria,
+            IEnumerable<int> donorIds
+        )
         {
-            var sql = $@"
-SELECT DonorId, TypePosition FROM {MatchingTableName(locus)} m
-JOIN PGroupNames p 
-ON m.PGroup_Id = p.Id
-INNER JOIN (
-    SELECT '{pGroups.FirstOrDefault()}' AS PGroupId
-    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", pGroups.Skip(1))}'
-)
-AS PGroupIds 
-ON p.Name = PGroupIds.PGroupId
-GROUP BY DonorId, TypePosition";
+            donorIds = donorIds.ToList();
 
-            using (var conn = new SqlConnection(connectionString))
-            {
-                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
-            }
+            var matchingPGroupResults = await Task.WhenAll(
+                GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupsToMatchInPositionOne, donorIds),
+                GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupsToMatchInPositionTwo, donorIds)
+            );
+
+            var untypedDonorIds = await GetUntypedDonorsAtLocus(locus, donorIds);
+            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] {TypePositions.One, TypePositions.Two}.Select(position =>
+                new PotentialHlaMatchRelation
+                {
+                    DonorId = id,
+                    Locus = locus,
+                    SearchTypePosition = position,
+                    MatchingTypePositions = position
+                }));
+
+            return matchingPGroupResults[0].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.One, locus))
+                .Concat(matchingPGroupResults[1].Select(r => r.ToPotentialHlaMatchRelation(TypePositions.Two, locus)))
+                .Concat(untypedDonorResults);
         }
 
         public Task<int> HighestDonorId()
@@ -93,9 +101,9 @@ GROUP BY DonorId, TypePosition";
             {
                 return new List<DonorIdWithPGroupNames>();
             }
-            
+
             var results = donorIds
-                .Select(id => new DonorIdWithPGroupNames{ DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>()})
+                .Select(id => new DonorIdWithPGroupNames {DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>()})
                 .ToList();
             using (var conn = new SqlConnection(connectionString))
             {
@@ -124,6 +132,7 @@ ON m.DonorId = DonorIds.Id
                     }
                 }
             }
+
             return results;
         }
 
@@ -134,7 +143,7 @@ ON m.DonorId = DonorIds.Id
             {
                 return new List<DonorResult>();
             }
-            
+
             using (var conn = new SqlConnection(connectionString))
             {
                 var sql = $@"
@@ -222,9 +231,125 @@ ON DonorId = DonorIds.Id
             await Task.WhenAll(LocusHelpers.AllLoci().Select(l => RefreshMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
+        public void InsertPGroups(IEnumerable<string> pGroups)
+        {
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                var existingPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames").Select(p => p.Name);
+
+                var dt = new DataTable();
+                dt.Columns.Add("Id");
+                dt.Columns.Add("Name");
+
+                foreach (var pg in pGroups.Distinct().Except(existingPGroups))
+                {
+                    dt.Rows.Add(0, pg);
+                }
+
+                var transaction = conn.BeginTransaction();
+                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
+                {
+                    sqlBulk.BatchSize = 10000;
+                    sqlBulk.DestinationTableName = "PGroupNames";
+                    sqlBulk.WriteToServer(dt);
+                }
+
+                transaction.Commit();
+                conn.Close();
+            }
+
+            CachePGroupDictionary();
+        }
+
         public void SetupForHlaRefresh()
         {
             // Do nothing
+        }
+
+        private async Task<IEnumerable<int>> GetUntypedDonorsAtLocus(Locus locus, IEnumerable<int> donorIds)
+        {
+            donorIds = donorIds.ToList();
+
+            var sql = $@"
+SELECT DonorId FROM Donors 
+INNER JOIN (
+    SELECT '{donorIds.FirstOrDefault()}' AS Id
+    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
+)
+AS DonorIds 
+ON DonorId = DonorIds.Id 
+WHERE {DonorHlaColumnAtLocus(locus, TypePositions.One)} IS NULL
+AND {DonorHlaColumnAtLocus(locus, TypePositions.Two)} IS NULL
+";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<int>(sql);
+            }
+        }
+
+        private async Task<IEnumerable<DonorMatch>> GetDonorsForPGroupsAtLocusFromDonorSelection(
+            Locus locus,
+            IEnumerable<string> pGroups,
+            IEnumerable<int> donorIds
+        )
+        {
+            donorIds = donorIds.ToList();
+            pGroups = pGroups.ToList();
+
+            var sql = $@"
+SELECT InnerDonorId as DonorId, TypePosition FROM {MatchingTableName(locus)} m
+
+RIGHT JOIN (
+    SELECT '{donorIds.FirstOrDefault()}' AS InnerDonorId
+    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
+)
+AS InnerDonors 
+ON m.DonorId = InnerDonors.InnerDonorId
+
+LEFT JOIN PGroupNames p 
+ON m.PGroup_Id = p.Id
+
+INNER JOIN (
+    SELECT '{pGroups.FirstOrDefault()}' AS PGroupName
+    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", pGroups.Skip(1))}'
+)
+AS PGroupNames 
+ON (p.Name = PGroupNames.PGroupName)
+
+GROUP BY InnerDonorId, TypePosition";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
+            }
+        }
+
+        private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(Locus locus, IEnumerable<string> pGroups)
+        {
+            pGroups = pGroups.ToList();
+
+            var sql = $@"
+SELECT DonorId, TypePosition FROM {MatchingTableName(locus)} m
+
+LEFT JOIN PGroupNames p 
+ON m.PGroup_Id = p.Id
+
+INNER JOIN (
+    SELECT '{pGroups.FirstOrDefault()}' AS PGroupName
+    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", pGroups.Skip(1))}'
+)
+AS PGroupNames 
+ON (p.Name = PGroupNames.PGroupName)
+
+GROUP BY DonorId, TypePosition";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
+            }
         }
 
         private async Task RefreshMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonor> donors, Locus locus)
@@ -287,36 +412,10 @@ ON DonorId = DonorIds.Id
             return "MatchingHlaAt" + locus;
         }
 
-        public void InsertPGroups(IEnumerable<string> pGroups)
+        private static string DonorHlaColumnAtLocus(Locus locus, TypePositions positions)
         {
-            using (var conn = new SqlConnection(connectionString))
-            {
-                conn.Open();
-
-                var existingPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames").Select(p => p.Name);
-
-                var dt = new DataTable();
-                dt.Columns.Add("Id");
-                dt.Columns.Add("Name");
-
-                foreach (var pg in pGroups.Distinct().Except(existingPGroups))
-                {
-                    dt.Rows.Add(0, pg);
-                }
-
-                var transaction = conn.BeginTransaction();
-                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
-                {
-                    sqlBulk.BatchSize = 10000;
-                    sqlBulk.DestinationTableName = "PGroupNames";
-                    sqlBulk.WriteToServer(dt);
-                }
-
-                transaction.Commit();
-                conn.Close();
-            }
-
-            CachePGroupDictionary();
+            var positionString = positions == TypePositions.One ? "1" : "2";
+            return $"{locus.ToString().ToUpper()}_{positionString}";
         }
 
         private void CachePGroupDictionary()

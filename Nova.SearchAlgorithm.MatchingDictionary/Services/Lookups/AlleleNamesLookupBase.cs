@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using System;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
@@ -16,9 +17,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
 
         protected AlleleNamesLookupBase(
-            IHlaLookupRepository hlaLookupRepository, 
+            IHlaLookupRepository hlaLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService)
-                : base(hlaLookupRepository)
+            : base(hlaLookupRepository)
         {
             this.alleleNamesLookupService = alleleNamesLookupService;
         }
@@ -31,7 +32,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 
         protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName);
 
-        private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntities(MatchLocus matchLocus, IEnumerable<string> alleleNamesToLookup)
+        private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntities(
+            MatchLocus matchLocus,
+            IEnumerable<string> alleleNamesToLookup
+        )
         {
             var lookupTasks = alleleNamesToLookup.Select(name => GetHlaLookupTableEntitiesForAlleleNameIfExists(matchLocus, name));
             var tableEntities = await Task.WhenAll(lookupTasks);
@@ -44,25 +48,26 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
         /// If nothing is found, try again using the current version(s) of the allele name.
         /// Else an invalid HLA exception will be thrown.
         /// </summary>
-        private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntitiesForAlleleNameIfExists(
-            MatchLocus matchLocus, string lookupName)
+        private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntitiesForAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
         {
-            if (TryGetHlaLookupTableEntityByAlleleLookupName(matchLocus, lookupName, out var lookupResult))
+            var lookupResult = await TryGetHlaLookupTableEntityByAlleleLookupName(matchLocus, lookupName);
+            if (lookupResult != null)
             {
-                return new List<HlaLookupTableEntity> { lookupResult };
+                return new List<HlaLookupTableEntity> {lookupResult};
             }
 
             return await GetHlaLookupTableEntitiesByCurrentAlleleNamesIfExists(matchLocus, lookupName);
         }
 
-        private bool TryGetHlaLookupTableEntityByAlleleLookupName(
-            MatchLocus matchLocus, string lookupName, out HlaLookupTableEntity lookupResult)
+        private async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntityByAlleleLookupName(MatchLocus matchLocus, string lookupName)
         {
-            return TryGetHlaLookupTableEntity(matchLocus, lookupName, TypingMethod.Molecular, out lookupResult);
+            return await TryGetHlaLookupTableEntity(matchLocus, lookupName, TypingMethod.Molecular);
         }
 
         private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntitiesByCurrentAlleleNamesIfExists(
-            MatchLocus matchLocus, string lookupName)
+            MatchLocus matchLocus,
+            string lookupName
+        )
         {
             var currentNames = await alleleNamesLookupService.GetCurrentAlleleNames(matchLocus, lookupName);
             var lookupTasks = currentNames.Select(name => GetHlaLookupTableEntityIfExists(matchLocus, name, TypingMethod.Molecular));
