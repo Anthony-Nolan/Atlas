@@ -14,8 +14,8 @@ namespace Nova.SearchAlgorithm.Common.Models
         public AlleleLevelLocusMatchCriteria LocusMismatchA { get; set; }
         public AlleleLevelLocusMatchCriteria LocusMismatchB { get; set; }
         public AlleleLevelLocusMatchCriteria LocusMismatchC { get; set; }
-        public AlleleLevelLocusMatchCriteria LocusMismatchDQB1 { get; set; }
-        public AlleleLevelLocusMatchCriteria LocusMismatchDRB1 { get; set; }
+        public AlleleLevelLocusMatchCriteria LocusMismatchDqb1 { get; set; }
+        public AlleleLevelLocusMatchCriteria LocusMismatchDrb1 { get; set; }
         
         public AlleleLevelLocusMatchCriteria MatchCriteriaForLocus(Locus locus)
         {
@@ -28,9 +28,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                 case Locus.C:
                     return LocusMismatchC;
                 case Locus.Dqb1:
-                    return LocusMismatchDQB1;
+                    return LocusMismatchDqb1;
                 case Locus.Drb1:
-                    return LocusMismatchDRB1;
+                    return LocusMismatchDrb1;
                 default:
                     throw new NotImplementedException();
             }
@@ -51,11 +51,11 @@ namespace Nova.SearchAlgorithm.Common.Models
             {
                 loci.Add(Locus.C);
             }
-            if (LocusMismatchDRB1 != null)
+            if (LocusMismatchDrb1 != null)
             {
                 loci.Add(Locus.Drb1);
             }
-            if (LocusMismatchDQB1 != null)
+            if (LocusMismatchDqb1 != null)
             {
                 loci.Add(Locus.Dqb1);
             }

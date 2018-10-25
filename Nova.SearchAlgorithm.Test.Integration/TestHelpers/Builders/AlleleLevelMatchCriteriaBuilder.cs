@@ -40,10 +40,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    criteria.LocusMismatchDQB1 = locusMatchCriteria;
+                    criteria.LocusMismatchDqb1 = locusMatchCriteria;
                     break;
                 case Locus.Drb1:
-                    criteria.LocusMismatchDRB1 = locusMatchCriteria;
+                    criteria.LocusMismatchDrb1 = locusMatchCriteria;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -68,10 +68,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    criteria.LocusMismatchDQB1.MismatchCount = mismatchCount;
+                    criteria.LocusMismatchDqb1.MismatchCount = mismatchCount;
                     break;
                 case Locus.Drb1:
-                    criteria.LocusMismatchDRB1.MismatchCount = mismatchCount;
+                    criteria.LocusMismatchDrb1.MismatchCount = mismatchCount;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         {
             criteria.LocusMismatchA = criteria.LocusMismatchA ?? locusMatchCriteria;
             criteria.LocusMismatchB = criteria.LocusMismatchB ?? locusMatchCriteria;
-            criteria.LocusMismatchDRB1 = criteria.LocusMismatchDRB1 ?? locusMatchCriteria;
+            criteria.LocusMismatchDrb1 = criteria.LocusMismatchDrb1 ?? locusMatchCriteria;
             return this;
         }
 

@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 DonorMismatchCount = 2,
                 LocusMismatchA = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
                 LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
+                LocusMismatchDrb1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
             };
 
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
@@ -104,9 +104,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 DonorMismatchCount = 2,
                 LocusMismatchA = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
                 LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
+                LocusMismatchDrb1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
                 LocusMismatchC = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchDQB1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
+                LocusMismatchDqb1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
             };
 
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
