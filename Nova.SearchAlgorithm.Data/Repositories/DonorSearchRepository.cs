@@ -31,14 +31,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             var results = await Task.WhenAll(
                 GetAllDonorsForPGroupsAtLocus(
                     locus,
-                    criteria.PGroupsToMatchInPositionOne,
+                    criteria.PGroupIdsToMatchInPositionOne,
                     criteria.SearchType,
                     criteria.Registries,
                     filteringOptions
                 ),
                 GetAllDonorsForPGroupsAtLocus(
                     locus,
-                    criteria.PGroupsToMatchInPositionTwo,
+                    criteria.PGroupIdsToMatchInPositionTwo,
                     criteria.SearchType,
                     criteria.Registries,
                     filteringOptions
@@ -58,8 +58,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             donorIds = donorIds.ToList();
 
             var matchingPGroupResults = await Task.WhenAll(
-                GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupsToMatchInPositionOne, donorIds),
-                GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupsToMatchInPositionTwo, donorIds)
+                GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupIdsToMatchInPositionOne, donorIds),
+                GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupIdsToMatchInPositionTwo, donorIds)
             );
 
             var untypedDonorIds = await GetUntypedDonorsAtLocus(locus, donorIds);
@@ -101,7 +101,7 @@ AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
 
         private async Task<IEnumerable<DonorMatch>> GetDonorsForPGroupsAtLocusFromDonorSelection(
             Locus locus,
-            IEnumerable<string> pGroups,
+            IEnumerable<int> pGroups,
             IEnumerable<int> donorIds
         )
         {
@@ -118,15 +118,12 @@ RIGHT JOIN (
 AS InnerDonors 
 ON m.DonorId = InnerDonors.InnerDonorId
 
-LEFT JOIN PGroupNames p 
-ON m.PGroup_Id = p.Id
-
 INNER JOIN (
-    SELECT '{pGroups.FirstOrDefault()}' AS PGroupName
-    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", pGroups.Skip(1))}'
+    SELECT {pGroups.FirstOrDefault()} AS PGroupId
+    {(pGroups.Count() > 1 ? "UNION ALL SELECT" : "")} {string.Join(" UNION ALL SELECT ", pGroups.Skip(1))}
 )
-AS PGroupNames 
-ON (p.Name = PGroupNames.PGroupName)
+AS PGroupIds 
+ON (m.PGroup_Id = PGroupIds.PGroupId)
 
 GROUP BY InnerDonorId, TypePosition";
 
@@ -138,7 +135,7 @@ GROUP BY InnerDonorId, TypePosition";
 
         private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(
             Locus locus,
-            IEnumerable<string> pGroups,
+            IEnumerable<int> pGroups,
             DonorType donorType,
             IEnumerable<RegistryCode> registryCodes,
             MatchingFilteringOptions filteringOptions
@@ -169,15 +166,12 @@ SELECT m.DonorId, TypePosition FROM {MatchingTableName(locus)} m
 
 {filterQuery}
 
-LEFT JOIN PGroupNames p 
-ON m.PGroup_Id = p.Id
-
 INNER JOIN (
-    SELECT '{pGroups.FirstOrDefault()}' AS PGroupName
-    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", pGroups.Skip(1))}'
+    SELECT {pGroups.FirstOrDefault()} AS PGroupId
+    {(pGroups.Count() > 1 ? "UNION ALL SELECT" : "")} {string.Join(" UNION ALL SELECT ", pGroups.Skip(1))}
 )
-AS PGroupNames 
-ON (p.Name = PGroupNames.PGroupName)
+AS PGroupIds 
+ON (m.PGroup_Id = PGroupIds.PGroupId)
 
 GROUP BY m.DonorId, TypePosition";
 

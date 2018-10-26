@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
 {
@@ -11,5 +12,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         void InsertPGroups(IEnumerable<string> pGroups);
 
         int FindOrCreatePGroup(string pGroupName);
+
+        Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
     }
 }

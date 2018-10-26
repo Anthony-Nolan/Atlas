@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Repositories;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Repositories;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {
@@ -23,7 +23,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
             IDatabaseDonorMatchingService databaseDonorMatchingService,
             IDonorInspectionRepository donorInspectionRepository,
             IMatchFilteringService matchFilteringService,
-            IMatchCriteriaAnalyser matchCriteriaAnalyser)
+            IMatchCriteriaAnalyser matchCriteriaAnalyser
+            )
         {
             this.databaseDonorMatchingService = databaseDonorMatchingService;
             this.donorInspectionRepository = donorInspectionRepository;

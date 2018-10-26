@@ -70,9 +70,10 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 return existing.Id;
             }
 
-            string sql = @"
+            const string sql = @"
 INSERT INTO PGroupNames (Name) VALUES (@PGroupName);
-SELECT CAST(SCOPE_IDENTITY() as int)";
+SELECT CAST(SCOPE_IDENTITY() as int)
+";
 
             int newId;
 
@@ -83,6 +84,25 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
 
             CachePGroupDictionary();
             return newId;
+        }
+
+        public async Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames)
+        {
+            pGroupNames = pGroupNames.ToList();
+            if (!pGroupNames.Any())
+            {
+                return new List<int>();
+            }
+            
+            var sql = $@"
+SELECT p.Id FROM PGroupNames p
+WHERE p.Name IN ('{string.Join("', '", pGroupNames)}') 
+";
+            
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<int>(sql);
+            }
         }
 
         private void CachePGroupDictionary()
