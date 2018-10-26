@@ -111,69 +111,79 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
 
-        public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePositions positions, string hlaString)
+        public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePosition position, string hlaString)
         {
             switch (locus)
             {
                 case Locus.A:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (position)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
+                        case TypePosition.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
+                            break;
+                        case TypePosition.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
                     }
 
                     break;
                 case Locus.B:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (position)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
+                        case TypePosition.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
+                            break;
+                        case TypePosition.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
                     }
 
                     break;
                 case Locus.C:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (position)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
+                        case TypePosition.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
+                            break;
+                        case TypePosition.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
                     }
 
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (position)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
+                        case TypePosition.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
+                            break;
+                        case TypePosition.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
                     }
 
                     break;
                 case Locus.Drb1:
-                    if (positions == TypePositions.One || positions == TypePositions.Both)
+                    switch (position)
                     {
-                        searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
-                    }
-
-                    if (positions == TypePositions.Two || positions == TypePositions.Both)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
+                        case TypePosition.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
+                            break;
+                        case TypePosition.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
                     }
 
                     break;
@@ -204,16 +214,16 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
         {
-            return WithLocusMatchHla(Locus.A, TypePositions.One, searchHla.A_1)
-                .WithLocusMatchHla(Locus.A, TypePositions.Two, searchHla.A_2)
-                .WithLocusMatchHla(Locus.B, TypePositions.One, searchHla.B_1)
-                .WithLocusMatchHla(Locus.B, TypePositions.Two, searchHla.B_2)
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.One, searchHla.DRB1_1)
-                .WithLocusMatchHla(Locus.Drb1, TypePositions.Two, searchHla.DRB1_2)
-                .WithLocusMatchHla(Locus.C, TypePositions.One, searchHla.C_1)
-                .WithLocusMatchHla(Locus.C, TypePositions.Two, searchHla.C_2)
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.One, searchHla.DQB1_1)
-                .WithLocusMatchHla(Locus.Dqb1, TypePositions.Two, searchHla.DQB1_2);
+            return WithLocusMatchHla(Locus.A, TypePosition.One, searchHla.A_1)
+                .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHla.A_2)
+                .WithLocusMatchHla(Locus.B, TypePosition.One, searchHla.B_1)
+                .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHla.B_2)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHla.DRB1_1)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.DRB1_2)
+                .WithLocusMatchHla(Locus.C, TypePosition.One, searchHla.C_1)
+                .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHla.C_2)
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHla.DQB1_1)
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHla.DQB1_2);
         }
 
         public SearchRequest Build()

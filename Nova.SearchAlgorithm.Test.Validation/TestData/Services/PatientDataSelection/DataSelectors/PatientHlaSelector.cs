@@ -67,12 +67,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 switch (orientation)
                 {
                     case MatchOrientation.Direct:
-                        allele1 = GetTgsAllele(locus, TypePositions.One, tgsAllele1, tgsAllele2, criteria);
-                        allele2 = GetTgsAllele(locus, TypePositions.Two, tgsAllele2, tgsAllele1, criteria);
+                        allele1 = GetTgsAllele(locus, TypePosition.One, tgsAllele1, tgsAllele2, criteria);
+                        allele2 = GetTgsAllele(locus, TypePosition.Two, tgsAllele2, tgsAllele1, criteria);
                         break;
                     case MatchOrientation.Cross:
-                        allele1 = GetTgsAllele(locus, TypePositions.One, tgsAllele2, tgsAllele1, criteria);
-                        allele2 = GetTgsAllele(locus, TypePositions.Two, tgsAllele1, tgsAllele2, criteria);
+                        allele1 = GetTgsAllele(locus, TypePosition.One, tgsAllele2, tgsAllele1, criteria);
+                        allele2 = GetTgsAllele(locus, TypePosition.Two, tgsAllele1, tgsAllele2, criteria);
                         break;
                     case MatchOrientation.Arbitrary:
                     default:
@@ -80,8 +80,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
                 }
             }
 
-            var typingResolution1 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.One);
-            var typingResolution2 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePositions.Two);
+            var typingResolution1 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePosition.One);
+            var typingResolution2 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePosition.Two);
 
             var hla1 = allele1.GetHlaForResolution(typingResolution1);
             var hla2 = allele2.GetHlaForResolution(typingResolution2);
@@ -138,7 +138,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private TgsAllele GetTgsAllele(
             Locus locus,
-            TypePositions position,
+            TypePosition position,
             TgsAllele genotypeAllele,
             TgsAllele otherGenotypeAllele,
             PatientHlaSelectionCriteria criteria
@@ -175,12 +175,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             }
         }
 
-        private static TgsAllele GetNonMatchingAllele(Locus locus, TypePositions position)
+        private static TgsAllele GetNonMatchingAllele(Locus locus, TypePosition position)
         {
             return NonMatchingGenotype.Hla.DataAtPosition(locus, position);
         }
 
-        private static TgsAllele GetNonMatchingNullAllele(Locus locus, TypePositions position)
+        private static TgsAllele GetNonMatchingNullAllele(Locus locus, TypePosition position)
         {
             return NonMatchingNullAlleleGenotype.Hla.DataAtPosition(locus, position);
         }
@@ -192,7 +192,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
             return TgsAllele.FromTestDataAllele(alleleAtLocus);
         }
 
-        private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePositions position, TgsAllele genotypeAllele)
+        private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePosition position, TgsAllele genotypeAllele)
         {
             var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
             var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele);
@@ -202,7 +202,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private TgsAllele GetThreeFieldMatchingTgsAllele(
             Locus locus,
-            TypePositions position,
+            TypePosition position,
             TgsAllele genotypeAllele,
             TgsAllele otherGenotypeAllele
         )
@@ -237,7 +237,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         private TgsAllele GetTwoFieldMatchingTgsAllele(
             Locus locus,
-            TypePositions position,
+            TypePosition position,
             TgsAllele genotypeAllele,
             TgsAllele otherGenotypeAllele
         )

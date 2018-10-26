@@ -23,8 +23,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
     public class ScoringTestsForNullAlleleInString : IntegrationTestBase
     {
         private const Locus LocusUnderTest = Locus.A;
-        private const TypePositions PositionUnderTest = TypePositions.One;
-        private const TypePositions OtherPosition = TypePositions.Two;
+        private const TypePosition PositionUnderTest = TypePosition.One;
+        private const TypePosition OtherPosition = TypePosition.Two;
 
         private readonly List<MatchGrade> matchGradesForExpressingAlleleOfSameGGroups = new List<MatchGrade>
         {

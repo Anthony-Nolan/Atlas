@@ -51,22 +51,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
 
         public Donor Build()
         {
-            donor.A_1 = GetHla(Locus.A, TypePositions.One);
-            donor.A_2 = GetHla(Locus.A, TypePositions.Two);
-            donor.B_1 = GetHla(Locus.B, TypePositions.One);
-            donor.B_2 = GetHla(Locus.B, TypePositions.Two);
-            donor.C_1 = GetHla(Locus.C, TypePositions.One);
-            donor.C_2 = GetHla(Locus.C, TypePositions.Two);
-            donor.DPB1_1 = GetHla(Locus.Dpb1, TypePositions.One);
-            donor.DPB1_2 = GetHla(Locus.Dpb1, TypePositions.Two);
-            donor.DQB1_1 = GetHla(Locus.Dqb1, TypePositions.One);
-            donor.DQB1_2 = GetHla(Locus.Dqb1, TypePositions.Two);
-            donor.DRB1_1 = GetHla(Locus.Drb1, TypePositions.One);
-            donor.DRB1_2 = GetHla(Locus.Drb1, TypePositions.Two);
+            donor.A_1 = GetHla(Locus.A, TypePosition.One);
+            donor.A_2 = GetHla(Locus.A, TypePosition.Two);
+            donor.B_1 = GetHla(Locus.B, TypePosition.One);
+            donor.B_2 = GetHla(Locus.B, TypePosition.Two);
+            donor.C_1 = GetHla(Locus.C, TypePosition.One);
+            donor.C_2 = GetHla(Locus.C, TypePosition.Two);
+            donor.DPB1_1 = GetHla(Locus.Dpb1, TypePosition.One);
+            donor.DPB1_2 = GetHla(Locus.Dpb1, TypePosition.Two);
+            donor.DQB1_1 = GetHla(Locus.Dqb1, TypePosition.One);
+            donor.DQB1_2 = GetHla(Locus.Dqb1, TypePosition.Two);
+            donor.DRB1_1 = GetHla(Locus.Drb1, TypePosition.One);
+            donor.DRB1_2 = GetHla(Locus.Drb1, TypePosition.Two);
             return donor;
         }
 
-        private string GetHla(Locus locus, TypePositions position)
+        private string GetHla(Locus locus, TypePosition position)
         {
             var shouldMatchGenotypeAtPosition = shouldMatchGenotype.DataAtPosition(locus, position);
             var resolution = typingResolutions.DataAtPosition(locus, position);
@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
             return shouldMatchGenotypeAtPosition ? GetMatchingHla(locus, position, resolution) : GetNonMatchingHla(locus, resolution);
         }
 
-        private string GetMatchingHla(Locus locus, TypePositions position, HlaTypingResolution resolution)
+        private string GetMatchingHla(Locus locus, TypePosition position, HlaTypingResolution resolution)
         {
             return genotype.Hla.DataAtPosition(locus, position).GetHlaForResolution(resolution);
         }

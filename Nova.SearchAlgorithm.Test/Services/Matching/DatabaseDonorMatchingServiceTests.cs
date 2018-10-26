@@ -51,37 +51,54 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>
                 {
-                    HlaMatchFor(Locus.A, TypePositions.One, TypePositions.One, donor_ExactMatch_AtLocusA, PGroupA1),
-                    HlaMatchFor(Locus.A, TypePositions.Two, TypePositions.Two, donor_ExactMatch_AtLocusA, PGroupA2),
-                    HlaMatchFor(Locus.A, TypePositions.One, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupA1),
-                    HlaMatchFor(Locus.A, TypePositions.One, TypePositions.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupA1),
-                    HlaMatchFor(Locus.A, TypePositions.Two, TypePositions.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupA2),
+                    HlaMatchFor(Locus.A, TypePosition.One, TypePosition.One, donor_ExactMatch_AtLocusA, PGroupA1),
+                    HlaMatchFor(Locus.A, TypePosition.Two, TypePosition.Two, donor_ExactMatch_AtLocusA, PGroupA2),
+                    HlaMatchFor(Locus.A, TypePosition.One, TypePosition.One, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupA1),
+                    HlaMatchFor(Locus.A, TypePosition.One, TypePosition.Two, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupA1),
+                HlaMatchFor(Locus.A, TypePosition.One, TypePosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupA1),
+                    HlaMatchFor(Locus.A, TypePosition.Two, TypePosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupA2),
                 });
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.B, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>
                 {
-                    HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, donor_ExactMatch_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_ExactMatch_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.One, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupB),
-                    HlaMatchFor(Locus.B, TypePositions.Two, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.One, TypePosition.One, donor_ExactMatch_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.One, TypePosition.Two, donor_ExactMatch_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.One, donor_ExactMatch_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.Two, donor_ExactMatch_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.One, TypePosition.One, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.One, TypePosition.Two, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.One, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.Two, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.One, TypePosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.One, TypePosition.Two, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.Two, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.One, TypePosition.One, donor_NoMatch_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.One, TypePosition.Two, donor_NoMatch_AtLocusA, PGroupB),
+                HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.One, donor_NoMatch_AtLocusA, PGroupB),
+                    HlaMatchFor(Locus.B, TypePosition.Two, TypePosition.Two, donor_NoMatch_AtLocusA, PGroupB),
                 });
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.Drb1, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>
                 {
-                    HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, donor_ExactMatch_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_ExactMatch_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.One, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupDrb1),
-                    HlaMatchFor(Locus.Drb1, TypePositions.Two, TypePositions.Both, donor_NoMatch_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.One, donor_ExactMatch_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.Two, donor_ExactMatch_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.One, donor_ExactMatch_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.Two, donor_ExactMatch_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.One, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.Two, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.One, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.Two, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.Two, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.Two, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.One, donor_NoMatch_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.One, TypePosition.Two, donor_NoMatch_AtLocusA, PGroupDrb1),
+                HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.One, donor_NoMatch_AtLocusA, PGroupDrb1),
+                    HlaMatchFor(Locus.Drb1, TypePosition.Two, TypePosition.Two, donor_NoMatch_AtLocusA, PGroupDrb1),
                 });
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
@@ -90,14 +107,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
                 .WithLocusMismatchDRB1(PGroupDrb1, PGroupDrb1, 2);
         }
 
-        private static PotentialHlaMatchRelation HlaMatchFor(Locus locus, TypePositions searchPosition, TypePositions matchPosition,
+        private static PotentialHlaMatchRelation HlaMatchFor(Locus locus, TypePosition searchPosition, TypePosition matchPosition,
             DonorResult donor, string hlaMatchName)
         {
             return new PotentialHlaMatchRelation
             {
                 DonorId = donor.DonorId,
                 SearchTypePosition = searchPosition,
-                MatchingTypePositions = matchPosition,
+                MatchingTypePosition = matchPosition,
                 Locus = locus,
                 Name = hlaMatchName
             };
