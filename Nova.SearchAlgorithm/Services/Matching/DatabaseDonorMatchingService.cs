@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
@@ -32,11 +33,17 @@ namespace Nova.SearchAlgorithm.Services.Matching
     {
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
+        private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
 
-        public DatabaseDonorMatchingService(IDonorSearchRepository donorSearchRepository, IMatchFilteringService matchFilteringService)
+        public DatabaseDonorMatchingService(
+            IDonorSearchRepository donorSearchRepository,
+            IMatchFilteringService matchFilteringService,
+            IDatabaseFilteringAnalyser databaseFilteringAnalyser
+        )
         {
             this.donorSearchRepository = donorSearchRepository;
             this.matchFilteringService = matchFilteringService;
+            this.databaseFilteringAnalyser = databaseFilteringAnalyser;
         }
 
         public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
@@ -137,7 +144,13 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
             };
 
-            var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
+            var filteringOptions = new MatchingFilteringOptions
+            {
+                ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
+                ShouldFilterOnRegistry = databaseFilteringAnalyser.ShouldFilterOnRegistriesInDatabase(repoCriteria),
+            };
+
+            var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions))
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 

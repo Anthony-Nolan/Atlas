@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -29,11 +30,27 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             this.context = context;
         }
 
-        public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(Locus locus, LocusSearchCriteria criteria)
+        public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(
+            Locus locus,
+            LocusSearchCriteria criteria,
+            MatchingFilteringOptions filteringOptions
+        )
         {
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionOne),
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupsToMatchInPositionTwo)
+                GetAllDonorsForPGroupsAtLocus(
+                    locus,
+                    criteria.PGroupsToMatchInPositionOne,
+                    criteria.SearchType,
+                    criteria.Registries,
+                    filteringOptions
+                ),
+                GetAllDonorsForPGroupsAtLocus(
+                    locus,
+                    criteria.PGroupsToMatchInPositionTwo,
+                    criteria.SearchType,
+                    criteria.Registries,
+                    filteringOptions
+                )
             );
 
             return results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus))
@@ -327,12 +344,38 @@ GROUP BY InnerDonorId, TypePosition";
             }
         }
 
-        private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(Locus locus, IEnumerable<string> pGroups)
+        private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(
+            Locus locus,
+            IEnumerable<string> pGroups,
+            DonorType donorType,
+            IEnumerable<RegistryCode> registryCodes,
+            MatchingFilteringOptions filteringOptions
+        )
         {
             pGroups = pGroups.ToList();
 
+            var filterQuery = "";
+
+            if (filteringOptions.ShouldFilterOnDonorType || filteringOptions.ShouldFilterOnRegistry)
+            {
+                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
+                var registryClause = filteringOptions.ShouldFilterOnRegistry 
+                    ? $"AND d.RegistryCode IN ({string.Join(",", registryCodes.Select(id => (int) id))})" 
+                    : "";
+
+                filterQuery = $@"
+INNER JOIN Donors d
+ON m.DonorId = d.DonorId
+{donorTypeClause}
+{registryClause}
+";
+            }
+            
+
             var sql = $@"
-SELECT DonorId, TypePosition FROM {MatchingTableName(locus)} m
+SELECT m.DonorId, TypePosition FROM {MatchingTableName(locus)} m
+
+{filterQuery}
 
 LEFT JOIN PGroupNames p 
 ON m.PGroup_Id = p.Id
@@ -344,7 +387,7 @@ INNER JOIN (
 AS PGroupNames 
 ON (p.Name = PGroupNames.PGroupName)
 
-GROUP BY DonorId, TypePosition";
+GROUP BY m.DonorId, TypePosition";
 
             using (var conn = new SqlConnection(connectionString))
             {
