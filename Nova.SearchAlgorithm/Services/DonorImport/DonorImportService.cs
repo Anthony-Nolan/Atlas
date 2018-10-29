@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             }
         }
 
-        public async Task ContinueDonorImport(int lastId)
+        private async Task ContinueDonorImport(int lastId)
         {
             var nextId = lastId;
 
