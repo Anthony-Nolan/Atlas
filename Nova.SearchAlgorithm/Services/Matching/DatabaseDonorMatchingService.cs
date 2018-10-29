@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Services.Matching
@@ -32,11 +34,20 @@ namespace Nova.SearchAlgorithm.Services.Matching
     {
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
+        private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
+        private readonly IPGroupRepository pGroupRepository;
 
-        public DatabaseDonorMatchingService(IDonorSearchRepository donorSearchRepository, IMatchFilteringService matchFilteringService)
+        public DatabaseDonorMatchingService(
+            IDonorSearchRepository donorSearchRepository,
+            IMatchFilteringService matchFilteringService,
+            IDatabaseFilteringAnalyser databaseFilteringAnalyser,
+            IPGroupRepository pGroupRepository
+        )
         {
             this.donorSearchRepository = donorSearchRepository;
             this.matchFilteringService = matchFilteringService;
+            this.databaseFilteringAnalyser = databaseFilteringAnalyser;
+            this.pGroupRepository = pGroupRepository;
         }
 
         public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
@@ -133,11 +144,17 @@ namespace Nova.SearchAlgorithm.Services.Matching
             {
                 SearchType = searchType,
                 Registries = registriesToSearch,
-                PGroupsToMatchInPositionOne = criteria.PGroupsToMatchInPositionOne,
-                PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
+                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
             };
 
-            var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria))
+            var filteringOptions = new MatchingFilteringOptions
+            {
+                ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
+                ShouldFilterOnRegistry = databaseFilteringAnalyser.ShouldFilterOnRegistriesInDatabase(repoCriteria),
+            };
+
+            var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions))
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 
@@ -156,8 +173,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
             {
                 SearchType = searchType,
                 Registries = registriesToSearch,
-                PGroupsToMatchInPositionOne = criteria.PGroupsToMatchInPositionOne,
-                PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
+                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
             };
 
             var matches = (await donorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))

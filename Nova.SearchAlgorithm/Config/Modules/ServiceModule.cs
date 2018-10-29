@@ -45,7 +45,10 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
 
-            builder.RegisterType<SqlDonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorImportRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorInspectionRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<PGroupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -61,6 +64,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchCriteriaAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DatabaseFilteringAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ExpandHlaPhenotypeService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             // Scoring Services

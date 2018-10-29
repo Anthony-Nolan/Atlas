@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Common.Models
     {
         public DonorType SearchType { get; set; }
         public IEnumerable<RegistryCode> Registries { get; set; }
-        public IEnumerable<string> PGroupsToMatchInPositionOne { get; set; }
-        public IEnumerable<string> PGroupsToMatchInPositionTwo { get; set; }
+        public IEnumerable<int> PGroupIdsToMatchInPositionOne { get; set; }
+        public IEnumerable<int> PGroupIdsToMatchInPositionTwo { get; set; }
     }
 }

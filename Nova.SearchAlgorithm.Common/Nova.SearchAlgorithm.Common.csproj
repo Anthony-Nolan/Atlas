@@ -166,6 +166,7 @@
     <Compile Include="Models\LocusInfo.cs" />
     <Compile Include="Models\LocusSearchCriteria.cs" />
     <Compile Include="Models\Matching\DonorIdWithPGroupNames.cs" />
+    <Compile Include="Models\Matching\MatchingFilteringOptions.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialHlaMatchRelation.cs" />
     <Compile Include="Models\RawInputDonor.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="Repositories\CloudTableBatchQueryAsync.cs" />
     <Compile Include="Repositories\CloudTableExtensions.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />
+    <Compile Include="Repositories\IPGroupRepository.cs" />
     <Compile Include="Repositories\LookupRepositoryBase.cs" />
     <Compile Include="Repositories\IDonorImportRepository.cs" />
     <Compile Include="Repositories\IDonorInspectionRepository.cs" />
