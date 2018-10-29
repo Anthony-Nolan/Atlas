@@ -31,11 +31,15 @@ namespace Nova.SearchAlgorithm.Config.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            RegisterSearchAlgorithmTypes(builder);
+            RegisterMatchingDictionaryTypes(builder);
+        }
+
+        public static void RegisterSearchAlgorithmTypes(ContainerBuilder builder)
+        {
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
-            builder.RegisterInstance(AutomapperConfig.CreateMapper())
-                .SingleInstance()
-                .AsImplementedInterfaces();
+            builder.RegisterInstance(AutomapperConfig.CreateMapper()).SingleInstance().AsImplementedInterfaces();
 
             var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
@@ -79,11 +83,9 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
-
-            RegisterMatchingDictionaryTypes(builder);
         }
 
-        private static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
+        public static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
         {
             builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
