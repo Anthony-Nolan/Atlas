@@ -45,8 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_ForPatientHlaMatchingMultiplePGroups_InsertsMatchRowForEachPGroup()
         {
-            var donor = DonorWithId(DonorIdGenerator.NextId());
-            var inputDonor = donor;
+            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
@@ -55,6 +54,35 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             pGroups.First().PGroupNames.A_1.Count().Should().Be(hlaWithKnownPGroups1.Item2);
         }
 
+        [Test]
+        public async Task UpdateDonorHla_WhenUpdateHasBeenRunForADonor_DoesNotAddMorePGroups()
+        {
+            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+
+            await updateService.UpdateDonorHla();
+            var initialPGroupCountAtA1 = (await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId})).First().PGroupNames.A_1.Count();
+
+            await updateService.UpdateDonorHla();
+            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
+            pGroups.First().PGroupNames.A_1.Count().Should().Be(initialPGroupCountAtA1);
+        }
+        
+        [Test]
+        public async Task UpdateDonorHla_UpdatesHlaForNewDonorsSinceLastRun()
+        {
+            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await updateService.UpdateDonorHla();
+            
+            var newDonor = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await updateService.UpdateDonorHla();
+
+            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {newDonor.DonorId});
+            pGroups.Should().NotBeEmpty();
+        }
+        
         private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, RawInputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);
