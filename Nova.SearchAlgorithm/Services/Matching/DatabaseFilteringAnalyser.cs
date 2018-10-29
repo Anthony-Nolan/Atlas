@@ -7,6 +7,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
     /// <summary>
     /// Determines whether certain levels of filtering should be performed in the database layer or not
     /// Doing so affects performance positively in some cases, but negatively in others
+    ///
+    /// In all cases, the database level filtering must remove a large proprtion of donors to be worth applying
     /// </summary>
     public interface IDatabaseFilteringAnalyser
     {
