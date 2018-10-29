@@ -303,7 +303,7 @@ AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
 
             using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QueryAsync<int>(sql);
+                return await conn.QueryAsync<int>(sql, commandTimeout: 300);
             }
         }
 
