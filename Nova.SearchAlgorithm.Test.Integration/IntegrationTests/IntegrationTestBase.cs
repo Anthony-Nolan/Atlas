@@ -1,29 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.Entity.Migrations;
 using Autofac;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
+using Nova.DonorService.Client;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Config.Modules;
 using Nova.SearchAlgorithm.Data;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Services;
-using Nova.SearchAlgorithm.Services.DonorImport;
-using Nova.SearchAlgorithm.Services.Matching;
-using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Services.Scoring.Confidence;
-using Nova.SearchAlgorithm.Services.Scoring.Grading;
-using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Data.Migrations;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
-using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Models;
-using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -45,6 +32,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 return Container.Resolve<IDonorIdGenerator>();
             }
         }
+        
+        protected static IDonorServiceClient MockDonorServiceClient { get; set; }
 
         [OneTimeSetUp]
         public void Setup()
@@ -72,7 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             {
                 context.Database.CreateIfNotExists();
             }
-            var config = new Data.Migrations.Configuration();
+            var config = new Configuration();
             var migrator = new DbMigrator(config);
             migrator.Update();
         }
@@ -96,6 +85,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
 
+            MockDonorServiceClient = Substitute.For<IDonorServiceClient>();
+            builder.RegisterInstance(MockDonorServiceClient).AsImplementedInterfaces().SingleInstance();
+            
             // Integration Test Types
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
             builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
