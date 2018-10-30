@@ -34,11 +34,16 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefaultAsync();
         }
 
-        public IBatchQueryAsync<DonorResult> AllDonors()
+        public async Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate()
         {
+            var highestDonorId = await GetHighestDonorIdForWhichHlaHasBeenProcessed();
+            
             using (var conn = new SqlConnection(connectionString))
             {
-                var donors = conn.Query<Donor>("SELECT * FROM donors");
+                var donors = conn.Query<Donor>($@"
+SELECT * FROM Donors d
+WHERE DonorId > {highestDonorId}
+");
                 return new SqlDonorBatchQueryAsync(donors);
             }
         }
@@ -118,6 +123,18 @@ ON DonorId = DonorIds.Id
 ";
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
                 return donors.Select(d => d.ToDonorResult());
+            }
+        }
+
+        private async Task<int> GetHighestDonorIdForWhichHlaHasBeenProcessed()
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                // A, B, and DRB1 should have entries for all donors, so we query the smallest of the three
+                return await connection.QuerySingleOrDefaultAsync<int>(@"
+SELECT TOP(1) DonorId FROM MatchingHlaAtDrb1 m
+ORDER BY m.DonorId DESC
+", 0);
             }
         }
     }
