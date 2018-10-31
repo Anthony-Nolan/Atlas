@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.SixOutOfSixSearch
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSearch.SixOutOfSixSearch
 {
     using TechTalk.SpecFlow;
     

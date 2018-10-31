@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.SixOutOfSixSearch
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSearch.SixOutOfSixSearch
 {
     using TechTalk.SpecFlow;
     
@@ -160,16 +160,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.SixOutOf
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search with a mismatched donor at Dqb1")]
-        public virtual void _66SearchWithAMismatchedDonorAtDqb1()
+        [NUnit.Framework.DescriptionAttribute("6/6 Search with a mismatched donor at DQB1")]
+        public virtual void _66SearchWithAMismatchedDonorAtDQB1()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with a mismatched donor at Dqb1", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with a mismatched donor at DQB1", ((string[])(null)));
 #line 36
   this.ScenarioSetup(scenarioInfo);
 #line 37
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 38
-    testRunner.And("the donor has a single mismatch at locus Dqb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the donor has a single mismatch at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 39
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 40

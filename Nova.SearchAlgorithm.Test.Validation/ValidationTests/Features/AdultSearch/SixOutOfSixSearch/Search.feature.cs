@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSearcha.SixOutOfSixSearch
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSearch.SixOutOfSixSearch
 {
     using TechTalk.SpecFlow;
     
@@ -83,16 +83,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search with untyped patient at Dqb1")]
-        public virtual void _66SearchWithUntypedPatientAtDqb1()
+        [NUnit.Framework.DescriptionAttribute("6/6 Search with untyped patient at DQB1")]
+        public virtual void _66SearchWithUntypedPatientAtDQB1()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at Dqb1", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at DQB1", ((string[])(null)));
 #line 11
   this.ScenarioSetup(scenarioInfo);
 #line 12
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 13
-    testRunner.And("the patient is untyped at Locus Dqb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 14
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 15
@@ -102,10 +102,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search with untyped patient at C and Dqb1")]
-        public virtual void _66SearchWithUntypedPatientAtCAndDqb1()
+        [NUnit.Framework.DescriptionAttribute("6/6 Search with untyped patient at C and DQB1")]
+        public virtual void _66SearchWithUntypedPatientAtCAndDQB1()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at C and Dqb1", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at C and DQB1", ((string[])(null)));
 #line 17
   this.ScenarioSetup(scenarioInfo);
 #line 18
@@ -113,7 +113,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
 #line 19
  testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 20
-    testRunner.And("the patient is untyped at Locus Dqb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 22

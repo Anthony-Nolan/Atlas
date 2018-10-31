@@ -33,9 +33,9 @@ Feature: Ten Out Of Ten Search - mismatches
     When I run a 10/10 search
     Then the results should not contain the specified donor
     
-  Scenario: 10/10 Search with a mismatched donor at Dqb1
+  Scenario: 10/10 Search with a mismatched donor at DQB1
     Given a patient and a donor
-    And the donor has a single mismatch at locus Dqb1
+    And the donor has a single mismatch at locus DQB1
     When I run a 10/10 search
     Then the results should not contain the specified donor
 
