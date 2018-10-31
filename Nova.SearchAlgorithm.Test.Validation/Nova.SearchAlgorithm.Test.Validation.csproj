@@ -438,42 +438,42 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>TwoMismatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfEightSearch\Search.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Search.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfTenSearch\BetterMatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>BetterMatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfTenSearch\EightOutOfTenMatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>EightOutOfTenMatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\EightOutOfTenSearch\WorseMatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>WorseMatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FullMatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
@@ -498,42 +498,42 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatchCountRanking.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Search.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\AlignedRegistries.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AlignedRegistries.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\Mismatches.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\MultiplePatients.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MultiplePatients.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Search.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\TenOutOfTenSearch\TypingResolutions.feature.cs">
+    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TypingResolutions.feature</DependentUpon>
@@ -553,21 +553,21 @@
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature" />
-    <Content Include="ValidationTests\Features\EightOutOfEightSearch\AlignedRegistries.feature" />
-    <Content Include="ValidationTests\Features\EightOutOfEightSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\EightOutOfTenSearch\BetterMatches.feature" />
-    <Content Include="ValidationTests\Features\EightOutOfTenSearch\EightOutOfTenMatches.feature" />
-    <Content Include="ValidationTests\Features\EightOutOfTenSearch\WorseMatches.feature" />
-    <Content Include="ValidationTests\Features\NineOutOfTenSearch\FullMatches.feature" />
-    <Content Include="ValidationTests\Features\NineOutOfTenSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
     <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
-    <Content Include="ValidationTests\Features\SixOutOfSixSearch\AlignedRegistries.feature" />
-    <Content Include="ValidationTests\Features\SixOutOfSixSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\TenOutOfTenSearch\AlignedRegistries.feature" />
-    <Content Include="ValidationTests\Features\TenOutOfTenSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\TenOutOfTenSearch\MultiplePatients.feature" />
-    <Content Include="ValidationTests\Features\TenOutOfTenSearch\Search.feature" />
-    <Content Include="ValidationTests\Features\TenOutOfTenSearch\TypingResolutions.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\AlignedRegistries.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature" />
+    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature" />
     <Content Include="ValidationTests\Features\ValidationREADME.md" />
     <None Include="app.config">
       <SubType>Designer</SubType>
@@ -583,7 +583,7 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="ValidationTests\Features\EightOutOfEightSearch\Search.feature">
+    <None Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Search.feature.cs</LastGenOutput>
     </None>
@@ -599,7 +599,7 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>MatchCountRanking.feature.cs</LastGenOutput>
     </None>
-    <None Include="ValidationTests\Features\SixOutOfSixSearch\Search.feature">
+    <None Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Search.feature.cs</LastGenOutput>
     </None>
