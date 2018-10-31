@@ -114,7 +114,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 return;
             }
 
-            var tableName = MatchingTableName(locus);
+            var tableName = MatchingTableNameHelper.MatchingTableName(locus);
 
             using (var conn = new SqlConnection(connectionString))
             {
@@ -160,11 +160,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 transaction.Commit();
                 conn.Close();
             }
-        }
-
-        private static string MatchingTableName(Locus locus)
-        {
-            return "MatchingHlaAt" + locus;
         }
     }
 }
