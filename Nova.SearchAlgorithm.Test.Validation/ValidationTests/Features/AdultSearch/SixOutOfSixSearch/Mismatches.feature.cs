@@ -122,16 +122,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search with a mismatched donor at Drb1")]
-        public virtual void _66SearchWithAMismatchedDonorAtDrb1()
+        [NUnit.Framework.DescriptionAttribute("6/6 Search with a mismatched donor at DRB1")]
+        public virtual void _66SearchWithAMismatchedDonorAtDRB1()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with a mismatched donor at Drb1", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with a mismatched donor at DRB1", ((string[])(null)));
 #line 24
   this.ScenarioSetup(scenarioInfo);
 #line 25
     testRunner.Given("a patient and a donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 26
-    testRunner.And("the donor has a single mismatch at locus Drb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the donor has a single mismatch at locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 27
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 28
@@ -179,16 +179,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search with a mismatched donor at Dpb1")]
-        public virtual void _66SearchWithAMismatchedDonorAtDpb1()
+        [NUnit.Framework.DescriptionAttribute("6/6 Search with a mismatched donor at DPB1")]
+        public virtual void _66SearchWithAMismatchedDonorAtDPB1()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with a mismatched donor at Dpb1", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with a mismatched donor at DPB1", ((string[])(null)));
 #line 42
   this.ScenarioSetup(scenarioInfo);
 #line 43
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 44
-    testRunner.And("the donor has a single mismatch at locus Dpb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the donor has a single mismatch at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 45
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 46

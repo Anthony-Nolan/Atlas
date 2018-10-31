@@ -61,20 +61,20 @@
 
   Scenario: P-group match - donor untyped at C
     Given a patient has a match
-    And the matching donor is untyped at Locus C
+    And the matching donor is untyped at locus C
     When I run a 6/6 search
     Then the match grade should be p-group at C at both positions
 
   Scenario: P-group match - patient untyped at C
     Given a patient has a match
-    And the patient is untyped at Locus C
+    And the patient is untyped at locus C
     When I run a 6/6 search
     Then the match grade should be p-group at C at both positions
 
   Scenario: P-group match - patient and donor untyped at C
     Given a patient has a match
-    And the matching donor is untyped at Locus C
-    And the patient is untyped at Locus C
+    And the matching donor is untyped at locus C
+    And the patient is untyped at locus C
     When I run a 6/6 search
     Then the match grade should be p-group at C at both positions
 

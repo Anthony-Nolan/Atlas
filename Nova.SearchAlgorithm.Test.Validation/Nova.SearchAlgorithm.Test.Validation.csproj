@@ -539,6 +539,9 @@
       <DependentUpon>TypingResolutions.feature</DependentUpon>
     </Compile>
     <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\InputParsers\LocusParser.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\InputParsers\OrientationParser.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\InputParsers\PositionParser.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultipleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\PatientDataFactoryExtensions.cs" />

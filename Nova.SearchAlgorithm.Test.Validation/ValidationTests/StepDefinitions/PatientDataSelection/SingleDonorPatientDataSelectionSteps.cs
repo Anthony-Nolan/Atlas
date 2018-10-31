@@ -2,6 +2,8 @@
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System;
+using System.Linq;
+using Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -33,14 +35,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     patientDataFactory.SetPatientUntypedAtLocus(Locus.C);
                     break;
                 case "Dpb1":
+                case "DPB1":
                     patientDataFactory.SetPatientUntypedAtLocus(Locus.Dpb1);
                     break;
                 case "Dqb1":
+                case "DQB1":
                     patientDataFactory.SetPatientUntypedAtLocus(Locus.Dqb1);
                     break;
                 case "A":
                 case "B":
                 case "Drb1":
+                case "DRB1":
                     throw new Exception("Loci A, B, DRB1 cannot be untyped");
                 default:
                     ScenarioContext.Current.Pending();
@@ -59,41 +64,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         }
 
         [Given(@"the patient is homozygous at (.*)")]
-        public void GivenThePatientIsHomozygousAt(string locus)
+        public void GivenThePatientIsHomozygousAt(string locusString)
         {
             var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var loci = LocusParser.ParseLoci(locusString);
 
-            switch (locus)
+            foreach (var locus in loci)
             {
-                case "locus A":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.A);
-                    break;
-                case "locus B":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.B);
-                    break;
-                case "locus C":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.C);
-                    break;
-                case "locus DPB1":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dpb1);
-                    break;
-                case "locus DQB1":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dqb1);
-                    break;
-                case "locus DRB1":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Drb1);
-                    break;
-                case "all loci":
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.A);
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.B);
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.C);
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dpb1);
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Dqb1);
-                    patientDataFactory.SetPatientHomozygousAtLocus(Locus.Drb1);
-                    break;
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                patientDataFactory.SetPatientHomozygousAtLocus(locus);
             }
 
             ScenarioContext.Current.Set(patientDataFactory);
@@ -126,30 +104,22 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             ScenarioContext.Current.Set(patientDataFactory);
         }
 
-        [Given(@"the donor is untyped at Locus (.*)")]
-        [Given(@"the matching donor is untyped at Locus (.*)")]
-        public void GivenTheMatchingDonorIsUntypedAt(string locus)
+        [Given(@"the donor is untyped at (.*)")]
+        [Given(@"the matching donor is untyped at (.*)")]
+        public void GivenTheMatchingDonorIsUntypedAt(string locusString)
         {
             var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var loci = LocusParser.ParseLoci(locusString).ToList();
 
-            switch (locus)
+            var lociWithMandatoryTyping = new[] {Locus.A, Locus.B, Locus.Drb1};
+            if (loci.Any(l => lociWithMandatoryTyping.Contains(l)))
             {
-                case "C":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(Locus.C, HlaTypingResolution.Untyped);
-                    break;
-                case "Dpb1":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(Locus.Dpb1, HlaTypingResolution.Untyped);
-                    break;
-                case "Dqb1":
-                    patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(Locus.Dqb1, HlaTypingResolution.Untyped);
-                    break;
-                case "A":
-                case "B":
-                case "Drb1":
-                    throw new Exception("Loci A, B, DRB1 cannot be untyped");
-                default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                throw new Exception("Loci A, B, DRB1 cannot be untyped");
+            }
+
+            foreach (var locus in loci)
+            {
+                patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(locus, HlaTypingResolution.Untyped);
             }
 
             ScenarioContext.Current.Set(patientDataFactory);

@@ -67,20 +67,20 @@
 
   Scenario: Potential match - donor untyped at C
     Given a patient has a match
-    And the matching donor is untyped at Locus C
+    And the matching donor is untyped at locus C
     When I run a 6/6 search
     Then the match confidence should be Potential at C at both positions
 
   Scenario: Potential match - patient untyped at C
     Given a patient has a match
-    And the patient is untyped at Locus C
+    And the patient is untyped at locus C
     When I run a 6/6 search
     Then the match confidence should be Potential at C at both positions
 
   Scenario: Potential match - patient and donor untyped at C
     Given a patient has a match
-    And the matching donor is untyped at Locus C
-    And the patient is untyped at Locus C
+    And the matching donor is untyped at locus C
+    And the patient is untyped at locus C
     When I run a 6/6 search
     Then the match confidence should be Potential at C at both positions
 

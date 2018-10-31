@@ -153,7 +153,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
 #line 31
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 32
-    testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 33
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 34
@@ -172,7 +172,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
 #line 37
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 38
-    testRunner.And("the matching donor is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is untyped at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 39
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 40
@@ -191,9 +191,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSea
 #line 43
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 44
-    testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 45
-    testRunner.And("the matching donor is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is untyped at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 46
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 47

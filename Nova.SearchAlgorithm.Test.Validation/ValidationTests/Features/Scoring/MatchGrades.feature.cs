@@ -253,7 +253,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 63
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 64
-    testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 65
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 66
@@ -272,7 +272,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 69
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 70
-    testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 71
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 72
@@ -291,9 +291,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 75
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 76
-    testRunner.And("the matching donor is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 77
-    testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the patient is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 78
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 79

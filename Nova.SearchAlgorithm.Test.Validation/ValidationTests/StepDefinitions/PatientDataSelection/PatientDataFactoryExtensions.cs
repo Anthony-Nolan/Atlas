@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -55,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     break;
             }
 
-            var loci = ParseLoci(locusType);
+            var loci = LocusParser.ParseLoci(locusType);
 
             foreach (var locus in loci)
             {
@@ -75,8 +76,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetMismatchAt(this IPatientDataFactory factory, string locusType, string positionType)
         {
-            var loci = ParseLoci(locusType);
-            var positions = ParsePositions(positionType).ToList();
+            var loci = LocusParser.ParseLoci(locusType);
+            var positions = PositionParser.ParsePositions(positionType).ToList();
             
             foreach (var locus in loci)
             {
@@ -107,8 +108,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetMatchOrientationsAt(this IPatientDataFactory factory, string orientationString, string locusType)
         {
-            var loci = ParseLoci(locusType);
-            var orientation = ParseOrientation(orientationString);
+            var loci = LocusParser.ParseLoci(locusType);
+            var orientation = OrientationParser.ParseOrientation(orientationString);
 
             foreach (var locus in loci)
             {
@@ -216,7 +217,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetExpressionSuffixAt(this IPatientDataFactory factory, string expressionSuffix, string locusType)
         {
-            var loci = ParseLoci(locusType);
+            var loci = LocusParser.ParseLoci(locusType);
 
             switch (expressionSuffix)
             {
@@ -242,8 +243,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetNullAlleleAt(this IPatientDataFactory factory, string locusType, string positionType)
         {
-            var loci = ParseLoci(locusType);
-            var positions = ParsePositions(positionType).ToList();
+            var loci = LocusParser.ParseLoci(locusType);
+            var positions = PositionParser.ParsePositions(positionType).ToList();
 
             foreach (var locus in loci)
             {
@@ -258,8 +259,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetPatientNonMatchingNullAlleleAt(this IPatientDataFactory factory, string locusType, string positionType)
         {
-            var loci = ParseLoci(locusType);
-            var positions = ParsePositions(positionType).ToList();
+            var loci = LocusParser.ParseLoci(locusType);
+            var positions = PositionParser.ParsePositions(positionType).ToList();
 
             foreach (var locus in loci)
             {
@@ -274,7 +275,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
         public static IPatientDataFactory SetPatientTypingCategoryAt(this IPatientDataFactory factory, string typingCategory, string locusType)
         {
-            var loci = ParseLoci(locusType);
+            var loci = LocusParser.ParseLoci(locusType);
             var typingResolution = ParsePatientTypingResolution(typingCategory);
 
             foreach (var locus in loci)
@@ -300,63 +301,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 default:
                     ScenarioContext.Current.Pending();
                     return HlaTypingResolution.Tgs;
-            }
-        }
-
-        private static IEnumerable<Locus> ParseLoci(string locus)
-        {
-            switch (locus)
-            {
-                case "each locus":
-                case "all loci":
-                    return LocusHelpers.AllLoci();
-                case "locus A":
-                    return new[] {Locus.A};
-                case "locus B":
-                    return new[] {Locus.B};
-                case "locus C":
-                    return new[] {Locus.C};
-                case "locus Dpb1":
-                case "locus DPB1":
-                    return new[] {Locus.Dpb1};
-                case "locus Dqb1":
-                case "locus DQB1":
-                    return new[] {Locus.Dqb1};
-                case "locus Drb1":
-                case "locus DRB1":
-                    return new[] {Locus.Drb1};
-                default:
-                    ScenarioContext.Current.Pending();
-                    return new List<Locus>();
-            }
-        }
-
-        private static IEnumerable<TypePosition> ParsePositions(string positionType)
-        {
-            switch (positionType)
-            {
-                case "position 1":
-                case "position one":
-                    return new[] {TypePosition.One};
-                case "position 2":
-                case "position two":
-                    return new[] {TypePosition.Two};
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private static MatchOrientation ParseOrientation(string orientation)
-        {
-            switch (orientation)
-            {
-                case "cross":
-                    return MatchOrientation.Cross;
-                case "direct":
-                    return MatchOrientation.Direct;
-                default:
-                    ScenarioContext.Current.Pending();
-                    return MatchOrientation.Arbitrary;
             }
         }
 
