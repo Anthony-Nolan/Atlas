@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     public class SingleDonorSearchTests : IntegrationTestBase
     {
         private ISearchService searchService;
-        private InputDonor donor;
+        private InputDonorWithExpandedHla donor;
         // A selection of valid hla data for the single donor to have
         private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
         {
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
             var donorRepository = Container.Resolve<IDonorImportRepository>();
 
-            donor = new InputDonor
+            donor = new InputDonorWithExpandedHla
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,

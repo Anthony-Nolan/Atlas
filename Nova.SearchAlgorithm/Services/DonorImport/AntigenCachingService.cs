@@ -1,14 +1,14 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Services.DonorImport

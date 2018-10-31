@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
             };
         }
 
-        public void CopyRawHlaFrom(InputDonor donor)
+        public void CopyRawHlaFrom(InputDonorWithExpandedHla donor)
         {
             A_1 = donor.MatchingHla.A_1.OriginalName;
             A_2 = donor.MatchingHla.A_2.OriginalName;

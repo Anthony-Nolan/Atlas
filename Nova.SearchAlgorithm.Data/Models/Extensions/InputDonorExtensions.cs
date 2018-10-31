@@ -1,11 +1,12 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Entity;
 
 namespace Nova.SearchAlgorithm.Data.Models.Extensions
 {
     static class InputDonorExtensions
     {
-        public static Donor ToDonorEntity(this InputDonor donor)
+        public static Donor ToDonorEntity(this InputDonorWithExpandedHla donor)
         {
             return new Donor
             {
@@ -27,7 +28,7 @@ namespace Nova.SearchAlgorithm.Data.Models.Extensions
             };
         }
 
-        public static Donor ToDonorEntity(this RawInputDonor donor)
+        public static Donor ToDonorEntity(this InputDonor donor)
         {
             return new Donor
             {

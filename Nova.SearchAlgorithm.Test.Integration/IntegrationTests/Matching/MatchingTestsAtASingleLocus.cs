@@ -19,12 +19,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     public class MatchingTestsAtASingleLocus : IntegrationTestBase
     {
         private IDonorMatchingService matchingService;
-        private InputDonor donorWithFullHomozygousMatchAtLocus;
-        private InputDonor donorWithFullExactHeterozygousMatchAtLocus;
-        private InputDonor donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus;
-        private InputDonor donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus;
-        private InputDonor donorWithNoMatchAtLocus;
-        private InputDonor donorWithFullCrossHeterozygousMatchAtLocus;
+        private InputDonorWithExpandedHla donorWithFullHomozygousMatchAtLocus;
+        private InputDonorWithExpandedHla donorWithFullExactHeterozygousMatchAtLocus;
+        private InputDonorWithExpandedHla donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus;
+        private InputDonorWithExpandedHla donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus;
+        private InputDonorWithExpandedHla donorWithNoMatchAtLocus;
+        private InputDonorWithExpandedHla donorWithFullCrossHeterozygousMatchAtLocus;
 
         private const DonorType DefaultDonorType = DonorType.Cord;
         
@@ -117,7 +117,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            var allDonors = new List<InputDonor>
+            var allDonors = new List<InputDonorWithExpandedHla>
             {
                 donorWithFullHomozygousMatchAtLocus,
                 donorWithFullExactHeterozygousMatchAtLocus,

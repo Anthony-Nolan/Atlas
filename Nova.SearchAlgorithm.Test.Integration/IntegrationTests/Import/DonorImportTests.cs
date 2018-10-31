@@ -3,12 +3,13 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Services.DonorImport;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Services.DonorImport;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
@@ -32,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task InsertBatchOfDonors_InsertsCorrectDonorData()
         {
-            var inputDonors = new List<RawInputDonor> {NextDonor(), NextDonor()};
+            var inputDonors = new List<InputDonor> {NextDonor(), NextDonor()};
             await importRepo.InsertBatchOfDonors(inputDonors);
 
             var storedDonor1 = await inspectionRepo.GetDonor(inputDonors.First().DonorId);
@@ -47,7 +48,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
             var inputDonor = NextDonor();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
 
@@ -59,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorHla_ForPatientHlaMatchingMultiplePGroups_InsertsMatchRowForEachPGroup()
         {
             var inputDonor = NextDonor();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
 
@@ -69,7 +70,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 
         #endregion
 
-        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, RawInputDonor donorExpected)
+        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, InputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);
             donorActual.DonorType.Should().Be(donorExpected.DonorType);
@@ -77,9 +78,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             donorActual.HlaNames.ShouldBeEquivalentTo(donorExpected.HlaNames);
         }
 
-        private RawInputDonor DonorWithId(int id)
+        private InputDonor DonorWithId(int id)
         {
-            return new RawInputDonor
+            return new InputDonor
             {
                 RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,
@@ -97,7 +98,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         /// <returns> Donor with default information, and an auto-incremented donorId to avoid duplicates in the test DB</returns>
-        private RawInputDonor NextDonor()
+        private InputDonor NextDonor()
         {
             var donor = DonorWithId(DonorIdGenerator.NextId());
             return donor;

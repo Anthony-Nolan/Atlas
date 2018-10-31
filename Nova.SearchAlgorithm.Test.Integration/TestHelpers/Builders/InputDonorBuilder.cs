@@ -6,11 +6,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
     public class InputDonorBuilder
     {
-        private readonly InputDonor donor;
+        private readonly InputDonorWithExpandedHla donor;
         
         public InputDonorBuilder(int donorId)
         {
-            donor = new InputDonor
+            donor = new InputDonorWithExpandedHla
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
         
-        public InputDonor Build()
+        public InputDonorWithExpandedHla Build()
         {
             return donor;
         }

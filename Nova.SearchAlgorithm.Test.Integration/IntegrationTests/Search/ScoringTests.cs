@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private ISearchService searchService;
         private ITestHlaSet defaultHlaSet;
         private ITestHlaSet mismatchHlaSet;
-        private InputDonor donor_FiveLocus_SingleAlleles;
+        private InputDonorWithExpandedHla donor_FiveLocus_SingleAlleles;
 
         [OneTimeSetUp]
         public void ImportTestDonor()
@@ -250,7 +250,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
         #endregion
 
-        private InputDonor BuildTestDonor()
+        private InputDonorWithExpandedHla BuildTestDonor()
         {
             var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
 

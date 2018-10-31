@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
 
-        private readonly InputDonor donorWithAlleles = new InputDonor
+        private readonly InputDonorWithExpandedHla donorWithAlleles = new InputDonorWithExpandedHla
         {
             RegistryCode = RegistryCode.DKMS,
             DonorType = DonorType.Cord,
@@ -29,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             }
         };
 
-        private readonly InputDonor donorWithXxCodes = new InputDonor
+        private readonly InputDonorWithExpandedHla donorWithXxCodes = new InputDonorWithExpandedHla
         {
             RegistryCode = RegistryCode.AN,
             DonorType = DonorType.Cord,
@@ -80,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAlleles;
             donor.DonorId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor>{donor.ToRawInputDonor()});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor>{donor.ToRawInputDonor()});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -92,14 +93,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodes;
             donor.DonorId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor>{donor.ToRawInputDonor()});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor>{donor.ToRawInputDonor()});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
             AssertStoredDonorInfoMatchesOriginalDonorInfo(donorWithXxCodes, result);
         }
         
-        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(InputDonor expectedDonor, DonorResult actualDonor)
+        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(InputDonorWithExpandedHla expectedDonor, DonorResult actualDonor)
         {
             actualDonor.DonorId.Should().Be(expectedDonor.DonorId);
             actualDonor.DonorType.Should().Be(expectedDonor.DonorType);

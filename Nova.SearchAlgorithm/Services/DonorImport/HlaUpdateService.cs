@@ -1,20 +1,23 @@
 ﻿using System;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.Utils.ApplicationInsights.EventModels;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DonorImport
 {
     public interface IHlaUpdateService
     {
+        /// <summary>
+        /// For any donors with a higher id than the last updated donor, fetches p-groups for all donor's hla
+        /// And stores the pre-processed p-groups for use in matching
+        /// </summary>
         Task UpdateDonorHla();
     }
 
@@ -112,13 +115,13 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             pGroupRepository.InsertPGroups(pGroups);
         }
 
-        private async Task<InputDonor> FetchDonorHlaData(DonorResult donor)
+        private async Task<InputDonorWithExpandedHla> FetchDonorHlaData(DonorResult donor)
         {
             try
             {
                 var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames);
 
-                return new InputDonor
+                return new InputDonorWithExpandedHla
                 {
                     DonorId = donor.DonorId,
                     DonorType = donor.DonorType,

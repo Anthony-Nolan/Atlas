@@ -171,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             }
         }
 
-        private IEnumerable<InputDonor> BuildInputDonors()
+        private IEnumerable<InputDonorWithExpandedHla> BuildInputDonors()
         {
             return
                 BuildTwoOutOfTwoMatchCountDonors().Concat(
@@ -179,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         BuildZeroOutOfTwoMatchCountDonors()));
         }
 
-        private IEnumerable<InputDonor> BuildTwoOutOfTwoMatchCountDonors()
+        private IEnumerable<InputDonorWithExpandedHla> BuildTwoOutOfTwoMatchCountDonors()
         {
             var donorWithOriginalHla1At1AndOriginalNullAt2 = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
@@ -204,7 +204,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         originalHlaAtLocusUnderTest)))
                 .Build();
 
-            var donors = new List<InputDonor>
+            var donors = new List<InputDonorWithExpandedHla>
             {
                 donorWithOriginalHla1At1AndOriginalNullAt2,
                 donorWithOriginalHla1At1AndDifferentNullAt2,
@@ -216,7 +216,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             return donors;
         }
 
-        private IEnumerable<InputDonor> BuildOneOutOfTwoMatchCountDonors()
+        private IEnumerable<InputDonorWithExpandedHla> BuildOneOutOfTwoMatchCountDonors()
         {
             var donorWithOriginalHla1At1AndOriginalHla2At2 = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
@@ -232,7 +232,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         new Tuple<string, string>(originalHlaAtLocusUnderTest.Item1, mismatchedHlaAtLocusUnderTest.Item2))))
                 .Build();
 
-            var donors = new List<InputDonor>
+            var donors = new List<InputDonorWithExpandedHla>
             {
                 donorWithOriginalHla1At1AndOriginalHla2At2,
                 donorWithOriginalHla1At1AndMismatchedHla2At2
@@ -243,7 +243,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             return donors;
         }
 
-        private IEnumerable<InputDonor> BuildZeroOutOfTwoMatchCountDonors()
+        private IEnumerable<InputDonorWithExpandedHla> BuildZeroOutOfTwoMatchCountDonors()
         {
             var donorWithMismatchedHla1At1AndOriginalHla2At2 = new InputDonorBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
@@ -282,7 +282,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         mismatchedHlaAtLocusUnderTest)))
                 .Build();
 
-            var donors = new List<InputDonor>
+            var donors = new List<InputDonorWithExpandedHla>
             {
                 donorWithMismatchedHla1At1AndOriginalHla2At2,
                 donorWithMismatchedHla1At1AndOriginalNullAt2,

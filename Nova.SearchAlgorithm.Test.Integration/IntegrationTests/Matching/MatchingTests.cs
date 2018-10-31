@@ -15,18 +15,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     public class MatchingTests : IntegrationTestBase
     {
         private IDonorMatchingService matchingService;
-        private InputDonor cordDonorWithFullHomozygousMatchAtLocusA;
-        private InputDonor cordDonorWithFullHeterozygousMatchAtLocusA;
-        private InputDonor cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA;
-        private InputDonor cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
-        private InputDonor cordDonorWithNoMatchAtLocusAAndExactMatchAtB;
-        private InputDonor cordDonorWithNoMatchAtLocusAAndHalfMatchAtB;
+        private InputDonorWithExpandedHla cordDonorWithFullHomozygousMatchAtLocusA;
+        private InputDonorWithExpandedHla cordDonorWithFullHeterozygousMatchAtLocusA;
+        private InputDonorWithExpandedHla cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA;
+        private InputDonorWithExpandedHla cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
+        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocusAAndExactMatchAtB;
+        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocusAAndHalfMatchAtB;
 
         // Registries chosen to be different from `DefaultRegistryCode`
-        private InputDonor cordDonorWithFullMatchAtAnthonyNolanRegistry;
-        private InputDonor cordDonorWithFullMatchAtNmdpRegistry;
+        private InputDonorWithExpandedHla cordDonorWithFullMatchAtAnthonyNolanRegistry;
+        private InputDonorWithExpandedHla cordDonorWithFullMatchAtNmdpRegistry;
         
-        private InputDonor adultDonorWithFullMatch;
+        private InputDonorWithExpandedHla adultDonorWithFullMatch;
 
         private const string PatientPGroup_LocusA_BothPositions = "01:01P";
         private const string PatientPGroup_LocusA_PositionOne = "01:02";
@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DonorType.Adult)
                 .Build();
             
-            var allDonors = new List<InputDonor>
+            var allDonors = new List<InputDonorWithExpandedHla>
             {
                 cordDonorWithFullHomozygousMatchAtLocusA,
                 cordDonorWithFullHeterozygousMatchAtLocusA,

@@ -1,6 +1,7 @@
 ﻿using System;
 using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Exceptions;
 
@@ -8,9 +9,9 @@ namespace Nova.SearchAlgorithm.Extensions
 {
     public static class DonorExtensions
     {
-        public static RawInputDonor ToRawImportDonor(this DonorInfoForSearchAlgorithm donor)
+        public static InputDonor ToInputDonor(this DonorInfoForSearchAlgorithm donor)
         {
-            return new RawInputDonor
+            return new InputDonor
             {
                 DonorId = donor.DonorId,
                 RegistryCode = RegistryCodeFromString(donor.RegistryCode),
@@ -19,7 +20,7 @@ namespace Nova.SearchAlgorithm.Extensions
             };
         }
 
-        public static PhenotypeInfo<string> HlaAsPhenotype(this DonorInfoForSearchAlgorithm donor)
+        private static PhenotypeInfo<string> HlaAsPhenotype(this DonorInfoForSearchAlgorithm donor)
         {
             return new PhenotypeInfo<string>
             {
@@ -29,16 +30,16 @@ namespace Nova.SearchAlgorithm.Extensions
                 B_2 = donor.B_2,
                 C_1 = donor.C_1,
                 C_2 = donor.C_2,
-                DPB1_1 = donor.DPB1_1,
-                DPB1_2 = donor.DPB1_2,
-                DQB1_1 = donor.DQB1_1,
-                DQB1_2 = donor.DQB1_2,
-                DRB1_1 = donor.DRB1_1,
-                DRB1_2 = donor.DRB1_2
+                Dpb1_1 = donor.DPB1_1,
+                Dpb1_2 = donor.DPB1_2,
+                Dqb1_1 = donor.DQB1_1,
+                Dqb1_2 = donor.DQB1_2,
+                Drb1_1 = donor.DRB1_1,
+                Drb1_2 = donor.DRB1_2
             };
         }
 
-        public static RegistryCode RegistryCodeFromString(string input)
+        private static RegistryCode RegistryCodeFromString(string input)
         {
             if (Enum.TryParse(input, out RegistryCode code))
             {
@@ -47,7 +48,7 @@ namespace Nova.SearchAlgorithm.Extensions
             throw new DonorImportException($"Could not understand registry code {input}");
         }
 
-        public static DonorType DonorTypeFromString(string input)
+        private static DonorType DonorTypeFromString(string input)
         {
             switch (input.ToLower())
             {

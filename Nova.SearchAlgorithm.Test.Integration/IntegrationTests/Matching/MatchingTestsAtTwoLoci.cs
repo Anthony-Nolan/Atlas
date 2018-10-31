@@ -28,17 +28,17 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     {
         private IDonorMatchingService matchingService;
 
-        private InputDonor cordDonorWithNoMatchAtEitherLocus;
-        private InputDonor cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2;
-        private InputDonor cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2;
+        private InputDonorWithExpandedHla cordDonorWithNoMatchAtEitherLocus;
+        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2;
+        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2;
 
-        private InputDonor cordDonorWithHalfMatchAtLocus1AndNoMatchAtLocus2;
-        private InputDonor cordDonorWithHalfMatchAtBothLoci;
-        private InputDonor cordDonorWithHalfMatchAtLocus1AndFullMatchAtLocus2;
+        private InputDonorWithExpandedHla cordDonorWithHalfMatchAtLocus1AndNoMatchAtLocus2;
+        private InputDonorWithExpandedHla cordDonorWithHalfMatchAtBothLoci;
+        private InputDonorWithExpandedHla cordDonorWithHalfMatchAtLocus1AndFullMatchAtLocus2;
 
-        private InputDonor cordDonorWithFullMatchAtLocus1AndNoMatchAtLocus2;
-        private InputDonor cordDonorWithFullMatchAtLocus1AndHalfMatchAtLocus2;
-        private InputDonor cordDonorWithFullMatchAtBothLoci;
+        private InputDonorWithExpandedHla cordDonorWithFullMatchAtLocus1AndNoMatchAtLocus2;
+        private InputDonorWithExpandedHla cordDonorWithFullMatchAtLocus1AndHalfMatchAtLocus2;
+        private InputDonorWithExpandedHla cordDonorWithFullMatchAtBothLoci;
 
         private const DonorType DefaultDonorType = DonorType.Cord;
 
@@ -126,7 +126,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithMatchesAtLocus2(2)
                 .Build();
 
-            var allDonors = new List<InputDonor>
+            var allDonors = new List<InputDonorWithExpandedHla>
             {
                 cordDonorWithNoMatchAtEitherLocus,
                 cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2,
@@ -278,7 +278,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 return this;
             }
 
-            public InputDonor Build()
+            public InputDonorWithExpandedHla Build()
             {
                 return inputDonorBuilder
                     .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})

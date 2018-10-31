@@ -1,18 +1,22 @@
-﻿using Nova.DonorService.Client;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.Extensions;
-using Nova.Utils.ApplicationInsights;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.DonorService.Client;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Exceptions;
+using Nova.SearchAlgorithm.Extensions;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DonorImport
 {
     public interface IDonorImportService
     {
+        /// <summary>
+        /// Fetches all donors with a higher id than the highest existing donor, and stores their data in the donor table
+        /// Does not perform analysis of donor p-groups
+        /// </summary>
         Task StartDonorImport();
     }
 
@@ -20,18 +24,18 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
     {
         private const int DonorPageSize = 100;
 
-        private readonly IDonorInspectionRepository donorInspectionRespository;
+        private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImportService(
-            IDonorInspectionRepository donorInspectionRespository,
+            IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
-            this.donorInspectionRespository = donorInspectionRespository;
+            this.donorInspectionRepository = donorInspectionRepository;
             this.donorImportRepository = donorImportRepository;
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
@@ -41,7 +45,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
         {
             try
             {
-                await ContinueDonorImport(await donorInspectionRespository.HighestDonorId());
+                await ContinueDonorImport(await donorInspectionRepository.HighestDonorId());
             }
             catch (Exception ex)
             {
@@ -49,7 +53,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             }
         }
 
-        public async Task ContinueDonorImport(int lastId)
+        private async Task ContinueDonorImport(int lastId)
         {
             var nextId = lastId;
 
@@ -61,7 +65,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             
             while (page.DonorsInfo.Any())
             {
-                await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToRawImportDonor()));
+                await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToInputDonor()));
 
                 stopwatch.Stop();
                 logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
@@ -73,7 +77,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
                 stopwatch.Start();
                 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-                nextId = page.LastId ?? (await donorInspectionRespository.HighestDonorId());
+                nextId = page.LastId ?? (await donorInspectionRepository.HighestDonorId());
                 page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
             }
             

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -31,7 +32,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             this.pGroupRepository = pGroupRepository;
         }
 
-        public async Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors)
+        public async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
         {
             var rawInputDonors = donors.ToList();
 
@@ -80,7 +81,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        public async Task AddOrUpdateDonorWithHla(InputDonor donor)
+        public async Task AddOrUpdateDonorWithHla(InputDonorWithExpandedHla donor)
         {
             var result = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
             if (result == null)
@@ -92,12 +93,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 result.CopyRawHlaFrom(donor);
             }
 
-            await RefreshMatchingGroupsForExistingDonorBatch(new List<InputDonor> {donor});
+            await RefreshMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
 
             await context.SaveChangesAsync();
         }
 
-        public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> inputDonors)
+        public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
             await Task.WhenAll(LocusHelpers.AllLoci().Select(l => RefreshMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
@@ -107,7 +108,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             // Do nothing
         }
 
-        private async Task RefreshMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonor> donors, Locus locus)
+        private async Task RefreshMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
         {
             if (locus == Locus.Dpb1)
             {
