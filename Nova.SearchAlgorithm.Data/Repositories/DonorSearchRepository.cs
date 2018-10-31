@@ -109,7 +109,7 @@ AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
             pGroups = pGroups.ToList();
 
             var sql = $@"
-SELECT InnerDonorId as DonorId, TypePosition FROM {MatchingTableName(locus)} m
+SELECT InnerDonorId as DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 
 RIGHT JOIN (
     SELECT '{donorIds.FirstOrDefault()}' AS InnerDonorId
@@ -162,7 +162,7 @@ ON m.DonorId = d.DonorId
             
 
             var sql = $@"
-SELECT m.DonorId, TypePosition FROM {MatchingTableName(locus)} m
+SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 
 {filterQuery}
 
@@ -179,11 +179,6 @@ GROUP BY m.DonorId, TypePosition";
             {
                 return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
             }
-        }
-
-        private static string MatchingTableName(Locus locus)
-        {
-            return "MatchingHlaAt" + locus;
         }
 
         private static string DonorHlaColumnAtLocus(Locus locus, TypePosition positions)
