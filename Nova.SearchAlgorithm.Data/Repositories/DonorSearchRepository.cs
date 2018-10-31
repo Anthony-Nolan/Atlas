@@ -84,8 +84,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             var sql = $@"
 SELECT DonorId FROM Donors 
 INNER JOIN (
-    SELECT '{donorIds.FirstOrDefault()}' AS Id
-    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
+    SELECT {donorIds.FirstOrDefault()} AS Id
+    {(donorIds.Count() > 1 ? "UNION ALL SELECT" : "")}  {string.Join(" UNION ALL SELECT ", donorIds.Skip(1))}
 )
 AS DonorIds 
 ON DonorId = DonorIds.Id 
@@ -112,8 +112,8 @@ AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
 SELECT InnerDonorId as DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 
 RIGHT JOIN (
-    SELECT '{donorIds.FirstOrDefault()}' AS InnerDonorId
-    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
+    SELECT {donorIds.FirstOrDefault()} AS InnerDonorId
+    {(donorIds.Count() > 1 ? "UNION ALL SELECT" : "")}  {string.Join(" UNION ALL SELECT ", donorIds.Skip(1))}
 )
 AS InnerDonors 
 ON m.DonorId = InnerDonors.InnerDonorId
