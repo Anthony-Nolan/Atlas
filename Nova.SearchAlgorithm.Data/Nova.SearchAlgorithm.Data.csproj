@@ -177,6 +177,8 @@
     <Compile Include="Entity\ScoringWeightings\ScoringWeighting.cs" />
     <Compile Include="Exceptions\DataHttpException.cs" />
     <Compile Include="Extensions\DbSetExtensions.cs" />
+    <Compile Include="Helpers\DistinctPGroupNameComparer.cs" />
+    <Compile Include="Helpers\MatchingTableNameHelper.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.Designer.cs">
       <DependentUpon>201806271340159_InitialCreate.cs</DependentUpon>
@@ -200,9 +202,12 @@
     <Compile Include="Entity\Donor.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\DonorImportRepository.cs" />
+    <Compile Include="Repositories\DonorInspectionRepository.cs" />
+    <Compile Include="Repositories\PGroupRepository.cs" />
     <Compile Include="Repositories\ScoringWeightingRepository.cs" />
     <Compile Include="Repositories\SqlDonorBatchQueryAsync.cs" />
-    <Compile Include="Repositories\SqlDonorMatchRepository.cs" />
+    <Compile Include="Repositories\DonorSearchRepository.cs" />
     <Compile Include="SearchAlgorithmContext.cs" />
   </ItemGroup>
   <ItemGroup>

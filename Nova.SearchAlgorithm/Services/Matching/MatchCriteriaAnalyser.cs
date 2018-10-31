@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 lociToSearchInDatabase.Add(Locus.B);
             }
 
-            if (criteria.LocusMismatchDRB1.MismatchCount == 0)
+            if (criteria.LocusMismatchDrb1.MismatchCount == 0)
             {
                 lociToSearchInDatabase.Add(Locus.Drb1);
             }
@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 lociToSearchInDatabase.Add(Locus.B);
             }
 
-            if (!lociToSearchInDatabase.Contains(Locus.Drb1) && lociToSearchInDatabase.Count() < 2 && criteria.LocusMismatchDRB1.MismatchCount < 2)
+            if (!lociToSearchInDatabase.Contains(Locus.Drb1) && lociToSearchInDatabase.Count() < 2 && criteria.LocusMismatchDrb1.MismatchCount < 2)
             {
                 lociToSearchInDatabase.Add(Locus.Drb1);
             }

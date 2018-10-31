@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Services.Matching
@@ -34,16 +35,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
+        private readonly IPGroupRepository pGroupRepository;
 
         public DatabaseDonorMatchingService(
             IDonorSearchRepository donorSearchRepository,
             IMatchFilteringService matchFilteringService,
-            IDatabaseFilteringAnalyser databaseFilteringAnalyser
+            IDatabaseFilteringAnalyser databaseFilteringAnalyser,
+            IPGroupRepository pGroupRepository
         )
         {
             this.donorSearchRepository = donorSearchRepository;
             this.matchFilteringService = matchFilteringService;
             this.databaseFilteringAnalyser = databaseFilteringAnalyser;
+            this.pGroupRepository = pGroupRepository;
         }
 
         public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
@@ -140,8 +144,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
             {
                 SearchType = searchType,
                 Registries = registriesToSearch,
-                PGroupsToMatchInPositionOne = criteria.PGroupsToMatchInPositionOne,
-                PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
+                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
             };
 
             var filteringOptions = new MatchingFilteringOptions
@@ -169,8 +173,8 @@ namespace Nova.SearchAlgorithm.Services.Matching
             {
                 SearchType = searchType,
                 Registries = registriesToSearch,
-                PGroupsToMatchInPositionOne = criteria.PGroupsToMatchInPositionOne,
-                PGroupsToMatchInPositionTwo = criteria.PGroupsToMatchInPositionTwo,
+                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
             };
 
             var matches = (await donorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))

@@ -94,8 +94,8 @@ namespace Nova.SearchAlgorithm.Services
                 LocusMismatchA = criteriaMappings[0],
                 LocusMismatchB = criteriaMappings[1],
                 LocusMismatchC = criteriaMappings[2],
-                LocusMismatchDRB1 = criteriaMappings[3],
-                LocusMismatchDQB1 = criteriaMappings[4]
+                LocusMismatchDrb1 = criteriaMappings[3],
+                LocusMismatchDqb1 = criteriaMappings[4]
             };
             return criteria;
         }

@@ -1,10 +1,10 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Repositories;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Matching
@@ -27,8 +27,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             IDonorInspectionRepository donorInspectionRepository,
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
-            ILogger logger
-        )
+            ILogger logger)
         {
             this.databaseDonorMatchingService = databaseDonorMatchingService;
             this.donorInspectionRepository = donorInspectionRepository;

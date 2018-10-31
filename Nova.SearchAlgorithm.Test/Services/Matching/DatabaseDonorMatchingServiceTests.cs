@@ -46,7 +46,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var donorSearchRepository = GetFake<IDonorSearchRepository>();
             var matchFilteringService = new MatchFilteringService();
             var databaseFilteringAnalyser = Substitute.For<IDatabaseFilteringAnalyser>();
-            donorMatchingService = new DatabaseDonorMatchingService(donorSearchRepository, matchFilteringService, databaseFilteringAnalyser);
+            var pGroupRepository = Substitute.For<IPGroupRepository>();
+            donorMatchingService = new DatabaseDonorMatchingService(donorSearchRepository, matchFilteringService, databaseFilteringAnalyser, pGroupRepository);
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>

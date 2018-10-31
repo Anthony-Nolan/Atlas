@@ -27,6 +27,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
+        private readonly IPGroupRepository pGroupRepository;
 
         public HlaUpdateService(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
@@ -35,7 +36,8 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             ILogger logger,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAntigenCachingService antigenCachingService,
-            IAlleleNamesLookupRepository alleleNamesLookupRepository
+            IAlleleNamesLookupRepository alleleNamesLookupRepository,
+            IPGroupRepository pGroupRepository
         )
         {
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
@@ -45,6 +47,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.antigenCachingService = antigenCachingService;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
+            this.pGroupRepository = pGroupRepository;
         }
 
         public async Task UpdateDonorHla()
@@ -106,7 +109,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
             // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
             var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
-            donorImportRepository.InsertPGroups(pGroups);
+            pGroupRepository.InsertPGroups(pGroups);
         }
 
         private async Task<InputDonor> FetchDonorHlaData(DonorResult donor)

@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Builders
 
         public DonorMatchCriteriaBuilder WithLocusMismatchDRB1(IEnumerable<string> hla1, IEnumerable<string> hla2, int mismatchCount)
         {
-            request.LocusMismatchDRB1 = new AlleleLevelLocusMatchCriteria
+            request.LocusMismatchDrb1 = new AlleleLevelLocusMatchCriteria
             {
                 PGroupsToMatchInPositionOne = hla1,
                 PGroupsToMatchInPositionTwo = hla2,

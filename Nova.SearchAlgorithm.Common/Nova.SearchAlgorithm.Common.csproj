@@ -182,6 +182,7 @@
     <Compile Include="Repositories\CloudTableBatchQueryAsync.cs" />
     <Compile Include="Repositories\CloudTableExtensions.cs" />
     <Compile Include="Repositories\CloudTableFactory.cs" />
+    <Compile Include="Repositories\IPGroupRepository.cs" />
     <Compile Include="Repositories\LookupRepositoryBase.cs" />
     <Compile Include="Repositories\IDonorImportRepository.cs" />
     <Compile Include="Repositories\IDonorInspectionRepository.cs" />
