@@ -211,9 +211,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
         
         /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
-        private InputDonorBuilder GetDefaultInputDonorBuilder()
+        private InputDonorWithExpandedHlaBuilder GetDefaultInputDonorBuilder()
         {
-            return new InputDonorBuilder(DonorIdGenerator.NextId())
+            return new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithRegistryCode(DefaultRegistryCode)
                 .WithDonorType(DefaultDonorType)
                 .WithMatchingHlaAtLocus(

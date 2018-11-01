@@ -240,13 +240,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             private readonly Locus locus1;
             private readonly Locus locus2;
-            private InputDonorBuilder inputDonorBuilder;
+            private InputDonorWithExpandedHlaBuilder inputDonorWithExpandedHlaBuilder;
 
             public TwoLociTestsInputDonorBuilder(int donorId, Locus locus1, Locus locus2)
             {
                 this.locus1 = locus1;
                 this.locus2 = locus2;
-                inputDonorBuilder = new InputDonorBuilder(donorId)
+                inputDonorWithExpandedHlaBuilder = new InputDonorWithExpandedHlaBuilder(donorId)
                     .WithDonorType(DonorType.Cord);
             }
 
@@ -255,7 +255,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 var pGroupAtPosition1 = numberOfMatches > 0 ? PatientPGroupAtLocusOne_PositionOne : NonMatchingPGroup;
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusOne_PositionTwo : NonMatchingPGroup;
 
-                inputDonorBuilder = inputDonorBuilder
+                inputDonorWithExpandedHlaBuilder = inputDonorWithExpandedHlaBuilder
                     .WithMatchingHlaAtLocus(
                         locus1,
                         new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
@@ -269,7 +269,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 var pGroupAtPosition1 = numberOfMatches > 0 ? PatientPGroupAtLocusTwo_PositionOne : NonMatchingPGroup;
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusTwo_PositionTwo : NonMatchingPGroup;
 
-                inputDonorBuilder = inputDonorBuilder
+                inputDonorWithExpandedHlaBuilder = inputDonorWithExpandedHlaBuilder
                     .WithMatchingHlaAtLocus(
                         locus2,
                         new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
@@ -280,7 +280,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             public InputDonorWithExpandedHla Build()
             {
-                return inputDonorBuilder
+                return inputDonorWithExpandedHlaBuilder
                     .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
                     .Build();
             }

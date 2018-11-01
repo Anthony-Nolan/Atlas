@@ -258,7 +258,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .GetPhenotypeOfExpandedHla(defaultHlaSet.FiveLocus_SingleExpressingAlleles)
                 .Result;
 
-            return new InputDonorBuilder(DonorIdGenerator.NextId())
+            return new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
         }

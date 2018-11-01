@@ -181,7 +181,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IEnumerable<InputDonorWithExpandedHla> BuildTwoOutOfTwoMatchCountDonors()
         {
-            var donorWithOriginalHla1At1AndOriginalNullAt2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndOriginalNullAt2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -189,7 +189,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         OriginalNullAllele)))
                 .Build();
 
-            var donorWithOriginalHla1At1AndDifferentNullAt2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndDifferentNullAt2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -197,7 +197,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         DifferentNullAllele)))
                 .Build();
 
-            var donorHomozygousForOriginalHla1 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorHomozygousForOriginalHla1 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByTyping,
@@ -218,14 +218,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IEnumerable<InputDonorWithExpandedHla> BuildOneOutOfTwoMatchCountDonors()
         {
-            var donorWithOriginalHla1At1AndOriginalHla2At2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndOriginalHla2At2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
                         originalHlaAtLocusUnderTest)))
                 .Build();
 
-            var donorWithOriginalHla1At1AndMismatchedHla2At2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndMismatchedHla2At2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
@@ -245,14 +245,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IEnumerable<InputDonorWithExpandedHla> BuildZeroOutOfTwoMatchCountDonors()
         {
-            var donorWithMismatchedHla1At1AndOriginalHla2At2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndOriginalHla2At2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
                         new Tuple<string, string>(mismatchedHlaAtLocusUnderTest.Item1, originalHlaAtLocusUnderTest.Item2))))
                 .Build();
 
-            var donorWithMismatchedHla1At1AndOriginalNullAt2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndOriginalNullAt2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -260,7 +260,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         OriginalNullAllele)))
                 .Build();
 
-            var donorWithMismatchedHla1At1AndDifferentNullAt2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndDifferentNullAt2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -268,14 +268,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         DifferentNullAllele)))
                 .Build();
 
-            var donorHomozygousForMismatchedHla1 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorHomozygousForMismatchedHla1 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByTyping,
                         mismatchedHlaAtLocusUnderTest)))
                 .Build();
 
-            var donorWithMismatchedHla1At1AndMismatchedHla2At2 = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndMismatchedHla2At2 = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
