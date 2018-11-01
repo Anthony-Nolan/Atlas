@@ -32,8 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
-            var donor = DonorWithId(DonorIdGenerator.NextId());
-            var inputDonor = donor;
+            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
