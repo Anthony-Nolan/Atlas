@@ -1,22 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Helpers;
-using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
-using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
@@ -82,20 +77,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        public async Task AddOrUpdateDonorWithHla(InputDonorWithExpandedHla donor)
+        public async Task UpdateDonorWithHla(InputDonorWithExpandedHla donor)
         {
-            var existingDonor = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
-            if (existingDonor == null)
-            {
-                context.Donors.Add(donor.ToDonorEntity());
-                await AddMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
-            }
-            else
-            {
-                existingDonor.CopyDataFrom(donor);
-                await ReplaceMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
-            }
+            var existingDonor = await context.Donors.FirstAsync(d => d.DonorId == donor.DonorId);
+            existingDonor.CopyDataFrom(donor);
+            await ReplaceMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
+            await context.SaveChangesAsync();
+        }
 
+        public async Task AddDonorWithHla(InputDonorWithExpandedHla donor)
+        {
+            context.Donors.Add(donor.ToDonorEntity());
+            await AddMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
             await context.SaveChangesAsync();
         }
 

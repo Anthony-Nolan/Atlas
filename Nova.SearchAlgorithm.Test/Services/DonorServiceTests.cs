@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Services
             importRepository = Substitute.For<IDonorImportRepository>();
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
-            
+
             donorService = new DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository);
         }
 
@@ -47,11 +47,10 @@ namespace Nova.SearchAlgorithm.Test.Services
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
             inspectionRepository.GetDonor(Arg.Any<int>()).Returns(null, new DonorResult());
-            
-            
+
             await donorService.CreateDonor(donor);
 
-            await importRepository.Received().AddOrUpdateDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
+            await importRepository.Received().AddDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
         }
 
         [Test]
@@ -70,12 +69,38 @@ namespace Nova.SearchAlgorithm.Test.Services
                 RegistryCode = RegistryCode.AN,
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            inspectionRepository.GetDonor(Arg.Any<int>()).Returns(new DonorResult());
-            
-            
+            inspectionRepository.GetDonor(Arg.Any<int>()).Returns(new DonorResult {HlaNames = new PhenotypeInfo<string>("different-hla")});
+
             await donorService.UpdateDonor(donor);
 
-            await importRepository.Received().AddOrUpdateDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
+            await importRepository.Received().UpdateDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
+        }
+
+        [Test]
+        public async Task UpdateDonor_WhenDonorExistsAndIsUnchanged_DoesNotUpdateDonor()
+        {
+            var hlaStrings = new PhenotypeInfo<string>("hla");
+            const DonorType donorType = DonorType.Adult;
+            const RegistryCode registryCode = RegistryCode.AN;
+            
+            var donor = new InputDonor
+            {
+                DonorId = 1,
+                DonorType = donorType,
+                RegistryCode = registryCode,
+                HlaNames = hlaStrings
+            };
+            var existingDonor = new DonorResult
+            {
+                DonorType = donorType,
+                RegistryCode = registryCode,
+                HlaNames = hlaStrings
+            };
+            inspectionRepository.GetDonor(Arg.Any<int>()).Returns(existingDonor);
+
+            await donorService.UpdateDonor(donor);
+
+            await importRepository.DidNotReceive().UpdateDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
         }
     }
 }

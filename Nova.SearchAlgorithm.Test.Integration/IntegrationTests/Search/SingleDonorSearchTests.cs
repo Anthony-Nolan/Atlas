@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 DonorId = DonorIdGenerator.NextId(),
                 MatchingHla = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlas).Result
             };
-            donorRepository.AddOrUpdateDonorWithHla(donor).Wait();
+            donorRepository.AddDonorWithHla(donor).Wait();
         }
 
         [SetUp]

@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAlleles;
             donor.DonorId = DonorIdGenerator.NextId();
-            await importRepo.AddOrUpdateDonorWithHla(donor);
+            await importRepo.AddDonorWithHla(donor);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -69,7 +69,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodes;
             donor.DonorId = DonorIdGenerator.NextId();
-            await importRepo.AddOrUpdateDonorWithHla(donor);
+            await importRepo.AddDonorWithHla(donor);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 

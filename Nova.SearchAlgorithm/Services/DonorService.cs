@@ -33,39 +33,55 @@ namespace Nova.SearchAlgorithm.Services
         public async Task<InputDonor> CreateDonor(InputDonor inputDonor)
         {
             var donorId = inputDonor.DonorId;
-            var donorExists = (await donorInspectionRepository.GetDonor(donorId)) != null;
+            var donorExists = await donorInspectionRepository.GetDonor(donorId) != null;
             if (donorExists)
             {
                 throw new NovaHttpException(HttpStatusCode.Conflict, $"Donor {donorId} already exists");
             }
 
-            return await AddOrUpdateDonor(inputDonor);
+            var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
+            await donorImportRepository.AddDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
+
+            return await GetDonor(inputDonor.DonorId);
         }
 
         public async Task<InputDonor> UpdateDonor(InputDonor inputDonor)
         {
             var donorId = inputDonor.DonorId;
-            var donorExists = (await donorInspectionRepository.GetDonor(donorId)) != null;
+            var existingDonor = await donorInspectionRepository.GetDonor(donorId);
+            var donorExists = existingDonor != null;
             if (!donorExists)
             {
                 throw new NovaNotFoundException($"Donor {donorId} does not exist");
             }
 
-            return await AddOrUpdateDonor(inputDonor);
+            var donorDetailsUnchanged = existingDonor.DonorType == inputDonor.DonorType && existingDonor.RegistryCode == inputDonor.RegistryCode;
+            var hlaUnchanged = existingDonor.HlaNames.Equals(new PhenotypeInfo<string>(inputDonor.HlaNames));
+            if (donorDetailsUnchanged && hlaUnchanged)
+            {
+                return inputDonor;
+            }
+            
+            var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
+            await donorImportRepository.UpdateDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
+
+            return await GetDonor(inputDonor.DonorId);
         }
 
-        private async Task<InputDonor> AddOrUpdateDonor(InputDonor inputDonor)
+        private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor, PhenotypeInfo<ExpandedHla> matchingHla)
         {
-            var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
-            await donorImportRepository.AddOrUpdateDonorWithHla(new InputDonorWithExpandedHla
+            return new InputDonorWithExpandedHla
             {
                 DonorId = inputDonor.DonorId,
                 DonorType = inputDonor.DonorType,
                 RegistryCode = inputDonor.RegistryCode,
                 MatchingHla = matchingHla,
-            });
+            };
+        }
 
-            var donor = await donorInspectionRepository.GetDonor(inputDonor.DonorId);
+        private async Task<InputDonor> GetDonor(int donorId)
+        {
+            var donor = await donorInspectionRepository.GetDonor(donorId);
             return new InputDonor
             {
                 DonorId = donor.DonorId,
