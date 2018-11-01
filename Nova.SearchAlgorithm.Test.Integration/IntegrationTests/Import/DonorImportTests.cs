@@ -1,83 +1,199 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Autofac;
 using FluentAssertions;
+using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.DonorImport;
+using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
     public class DonorImportTests : IntegrationTestBase
     {
+        private IDonorImportService donorImportService;
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
-        private IHlaUpdateService updateService;
 
-        // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
-        private readonly Tuple<string, int> AHlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 213);
+        private static readonly DonorInfoForSearchAlgorithmPage EmptyDonorPage = new DonorInfoForSearchAlgorithmPage
+        {
+            DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+        };
+
+        private const string DefaultDonorType = "a";
+        private const string DefaultRegistryCode = "DKMS";
 
         [SetUp]
-        public void ResolveSearchRepo()
+        public void SetUp()
         {
             importRepo = Container.Resolve<IDonorImportRepository>();
             inspectionRepo = Container.Resolve<IDonorInspectionRepository>();
-            updateService = Container.Resolve<IHlaUpdateService>();
+            donorImportService = Container.Resolve<IDonorImportService>();
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+            {
+                DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+            });
         }
 
         [Test]
-        public async Task InsertBatchOfDonors_InsertsCorrectDonorData()
+        public async Task DonorImport_FetchesDonorsWithIdsHigherThanMaxExistingDonor()
         {
-            var inputDonors = new List<RawInputDonor> {NextDonor(), NextDonor()};
-            await importRepo.InsertBatchOfDonors(inputDonors);
+            var lowerId = DonorIdGenerator.NextId();
+            var higherId = DonorIdGenerator.NextId();
+            await importRepo.InsertBatchOfDonors(new List<RawInputDonor>
+            {
+                DonorWithId(higherId),
+                DonorWithId(lowerId),
+            });
 
-            var storedDonor1 = await inspectionRepo.GetDonor(inputDonors.First().DonorId);
-            var storedDonor2 = await inspectionRepo.GetDonor(inputDonors.Last().DonorId);
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor1, inputDonors.Single(d => d.DonorId == inputDonors.First().DonorId));
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor2, inputDonors.Single(d => d.DonorId == inputDonors.Last().DonorId));
-        }
+            await donorImportService.StartDonorImport();
 
-        #region UpdateDonorHla
-
-        [Test]
-        public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
-        {
-            var inputDonor = NextDonor();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
-
-            await updateService.UpdateDonorHla();
-
-            var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
+            await MockDonorServiceClient.Received().GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), higherId);
         }
 
         [Test]
-        public async Task UpdateDonorHla_ForPatientHlaMatchingMultiplePGroups_InsertsMatchRowForEachPGroup()
+        public async Task DonorImport_AddsNewDonorsToDatabase()
         {
-            var inputDonor = NextDonor();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            var newDonorId = DonorIdGenerator.NextId();
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    {
+                        new DonorInfoForSearchAlgorithm
+                        {
+                            DonorId = newDonorId,
+                            DonorType = DefaultDonorType,
+                            RegistryCode = DefaultRegistryCode,
+                        }
+                    }
+                },
+                new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                });
 
-            await updateService.UpdateDonorHla();
+            await donorImportService.StartDonorImport();
+            var donor = await inspectionRepo.GetDonor(newDonorId);
 
-            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
-            pGroups.First().PGroupNames.A_1.Count().Should().Be(AHlaWithKnownPGroups1.Item2);
+            donor.Should().NotBeNull();
         }
 
-        #endregion
-
-        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, RawInputDonor donorExpected)
+        [TestCase("a", DonorType.Adult)]
+        [TestCase("adult", DonorType.Adult)]
+        [TestCase("c", DonorType.Cord)]
+        [TestCase("cord", DonorType.Cord)]
+        public async Task DonorImport_ParsesDonorTypeCorrectly(string rawDonorType, DonorType expectedDonorType)
         {
-            donorActual.DonorId.Should().Be(donorExpected.DonorId);
-            donorActual.DonorType.Should().Be(donorExpected.DonorType);
-            donorActual.RegistryCode.Should().Be(donorExpected.RegistryCode);
-            donorActual.HlaNames.ShouldBeEquivalentTo(donorExpected.HlaNames);
+            var newDonorId = DonorIdGenerator.NextId();
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    {
+                        new DonorInfoForSearchAlgorithm
+                        {
+                            DonorId = newDonorId,
+                            DonorType = rawDonorType,
+                            RegistryCode = DefaultRegistryCode,
+                        }
+                    }
+                },
+                new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                });
+
+            await donorImportService.StartDonorImport();
+            var donor = await inspectionRepo.GetDonor(newDonorId);
+
+            donor.DonorType.Should().Be(expectedDonorType);
+        }
+        
+        [Test]
+        public void DonorImport_WhenDonorHasUnrecognisedDonorType_ThrowsException()
+        {
+            const string unexpectedDonorType = "fossil";
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    {
+                        new DonorInfoForSearchAlgorithm
+                        {
+                            DonorId = DonorIdGenerator.NextId(),
+                            DonorType = unexpectedDonorType,
+                            RegistryCode = DefaultRegistryCode,
+                        }
+                    }
+                },
+                new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                });
+
+            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImportService.StartDonorImport());
         }
 
-        private RawInputDonor DonorWithId(int id)
+        [TestCase("DKMS", RegistryCode.DKMS)]
+        [TestCase("AN", RegistryCode.AN)]
+        [TestCase("WBS", RegistryCode.WBS)]
+        [TestCase("ITALY", RegistryCode.ITALY)]
+        [TestCase("NHSBT", RegistryCode.NHSBT)]
+        [TestCase("NMDP", RegistryCode.NMDP)]
+        public async Task DonorImport_ParsesRegistryCorrectly(string rawRegistry, RegistryCode expectedRegistry)
+        {
+            var newDonorId = DonorIdGenerator.NextId();
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    {
+                        new DonorInfoForSearchAlgorithm
+                        {
+                            DonorId = newDonorId,
+                            DonorType = DefaultDonorType,
+                            RegistryCode = rawRegistry,
+                        }
+                    }
+                },
+                new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                });
+
+            await donorImportService.StartDonorImport();
+            var donor = await inspectionRepo.GetDonor(newDonorId);
+
+            donor.RegistryCode.Should().Be(expectedRegistry);
+        }
+        
+        [Test]
+        public void DonorImport_WhenDonorHasUnrecognisedRegistryCode_ThrowsException()
+        {
+            const string unexpectedRegistryCode = "MARS";
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    {
+                        new DonorInfoForSearchAlgorithm
+                        {
+                            DonorId = DonorIdGenerator.NextId(),
+                            DonorType = DefaultDonorType,
+                            RegistryCode = unexpectedRegistryCode,
+                        }
+                    }
+                },
+                new DonorInfoForSearchAlgorithmPage
+                {
+                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                });
+
+            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImportService.StartDonorImport());
+        }
+
+        private static RawInputDonor DonorWithId(int id)
         {
             return new RawInputDonor
             {
@@ -86,21 +202,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 DonorId = id,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A_1 = AHlaWithKnownPGroups1.Item1,
+                    A_1 = "01:01",
                     A_2 = "30:02:01:01",
                     B_1 = "07:02",
                     B_2 = "08:01",
-                    DRB1_1 = "01:11",
-                    DRB1_2 = "03:41",
+                    Drb1_1 = "01:11",
+                    Drb1_2 = "03:41",
                 }
             };
-        }
-
-        /// <returns> Donor with default information, and an auto-incremented donorId to avoid duplicates in the test DB</returns>
-        private RawInputDonor NextDonor()
-        {
-            var donor = DonorWithId(DonorIdGenerator.NextId());
-            return donor;
         }
     }
 }
