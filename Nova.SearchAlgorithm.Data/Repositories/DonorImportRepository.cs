@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -83,83 +84,117 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task AddOrUpdateDonorWithHla(InputDonorWithExpandedHla donor)
         {
-            var result = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
-            if (result == null)
+            var existingDonor = await context.Donors.FirstOrDefaultAsync(d => d.DonorId == donor.DonorId);
+            if (existingDonor == null)
             {
                 context.Donors.Add(donor.ToDonorEntity());
+                await AddMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
             }
             else
             {
-                result.CopyRawHlaFrom(donor);
+                existingDonor.CopyDataFrom(donor);
+                await ReplaceMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
             }
-
-            await RefreshMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
 
             await context.SaveChangesAsync();
         }
 
-        public async Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        public async Task AddMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            await Task.WhenAll(LocusHelpers.AllLoci().Select(l => RefreshMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusHelpers.AllLoci().Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
-        public void SetupForHlaRefresh()
+        public async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            // Do nothing
+            await Task.WhenAll(LocusHelpers.AllLoci().Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
-        private async Task RefreshMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
         {
+            donors = donors.ToList();
             if (locus == Locus.Dpb1)
             {
                 return;
             }
 
-            var tableName = MatchingTableNameHelper.MatchingTableName(locus);
+            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
+            var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
 
-                var dataTableGenerationTask = Task.Run(() =>
-                {
-                    var dt = new DataTable();
-                    dt.Columns.Add("Id");
-                    dt.Columns.Add("DonorId");
-                    dt.Columns.Add("TypePosition");
-                    dt.Columns.Add("PGroup_Id");
-
-                    foreach (var donor in donors)
-                    {
-                        donor.MatchingHla.EachPosition((l, p, h) =>
-                        {
-                            if (h == null || l != locus)
-                            {
-                                return;
-                            }
-
-                            foreach (var pGroup in h.PGroups)
-                            {
-                                dt.Rows.Add(0, donor.DonorId, (int) p, pGroupRepository.FindOrCreatePGroup(pGroup));
-                            }
-                        });
-                    }
-
-                    return dt;
-                });
-
-                var dataTable = await dataTableGenerationTask;
-
-                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
-                {
-                    sqlBulk.BatchSize = 10000;
-                    sqlBulk.DestinationTableName = tableName;
-                    sqlBulk.WriteToServer(dataTable);
-                }
+                var deleteSql = $@"
+DELETE FROM {matchingTableName}
+WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
+";
+                // QueryAsync throws exception with 'No columns were selected'
+                // https://github.com/StackExchange/Dapper/issues/591
+                conn.Query(deleteSql, null, transaction);
+                await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
 
                 transaction.Commit();
                 conn.Close();
+            }
+        }
+
+        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        {
+            if (locus == Locus.Dpb1)
+            {
+                return;
+            }
+
+            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
+            var dataTable = CreateDonorDataTableForLocus(donors, locus);
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+
+                await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
+
+                transaction.Commit();
+                conn.Close();
+            }
+        }
+
+        private DataTable CreateDonorDataTableForLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id");
+            dt.Columns.Add("DonorId");
+            dt.Columns.Add("TypePosition");
+            dt.Columns.Add("PGroup_Id");
+
+            foreach (var donor in donors)
+            {
+                donor.MatchingHla.EachPosition((l, p, h) =>
+                {
+                    if (h == null || l != locus)
+                    {
+                        return;
+                    }
+
+                    foreach (var pGroup in h.PGroups)
+                    {
+                        dt.Rows.Add(0, donor.DonorId, (int) p, pGroupRepository.FindOrCreatePGroup(pGroup));
+                    }
+                });
+            }
+
+            return dt;
+        }
+
+        private static async Task BulkInsertDataTable(SqlConnection conn, SqlTransaction transaction, string tableName, DataTable dataTable)
+        {
+            using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
+            {
+                sqlBulk.BatchSize = 10000;
+                sqlBulk.DestinationTableName = tableName;
+                await sqlBulk.WriteToServerAsync(dataTable);
             }
         }
     }

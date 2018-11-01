@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
             var donorHlaData = await Task.WhenAll(donorBatch.Select(FetchDonorHlaData));
             var inputDonors = donorHlaData.Where(x => x != null).ToList();
-            await donorImportRepository.RefreshMatchingGroupsForExistingDonorBatch(inputDonors);
+            await donorImportRepository.AddMatchingGroupsForExistingDonorBatch(inputDonors);
 
             stopwatch.Stop();
             logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
@@ -104,10 +104,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             await hlaMatchingLookupRepository.LoadDataIntoMemory();
             await alleleNamesLookupRepository.LoadDataIntoMemory();
 
-            // We set up a new matches table each time the job is run - this must be done upfront to avoid multiple tasks setting it up asynchronously
-            donorImportRepository.SetupForHlaRefresh();
-
-            // All antigens are fetched from the HLA service. We use our cache for nmdp lookups to avoid too much load on the hla service
+            // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
             await antigenCachingService.GenerateAntigenCache();
 
             // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
