@@ -1,28 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.Entity.Migrations;
 using Autofac;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
+using Nova.DonorService.Client;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.Config.Modules;
 using Nova.SearchAlgorithm.Data;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Services;
-using Nova.SearchAlgorithm.Services.DonorImport;
-using Nova.SearchAlgorithm.Services.Matching;
-using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Services.Scoring.Confidence;
-using Nova.SearchAlgorithm.Services.Scoring.Grading;
-using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Data.Migrations;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
-using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Models;
-using Nova.Utils.WebApi.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -44,6 +32,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 return Container.Resolve<IDonorIdGenerator>();
             }
         }
+        
+        protected static IDonorServiceClient MockDonorServiceClient { get; set; }
 
         [OneTimeSetUp]
         public void Setup()
@@ -59,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             StorageEmulator.Stop();
         }
 
-        protected void ResetDatabase()
+        private void ResetDatabase()
         {
             ClearDatabase();
             SetupDatabase();
@@ -71,73 +61,36 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             {
                 context.Database.CreateIfNotExists();
             }
-            var config = new Data.Migrations.Configuration();
+            var config = new Configuration();
             var migrator = new DbMigrator(config);
             migrator.Update();
         }
 
         // This is almost a duplicate of the container in 
         // Nova.SearchAlgorithm.Config.Modules.ServiceModule
-        private IContainer CreateContainer()
+        private static IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();
-
-            builder.RegisterInstance(AutomapperConfig.CreateMapper())
-                .SingleInstance()
-                .AsImplementedInterfaces();
-
-            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<DonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DonorImportRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DonorInspectionRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<PGroupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
-            builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
-            // Matching Services
-            builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DonorMatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchFilteringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchCriteriaAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DatabaseFilteringAnalyser>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ExpandHlaPhenotypeService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
-            // Scoring Services
-            builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<GradingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ConfidenceService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ConfidenceCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<RankingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MatchScoreCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ScoringRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            ServiceModule.RegisterSearchAlgorithmTypes(builder);
+            ServiceModule.RegisterMatchingDictionaryTypes(builder);
             
+            // Matching Dictionary Overrides
+            builder.RegisterType<FileBackedHlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            
+            // Clients
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             builder.RegisterInstance(mockHlaServiceClient).AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterType<FileBackedHlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
-            builder.RegisterType<AlleleNamesLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-
+            MockDonorServiceClient = Substitute.For<IDonorServiceClient>();
+            builder.RegisterInstance(MockDonorServiceClient).AsImplementedInterfaces().SingleInstance();
+            
+            // Integration Test Types
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().WithParameter("optionsAccessor", new MemoryCacheOptions()).SingleInstance();
-            
             builder.RegisterType<DonorIdGenerator>().AsImplementedInterfaces().SingleInstance();
-            
-            var logger = new RequestAwareLogger(new TelemetryClient(),
-                ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
-            builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
             return builder.Build();
         }

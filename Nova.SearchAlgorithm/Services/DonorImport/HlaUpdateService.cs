@@ -67,7 +67,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
             try
             {
-                var batchedQuery = donorInspectionRepository.AllDonors();
+                var batchedQuery = await donorInspectionRepository.DonorsAddedSinceLastHlaUpdate();
                 while (batchedQuery.HasMoreResults)
                 {
                     var donorBatch = await batchedQuery.RequestNextAsync();

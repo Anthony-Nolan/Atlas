@@ -175,6 +175,9 @@
     <Reference Include="Newtonsoft.Json.Schema, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.Schema.3.0.2\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
     </Reference>
+    <Reference Include="Nova.DonorService.Client, Version=2.0.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.DonorService.Client.2.0.2\lib\net462\Nova.DonorService.Client.dll</HintPath>
+    </Reference>
     <Reference Include="Nova.HLAService.Client, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\Nova.HLAService.Client.3.0.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
       <Private>True</Private>
@@ -340,6 +343,7 @@
   <ItemGroup>
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
+    <Compile Include="IntegrationTests\Import\HlaUpdateTests.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsForNullAlleleInString.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsForHomozyousPatient.cs" />
     <Compile Include="IntegrationTests\Matching\MatchingTestsAtTwoLoci.cs" />

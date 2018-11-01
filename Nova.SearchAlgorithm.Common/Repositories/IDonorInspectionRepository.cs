@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
     public interface IDonorInspectionRepository
     {
         Task<int> HighestDonorId();
-        IBatchQueryAsync<DonorResult> AllDonors();
+        Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate();
         Task<DonorResult> GetDonor(int donorId);
         Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
         Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds);

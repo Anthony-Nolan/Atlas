@@ -25,8 +25,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 A_2 = new ExpandedHla { OriginalName = "30:02", PGroups = new List<string> { "01:01P", "30:02P" } },
                 B_1 = new ExpandedHla { OriginalName = "07:02", PGroups = new List<string> { "07:02P" } },
                 B_2 = new ExpandedHla { OriginalName = "08:01", PGroups = new List<string> { "08:01P" } },
-                DRB1_1 = new ExpandedHla { OriginalName = "01:11", PGroups = new List<string> { "01:11P" } },
-                DRB1_2 = new ExpandedHla { OriginalName = "03:41", PGroups = new List<string> { "03:41P" } }
+                Drb1_1 = new ExpandedHla { OriginalName = "01:11", PGroups = new List<string> { "01:11P" } },
+                Drb1_2 = new ExpandedHla { OriginalName = "03:41", PGroups = new List<string> { "03:41P" } }
             }
         };
 
@@ -40,8 +40,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 A_2 = new ExpandedHla { OriginalName = "30:XX", PGroups = new List<string> { "01:01P", "30:02P" } },
                 B_1 = new ExpandedHla { OriginalName = "*07:XX", PGroups = new List<string> { "07:02P" } },
                 B_2 = new ExpandedHla { OriginalName = "08:XX", PGroups = new List<string> { "08:01P" } },
-                DRB1_1 = new ExpandedHla { OriginalName = "*01:XX", PGroups = new List<string> { "01:11P" } },
-                DRB1_2 = new ExpandedHla { OriginalName = "03:XX", PGroups = new List<string> { "03:41P" } }
+                Drb1_1 = new ExpandedHla { OriginalName = "*01:XX", PGroups = new List<string> { "01:11P" } },
+                Drb1_2 = new ExpandedHla { OriginalName = "03:XX", PGroups = new List<string> { "03:41P" } }
             }
         };
 
