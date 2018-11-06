@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         public RegistryCode RegistryCode { get; set; }
         public PhenotypeInfo<ExpandedHla> MatchingHla { get; set; }
 
-        public InputDonor ToRawInputDonor()
+        public InputDonor ToInputDonor()
         {
             return new InputDonor
             {

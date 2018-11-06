@@ -1,5 +1,4 @@
-﻿using System;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 
@@ -8,7 +7,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
     public class InputDonorBuilder
     {
         private readonly InputDonor donor;
-        
         
         public InputDonorBuilder(int donorId)
         {
