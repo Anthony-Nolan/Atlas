@@ -168,7 +168,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .Build();
 
             var donorRepository = Container.Resolve<IDonorImportRepository>();
-            donorRepository.AddDonorWithHla(testDonor).Wait();
+            donorRepository.InsertDonorWithHla(testDonor).Wait();
 
             return testDonor.DonorId;
         }

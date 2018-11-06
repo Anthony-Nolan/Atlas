@@ -77,6 +77,13 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
+        public async Task InsertDonorWithHla(InputDonorWithExpandedHla donor)
+        {
+            context.Donors.Add(donor.ToDonorEntity());
+            await AddMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
+            await context.SaveChangesAsync();
+        }
+
         public async Task UpdateDonorWithHla(InputDonorWithExpandedHla donor)
         {
             var existingDonor = await context.Donors.FirstAsync(d => d.DonorId == donor.DonorId);
@@ -85,10 +92,26 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task AddDonorWithHla(InputDonorWithExpandedHla donor)
+        public async Task InsertBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
-            context.Donors.Add(donor.ToDonorEntity());
-            await AddMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
+            donors = donors.ToList();
+            await InsertBatchOfDonors(donors.Select(d => d.ToInputDonor()));
+            await AddMatchingGroupsForExistingDonorBatch(donors);
+        }
+
+        // Performance of Entity Framework may not be sufficient to efficiently import large quantities of donors.
+        // Consider re-writing this with Dapper if we prove to need to process large donor batches
+        public async Task UpdateBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors)
+        {
+            donors = donors.ToList();
+            var donorIds = donors.Select(d => d.DonorId);
+            var existingDonors = context.Donors.Where(existingDonor => donorIds.Contains(existingDonor.DonorId));
+            foreach (var existingDonor in existingDonors)
+            {
+                existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
+            }
+
+            await ReplaceMatchingGroupsForExistingDonorBatch(donors);
             await context.SaveChangesAsync();
         }
 

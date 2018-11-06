@@ -153,6 +153,7 @@
   <ItemGroup>
     <Compile Include="Models\Donors\DonorType.cs" />
     <Compile Include="Models\Donors\InputDonor.cs" />
+    <Compile Include="Models\Donors\InputDonorBatch.cs" />
     <Compile Include="Models\Donors\RegistryCode.cs" />
     <Compile Include="Models\Scoring\ScoringRequest.cs" />
     <Compile Include="Models\Scoring\ScoringResult.cs" />

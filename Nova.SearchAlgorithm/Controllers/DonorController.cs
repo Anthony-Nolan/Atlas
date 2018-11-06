@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web.Http;
 using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Services;
-using Nova.Utils.Http.Exceptions;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
@@ -31,6 +28,20 @@ namespace Nova.SearchAlgorithm.Controllers
         public async Task<InputDonor> UpdateDonor([FromBody] InputDonor donor)
         {
             return await donorService.UpdateDonor(donor);
+        }
+
+        [HttpPost]
+        [Route("batch")]
+        public async Task<IEnumerable<InputDonor>> CreateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        {
+            return await donorService.CreateDonorBatch(donorBatch.Donors);
+        }
+
+        [HttpPut]
+        [Route("batch")]
+        public async Task<IEnumerable<InputDonor>> UpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        {
+            return await donorService.UpdateDonorBatch(donorBatch.Donors);
         }
     }
 }

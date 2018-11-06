@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services
 
             await donorService.CreateDonor(donor);
 
-            await importRepository.Received().AddDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
+            await importRepository.Received().InsertDonorWithHla(Arg.Is<InputDonorWithExpandedHla>(d => d.DonorId == donor.DonorId));
         }
 
         [Test]

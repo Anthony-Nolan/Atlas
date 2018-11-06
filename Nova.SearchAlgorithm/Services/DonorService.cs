@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -11,6 +13,8 @@ namespace Nova.SearchAlgorithm.Services
     {
         Task<InputDonor> CreateDonor(InputDonor inputDonor);
         Task<InputDonor> UpdateDonor(InputDonor inputDonor);
+        Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors);
+        Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonor);
     }
 
     public class DonorService : IDonorService
@@ -40,7 +44,7 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
-            await donorImportRepository.AddDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
+            await donorImportRepository.InsertDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
 
             return await GetDonor(inputDonor.DonorId);
         }
@@ -61,11 +65,55 @@ namespace Nova.SearchAlgorithm.Services
             {
                 return inputDonor;
             }
-            
+
             var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
             await donorImportRepository.UpdateDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
 
             return await GetDonor(inputDonor.DonorId);
+        }
+
+        public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
+        {
+            inputDonors = inputDonors.ToList();
+            var existingDonors = (await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId))).ToList();
+            if (existingDonors.Any())
+            {
+                throw new NovaHttpException(
+                    HttpStatusCode.Conflict,
+                    $"One or more donors already exist. Donor ID(s): {string.Join(",", existingDonors.Select(d => d.DonorId))}"
+                );
+            }
+
+            var donorsWithHla = await Task.WhenAll(inputDonors.Select(async d =>
+                {
+                    var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
+                    return CombineDonorAndExpandedHla(d, hla);
+                }
+            ));
+            await donorImportRepository.InsertBatchOfDonorsWithHla(donorsWithHla.AsEnumerable());
+
+            return await GetDonors(inputDonors.Select(d => d.DonorId));
+        }
+
+        public async Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonors)
+        {
+            inputDonors = inputDonors.ToList();
+            var existingDonors = (await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId))).ToList();
+            if (existingDonors.Count() != inputDonors.Count())
+            {
+                var newDonors = inputDonors.Where(id => existingDonors.All(ed => ed.DonorId != id.DonorId));
+                throw new NovaNotFoundException($"One or more donors do not exist. Donor ID(s):  {string.Join(",", newDonors.Select(d => d.DonorId))}");
+            }
+            
+            var donorsWithHla = await Task.WhenAll(inputDonors.Select(async d =>
+                {
+                    var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
+                    return CombineDonorAndExpandedHla(d, hla);
+                }
+            ));
+            await donorImportRepository.UpdateBatchOfDonorsWithHla(donorsWithHla.AsEnumerable());
+
+            return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
 
         private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor, PhenotypeInfo<ExpandedHla> matchingHla)
@@ -89,6 +137,18 @@ namespace Nova.SearchAlgorithm.Services
                 DonorType = donor.DonorType,
                 RegistryCode = donor.RegistryCode,
             };
+        }
+
+        private async Task<IEnumerable<InputDonor>> GetDonors(IEnumerable<int> donorIds)
+        {
+            var donors = await donorInspectionRepository.GetDonors(donorIds);
+            return donors.Select(donor => new InputDonor
+            {
+                DonorId = donor.DonorId,
+                HlaNames = donor.HlaNames,
+                DonorType = donor.DonorType,
+                RegistryCode = donor.RegistryCode,
+            });
         }
     }
 }

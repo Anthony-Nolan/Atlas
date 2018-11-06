@@ -935,7 +935,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            await donorRepository.AddDonorWithHla(testDonor);
+            await donorRepository.InsertDonorWithHla(testDonor);
 
             return testDonor.DonorId;
         }
