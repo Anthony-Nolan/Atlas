@@ -25,11 +25,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         Task InsertDonorWithHla(InputDonorWithExpandedHla donor);
 
         /// <summary>
-        /// Update donor information, including HLA, and refresh the pre-processed matching groups.
-        /// </summary>
-        Task UpdateDonorWithHla(InputDonorWithExpandedHla donor);
-
-        /// <summary>
         /// Insert a batch of donors into the database.
         /// Will create the hla matches.
         /// </summary>

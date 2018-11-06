@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Entity;
@@ -79,17 +78,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task InsertDonorWithHla(InputDonorWithExpandedHla donor)
         {
-            context.Donors.Add(donor.ToDonorEntity());
-            await AddMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
-            await context.SaveChangesAsync();
-        }
-
-        public async Task UpdateDonorWithHla(InputDonorWithExpandedHla donor)
-        {
-            var existingDonor = await context.Donors.FirstAsync(d => d.DonorId == donor.DonorId);
-            existingDonor.CopyDataFrom(donor);
-            await ReplaceMatchingGroupsForExistingDonorBatch(new List<InputDonorWithExpandedHla> {donor});
-            await context.SaveChangesAsync();
+            await InsertBatchOfDonorsWithHla(new[] {donor});
         }
 
         public async Task InsertBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors)
@@ -120,7 +109,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await Task.WhenAll(LocusHelpers.AllLoci().Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
-        public async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
             await Task.WhenAll(LocusHelpers.AllLoci().Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }

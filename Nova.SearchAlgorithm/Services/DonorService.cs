@@ -36,40 +36,12 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task<InputDonor> CreateDonor(InputDonor inputDonor)
         {
-            var donorId = inputDonor.DonorId;
-            var donorExists = await donorInspectionRepository.GetDonor(donorId) != null;
-            if (donorExists)
-            {
-                throw new NovaHttpException(HttpStatusCode.Conflict, $"Donor {donorId} already exists");
-            }
-
-            var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
-            await donorImportRepository.InsertDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
-
-            return await GetDonor(inputDonor.DonorId);
+            return (await CreateDonorBatch(new[] {inputDonor})).Single();
         }
 
         public async Task<InputDonor> UpdateDonor(InputDonor inputDonor)
         {
-            var donorId = inputDonor.DonorId;
-            var existingDonor = await donorInspectionRepository.GetDonor(donorId);
-            var donorExists = existingDonor != null;
-            if (!donorExists)
-            {
-                throw new NovaNotFoundException($"Donor {donorId} does not exist");
-            }
-
-            var donorDetailsUnchanged = existingDonor.DonorType == inputDonor.DonorType && existingDonor.RegistryCode == inputDonor.RegistryCode;
-            var hlaUnchanged = existingDonor.HlaNames.Equals(new PhenotypeInfo<string>(inputDonor.HlaNames));
-            if (donorDetailsUnchanged && hlaUnchanged)
-            {
-                return inputDonor;
-            }
-
-            var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(inputDonor.HlaNames));
-            await donorImportRepository.UpdateDonorWithHla(CombineDonorAndExpandedHla(inputDonor, matchingHla));
-
-            return await GetDonor(inputDonor.DonorId);
+            return (await UpdateDonorBatch(new[] {inputDonor})).Single();
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
@@ -102,9 +74,10 @@ namespace Nova.SearchAlgorithm.Services
             if (existingDonors.Count() != inputDonors.Count())
             {
                 var newDonors = inputDonors.Where(id => existingDonors.All(ed => ed.DonorId != id.DonorId));
-                throw new NovaNotFoundException($"One or more donors do not exist. Donor ID(s):  {string.Join(",", newDonors.Select(d => d.DonorId))}");
+                throw new NovaNotFoundException(
+                    $"One or more donors do not exist. Donor ID(s):  {string.Join(",", newDonors.Select(d => d.DonorId))}");
             }
-            
+
             var donorsWithHla = await Task.WhenAll(inputDonors.Select(async d =>
                 {
                     var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
@@ -124,18 +97,6 @@ namespace Nova.SearchAlgorithm.Services
                 DonorType = inputDonor.DonorType,
                 RegistryCode = inputDonor.RegistryCode,
                 MatchingHla = matchingHla,
-            };
-        }
-
-        private async Task<InputDonor> GetDonor(int donorId)
-        {
-            var donor = await donorInspectionRepository.GetDonor(donorId);
-            return new InputDonor
-            {
-                DonorId = donor.DonorId,
-                HlaNames = donor.HlaNames,
-                DonorType = donor.DonorType,
-                RegistryCode = donor.RegistryCode,
             };
         }
 
