@@ -17,23 +17,23 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         /// Adds pre-processed matching p-groups for a batch of donors
         /// Used when adding donors
         /// </summary>
-        Task AddMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors);
+        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors);
 
         /// <summary>
-        /// Inserts a donor and generates the matching groups.
+        /// Inserts a donor and generates the matching p-groups.
         /// </summary>
-        Task InsertDonorWithHla(InputDonorWithExpandedHla donor);
+        Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor);
 
         /// <summary>
         /// Insert a batch of donors into the database.
         /// Will create the hla matches.
         /// </summary>
-        Task InsertBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors);
+        Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
         
         /// <summary>
         /// Insert a batch of donors into the database.
         /// Will create the hla matches.
         /// </summary>
-        Task UpdateBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors);
+        Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
     }
 }

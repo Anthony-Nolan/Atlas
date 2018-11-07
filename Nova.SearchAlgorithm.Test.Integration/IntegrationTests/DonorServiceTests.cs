@@ -32,8 +32,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateDonor(inputDonor);
             Assert.ThrowsAsync<NovaHttpException>(() => donorService.CreateDonor(inputDonor));
 
-            // Should not throw exception
-            await donorInspectionRepository.GetDonor(inputDonor.DonorId);
+            var donors = await donorInspectionRepository.GetDonors(new[] {inputDonor.DonorId});
+            donors.Count().Should().Be(1);
         }
 
         [Test]
@@ -66,8 +66,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var updatedDonor = new InputDonorBuilder(donorId).WithDonorType(DonorType.Cord).Build();
             await donorService.UpdateDonor(updatedDonor);
 
-            // Should not throw exception
-            await donorInspectionRepository.GetDonor(donorId);
+            var donors = await donorInspectionRepository.GetDonors(new[] {donorId});
+            donors.Count().Should().Be(1);
         }
 
         [Test]
@@ -141,8 +141,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateDonor(existingDonor);
             Assert.ThrowsAsync<NovaHttpException>(() => donorService.CreateDonorBatch(new[] {existingDonor, newDonor}));
 
-            // Should not throw exception
-            await donorInspectionRepository.GetDonor(existingDonor.DonorId);
+            var donors = await donorInspectionRepository.GetDonors(new[] {existingDonor.DonorId});
+            donors.Count().Should().Be(1);
         }
 
         [Test]
@@ -167,8 +167,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var updatedDonor = new InputDonorBuilder(donorId).WithDonorType(DonorType.Cord).Build();
             await donorService.UpdateDonorBatch(new[] {updatedDonor});
 
-            // Should not throw exception
-            await donorInspectionRepository.GetDonor(donorId);
+            var donors = await donorInspectionRepository.GetDonors(new[] {donorId});
+            donors.Count().Should().Be(1);
         }
 
         [Test]

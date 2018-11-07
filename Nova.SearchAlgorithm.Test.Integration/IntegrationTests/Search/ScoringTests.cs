@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
             // add test donors to repository
             var donorRepository = Container.Resolve<IDonorImportRepository>();
-            donorRepository.InsertDonorWithHla(donor_FiveLocus_SingleAlleles).Wait();
+            donorRepository.InsertDonorWithExpandedHla(donor_FiveLocus_SingleAlleles).Wait();
         }
 
         [SetUp]

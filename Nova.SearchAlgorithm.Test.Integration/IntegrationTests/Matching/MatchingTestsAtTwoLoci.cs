@@ -140,7 +140,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             };
             foreach (var donor in allDonors)
             {
-                Task.Run(() => importRepo.InsertDonorWithHla(donor)).Wait();
+                Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
 

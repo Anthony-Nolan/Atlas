@@ -167,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var importRepo = Container.Resolve<IDonorImportRepository>();
             foreach (var donor in BuildInputDonors())
             {
-                Task.Run(() => importRepo.InsertDonorWithHla(donor)).Wait();
+                Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
 

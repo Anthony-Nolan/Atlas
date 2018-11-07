@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.Services
                     return CombineDonorAndExpandedHla(d, hla);
                 }
             ));
-            await donorImportRepository.InsertBatchOfDonorsWithHla(donorsWithHla.AsEnumerable());
+            await donorImportRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.Services
                     return CombineDonorAndExpandedHla(d, hla);
                 }
             ));
-            await donorImportRepository.UpdateBatchOfDonorsWithHla(donorsWithHla.AsEnumerable());
+            await donorImportRepository.UpdateBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }

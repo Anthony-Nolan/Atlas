@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
             var donorHlaData = await Task.WhenAll(donorBatch.Select(FetchDonorHlaData));
             var inputDonors = donorHlaData.Where(x => x != null).ToList();
-            await donorImportRepository.AddMatchingGroupsForExistingDonorBatch(inputDonors);
+            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(inputDonors);
 
             stopwatch.Stop();
             logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>

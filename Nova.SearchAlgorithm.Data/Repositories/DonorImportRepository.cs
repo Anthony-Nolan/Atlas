@@ -76,25 +76,27 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        public async Task InsertDonorWithHla(InputDonorWithExpandedHla donor)
+        public async Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor)
         {
-            await InsertBatchOfDonorsWithHla(new[] {donor});
+            await InsertBatchOfDonorsWithExpandedHla(new[] {donor});
         }
 
-        public async Task InsertBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors)
+        public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
             await InsertBatchOfDonors(donors.Select(d => d.ToInputDonor()));
-            await AddMatchingGroupsForExistingDonorBatch(donors);
+            await AddMatchingPGroupsForExistingDonorBatch(donors);
         }
 
         // Performance of Entity Framework may not be sufficient to efficiently import large quantities of donors.
         // Consider re-writing this with Dapper if we prove to need to process large donor batches
-        public async Task UpdateBatchOfDonorsWithHla(IEnumerable<InputDonorWithExpandedHla> donors)
+        public async Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
             var donorIds = donors.Select(d => d.DonorId);
-            var existingDonors = context.Donors.Where(existingDonor => donorIds.Contains(existingDonor.DonorId));
+            var existingDonors = from donor in context.Donors
+                join id in donorIds on donor.DonorId equals id
+                select donor;
             foreach (var existingDonor in existingDonors)
             {
                 existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
@@ -104,7 +106,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task AddMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
             await Task.WhenAll(LocusHelpers.AllLoci().Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
