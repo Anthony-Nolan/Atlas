@@ -8,15 +8,15 @@
     When I run a 6/6 search
     Then the results should contain the specified donor
 
-  Scenario: 6/6 Search with untyped patient at Dqb1
+  Scenario: 6/6 Search with untyped patient at DQB1
     Given a patient has a match
-    And the patient is untyped at Locus Dqb1
+    And the patient is untyped at Locus DQB1
     When I run a 6/6 search
     Then the results should contain the specified donor
 	
-  Scenario: 6/6 Search with untyped patient at C and Dqb1
+  Scenario: 6/6 Search with untyped patient at C and DQB1
     Given a patient has a match
 	And the patient is untyped at Locus C
-    And the patient is untyped at Locus Dqb1
+    And the patient is untyped at Locus DQB1
     When I run a 6/6 search
     Then the results should contain the specified donor

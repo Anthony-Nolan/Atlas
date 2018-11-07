@@ -29,20 +29,20 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
     
   Scenario: 10/10 Search with untyped donor at C
     Given a patient has a match
-    And the matching donor is untyped at Locus C
+    And the matching donor is untyped at locus C
     When I run a 10/10 search
     Then the results should contain the specified donor
     
-  Scenario: 10/10 Search with untyped donor at Dqb1
+  Scenario: 10/10 Search with untyped donor at DQB1
     Given a patient has a match
-    And the matching donor is untyped at Locus Dqb1
+    And the matching donor is untyped at locus DQB1
     When I run a 10/10 search
     Then the results should contain the specified donor
     
-  Scenario: 10/10 Search with untyped donor at C and Dqb1
+  Scenario: 10/10 Search with untyped donor at C and DQB1
     Given a patient has a match
-    And the matching donor is untyped at Locus C
-    And the matching donor is untyped at Locus Dqb1
+    And the matching donor is untyped at locus C
+    And the matching donor is untyped at locus DQB1
     When I run a 10/10 search
     Then the results should contain the specified donor
 

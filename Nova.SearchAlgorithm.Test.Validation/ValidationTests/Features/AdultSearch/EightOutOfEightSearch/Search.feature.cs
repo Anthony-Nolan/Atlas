@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOutOfEightSearch
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AdultSearch.EightOutOfEightSearch
 {
     using TechTalk.SpecFlow;
     
@@ -64,16 +64,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.EightOut
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("8/8 Search with untyped patient at Dqb1")]
-        public virtual void _88SearchWithUntypedPatientAtDqb1()
+        [NUnit.Framework.DescriptionAttribute("8/8 Search with untyped patient at DQB1")]
+        public virtual void _88SearchWithUntypedPatientAtDQB1()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search with untyped patient at Dqb1", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search with untyped patient at DQB1", ((string[])(null)));
 #line 5
   this.ScenarioSetup(scenarioInfo);
 #line 6
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
- testRunner.And("the patient is untyped at Locus Dqb1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 8
     testRunner.And("the matching donor is a 8/8 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9

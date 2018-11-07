@@ -21,9 +21,9 @@ Feature: Six Out Of Six Search - mismatches
     When I run a 6/6 search
     Then the results should not contain the specified donor
 
-  Scenario: 6/6 Search with a mismatched donor at Drb1
+  Scenario: 6/6 Search with a mismatched donor at DRB1
     Given a patient and a donor
-    And the donor has a single mismatch at locus Drb1
+    And the donor has a single mismatch at locus DRB1
     When I run a 6/6 search
     Then the results should not contain the specified donor
   
@@ -33,14 +33,14 @@ Feature: Six Out Of Six Search - mismatches
     When I run a 6/6 search
     Then the results should contain the specified donor
 
-  Scenario: 6/6 Search with a mismatched donor at Dqb1
+  Scenario: 6/6 Search with a mismatched donor at DQB1
     Given a patient has a match
-    And the donor has a single mismatch at locus Dqb1
+    And the donor has a single mismatch at locus DQB1
     When I run a 6/6 search
     Then the results should contain the specified donor
     
-  Scenario: 6/6 Search with a mismatched donor at Dpb1
+  Scenario: 6/6 Search with a mismatched donor at DPB1
     Given a patient has a match
-    And the donor has a single mismatch at locus Dpb1
+    And the donor has a single mismatch at locus DPB1
     When I run a 6/6 search
     Then the results should contain the specified donor
