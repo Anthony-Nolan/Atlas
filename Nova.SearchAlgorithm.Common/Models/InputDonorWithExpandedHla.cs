@@ -1,8 +1,9 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 
 namespace Nova.SearchAlgorithm.Common.Models
 {
-    public class InputDonor
+    public class InputDonorWithExpandedHla
     {
         public int DonorId { get; set; }
         
@@ -10,9 +11,9 @@ namespace Nova.SearchAlgorithm.Common.Models
         public RegistryCode RegistryCode { get; set; }
         public PhenotypeInfo<ExpandedHla> MatchingHla { get; set; }
 
-        public RawInputDonor ToRawInputDonor()
+        public InputDonor ToInputDonor()
         {
-            return new RawInputDonor
+            return new InputDonor
             {
                 DonorId = DonorId,
                 RegistryCode = RegistryCode,

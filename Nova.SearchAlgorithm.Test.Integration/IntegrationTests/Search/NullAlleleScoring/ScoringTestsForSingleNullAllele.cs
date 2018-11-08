@@ -163,12 +163,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .GetPhenotypeOfExpandedHla(donorPhenotype)
                 .Result;
 
-            var testDonor = new InputDonorBuilder(DonorIdGenerator.NextId())
+            var testDonor = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
             var donorRepository = Container.Resolve<IDonorImportRepository>();
-            donorRepository.AddOrUpdateDonorWithHla(testDonor).Wait();
+            donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
 
             return testDonor.DonorId;
         }

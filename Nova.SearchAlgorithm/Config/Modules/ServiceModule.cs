@@ -52,6 +52,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Services.DonorService>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<SearchService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();

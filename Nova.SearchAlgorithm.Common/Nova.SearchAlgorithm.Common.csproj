@@ -161,7 +161,7 @@
     <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\IBatchQueryAsync.cs" />
     <Compile Include="Models\IStorableInCloudTable.cs" />
-    <Compile Include="Models\InputDonor.cs" />
+    <Compile Include="Models\InputDonorWithExpandedHla.cs" />
     <Compile Include="Models\Locus.cs" />
     <Compile Include="Models\LocusInfo.cs" />
     <Compile Include="Models\LocusSearchCriteria.cs" />
@@ -169,7 +169,6 @@
     <Compile Include="Models\Matching\MatchingFilteringOptions.cs" />
     <Compile Include="Models\PhenotypeInfo.cs" />
     <Compile Include="Models\PotentialHlaMatchRelation.cs" />
-    <Compile Include="Models\RawInputDonor.cs" />
     <Compile Include="Models\Scoring\MatchGradeResult.cs" />
     <Compile Include="Models\Scoring\MatchOrientation.cs" />
     <Compile Include="Models\SearchResults\LocusMatchDetails.cs" />

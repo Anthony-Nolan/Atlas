@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         Task<int> HighestDonorId();
         Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate();
         Task<DonorResult> GetDonor(int donorId);
-        Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
         Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds);
+        Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
     }
 }

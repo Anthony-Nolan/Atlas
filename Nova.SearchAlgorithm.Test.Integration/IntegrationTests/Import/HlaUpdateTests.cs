@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
@@ -33,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
 
@@ -45,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorHla_ForPatientHlaMatchingMultiplePGroups_InsertsMatchRowForEachPGroup()
         {
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
 
@@ -57,7 +58,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorHla_WhenUpdateHasBeenRunForADonor_DoesNotAddMorePGroups()
         {
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
             var initialPGroupCountAtA1 = (await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId})).First().PGroupNames.A_1.Count();
@@ -71,18 +72,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorHla_UpdatesHlaForNewDonorsSinceLastRun()
         {
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
             await updateService.UpdateDonorHla();
             
             var newDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
             await updateService.UpdateDonorHla();
 
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {newDonor.DonorId});
             pGroups.Should().NotBeEmpty();
         }
         
-        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, RawInputDonor donorExpected)
+        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, InputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);
             donorActual.DonorType.Should().Be(donorExpected.DonorType);
@@ -90,9 +91,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             donorActual.HlaNames.ShouldBeEquivalentTo(donorExpected.HlaNames);
         }
 
-        private RawInputDonor DonorWithId(int id)
+        private InputDonor DonorWithId(int id)
         {
-            return new RawInputDonor
+            return new InputDonor
             {
                 RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,

@@ -1,42 +1,47 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web.Http;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.Utils.Http.Exceptions;
+using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Controllers
 {
-    /// <summary>
-    /// Endpoints to expose the donor data we are storing, for debugging and verification.
-    /// </summary>
     [RoutePrefix("donor")]
     public class DonorController : ApiController
     {
-        private readonly IDonorInspectionRepository donorRepository;
+        private readonly IDonorService donorService;
 
-        public DonorController(IDonorInspectionRepository donorRepository)
+        public DonorController(IDonorService donorService)
         {
-            this.donorRepository = donorRepository;
+            this.donorService = donorService;
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public Task<DonorResult> GetDonor(int id)
+        [HttpPost]
+        [Route("")]
+        public async Task<InputDonor> CreateDonor([FromBody] InputDonor donor)
         {
-            var donor = donorRepository.GetDonor(id);
-            if (donor == null)
-            {
-                throw new NovaNotFoundException($"No donor available with ID {id}");
-            }
-            return donor;
+            return await donorService.CreateDonor(donor);
         }
 
-        [HttpGet]
-        [Route("highest-donor-id")]
-        public Task<int> GetHighestDonorId()
+        [HttpPut]
+        [Route("")]
+        public async Task<InputDonor> UpdateDonor([FromBody] InputDonor donor)
         {
-            return donorRepository.HighestDonorId();
+            return await donorService.UpdateDonor(donor);
+        }
+
+        [HttpPost]
+        [Route("batch")]
+        public async Task<IEnumerable<InputDonor>> CreateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        {
+            return await donorService.CreateDonorBatch(donorBatch.Donors);
+        }
+
+        [HttpPut]
+        [Route("batch")]
+        public async Task<IEnumerable<InputDonor>> UpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        {
+            return await donorService.UpdateDonorBatch(donorBatch.Donors);
         }
     }
 }

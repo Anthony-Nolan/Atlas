@@ -4,6 +4,7 @@ using Autofac;
 using FluentAssertions;
 using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
@@ -45,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var lowerId = DonorIdGenerator.NextId();
             var higherId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<RawInputDonor>
+            await importRepo.InsertBatchOfDonors(new List<InputDonor>
             {
                 DonorWithId(higherId),
                 DonorWithId(lowerId),
@@ -193,9 +194,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             Assert.ThrowsAsync<DonorImportHttpException>(() => donorImportService.StartDonorImport());
         }
 
-        private static RawInputDonor DonorWithId(int id)
+        private static InputDonor DonorWithId(int id)
         {
-            return new RawInputDonor
+            return new InputDonor
             {
                 RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,

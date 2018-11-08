@@ -931,11 +931,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .GetPhenotypeOfExpandedHla(donorPhenotype)
                 .Result;
 
-            var testDonor = new InputDonorBuilder(donorId.Value)
+            var testDonor = new InputDonorWithExpandedHlaBuilder(donorId.Value)
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            await donorRepository.AddOrUpdateDonorWithHla(testDonor);
+            await donorRepository.InsertDonorWithExpandedHla(testDonor);
 
             return testDonor.DonorId;
         }
@@ -963,7 +963,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         {
             public string AlleleName { get; }
             public PhenotypeInfo<string> Phenotype { get; }
-            private InputDonor Donor { get; }
+            private InputDonorWithExpandedHla Donor { get; }
             public int DonorId => Donor.DonorId;
 
 
@@ -974,13 +974,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 Donor = BuildDonor(expandHlaPhenotypeService, donorId);
             }
 
-            private InputDonor BuildDonor(IExpandHlaPhenotypeService expandHlaPhenotypeService, int donorId)
+            private InputDonorWithExpandedHla BuildDonor(IExpandHlaPhenotypeService expandHlaPhenotypeService, int donorId)
             {
                 var matchingHlaPhenotype = expandHlaPhenotypeService
                     .GetPhenotypeOfExpandedHla(Phenotype)
                     .Result;
 
-                return new InputDonorBuilder(donorId)
+                return new InputDonorWithExpandedHlaBuilder(donorId)
                     .WithMatchingHla(matchingHlaPhenotype)
                     .Build();
             }

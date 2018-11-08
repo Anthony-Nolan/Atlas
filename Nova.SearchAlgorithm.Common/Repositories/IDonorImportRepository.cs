@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Common.Repositories
@@ -10,23 +11,29 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         /// Insert a batch of donors into the database.
         /// This does _not_ refresh or create the hla matches.
         /// </summary>
-        Task InsertBatchOfDonors(IEnumerable<RawInputDonor> donors);
+        Task InsertBatchOfDonors(IEnumerable<InputDonor> donors);
 
         /// <summary>
-        /// If a donor with the given DonorId already exists, update the HLA and refresh the pre-processed matching groups.
-        /// Otherwise, insert the donor and generate the matching groups.
+        /// Adds pre-processed matching p-groups for a batch of donors
+        /// Used when adding donors
         /// </summary>
-        Task AddOrUpdateDonorWithHla(InputDonor donor);
+        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors);
 
         /// <summary>
-        /// Performs one time set up before the Refresh Hla function is run
-        /// e.g. generating a new data table in the azure table storage implementation
+        /// Inserts a donor and generates the matching p-groups.
         /// </summary>
-        void SetupForHlaRefresh();
+        Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor);
+
+        /// <summary>
+        /// Insert a batch of donors into the database.
+        /// Will create the hla matches.
+        /// </summary>
+        Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
         
         /// <summary>
-        /// Refreshes the pre-processed matching groups for a batch of donors, for example if the HLA matching dictionary has been updated.
+        /// Insert a batch of donors into the database.
+        /// Will create the hla matches.
         /// </summary>
-        Task RefreshMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonor> donors);
+        Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
     }
 }

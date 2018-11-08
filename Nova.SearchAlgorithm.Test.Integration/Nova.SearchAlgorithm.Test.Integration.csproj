@@ -341,6 +341,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="IntegrationTests\DonorServiceTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorImportTests.cs" />
     <Compile Include="IntegrationTests\Import\DonorStorageTests.cs" />
     <Compile Include="IntegrationTests\Import\HlaUpdateTests.cs" />
@@ -368,8 +369,9 @@
     <Compile Include="TestHelpers\Builders\AlleleLevelMatchCriteriaBuilderFromExpandedHla.cs" />
     <Compile Include="TestHelpers\Builders\ExpandedHlaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\HlaNamePhenotypeBuilder.cs" />
-    <Compile Include="TestHelpers\Builders\SearchRequestFromHlasBuilder.cs" />
     <Compile Include="TestHelpers\Builders\InputDonorBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\SearchRequestFromHlasBuilder.cs" />
+    <Compile Include="TestHelpers\Builders\InputDonorWithExpandedHlaBuilder.cs" />
     <Compile Include="TestHelpers\Builders\SearchRequestBuilder.cs" />
     <Compile Include="TestHelpers\DonorIdGenerator.cs" />
     <Compile Include="IntegrationTests\IntegrationTestBase.cs" />

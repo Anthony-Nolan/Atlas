@@ -20,6 +20,22 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
         }
 
+        public PhenotypeInfo(Utils.PhenoTypeInfo.PhenotypeInfo<T> phenotypeInfo)
+        {
+            A_1 = phenotypeInfo.A_1;
+            A_2 = phenotypeInfo.A_2;
+            B_1 = phenotypeInfo.B_1;
+            B_2 = phenotypeInfo.B_2;
+            C_1 = phenotypeInfo.C_1;
+            C_2 = phenotypeInfo.C_2;
+            Dpb1_1 = phenotypeInfo.Dpb1_1;
+            Dpb1_2 = phenotypeInfo.Dpb1_2;
+            Dqb1_1 = phenotypeInfo.Dqb1_1;
+            Dqb1_2 = phenotypeInfo.Dqb1_2;
+            Drb1_1 = phenotypeInfo.Drb1_1;
+            Drb1_2 = phenotypeInfo.Drb1_2;
+        }
+
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> Map<R>(Func<Locus, TypePosition, T, R> mapping)
         {

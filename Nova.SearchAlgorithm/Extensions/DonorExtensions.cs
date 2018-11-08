@@ -1,6 +1,7 @@
 ﻿using System;
 using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Exceptions;
 
@@ -8,9 +9,9 @@ namespace Nova.SearchAlgorithm.Extensions
 {
     public static class DonorExtensions
     {
-        public static RawInputDonor ToRawImportDonor(this DonorInfoForSearchAlgorithm donor)
+        public static InputDonor ToInputDonor(this DonorInfoForSearchAlgorithm donor)
         {
-            return new RawInputDonor
+            return new InputDonor
             {
                 DonorId = donor.DonorId,
                 RegistryCode = RegistryCodeFromString(donor.RegistryCode),
