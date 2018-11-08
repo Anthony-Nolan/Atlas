@@ -32,6 +32,9 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
       migration runner has been known to struggle to cope with large migrations of existing data. 
      In such cases the data may need to be manually migrated
      
+     For the HLA refresh job to complete in a reasonable timeframe, indexes must be removed from the MatchingHlaAt<Locus> tables.
+     Once the job is complete, they should be re-added. https://anthonynolan.atlassian.net/wiki/spaces/NPDWS/pages/541229066/Database+Setup contains a script to re-add the indexes, if the required indexes change then that page should be updated accordingly
+     
 #### Dependencies
 
 The service has external dependencies on two services, the `DonorService` and `HlaService`. By default the configuration points to the 
