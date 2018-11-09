@@ -228,7 +228,7 @@ These tests are primarily for the benefit of non-developers, intended to confirm
 - Uses development azure storage account (may change in future)
 - Starts an in-memory OWIN server, aiming to run the application as realistically as possible. 
   - All test implementations should be via HTTP requests to the in-memory service.
-  - **SETUP:** As these tests spin up a full version of the application, a `Settings/SecureSettings.config` file must be created, as with the service itself
+  - **SETUP:** As these tests spin up a full version of the application, a `Settings/SecureSettings.config` file must be created, as with the service itself. Additional keys required are the api keys for hla and donor services.
   - **SETUP:** `Settings/ConnectionStrings.config` must also be created. This is seperate from the web.config file to allow the CI server to override connection strings to point at a non-local database
 
 - Tests are written in the Gherkin language, using the library `SpecFlow`
