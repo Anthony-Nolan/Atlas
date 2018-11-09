@@ -302,6 +302,8 @@
     <Compile Include="Config\Configuration.cs" />
     <Compile Include="Config\HangfireConfig.cs" />
     <Compile Include="Config\InstrumentationConfig.cs" />
+    <Compile Include="Config\Mappings\InputDonorProfile.cs" />
+    <Compile Include="Config\Mappings\ScoringResultProfile.cs" />
     <Compile Include="Config\Modules\ClientModule.cs" />
     <Compile Include="Config\Modules\ServiceModule.cs" />
     <Compile Include="Config\SwaggerConfig.cs" />
@@ -399,6 +401,7 @@
       <Name>Nova.SearchAlgorithm.MatchingDictionary</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

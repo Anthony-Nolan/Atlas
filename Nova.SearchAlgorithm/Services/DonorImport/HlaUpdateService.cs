@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -31,6 +32,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
+        private readonly IMapper mapper;
 
         public HlaUpdateService(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
@@ -40,8 +42,8 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAntigenCachingService antigenCachingService,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
-            IPGroupRepository pGroupRepository
-        )
+            IPGroupRepository pGroupRepository,
+            IMapper mapper)
         {
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.donorInspectionRepository = donorInspectionRepository;
@@ -51,6 +53,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             this.antigenCachingService = antigenCachingService;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.pGroupRepository = pGroupRepository;
+            this.mapper = mapper;
         }
 
         public async Task UpdateDonorHla()
@@ -118,13 +121,9 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             {
                 var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames);
 
-                return new InputDonorWithExpandedHla
-                {
-                    DonorId = donor.DonorId,
-                    DonorType = donor.DonorType,
-                    RegistryCode = donor.RegistryCode,
-                    MatchingHla = matchingHla
-                };
+                var donorWithHla = mapper.Map<InputDonorWithExpandedHla>(donor);
+                donorWithHla.MatchingHla = matchingHla;
+                return donorWithHla;
             }
             catch (MatchingDictionaryException e)
             {

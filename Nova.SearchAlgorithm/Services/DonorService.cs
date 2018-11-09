@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -22,16 +23,18 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
+        private readonly IMapper mapper;
 
         public DonorService(
             IDonorImportRepository donorImportRepository,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
-            IDonorInspectionRepository donorInspectionRepository
-        )
+            IDonorInspectionRepository donorInspectionRepository,
+            IMapper mapper)
         {
             this.donorImportRepository = donorImportRepository;
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.donorInspectionRepository = donorInspectionRepository;
+            this.mapper = mapper;
         }
 
         public async Task<InputDonor> CreateDonor(InputDonor inputDonor)
@@ -89,27 +92,17 @@ namespace Nova.SearchAlgorithm.Services
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
 
-        private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor, PhenotypeInfo<ExpandedHla> matchingHla)
+        private InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor, PhenotypeInfo<ExpandedHla> matchingHla)
         {
-            return new InputDonorWithExpandedHla
-            {
-                DonorId = inputDonor.DonorId,
-                DonorType = inputDonor.DonorType,
-                RegistryCode = inputDonor.RegistryCode,
-                MatchingHla = matchingHla,
-            };
+            var donorWithHla = mapper.Map<InputDonorWithExpandedHla>(inputDonor);
+            donorWithHla.MatchingHla = matchingHla;
+            return donorWithHla;
         }
 
         private async Task<IEnumerable<InputDonor>> GetDonors(IEnumerable<int> donorIds)
         {
             var donors = await donorInspectionRepository.GetDonors(donorIds);
-            return donors.Select(donor => new InputDonor
-            {
-                DonorId = donor.DonorId,
-                HlaNames = donor.HlaNames,
-                DonorType = donor.DonorType,
-                RegistryCode = donor.RegistryCode,
-            });
+            return donors.Select(donor => mapper.Map<InputDonor>(donor));
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
@@ -17,6 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Services
         private IDonorImportRepository importRepository;
         private IDonorInspectionRepository inspectionRepository;
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
+        private IMapper mapper;
 
         [SetUp]
         public void SetUp()
@@ -24,8 +26,8 @@ namespace Nova.SearchAlgorithm.Test.Services
             importRepository = Substitute.For<IDonorImportRepository>();
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
-
-            donorService = new DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository);
+            mapper = TestsSetup.Mapper;
+            donorService = new DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
         }
 
         [Test]

@@ -419,6 +419,7 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToGgroups\SerologyToGGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\MatchedHlaTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToSerology\SerologyToSerologyMatchingTest.cs" />
+    <Compile Include="TestsSetup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

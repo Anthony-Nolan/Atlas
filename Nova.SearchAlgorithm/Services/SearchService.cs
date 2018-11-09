@@ -157,20 +157,8 @@ namespace Nova.SearchAlgorithm.Services
                 IsLocusMatchCountIncludedInTotal = matchDetailsForLocus != null,
                 MatchGradeScore = scoreDetailsForLocus.MatchGradeScore,
                 MatchConfidenceScore = scoreDetailsForLocus.MatchConfidenceScore,
-                ScoreDetailsAtPositionOne = new LocusPositionScoreDetails
-                {
-                    MatchConfidence = scoreDetailsForLocus.ScoreDetailsAtPosition1.MatchConfidence,
-                    MatchConfidenceScore = scoreDetailsForLocus.ScoreDetailsAtPosition1.MatchConfidenceScore,
-                    MatchGrade = scoreDetailsForLocus.ScoreDetailsAtPosition1.MatchGrade,
-                    MatchGradeScore = scoreDetailsForLocus.ScoreDetailsAtPosition1.MatchGradeScore,
-                },
-                ScoreDetailsAtPositionTwo = new LocusPositionScoreDetails
-                {
-                    MatchConfidence = scoreDetailsForLocus.ScoreDetailsAtPosition2.MatchConfidence,
-                    MatchConfidenceScore = scoreDetailsForLocus.ScoreDetailsAtPosition2.MatchConfidenceScore,
-                    MatchGrade = scoreDetailsForLocus.ScoreDetailsAtPosition2.MatchGrade,
-                    MatchGradeScore = scoreDetailsForLocus.ScoreDetailsAtPosition2.MatchGradeScore,
-                }
+                ScoreDetailsAtPositionOne = scoreDetailsForLocus.ScoreDetailsAtPosition1,
+                ScoreDetailsAtPositionTwo = scoreDetailsForLocus.ScoreDetailsAtPosition2
             };
         }
     }
