@@ -19,8 +19,8 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
     {
         public LocusSearchHlaValidator()
         {
-            RuleFor(x => x.SearchHla1).NotEmpty();
-            RuleFor(x => x.SearchHla1).NotEmpty();
+            RuleFor(x => x.SearchHla1).NotEmpty().NotNull();
+            RuleFor(x => x.SearchHla1).NotEmpty().NotNull();
         }
     }
 }

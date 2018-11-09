@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             {
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria(),
-                RegistriesToSearch = new[] { RegistryCode.AN, (RegistryCode) 999 }
+                RegistriesToSearch = new[] {RegistryCode.AN, (RegistryCode) 999}
             });
             result.IsValid.Should().BeFalse();
         }
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             var result = validator.Validate(new SearchRequest
             {
                 MatchCriteria = new MismatchCriteria(),
-                RegistriesToSearch = new []{ RegistryCode.AN }
+                RegistriesToSearch = new[] {RegistryCode.AN}
             });
             result.IsValid.Should().BeFalse();
         }
@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         {
             var result = validator.Validate(new SearchRequest
             {
-                RegistriesToSearch = new []{ RegistryCode.AN },
+                RegistriesToSearch = new[] {RegistryCode.AN},
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
@@ -76,20 +76,20 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
                 },
                 SearchHlaData = new SearchHlaData
                 {
-                    LocusSearchHlaA = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaB = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaDrb1 = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaA = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaB = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaDrb1 = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
                 }
             });
             result.IsValid.Should().BeFalse();
         }
-        
+
         [Test]
         public void Validator_WithMatchCriteriaForLocusDqb1AndNoHlaDataAtDqb1_ShouldHaveValidationError()
         {
             var result = validator.Validate(new SearchRequest
             {
-                RegistriesToSearch = new []{ RegistryCode.AN },
+                RegistriesToSearch = new[] {RegistryCode.AN},
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
@@ -100,9 +100,9 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
                 },
                 SearchHlaData = new SearchHlaData
                 {
-                    LocusSearchHlaA = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaB = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaDrb1 = new LocusSearchHla{ SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaA = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaB = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
+                    LocusSearchHlaDrb1 = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
                 }
             });
             result.IsValid.Should().BeFalse();
