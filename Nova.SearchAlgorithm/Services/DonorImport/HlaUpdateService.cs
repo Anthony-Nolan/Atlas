@@ -121,9 +121,13 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             {
                 var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames);
 
-                var donorWithHla = mapper.Map<InputDonorWithExpandedHla>(donor);
-                donorWithHla.MatchingHla = matchingHla;
-                return donorWithHla;
+                return new InputDonorWithExpandedHla
+                {
+                    DonorId = donor.DonorId,
+                    DonorType = donor.DonorType,
+                    RegistryCode = donor.RegistryCode,
+                    MatchingHla = matchingHla,
+                };
             }
             catch (MatchingDictionaryException e)
             {

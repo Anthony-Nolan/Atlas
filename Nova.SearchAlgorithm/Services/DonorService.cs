@@ -92,11 +92,16 @@ namespace Nova.SearchAlgorithm.Services
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
 
-        private InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor, PhenotypeInfo<ExpandedHla> matchingHla)
+        private InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor,
+            PhenotypeInfo<ExpandedHla> matchingHla)
         {
-            var donorWithHla = mapper.Map<InputDonorWithExpandedHla>(inputDonor);
-            donorWithHla.MatchingHla = matchingHla;
-            return donorWithHla;
+            return new InputDonorWithExpandedHla
+            {
+                DonorId = inputDonor.DonorId,
+                DonorType = inputDonor.DonorType,
+                RegistryCode = inputDonor.RegistryCode,
+                MatchingHla = matchingHla,
+            };
         }
 
         private async Task<IEnumerable<InputDonor>> GetDonors(IEnumerable<int> donorIds)

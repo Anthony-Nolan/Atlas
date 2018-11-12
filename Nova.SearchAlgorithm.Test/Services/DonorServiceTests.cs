@@ -4,6 +4,7 @@ using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Services;
 using Nova.Utils.Http.Exceptions;
 using NSubstitute;
@@ -26,14 +27,14 @@ namespace Nova.SearchAlgorithm.Test.Services
             importRepository = Substitute.For<IDonorImportRepository>();
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
-            mapper = TestsSetup.Mapper;
+            mapper = AutomapperConfig.CreateMapper();
             donorService = new DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
         }
 
         [Test]
         public void CreateDonor_WhenDonorExists_ThrowsException()
         {
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] {new DonorResult()});
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
             Assert.ThrowsAsync<NovaHttpException>(() => donorService.CreateDonor(new InputDonor()));
         }
@@ -42,7 +43,8 @@ namespace Nova.SearchAlgorithm.Test.Services
         [Test]
         public async Task CreateDonor_WhenDonorDoesNotExist_CreatesDonor()
         {
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorResult>(), new List<DonorResult> {new DonorResult()});
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorResult>(),
+                new List<DonorResult> { new DonorResult() });
 
             var inputDonor = new InputDonor
             {
@@ -50,7 +52,8 @@ namespace Nova.SearchAlgorithm.Test.Services
             };
             await donorService.CreateDonor(inputDonor);
 
-            await importRepository.Received().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+            await importRepository.Received()
+                .InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
 
         [Test]
@@ -66,11 +69,12 @@ namespace Nova.SearchAlgorithm.Test.Services
             {
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] {new DonorResult()});
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
             await donorService.UpdateDonor(inputDonor);
 
-            await importRepository.Received().UpdateBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+            await importRepository.Received()
+                .UpdateBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
     }
 }
