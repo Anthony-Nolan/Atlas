@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using NUnit.Framework;
 
@@ -57,6 +56,29 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             };
             var result = validator.Validate(searchHla);
             result.IsValid.Should().BeTrue();
+        }
+        
+        [Test]
+        public void Validator_WhenOneHlaStringNull_ShouldHaveValidationError()
+        {
+            var searchHla = new LocusSearchHla
+            {
+                SearchHla2 = null
+            };
+            var result = validator.Validate(searchHla);
+            result.IsValid.Should().BeFalse();
+        }
+        
+        [Test]
+        public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
+        {
+            var searchHla = new LocusSearchHla
+            {
+                SearchHla1 = null,
+                SearchHla2 = null
+            };
+            var result = validator.Validate(searchHla);
+            result.IsValid.Should().BeFalse();
         }
     }
 }
