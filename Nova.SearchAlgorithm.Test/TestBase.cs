@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using Autofac.Builder;
-using AutoMapper;
 using Nova.SearchAlgorithm.Config;
 using Nova.Utils.Auth;
 using Nova.Utils.WebApi.Filters;
