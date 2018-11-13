@@ -130,8 +130,9 @@
       <HintPath>..\packages\Nova.HLAService.Client.3.0.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nova.Utils, Version=8.3.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.8.3.3\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=8.6.1.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.Utils.8.6.1\lib\net462\Nova.Utils.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Nova.Utils.WebApi, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\Nova.Utils.WebApi.6.0.0\lib\net462\Nova.Utils.WebApi.dll</HintPath>

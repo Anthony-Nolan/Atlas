@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Common.Models
     /// Data type to hold one instance of T for each of the supported HLA loci and each type position within.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
-    public class PhenotypeInfo<T> : Utils.PhenoTypeInfo.PhenotypeInfo<T>
+    public class PhenotypeInfo<T> : Utils.PhenotypeInfo.PhenotypeInfo<T>
     {
         public PhenotypeInfo()
         {
@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
         }
 
-        public PhenotypeInfo(Utils.PhenoTypeInfo.PhenotypeInfo<T> phenotypeInfo)
+        public PhenotypeInfo(Utils.PhenotypeInfo.PhenotypeInfo<T> phenotypeInfo)
         {
             A_1 = phenotypeInfo.A_1;
             A_2 = phenotypeInfo.A_2;
