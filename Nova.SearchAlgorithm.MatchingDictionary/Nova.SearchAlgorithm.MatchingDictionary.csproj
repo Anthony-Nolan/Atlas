@@ -199,7 +199,7 @@
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
     <Compile Include="Exceptions\MatchingDictionaryHttpException.cs" />
-    <Compile Include="Exceptions\PermittedLocusException.cs" />
+    <Compile Include="Exceptions\LocusNameException.cs" />
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
@@ -296,7 +296,7 @@
     <Compile Include="Models\Lookups\SerologyEntry.cs" />
     <Compile Include="Models\Lookups\MatchingSerologyExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
-    <Compile Include="HlaTypingInfo\PermittedLocusNames.cs" />
+    <Compile Include="HlaTypingInfo\MatchingDictionaryLoci.cs" />
     <Compile Include="Models\HLATypings\SerologyTyping.cs" />
     <Compile Include="Models\HLATypings\SerologySubtype.cs" />
     <Compile Include="Models\MatchingTypings\AlleleInfoForMatching.cs" />

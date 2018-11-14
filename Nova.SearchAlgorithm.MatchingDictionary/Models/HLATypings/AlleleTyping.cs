@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         }
 
         public AlleleTyping(MatchLocus matchLocus, string name, bool isDeleted = false)
-            : this(matchLocus.ToMolecularLocusNameIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
+            : this(matchLocus.ToMolecularLocusIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
         {
         }
 

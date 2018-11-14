@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Data;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
             this.fileName = fileName;
         }
 
-        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForPermittedLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
+        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForMatchingDictionaryLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
         {
             var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName);
             ExtractHeaders(fileContents.First());
@@ -37,13 +37,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
             // Do nothing by default
         }
 
-        private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForPermittedLociFromFileContents(IEnumerable<string> wmdaFileContents)
+        private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForMatchingDictionaryLoci(IEnumerable<string> wmdaFileContents)
         {
             return 
                 wmdaFileContents
                     .Select(line => line.Trim())
                     .Select(MapLineOfFileContentsToWmdaHlaTyping)
-                    .Where(typing => typing != null && typing.IsPermittedLocusTyping());
+                    .Where(typing => typing != null && typing.IsMatchingDictionaryLocusTyping());
         }
     }
 }

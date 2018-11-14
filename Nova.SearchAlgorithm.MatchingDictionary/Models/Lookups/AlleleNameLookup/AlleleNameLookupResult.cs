@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLooku
 
         public AlleleNameLookupResult(string locus, string lookupName, string currentAlleleName)
         {
-            MatchLocus = PermittedLocusNames.GetMatchLocusNameFromTypingLocusIfExists(TypingMethod.Molecular, locus);
+            MatchLocus = MatchingDictionaryLoci.GetMatchLocusFromTypingLocusIfExists(TypingMethod.Molecular, locus);
             LookupName = lookupName;
             CurrentAlleleNames = new[] {currentAlleleName};
         }
