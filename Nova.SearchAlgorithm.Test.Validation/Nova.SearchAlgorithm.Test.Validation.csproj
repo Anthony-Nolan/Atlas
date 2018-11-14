@@ -411,6 +411,11 @@
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientFactories\PatientDataFactoryTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
+    <Compile Include="ValidationTests\Features\AlleleNames\AlleleNames.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AlleleNames.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -481,11 +486,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
-    <Compile Include="ValidationTests\Features\Test.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Test.feature</DependentUpon>
-    </Compile>
     <Compile Include="ValidationTests\Features\NullAlleles\NullAlleles.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -550,15 +550,16 @@
     <Compile Include="ValidationTests\StepDefinitions\InputParsers\LocusParser.cs" />
     <Compile Include="ValidationTests\StepDefinitions\InputParsers\OrientationParser.cs" />
     <Compile Include="ValidationTests\StepDefinitions\InputParsers\PositionParser.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\ExplicitDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultipleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\PatientDataFactoryExtensions.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\SingleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\AlleleNameFeatureSteps.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature" />
@@ -572,7 +573,6 @@
     <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\Test.feature" />
     <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />

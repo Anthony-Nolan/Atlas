@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 {
     /// <summary>
     /// Contains a set of extension methods that allow for easy manipulation of a patient data factory based on string inputs from the test steps.
-    /// This logic should not be moved to the selctor itself, as that should remain strongly typed.
+    /// This logic should not be moved to the selector itself, as that should remain strongly typed.
     /// </summary>
     public static class PatientDataFactoryExtensions
     {

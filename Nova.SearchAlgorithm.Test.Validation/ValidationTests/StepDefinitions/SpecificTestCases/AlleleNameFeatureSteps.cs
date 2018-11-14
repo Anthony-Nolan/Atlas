@@ -6,27 +6,37 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using TechTalk.SpecFlow;
 
-namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
+namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases
 {
     [Binding]
-    public class ExplicitDataSelectionSteps
+    public class AlleleNameFeatureSteps
     {
-        [Given(@"the matching donor has hla")]
+        [Given(@"the matching donor has a deleted allele")]
         public async Task GivenADonorWithKnownHla()
         {
             var staticDataProvider = ScenarioContext.Current.Get<IStaticDataProvider>();
 
+            const string deletedAlleleAtA = "*02:01:82";
+            const string replacementAlleleAtA = "*02:01:84";
+            
             var inputDonor = new InputDonor
             {
                 DonorId = DonorIdGenerator.NextId(),
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A = {Position1 = "*01:01", Position2 = "*01:01"},
+                    A = {Position1 = deletedAlleleAtA, Position2 = "*01:01"},
                     B = {Position1 = "*15:01", Position2 = "*15:01"},
                     Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
                 },
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult
+            };
+            
+            var patientHla = new PhenotypeInfo<string>
+            {
+                A = {Position1 = replacementAlleleAtA, Position2 = inputDonor.HlaNames.A.Position2},
+                B = {Position1 = inputDonor.HlaNames.B.Position1, Position2 = inputDonor.HlaNames.B.Position2},
+                Drb1 = {Position1 = inputDonor.HlaNames.Drb1.Position1, Position2 = inputDonor.HlaNames.Drb1.Position2}
             };
 
             await AlgorithmTestingService.AddDonors(new[]
@@ -35,23 +45,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             });
 
             staticDataProvider.SetExpectedDonorIds(new[] {inputDonor.DonorId});
+            staticDataProvider.SetPatientHla(patientHla);
+
             ScenarioContext.Current.Set(staticDataProvider);
             ScenarioContext.Current.Set((IExpectedDonorProvider) staticDataProvider);
-        }
-
-        [Given(@"the patient has hla")]
-        public void GivenAPatientWithKnownHla()
-        {
-            var staticDataProvider = ScenarioContext.Current.Get<IStaticDataProvider>();
-            var patientHla = new PhenotypeInfo<string>
-            {
-                A = {Position1 = "*01:01", Position2 = "*01:01"},
-                B = {Position1 = "*15:01", Position2 = "*15:01"},
-                Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
-            };
-            
-            staticDataProvider.SetPatientHla(patientHla);
-            ScenarioContext.Current.Set(staticDataProvider);
             ScenarioContext.Current.Set((IPatientDataProvider) staticDataProvider);
         }
     }
