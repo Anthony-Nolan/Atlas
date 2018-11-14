@@ -139,6 +139,57 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.AlleleNa
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Donor has a specific renamed allele")]
+        public virtual void DonorHasASpecificRenamedAllele()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Donor has a specific renamed allele", ((string[])(null)));
+#line 30
+  this.ScenarioSetup(scenarioInfo);
+#line 31
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
+                        "A_1",
+                        "A_2",
+                        "B_1",
+                        "B_2",
+                        "DRB1_1",
+                        "DRB1_2"});
+            table1.AddRow(new string[] {
+                        "*02:09",
+                        "*01:01",
+                        "*15:01",
+                        "*15:11",
+                        "*15:03",
+                        "*03:01"});
+#line 32
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table1, "And ");
+#line hidden
+            TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
+                        "A_1",
+                        "A_2",
+                        "B_1",
+                        "B_2",
+                        "DRB1_1",
+                        "DRB1_2"});
+            table2.AddRow(new string[] {
+                        "*02:09:01:01",
+                        "*01:01",
+                        "*15:01",
+                        "*15:11",
+                        "*15:03",
+                        "*03:01"});
+#line 35
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table2, "And ");
+#line 38
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 39
+    testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

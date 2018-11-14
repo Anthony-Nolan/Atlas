@@ -554,6 +554,8 @@
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\AlleleNameFeatureSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\FeatureDefinedTestDataSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\SpecificTestDataSteps.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature" />

@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
 
-            await GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
         }
 
         [Given(@"the patient has a deleted allele")]
@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
             
-            await GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
         }
         
         [Given(@"the matching donor has an old version of a renamed allele")]
@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
             
-            await GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
         }
         
         [Given(@"the patient has an old version of a renamed allele")]
@@ -96,31 +96,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
             
-            await GivenDonorAndPatientHla(donorHla, patientHla);
-        }
-
-        private static async Task GivenDonorAndPatientHla(Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla, PhenotypeInfo<string> patientHla)
-        {
-            var staticDataProvider = ScenarioContext.Current.Get<IStaticDataProvider>();
-            var inputDonor = new InputDonor
-            {
-                DonorId = DonorIdGenerator.NextId(),
-                HlaNames = donorHla,
-                RegistryCode = RegistryCode.AN,
-                DonorType = DonorType.Adult
-            };
-
-            await AlgorithmTestingService.AddDonors(new[]
-            {
-                inputDonor
-            });
-
-            staticDataProvider.SetExpectedDonorIds(new[] {inputDonor.DonorId});
-            staticDataProvider.SetPatientHla(patientHla);
-
-            ScenarioContext.Current.Set(staticDataProvider);
-            ScenarioContext.Current.Set((IExpectedDonorProvider) staticDataProvider);
-            ScenarioContext.Current.Set((IPatientDataProvider) staticDataProvider);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
         }
     }
 }
