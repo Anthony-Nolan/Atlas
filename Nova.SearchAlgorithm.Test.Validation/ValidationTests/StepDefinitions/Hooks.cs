@@ -39,7 +39,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.Set(new SearchRequestBuilder());
             ScenarioContext.Current.Set(patientDataFactory);
             ScenarioContext.Current.Set(container.Resolve<IStaticDataProvider>());
-            ScenarioContext.Current.Set(container.Resolve<IStaticPatientDataProvider>());
             ScenarioContext.Current.Set(container.Resolve<IMultiplePatientDataFactory>());
 
             // By default, inject the patient data factory as the patient & donor data provider.
@@ -58,13 +57,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             builder.RegisterType<MetaDonorRepository>().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<AlleleRepository>().AsImplementedInterfaces();
-            builder.RegisterType<StaticTestHlaRepository>().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<TestDataService>().AsImplementedInterfaces();
             
             builder.RegisterType<PatientDataFactory>().AsImplementedInterfaces();
             builder.RegisterType<MultiplePatientDataFactory>().AsImplementedInterfaces();
-            builder.RegisterType<StaticPatientDataProvider>().AsImplementedInterfaces();
             builder.RegisterType<StaticDataProvider>().AsImplementedInterfaces();
 
             builder.RegisterType<MetaDonorSelector>().AsImplementedInterfaces();
