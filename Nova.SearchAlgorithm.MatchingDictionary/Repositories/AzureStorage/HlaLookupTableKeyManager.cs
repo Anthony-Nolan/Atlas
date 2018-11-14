@@ -12,8 +12,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public static IEnumerable<string> GetTablePartitionKeys()
         {
-            return PermittedLocusNames
-                .GetPermittedMatchLoci()
+            return MatchingDictionaryLoci
+                .GetMatchLoci()
                 .Select(matchLocus => matchLocus.ToString());
         }
 

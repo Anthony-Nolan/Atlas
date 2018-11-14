@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         [TestCase(TypingMethod.Serology, "MadeUpLocus")]
         public void HlaTyping_WhenNotPermittedLocus_RaisesPermittedLocusException(TypingMethod typingMethod, string nonPermittedLocus)
         {
-            Assert.Throws<PermittedLocusException>(() =>
+            Assert.Throws<LocusNameException>(() =>
             {
                 var hlaTyping = new HlaTyping(typingMethod, nonPermittedLocus, HlaName);
             });
