@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Extensions;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.Scoring;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {

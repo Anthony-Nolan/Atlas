@@ -21,7 +21,13 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
         /// Optional.
         /// </summary>
         public LocusSearchHla LocusSearchHlaC { get; set; }
-        
+
+        /// <summary>
+        /// Search HLA for locus DPB1.
+        /// Optional.
+        /// </summary>
+        public LocusSearchHla LocusSearchHlaDpb1 { get; set; }
+
         /// <summary>
         /// Search HLA for locus DQB1.
         /// Optional.
@@ -33,12 +39,6 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
         /// Required.
         /// </summary>
         public LocusSearchHla LocusSearchHlaDrb1 { get; set; }
-
-        /// <summary>
-        /// Search HLA for locus DPB1.
-        /// Optional.
-        /// </summary>
-        public LocusSearchHla LocusSearchHlaDpb1 { get; set; }
     }
     
     public class SearchHlaDataValidator : AbstractValidator<SearchHlaData>
