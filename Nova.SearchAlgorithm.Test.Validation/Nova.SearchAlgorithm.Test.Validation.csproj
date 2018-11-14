@@ -392,12 +392,14 @@
     <Compile Include="TestData\Services\AlleleStringAlleleSelector.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
+    <Compile Include="TestData\Services\IExpectedDonorProvider.cs" />
     <Compile Include="TestData\Services\IPatientDataProvider.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\DatabaseDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\MetaDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataFactory.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataProvider.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataTestCase.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
@@ -479,6 +481,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Mismatches.feature</DependentUpon>
     </Compile>
+    <Compile Include="ValidationTests\Features\Test.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Test.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\NullAlleles\NullAlleles.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -543,6 +550,7 @@
     <Compile Include="ValidationTests\StepDefinitions\InputParsers\LocusParser.cs" />
     <Compile Include="ValidationTests\StepDefinitions\InputParsers\OrientationParser.cs" />
     <Compile Include="ValidationTests\StepDefinitions\InputParsers\PositionParser.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\ExplicitDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultipleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\PatientDataFactoryExtensions.cs" />
@@ -564,6 +572,7 @@
     <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
+    <Content Include="ValidationTests\Features\Test.feature" />
     <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature" />
     <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />
