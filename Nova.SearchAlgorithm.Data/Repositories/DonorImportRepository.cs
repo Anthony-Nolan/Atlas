@@ -93,10 +93,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public async Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
+            var donorIds = donors.Select(d => d.DonorId);
             var existingDonors = from donor in context.Donors
-                join updatedDonor in donors on donor.DonorId equals updatedDonor.DonorId
+                join id in donorIds on donor.DonorId equals id
                 select donor;
-            foreach (var existingDonor in existingDonors)
+            foreach (var existingDonor in existingDonors.ToList())
             {
                 existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
             }
