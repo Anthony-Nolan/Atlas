@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         {
         }
 
+        [Given(@"the patient is untyped at locus (.*)")]
         [Given(@"the patient is untyped at Locus (.*)")]
         public void GivenThePatientIsUntypedAt(string locus)
         {
