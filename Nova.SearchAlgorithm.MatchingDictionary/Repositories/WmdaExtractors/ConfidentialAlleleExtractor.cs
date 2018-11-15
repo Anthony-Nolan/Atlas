@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
         {
         }
 
-        protected override ConfidentialAllele MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override ConfidentialAllele MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
                 return null;

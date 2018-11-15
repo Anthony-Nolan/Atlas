@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.Hl
             this.typingMethod = typingMethod;
         }
 
-        protected override HlaNom MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override HlaNom MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
                 return null;

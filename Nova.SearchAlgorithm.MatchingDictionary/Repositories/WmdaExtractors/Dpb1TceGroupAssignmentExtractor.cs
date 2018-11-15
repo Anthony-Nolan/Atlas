@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
         {
         }
 
-        protected override Dpb1TceGroupAssignment MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override Dpb1TceGroupAssignment MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
             {
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
                 alleleName,
                 vOneAssignment,
                 vTwoAssignment
-                );
+            );
         }
 
         protected string GetAssignment(string assignmentString)

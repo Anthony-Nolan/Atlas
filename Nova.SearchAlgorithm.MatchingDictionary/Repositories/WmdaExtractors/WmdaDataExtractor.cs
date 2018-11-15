@@ -19,20 +19,31 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
         public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForPermittedLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
         {
             var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName);
-            var data = ExtractWmdaHlaTypingsForPermittedLociFromFileContents(fileContents);
+            ExtractHeaders(fileContents.First());
+            return ExtractWmdaHlaTypingsForPermittedLociFromFileContents(fileContents);
+        }
 
-            return data;
+        /// <returns>
+        /// The information contained in the line, mapped to the appropriate type
+        /// Returns null if a line cannot be parsed
+        /// </returns>
+        protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTyping(string line);
+
+        /// <summary>
+        /// In some cases, the header information from the file is necessary to parse the remaining lines correctly
+        /// </summary>
+        protected virtual void ExtractHeaders(string headersLine)
+        {
+            // Do nothing by default
         }
 
         private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForPermittedLociFromFileContents(IEnumerable<string> wmdaFileContents)
         {
             return 
                 wmdaFileContents
-                .Select(line => line.Trim())
-                .Select(MapLineOfFileContentsToWmdaHlaTypingElseNull)
-                .Where(typing => typing != null && typing.IsPermittedLocusTyping());
+                    .Select(line => line.Trim())
+                    .Select(MapLineOfFileContentsToWmdaHlaTyping)
+                    .Where(typing => typing != null && typing.IsPermittedLocusTyping());
         }
-
-        protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTypingElseNull(string line);
     }
 }

@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.Se
         {
         }
 
-        protected override RelDnaSer MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override RelDnaSer MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
                 return null;
