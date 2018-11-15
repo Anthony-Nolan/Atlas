@@ -22,8 +22,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
             var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
 
-            alleleNameLookupResults = new AlleleNamesService(
-                    fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
+            alleleNameLookupResults = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
                 .GetAlleleNamesAndTheirVariants()
                 .ToList();
         }
