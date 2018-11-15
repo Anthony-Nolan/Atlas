@@ -202,7 +202,15 @@ The solution has three levels of testing: Unit, Integration, Validation
 
 Contained within the `Nova.SearchAlgorithm.Test` project.
 
-No external dependencies or storage, testing indiviual code units. 
+No external dependencies or storage, testing individual code units. 
+
+**Matching Dictionary Tests**
+
+These tests use checked in versions of the allele data we fetch from WMDA. Originally they were directly copied from a version of the WMDA 
+data, but to speed up testing, alleles unused in any unit test have been removed from some of the files - as such they should not be considered
+to be valid representations of the WMDA data.
+
+Any new alleles required in testing the matching dictionary should be added, and any no longer used can be removed.
 
 ### Integration Testing
 
