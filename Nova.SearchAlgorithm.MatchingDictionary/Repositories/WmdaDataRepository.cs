@@ -1,7 +1,10 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.HlaNomExtractors;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.SerologyRelationshipExtractors;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {

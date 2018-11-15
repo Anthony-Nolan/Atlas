@@ -1,7 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
     internal class Dpb1TceGroupAssignmentExtractor : WmdaDataExtractor<Dpb1TceGroupAssignment>
     {

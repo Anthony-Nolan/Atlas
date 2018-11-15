@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.SerologyRelationshipExtractors
 {
     internal class AlleleToSerologyRelationshipExtractor : WmdaDataExtractor<RelDnaSer>
     {

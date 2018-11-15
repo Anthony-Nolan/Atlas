@@ -1,10 +1,10 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
     internal class AlleleHistoryExtractor : WmdaDataExtractor<AlleleNameHistory>
     {

@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Data;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
     internal abstract class WmdaDataExtractor<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
