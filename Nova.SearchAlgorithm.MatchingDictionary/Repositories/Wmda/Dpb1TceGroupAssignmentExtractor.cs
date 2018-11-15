@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     internal class Dpb1TceGroupAssignmentExtractor : WmdaDataExtractor<Dpb1TceGroupAssignment>
     {
         private const string FileName = "tce/dpb_tce.csv";
-        private const string RegexPattern = @"^DPB1\*([\w:]+),.*,(\w?).*,(\w?).*,";
+        private readonly Regex regex = new Regex(@"^DPB1\*([\w:]+),.*,(\w?).*,(\w?).*,");
 
         public Dpb1TceGroupAssignmentExtractor() : base(FileName)
         {
@@ -14,8 +14,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         protected override Dpb1TceGroupAssignment MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
-            var regex = new Regex(RegexPattern);
-
             if (!regex.IsMatch(line))
             {
                 return null;

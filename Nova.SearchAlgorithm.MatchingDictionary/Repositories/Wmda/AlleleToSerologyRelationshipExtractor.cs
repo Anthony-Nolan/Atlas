@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     internal class AlleleToSerologyRelationshipExtractor : WmdaDataExtractor<RelDnaSer>
     {
         private const string FileName = WmdaFilePathPrefix + "rel_dna_ser.txt";
-        private const string RegexPattern = @"^(\w+\*)\;([\w:]+)\;([\d\/\\?]*);([\d\/\\?]*)\;([\d\/\\?]*)\;([\d\/\\?]*)$";
+        private readonly Regex regex = new Regex(@"^(\w+\*)\;([\w:]+)\;([\d\/\\?]*);([\d\/\\?]*)\;([\d\/\\?]*)\;([\d\/\\?]*)$");
 
         public AlleleToSerologyRelationshipExtractor() : base(FileName)
         {
@@ -16,8 +16,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         protected override RelDnaSer MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
-            var regex = new Regex(RegexPattern);
-
             if (!regex.IsMatch(line))
                 return null;
 
