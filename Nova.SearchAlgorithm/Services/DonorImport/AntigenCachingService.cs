@@ -41,11 +41,6 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             var dummyPhenotypeInfo = new PhenotypeInfo<int>();
             await dummyPhenotypeInfo.WhenAllLoci(async (locus, hla1, hla2) =>
             {
-                if (Locus.Dpb1.Equals(locus))
-                {
-                    return;
-                }
-
                 var lociStopwatch = new Stopwatch();
                 lociStopwatch.Start();
 
