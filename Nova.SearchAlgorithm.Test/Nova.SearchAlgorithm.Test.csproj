@@ -462,30 +462,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\Allelelist_history.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\Allele_status.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\wmda\hla_nom.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\wmda\hla_nom_g.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\wmda\hla_nom_p.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\wmda\rel_dna_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\wmda\rel_ser_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MatchingDictionary\Data\wmda-v3310\version_report.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="MatchingDictionary\Data\wmda-v3330\Allelelist_history.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

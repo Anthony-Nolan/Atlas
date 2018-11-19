@@ -12,17 +12,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
     public class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
         [Test]
-        public void SerologyToAlleleMatching_ValidSerology_HaveAtLeastOneGGroup()
-        {
-            var gGroupCounts = MatchedHla
-                .Where(m => !m.HlaTyping.IsDeleted && m.HlaTyping is SerologyTyping)
-                .Select(m => new { HlaType = m.HlaTyping, GGroupCount = m.MatchingGGroups.Count() })
-                .ToList();
-
-            Assert.IsTrue(gGroupCounts.All(g => g.GGroupCount > 0));
-        }
-
-        [Test]
         public void SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect()
         {
             Approvals.Verify(GetGGroupsAsString(MatchLocus.A, "9"));

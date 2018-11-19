@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     internal class SerologyToSerologyRelationshipExtractor : WmdaDataExtractor<RelSerSer>
     {
         private const string FileName = WmdaFilePathPrefix + "rel_ser_ser.txt";
-        private const string RegexPattern = @"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)";
+        private readonly Regex regex = new Regex(@"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)");
 
         public SerologyToSerologyRelationshipExtractor() : base(FileName)
         {
@@ -14,8 +14,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         protected override RelSerSer MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
-            var regex = new Regex(RegexPattern);
-
             if (!regex.IsMatch(line))
                 return null;
 

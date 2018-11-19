@@ -11,12 +11,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         private const string FileName = "Allelelist_history.txt";
         private const string ColumnDelimiter = ",";
         private const string OldestHlaDatabaseVersionToImport = "3000";
-        private const string ColumnNamesRegexPattern =
-            "^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaDatabaseVersionToImport;
-        private const string AlleleHistoryRegexPattern = @"^HLA\d+,.+$";
+        private static readonly Regex ColumnNamesRegex = 
+            new Regex("^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaDatabaseVersionToImport);
+        private static readonly Regex AlleleHistoryRegex = new Regex(@"^HLA\d+,.+$");
+        private static readonly Regex AlleleNameRegex = new Regex(@"\" + MolecularPrefix + @"([\w:]+)");
         private const string NoAlleleNamePlaceHolder = "NA";
         private const string MolecularPrefix = "*";
-        private const string AlleleNameRegexPattern = @"\" + MolecularPrefix + @"([\w:]+)";
 
         private IEnumerable<string> hlaDatabaseVersions;
 
@@ -57,14 +57,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         private static IEnumerable<string> SplitAlleleHistoryLine(string line)
         {
-            var regex = new Regex(AlleleHistoryRegexPattern);
-
-            if (!regex.IsMatch(line))
+            if (!AlleleHistoryRegex.IsMatch(line))
             {
                 return new List<string>();
             }
 
-            return regex
+            return AlleleHistoryRegex
                 .Match(line)
                 .Value
                 .TrimEnd(ColumnDelimiter.ToCharArray())
@@ -110,14 +108,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         private static string GetAlleleNameWithoutLocus(string input)
         {
-            var regex = new Regex(AlleleNameRegexPattern);
-
-            if (input.Equals(NoAlleleNamePlaceHolder) || !regex.IsMatch(input))
+            if (input.Equals(NoAlleleNamePlaceHolder) || !AlleleNameRegex.IsMatch(input))
             {
                 return null;
             }
 
-            return regex.Match(input).Groups[1].Value;
+            return AlleleNameRegex.Match(input).Groups[1].Value;
         }
 
         private void ExtractHlaDatabaseVersionsFromLine(string line)
@@ -131,9 +127,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         private static bool TryExtractHlaDatabaseVersions(string line, out IEnumerable<string> hlaDatabaseVersions)
         {
-            var regex = new Regex(ColumnNamesRegexPattern);
-
-            hlaDatabaseVersions = regex
+            hlaDatabaseVersions = ColumnNamesRegex
                 .Match(line)
                 .Value
                 .Split(ColumnDelimiter.ToCharArray())

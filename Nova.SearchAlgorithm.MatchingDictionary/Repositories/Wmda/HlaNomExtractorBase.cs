@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
     {
         private const string FileName = WmdaFilePathPrefix + "hla_nom.txt";
-        private const string RegexPattern = @"^(\w+\*{0,1})\;([\w:]+)\;\d+\;(\d*)\;([\w:]*)\;";
+        private readonly Regex regex = new Regex(@"^(\w+\*{0,1})\;([\w:]+)\;\d+\;(\d*)\;([\w:]*)\;");
         private readonly TypingMethod typingMethod;
 
         protected HlaNomExtractorBase(TypingMethod typingMethod) : base(FileName)
@@ -17,8 +17,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         protected override HlaNom MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
-            var regex = new Regex(RegexPattern);
-
             if (!regex.IsMatch(line))
                 return null;
 

@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
     internal abstract class AlleleGroupExtractorBase<TWmdaAlleleGroup> : WmdaDataExtractor<TWmdaAlleleGroup>
         where TWmdaAlleleGroup : IWmdaAlleleGroup, new()
     {
-        private const string RegexPattern = @"^(\w+\*)\;([\w:\/]+)\;([\w:]*)$";
+        private readonly Regex regex = new Regex(@"^(\w+\*)\;([\w:\/]+)\;([\w:]*)$");
 
         protected AlleleGroupExtractorBase(string fileName) : base(WmdaFilePathPrefix + fileName)
         {
@@ -14,8 +14,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
 
         protected override TWmdaAlleleGroup MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
         {
-            var regex = new Regex(RegexPattern);
-
             if (!regex.IsMatch(line))
                 return default;
 
