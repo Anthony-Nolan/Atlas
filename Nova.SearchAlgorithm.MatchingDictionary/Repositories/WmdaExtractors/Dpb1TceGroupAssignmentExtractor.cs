@@ -1,7 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
     internal class Dpb1TceGroupAssignmentExtractor : WmdaDataExtractor<Dpb1TceGroupAssignment>
     {
@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        protected override Dpb1TceGroupAssignment MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override Dpb1TceGroupAssignment MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
             {
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                 alleleName,
                 vOneAssignment,
                 vTwoAssignment
-                );
+            );
         }
 
         protected string GetAssignment(string assignmentString)

@@ -1,7 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
     internal class AlleleStatusExtractor : WmdaDataExtractor<AlleleStatus>
     {
@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        protected override AlleleStatus MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override AlleleStatus MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
             {

@@ -1,8 +1,8 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Text.RegularExpressions;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.HlaNomExtractors
 {
     internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
     {
@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             this.typingMethod = typingMethod;
         }
 
-        protected override HlaNom MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override HlaNom MapLineOfFileContentsToWmdaHlaTyping(string line)
         {
             if (!regex.IsMatch(line))
                 return null;

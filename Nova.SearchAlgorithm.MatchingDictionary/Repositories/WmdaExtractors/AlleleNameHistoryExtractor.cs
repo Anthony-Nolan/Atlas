@@ -1,18 +1,20 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 {
     internal class AlleleHistoryExtractor : WmdaDataExtractor<AlleleNameHistory>
     {
         private const string FileName = "Allelelist_history.txt";
         private const string ColumnDelimiter = ",";
         private const string OldestHlaDatabaseVersionToImport = "3000";
-        private static readonly Regex ColumnNamesRegex = 
+
+        private static readonly Regex ColumnNamesRegex =
             new Regex("^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaDatabaseVersionToImport);
+
         private static readonly Regex AlleleHistoryRegex = new Regex(@"^HLA\d+,.+$");
         private static readonly Regex AlleleNameRegex = new Regex(@"\" + MolecularPrefix + @"([\w:]+)");
         private const string NoAlleleNamePlaceHolder = "NA";
@@ -24,16 +26,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
         {
         }
 
-        protected override AlleleNameHistory MapLineOfFileContentsToWmdaHlaTypingElseNull(string line)
+        protected override void ExtractHeaders(string headersLine)
         {
-            if (hlaDatabaseVersions != null)
-            {
-                return GetAlleleNameHistory(line);
-            }
-
             // HLA database versions are listed as column names in first line of file contents
-            ExtractHlaDatabaseVersionsFromLine(line);
-            return null;
+            hlaDatabaseVersions = ExtractHlaDatabaseVersionsFromLine(headersLine);
+        }
+
+        protected override AlleleNameHistory MapLineOfFileContentsToWmdaHlaTyping(string line)
+        {
+            return GetAlleleNameHistory(line);
         }
 
         private AlleleNameHistory GetAlleleNameHistory(string line)
@@ -50,8 +51,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             var versionedAlleleNames = GetVersionedAlleleNames(lineSplitByColumnDelimiter);
 
             // exclude entries that don't have any allele names listed on or after oldest version of interest
-            return versionedAlleleNames.Any() 
-                ? new AlleleNameHistory(locus, hlaId, versionedAlleleNames) 
+            return versionedAlleleNames.Any()
+                ? new AlleleNameHistory(locus, hlaId, versionedAlleleNames)
                 : null;
         }
 
@@ -75,8 +76,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
                 .SkipWhile(str => !str.Contains(MolecularPrefix))
                 .FirstOrDefault();
 
-            var locusName = firstAlleleNameInLine
-                ?.Substring(0, firstAlleleNameInLine.IndexOf(MolecularPrefix) + 1);
+            var locusName = firstAlleleNameInLine ?.Substring(0, firstAlleleNameInLine.IndexOf(MolecularPrefix) + 1);
 
             return locusName;
         }
@@ -116,13 +116,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.Wmda
             return AlleleNameRegex.Match(input).Groups[1].Value;
         }
 
-        private void ExtractHlaDatabaseVersionsFromLine(string line)
+        private static IEnumerable<string> ExtractHlaDatabaseVersionsFromLine(string line)
         {
-            if (!TryExtractHlaDatabaseVersions(line, out hlaDatabaseVersions))
+            if (!TryExtractHlaDatabaseVersions(line, out var databaseVersions))
             {
-                throw new ArgumentException(
-                    $"Could not extract HLA database versions from {FileName} file.");
+                throw new ArgumentException($"Could not extract HLA database versions from {FileName} file.");
             }
+
+            return databaseVersions;
         }
 
         private static bool TryExtractHlaDatabaseVersions(string line, out IEnumerable<string> hlaDatabaseVersions)

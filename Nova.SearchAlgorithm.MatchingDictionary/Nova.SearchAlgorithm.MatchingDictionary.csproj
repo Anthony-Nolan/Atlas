@@ -234,18 +234,16 @@
     <Compile Include="Repositories\HlaLookupRepositoryBase.cs" />
     <Compile Include="Repositories\Dpb1TceGroupsLookupRepository.cs" />
     <Compile Include="Repositories\HlaScoringLookupRepository.cs" />
-    <Compile Include="Repositories\Wmda\AlleleNameHistoryExtractor.cs" />
-    <Compile Include="Repositories\Wmda\Dpb1TceGroupAssignmentExtractor.cs" />
-    <Compile Include="Repositories\Wmda\AlleleStatusExtractor.cs" />
-    <Compile Include="Repositories\Wmda\HlaNomExtractorBase.cs" />
-    <Compile Include="Repositories\Wmda\AlleleGroupExtractorBase.cs" />
-    <Compile Include="Repositories\Wmda\GGroupExtractor.cs" />
-    <Compile Include="Repositories\Wmda\PGroupExtractor.cs" />
-    <Compile Include="Repositories\Wmda\AlleleExtractor.cs" />
-    <Compile Include="Repositories\Wmda\SerologyToSerologyRelationshipExtractor.cs" />
-    <Compile Include="Repositories\Wmda\AlleleToSerologyRelationshipExtractor.cs" />
-    <Compile Include="Repositories\Wmda\SerologyExtractor.cs" />
-    <Compile Include="Repositories\Wmda\ConfidentialAlleleExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\AlleleGroupExtractors\AlleleGroupExtractorBase.cs" />
+    <Compile Include="Repositories\WmdaExtractors\AlleleGroupExtractors\GGroupExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\AlleleGroupExtractors\PGroupExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\AlleleNameHistoryExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\Dpb1TceGroupAssignmentExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\AlleleStatusExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\HlaNomExtractors\AlleleExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\HlaNomExtractors\HlaNomExtractorBase.cs" />
+    <Compile Include="Repositories\WmdaExtractors\HlaNomExtractors\SerologyExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\ConfidentialAlleleExtractor.cs" />
     <Compile Include="Data\WmdaFileDownloader.cs" />
     <Compile Include="Exceptions\InvalidHlaException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryException.cs" />
@@ -256,7 +254,9 @@
     <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
-    <Compile Include="Repositories\Wmda\WmdaDataExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\SerologyRelationshipExtractors\AlleleToSerologyRelationshipExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\SerologyRelationshipExtractors\SerologyToSerologyRelationshipExtractor.cs" />
+    <Compile Include="Repositories\WmdaExtractors\WmdaDataExtractor.cs" />
     <Compile Include="Services\MultipleAlleleNullFilter.cs" />
     <Compile Include="Services\Dpb1TceGroupsService.cs" />
     <Compile Include="Services\ExpressionSuffixParser.cs" />
@@ -351,6 +351,5 @@
       <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
