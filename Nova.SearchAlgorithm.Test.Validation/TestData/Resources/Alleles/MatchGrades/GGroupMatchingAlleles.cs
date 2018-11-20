@@ -14,82 +14,99 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
     {
         public static readonly PhenotypeInfo<List<AlleleTestData>> Alleles = new PhenotypeInfo<List<AlleleTestData>>
         {
-            A_1 =
-                new List<AlleleTestData>
+            A =
+            {
+                Position1 = new List<AlleleTestData>
                 {
                     new AlleleTestData {AlleleName = "*01:261", GGroup = "01:01:01G"},
                     new AlleleTestData {AlleleName = "*01:253", GGroup = "01:01:01G"},
                     new AlleleTestData {AlleleName = "*01:252", GGroup = "01:01:01G"},
                 },
-            A_2 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*01:251", GGroup = "01:01:01G"},
-                new AlleleTestData {AlleleName = "*01:248", GGroup = "01:01:01G"},
-                new AlleleTestData {AlleleName = "*01:246", GGroup = "01:01:01G"},
-            },
-            B_1 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*07:312", GGroup = "07:02:01G"},
-                new AlleleTestData {AlleleName = "*07:130", GGroup = "07:02:01G"},
-                new AlleleTestData {AlleleName = "*07:02:01:01", GGroup = "07:02:01G"},
-            },
-            B_2 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*07:58", GGroup = "07:02:01G"},
-                new AlleleTestData {AlleleName = "*07:156", GGroup = "07:02:01G"},
-                new AlleleTestData {AlleleName = "*07:129", GGroup = "07:02:01G"},
-            },
-            C_1 =
-                new List<AlleleTestData>
+                Position2 = new List<AlleleTestData>
                 {
-                    new AlleleTestData {AlleleName = "*01:155", GGroup = "01:02:01G"},
-                    new AlleleTestData {AlleleName = "*01:02:01:09", GGroup = "01:02:01G"},
-                    new AlleleTestData {AlleleName = "*01:25", GGroup = "01:02:01G"},
-                },
-            C_2 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*01:83", GGroup = "01:02:01G"},
-                new AlleleTestData {AlleleName = "*01:44", GGroup = "01:02:01G"},
-                new AlleleTestData {AlleleName = "*01:135", GGroup = "01:02:01G"},
+                    new AlleleTestData {AlleleName = "*01:251", GGroup = "01:01:01G"},
+                    new AlleleTestData {AlleleName = "*01:248", GGroup = "01:01:01G"},
+                    new AlleleTestData {AlleleName = "*01:246", GGroup = "01:01:01G"},
+                }
             },
-            DPB1_1 = new List<AlleleTestData>
+            B =
             {
-                new AlleleTestData {AlleleName = "*678:01", GGroup = "02:01:01G"},
-                new AlleleTestData {AlleleName = "*617:01", GGroup = "02:01:01G"},
-                new AlleleTestData {AlleleName = "*416:01:01:02", GGroup = "02:01:01G"},
-            },
-            DPB1_2 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*02:01:05", GGroup = "02:01:01G"},
-                new AlleleTestData {AlleleName = "*352:01", GGroup = "02:01:01G"},
-                new AlleleTestData {AlleleName = "*414:01:01:01", GGroup = "02:01:01G"},
-            },
-            DQB1_1 =
-                new List<AlleleTestData>
+                Position1 = new List<AlleleTestData>
                 {
-                    new AlleleTestData {AlleleName = "*02:01:01", GGroup = "02:01:01G"},
-                    new AlleleTestData {AlleleName = "*02:06", GGroup = "02:01:01G"},
-                    new AlleleTestData {AlleleName = "*02:09", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*07:312", GGroup = "07:02:01G"},
+                    new AlleleTestData {AlleleName = "*07:130", GGroup = "07:02:01G"},
+                    new AlleleTestData {AlleleName = "*07:02:01:01", GGroup = "07:02:01G"},
                 },
-            DQB1_2 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*02:02:01:02", GGroup = "02:01:01G"},
-                new AlleleTestData {AlleleName = "*02:59", GGroup = "02:01:01G"},
-                new AlleleTestData {AlleleName = "*02:105", GGroup = "02:01:01G"},
-            },
-            DRB1_1 =
-                new List<AlleleTestData>
+                Position2 = new List<AlleleTestData>
                 {
-                    new AlleleTestData {AlleleName = "*03:144", GGroup = "03:01:01G"},
-                    new AlleleTestData {AlleleName = "*03:146", GGroup = "03:01:01G"},
-                    new AlleleTestData {AlleleName = "*03:137", GGroup = "03:01:01G"},
-                },
-            DRB1_2 = new List<AlleleTestData>
-            {
-                new AlleleTestData {AlleleName = "*03:01:26", GGroup = "03:01:01G"},
-                new AlleleTestData {AlleleName = "*03:124", GGroup = "03:01:01G"},
-                new AlleleTestData {AlleleName = "*03:132", GGroup = "03:01:01G"},
+                    new AlleleTestData {AlleleName = "*07:58", GGroup = "07:02:01G"},
+                    new AlleleTestData {AlleleName = "*07:156", GGroup = "07:02:01G"},
+                    new AlleleTestData {AlleleName = "*07:129", GGroup = "07:02:01G"},
+                }
             },
+            C =
+            {
+                Position1 =
+                    new List<AlleleTestData>
+                    {
+                        new AlleleTestData {AlleleName = "*01:155", GGroup = "01:02:01G"},
+                        new AlleleTestData {AlleleName = "*01:02:01:09", GGroup = "01:02:01G"},
+                        new AlleleTestData {AlleleName = "*01:25", GGroup = "01:02:01G"},
+                    },
+                Position2 = new List<AlleleTestData>
+                {
+                    new AlleleTestData {AlleleName = "*01:83", GGroup = "01:02:01G"},
+                    new AlleleTestData {AlleleName = "*01:44", GGroup = "01:02:01G"},
+                    new AlleleTestData {AlleleName = "*01:135", GGroup = "01:02:01G"},
+                }
+            },
+            Dpb1 =
+            {
+                Position1 = new List<AlleleTestData>
+                {
+                    new AlleleTestData {AlleleName = "*678:01", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*617:01", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*416:01:01:02", GGroup = "02:01:01G"},
+                },
+                Position2 = new List<AlleleTestData>
+                {
+                    new AlleleTestData {AlleleName = "*02:01:05", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*352:01", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*414:01:01:01", GGroup = "02:01:01G"},
+                }
+            },
+            Dqb1 =
+            {
+                Position1 =
+                    new List<AlleleTestData>
+                    {
+                        new AlleleTestData {AlleleName = "*02:01:01", GGroup = "02:01:01G"},
+                        new AlleleTestData {AlleleName = "*02:06", GGroup = "02:01:01G"},
+                        new AlleleTestData {AlleleName = "*02:09", GGroup = "02:01:01G"},
+                    },
+                Position2 = new List<AlleleTestData>
+                {
+                    new AlleleTestData {AlleleName = "*02:02:01:02", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*02:59", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*02:105", GGroup = "02:01:01G"},
+                }
+            },
+            Drb1 =
+            {
+                Position1 =
+                    new List<AlleleTestData>
+                    {
+                        new AlleleTestData {AlleleName = "*03:144", GGroup = "03:01:01G"},
+                        new AlleleTestData {AlleleName = "*03:146", GGroup = "03:01:01G"},
+                        new AlleleTestData {AlleleName = "*03:137", GGroup = "03:01:01G"},
+                    },
+                Position2 = new List<AlleleTestData>
+                {
+                    new AlleleTestData {AlleleName = "*03:01:26", GGroup = "03:01:01G"},
+                    new AlleleTestData {AlleleName = "*03:124", GGroup = "03:01:01G"},
+                    new AlleleTestData {AlleleName = "*03:132", GGroup = "03:01:01G"},
+                },
+            }
         };
     }
 }

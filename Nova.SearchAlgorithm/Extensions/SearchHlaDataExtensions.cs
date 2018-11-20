@@ -9,16 +9,12 @@ namespace Nova.SearchAlgorithm.Extensions
         {
             return new PhenotypeInfo<string>
             {
-                A_1 = searchHlaData.LocusSearchHlaA.SearchHla1,
-                A_2 = searchHlaData.LocusSearchHlaA.SearchHla2,
-                B_1 = searchHlaData.LocusSearchHlaB.SearchHla1,
-                B_2 = searchHlaData.LocusSearchHlaB.SearchHla2,
-                C_1 = searchHlaData.LocusSearchHlaC?.SearchHla1,
-                C_2 = searchHlaData.LocusSearchHlaC?.SearchHla2,
-                Dqb1_1 = searchHlaData.LocusSearchHlaDqb1?.SearchHla1,
-                Dqb1_2 = searchHlaData.LocusSearchHlaDqb1?.SearchHla2,
-                Drb1_1 = searchHlaData.LocusSearchHlaDrb1.SearchHla1,
-                Drb1_2 = searchHlaData.LocusSearchHlaDrb1.SearchHla2
+                A = { Position1 = searchHlaData.LocusSearchHlaA.SearchHla1, Position2 = searchHlaData.LocusSearchHlaA.SearchHla2},
+                B = { Position1 = searchHlaData.LocusSearchHlaB.SearchHla1, Position2 = searchHlaData.LocusSearchHlaB.SearchHla2},
+                Drb1 = { Position1 = searchHlaData.LocusSearchHlaDrb1.SearchHla1, Position2 = searchHlaData.LocusSearchHlaDrb1.SearchHla2},
+                C = { Position1 = searchHlaData.LocusSearchHlaC?.SearchHla1, Position2 = searchHlaData.LocusSearchHlaC?.SearchHla2},
+                Dpb1 = { Position1 = searchHlaData.LocusSearchHlaDpb1?.SearchHla1, Position2 = searchHlaData.LocusSearchHlaDpb1?.SearchHla2},
+                Dqb1 = { Position1 = searchHlaData.LocusSearchHlaDqb1?.SearchHla1, Position2 = searchHlaData.LocusSearchHlaDqb1?.SearchHla2},
             };
         }
     }

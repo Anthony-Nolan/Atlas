@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
     public class InputDonorBuilder
     {
         private readonly InputDonor donor;
-        
+
         public InputDonorBuilder(int donorId)
         {
             donor = new InputDonor
@@ -18,12 +18,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 // Default hla chosen to be valid hla
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A_1 = "*01:01",
-                    A_2 = "*01:01",
-                    B_1 = "*18:01:01",
-                    B_2 = "*18:01:01",
-                    Drb1_1 = "*04:01",
-                    Drb1_2 = "*04:01",
+                    A =
+                    {
+                        Position1 = "*01:01",
+                        Position2 = "*01:01",
+                    },
+                    B =
+                    {
+                        Position1 = "*18:01:01",
+                        Position2 = "*18:01:01",
+                    },
+                    Drb1 =
+                    {
+                        Position1 = "*04:01",
+                        Position2 = "*04:01",
+                    }
                 }
             };
         }
@@ -39,13 +48,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             donor.RegistryCode = registryCode;
             return this;
         }
-        
+
         public InputDonorBuilder WithDonorType(DonorType donorType)
         {
             donor.DonorType = donorType;
             return this;
         }
-        
+
         public InputDonor Build()
         {
             return donor;

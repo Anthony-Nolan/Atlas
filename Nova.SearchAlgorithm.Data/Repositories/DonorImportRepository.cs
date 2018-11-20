@@ -60,12 +60,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                     donor.DonorId,
                     (int) donor.DonorType,
                     (int) donor.RegistryCode,
-                    donor.HlaNames.A_1, donor.HlaNames.A_2,
-                    donor.HlaNames.B_1, donor.HlaNames.B_2,
-                    donor.HlaNames.C_1, donor.HlaNames.C_2,
-                    donor.HlaNames.Dpb1_1, donor.HlaNames.Dpb1_2,
-                    donor.HlaNames.Dqb1_1, donor.HlaNames.Dqb1_2,
-                    donor.HlaNames.Drb1_1, donor.HlaNames.Drb1_2);
+                    donor.HlaNames.A.Position1, donor.HlaNames.A.Position2,
+                    donor.HlaNames.B.Position1, donor.HlaNames.B.Position2,
+                    donor.HlaNames.C.Position1, donor.HlaNames.C.Position2,
+                    donor.HlaNames.Dpb1.Position1, donor.HlaNames.Dpb1.Position2,
+                    donor.HlaNames.Dqb1.Position1, donor.HlaNames.Dqb1.Position2,
+                    donor.HlaNames.Drb1.Position1, donor.HlaNames.Drb1.Position2);
             }
 
             using (var sqlBulk = new SqlBulkCopy(connectionString))

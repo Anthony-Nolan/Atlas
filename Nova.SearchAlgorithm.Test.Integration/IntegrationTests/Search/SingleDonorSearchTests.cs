@@ -14,30 +14,57 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     public class SingleDonorSearchTests : IntegrationTestBase
     {
         private ISearchService searchService;
+
         private InputDonorWithExpandedHla donor;
+
         // A selection of valid hla data for the single donor to have
         private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
         {
-            A_1 = "01:02",
-            A_2 = "01:02",
-            B_1 = "14:53",
-            B_2 = "14:47",
-            DRB1_1 = "13:03:01",
-            DRB1_2 = "13:02:01:03",
-            C_1 = "02:02",
-            C_2 = "02:02",
+            A =
+            {
+                Position1 = "01:02",
+                Position2 = "01:02",
+            },
+            B =
+            {
+                Position1 = "14:53",
+                Position2 = "14:47",
+            },
+            Drb1 =
+            {
+                Position1 = "13:03:01",
+                Position2 = "13:02:01:03",
+            },
+            C =
+            {
+                Position1 = "02:02",
+                Position2 = "02:02",
+            }
         };
+
         // A selection of valid hla strings that do not match the donor's
         private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
         {
-            A_1 = "02:01:01:01",
-            A_2 = "02:01:01:01",
-            B_1 = "07:02:01:01",
-            B_2 = "07:02:13",
-            DRB1_1 = "14:190",
-            DRB1_2 = "14:190",
-            C_1 = "07:01",
-            C_2 = "07:01",
+            A =
+            {
+                Position1 = "02:01:01:01",
+                Position2 = "02:01:01:01",
+            },
+            B =
+            {
+                Position1 = "07:02:01:01",
+                Position2 = "07:02:13",
+            },
+            Drb1 =
+            {
+                Position1 = "14:190",
+                Position2 = "14:190",
+            },
+            C =
+            {
+                Position1 = "07:01",
+                Position2 = "07:01",
+            }
         };
 
         [OneTimeSetUp]
@@ -68,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
                 .Build();
-            
+
             var results = await searchService.Search(searchRequest);
 
             results.Should().Contain(d => d.DonorId == donor.DonorId);
@@ -81,7 +108,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
                 .Build();
-            
+
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
@@ -94,7 +121,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
                 .Build();
-            
+
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
@@ -107,12 +134,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .SixOutOfSix()
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
-            
+
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
         }
-        
+
         [Test]
         public async Task Search_SixOutOfSix_MismatchAtMultipleLoci_DoesNotReturnDonor()
         {
@@ -122,7 +149,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
-            
+
             var results = await searchService.Search(searchRequest);
 
             results.Should().BeEmpty();
@@ -136,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
 
             // C & DQB1 should both be populated from scoring data in a 6/6 only search
             result?.SearchResultAtLocusC.MatchCount.Should().Be(2);
@@ -151,11 +178,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
 
             result?.TotalMatchCount.Should().Be(6);
         }
-        
+
         [Test]
         public async Task Search_SixOutOfSix_TypedLociExcludedFromSearchSetIsLocusTypedAsTrue()
         {
@@ -164,12 +191,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
 
             // C is typed but not included in search
             result?.SearchResultAtLocusC.IsLocusTyped.Should().BeTrue();
         }
-        
+
         [Test]
         public async Task Search_SixOutOfSix_TypedLociIncludedInSearchSetIsLocusTypedAsTrue()
         {
@@ -178,12 +205,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
 
             // A is typed and included in search
             result?.SearchResultAtLocusA.IsLocusTyped.Should().BeTrue();
         }
-        
+
         [Test]
         public async Task Search_SixOutOfSix_UntypedLociExcludedFromSearchSetIsLocusTypedAsFalse()
         {
@@ -192,7 +219,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result =  results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
 
             // DQB1 is not typed and not included in search
             result?.SearchResultAtLocusDqb1.IsLocusTyped.Should().BeFalse();

@@ -32,18 +32,12 @@ namespace Nova.SearchAlgorithm.Data.Entity
                 RegistryCode = RegistryCode,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A_1 = A_1,
-                    A_2 = A_2,
-                    B_1 = B_1,
-                    B_2 = B_2,
-                    C_1 = C_1,
-                    C_2 = C_2,
-                    Dpb1_1 = DPB1_1,
-                    Dpb1_2 = DPB1_2,
-                    Dqb1_1 = DQB1_1,
-                    Dqb1_2 = DQB1_2,
-                    Drb1_1 = DRB1_1,
-                    Drb1_2 = DRB1_2
+                    A = {Position1 = A_1, Position2 = A_2},
+                    B = {Position1 = B_1, Position2 = B_2},
+                    C = {Position1 = C_1, Position2 = C_2},
+                    Dpb1 = {Position1 = DPB1_1, Position2 = DPB1_2},
+                    Dqb1 = {Position1 = DQB1_1, Position2 = DQB1_2},
+                    Drb1 = {Position1 = DRB1_1, Position2 = DRB1_2},
                 }
             };
         }
@@ -53,16 +47,16 @@ namespace Nova.SearchAlgorithm.Data.Entity
             DonorId = donor.DonorId;
             DonorType = donor.DonorType;
             RegistryCode = donor.RegistryCode;
-            A_1 = donor.MatchingHla.A_1.OriginalName;
-            A_2 = donor.MatchingHla.A_2.OriginalName;
-            B_1 = donor.MatchingHla.B_1.OriginalName;
-            B_2 = donor.MatchingHla.B_2.OriginalName;
-            C_1 = donor.MatchingHla.C_1?.OriginalName;
-            C_2 = donor.MatchingHla.C_2?.OriginalName;
-            DRB1_1 = donor.MatchingHla.Drb1_1.OriginalName;
-            DRB1_2 = donor.MatchingHla.Drb1_2.OriginalName;
-            DQB1_1 = donor.MatchingHla.Dqb1_1?.OriginalName;
-            DQB1_2 = donor.MatchingHla.Dqb1_2?.OriginalName;
+            A_1 = donor.MatchingHla.A.Position1.OriginalName;
+            A_2 = donor.MatchingHla.A.Position2.OriginalName;
+            B_1 = donor.MatchingHla.B.Position1.OriginalName;
+            B_2 = donor.MatchingHla.B.Position2.OriginalName;
+            C_1 = donor.MatchingHla.C.Position1?.OriginalName;
+            C_2 = donor.MatchingHla.C.Position2?.OriginalName;
+            DRB1_1 = donor.MatchingHla.Drb1.Position1.OriginalName;
+            DRB1_2 = donor.MatchingHla.Drb1.Position2.OriginalName;
+            DQB1_1 = donor.MatchingHla.Dqb1.Position1?.OriginalName;
+            DQB1_2 = donor.MatchingHla.Dqb1.Position2?.OriginalName;
         }
     }
 }

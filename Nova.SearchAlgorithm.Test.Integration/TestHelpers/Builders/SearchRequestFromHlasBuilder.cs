@@ -18,16 +18,16 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas = null)
         {
             searchRequestBuilder = new SearchRequestBuilder()
-                .WithLocusMatchHla(Locus.A, TypePosition.One, searchHlas.A_1)
-                .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHlas.A_2)
-                .WithLocusMatchHla(Locus.B, TypePosition.One, searchHlas.B_1)
-                .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHlas.B_2)
-                .WithLocusMatchHla(Locus.C, TypePosition.One, searchHlas.C_1)
-                .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHlas.C_2)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHlas.DQB1_1)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHlas.DQB1_2)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHlas.DRB1_1)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHlas.DRB1_2);
+                .WithLocusMatchHla(Locus.A, TypePosition.One, searchHlas.A.Position1)
+                .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHlas.A.Position2)
+                .WithLocusMatchHla(Locus.B, TypePosition.One, searchHlas.B.Position1)
+                .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHlas.B.Position2)
+                .WithLocusMatchHla(Locus.C, TypePosition.One, searchHlas.C.Position1)
+                .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHlas.C.Position2)
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHlas.Dqb1.Position1)
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHlas.Dqb1.Position2)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHlas.Drb1.Position1)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHlas.Drb1.Position2);
 
             this.nonMatchingHlas = nonMatchingHlas;
         }

@@ -39,16 +39,16 @@ namespace Nova.SearchAlgorithm.Test.Performance.Models
             DonorType = input.DonorType;
             IsAlignedRegistriesSearch = input.IsAlignedRegistriesSearch;
 
-            HlaA1 = input.Hla.A_1;
-            HlaA2 = input.Hla.A_2;
-            HlaB1 = input.Hla.B_1;
-            HlaB2 = input.Hla.B_2;
-            HlaC1 = input.Hla.C_1;
-            HlaC2 = input.Hla.C_2;
-            HlaDqb11 = input.Hla.Dqb1_1;
-            HlaDqb12 = input.Hla.Dqb1_2;
-            HlaDrb11 = input.Hla.Drb1_1;
-            HlaDrb12 = input.Hla.Drb1_2;
+            HlaA1 = input.Hla.A.Position1;
+            HlaA2 = input.Hla.A.Position2;
+            HlaB1 = input.Hla.B.Position1;
+            HlaB2 = input.Hla.B.Position2;
+            HlaC1 = input.Hla.C.Position1;
+            HlaC2 = input.Hla.C.Position2;
+            HlaDqb11 = input.Hla.Dqb1.Position1;
+            HlaDqb12 = input.Hla.Dqb1.Position2;
+            HlaDrb11 = input.Hla.Drb1.Position1;
+            HlaDrb12 = input.Hla.Drb1.Position2;
 
             ElapsedMilliseconds = metrics.ElapsedMilliseconds;
             MatchedDonors = metrics.DonorsReturned;

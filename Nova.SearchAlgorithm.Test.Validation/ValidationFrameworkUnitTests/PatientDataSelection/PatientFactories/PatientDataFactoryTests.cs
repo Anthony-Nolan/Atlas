@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             CaptureCriteria();
             // Ensure that the match levels have actually updated, as the default values will be the same
-            capturedMetaDonorCriteria.MatchLevels.A_1.Should().Be(matchLevel);
+            capturedMetaDonorCriteria.MatchLevels.A.Position1.Should().Be(matchLevel);
             capturedMetaDonorCriteria.MatchLevels.ShouldBeEquivalentTo(capturedPatientCriteria.MatchLevels);
         }
 

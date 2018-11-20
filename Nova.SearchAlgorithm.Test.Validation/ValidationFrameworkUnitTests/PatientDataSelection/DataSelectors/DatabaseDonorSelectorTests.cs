@@ -18,7 +18,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
         [SetUp]
         public void SetUp()
         {
-            donorSelector = new DatabaseDonorSelector();;
+            donorSelector = new DatabaseDonorSelector();
+            ;
         }
 
         [Test]
@@ -41,14 +42,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             id.Should().Be(donorId);
         }
-        
+
         [Test]
         public void GetExpectedMatchingDonorId_WhenMultipleDonorsExistForMetaDonor_ReturnsDonorIdOfMatchingDonor()
         {
             const int donorIdMatching = 1;
             const int donorIdNotMatching = 2;
             var matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.XxCode);
-            
+
             var metaDonor = new MetaDonor
             {
                 DatabaseDonors = new List<Donor>
@@ -80,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             id.Should().Be(donorIdMatching);
         }
-        
+
         [Test]
         public void GetExpectedMatchingDonorId_WhenNoDonorExistsWithMatchingTypingResolution_ThrowsException()
         {
@@ -99,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
                 {
-                    A_1 = HlaTypingResolution.Serology
+                    A = {Position1 = HlaTypingResolution.Serology}
                 }
             };
 

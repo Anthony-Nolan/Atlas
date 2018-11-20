@@ -78,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-            patientHla.A_1.Should().Be(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+            patientHla.A.Position1.Should().Be(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+            patientHla.A.Position1.Should().NotBe(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
 
         [Test]
@@ -123,7 +123,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+            patientHla.A.Position1.Should().NotBe(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
 
         [Test]
@@ -269,7 +269,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+            patientHla.A.Position1.Should().NotBe(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
         
         [Test]
@@ -289,7 +289,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-            patientHla.A_1.Should().NotBe(metaDonor.Genotype.Hla.A_1.TgsTypedAllele);
+            patientHla.A.Position1.Should().NotBe(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
         
         [Test]
@@ -309,7 +309,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-            patientHla.A_1.Should().Contain("N");
+            patientHla.A.Position1.Should().Contain("N");
         }
         
         [Test]
@@ -334,8 +334,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Pati
             {
                 var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
 
-                patientHla.A_1.Should().Contain("N");
-                patientHla.A_2.Should().NotContain("N");
+                patientHla.A.Position1.Should().Contain("N");
+                patientHla.A.Position2.Should().NotContain("N");
             }
         }
         

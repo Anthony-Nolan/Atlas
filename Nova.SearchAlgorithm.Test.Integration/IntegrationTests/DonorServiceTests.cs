@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateDonor(inputDonor);
 
             var donors = await donorInspectionRepository.GetPGroupsForDonors(new[] {inputDonor.DonorId});
-            donors.First().PGroupNames.A_1.Should().NotBeNullOrEmpty();
+            donors.First().PGroupNames.A.Position1.Should().NotBeNullOrEmpty();
         }
 
         [Test]
@@ -97,7 +97,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var initialPGroupsCount = (await donorInspectionRepository.GetPGroupsForDonors(new[] {donorId}))
                 .First().PGroupNames.DataAtPosition(locus, position).Count();
 
-            const DonorType newDonorType = DonorType.Cord;
             // XX code will always have more p-groups than a single allele
             var updatedDonor = new InputDonorBuilder(donorId).WithHlaAtLocus(locus, position, "*01:XX").Build();
 
@@ -129,8 +128,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateDonorBatch(new[] {inputDonor1, inputDonor2});
 
             var donors = (await donorInspectionRepository.GetPGroupsForDonors(new[] {inputDonor1.DonorId, inputDonor2.DonorId})).ToList();
-            donors.First().PGroupNames.A_1.Should().NotBeNullOrEmpty();
-            donors.Last().PGroupNames.A_1.Should().NotBeNullOrEmpty();
+            donors.First().PGroupNames.A.Position1.Should().NotBeNullOrEmpty();
+            donors.Last().PGroupNames.A.Position1.Should().NotBeNullOrEmpty();
         }
 
         [Test]
@@ -206,7 +205,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var initialPGroupsCounts = (await donorInspectionRepository.GetPGroupsForDonors(new[] {donorId1, donorId2}))
                 .Select(p => p.PGroupNames.DataAtPosition(locus, position).Count()).ToList();
 
-            const DonorType newDonorType = DonorType.Cord;
             // XX code will always have more p-groups than a single allele
             var updatedDonor1 = new InputDonorBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:XX").Build();
             var updatedDonor2 = new InputDonorBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:XX").Build();

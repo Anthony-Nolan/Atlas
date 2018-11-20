@@ -59,18 +59,36 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             return new PhenotypeInfo<R>
             {
-                A_1 = mapping(Locus.A, A),
-                A_2 = mapping(Locus.A, A),
-                B_1 = mapping(Locus.B, B),
-                B_2 = mapping(Locus.B, B),
-                C_1 = mapping(Locus.C, C),
-                C_2 = mapping(Locus.C, C),
-                DPB1_1 = mapping(Locus.Dpb1, DPB1),
-                DPB1_2 = mapping(Locus.Dpb1, DPB1),
-                DQB1_1 = mapping(Locus.Dqb1, DQB1),
-                DQB1_2 = mapping(Locus.Dqb1, DQB1),
-                DRB1_1 = mapping(Locus.Drb1, DRB1),
-                DRB1_2 = mapping(Locus.Drb1, DRB1),
+                A =
+                {
+                    Position1 = mapping(Locus.A, A),
+                    Position2 = mapping(Locus.A, A),
+                },
+                B =
+                {
+                    Position1 = mapping(Locus.B, B),
+                    Position2 = mapping(Locus.B, B),
+                },
+                C =
+                {
+                    Position1 = mapping(Locus.C, C),
+                    Position2 = mapping(Locus.C, C),
+                },
+                Dpb1 =
+                {
+                    Position1 = mapping(Locus.Dpb1, DPB1),
+                    Position2 = mapping(Locus.Dpb1, DPB1),
+                },
+                Dqb1 =
+                {
+                    Position1 = mapping(Locus.Dqb1, DQB1),
+                    Position2 = mapping(Locus.Dqb1, DQB1),
+                },
+                Drb1 =
+                {
+                    Position1 = mapping(Locus.Drb1, DRB1),
+                    Position2 = mapping(Locus.Drb1, DRB1),
+                }
             };
         }       
         
@@ -82,18 +100,36 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             return new PhenotypeInfo<R>
             {
-                A_1 = mapping(Locus.A, A).Item1,
-                A_2 = mapping(Locus.A, A).Item2,
-                B_1 = mapping(Locus.B, B).Item1,
-                B_2 = mapping(Locus.B, B).Item2,
-                C_1 = mapping(Locus.C, C).Item1,
-                C_2 = mapping(Locus.C, C).Item2,
-                DPB1_1 = mapping(Locus.Dpb1, DPB1).Item1,
-                DPB1_2 = mapping(Locus.Dpb1, DPB1).Item2,
-                DQB1_1 = mapping(Locus.Dqb1, DQB1).Item1,
-                DQB1_2 = mapping(Locus.Dqb1, DQB1).Item2,
-                DRB1_1 = mapping(Locus.Drb1, DRB1).Item1,
-                DRB1_2 = mapping(Locus.Drb1, DRB1).Item2,
+                A =
+                {
+                    Position1 = mapping(Locus.A, A).Item1,
+                    Position2 = mapping(Locus.A, A).Item2,
+                },
+                B =
+                {
+                    Position1 = mapping(Locus.B, B).Item1,
+                    Position2 = mapping(Locus.B, B).Item2,
+                },
+                C =
+                {
+                    Position1 = mapping(Locus.C, C).Item1,
+                    Position2 = mapping(Locus.C, C).Item2,
+                },
+                Dpb1 =
+                {
+                    Position1 = mapping(Locus.Dpb1, DPB1).Item1,
+                    Position2 = mapping(Locus.Dpb1, DPB1).Item2,
+                },
+                Dqb1 =
+                {
+                    Position1 = mapping(Locus.Dqb1, DQB1).Item1,
+                    Position2 = mapping(Locus.Dqb1, DQB1).Item2,
+                },
+                Drb1 =
+                {
+                    Position1 = mapping(Locus.Drb1, DRB1).Item1,
+                    Position2 = mapping(Locus.Drb1, DRB1).Item2,
+                }
             };
         }
 

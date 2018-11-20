@@ -30,28 +30,28 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             switch (locus)
             {
                 case Locus.A:
-                    donor.MatchingHla.A_1 = hla1;
-                    donor.MatchingHla.A_2 = hla2;
+                    donor.MatchingHla.A.Position1 = hla1;
+                    donor.MatchingHla.A.Position2 = hla2;
                     break;
                 case Locus.B:
-                    donor.MatchingHla.B_1 = hla1;
-                    donor.MatchingHla.B_2 = hla2;
+                    donor.MatchingHla.B.Position1 = hla1;
+                    donor.MatchingHla.B.Position2 = hla2;
                     break;
                 case Locus.C:
-                    donor.MatchingHla.C_1 = hla1;
-                    donor.MatchingHla.C_2 = hla2;
+                    donor.MatchingHla.C.Position1 = hla1;
+                    donor.MatchingHla.C.Position2 = hla2;
                     break;
                 case Locus.Dpb1:
-                    donor.MatchingHla.Dpb1_1 = hla1;
-                    donor.MatchingHla.Dpb1_2 = hla2;
+                    donor.MatchingHla.Dpb1.Position1 = hla1;
+                    donor.MatchingHla.Dpb1.Position2 = hla2;
                     break;
                 case Locus.Dqb1:
-                    donor.MatchingHla.Dqb1_1 = hla1;
-                    donor.MatchingHla.Dqb1_2 = hla2;
+                    donor.MatchingHla.Dqb1.Position1 = hla1;
+                    donor.MatchingHla.Dqb1.Position2 = hla2;
                     break;
                 case Locus.Drb1:
-                    donor.MatchingHla.Drb1_1 = hla1;
-                    donor.MatchingHla.Drb1_2 = hla2;
+                    donor.MatchingHla.Drb1.Position1 = hla1;
+                    donor.MatchingHla.Drb1.Position2 = hla2;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -62,12 +62,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         // Populates all null required hla positions (A, B, Drb1) with given hla values
         public InputDonorWithExpandedHlaBuilder WithDefaultRequiredHla(ExpandedHla hla)
         {
-            donor.MatchingHla.A_1 = donor.MatchingHla.A_1 ?? hla;
-            donor.MatchingHla.A_2 = donor.MatchingHla.A_2 ?? hla;
-            donor.MatchingHla.B_1 = donor.MatchingHla.B_1 ?? hla;
-            donor.MatchingHla.B_2 = donor.MatchingHla.B_2 ?? hla;
-            donor.MatchingHla.Drb1_1 = donor.MatchingHla.Drb1_1 ?? hla;
-            donor.MatchingHla.Drb1_2 = donor.MatchingHla.Drb1_2 ?? hla;
+            donor.MatchingHla.A.Position1 = donor.MatchingHla.A.Position1 ?? hla;
+            donor.MatchingHla.A.Position2 = donor.MatchingHla.A.Position2 ?? hla;
+            donor.MatchingHla.B.Position1 = donor.MatchingHla.B.Position1 ?? hla;
+            donor.MatchingHla.B.Position2 = donor.MatchingHla.B.Position2 ?? hla;
+            donor.MatchingHla.Drb1.Position1 = donor.MatchingHla.Drb1.Position1 ?? hla;
+            donor.MatchingHla.Drb1.Position2 = donor.MatchingHla.Drb1.Position2 ?? hla;
             return this;
         }
 

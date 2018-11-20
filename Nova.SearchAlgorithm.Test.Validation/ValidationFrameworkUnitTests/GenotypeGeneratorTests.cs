@@ -115,7 +115,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNullOrEmpty();
+            genotype.Hla.A.Position1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().BeNullOrEmpty();
         }
         
         [Test]
@@ -124,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().NotBeNullOrEmpty();
+            genotype.Hla.A.Position1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfSubtypes).Should().NotBeNullOrEmpty();
         }
         
         [Test]
@@ -274,7 +274,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().NotBeNullOrEmpty();
+            genotype.Hla.A.Position1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().NotBeNullOrEmpty();
         }
 
         [Test]
@@ -292,8 +292,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            // No P groups listed in A_2 test data, so no allele string of single P group can be built at this position
-            genotype.Hla.A_2.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().BeNullOrEmpty();
+            // No P groups listed in A.Position2 test data, so no allele string of single P group can be built at this position
+            genotype.Hla.A.Position2.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup).Should().BeNullOrEmpty();
         }
 
         [Test]
@@ -302,7 +302,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.A_1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Should().NotBeNullOrEmpty();
+            genotype.Hla.A.Position1.GetHlaForResolution(HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups).Should().NotBeNullOrEmpty();
         }
 
         [Test]

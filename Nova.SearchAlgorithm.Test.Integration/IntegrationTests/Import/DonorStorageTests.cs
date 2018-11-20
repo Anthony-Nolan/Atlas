@@ -21,12 +21,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             DonorType = DonorType.Cord,
             MatchingHla = new PhenotypeInfo<ExpandedHla>
             {
-                A_1 = new ExpandedHla { OriginalName = "01:02", PGroups = new List<string> { "01:01P", "01:02" } },
-                A_2 = new ExpandedHla { OriginalName = "30:02", PGroups = new List<string> { "01:01P", "30:02P" } },
-                B_1 = new ExpandedHla { OriginalName = "07:02", PGroups = new List<string> { "07:02P" } },
-                B_2 = new ExpandedHla { OriginalName = "08:01", PGroups = new List<string> { "08:01P" } },
-                Drb1_1 = new ExpandedHla { OriginalName = "01:11", PGroups = new List<string> { "01:11P" } },
-                Drb1_2 = new ExpandedHla { OriginalName = "03:41", PGroups = new List<string> { "03:41P" } }
+                A =
+                {
+                    Position1 = new ExpandedHla {OriginalName = "01:02", PGroups = new List<string> {"01:01P", "01:02"}},
+                    Position2 = new ExpandedHla {OriginalName = "30:02", PGroups = new List<string> {"01:01P", "30:02P"}},
+                },
+                B =
+                {
+                    Position1 = new ExpandedHla {OriginalName = "07:02", PGroups = new List<string> {"07:02P"}},
+                    Position2 = new ExpandedHla {OriginalName = "08:01", PGroups = new List<string> {"08:01P"}},
+                },
+                Drb1 =
+                {
+                    Position1 = new ExpandedHla {OriginalName = "01:11", PGroups = new List<string> {"01:11P"}},
+                    Position2 = new ExpandedHla {OriginalName = "03:41", PGroups = new List<string> {"03:41P"}},
+                }
             }
         };
 
@@ -36,12 +45,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             DonorType = DonorType.Cord,
             MatchingHla = new PhenotypeInfo<ExpandedHla>
             {
-                A_1 = new ExpandedHla { OriginalName = "*01:XX", PGroups = new List<string> { "01:01P", "01:02" } },
-                A_2 = new ExpandedHla { OriginalName = "30:XX", PGroups = new List<string> { "01:01P", "30:02P" } },
-                B_1 = new ExpandedHla { OriginalName = "*07:XX", PGroups = new List<string> { "07:02P" } },
-                B_2 = new ExpandedHla { OriginalName = "08:XX", PGroups = new List<string> { "08:01P" } },
-                Drb1_1 = new ExpandedHla { OriginalName = "*01:XX", PGroups = new List<string> { "01:11P" } },
-                Drb1_2 = new ExpandedHla { OriginalName = "03:XX", PGroups = new List<string> { "03:41P" } }
+                A =
+                {
+                    Position1 = new ExpandedHla {OriginalName = "*01:XX", PGroups = new List<string> {"01:01P", "01:02"}},
+                    Position2 = new ExpandedHla {OriginalName = "30:XX", PGroups = new List<string> {"01:01P", "30:02P"}},
+                },
+                B =
+                {
+                    Position1 = new ExpandedHla {OriginalName = "*07:XX", PGroups = new List<string> {"07:02P"}},
+                    Position2 = new ExpandedHla {OriginalName = "08:XX", PGroups = new List<string> {"08:01P"}},
+                },
+                Drb1 =
+                {
+                    Position1 = new ExpandedHla {OriginalName = "*01:XX", PGroups = new List<string> {"01:11P"}},
+                    Position2 = new ExpandedHla {OriginalName = "03:XX", PGroups = new List<string> {"03:41P"}},
+                }
             }
         };
 
@@ -81,7 +99,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAlleles;
             donor.DonorId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<InputDonor>{donor.ToInputDonor()});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -93,13 +111,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodes;
             donor.DonorId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<InputDonor>{donor.ToInputDonor()});
+            await importRepo.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
             AssertStoredDonorInfoMatchesOriginalDonorInfo(donorWithXxCodes, result);
         }
-        
+
         private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(InputDonorWithExpandedHla expectedDonor, DonorResult actualDonor)
         {
             actualDonor.DonorId.Should().Be(expectedDonor.DonorId);

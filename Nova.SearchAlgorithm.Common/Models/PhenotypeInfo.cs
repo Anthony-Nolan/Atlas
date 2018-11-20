@@ -22,18 +22,18 @@ namespace Nova.SearchAlgorithm.Common.Models
 
         public PhenotypeInfo(Utils.PhenotypeInfo.PhenotypeInfo<T> phenotypeInfo)
         {
-            A_1 = phenotypeInfo.A_1;
-            A_2 = phenotypeInfo.A_2;
-            B_1 = phenotypeInfo.B_1;
-            B_2 = phenotypeInfo.B_2;
-            C_1 = phenotypeInfo.C_1;
-            C_2 = phenotypeInfo.C_2;
-            Dpb1_1 = phenotypeInfo.Dpb1_1;
-            Dpb1_2 = phenotypeInfo.Dpb1_2;
-            Dqb1_1 = phenotypeInfo.Dqb1_1;
-            Dqb1_2 = phenotypeInfo.Dqb1_2;
-            Drb1_1 = phenotypeInfo.Drb1_1;
-            Drb1_2 = phenotypeInfo.Drb1_2;
+            A.Position1 = phenotypeInfo.A.Position1;
+            A.Position2 = phenotypeInfo.A.Position2;
+            B.Position1 = phenotypeInfo.B.Position1;
+            B.Position2 = phenotypeInfo.B.Position2;
+            C.Position1 = phenotypeInfo.C.Position1;
+            C.Position2 = phenotypeInfo.C.Position2;
+            Dpb1.Position1 = phenotypeInfo.Dpb1.Position1;
+            Dpb1.Position2 = phenotypeInfo.Dpb1.Position2;
+            Dqb1.Position1 = phenotypeInfo.Dqb1.Position1;
+            Dqb1.Position2 = phenotypeInfo.Dqb1.Position2;
+            Drb1.Position1 = phenotypeInfo.Drb1.Position1;
+            Drb1.Position2 = phenotypeInfo.Drb1.Position2;
         }
 
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
@@ -41,45 +41,81 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             return new PhenotypeInfo<R>
             {
-                A_1 = mapping(Locus.A, TypePosition.One, A_1),
-                A_2 = mapping(Locus.A, TypePosition.Two, A_2),
-                B_1 = mapping(Locus.B, TypePosition.One, B_1),
-                B_2 = mapping(Locus.B, TypePosition.Two, B_2),
-                C_1 = mapping(Locus.C, TypePosition.One, C_1),
-                C_2 = mapping(Locus.C, TypePosition.Two, C_2),
-                Dpb1_1 = mapping(Locus.Dpb1, TypePosition.One, Dpb1_1),
-                Dpb1_2 = mapping(Locus.Dpb1, TypePosition.Two, Dpb1_2),
-                Dqb1_1 = mapping(Locus.Dqb1, TypePosition.One, Dqb1_1),
-                Dqb1_2 = mapping(Locus.Dqb1, TypePosition.Two, Dqb1_2),
-                Drb1_1 = mapping(Locus.Drb1, TypePosition.One, Drb1_1),
-                Drb1_2 = mapping(Locus.Drb1, TypePosition.Two, Drb1_2),
+                A =
+                {
+                    Position1 = mapping(Locus.A, TypePosition.One, A.Position1),
+                    Position2 = mapping(Locus.A, TypePosition.Two, A.Position2),
+                },
+                B =
+                {
+                    Position1 = mapping(Locus.B, TypePosition.One, B.Position1),
+                    Position2 = mapping(Locus.B, TypePosition.Two, B.Position2),
+                },
+                C =
+                {
+                    Position1 = mapping(Locus.C, TypePosition.One, C.Position1),
+                    Position2 = mapping(Locus.C, TypePosition.Two, C.Position2),
+                },
+                Dpb1 =
+                {
+                    Position1 = mapping(Locus.Dpb1, TypePosition.One, Dpb1.Position1),
+                    Position2 = mapping(Locus.Dpb1, TypePosition.Two, Dpb1.Position2),
+                },
+                Dqb1 =
+                {
+                    Position1 = mapping(Locus.Dqb1, TypePosition.One, Dqb1.Position1),
+                    Position2 = mapping(Locus.Dqb1, TypePosition.Two, Dqb1.Position2),
+                },
+                Drb1 =
+                {
+                    Position1 = mapping(Locus.Drb1, TypePosition.One, Drb1.Position1),
+                    Position2 = mapping(Locus.Drb1, TypePosition.Two, Drb1.Position2),
+                }
             };
         }
 
         // TODO: NOVA-1427: Mapping all positions in parallel using PLINQ may improve performance for long mapping functions
         public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, Tuple<R, R>> mapping)
         {
-            var a = mapping(Locus.A, A_1, A_2);
-            var b = mapping(Locus.B, B_1, B_2);
-            var c = mapping(Locus.C, C_1, C_2);
-            var dpb1 = mapping(Locus.Dpb1, Dpb1_1, Dpb1_2);
-            var dqb1 = mapping(Locus.Dqb1, Dqb1_1, Dqb1_2);
-            var drb1 = mapping(Locus.Drb1, Drb1_1, Drb1_2);
+            var a = mapping(Locus.A, A.Position1, A.Position2);
+            var b = mapping(Locus.B, B.Position1, B.Position2);
+            var c = mapping(Locus.C, C.Position1, C.Position2);
+            var dpb1 = mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
+            var dqb1 = mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
+            var drb1 = mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2);
 
             return new PhenotypeInfo<R>
             {
-                A_1 = a.Item1,
-                A_2 = a.Item2,
-                B_1 = b.Item1,
-                B_2 = b.Item2,
-                C_1 = c.Item1,
-                C_2 = c.Item2,
-                Dpb1_1 = dpb1.Item1,
-                Dpb1_2 = dpb1.Item2,
-                Dqb1_1 = dqb1.Item1,
-                Dqb1_2 = dqb1.Item2,
-                Drb1_1 = drb1.Item1,
-                Drb1_2 = drb1.Item2,
+                A =
+                {
+                    Position1 = a.Item1,
+                    Position2 = a.Item2,
+                },
+                B =
+                {
+                    Position1 = b.Item1,
+                    Position2 = b.Item2,
+                },
+                C =
+                {
+                    Position1 = c.Item1,
+                    Position2 = c.Item2,
+                },
+                Dpb1 =
+                {
+                    Position1 = dpb1.Item1,
+                    Position2 = dpb1.Item2,
+                },
+                Dqb1 =
+                {
+                    Position1 = dqb1.Item1,
+                    Position2 = dqb1.Item2,
+                },
+                Drb1 =
+                {
+                    Position1 = drb1.Item1,
+                    Position2 = drb1.Item2,
+                }
             };
         }
 
@@ -87,18 +123,18 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             var data = new[]
             {
-                new PositionInfo<T>(Locus.A, TypePosition.One, A_1),
-                new PositionInfo<T>(Locus.A, TypePosition.Two, A_2),
-                new PositionInfo<T>(Locus.B, TypePosition.One, B_1),
-                new PositionInfo<T>(Locus.B, TypePosition.Two, B_2),
-                new PositionInfo<T>(Locus.C, TypePosition.One, C_1),
-                new PositionInfo<T>(Locus.C, TypePosition.Two, C_2),
-                new PositionInfo<T>(Locus.Dpb1, TypePosition.One, Dpb1_1),
-                new PositionInfo<T>(Locus.Dpb1, TypePosition.Two, Dpb1_2),
-                new PositionInfo<T>(Locus.Dqb1, TypePosition.One, Dqb1_1),
-                new PositionInfo<T>(Locus.Dqb1, TypePosition.Two, Dqb1_2),
-                new PositionInfo<T>(Locus.Drb1, TypePosition.One, Drb1_1),
-                new PositionInfo<T>(Locus.Drb1, TypePosition.Two, Drb1_2)
+                new PositionInfo<T>(Locus.A, TypePosition.One, A.Position1),
+                new PositionInfo<T>(Locus.A, TypePosition.Two, A.Position2),
+                new PositionInfo<T>(Locus.B, TypePosition.One, B.Position1),
+                new PositionInfo<T>(Locus.B, TypePosition.Two, B.Position2),
+                new PositionInfo<T>(Locus.C, TypePosition.One, C.Position1),
+                new PositionInfo<T>(Locus.C, TypePosition.Two, C.Position2),
+                new PositionInfo<T>(Locus.Dpb1, TypePosition.One, Dpb1.Position1),
+                new PositionInfo<T>(Locus.Dpb1, TypePosition.Two, Dpb1.Position2),
+                new PositionInfo<T>(Locus.Dqb1, TypePosition.One, Dqb1.Position1),
+                new PositionInfo<T>(Locus.Dqb1, TypePosition.Two, Dqb1.Position2),
+                new PositionInfo<T>(Locus.Drb1, TypePosition.One, Drb1.Position1),
+                new PositionInfo<T>(Locus.Drb1, TypePosition.Two, Drb1.Position2)
             };
 
             var results = await Task.WhenAll(data.Select(async d =>
@@ -109,18 +145,36 @@ namespace Nova.SearchAlgorithm.Common.Models
 
             return new PhenotypeInfo<R>
             {
-                A_1 = results.Single(r => r.Locus == Locus.A && r.Position == TypePosition.One).Data,
-                A_2 = results.Single(r => r.Locus == Locus.A && r.Position == TypePosition.Two).Data,
-                B_1 = results.Single(r => r.Locus == Locus.B && r.Position == TypePosition.One).Data,
-                B_2 = results.Single(r => r.Locus == Locus.B && r.Position == TypePosition.Two).Data,
-                C_1 = results.Single(r => r.Locus == Locus.C && r.Position == TypePosition.One).Data,
-                C_2 = results.Single(r => r.Locus == Locus.C && r.Position == TypePosition.Two).Data,
-                Dpb1_1 = results.Single(r => r.Locus == Locus.Dpb1 && r.Position == TypePosition.One).Data,
-                Dpb1_2 = results.Single(r => r.Locus == Locus.Dpb1 && r.Position == TypePosition.Two).Data,
-                Dqb1_1 = results.Single(r => r.Locus == Locus.Dqb1 && r.Position == TypePosition.One).Data,
-                Dqb1_2 = results.Single(r => r.Locus == Locus.Dqb1 && r.Position == TypePosition.Two).Data,
-                Drb1_1 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePosition.One).Data,
-                Drb1_2 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePosition.Two).Data,
+                A =
+                {
+                    Position1 = results.Single(r => r.Locus == Locus.A && r.Position == TypePosition.One).Data,
+                    Position2 = results.Single(r => r.Locus == Locus.A && r.Position == TypePosition.Two).Data,
+                },
+                B =
+                {
+                    Position1 = results.Single(r => r.Locus == Locus.B && r.Position == TypePosition.One).Data,
+                    Position2 = results.Single(r => r.Locus == Locus.B && r.Position == TypePosition.Two).Data,
+                },
+                C =
+                {
+                    Position1 = results.Single(r => r.Locus == Locus.C && r.Position == TypePosition.One).Data,
+                    Position2 = results.Single(r => r.Locus == Locus.C && r.Position == TypePosition.Two).Data,
+                },
+                Dpb1 =
+                {
+                    Position1 = results.Single(r => r.Locus == Locus.Dpb1 && r.Position == TypePosition.One).Data,
+                    Position2 = results.Single(r => r.Locus == Locus.Dpb1 && r.Position == TypePosition.Two).Data,
+                },
+                Dqb1 =
+                {
+                    Position1 = results.Single(r => r.Locus == Locus.Dqb1 && r.Position == TypePosition.One).Data,
+                    Position2 = results.Single(r => r.Locus == Locus.Dqb1 && r.Position == TypePosition.Two).Data,
+                },
+                Drb1 =
+                {
+                    Position1 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePosition.One).Data,
+                    Position2 = results.Single(r => r.Locus == Locus.Drb1 && r.Position == TypePosition.Two).Data,
+                }
             };
         }
 
@@ -129,76 +183,94 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             return new List<R>
             {
-                mapping(Locus.A, A_1, A_2),
-                mapping(Locus.B, B_1, B_2),
-                mapping(Locus.C, C_1, C_2),
-                mapping(Locus.Dpb1, Dpb1_1, Dpb1_2),
-                mapping(Locus.Dqb1, Dqb1_1, Dqb1_2),
-                mapping(Locus.Drb1, Drb1_1, Drb1_2),
+                mapping(Locus.A, A.Position1, A.Position2),
+                mapping(Locus.B, B.Position1, B.Position2),
+                mapping(Locus.C, C.Position1, C.Position2),
+                mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
+                mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
+                mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2),
             };
         }
 
         public void EachPosition(Action<Locus, TypePosition, T> action)
         {
-            action(Locus.A, TypePosition.One, A_1);
-            action(Locus.A, TypePosition.Two, A_2);
-            action(Locus.B, TypePosition.One, B_1);
-            action(Locus.B, TypePosition.Two, B_2);
-            action(Locus.C, TypePosition.One, C_1);
-            action(Locus.C, TypePosition.Two, C_2);
-            action(Locus.Dpb1, TypePosition.One, Dpb1_1);
-            action(Locus.Dpb1, TypePosition.Two, Dpb1_2);
-            action(Locus.Dqb1, TypePosition.One, Dqb1_1);
-            action(Locus.Dqb1, TypePosition.Two, Dqb1_2);
-            action(Locus.Drb1, TypePosition.One, Drb1_1);
-            action(Locus.Drb1, TypePosition.Two, Drb1_2);
+            action(Locus.A, TypePosition.One, A.Position1);
+            action(Locus.A, TypePosition.Two, A.Position2);
+            action(Locus.B, TypePosition.One, B.Position1);
+            action(Locus.B, TypePosition.Two, B.Position2);
+            action(Locus.C, TypePosition.One, C.Position1);
+            action(Locus.C, TypePosition.Two, C.Position2);
+            action(Locus.Dpb1, TypePosition.One, Dpb1.Position1);
+            action(Locus.Dpb1, TypePosition.Two, Dpb1.Position2);
+            action(Locus.Dqb1, TypePosition.One, Dqb1.Position1);
+            action(Locus.Dqb1, TypePosition.Two, Dqb1.Position2);
+            action(Locus.Drb1, TypePosition.One, Drb1.Position1);
+            action(Locus.Drb1, TypePosition.Two, Drb1.Position2);
         }
 
         public void EachLocus(Action<Locus, T, T> action)
         {
-            action(Locus.A, A_1, A_2);
-            action(Locus.B, B_1, B_2);
-            action(Locus.C, C_1, C_2);
-            action(Locus.Dpb1, Dpb1_1, Dpb1_2);
-            action(Locus.Dqb1, Dqb1_1, Dqb1_2);
-            action(Locus.Drb1, Drb1_1, Drb1_2);
+            action(Locus.A, A.Position1, A.Position2);
+            action(Locus.B, B.Position1, B.Position2);
+            action(Locus.C, C.Position1, C.Position2);
+            action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
+            action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
+            action(Locus.Drb1, Drb1.Position1, Drb1.Position2);
         }
 
         public async Task WhenAllLoci(Func<Locus, T, T, Task> action)
         {
             await Task.WhenAll(
-                action(Locus.A, A_1, A_2),
-                action(Locus.B, B_1, B_2),
-                action(Locus.C, C_1, C_2),
-                action(Locus.Dpb1, Dpb1_1, Dpb1_2),
-                action(Locus.Dqb1, Dqb1_1, Dqb1_2),
-                action(Locus.Drb1, Drb1_1, Drb1_2));
+                action(Locus.A, A.Position1, A.Position2),
+                action(Locus.B, B.Position1, B.Position2),
+                action(Locus.C, C.Position1, C.Position2),
+                action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
+                action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
+                action(Locus.Drb1, Drb1.Position1, Drb1.Position2));
         }
 
         public async Task<PhenotypeInfo<R>> WhenAllLoci<R>(Func<Locus, T, T, Task<Tuple<R, R>>> action)
         {
             var results = await Task.WhenAll(
-                action(Locus.A, A_1, A_2),
-                action(Locus.B, B_1, B_2),
-                action(Locus.C, C_1, C_2),
-                action(Locus.Dpb1, Dpb1_1, Dpb1_2),
-                action(Locus.Dqb1, Dqb1_1, Dqb1_2),
-                action(Locus.Drb1, Drb1_1, Drb1_2));
+                action(Locus.A, A.Position1, A.Position2),
+                action(Locus.B, B.Position1, B.Position2),
+                action(Locus.C, C.Position1, C.Position2),
+                action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
+                action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
+                action(Locus.Drb1, Drb1.Position1, Drb1.Position2));
 
             return new PhenotypeInfo<R>
             {
-                A_1 = results[0].Item1,
-                A_2 = results[0].Item2,
-                B_1 = results[1].Item1,
-                B_2 = results[1].Item2,
-                C_1 = results[2].Item1,
-                C_2 = results[2].Item2,
-                Dpb1_1 = results[3].Item1,
-                Dpb1_2 = results[3].Item2,
-                Dqb1_1 = results[4].Item1,
-                Dqb1_2 = results[4].Item2,
-                Drb1_1 = results[5].Item1,
-                Drb1_2 = results[5].Item2
+                A =
+                {
+                    Position1 = results[0].Item1,
+                    Position2 = results[0].Item2,
+                },
+                B =
+                {
+                    Position1 = results[1].Item1,
+                    Position2 = results[1].Item2,
+                },
+                C =
+                {
+                    Position1 = results[2].Item1,
+                    Position2 = results[2].Item2,
+                },
+                Dpb1 =
+                {
+                    Position1 = results[3].Item1,
+                    Position2 = results[3].Item2,
+                },
+                Dqb1 =
+                {
+                    Position1 = results[4].Item1,
+                    Position2 = results[4].Item2,
+                },
+                Drb1 =
+                {
+                    Position1 = results[5].Item1,
+                    Position2 = results[5].Item2
+                }
             };
         }
 
@@ -207,17 +279,17 @@ namespace Nova.SearchAlgorithm.Common.Models
             switch (locus)
             {
                 case Locus.A:
-                    return new Tuple<T, T>(A_1, A_2);
+                    return new Tuple<T, T>(A.Position1, A.Position2);
                 case Locus.B:
-                    return new Tuple<T, T>(B_1, B_2);
+                    return new Tuple<T, T>(B.Position1, B.Position2);
                 case Locus.C:
-                    return new Tuple<T, T>(C_1, C_2);
+                    return new Tuple<T, T>(C.Position1, C.Position2);
                 case Locus.Dpb1:
-                    return new Tuple<T, T>(Dpb1_1, Dpb1_2);
+                    return new Tuple<T, T>(Dpb1.Position1, Dpb1.Position2);
                 case Locus.Dqb1:
-                    return new Tuple<T, T>(Dqb1_1, Dqb1_2);
+                    return new Tuple<T, T>(Dqb1.Position1, Dqb1.Position2);
                 case Locus.Drb1:
-                    return new Tuple<T, T>(Drb1_1, Drb1_2);
+                    return new Tuple<T, T>(Drb1.Position1, Drb1.Position2);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
             }
@@ -232,9 +304,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            return A_1;
+                            return A.Position1;
                         case TypePosition.Two:
-                            return A_2;
+                            return A.Position2;
                         default:
                             throw new Exception(errorMessage);
                     }
@@ -242,9 +314,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            return B_1;
+                            return B.Position1;
                         case TypePosition.Two:
-                            return B_2;
+                            return B.Position2;
                         default:
                             throw new Exception(errorMessage);
                     }
@@ -252,9 +324,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            return C_1;
+                            return C.Position1;
                         case TypePosition.Two:
-                            return C_2;
+                            return C.Position2;
                         default:
                             throw new Exception(errorMessage);
                     }
@@ -262,9 +334,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            return Dpb1_1;
+                            return Dpb1.Position1;
                         case TypePosition.Two:
-                            return Dpb1_2;
+                            return Dpb1.Position2;
                         default:
                             throw new Exception(errorMessage);
                     }
@@ -272,9 +344,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            return Dqb1_1;
+                            return Dqb1.Position1;
                         case TypePosition.Two:
-                            return Dqb1_2;
+                            return Dqb1.Position2;
                         default:
                             throw new Exception(errorMessage);
                     }
@@ -282,9 +354,9 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            return Drb1_1;
+                            return Drb1.Position1;
                         case TypePosition.Two:
-                            return Drb1_2;
+                            return Drb1.Position2;
                         default:
                             throw new Exception(errorMessage);
                     }
@@ -301,10 +373,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            A_1 = value;
+                            A.Position1 = value;
                             break;
                         case TypePosition.Two:
-                            A_2 = value;
+                            A.Position2 = value;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -315,10 +387,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            B_1 = value;
+                            B.Position1 = value;
                             break;
                         case TypePosition.Two:
-                            B_2 = value;
+                            B.Position2 = value;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -329,10 +401,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            C_1 = value;
+                            C.Position1 = value;
                             break;
                         case TypePosition.Two:
-                            C_2 = value;
+                            C.Position2 = value;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -343,10 +415,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            Dpb1_1 = value;
+                            Dpb1.Position1 = value;
                             break;
                         case TypePosition.Two:
-                            Dpb1_2 = value;
+                            Dpb1.Position2 = value;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -357,10 +429,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            Dqb1_1 = value;
+                            Dqb1.Position1 = value;
                             break;
                         case TypePosition.Two:
-                            Dqb1_2 = value;
+                            Dqb1.Position2 = value;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -371,10 +443,10 @@ namespace Nova.SearchAlgorithm.Common.Models
                     switch (position)
                     {
                         case TypePosition.One:
-                            Drb1_1 = value;
+                            Drb1.Position1 = value;
                             break;
                         case TypePosition.Two:
-                            Drb1_2 = value;
+                            Drb1.Position2 = value;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(position), position, null);

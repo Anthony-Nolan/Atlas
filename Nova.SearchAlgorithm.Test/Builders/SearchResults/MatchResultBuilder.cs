@@ -17,16 +17,11 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                 {
                     HlaNames = new PhenotypeInfo<string>
                     {
-                        A_1 = "donor-hla",
-                        A_2 = "donor-hla",
-                        B_1 = "donor-hla",
-                        B_2 = "donor-hla",
-                        C_1 = "donor-hla",
-                        C_2 = "donor-hla",
-                        DQB1_1 = "donor-hla",
-                        DQB1_2 = "donor-hla",
-                        DRB1_1 = "donor-hla",
-                        DRB1_2 = "donor-hla",
+                        A = { Position1 = "donor-hla", Position2 = "donor-hla"},
+                        B = { Position1 = "donor-hla", Position2 = "donor-hla"},
+                        C = { Position1 = "donor-hla", Position2 = "donor-hla"},
+                        Dqb1 = { Position1 = "donor-hla", Position2 = "donor-hla"},
+                        Drb1 = { Position1 = "donor-hla", Position2 = "donor-hla"},
                     }
                 }
             };

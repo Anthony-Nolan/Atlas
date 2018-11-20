@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             inspectionRepo = Container.Resolve<IDonorInspectionRepository>();
             updateService = Container.Resolve<IHlaUpdateService>();
         }
-        
+
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             await updateService.UpdateDonorHla();
 
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
-            pGroups.First().PGroupNames.A_1.Count().Should().Be(hlaWithKnownPGroups1.Item2);
+            pGroups.First().PGroupNames.A.Position1.Count().Should().Be(hlaWithKnownPGroups1.Item2);
         }
 
         [Test]
@@ -61,20 +61,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
             await updateService.UpdateDonorHla();
-            var initialPGroupCountAtA1 = (await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId})).First().PGroupNames.A_1.Count();
+            var initialPGroupCountAtA1 =
+                (await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId})).First().PGroupNames.A.Position1.Count();
 
             await updateService.UpdateDonorHla();
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
-            pGroups.First().PGroupNames.A_1.Count().Should().Be(initialPGroupCountAtA1);
+            pGroups.First().PGroupNames.A.Position1.Count().Should().Be(initialPGroupCountAtA1);
         }
-        
+
         [Test]
         public async Task UpdateDonorHla_UpdatesHlaForNewDonorsSinceLastRun()
         {
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
             await updateService.UpdateDonorHla();
-            
+
             var newDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
             await updateService.UpdateDonorHla();
@@ -82,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {newDonor.DonorId});
             pGroups.Should().NotBeEmpty();
         }
-        
+
         private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, InputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);
@@ -100,12 +101,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 DonorId = id,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A_1 = hlaWithKnownPGroups1.Item1,
-                    A_2 = "30:02:01:01",
-                    B_1 = "07:02",
-                    B_2 = "08:01",
-                    Drb1_1 = "01:11",
-                    Drb1_2 = "03:41",
+                    A =
+                    {
+                        Position1 = hlaWithKnownPGroups1.Item1,
+                        Position2 = "30:02:01:01",
+                    },
+                    B =
+                    {
+                        Position1 = "07:02",
+                        Position2 = "08:01",
+                    },
+                    Drb1 =
+                    {
+                        Position1 = "01:11",
+                        Position2 = "03:41",
+                    }
                 }
             };
         }

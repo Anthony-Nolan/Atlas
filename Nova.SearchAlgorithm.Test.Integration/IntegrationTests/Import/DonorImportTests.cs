@@ -203,12 +203,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 DonorId = id,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A_1 = "01:01",
-                    A_2 = "30:02:01:01",
-                    B_1 = "07:02",
-                    B_2 = "08:01",
-                    Drb1_1 = "01:11",
-                    Drb1_2 = "03:41",
+                    A = { Position1 = "01:01", Position2 = "30:02:01:01"},
+                    B = { Position1 = "07:02", Position2 = "08:01"},
+                    Drb1 = { Position1 = "01:11", Position2 = "03:41"},
                 }
             };
         }

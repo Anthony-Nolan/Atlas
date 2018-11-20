@@ -13,61 +13,115 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestData
         {
             public PhenotypeInfo<string> ThreeLocus_SingleExpressingAlleles => new PhenotypeInfo<string>
             {
-                A_1 = "01:01:02",
-                A_2 = "02:01:01:02L",
-                B_1 = "07:68:01",
-                B_2 = "08:01:01:01",
-                DRB1_1 = "01:01:01",
-                DRB1_2 = "03:02:01"
+                A =
+                {
+                    Position1 = "01:01:02",
+                    Position2 = "02:01:01:02L",
+                },
+                B =
+                {
+                    Position1 = "07:68:01",
+                    Position2 = "08:01:01:01",
+                },
+                Drb1 =
+                {
+                    Position1 = "01:01:01",
+                    Position2 = "03:02:01"
+                }
             };
 
             public PhenotypeInfo<string> FiveLocus_SingleExpressingAlleles => new HlaNamePhenotypeBuilder(ThreeLocus_SingleExpressingAlleles)
-                    .WithHlaNameAt(Locus.C, TypePosition.One, "01:02:01:01")
-                    .WithHlaNameAt(Locus.C, TypePosition.Two, "02:02:01")
-                    .WithHlaNameAt(Locus.Dqb1, TypePosition.One, "02:01:11")
-                    .WithHlaNameAt(Locus.Dqb1, TypePosition.Two, "03:01:01:01")
-                    .Build();
+                .WithHlaNameAt(Locus.C, TypePosition.One, "01:02:01:01")
+                .WithHlaNameAt(Locus.C, TypePosition.Two, "02:02:01")
+                .WithHlaNameAt(Locus.Dqb1, TypePosition.One, "02:01:11")
+                .WithHlaNameAt(Locus.Dqb1, TypePosition.Two, "03:01:01:01")
+                .Build();
 
             public PhenotypeInfo<string> FiveLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>
             {
-                A_1 = "01:01",
-                A_2 = "02:01",
-                B_1 = "07:68",
-                B_2 = "08:01",
-                C_1 = "01:02",
-                C_2 = "02:02",
-                DQB1_1 = "02:01",
-                DQB1_2 = "03:01",
-                DRB1_1 = "01:01",
-                DRB1_2 = "03:02"
+                A =
+                {
+                    Position1 = "01:01",
+                    Position2 = "02:01",
+                },
+                B =
+                {
+                    Position1 = "07:68",
+                    Position2 = "08:01",
+                },
+                C =
+                {
+                    Position1 = "01:02",
+                    Position2 = "02:02",
+                },
+                Dqb1 =
+                {
+                    Position1 = "02:01",
+                    Position2 = "03:01",
+                },
+                Drb1 =
+                {
+                    Position1 = "01:01",
+                    Position2 = "03:02"
+                }
             };
 
-        public PhenotypeInfo<string> FiveLocus_XxCodes => new PhenotypeInfo<string>
+            public PhenotypeInfo<string> FiveLocus_XxCodes => new PhenotypeInfo<string>
             {
-                A_1 = "01:XX",
-                A_2 = "02:XX",
-                B_1 = "07:XX",
-                B_2 = "08:XX",
-                C_1 = "01:XX",
-                C_2 = "02:XX",
-                DQB1_1 = "02:XX",
-                DQB1_2 = "03:XX",
-                DRB1_1 = "01:XX",
-                DRB1_2 = "03:XX"
+                A =
+                {
+                    Position1 = "01:XX",
+                    Position2 = "02:XX",
+                },
+                B =
+                {
+                    Position1 = "07:XX",
+                    Position2 = "08:XX",
+                },
+                C =
+                {
+                    Position1 = "01:XX",
+                    Position2 = "02:XX",
+                },
+                Dqb1 =
+                {
+                    Position1 = "02:XX",
+                    Position2 = "03:XX",
+                },
+                Drb1 =
+                {
+                    Position1 = "01:XX",
+                    Position2 = "03:XX"
+                }
             };
 
             public PhenotypeInfo<string> FiveLocus_Serologies => new PhenotypeInfo<string>
             {
-                A_1 = "1",
-                A_2 = "2",
-                B_1 = "7",
-                B_2 = "8",
-                C_1 = "1",
-                C_2 = "2",
-                DQB1_1 = "2",
-                DQB1_2 = "3",
-                DRB1_1 = "1",
-                DRB1_2 = "3"
+                A =
+                {
+                    Position1 = "1",
+                    Position2 = "2",
+                },
+                B =
+                {
+                    Position1 = "7",
+                    Position2 = "8",
+                },
+                C =
+                {
+                    Position1 = "1",
+                    Position2 = "2",
+                },
+                Dqb1 =
+                {
+                    Position1 = "2",
+                    Position2 = "3",
+                },
+                Drb1 =
+                {
+                    Position1 = "1",
+                    Position2 = "3"
+                }
             };
         }
 
@@ -75,12 +129,21 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestData
         {
             public PhenotypeInfo<string> ThreeLocus_SingleExpressingAlleles => new PhenotypeInfo<string>
             {
-                A_1 = "03:02:03",
-                A_2 = "11:01:01:01",
-                B_1 = "13:01:02",
-                B_2 = "14:06:01",
-                DRB1_1 = "04:05:01:01",
-                DRB1_2 = "08:02:04"
+                A =
+                {
+                    Position1 = "03:02:03",
+                    Position2 = "11:01:01:01",
+                },
+                B =
+                {
+                    Position1 = "13:01:02",
+                    Position2 = "14:06:01",
+                },
+                Drb1 =
+                {
+                    Position1 = "04:05:01:01",
+                    Position2 = "08:02:04"
+                }
             };
 
             public PhenotypeInfo<string> FiveLocus_SingleExpressingAlleles => new HlaNamePhenotypeBuilder(ThreeLocus_SingleExpressingAlleles)
@@ -92,44 +155,89 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestData
 
             public PhenotypeInfo<string> FiveLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>
             {
-                A_1 = "03:02",
-                A_2 = "11:01",
-                B_1 = "13:01",
-                B_2 = "14:06",
-                C_1 = "03:02",
-                C_2 = "04:42",
-                DQB1_1 = "04:02",
-                DQB1_2 = "05:01",
-                DRB1_1 = "04:05",
-                DRB1_2 = "08:02"
+                A =
+                {
+                    Position1 = "03:02",
+                    Position2 = "11:01",
+                },
+                B =
+                {
+                    Position1 = "13:01",
+                    Position2 = "14:06",
+                },
+                C =
+                {
+                    Position1 = "03:02",
+                    Position2 = "04:42",
+                },
+                Dqb1 =
+                {
+                    Position1 = "04:02",
+                    Position2 = "05:01",
+                },
+                Drb1 =
+                {
+                    Position1 = "04:05",
+                    Position2 = "08:02"
+                }
             };
 
             public PhenotypeInfo<string> FiveLocus_XxCodes => new PhenotypeInfo<string>
             {
-                A_1 = "03:XX",
-                A_2 = "11:XX",
-                B_1 = "13:XX",
-                B_2 = "14:XX",
-                C_1 = "03:XX",
-                C_2 = "04:XX",
-                DQB1_1 = "04:XX",
-                DQB1_2 = "05:XX",
-                DRB1_1 = "04:XX",
-                DRB1_2 = "08:XX"
+                A =
+                {
+                    Position1 = "03:XX",
+                    Position2 = "11:XX",
+                },
+                B =
+                {
+                    Position1 = "13:XX",
+                    Position2 = "14:XX",
+                },
+                C =
+                {
+                    Position1 = "03:XX",
+                    Position2 = "04:XX",
+                },
+                Dqb1 =
+                {
+                    Position1 = "04:XX",
+                    Position2 = "05:XX",
+                },
+                Drb1 =
+                {
+                    Position1 = "04:XX",
+                    Position2 = "08:XX"
+                }
             };
 
             public PhenotypeInfo<string> FiveLocus_Serologies => new PhenotypeInfo<string>
             {
-                A_1 = "3",
-                A_2 = "11",
-                B_1 = "13",
-                B_2 = "14",
-                C_1 = "3",
-                C_2 = "4",
-                DQB1_1 = "4",
-                DQB1_2 = "5",
-                DRB1_1 = "4",
-                DRB1_2 = "8"
+                A =
+                {
+                    Position1 = "3",
+                    Position2 = "11",
+                },
+                B =
+                {
+                    Position1 = "13",
+                    Position2 = "14",
+                },
+                C =
+                {
+                    Position1 = "3",
+                    Position2 = "4",
+                },
+                Dqb1 =
+                {
+                    Position1 = "4",
+                    Position2 = "5",
+                },
+                Drb1 =
+                {
+                    Position1 = "4",
+                    Position2 = "8"
+                }
             };
         }
     }
