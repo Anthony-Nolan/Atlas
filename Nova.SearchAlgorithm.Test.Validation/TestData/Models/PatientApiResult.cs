@@ -1,10 +1,10 @@
-﻿using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+﻿using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Models
 {
     public class PatientApiResult
     {
-        public IPatientDataFactory PatientDataFactory;
+        public IExpectedDonorProvider ExpectedDonorProvider;
         public SearchAlgorithmApiResult ApiResult;
     }
 }
