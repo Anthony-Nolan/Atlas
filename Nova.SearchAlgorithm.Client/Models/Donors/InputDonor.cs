@@ -1,4 +1,4 @@
-﻿using Nova.Utils.PhenoTypeInfo;
+﻿using Nova.Utils.PhenotypeInfo;
 
 namespace Nova.SearchAlgorithm.Client.Models.Donors
 {

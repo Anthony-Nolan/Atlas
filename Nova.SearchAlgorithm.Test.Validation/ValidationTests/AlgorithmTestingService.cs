@@ -1,8 +1,11 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Owin.Testing;
 using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
@@ -34,14 +37,32 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
                 .PostAsync();
 
             var content = await result.Content.ReadAsStringAsync();
-            var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
+            var deserializedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
             return new SearchAlgorithmApiResult
             {
                 IsSuccess = result.IsSuccessStatusCode,
                 StatusCode = result.StatusCode,
                 ErrorMessage = result.IsSuccessStatusCode ? null : content,
-                Results = result.IsSuccessStatusCode ? deserialisedContent : null,
+                Results = result.IsSuccessStatusCode ? deserializedContent : null,
             };
+        }
+
+        public static async Task AddDonors(IEnumerable<InputDonor> donors)
+        {
+            var batch = new InputDonorBatch
+            {
+                Donors = donors
+            };
+            
+            var result = await server.CreateRequest("/donor/batch")
+                .AddHeader(ApiKeyHeader, ApiKey)
+                .And(request => request.Content = SerialiseToJson(batch))
+                .PostAsync();
+
+            if (!result.IsSuccessStatusCode)
+            {
+                throw new Exception("Request to add donors failed");
+            }
         }
 
         public static void RunHlaRefresh()
@@ -51,9 +72,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
                 .PostAsync()).Wait();
         }
 
-        private static StringContent SerialiseToJson(SearchRequest searchRequest)
+        private static StringContent SerialiseToJson(object obj)
         {
-            return new StringContent(JsonConvert.SerializeObject(searchRequest), Encoding.UTF8, "application/json");
+            return new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
         }
     }
 }

@@ -179,8 +179,9 @@
       <HintPath>..\packages\Nova.HLAService.Client.3.0.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nova.Utils, Version=8.3.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.8.3.3\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=8.6.1.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.Utils.8.6.1\lib\net462\Nova.Utils.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Nova.Utils.Entity, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nova.Utils.Entity.3.3.2\lib\net462\Nova.Utils.Entity.dll</HintPath>
@@ -373,7 +374,6 @@
     <Compile Include="TestData\Models\PatientApiResult.cs" />
     <Compile Include="TestData\Repositories\AlleleRepository.cs" />
     <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
-    <Compile Include="TestData\Repositories\StaticTestHlaRepository.cs" />
     <Compile Include="TestData\Repositories\TestDataRepository.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithDifferentThirdField.cs" />
     <Compile Include="TestData\Resources\Alleles\AllelesWithNonNullExpressionSuffix.cs" />
@@ -391,14 +391,14 @@
     <Compile Include="TestData\Services\AlleleStringAlleleSelector.cs" />
     <Compile Include="TestData\Services\DonorIdGenerator.cs" />
     <Compile Include="TestData\Services\GenotypeGenerator.cs" />
+    <Compile Include="TestData\Services\IExpectedDonorProvider.cs" />
     <Compile Include="TestData\Services\IPatientDataProvider.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\DatabaseDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\MetaDonorSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataFactory.cs" />
     <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataTestCase.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticPatientDataProvider.cs" />
+    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataProvider.cs" />
     <Compile Include="TestData\Services\TestDataService.cs" />
     <Compile Include="ValidationFrameworkUnitTests\AlleleStringAlleleSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\GenotypeGeneratorTests.cs" />
@@ -408,6 +408,11 @@
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\PatientHlaSelectorTests.cs" />
     <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientFactories\PatientDataFactoryTests.cs" />
     <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
+    <Compile Include="ValidationTests\Features\AlleleNames\AlleleNames.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AlleleNames.feature</DependentUpon>
+    </Compile>
     <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -548,8 +553,12 @@
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\SingleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\AlleleNameFeatureSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\FeatureDefinedTestDataSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\SpecificTestDataSteps.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature" />
     <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature" />

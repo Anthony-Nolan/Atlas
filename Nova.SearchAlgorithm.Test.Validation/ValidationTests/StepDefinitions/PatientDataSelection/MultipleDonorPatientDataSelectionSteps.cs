@@ -80,16 +80,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             ScenarioContext.Current.Set(patientDataFactory);
         }
 
-        [Given(@"a patient has multiple matches with different match grades")]
-        public void GivenAPatientHasMultipleMatchesWithDifferentMatchGrades()
-        {
-            var patientDataProvider = ScenarioContext.Current.Get<IStaticPatientDataProvider>();
-            patientDataProvider.SetTestCase(StaticDataTestCase.MatchingDonorsAtEachMatchGrade);
-
-            ScenarioContext.Current.Set(patientDataProvider);
-            ScenarioContext.Current.Set((IPatientDataProvider) patientDataProvider);
-        }
-
         [Given(@"a patient has multiple matches with different match confidences")]
         public void GivenAPatientHasMultipleMatchesWithDifferentMatchConfidences()
         {

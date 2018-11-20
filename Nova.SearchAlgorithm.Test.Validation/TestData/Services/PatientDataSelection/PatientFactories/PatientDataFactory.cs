@@ -71,12 +71,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
         /// Be careful that this is definitely what you want if matching multiple donors
         /// </summary>
         void UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution resolution);
-
-        // Selected Data
-        IEnumerable<int> GetExpectedMatchingDonorIds();
     }
 
-    public class PatientDataFactory : IPatientDataFactory, IPatientDataProvider
+    public class PatientDataFactory : IPatientDataFactory, IPatientDataProvider, IExpectedDonorProvider
     {
         private readonly IMetaDonorSelector metaDonorSelector;
         private readonly IDatabaseDonorSelector databaseDonorSelector;

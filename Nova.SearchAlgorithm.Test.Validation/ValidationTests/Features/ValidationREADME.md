@@ -149,6 +149,22 @@ _e.g. Matches at a p-group, but not g-group, level._
 When adding new tests, relevant test data for that scenario may not yet exist. 
 If this is a case, a developer will need to add the appropriate test donors. 
 
+**Specific test data scenarios** 
+
+In some cases, we may want to test some specific hla values, rather than allowing the system to choose values for us based on criteria.
+For such cases, step definitions have been created to allow for specifying hla at a scenario level
+
+e.g.
+
+```
+And the matching donor has the following HLA:
+       |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+       |*02:09 |*01:01 |*15:01 |*15:11 |*15:03 |*03:01 | 
+And the patient has the following HLA:
+       |A_1          |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+       |*02:09:01:01 |*01:01 |*15:01 |*15:11 |*15:03 |*03:01 |
+```
+
 ## Default Values
 
 To keep the test cases as short and readable as possible, certain values of the test data have some default values, that will be used if nothing else specified.

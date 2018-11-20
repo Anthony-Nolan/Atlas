@@ -1,8 +1,8 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System;
+using System.Linq;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
-using System;
-using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using TechTalk.SpecFlow;
 
@@ -24,6 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         {
         }
 
+        [Given(@"the patient is untyped at locus (.*)")]
         [Given(@"the patient is untyped at Locus (.*)")]
         public void GivenThePatientIsUntypedAt(string locus)
         {

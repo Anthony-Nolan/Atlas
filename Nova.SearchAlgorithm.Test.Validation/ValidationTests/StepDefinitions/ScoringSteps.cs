@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelectio
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -101,14 +102,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static SearchResult GetSearchResultForSingleDonor()
         {
-            var patientDataSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var expectedDonorProvider = ScenarioContext.Current.Get<IExpectedDonorProvider>();
             var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
             return apiResult
                 .Results
                 .SearchResults
-                .Single(r => r.DonorId == patientDataSelector.GetExpectedMatchingDonorIds().Single());
+                .Single(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
         private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)

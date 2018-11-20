@@ -83,8 +83,8 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nova.Utils, Version=8.4.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Nova.Utils.8.4.0\lib\net462\Nova.Utils.dll</HintPath>
+    <Reference Include="Nova.Utils, Version=8.6.1.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Nova.Utils.8.6.1\lib\net462\Nova.Utils.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342">
