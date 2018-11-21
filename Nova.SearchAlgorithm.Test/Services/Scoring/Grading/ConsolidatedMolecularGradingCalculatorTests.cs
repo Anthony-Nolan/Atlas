@@ -1,18 +1,28 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
+using NSubstitute;
 using NUnit.Framework;
 using System;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class ConsolidatedMolecularGradingCalculatorTests :
-        GradingCalculatorTestsBase<ConsolidatedMolecularGradingCalculator>
+    public class ConsolidatedMolecularGradingCalculatorTests : GradingCalculatorTestsBase
     {
+        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+
+        [SetUp]
+        public override void SetUpGradingCalculator()
+        {
+            dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupsLookupService>();
+            GradingCalculator = new ConsolidatedMolecularGradingCalculator(dpb1TceGroupsLookupService);
+        }
+
         #region Tests: Exception Cases
 
         [TestCase(typeof(ConsolidatedMolecularScoringInfo), typeof(SerologyScoringInfo))]

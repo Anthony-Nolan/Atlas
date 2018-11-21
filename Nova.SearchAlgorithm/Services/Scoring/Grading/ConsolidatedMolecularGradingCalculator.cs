@@ -1,5 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
@@ -16,6 +17,13 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IConsolidatedMolecularGradingCalculator
     {
+        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+
+        public ConsolidatedMolecularGradingCalculator(IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+        {
+            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+        }
+
         protected override bool ScoringInfosAreOfPermittedTypes(
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo)

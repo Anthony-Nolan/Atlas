@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         private const MatchGrade DefaultMatchGradeForUntypedLocus = MatchGrade.PGroup;
+        private readonly IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+
+        public GradingService(IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+        {
+            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+        }
 
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
@@ -55,7 +62,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return GetPhenotypeGradingResults(patientLookupResults, donorLookupResults);
         }
 
-        private static PhenotypeInfo<MatchGradeResult> GetPhenotypeGradingResults(
+        private PhenotypeInfo<MatchGradeResult> GetPhenotypeGradingResults(
             PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
@@ -63,12 +70,6 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
             patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
             {
-                // TODO: NOVA-1301: Score DPB1
-                if (locus == Locus.Dpb1)
-                {
-                    return;
-                }
-
                 var patientLookupResultsAtLocus =
                     new Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult>(
                         patientLookupResult1,
@@ -85,7 +86,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return gradeResults;
         }
 
-        private static LocusMatchGradeResults GetLocusGradeResults(
+        private LocusMatchGradeResults GetLocusGradeResults(
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
         {
@@ -95,7 +96,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return GetGradeResultsInBestOrientations(directGrades, crossGrades);
         }
 
-        private static LocusMatchGrades GetMatchGradesForDirectOrientation(
+        private LocusMatchGrades GetMatchGradesForDirectOrientation(
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
         {
@@ -105,7 +106,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return new LocusMatchGrades(grade1, grade2);
         }
 
-        private static LocusMatchGrades GetMatchGradesForCrossOrientation(
+        private LocusMatchGrades GetMatchGradesForCrossOrientation(
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
             Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
         {
@@ -115,7 +116,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return new LocusMatchGrades(grade1, grade2);
         }
 
-        private static MatchGrade CalculateMatchGrade(
+        private MatchGrade CalculateMatchGrade(
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
@@ -125,6 +126,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
+                dpb1TceGroupsLookupService,
                 patientLookupResult.HlaScoringInfo,
                 donorLookupResult.HlaScoringInfo);
 
