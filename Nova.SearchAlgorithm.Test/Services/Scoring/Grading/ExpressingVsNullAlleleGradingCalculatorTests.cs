@@ -10,9 +10,14 @@ using System;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class ExpressingVsNullAlleleGradingCalculatorTests :
-        GradingCalculatorTestsBase<ExpressingVsNullAlleleGradingCalculator>
+    public class ExpressingVsNullAlleleGradingCalculatorTests : GradingCalculatorTestsBase
     {
+        [SetUp]
+        public override void SetUpGradingCalculator()
+        {
+            GradingCalculator = new ExpressingVsNullAlleleGradingCalculator();
+        }
+
         #region Tests: Exception Cases
 
         [TestCase(typeof(MultipleAlleleScoringInfo), typeof(MultipleAlleleScoringInfo))]

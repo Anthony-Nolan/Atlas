@@ -13,15 +13,12 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class SerologyGradingCalculatorTests :
-        GradingCalculatorTestsBase<SerologyGradingCalculator>
+    public class SerologyGradingCalculatorTests : GradingCalculatorTestsBase
     {
-        private ISerologyGradingCalculator serologyGradingCalculator;
-
         [SetUp]
-        public void SetUp()
+        public override void SetUpGradingCalculator()
         {
-            serologyGradingCalculator = new SerologyGradingCalculator();
+            GradingCalculator = new SerologyGradingCalculator();
         }
 
         #region Tests: Exception Cases
@@ -73,7 +70,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -95,7 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -117,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -158,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -180,7 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -223,7 +220,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -249,7 +246,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -271,7 +268,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -293,7 +290,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -332,7 +329,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -354,7 +351,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -394,7 +391,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -420,7 +417,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -442,7 +439,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -464,7 +461,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -503,7 +500,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -525,7 +522,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -565,7 +562,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -588,7 +585,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -611,7 +608,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Mismatch);
         }
@@ -638,7 +635,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -660,7 +657,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -682,7 +679,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -721,7 +718,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -743,7 +740,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -783,7 +780,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -809,7 +806,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -831,7 +828,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -853,7 +850,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -892,7 +889,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -914,7 +911,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -954,7 +951,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -980,7 +977,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -1002,7 +999,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -1024,7 +1021,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -1063,7 +1060,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -1085,7 +1082,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -1125,7 +1122,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -1151,7 +1148,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Associated);
         }
@@ -1173,7 +1170,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -1195,7 +1192,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -1234,7 +1231,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Split);
         }
@@ -1256,7 +1253,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }
@@ -1296,7 +1293,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                     .Build())
                 .Build();
 
-            var grade = serologyGradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
             grade.Should().Be(MatchGrade.Broad);
         }

@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -9,6 +10,13 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// </summary>
     public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
+        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+
+        public ExpressingAlleleGradingCalculator(IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+        {
+            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+        }
+
         protected override MatchGrade GetAlleleMatchGrade(
             AlleleGradingInfo patientInfo,
             AlleleGradingInfo donorInfo)

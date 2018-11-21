@@ -2,18 +2,28 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
+using NSubstitute;
 using NUnit.Framework;
 using System;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
-    public class MultipleAlleleGradingCalculatorTests :
-        GradingCalculatorTestsBase<MultipleAlleleGradingCalculator>
+    public class MultipleAlleleGradingCalculatorTests : GradingCalculatorTestsBase
     {
+        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+
+        [SetUp]
+        public override void SetUpGradingCalculator()
+        {
+            dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupsLookupService>();
+            GradingCalculator = new MultipleAlleleGradingCalculator(dpb1TceGroupsLookupService);
+        }
+
         #region Tests: Exception Cases
 
         [TestCase(typeof(SingleAlleleScoringInfo), typeof(SingleAlleleScoringInfo))]
