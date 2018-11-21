@@ -17,11 +17,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IConsolidatedMolecularGradingCalculator
     {
-        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
 
-        public ConsolidatedMolecularGradingCalculator(IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+        public ConsolidatedMolecularGradingCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService)
         {
-            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
         }
 
         protected override bool ScoringInfosAreOfPermittedTypes(

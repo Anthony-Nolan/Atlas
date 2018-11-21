@@ -20,11 +20,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IMultipleAlleleGradingCalculator
     {
-        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
 
-        public MultipleAlleleGradingCalculator(IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+        public MultipleAlleleGradingCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService)
         {
-            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
         }
 
         protected override bool ScoringInfosAreOfPermittedTypes(
@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult donorLookupResult)
         {
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupsLookupService,
+                dpb1TceGroupLookupService,
                 patientLookupResult.HlaScoringInfo,
                 donorLookupResult.HlaScoringInfo);
 

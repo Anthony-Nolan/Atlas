@@ -8,19 +8,20 @@ using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     [TestFixture]
     public class ConsolidatedMolecularGradingCalculatorTests : GradingCalculatorTestsBase
     {
-        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
 
         [SetUp]
         public override void SetUpGradingCalculator()
         {
-            dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupsLookupService>();
-            GradingCalculator = new ConsolidatedMolecularGradingCalculator(dpb1TceGroupsLookupService);
+            dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
+            GradingCalculator = new ConsolidatedMolecularGradingCalculator(dpb1TceGroupLookupService);
         }
 
         #region Tests: Exception Cases

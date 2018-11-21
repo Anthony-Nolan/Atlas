@@ -1,5 +1,4 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
-using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -7,11 +6,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public static IDpb1TceGroupsLookupResult ToDpb1TceGroupLookupResult(this HlaLookupTableEntity entity)
         {
-            var tceGroups = entity.GetHlaInfo<IEnumerable<string>>();
+            var tceGroup = entity.GetHlaInfo<string>();
 
             return new Dpb1TceGroupsLookupResult(
                 entity.LookupName, 
-                tceGroups);
+                tceGroup);
         }
     }
 }

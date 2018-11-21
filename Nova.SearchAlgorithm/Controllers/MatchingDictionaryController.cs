@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Controllers
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
-        private readonly IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
 
         public MatchingDictionaryController(
             IRecreateHlaLookupResultsService manageMatchingService,
@@ -25,14 +25,14 @@ namespace Nova.SearchAlgorithm.Controllers
             IHlaMatchingLookupService hlaMatchingLookupService,
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
-            IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+            IDpb1TceGroupLookupService dpb1TceGroupLookupService)
         {
             this.manageMatchingService = manageMatchingService;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaMatchingLookupService = hlaMatchingLookupService;
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
-            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
         }
 
         [HttpPost]
@@ -66,10 +66,10 @@ namespace Nova.SearchAlgorithm.Controllers
         }
 
         [HttpGet]
-        [Route("dpb1-tce-groups-lookup")]
-        public async Task<IEnumerable<string>> GetDpb1TceGroups(string dpb1HlaName)
+        [Route("dpb1-tce-group-lookup")]
+        public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupsLookupService.GetDpb1TceGroups(dpb1HlaName);
+            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName);
         }
 
         [HttpGet]

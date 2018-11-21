@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -10,11 +11,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// </summary>
     public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
-        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
 
-        public ExpressingAlleleGradingCalculator(IDpb1TceGroupsLookupService dpb1TceGroupsLookupService)
+        public ExpressingAlleleGradingCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService)
         {
-            this.dpb1TceGroupsLookupService = dpb1TceGroupsLookupService;
+            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
         }
 
         protected override MatchGrade GetAlleleMatchGrade(
@@ -42,6 +43,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             else if (IsPGroupMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.PGroup;
+            }
+            else if (IsPermissiveMismatch(patientInfo, donorInfo))
+            {
+                return MatchGrade.PermissiveMismatch;
             }
 
             return MatchGrade.Mismatch;
@@ -109,6 +114,28 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         private static bool IsPGroupMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
             return string.Equals(patientInfo.ScoringInfo.MatchingPGroup, donorInfo.ScoringInfo.MatchingPGroup);
+        }
+
+        private bool IsPermissiveMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
+        {
+            if (patientInfo.Allele.MatchLocus.Equals(MatchLocus.Dpb1))
+            {
+                var patientTceGroup = GetDpb1TceGroup(patientInfo.Allele.Name).Result;
+                var donorTceGroup = GetDpb1TceGroup(donorInfo.Allele.Name).Result;
+
+
+                return
+                    !string.IsNullOrEmpty(patientTceGroup) &&
+                    !string.IsNullOrEmpty(donorTceGroup) &&
+                    string.Equals(patientTceGroup, donorTceGroup);
+            }
+
+            return false;
+        }
+
+        private Task<string> GetDpb1TceGroup(string alleleName)
+        {
+            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName);
         }
 
         protected static bool AreBothSequencesFullLength(
