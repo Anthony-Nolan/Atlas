@@ -16,12 +16,14 @@ namespace Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions
                     return MatchLocus.B;
                 case Locus.C:
                     return MatchLocus.C;
+                case Locus.Dpb1:
+                    return MatchLocus.Dpb1;
                 case Locus.Dqb1:
                     return MatchLocus.Dqb1;
                 case Locus.Drb1:
                     return MatchLocus.Drb1;
                 default:
-                    throw new SearchHttpException($"Unable to convert unknown loci {locus} for matching dictionary lookup");
+                    throw new SearchHttpException($"Unable to convert unknown locus {locus} for matching dictionary lookup");
             }
         }
     }
