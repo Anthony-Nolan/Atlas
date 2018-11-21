@@ -31,26 +31,26 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dpb1TceGroups
                 .BeFalse();
         }
 
-        [TestCase("01:01:01:01", new[] { "3" }, Description = "Assignment V1 & 2 are the same; single allele name")]
-        [TestCase("01:01", new[] { "3" }, Description = "Assignment V1 & 2 are the same; NMDP code allele name")]
-        [TestCase("01", new[] { "3" }, Description = "Assignment V1 & 2 are the same; XX code name")]
-        [TestCase("06:01:01:03", new[] { "2" }, Description = "Assignment changed between V1 & 2; single allele name")]
-        [TestCase("06:01", new[] { "2" }, Description = "Assignment changed between V1 & 2; NMDP code allele name")]
-        [TestCase("06", new[] { "2" }, Description = "Assignment changed between V1 & 2; XX code name")]
-        [TestCase("30:01:01:01", new[] { "1" }, Description = "Assignment based on functional distance scores; single allele name")]
-        [TestCase("30:01", new[] { "1" }, Description = "Assignment based on functional distance scores; NMDP code allele name")]
-        [TestCase("30", new[] { "1" }, Description = "Assignment based on functional distance scores; XX code name")]
-        [TestCase("85:01:01:01", new[] { "3" }, Description = "No Assignment in V1; single allele name")]
-        [TestCase("85:01", new[] { "3" }, Description = "No Assignment in V1; NMDP code allele name")]
-        [TestCase("85", new[] { "3" }, Description = "No Assignment in V1; XX code name")]
-        [TestCase("548:01", new string[]{}, Description = "No Assignments in V1 & V2; single/NMPD code allele name")]
-        [TestCase("548", new string[] { }, Description = "No Assignments in V1 & V2; XX code name")]
+        [TestCase("01:01:01:01", "3", Description = "Assignment V1 & 2 are the same; single allele name")]
+        [TestCase("01:01", "3", Description = "Assignment V1 & 2 are the same; NMDP code allele name")]
+        [TestCase("01", "3", Description = "Assignment V1 & 2 are the same; XX code name")]
+        [TestCase("06:01:01:03", "2", Description = "Assignment changed between V1 & 2; single allele name")]
+        [TestCase("06:01", "2", Description = "Assignment changed between V1 & 2; NMDP code allele name")]
+        [TestCase("06", "2", Description = "Assignment changed between V1 & 2; XX code name")]
+        [TestCase("30:01:01:01", "1", Description = "Assignment based on functional distance scores; single allele name")]
+        [TestCase("30:01", "1", Description = "Assignment based on functional distance scores; NMDP code allele name")]
+        [TestCase("30", "1", Description = "Assignment based on functional distance scores; XX code name")]
+        [TestCase("85:01:01:01", "3", Description = "No Assignment in V1; single allele name")]
+        [TestCase("85:01", "3", Description = "No Assignment in V1; NMDP code allele name")]
+        [TestCase("85", "3", Description = "No Assignment in V1; XX code name")]
+        [TestCase("548:01", "", Description = "No Assignments in V1 & V2; single/NMDP code allele name")]
+        [TestCase("548", "", Description = "No Assignments in V1 & V2; XX code name")]
         public void Dpb1TceGroupsService_GetDpb1TceGroupLookupResults_TceGroupsAreAsExpected(
-            string lookupName, IEnumerable<string> expectedTceGroups)
+            string lookupName, string expectedTceGroup)
         {
             var actualLookupResult = GetDpb1TceGroupsLookupResult(lookupName);
 
-            actualLookupResult.TceGroups.ShouldBeEquivalentTo(expectedTceGroups);
+            actualLookupResult.TceGroup.Should().Be(expectedTceGroup);
         }
 
         private IDpb1TceGroupsLookupResult GetDpb1TceGroupsLookupResult(string lookupName)

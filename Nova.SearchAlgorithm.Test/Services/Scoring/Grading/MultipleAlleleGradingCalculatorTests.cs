@@ -15,13 +15,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
     [TestFixture]
     public class MultipleAlleleGradingCalculatorTests : GradingCalculatorTestsBase
     {
-        private IDpb1TceGroupsLookupService dpb1TceGroupsLookupService;
+        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
 
         [SetUp]
         public override void SetUpGradingCalculator()
         {
-            dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupsLookupService>();
-            GradingCalculator = new MultipleAlleleGradingCalculator(dpb1TceGroupsLookupService);
+            dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
+            GradingCalculator = new MultipleAlleleGradingCalculator(dpb1TceGroupLookupService);
         }
 
         #region Tests: Exception Cases

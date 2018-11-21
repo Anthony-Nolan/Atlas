@@ -31,19 +31,20 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults()
         {
-            var allResults = wmdaDataRepository
+            // Note: Due to DPB1 nomenclature, DPB1* expressing alleles with the same lookup name
+            // e.g., [0-9]+:XX, will all have the same protein, and thus the same TCE group.
+            return wmdaDataRepository
                 .Dpb1TceGroupAssignments
-                .SelectMany(GetLookupResultPerDpb1LookupName);
-
-            return GroupResultsByLookupName(allResults);
+                .Where(assignment => !ExpressionSuffixParser.IsAlleleNull(assignment.Name))
+                .SelectMany(GetLookupResultPerDpb1LookupName)
+                .Distinct();
         }
 
         private static IEnumerable<IDpb1TceGroupsLookupResult> GetLookupResultPerDpb1LookupName(Dpb1TceGroupAssignment tceGroupAssignment)
         {
             var lookupNames = GetLookupNames(tceGroupAssignment);
-            var tceGroups = GetTceGroups(tceGroupAssignment);
 
-            return lookupNames.Select(name => new Dpb1TceGroupsLookupResult(name, tceGroups));
+            return lookupNames.Select(name => new Dpb1TceGroupsLookupResult(name, tceGroupAssignment.VersionTwoAssignment));
         }
 
         private static IEnumerable<string> GetLookupNames(IWmdaHlaTyping tceGroup)
@@ -55,24 +56,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 allele.ToXxCodeLookupName()
             }
             .Concat(allele.ToNmdpCodeAlleleLookupNames());
-        }
-
-        private static IEnumerable<string> GetTceGroups(Dpb1TceGroupAssignment tceGroupAssignment)
-        {
-            var selectedVersion = tceGroupAssignment.VersionTwoAssignment;
-            return string.IsNullOrEmpty(selectedVersion)
-                ? new string[] { }
-                : new[] {selectedVersion};
-        }
-
-        private static IEnumerable<IDpb1TceGroupsLookupResult> GroupResultsByLookupName(
-            IEnumerable<IDpb1TceGroupsLookupResult> results)
-        {
-            return results
-                .GroupBy(result => result.LookupName)
-                .Select(grp => new Dpb1TceGroupsLookupResult(
-                    grp.Key,
-                    grp.SelectMany(lookup => lookup.TceGroups).Distinct()));
         }
     }
 }

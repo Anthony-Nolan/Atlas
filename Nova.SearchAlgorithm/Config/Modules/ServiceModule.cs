@@ -121,7 +121,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Dpb1TceGroupsLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Dpb1TceGroupLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

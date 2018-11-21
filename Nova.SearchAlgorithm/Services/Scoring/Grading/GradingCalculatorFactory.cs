@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     public static class GradingCalculatorFactory
     {
         public static IGradingCalculator GetGradingCalculator(
-            IDpb1TceGroupsLookupService dpb1TceGroupsLookupService,
+            IDpb1TceGroupLookupService dpb1TceGroupLookupService,
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo
         )
@@ -26,22 +26,22 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
             if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
             {
-                return new ConsolidatedMolecularGradingCalculator(dpb1TceGroupsLookupService);
+                return new ConsolidatedMolecularGradingCalculator(dpb1TceGroupLookupService);
             }
             if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
             {
-                return new MultipleAlleleGradingCalculator(dpb1TceGroupsLookupService);
+                return new MultipleAlleleGradingCalculator(dpb1TceGroupLookupService);
             }
             if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
             {
-                return GetSingleAlleleGradingCalculator(dpb1TceGroupsLookupService, pInfo, dInfo);
+                return GetSingleAlleleGradingCalculator(dpb1TceGroupLookupService, pInfo, dInfo);
             }
 
             throw new ArgumentException("No calculator available for provided patient and donor scoring infos.");
         }
 
         private static IGradingCalculator GetSingleAlleleGradingCalculator(
-            IDpb1TceGroupsLookupService dpb1TceGroupsLookupService,
+            IDpb1TceGroupLookupService dpb1TceGroupLookupService,
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo)
         {
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
             if (!patientAlleleIsNull && !donorAlleleIsNull)
             {
-                return new ExpressingAlleleGradingCalculator(dpb1TceGroupsLookupService);
+                return new ExpressingAlleleGradingCalculator(dpb1TceGroupLookupService);
             }
 
             if (patientAlleleIsNull && donorAlleleIsNull)

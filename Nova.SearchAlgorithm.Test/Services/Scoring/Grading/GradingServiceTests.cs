@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            var dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupsLookupService>();
+            var dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupLookupService>();
             gradingService = new GradingService(dpb1TceGroupsLookupService);
 
             defaultSerologyResult =
