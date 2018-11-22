@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     /// </summary>
     public interface IPermissiveMismatchCalculator
     {
-        bool IsPermissiveMismatch(MatchLocus matchLocus, string patientHlaName, string donorHlaName);
+        bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName);
     }
 
     public class PermissiveMismatchCalculator : IPermissiveMismatchCalculator
@@ -22,9 +22,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
         }
 
-        public bool IsPermissiveMismatch(MatchLocus matchLocus, string patientHlaName, string donorHlaName)
+        public bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName)
         {
-            return matchLocus == MatchLocus.Dpb1 && IsDpb1PermissiveMismatch(patientHlaName, donorHlaName);
+            return locus == Locus.Dpb1 && IsDpb1PermissiveMismatch(patientHlaName, donorHlaName);
         }
 
         private bool IsDpb1PermissiveMismatch(string patientHlaName, string donorHlaName)

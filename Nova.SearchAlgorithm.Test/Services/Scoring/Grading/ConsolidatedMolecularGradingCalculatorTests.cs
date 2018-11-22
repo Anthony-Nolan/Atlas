@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
@@ -16,7 +15,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
     public class ConsolidatedMolecularGradingCalculatorTests : GradingCalculatorTestsBase
     {
         private const Locus Dpb1Locus = Locus.Dpb1;
-        private const MatchLocus Dpb1MatchLocus = MatchLocus.Dpb1;
         private const Locus NonDpb1Locus = Locus.A;
 
         private IPermissiveMismatchCalculator permissiveMismatchCalculator;
@@ -166,7 +164,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorConsolidatedMolecularName)
                 .Returns(true);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -202,7 +200,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorConsolidatedMolecularName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -329,7 +327,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorAlleleName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorAlleleName)
                 .Returns(true);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -365,7 +363,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorAlleleName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorAlleleName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -490,7 +488,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientAlleleName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientAlleleName, donorConsolidatedMolecularName)
                 .Returns(true);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -527,7 +525,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientAlleleName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientAlleleName, donorConsolidatedMolecularName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -628,7 +626,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorAlleleName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorAlleleName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -695,7 +693,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientAlleleName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientAlleleName, donorConsolidatedMolecularName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -806,7 +804,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorMultipleAlleleName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorMultipleAlleleName)
                 .Returns(true);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -846,7 +844,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorMultipleAlleleName)
+                .IsPermissiveMismatch(Dpb1Locus, patientConsolidatedMolecularName, donorMultipleAlleleName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -989,7 +987,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientMultipleAlleleName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientMultipleAlleleName, donorConsolidatedMolecularName)
                 .Returns(true);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
@@ -1029,7 +1027,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .Build();
 
             permissiveMismatchCalculator
-                .IsPermissiveMismatch(Dpb1MatchLocus, patientMultipleAlleleName, donorConsolidatedMolecularName)
+                .IsPermissiveMismatch(Dpb1Locus, patientMultipleAlleleName, donorConsolidatedMolecularName)
                 .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Http;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Client.Models.Scoring;
 using Nova.SearchAlgorithm.Services.Scoring;
 
 namespace Nova.SearchAlgorithm.Controllers
