@@ -1,7 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +19,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IMultipleAlleleGradingCalculator
     {
-        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
-        public MultipleAlleleGradingCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService)
+        public MultipleAlleleGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
         {
-            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
+            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
         }
 
         protected override bool ScoringInfosAreOfPermittedTypes(
@@ -94,7 +93,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult donorLookupResult)
         {
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService,
+                permissiveMismatchCalculator,
                 patientLookupResult.HlaScoringInfo,
                 donorLookupResult.HlaScoringInfo);
 

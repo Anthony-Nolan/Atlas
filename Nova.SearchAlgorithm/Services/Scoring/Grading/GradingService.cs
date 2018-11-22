@@ -43,11 +43,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         }
 
         private const MatchGrade DefaultMatchGradeForUntypedLocus = MatchGrade.PGroup;
-        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
-        public GradingService(IDpb1TceGroupLookupService dpb1TceGroupLookupService)
+        public GradingService(IPermissiveMismatchCalculator permissiveMismatchCalculator)
         {
-            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
+            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
         }
 
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
@@ -126,7 +126,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService,
+                permissiveMismatchCalculator,
                 patientLookupResult.HlaScoringInfo,
                 donorLookupResult.HlaScoringInfo);
 

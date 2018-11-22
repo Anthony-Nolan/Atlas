@@ -2,7 +2,6 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
@@ -15,13 +14,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
     [TestFixture]
     public class ExpressingAlleleGradingCalculatorTests : GradingCalculatorTestsBase
     {
-        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         [SetUp]
         public override void SetUpGradingCalculator()
         {
-            dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
-            GradingCalculator = new ExpressingAlleleGradingCalculator(dpb1TceGroupLookupService);
+            permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
+            GradingCalculator = new ExpressingAlleleGradingCalculator(permissiveMismatchCalculator);
         }
 
         #region Tests: Exception Cases
