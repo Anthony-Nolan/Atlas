@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IConsolidatedMolecularGradingCalculator
     {
-        private IPermissiveMismatchCalculator permissiveMismatchCalculator;
+        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         public ConsolidatedMolecularGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
         {
@@ -55,6 +55,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return MatchGrade.PGroup;
             }
+            else if (IsPermissiveMismatch(patientLookupResult, donorLookupResult))
+            {
+                return MatchGrade.PermissiveMismatch;
+            }
 
             return MatchGrade.Mismatch;
         }
@@ -81,6 +85,16 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return patientInfo.MatchingPGroups
                 .Intersect(donorInfo.MatchingPGroups)
                 .Any();
+        }
+
+        private bool IsPermissiveMismatch(
+            IHlaLookupResult patientLookupResult,
+            IHlaLookupResult donorLookupResult)
+        {
+            return permissiveMismatchCalculator.IsPermissiveMismatch(
+                patientLookupResult.MatchLocus,
+                patientLookupResult.LookupName,
+                donorLookupResult.LookupName);
         }
     }
 }

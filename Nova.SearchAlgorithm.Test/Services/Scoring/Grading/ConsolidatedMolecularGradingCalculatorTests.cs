@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
@@ -13,6 +15,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
     [TestFixture]
     public class ConsolidatedMolecularGradingCalculatorTests : GradingCalculatorTestsBase
     {
+        private const Locus Dpb1Locus = Locus.Dpb1;
+        private const MatchLocus Dpb1MatchLocus = MatchLocus.Dpb1;
+        private const Locus NonDpb1Locus = Locus.A;
+
         private IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         [SetUp]
@@ -133,12 +139,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_WithDifferentNamesAndGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_AtDpb1_WithDifferentNamesAndGGroupsAndPGroups_ButPermissivelyMismatched_ReturnsPermissiveMismatch()
         {
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
@@ -150,6 +157,79 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorConsolidatedMolecularName)
+                .Returns(true);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.PermissiveMismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_AtDpb1_WithDifferentNamesAndGGroupsAndPGroups_AndNotPermissivelyMismatched_ReturnsMismatch()
+        {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorConsolidatedMolecularName)
+                .Returns(false);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_BothTypingsAreConsolidatedMolecular_AtNonDpb1Locus_WithDifferentNamesAndGGroupsAndPGroups_ReturnsMismatch()
+        {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
@@ -221,11 +301,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_AtDpb1_WithDifferentGGroupsAndPGroups_ButPermissivelyMismatched_ReturnsPermissiveMismatch()
         {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { patientPGroup })
@@ -236,6 +319,78 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorAlleleName)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .WithMatchingGGroup(donorGGroup)
+                    .WithMatchingPGroup(donorPGroup)
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorAlleleName)
+                .Returns(true);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.PermissiveMismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_AtDpb1_WithDifferentGGroupsAndPGroups_AndNotPermissivelyMismatched_ReturnsMismatch()
+        {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorAlleleName = "999:999";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .WithMatchingGGroup(donorGGroup)
+                    .WithMatchingPGroup(donorPGroup)
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorAlleleName)
+                .Returns(false);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_ConsolidatedMolecularVsExpressingAllele_AtNonDpb1Locus_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        {
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorAlleleName = "999:999";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -307,12 +462,87 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_AtDpb1_WithDifferentGGroupsAndPGroups_ButPermissivelyMismatched_ReturnsPermissiveMismatch()
         {
             const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientAlleleName)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .WithMatchingGGroup(patientGGroup)
+                    .WithMatchingPGroup(patientPGroup)
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientAlleleName, donorConsolidatedMolecularName)
+                .Returns(true);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.PermissiveMismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_AtDpb1_WithDifferentGGroupsAndPGroups_AndNotPermissivelyMismatched_ReturnsMismatch()
+        {
+            const string patientAlleleName = "999:999";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientAlleleName)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .WithMatchingGGroup(patientGGroup)
+                    .WithMatchingPGroup(patientPGroup)
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientAlleleName, donorConsolidatedMolecularName)
+                .Returns(false);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_ExpressingAlleleVsConsolidatedMolecular_AtNonDpb1Locus_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        {
+            const string patientAlleleName = "999:999";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -323,6 +553,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { donorPGroup })
@@ -339,11 +570,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         #region Tests: Consolidated Molecular vs. Null Allele & Vice Versa
 
         [Test]
-        public void CalculateGrade_ConsolidatedMolecularVsNullAllele_ReturnsMismatch()
+        public void CalculateGrade_ConsolidatedMolecularVsNullAllele_AtNonDpb1Locus_ReturnsMismatch()
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { patientPGroup })
@@ -354,6 +586,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = null;
             const string donorPGroup = null;
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -367,12 +600,50 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_NullAlleleVsConsolidatedMolecular_ReturnsMismatch()
+        public void CalculateGrade_ConsolidatedMolecularVsNullAllele_AtDpb1_ReturnsMismatch()
+        {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorAlleleName = "999:999N";
+            const string donorGGroup = null;
+            const string donorPGroup = null;
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorAlleleName)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(donorAlleleName)
+                    .WithMatchingGGroup(donorGGroup)
+                    .WithMatchingPGroup(donorPGroup)
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorAlleleName)
+                .Returns(false);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_NullAlleleVsConsolidatedMolecular_AtNonDpb1Locus_ReturnsMismatch()
         {
             const string patientAlleleName = "999:999N";
             const string patientGGroup = null;
             const string patientPGroup = null;
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -383,11 +654,49 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { donorPGroup })
                     .Build())
                 .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_NullAlleleVsConsolidatedMolecular_AtDpb1_ReturnsMismatch()
+        {
+            const string patientAlleleName = "999:999N";
+            const string patientGGroup = null;
+            const string patientPGroup = null;
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientAlleleName)
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(patientAlleleName)
+                    .WithMatchingGGroup(patientGGroup)
+                    .WithMatchingPGroup(patientPGroup)
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientAlleleName, donorConsolidatedMolecularName)
+                .Returns(false);
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
@@ -466,11 +775,92 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_AtDpb1_WithDifferentGGroupsAndPGroups_ButPermissivelyMismatched_ReturnsPermissiveMismatch()
+        {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorMultipleAlleleName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorMultipleAlleleName)
+                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
+                    .WithAlleleScoringInfos(new[]{
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithMatchingGGroup(donorGGroup)
+                            .WithMatchingPGroup(donorPGroup)
+                            .Build()
+                    })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorMultipleAlleleName)
+                .Returns(true);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.PermissiveMismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_AtDpb1_WithDifferentGGroupsAndPGroups_AndNotPermissivelyMismatched_ReturnsMismatch()
+        {
+            const string patientConsolidatedMolecularName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { patientGGroup })
+                    .WithMatchingPGroups(new[] { patientPGroup })
+                    .Build())
+                .Build();
+
+            const string donorMultipleAlleleName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorMultipleAlleleName)
+                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
+                    .WithAlleleScoringInfos(new[]{
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithMatchingGGroup(donorGGroup)
+                            .WithMatchingPGroup(donorPGroup)
+                            .Build()
+                    })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientConsolidatedMolecularName, donorMultipleAlleleName)
+                .Returns(false);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_ConsolidatedMolecularVsMultipleAllele_AtNonDpb1Locus_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { patientPGroup })
@@ -480,6 +870,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -567,11 +958,92 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         }
 
         [Test]
-        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
+        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_AtDpb1_WithDifferentGGroupsAndPGroups_ButPermissivelyMismatched_ReturnsPermissiveMismatch()
+        {
+            const string patientMultipleAlleleName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientMultipleAlleleName)
+                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
+                    .WithAlleleScoringInfos(new[]{
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithMatchingGGroup(patientGGroup)
+                            .WithMatchingPGroup(patientPGroup)
+                            .Build()
+                    })
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientMultipleAlleleName, donorConsolidatedMolecularName)
+                .Returns(true);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.PermissiveMismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_AtDpb1_WithDifferentGGroupsAndPGroups_AndNotPermissivelyMismatched_ReturnsMismatch()
+        {
+            const string patientMultipleAlleleName = "patient-hla-name";
+            const string patientGGroup = "patient-g-group";
+            const string patientPGroup = "patient-p-group";
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(patientMultipleAlleleName)
+                .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
+                    .WithAlleleScoringInfos(new[]{
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithMatchingGGroup(patientGGroup)
+                            .WithMatchingPGroup(patientPGroup)
+                            .Build()
+                    })
+                    .Build())
+                .Build();
+
+            const string donorConsolidatedMolecularName = "donor-hla-name";
+            const string donorGGroup = "donor-g-group";
+            const string donorPGroup = "donor-p-group";
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(Dpb1Locus)
+                .WithLookupName(donorConsolidatedMolecularName)
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
+                    .WithMatchingGGroups(new[] { donorGGroup })
+                    .WithMatchingPGroups(new[] { donorPGroup })
+                    .Build())
+                .Build();
+
+            permissiveMismatchCalculator
+                .IsPermissiveMismatch(Dpb1MatchLocus, patientMultipleAlleleName, donorConsolidatedMolecularName)
+                .Returns(false);
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public void CalculateGrade_MultipleAlleleVsConsolidatedMolecular_AtNonDpb1Locus_WithDifferentGGroupsAndPGroups_ReturnsMismatch()
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
             var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -585,6 +1057,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
             var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { donorPGroup })
