@@ -393,6 +393,7 @@
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchCriteriaAnalyserTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
+    <Compile Include="Services\Scoring\Grading\PermissiveMismatchCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorFactoryTests.cs" />
     <Compile Include="Services\Scoring\Grading\MultipleAlleleGradingCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorTestsBase.cs" />

@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
         //private bool IsPermissiveMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         //{
-        //    return permissiveMismatchCalculator.IsPermissiveMismatched(
+        //    return permissiveMismatchCalculator.IsPermissiveMismatch(
         //        patientInfo.Allele.MatchLocus,
         //        patientInfo.Allele.Name,
         //        donorInfo.Allele.Name);
