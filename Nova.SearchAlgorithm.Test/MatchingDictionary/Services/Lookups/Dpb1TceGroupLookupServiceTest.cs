@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
     public class Dpb1TceGroupLookupServiceTest :
         HlaSearchingLookupServiceTestBase<IDpb1TceGroupsLookupRepository, IDpb1TceGroupLookupService, IDpb1TceGroupsLookupResult>
     {
-        private const string ExpectedNoTceGroupAssignment = "no-assigned-TCE-group";
+        private const string ExpectedNoTceGroupAssignment = "";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()

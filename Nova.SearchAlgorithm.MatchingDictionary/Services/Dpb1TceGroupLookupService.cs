@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         HlaSearchingLookupServiceBase<IDpb1TceGroupsLookupResult>, 
         IDpb1TceGroupLookupService
     {
-        private const string NoTceGroupAssignment = "no-assigned-TCE-group";
+        private const string NoTceGroupAssignment = "";
 
         public Dpb1TceGroupLookupService(
             IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository,
