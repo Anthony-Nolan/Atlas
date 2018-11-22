@@ -31,13 +31,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults()
         {
-            // Note: Due to DPB1 nomenclature, DPB1* expressing alleles with the same lookup name
-            // e.g., [0-9]+:XX, will all have the same protein, and thus the same TCE group.
-            return wmdaDataRepository
+            var allResults = wmdaDataRepository
                 .Dpb1TceGroupAssignments
-                .Where(assignment => !ExpressionSuffixParser.IsAlleleNull(assignment.Name))
-                .SelectMany(GetLookupResultPerDpb1LookupName)
-                .Distinct();
+                .SelectMany(GetLookupResultPerDpb1LookupName);
+
+            return GroupResultsByLookupName(allResults);
         }
 
         private static IEnumerable<IDpb1TceGroupsLookupResult> GetLookupResultPerDpb1LookupName(Dpb1TceGroupAssignment tceGroupAssignment)
@@ -56,6 +54,25 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 allele.ToXxCodeLookupName()
             }
             .Concat(allele.ToNmdpCodeAlleleLookupNames());
+        }
+
+        /// <summary>
+        /// Due to DPB1 nomenclature, DPB1* expressing alleles with the same lookup name
+        /// e.g., [0-9]+:XX, will all have the same protein, and thus the same TCE group.
+        /// If a group of alleles with the same lookup name contains a null allele, the assignment
+        /// of the expressing alleles should be preferred.
+        /// </summary>
+        private static IEnumerable<IDpb1TceGroupsLookupResult> GroupResultsByLookupName(
+            IEnumerable<IDpb1TceGroupsLookupResult> results)
+        {
+            return results
+                .GroupBy(result => result.LookupName)
+                .Select(grp => new Dpb1TceGroupsLookupResult(
+                    grp.Key,
+                    grp.Select(lookup => lookup.TceGroup)
+                        .Distinct()
+                        .OrderByDescending(tceGroup => tceGroup)
+                        .First()));
         }
     }
 }

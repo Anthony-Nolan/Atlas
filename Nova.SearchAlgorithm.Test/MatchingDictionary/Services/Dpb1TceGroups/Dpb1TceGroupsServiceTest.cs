@@ -45,7 +45,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dpb1TceGroups
         [TestCase("85", "3", Description = "No Assignment in V1; XX code name")]
         [TestCase("548:01", "", Description = "No Assignments in V1 & V2; single/NMDP code allele name")]
         [TestCase("548", "", Description = "No Assignments in V1 & V2; XX code name")]
-        public void Dpb1TceGroupsService_GetDpb1TceGroupLookupResults_TceGroupsAreAsExpected(
+        [TestCase("04:01:01:24N", "", Description = "Null allele; single allele name")]
+        [TestCase("04:01", "3", Description = "Group of alleles with same lookup name & assignment contains a null allele; NMDP code allele name")]
+        [TestCase("04", "3", Description = "Group of alleles with same lookup name & assignment contains a null allele; XX code name")]
+        public void Dpb1TceGroupsService_GetDpb1TceGroupLookupResults_TceGroupIsAsExpected(
             string lookupName, string expectedTceGroup)
         {
             var actualLookupResult = GetDpb1TceGroupsLookupResult(lookupName);
