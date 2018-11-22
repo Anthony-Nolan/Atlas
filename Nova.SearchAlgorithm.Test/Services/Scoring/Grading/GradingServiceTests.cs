@@ -5,7 +5,6 @@ using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
@@ -24,8 +23,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            var dpb1TceGroupsLookupService = Substitute.For<IDpb1TceGroupLookupService>();
-            gradingService = new GradingService(dpb1TceGroupsLookupService);
+            var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
+            gradingService = new GradingService(permissiveMismatchCalculator);
 
             defaultSerologyResult =
                 new HlaScoringLookupResultBuilder()

@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
@@ -12,12 +11,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
     public class GradingCalculatorFactoryTests
     {
-        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
+            permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
         }
 
         [Test]
@@ -27,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new SerologyScoringInfoBuilder().Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<SerologyGradingCalculator>();
         }
@@ -42,7 +41,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<SerologyGradingCalculator>();
         }
@@ -57,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new SerologyScoringInfoBuilder().Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<SerologyGradingCalculator>();
         }
@@ -72,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ConsolidatedMolecularGradingCalculator>();
         }
@@ -87,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new ConsolidatedMolecularScoringInfoBuilder().Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ConsolidatedMolecularGradingCalculator>();
         }
@@ -101,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<MultipleAlleleGradingCalculator>();
         }
@@ -115,7 +114,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new MultipleAlleleScoringInfoBuilder().Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<MultipleAlleleGradingCalculator>();
         }
@@ -128,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(expressingAlleleName).Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingAlleleGradingCalculator>();
         }
@@ -141,7 +140,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<NullAlleleGradingCalculator>();
         }
@@ -156,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(donorAlleleName).Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }
@@ -168,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientScoringInfo = new ConsolidatedMolecularScoringInfoBuilder().Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }
@@ -181,7 +180,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
 
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                dpb1TceGroupLookupService, patientScoringInfo, donorScoringInfo);
+                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }

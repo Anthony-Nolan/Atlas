@@ -7,10 +7,11 @@
     public enum MatchGrade
     {
         /// <summary>
-        /// Mismatch value significantly lower than match values to ensure 
+        /// Mismatch values significantly lower than match values to ensure 
         /// the demotion of single match-mismatch results below double-match results.
         /// </summary>
         Mismatch = 0,
+        PermissiveMismatch = 1,
 
         // Grades for Serology-level matches
         Broad = 11,
