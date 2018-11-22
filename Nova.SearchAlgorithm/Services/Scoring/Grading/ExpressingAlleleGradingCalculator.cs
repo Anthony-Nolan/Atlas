@@ -42,10 +42,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return MatchGrade.PGroup;
             }
-            //else if (IsPermissiveMismatch(patientInfo, donorInfo))
-            //{
-            //    return MatchGrade.PermissiveMismatch;
-            //}
+            else if (IsPermissiveMismatch(patientInfo, donorInfo))
+            {
+                return MatchGrade.PermissiveMismatch;
+            }
 
             return MatchGrade.Mismatch;
         }
@@ -114,13 +114,13 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             return string.Equals(patientInfo.ScoringInfo.MatchingPGroup, donorInfo.ScoringInfo.MatchingPGroup);
         }
 
-        //private bool IsPermissiveMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
-        //{
-        //    return permissiveMismatchCalculator.IsPermissiveMismatch(
-        //        patientInfo.Allele.MatchLocus,
-        //        patientInfo.Allele.Name,
-        //        donorInfo.Allele.Name);
-        //}
+        private bool IsPermissiveMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
+        {
+            return permissiveMismatchCalculator.IsPermissiveMismatch(
+                patientInfo.Allele.MatchLocus,
+                patientInfo.Allele.Name,
+                donorInfo.Allele.Name);
+        }
 
         protected static bool AreBothSequencesFullLength(
             SingleAlleleScoringInfo patientInfo,

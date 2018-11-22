@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IMultipleAlleleGradingCalculator
     {
-        private IPermissiveMismatchCalculator permissiveMismatchCalculator;
+        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         public MultipleAlleleGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
         {
