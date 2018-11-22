@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using NSubstitute;
@@ -10,8 +10,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
     [TestFixture]
     public class PermissiveMismatchCalculatorTests
     {
-        private const MatchLocus Dpb1Locus = MatchLocus.Dpb1;
-        private const MatchLocus NonDpb1Locus = MatchLocus.A;
+        private const Locus Dpb1Locus = Locus.Dpb1;
+        private const Locus NonDpb1Locus = Locus.A;
         private const string PatientHlaName = "patient-hla-name";
         private const string DonorHlaName = "donor-hla-name";
         private const string NoTceGroupAssignment = "";

@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 
-namespace Nova.SearchAlgorithm.Client.Models.Scoring
+namespace Nova.SearchAlgorithm.Client.Models
 {
     public class ScoringRequest
     {
