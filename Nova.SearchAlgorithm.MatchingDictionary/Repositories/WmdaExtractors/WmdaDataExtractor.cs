@@ -18,9 +18,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
 
         public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForMatchingDictionaryLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
         {
-            var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName);
+            var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName).ToList();
             ExtractHeaders(fileContents.First());
-            return ExtractWmdaHlaTypingsForPermittedLociFromFileContents(fileContents);
+            return ExtractWmdaHlaTypingsForMatchingDictionaryLoci(fileContents);
         }
 
         /// <returns>
