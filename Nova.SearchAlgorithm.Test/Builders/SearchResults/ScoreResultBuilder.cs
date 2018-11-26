@@ -52,6 +52,19 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                         MatchGradeScore = 0,
                     }
                 },
+                ScoreDetailsAtLocusDpb1 = new LocusScoreDetails
+                {
+                    ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    },
+                    ScoreDetailsAtPosition2 = new LocusPositionScoreDetails
+                    {
+                        MatchConfidenceScore = 0,
+                        MatchGradeScore = 0,
+                    }
+                },
                 ScoreDetailsAtLocusDqb1 = new LocusScoreDetails
                 {
                     ScoreDetailsAtPosition1 = new LocusPositionScoreDetails

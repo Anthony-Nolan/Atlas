@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
@@ -20,6 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                         A = { Position1 = "donor-hla", Position2 = "donor-hla"},
                         B = { Position1 = "donor-hla", Position2 = "donor-hla"},
                         C = { Position1 = "donor-hla", Position2 = "donor-hla"},
+                        Dpb1 = { Position1 = "donor-hla", Position2 = "donor-hla" },
                         Dqb1 = { Position1 = "donor-hla", Position2 = "donor-hla"},
                         Drb1 = { Position1 = "donor-hla", Position2 = "donor-hla"},
                     }
