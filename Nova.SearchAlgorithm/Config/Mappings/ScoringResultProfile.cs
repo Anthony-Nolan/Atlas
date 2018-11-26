@@ -20,6 +20,7 @@ namespace Nova.SearchAlgorithm.Config.Mappings
                 .ForMember(s => s.SearchResultAtLocusA, opt => opt.MapFrom(m => m.ScoreDetailsForLocus(Locus.A)))
                 .ForMember(s => s.SearchResultAtLocusB, opt => opt.MapFrom(m => m.ScoreDetailsForLocus(Locus.B)))
                 .ForMember(s => s.SearchResultAtLocusC, opt => opt.MapFrom(m => m.ScoreDetailsForLocus(Locus.C)))
+                .ForMember(s => s.SearchResultAtLocusDpb1, opt => opt.MapFrom(m => m.ScoreDetailsForLocus(Locus.Dpb1)))
                 .ForMember(s => s.SearchResultAtLocusDqb1, opt => opt.MapFrom(m => m.ScoreDetailsForLocus(Locus.Dqb1)))
                 .ForMember(s => s.SearchResultAtLocusDrb1, opt => opt.MapFrom(m => m.ScoreDetailsForLocus(Locus.Drb1)));
         }
