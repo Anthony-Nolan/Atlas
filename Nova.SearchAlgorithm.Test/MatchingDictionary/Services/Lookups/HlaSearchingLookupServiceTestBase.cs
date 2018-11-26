@@ -109,22 +109,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 TypingMethod.Molecular);
         }
 
-        [TestCase("99:XX", "99:XX", "99")]
-        [TestCase("*99:XX", "99:XX", "99")]
-        public async Task GetHlaLookupResult_WhenXxCode_LookupTheFirstField(
-            string hlaName, string lookupName, string firstField)
+        [TestCase("99:XX", "99:XX")]
+        [TestCase("*99:XX", "99:XX")]
+        public async Task GetHlaLookupResult_WhenXxCode_LookupTheSubmittedHlaName(string hlaName, string lookupName)
         {
             HlaCategorisationService.GetHlaTypingCategory(lookupName).Returns(HlaTypingCategory.XxCode);
 
             await LookupService.GetHlaLookupResult(MatchedLocus, hlaName);
 
-            await HlaLookupRepository.Received().GetHlaLookupTableEntityIfExists(MatchedLocus, firstField, TypingMethod.Molecular);
+            await HlaLookupRepository.Received().GetHlaLookupTableEntityIfExists(MatchedLocus, lookupName, TypingMethod.Molecular);
         }
 
         [TestCase("*AlleleName", "AlleleName")]
         [TestCase("AlleleName", "AlleleName")]
-        public async Task GetHlaLookupResult_WhenAllele_LookupTheSubmittedHlaName(
-            string hlaName, string lookupName)
+        public async Task GetHlaLookupResult_WhenAllele_LookupTheSubmittedHlaName(string hlaName, string lookupName)
         {
             HlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.Allele);
 

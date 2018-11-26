@@ -6,6 +6,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {
     internal static class AlleleTypingExtensions
     {
+        private const string XxCodeSuffix = ":XX";
+
         public static IEnumerable<string> ToNmdpCodeAlleleLookupNames(this AlleleTyping alleleTyping)
         {
             return new []
@@ -17,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 
         public static string ToXxCodeLookupName(this AlleleTyping alleleTyping)
         {
-            return alleleTyping.FirstField;
+            return string.Concat(alleleTyping.FirstField, XxCodeSuffix);
         }
     }
 }

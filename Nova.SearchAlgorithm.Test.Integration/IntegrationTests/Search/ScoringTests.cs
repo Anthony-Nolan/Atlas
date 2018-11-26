@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private ISearchService searchService;
         private ITestHlaSet defaultHlaSet;
         private ITestHlaSet mismatchHlaSet;
-        private InputDonorWithExpandedHla donor_FiveLocus_SingleAlleles;
+        private InputDonorWithExpandedHla testDonor;
 
         [OneTimeSetUp]
         public void ImportTestDonor()
@@ -36,11 +36,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             defaultHlaSet = new TestHla.HeterozygousSet1();
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
-            donor_FiveLocus_SingleAlleles = BuildTestDonor();
+            testDonor = BuildTestDonor();
 
             // add test donors to repository
             var donorRepository = Container.Resolve<IDonorImportRepository>();
-            donorRepository.InsertDonorWithExpandedHla(donor_FiveLocus_SingleAlleles).Wait();
+            donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
         }
 
         [SetUp]
@@ -55,13 +55,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_TenOutOfTen_PatientAndDonorHaveSingleAlleles_ReturnsMolecularGrades_AndAlleleLevelConfidences()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
-                    defaultHlaSet.FiveLocus_SingleExpressingAlleles,
-                    mismatchHlaSet.FiveLocus_SingleExpressingAlleles)
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
                 .TenOutOfTen()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             var expectedMatchConfidences = new List<MatchConfidence> { MatchConfidence.Definite, MatchConfidence.Exact };
             expectedMatchConfidences.Should().Contain(result.OverallMatchConfidence);
@@ -71,13 +71,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_TenOutOfTen_PatientHasMultipleAlleles_DonorHasSingleAlleles_ReturnsMolecularGrades_AndAlleleLevelConfidences()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
-                    defaultHlaSet.FiveLocus_ExpressingAlleles_WithTruncatedNames,
-                    mismatchHlaSet.FiveLocus_ExpressingAlleles_WithTruncatedNames)
+                    defaultHlaSet.SixLocus_ExpressingAlleles_WithTruncatedNames,
+                    mismatchHlaSet.SixLocus_ExpressingAlleles_WithTruncatedNames)
                 .TenOutOfTen()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             var expectedMatchConfidences = new List<MatchConfidence> { MatchConfidence.Definite, MatchConfidence.Exact };
             expectedMatchConfidences.Should().Contain(result.OverallMatchConfidence);
@@ -87,13 +87,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_TenOutOfTen_PatientHasAlleleStrings_DonorHasSingleAlleles_ReturnsMolecularGrades_AndPotentialConfidences()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
-                    defaultHlaSet.FiveLocus_XxCodes,
-                    mismatchHlaSet.FiveLocus_XxCodes)
+                    defaultHlaSet.SixLocus_XxCodes,
+                    mismatchHlaSet.SixLocus_XxCodes)
                 .TenOutOfTen()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             result.OverallMatchConfidence.Should().Be(MatchConfidence.Potential);
         }
@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             result.OverallMatchConfidence.Should().Be(MatchConfidence.Potential);
         }
@@ -121,13 +121,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_NoMismatchGradesAndConfidencesAssignedAtMatchLoci()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
-                    defaultHlaSet.FiveLocus_SingleExpressingAlleles,
-                    mismatchHlaSet.FiveLocus_SingleExpressingAlleles)
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
                 .SixOutOfSix()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
             
             // Should be 6/6
             result.OverallMatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
@@ -158,15 +158,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_FiveOutOfSix_DonorMismatchedAtA_OneMismatchGradeAndConfidenceAssignedAtA_NoneAtBAndDrb1()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
-                    defaultHlaSet.FiveLocus_SingleExpressingAlleles,
-                    mismatchHlaSet.FiveLocus_SingleExpressingAlleles)
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(Locus.A)
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             // Should be 5/6
             result.OverallMatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -204,7 +204,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             // Should be 2x potential P group matches at C
             result.SearchResultAtLocusC.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
@@ -225,13 +225,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_GradesAndConfidencesCalculatedForLociExcludedFromMatching()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
-                    defaultHlaSet.FiveLocus_XxCodes,
-                    mismatchHlaSet.FiveLocus_XxCodes)
+                    defaultHlaSet.SixLocus_XxCodes,
+                    mismatchHlaSet.SixLocus_XxCodes)
                 .SixOutOfSix()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor_FiveLocus_SingleAlleles.DonorId);
+            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at C
             result.SearchResultAtLocusC.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
@@ -255,7 +255,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
 
             var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(defaultHlaSet.FiveLocus_SingleExpressingAlleles)
+                .GetPhenotypeOfExpandedHla(defaultHlaSet.SixLocus_SingleExpressingAlleles)
                 .Result;
 
             return new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())

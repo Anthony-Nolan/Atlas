@@ -31,13 +31,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     /// Expected match counts are determined by the decision to use position 1 of the source phenotype
     /// as the expressed typing within the homozygous patient locus.
     /// </summary>
-    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusSingleExpressingAlleles)]
-    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusExpressingAllelesWithTruncatedNames)]
-    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusXxCodes)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.SixLocusSingleExpressingAlleles)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames)]
+    [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.SixLocusXxCodes)]
     [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.FiveLocusSerologies)]
-    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSingleExpressingAlleles)]
-    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusExpressingAllelesWithTruncatedNames)]
-    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusXxCodes)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusSingleExpressingAlleles)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames)]
+    [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusXxCodes)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSerologies)]
     public class MatchingTestsForHomozygousPatient : IntegrationTestBase
     {
