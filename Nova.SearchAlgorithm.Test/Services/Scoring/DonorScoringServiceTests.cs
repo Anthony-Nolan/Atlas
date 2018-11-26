@@ -36,6 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             A = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
             B = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
             C = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
+            Dpb1 = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
             Dqb1 = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
             Drb1 = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
         };
@@ -61,8 +62,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public async Task Score_FetchesScoringDataForAllLociForAllResults()
         {
-            // 5 loci x 2 x 2 results. This will need updating when DPB1 included
-            const int expectedNumberOfFetches = 20;
+            // 6 loci x 2 x 2 results
+            const int expectedNumberOfFetches = 24;
 
             var patientHla = new PhenotypeInfo<string>();
             var result1 = new MatchResultBuilder().Build();
@@ -92,14 +93,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         [Test]
         public async Task Score_FetchesScoringDataForAllLociForPatientHla()
         {
-            // 5 loci x 2 positions. This will need updating when DPB1 included
-            const int expectedNumberOfFetches = 10;
+            // 6 loci x 2 positions
+            const int expectedNumberOfFetches = 12;
 
             var patientHla = new PhenotypeInfo<string>
             {
                 A = {Position1 = "hla-a-1", Position2 = "hla-a-2"},
                 B = {Position1 = "hla-b-1", Position2 = "hla-b-2"},
                 C = {Position1 = "hla-c-1", Position2 = "hla-c-2"},
+                Dpb1 = {Position1 = "hla-dpb1-1", Position2 = "hla-dpb1-2"},
                 Dqb1 = {Position1 = "hla-dqb1-1", Position2 = "hla-dqb1-2"},
                 Drb1 = {Position1 = "hla-drb1-1", Position2 = "hla-drb1-2"},
             };
@@ -295,8 +297,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
 
-            // Results for 5 loci, one of which is untyped
-            results.Single().ScoreResult.TypedLociCount.Should().Be(4);
+            // Results for 6 loci, one of which is untyped
+            results.Single().ScoreResult.TypedLociCount.Should().Be(5);
         }
 
         [Test]
