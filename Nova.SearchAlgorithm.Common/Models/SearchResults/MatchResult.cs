@@ -48,8 +48,6 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         /// Returns the loci for which match results have been set
         /// </summary>
         public IEnumerable<Locus> MatchedLoci => LocusHelpers.AllLoci()
-            // TODO: NOVA-1300 Match on DPB1
-            .Except(new[] {Locus.Dpb1})
             .Where(l => MatchDetailsForLocus(l) != null);
         
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>
@@ -57,6 +55,7 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
             MatchDetailsAtLocusA,
             MatchDetailsAtLocusB,
             MatchDetailsAtLocusC,
+            MatchDetailsAtLocusDpb1,
             MatchDetailsAtLocusDqb1,
             MatchDetailsAtLocusDrb1
         };
@@ -64,8 +63,9 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         private LocusMatchDetails MatchDetailsAtLocusA { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusB { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusC { get; set; }
-        private LocusMatchDetails MatchDetailsAtLocusDrb1 { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusDpb1 { get; set; }
         private LocusMatchDetails MatchDetailsAtLocusDqb1 { get; set; }
+        private LocusMatchDetails MatchDetailsAtLocusDrb1 { get; set; }
 
         // As this class is populated gradually over time, this is used to indicate when we've populated all matching data we plan to
         // Until then, accessing certain null values will throw exceptions, on the assumption they are not yet populated
@@ -85,15 +85,15 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
                 case Locus.C:
                     matchDetails = MatchDetailsAtLocusC;
                     break;
+                case Locus.Dpb1:
+                    matchDetails = MatchDetailsAtLocusDpb1;
+                    break;
                 case Locus.Dqb1:
                     matchDetails = MatchDetailsAtLocusDqb1;
                     break;
                 case Locus.Drb1:
                     matchDetails = MatchDetailsAtLocusDrb1;
                     break;
-                case Locus.Dpb1:
-                    // TODO: NOVA-1300 implement matching for Dpb1
-                    throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -124,15 +124,15 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
                 case Locus.C:
                     MatchDetailsAtLocusC = locusMatchDetails;
                     break;
+                case Locus.Dpb1:
+                    MatchDetailsAtLocusDpb1 = locusMatchDetails;
+                    break;
                 case Locus.Dqb1:
                     MatchDetailsAtLocusDqb1 = locusMatchDetails;
                     break;
                 case Locus.Drb1:
                     MatchDetailsAtLocusDrb1 = locusMatchDetails;
                     break;
-                case Locus.Dpb1:
-                    // TODO: NOVA-1300: Match on DPB1
-                    throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException();
             }

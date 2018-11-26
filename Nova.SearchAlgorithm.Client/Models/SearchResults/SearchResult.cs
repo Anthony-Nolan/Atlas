@@ -73,13 +73,18 @@
         public LocusSearchResult SearchResultAtLocusC { get; set; }
 
         /// <summary>
-        /// The details of the match at locus DRB1.
+        /// The details of the match at locus DPB1.
         /// </summary>
-        public LocusSearchResult SearchResultAtLocusDrb1 { get; set; }
+        public LocusSearchResult SearchResultAtLocusDpb1 { get; set; }
 
         /// <summary>
         /// The details of the match at locus DQB1.
         /// </summary>
         public LocusSearchResult SearchResultAtLocusDqb1 { get; set; }
+
+        /// <summary>
+        /// The details of the match at locus DRB1.
+        /// </summary>
+        public LocusSearchResult SearchResultAtLocusDrb1 { get; set; }
     }
 }

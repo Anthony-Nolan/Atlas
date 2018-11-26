@@ -37,8 +37,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
             testDonor = BuildTestDonor();
-
-            // add test donors to repository
             var donorRepository = Container.Resolve<IDonorImportRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
         }
@@ -213,6 +211,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             result.SearchResultAtLocusC.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
             result.SearchResultAtLocusC.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
+            // Should be 2x potential P group matches at DPB1
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
             // Should be 2x potential P group matches at DQB1
             result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
             result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
@@ -239,6 +244,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
             result.SearchResultAtLocusC.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
             result.SearchResultAtLocusC.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            // Should be 2x potential G group matches (XX code vs. Allele) at DPB1
+            result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at DQB1
             result.SearchResultAtLocusDqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
