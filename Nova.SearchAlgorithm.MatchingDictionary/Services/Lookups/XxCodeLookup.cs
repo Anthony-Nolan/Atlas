@@ -15,8 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 
         public override async Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(MatchLocus matchLocus, string lookupName)
         {
-            var firstField = lookupName.Split(':')[0];
-            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, firstField, TypingMethod.Molecular);
+            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, TypingMethod.Molecular);
             return new List<HlaLookupTableEntity> { entity };
         }
     }

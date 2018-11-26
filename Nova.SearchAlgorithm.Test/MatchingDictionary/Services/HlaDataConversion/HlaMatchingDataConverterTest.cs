@@ -13,8 +13,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
     public class HlaMatchingDataConverterTest :
         MatchedHlaDataConverterTestBase<HlaMatchingDataConverter>
     {
-        [TestCase("999:999", "999")]
-        [TestCase("999:999Q", "999")]
+        [TestCase("999:999", "999:XX")]
+        [TestCase("999:999Q", "999:XX")]
         public override void ConvertToHlaLookupResults_WhenTwoFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
             string alleleName, string xxCodeLookupName)
         {
@@ -30,9 +30,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
             actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
         }
 
-        [TestCase("999:999:999", "", "999:999", "999")]
-        [TestCase("999:999:999:999", "", "999:999", "999")]
-        [TestCase("999:999:999L", "L", "999:999", "999")]
+        [TestCase("999:999:999", "", "999:999", "999:XX")]
+        [TestCase("999:999:999:999", "", "999:999", "999:XX")]
+        [TestCase("999:999:999L", "L", "999:999", "999:XX")]
         public override void ConvertToHlaLookupResults_WhenThreeOrFourFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
             string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName)
         {
@@ -76,7 +76,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         {
             string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02" };
             const string nmdpCodeLookupName = "999:999";
-            const string xxCodeLookupName = "999";
+            const string xxCodeLookupName = "999:XX";
 
             var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
             var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(matchedAlleles);

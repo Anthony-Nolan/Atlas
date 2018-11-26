@@ -31,8 +31,7 @@ namespace Nova.SearchAlgorithm.Services
             string hla1,
             string hla2)
         {
-            // TODO:NOVA-1300 figure out how best to lookup matches for Dpb1
-            if (locus == Locus.Dpb1 || hla1 == null || hla2 == null)
+            if (hla1 == null || hla2 == null)
             {
                 return new Tuple<ExpandedHla, ExpandedHla>(null, null);
             }

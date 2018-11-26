@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            originalHlaPhenotype = new TestHla.HeterozygousSet1().FiveLocus_SingleExpressingAlleles;
+            originalHlaPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(LocusUnderTest, MatchingDonorType);
             expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
             donorImportRepository = Container.Resolve<IDonorImportRepository>();

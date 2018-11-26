@@ -987,7 +987,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
             
             private static PhenotypeInfo<string> BuildPhenotype(string hlaForPositionUnderTest)
             {
-                var defaultPhenotype = new TestHla.HeterozygousSet1().FiveLocus_SingleExpressingAlleles;
+                var defaultPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
                 return defaultPhenotype.Map((l, p, hla) => l == LocusUnderTest && p == PositionUnderTest ? hlaForPositionUnderTest : hla);
             }
         }
