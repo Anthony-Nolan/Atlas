@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void OneTimeSetup()
         {
-            defaultPhenotype = SetDefaultPhenotype();
+            defaultPhenotype = GetDefaultPhenotype();
             testDonorId = SetupTestDonor(defaultPhenotype);
         }
 
@@ -53,52 +53,79 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(defaultPhenotype);
 
             dpb1MismatchGrades.Should().NotContain(result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade);
-            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
-
             dpb1MismatchGrades.Should().NotContain(result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_NoMismatchConfidencesAtDpb1()
+        {
+            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(defaultPhenotype);
+
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
         }
 
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_TwoPermissiveMismatchGradesAtDpb1()
         {
-            var patientPhenotype = GetPatientPhenotype(MismatchedDpb1HlaWithSameTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
             var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
-            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_TwoMismatchConfidencesAtDpb1()
+        {
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
+            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_TwoMismatchGradesAtDpb1()
         {
-            var patientPhenotype = GetPatientPhenotype(MismatchedDpb1HlaWithDifferentTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
             var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_TwoMismatchConfidencesAtDpb1()
+        {
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
+            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchGradesAtDpb1()
         {
-            var patientPhenotype = GetPatientPhenotype(MismatchedDpb1HlaWithNoTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchConfidencesAtDpb1()
+        {
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            
+            result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
-        private static PhenotypeInfo<string> SetDefaultPhenotype()
+        private static PhenotypeInfo<string> GetDefaultPhenotype()
         {
             var defaultHlaSet = new TestHla.HeterozygousSet1();
             var phenotype = defaultHlaSet.SixLocus_SingleExpressingAlleles;
@@ -127,7 +154,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
         }
 
-        private PhenotypeInfo<string> GetPatientPhenotype(string dpb1Hla)
+        private PhenotypeInfo<string> GetPhenotypeWithDpb1HlaOf(string dpb1Hla)
         {
             var modifiedPhenotype = new PhenotypeInfo<string>(defaultPhenotype);
             modifiedPhenotype.SetAtLocus(Locus.Dpb1, dpb1Hla);
