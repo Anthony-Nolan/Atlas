@@ -671,58 +671,58 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new List<AlleleTestData>
                     {
                         new AlleleTestData
-                            {AlleleName = "*01:01:01:04", PGroup = "01:01P", GGroup = "01:01:01G", NmdpCode = "*01:CXC", Serology = ""},
+                            {AlleleName = "*01:01:01:04", PGroup = "01:01P", GGroup = "01:01:01G", NmdpCode = "*01:CXC"},
                         new AlleleTestData
-                            {AlleleName = "*02:02:01:01", PGroup = "02:02P", GGroup = "02:02:01G", NmdpCode = "*02:FNVN", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:06", PGroup = "04:01P", GGroup = "04:01:01G", NmdpCode = "*04:AB", Serology = ""},
+                            {AlleleName = "*02:02:01:01", PGroup = "02:02P", GGroup = "02:02:01G", NmdpCode = "*02:FNVN"},
+                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:06", PGroup = "04:01P", GGroup = "04:01:01G", NmdpCode = "*04:AB"},
                         new AlleleTestData
-                            {AlleleName = "*04:02:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF", Serology = ""},
+                            {AlleleName = "*04:02:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
                         new AlleleTestData
-                            {AlleleName = "*04:02:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF", Serology = ""},
+                            {AlleleName = "*04:02:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
                         new AlleleTestData
-                            {AlleleName = "*04:02:01:04", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF", Serology = ""},
-                        new AlleleTestData {AlleleName = "*05:01:01:03", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*05:SP", Serology = ""},
+                            {AlleleName = "*04:02:01:04", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
+                        new AlleleTestData {AlleleName = "*05:01:01:03", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*05:SP"},
                         new AlleleTestData
-                            {AlleleName = "*10:01:01:01", PGroup = "10:01P", GGroup = "10:01:01G", NmdpCode = "*10:WAW", Serology = ""},
+                            {AlleleName = "*10:01:01:01", PGroup = "10:01P", GGroup = "10:01:01G", NmdpCode = "*10:WAW"},
                         new AlleleTestData
-                            {AlleleName = "*105:01:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS", Serology = ""},
+                            {AlleleName = "*105:01:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS"},
                         new AlleleTestData
-                            {AlleleName = "*105:01:01:03", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS", Serology = ""},
+                            {AlleleName = "*105:01:01:03", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS"},
                         new AlleleTestData
-                            {AlleleName = "*17:01:01:01", PGroup = "17:01P", GGroup = "17:01:01G", NmdpCode = "*17:ANZX", Serology = ""},
+                            {AlleleName = "*17:01:01:01", PGroup = "17:01P", GGroup = "17:01:01G", NmdpCode = "*17:ANZX"},
                     },
                 Position2 =
                     new List<AlleleTestData>
                     {
                         new AlleleTestData
-                            {AlleleName = "*02:02:01:01", PGroup = "02:02P", GGroup = "02:02:01G", NmdpCode = "*02:FNVN", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB", Serology = ""},
-                        new AlleleTestData {AlleleName = "*04:01:01:06", PGroup = "04:01P", GGroup = "04:01:01G", NmdpCode = "*04:AB", Serology = ""},
+                            {AlleleName = "*02:02:01:01", PGroup = "02:02P", GGroup = "02:02:01G", NmdpCode = "*02:FNVN"},
+                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:06", PGroup = "04:01P", GGroup = "04:01:01G", NmdpCode = "*04:AB"},
                         new AlleleTestData
-                            {AlleleName = "*04:02:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF", Serology = ""},
+                            {AlleleName = "*04:02:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
                         new AlleleTestData
-                            {AlleleName = "*04:02:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF", Serology = ""},
+                            {AlleleName = "*04:02:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
                         new AlleleTestData
-                            {AlleleName = "*04:02:01:04", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF", Serology = ""},
+                            {AlleleName = "*04:02:01:04", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
                         new AlleleTestData
-                            {AlleleName = "*10:01:01:01", PGroup = "10:01P", GGroup = "10:01:01G", NmdpCode = "*10:WAW", Serology = ""},
+                            {AlleleName = "*10:01:01:01", PGroup = "10:01P", GGroup = "10:01:01G", NmdpCode = "*10:WAW"},
                         new AlleleTestData
-                            {AlleleName = "*104:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*104:FNVX", Serology = ""},
+                            {AlleleName = "*104:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*104:FNVX"},
                         new AlleleTestData
-                            {AlleleName = "*105:01:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS", Serology = ""},
+                            {AlleleName = "*105:01:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS"},
                         new AlleleTestData
-                            {AlleleName = "*105:01:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS", Serology = ""},
+                            {AlleleName = "*105:01:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*105:FNVS"},
                         new AlleleTestData
-                            {AlleleName = "*17:01:01:01", PGroup = "17:01P", GGroup = "17:01:01G", NmdpCode = "*17:ANZX", Serology = ""},
+                            {AlleleName = "*17:01:01:01", PGroup = "17:01P", GGroup = "17:01:01G", NmdpCode = "*17:ANZX"},
                     }
             },
             Dqb1 =
