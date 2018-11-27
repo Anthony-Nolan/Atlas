@@ -555,6 +555,7 @@
     <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\SingleDonorPatientDataSelectionSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
+    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\Dpb1PermissiveMismatchFeatureSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\AlleleNameFeatureSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\FeatureDefinedTestDataSteps.cs" />
     <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\SpecificTestDataSteps.cs" />

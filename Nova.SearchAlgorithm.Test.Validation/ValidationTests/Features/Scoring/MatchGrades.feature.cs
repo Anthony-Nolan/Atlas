@@ -320,6 +320,67 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Permissive Mismatch grade - patient and donor mismatched at DPB1, same TCE groups" +
+            "")]
+        public virtual void PermissiveMismatchGrade_PatientAndDonorMismatchedAtDPB1SameTCEGroups()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Permissive Mismatch grade - patient and donor mismatched at DPB1, same TCE groups" +
+                    "", ((string[])(null)));
+#line 87
+  this.ScenarioSetup(scenarioInfo);
+#line 88
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 89
+    testRunner.And("the patient and donor have mismatched DPB1 alleles with the same TCE group assign" +
+                    "ments", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 90
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 91
+    testRunner.Then("the match grade should be permissive mismatch at DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Mismatch grade - patient and donor mismatched at DPB1, different TCE groups")]
+        public virtual void MismatchGrade_PatientAndDonorMismatchedAtDPB1DifferentTCEGroups()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Mismatch grade - patient and donor mismatched at DPB1, different TCE groups", ((string[])(null)));
+#line 93
+  this.ScenarioSetup(scenarioInfo);
+#line 94
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 95
+    testRunner.And("the patient and donor have mismatched DPB1 alleles with different TCE group assig" +
+                    "nments", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 96
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 97
+    testRunner.Then("the match grade should be mismatch at DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Mismatch grade - patient and donor mismatched at DPB1, no TCE groups")]
+        public virtual void MismatchGrade_PatientAndDonorMismatchedAtDPB1NoTCEGroups()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Mismatch grade - patient and donor mismatched at DPB1, no TCE groups", ((string[])(null)));
+#line 99
+  this.ScenarioSetup(scenarioInfo);
+#line 100
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 101
+    testRunner.And("the patient and donor have mismatched DPB1 alleles with no TCE group assignments", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 102
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 103
+    testRunner.Then("the match grade should be mismatch at DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
