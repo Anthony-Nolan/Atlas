@@ -2,11 +2,10 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -14,6 +13,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
     [Binding]
     public class ScoringSteps
     {
+        private const string SerologyMatchGrade = "serology";
+
         [Then("the match grade should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
         {
@@ -36,7 +37,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                         AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusC, validMatchGrades);
                         break;
                     case Locus.Dpb1:
-                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDpb1, validMatchGrades);
+                        // Serology matching is not possible at DPB1
+                        if (!grade.Equals(SerologyMatchGrade))
+                        {
+                            AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDpb1, validMatchGrades);
+                        }                        
                         break;
                     case Locus.Dqb1:
                         AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDqb1, validMatchGrades);
@@ -126,7 +131,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return new[] { MatchGrade.GDna };
                 case "protein":
                     return new[] { MatchGrade.Protein };
-                case "serology":
+                case SerologyMatchGrade:
                     return new[] { MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split };
                 case "permissive mismatch":
                     return new[] { MatchGrade.PermissiveMismatch };
@@ -167,6 +172,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     expectedLoci.Add(Locus.A);
                     expectedLoci.Add(Locus.B);
                     expectedLoci.Add(Locus.C);
+                    expectedLoci.Add(Locus.Dpb1);
                     expectedLoci.Add(Locus.Dqb1);
                     expectedLoci.Add(Locus.Drb1);
                     break;
