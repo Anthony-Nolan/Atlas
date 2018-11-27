@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Autofac;
+﻿using Autofac;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlleleScoring
 {
@@ -987,7 +985,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
             
             private static PhenotypeInfo<string> BuildPhenotype(string hlaForPositionUnderTest)
             {
-                var defaultPhenotype = new TestHla.HeterozygousSet1().FiveLocus_SingleExpressingAlleles;
+                var defaultPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
                 return defaultPhenotype.Map((l, p, hla) => l == LocusUnderTest && p == PositionUnderTest ? hlaForPositionUnderTest : hla);
             }
         }

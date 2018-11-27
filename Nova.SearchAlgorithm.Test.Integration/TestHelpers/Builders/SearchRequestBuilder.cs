@@ -28,6 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     LocusSearchHlaA = new LocusSearchHla(),
                     LocusSearchHlaB = new LocusSearchHla(),
                     LocusSearchHlaC = new LocusSearchHla(),
+                    LocusSearchHlaDpb1 = new LocusSearchHla(),
                     LocusSearchHlaDqb1 = new LocusSearchHla(),
                     LocusSearchHlaDrb1 = new LocusSearchHla(),
                 }
@@ -158,7 +159,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
                     break;
                 case Locus.Dpb1:
-                    throw new NotImplementedException();
+                    switch (position)
+                    {
+                        case TypePosition.One:
+                            searchRequest.SearchHlaData.LocusSearchHlaDpb1.SearchHla1 = hlaString;
+                            break;
+                        case TypePosition.Two:
+                            searchRequest.SearchHlaData.LocusSearchHlaDpb1.SearchHla2 = hlaString;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
+                    }
+
+                    break;
                 case Locus.Dqb1:
                     switch (position)
                     {
@@ -218,12 +231,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHla.A.Position2)
                 .WithLocusMatchHla(Locus.B, TypePosition.One, searchHla.B.Position1)
                 .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHla.B.Position2)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHla.Drb1.Position1)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2)
                 .WithLocusMatchHla(Locus.C, TypePosition.One, searchHla.C.Position1)
                 .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHla.C.Position2)
+                .WithLocusMatchHla(Locus.Dpb1, TypePosition.One, searchHla.Dpb1.Position1)
+                .WithLocusMatchHla(Locus.Dpb1, TypePosition.Two, searchHla.Dpb1.Position2)
                 .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHla.Dqb1.Position1)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHla.Dqb1.Position2);
+                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHla.Dqb1.Position2)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHla.Drb1.Position1)
+                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
         }
 
         public SearchRequest Build()

@@ -135,7 +135,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
 
         private void SetPhenotypes()
         {
-            var originalHlaPhenotype = new TestHla.HeterozygousSet1().FiveLocus_SingleExpressingAlleles;
+            var originalHlaPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
 
             originalNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
             originalNullAlleleAtOnePositionPhenotype

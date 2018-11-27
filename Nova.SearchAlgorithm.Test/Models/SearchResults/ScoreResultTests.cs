@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Models.SearchResults
                 .WithMatchConfidenceAtLocus(Locus.A, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.B, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.C, matchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, matchConfidence)
                 .Build();
@@ -35,6 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Models.SearchResults
                 .WithMatchConfidenceAtLocus(Locus.A, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.B, lowerMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.C, higherMatchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, higherMatchConfidence)
                 .Build();
@@ -54,6 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Models.SearchResults
                 .WithMatchConfidenceAtLocusPosition(Locus.B, TypePosition.One, higherMatchConfidence)
                 .WithMatchConfidenceAtLocusPosition(Locus.B, TypePosition.Two, lowerMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.C, higherMatchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, higherMatchConfidence)
                 .Build();

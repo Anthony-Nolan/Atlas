@@ -140,6 +140,7 @@ namespace Nova.SearchAlgorithm.Services
                 SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),
                 SearchResultAtLocusB = MapSearchResultToApiLocusSearchResult(result, Locus.B),
                 SearchResultAtLocusC = MapSearchResultToApiLocusSearchResult(result, Locus.C),
+                SearchResultAtLocusDpb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
                 SearchResultAtLocusDqb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
                 SearchResultAtLocusDrb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Drb1),
             };
