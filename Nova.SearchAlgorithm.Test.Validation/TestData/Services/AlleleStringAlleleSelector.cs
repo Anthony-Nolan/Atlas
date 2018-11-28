@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Castle.Core.Internal;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
@@ -43,21 +44,43 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             IEnumerable<AlleleTestData> alleles
         )
         {
+            return GetAllelesForAlleleStringOfNamesByPGroup(
+                selectedAllele,
+                alleles,
+                a => a.PGroup == selectedAllele.PGroup && a.AlleleName != selectedAllele.AlleleName);
+        }
+
+        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithMultiplePGroups(
+            AlleleTestData selectedAllele,
+            IEnumerable<AlleleTestData> alleles
+        )
+        {
+            return GetAllelesForAlleleStringOfNamesByPGroup(
+                selectedAllele,
+                alleles,
+                a => a.PGroup != selectedAllele.PGroup);
+        }
+
+        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesByPGroup(
+            AlleleTestData selectedAllele,
+            IEnumerable<AlleleTestData> alleles,
+            Func<AlleleTestData, bool> pGroupFilterFunc
+        )
+        {
             // If we do not know the p-group for the selected allele, this string cannot be generated
             if (selectedAllele.PGroup == null)
             {
                 return new List<AlleleTestData>();
             }
 
-            var allelesSharingPGroup = alleles.Where(a => a.PGroup == selectedAllele.PGroup && a.AlleleName != selectedAllele.AlleleName);
+            var filteredAlleles = alleles
+                .Where(pGroupFilterFunc)
+                .ToList();
 
-            // If no alleles share a p-group with the selected allele, this string cannot be generated
-            if (allelesSharingPGroup.IsNullOrEmpty())
-            {
-                return new List<AlleleTestData>();
-            }
-
-            return allelesSharingPGroup.ToList().GetRandomSelection(1, 10);
+            // If no alleles found, string cannot be generated
+            return filteredAlleles.IsNullOrEmpty()
+                ? new List<AlleleTestData>()
+                : filteredAlleles.GetRandomSelection(1, 10);
         }
 
         /// <summary>
@@ -130,23 +153,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             return allelesForString;
         }
 
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithMultiplePGroups(
-            Dataset dataset,
-            AlleleTestData selectedAllele,
-            IEnumerable<AlleleTestData> alleles
-        )
-        {
-            try
-            {
-                // Different first fields (aka allele groups) will ensure that different p-groups are represented
-                return GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, true);
-            }
-            catch (InvalidTestDataException)
-            {
-                return new List<AlleleTestData>();
-            }
-        }
-
         /// <summary>
         /// Returns which test alleles from a list are valid for use in the allele string of subtypes
         /// The dataset selection will guarantee that such alleles must exist
@@ -166,7 +172,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             return allelesWithCorrectFirstField
                 .GroupBy(a => AlleleSplitter.FirstTwoFieldsAsString(a.AlleleName))
                 .Select(gg => gg.Key)
-                .Select(a => new AlleleTestData {AlleleName = a})
+                .Select(a => new AlleleTestData { AlleleName = a })
                 .ToList();
         }
     }
