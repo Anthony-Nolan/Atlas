@@ -674,11 +674,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                             {AlleleName = "*01:01:01:04", PGroup = "01:01P", GGroup = "01:01:01G", NmdpCode = "*01:CXC"},
                         new AlleleTestData
                             {AlleleName = "*02:02:01:01", PGroup = "02:02P", GGroup = "02:02:01G", NmdpCode = "*02:FNVN"},
-                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
                         new AlleleTestData {AlleleName = "*04:01:01:06", PGroup = "04:01P", GGroup = "04:01:01G", NmdpCode = "*04:AB"},
                         new AlleleTestData
                             {AlleleName = "*04:02:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
@@ -701,11 +701,11 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     {
                         new AlleleTestData
                             {AlleleName = "*02:02:01:01", PGroup = "02:02P", GGroup = "02:02:01G", NmdpCode = "*02:FNVN"},
-                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
-                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "03:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:03", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:04", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
+                        new AlleleTestData {AlleleName = "*04:01:01:05", PGroup = "04:01P", GGroup = "03:01:01G", NmdpCode = "*04:AB"},
                         new AlleleTestData {AlleleName = "*04:01:01:06", PGroup = "04:01P", GGroup = "04:01:01G", NmdpCode = "*04:AB"},
                         new AlleleTestData
                             {AlleleName = "*04:02:01:01", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
