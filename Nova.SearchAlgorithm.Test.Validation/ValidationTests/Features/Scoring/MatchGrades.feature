@@ -44,20 +44,20 @@
     Given a patient has a match
     And the matching donor is serology typed at each locus
     When I run a 10/10 search
-    Then the match grade should be serology at all loci at both positions  
+    Then the match grade should be serology at all loci except DPB1 at both positions  
         
   Scenario: Serology match at all loci - patient serology typed
     Given a patient has a match
     And the patient is serology typed at all loci
     When I run a 10/10 search
-    Then the match grade should be serology at all loci at both positions  
+    Then the match grade should be serology at all loci except DPB1 at both positions  
 
   Scenario: Serology match at all loci - donor and patient serology typed
     Given a patient has a match
     And the matching donor is serology typed at each locus
     And the patient is serology typed at all loci
     When I run a 10/10 search
-    Then the match grade should be serology at all loci at both positions  
+    Then the match grade should be serology at all loci except DPB1 at both positions  
 
   Scenario: P-group match - donor untyped at C
     Given a patient has a match

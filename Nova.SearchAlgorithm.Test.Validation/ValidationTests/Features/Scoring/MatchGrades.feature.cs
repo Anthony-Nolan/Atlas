@@ -198,7 +198,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 46
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 47
-    testRunner.Then("the match grade should be serology at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("the match grade should be serology at all loci except DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -217,7 +217,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 52
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 53
-    testRunner.Then("the match grade should be serology at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("the match grade should be serology at all loci except DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -238,7 +238,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line 59
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 60
-    testRunner.Then("the match grade should be serology at all loci at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("the match grade should be serology at all loci except DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
