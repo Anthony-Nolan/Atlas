@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             Name = name;
             TypingMethod = typingMethod;
             IsDeleted = isDeleted;
-            MatchLocus = PermittedLocusNames.GetMatchLocusNameFromTypingLocusIfExists(typingMethod, locus);
+            MatchLocus = MatchingDictionaryLoci.GetMatchLocusFromTypingLocusIfExists(typingMethod, locus);
         }
 
         public override string ToString()

@@ -1,33 +1,29 @@
 ﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
-    /// <summary>
-    /// Values for the grade of a given match. 
-    /// Ordered to allow for selecting the best grade: higher numbers being a better grade.
-    /// </summary>
     public enum MatchGrade
     {
         /// <summary>
-        /// Mismatch value significantly lower than match values to ensure 
-        /// the demotion of single match-mismatch results below double-match results.
+        /// Mismatch grades
         /// </summary>
-        Mismatch = 0,
+        Mismatch,
+        PermissiveMismatch,
 
         // Grades for Serology-level matches
-        Broad = 11,
-        Split = 12,
-        Associated = 13,
+        Broad,
+        Split,
+        Associated,
 
         // Grades for Null vs. Null allele matches
-        NullMismatch = 14,
-        NullPartial = 15,
-        NullCDna = 16,
-        NullGDna = 17,
+        NullMismatch,
+        NullPartial,
+        NullCDna,
+        NullGDna,
 
         // Grades for Expressing vs. Expressing allele matches
-        PGroup = 18,
-        GGroup = 19,
-        Protein = 20,
-        CDna = 21,
-        GDna = 22
+        PGroup,
+        GGroup,
+        Protein,
+        CDna,
+        GDna
     }
 }

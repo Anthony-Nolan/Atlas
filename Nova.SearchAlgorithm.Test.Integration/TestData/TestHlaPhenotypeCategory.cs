@@ -3,9 +3,9 @@
     public enum TestHlaPhenotypeCategory
     {
         ThreeLocusSingleExpressingAlleles,
-        FiveLocusSingleExpressingAlleles,
-        FiveLocusExpressingAllelesWithTruncatedNames,
-        FiveLocusXxCodes,
+        SixLocusSingleExpressingAlleles,
+        SixLocusExpressingAllelesWithTruncatedNames,
+        SixLocusXxCodes,
         FiveLocusSerologies
     }
 }

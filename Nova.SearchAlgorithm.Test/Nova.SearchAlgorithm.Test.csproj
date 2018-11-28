@@ -375,7 +375,7 @@
     <Compile Include="MatchingDictionary\Services\HlaDataConversion\HlaMatchingDataConverterTest.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\AlleleToSerology\AlleleToSerologyMatchingTestCaseSources.cs" />
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToSerology\SerologyToSerologyMatchingTestCaseSources.cs" />
-    <Compile Include="MatchingDictionary\Services\Lookups\Dpb1TceGroupsLookupServiceTest.cs" />
+    <Compile Include="MatchingDictionary\Services\Lookups\Dpb1TceGroupLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\LocusHlaMatchingLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaScoringLookupServiceTest.cs" />
     <Compile Include="MatchingDictionary\Services\Lookups\HlaSearchingLookupServiceTestBase.cs" />
@@ -393,6 +393,7 @@
     <Compile Include="Services\Matching\DonorMatchCalculatorTests.cs" />
     <Compile Include="Services\Matching\MatchCriteriaAnalyserTests.cs" />
     <Compile Include="Services\Matching\MatchFilteringServiceTests.cs" />
+    <Compile Include="Services\Scoring\Grading\PermissiveMismatchCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorFactoryTests.cs" />
     <Compile Include="Services\Scoring\Grading\MultipleAlleleGradingCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorTestsBase.cs" />

@@ -76,7 +76,8 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<RankingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<MatchScoreCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<ScoringRequestService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            
+            builder.RegisterType<PermissiveMismatchCalculator>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
             builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
@@ -121,7 +122,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<LocusHlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaMatchingLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaScoringLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<Dpb1TceGroupsLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<Dpb1TceGroupLookupService>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

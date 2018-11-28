@@ -19,6 +19,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         GradingCalculatorBase,
         IMultipleAlleleGradingCalculator
     {
+        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
+
+        public MultipleAlleleGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
+        {
+            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
+        }
 
         protected override bool ScoringInfosAreOfPermittedTypes(
             IHlaScoringInfo patientInfo,
@@ -82,11 +88,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
         }
 
-        private static MatchGrade GetSingleAlleleMatchGrade(
+        private MatchGrade GetSingleAlleleMatchGrade(
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
+                permissiveMismatchCalculator,
                 patientLookupResult.HlaScoringInfo,
                 donorLookupResult.HlaScoringInfo);
 

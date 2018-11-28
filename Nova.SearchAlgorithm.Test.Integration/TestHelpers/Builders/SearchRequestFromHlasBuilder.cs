@@ -24,6 +24,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHlas.B.Position2)
                 .WithLocusMatchHla(Locus.C, TypePosition.One, searchHlas.C.Position1)
                 .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHlas.C.Position2)
+                .WithLocusMatchHla(Locus.Dpb1, TypePosition.One, searchHlas.Dpb1.Position1)
+                .WithLocusMatchHla(Locus.Dpb1, TypePosition.Two, searchHlas.Dpb1.Position2)
                 .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHlas.Dqb1.Position1)
                 .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHlas.Dqb1.Position2)
                 .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHlas.Drb1.Position1)

@@ -2,11 +2,10 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -36,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                         AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusC, validMatchGrades);
                         break;
                     case Locus.Dpb1:
-                        ScenarioContext.Current.Pending();
+                        AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDpb1, validMatchGrades);
                         break;
                     case Locus.Dqb1:
                         AssertMatchGrade(expectedPosition, donorResult.SearchResultAtLocusDqb1, validMatchGrades);
@@ -86,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                         AssertMatchConfidence(expectedPositions, donorResult.SearchResultAtLocusC, validMatchConfidence);
                         break;
                     case Locus.Dpb1:
-                        ScenarioContext.Current.Pending();
+                        AssertMatchConfidence(expectedPositions, donorResult.SearchResultAtLocusDpb1, validMatchConfidence);
                         break;
                     case Locus.Dqb1:
                         AssertMatchConfidence(expectedPositions, donorResult.SearchResultAtLocusDqb1, validMatchConfidence);
@@ -128,6 +127,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return new[] { MatchGrade.Protein };
                 case "serology":
                     return new[] { MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split };
+                case "permissive mismatch":
+                    return new[] { MatchGrade.PermissiveMismatch };
                 case "mismatch":
                     return new[] { MatchGrade.Mismatch };
                 default:
@@ -156,18 +157,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
         private static IEnumerable<Locus> ParseExpectedLoci(string locus)
         {
+            var allLoci = new[] { Locus.A, Locus.B, Locus.C, Locus.Dpb1, Locus.Dqb1, Locus.Drb1 };
             var expectedLoci = new List<Locus>();
 
             switch (locus.ToUpper())
             {
                 case "ALL LOCI":
                 case "EACH LOCUS":
-                    expectedLoci.Add(Locus.A);
-                    expectedLoci.Add(Locus.B);
-                    expectedLoci.Add(Locus.C);
-                    expectedLoci.Add(Locus.Dqb1);
-                    expectedLoci.Add(Locus.Drb1);
-                    break;
+                    return allLoci;
+                case "ALL LOCI EXCEPT DPB1":
+                    return allLoci.Where(l => l != Locus.Dpb1);
                 case "LOCUS A":
                 case "A":
                     expectedLoci.Add(Locus.A);
@@ -179,6 +178,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "LOCUS C":
                 case "C":
                     expectedLoci.Add(Locus.C);
+                    break;
+                case "LOCUS DPB1":
+                case "DPB1":
+                    expectedLoci.Add(Locus.Dpb1);
                     break;
                 case "LOCUS DQB1":
                 case "DQB1":
@@ -201,7 +204,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             switch (position)
             {
                 case "both positions":
-                    return new TypePosition?[] {TypePosition.One, TypePosition.Two};
+                    return new TypePosition?[] { TypePosition.One, TypePosition.Two };
                 default:
                     ScenarioContext.Current.Pending();
                     return null;
@@ -250,7 +253,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             return IsOneOfMatchGradesAtMatchedLoci(result, new[] { matchGrade });
         }
-        
+
         private static bool IsMatchConfidenceAtMatchedLoci(SearchResult result, MatchConfidence matchConfidence)
         {
             return IsOneOfMatchConfidencesAtMatchedLoci(result, new[] { matchConfidence });

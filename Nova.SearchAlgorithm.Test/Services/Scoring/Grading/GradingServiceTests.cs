@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
+using NSubstitute;
 using NUnit.Framework;
 using System;
 
@@ -22,7 +23,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            gradingService = new GradingService();
+            var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
+            gradingService = new GradingService(permissiveMismatchCalculator);
 
             defaultSerologyResult =
                 new HlaScoringLookupResultBuilder()

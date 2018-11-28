@@ -6,16 +6,12 @@ using System;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
-    public abstract class GradingCalculatorTestsBase<TCalculator> 
-        where TCalculator : IGradingCalculator, new()
+    public abstract class GradingCalculatorTestsBase
     {
         protected IGradingCalculator GradingCalculator;
 
         [SetUp]
-        public void SetUpBeforeEachTest()
-        {
-            GradingCalculator = new TCalculator();
-        }
+        public abstract void SetUpGradingCalculator();
 
         [Test]
         public void CalculateGrade_MatchLociAreNotEqual_ThrowsException()

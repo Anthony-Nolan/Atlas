@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {

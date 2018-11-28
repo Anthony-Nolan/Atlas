@@ -345,6 +345,7 @@
     <Compile Include="Services\Scoring\DonorScoringService.cs" />
     <Compile Include="Services\Scoring\Grading\AlleleGradingInfo.cs" />
     <Compile Include="Services\Scoring\Grading\AlleleGradingCalculatorBase.cs" />
+    <Compile Include="Services\Scoring\Grading\PermissiveMismatchCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\ExpressingVsNullAlleleGradingCalculator.cs" />
     <Compile Include="Services\Scoring\Grading\GradingCalculatorFactory.cs" />
     <Compile Include="Services\Scoring\Grading\NullAlleleGradingCalculator.cs" />

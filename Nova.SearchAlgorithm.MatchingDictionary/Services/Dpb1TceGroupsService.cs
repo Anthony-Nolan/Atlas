@@ -41,9 +41,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private static IEnumerable<IDpb1TceGroupsLookupResult> GetLookupResultPerDpb1LookupName(Dpb1TceGroupAssignment tceGroupAssignment)
         {
             var lookupNames = GetLookupNames(tceGroupAssignment);
-            var tceGroups = GetTceGroups(tceGroupAssignment);
 
-            return lookupNames.Select(name => new Dpb1TceGroupsLookupResult(name, tceGroups));
+            return lookupNames.Select(name => new Dpb1TceGroupsLookupResult(name, tceGroupAssignment.VersionTwoAssignment));
         }
 
         private static IEnumerable<string> GetLookupNames(IWmdaHlaTyping tceGroup)
@@ -57,14 +56,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             .Concat(allele.ToNmdpCodeAlleleLookupNames());
         }
 
-        private static IEnumerable<string> GetTceGroups(Dpb1TceGroupAssignment tceGroupAssignment)
-        {
-            var selectedVersion = tceGroupAssignment.VersionTwoAssignment;
-            return string.IsNullOrEmpty(selectedVersion)
-                ? new string[] { }
-                : new[] {selectedVersion};
-        }
-
+        /// <summary>
+        /// Due to DPB1 nomenclature, DPB1* expressing alleles with the same lookup name
+        /// e.g., [0-9]+:XX, will all have the same protein, and thus the same TCE group.
+        /// If a group of alleles with the same lookup name contains a null allele, the assignment
+        /// of the expressing alleles should be preferred.
+        /// </summary>
         private static IEnumerable<IDpb1TceGroupsLookupResult> GroupResultsByLookupName(
             IEnumerable<IDpb1TceGroupsLookupResult> results)
         {
@@ -72,7 +69,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 .GroupBy(result => result.LookupName)
                 .Select(grp => new Dpb1TceGroupsLookupResult(
                     grp.Key,
-                    grp.SelectMany(lookup => lookup.TceGroups).Distinct()));
+                    grp.Select(lookup => lookup.TceGroup)
+                        .Distinct()
+                        .OrderByDescending(tceGroup => tceGroup)
+                        .First()));
         }
     }
 }

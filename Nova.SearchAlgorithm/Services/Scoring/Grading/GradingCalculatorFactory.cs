@@ -7,6 +7,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     public static class GradingCalculatorFactory
     {
         public static IGradingCalculator GetGradingCalculator(
+            IPermissiveMismatchCalculator permissiveMismatchCalculator,
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo
         )
@@ -25,21 +26,22 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             }
             if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
             {
-                return new ConsolidatedMolecularGradingCalculator();
+                return new ConsolidatedMolecularGradingCalculator(permissiveMismatchCalculator);
             }
             if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
             {
-                return new MultipleAlleleGradingCalculator();
+                return new MultipleAlleleGradingCalculator(permissiveMismatchCalculator);
             }
             if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
             {
-                return GetSingleAlleleGradingCalculator(pInfo, dInfo);
+                return GetSingleAlleleGradingCalculator(permissiveMismatchCalculator, pInfo, dInfo);
             }
 
             throw new ArgumentException("No calculator available for provided patient and donor scoring infos.");
         }
 
         private static IGradingCalculator GetSingleAlleleGradingCalculator(
+            IPermissiveMismatchCalculator permissiveMismatchCalculator,
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo)
         {
@@ -48,7 +50,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
             if (!patientAlleleIsNull && !donorAlleleIsNull)
             {
-                return new ExpressingAlleleGradingCalculator();
+                return new ExpressingAlleleGradingCalculator(permissiveMismatchCalculator);
             }
 
             if (patientAlleleIsNull && donorAlleleIsNull)

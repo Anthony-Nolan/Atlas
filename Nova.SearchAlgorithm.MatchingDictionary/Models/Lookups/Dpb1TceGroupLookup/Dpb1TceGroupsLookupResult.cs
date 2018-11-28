@@ -1,12 +1,11 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup
 {
     public interface IDpb1TceGroupsLookupResult : IHlaLookupResult
     {
-        IEnumerable<string> TceGroups { get; }
+        string TceGroup { get; }
     }
 
     public class Dpb1TceGroupsLookupResult : IDpb1TceGroupsLookupResult
@@ -14,15 +13,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLoo
         public MatchLocus MatchLocus => MatchLocus.Dpb1;
         public string LookupName { get; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public IEnumerable<string> TceGroups { get; }
-        public object HlaInfoToSerialise => TceGroups;
+        public string TceGroup { get; }
+        public object HlaInfoToSerialise => TceGroup;
 
         public Dpb1TceGroupsLookupResult(
             string lookupName,
-            IEnumerable<string> tceGroups)
+            string tceGroup)
         {
             LookupName = lookupName;
-            TceGroups = tceGroups;
+            TceGroup = tceGroup;
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()

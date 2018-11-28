@@ -100,9 +100,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         )
         {
             var scoreResult = new ScoreResult();
-
-            // TODO: NOVA-1301: Score DPB1
-            var scoredLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
+            var scoredLoci = LocusHelpers.AllLoci();
 
             foreach (var locus in scoredLoci)
             {
@@ -144,13 +142,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
-            // TODO: NOVA-1301: Implement DPB1 scoring
-            if (locus == Locus.Dpb1 || hla == null)
-            {
-                return null;
-            }
-
-            return await hlaScoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), hla);
+            return hla != null 
+                ? await hlaScoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), hla)
+                : null;
         }
     }
 }

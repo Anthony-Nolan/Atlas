@@ -1,9 +1,5 @@
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using System.Threading.Tasks;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases

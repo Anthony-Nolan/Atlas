@@ -64,15 +64,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
             {
                 Position1 = new List<AlleleTestData>
                 {
-                    new AlleleTestData {AlleleName = "*678:01", GGroup = "02:01:01G"},
-                    new AlleleTestData {AlleleName = "*617:01", GGroup = "02:01:01G"},
-                    new AlleleTestData {AlleleName = "*416:01:01:02", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*678:01", GGroup = "02:01:02G"},
+                    new AlleleTestData {AlleleName = "*617:01", GGroup = "02:01:02G"},
+                    new AlleleTestData {AlleleName = "*416:01:01:02", GGroup = "02:01:02G"},
                 },
                 Position2 = new List<AlleleTestData>
                 {
-                    new AlleleTestData {AlleleName = "*02:01:05", GGroup = "02:01:01G"},
-                    new AlleleTestData {AlleleName = "*352:01", GGroup = "02:01:01G"},
-                    new AlleleTestData {AlleleName = "*414:01:01:01", GGroup = "02:01:01G"},
+                    new AlleleTestData {AlleleName = "*02:01:02:02", GGroup = "02:01:02G"},
+                    new AlleleTestData {AlleleName = "*352:01", GGroup = "02:01:02G"},
+                    new AlleleTestData {AlleleName = "*414:01:01:01", GGroup = "02:01:02G"},
                 }
             },
             Dqb1 =

@@ -199,7 +199,7 @@
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
     <Compile Include="Exceptions\MatchingDictionaryHttpException.cs" />
-    <Compile Include="Exceptions\PermittedLocusException.cs" />
+    <Compile Include="Exceptions\LocusNameException.cs" />
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
@@ -263,7 +263,7 @@
     <Compile Include="Services\HlaDataConversion\AlleleTypingExtensions.cs" />
     <Compile Include="Services\HlaDataConversion\HlaScoringDataConverter.cs" />
     <Compile Include="Services\HlaDataConversion\MatchedHlaDataConverterBase.cs" />
-    <Compile Include="Services\Dpb1TceGroupsLookupService.cs" />
+    <Compile Include="Services\Dpb1TceGroupLookupService.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\AssociatedCalculator.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\BroadCalculator.cs" />
     <Compile Include="Services\HlaMatchPreCalculation\SerologyRelationships\MatchingSerologyCalculatorFactory.cs" />
@@ -296,7 +296,7 @@
     <Compile Include="Models\Lookups\SerologyEntry.cs" />
     <Compile Include="Models\Lookups\MatchingSerologyExtensions.cs" />
     <Compile Include="Models\HLATypings\AlleleTyping.cs" />
-    <Compile Include="HlaTypingInfo\PermittedLocusNames.cs" />
+    <Compile Include="HlaTypingInfo\MatchingDictionaryLoci.cs" />
     <Compile Include="Models\HLATypings\SerologyTyping.cs" />
     <Compile Include="Models\HLATypings\SerologySubtype.cs" />
     <Compile Include="Models\MatchingTypings\AlleleInfoForMatching.cs" />
