@@ -686,7 +686,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                             {AlleleName = "*04:02:01:02", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
                         new AlleleTestData
                             {AlleleName = "*04:02:01:04", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*04:CXF"},
-                        new AlleleTestData {AlleleName = "*05:01:01:03", PGroup = "04:02P", GGroup = "04:02:01G", NmdpCode = "*05:SP"},
+                        new AlleleTestData {AlleleName = "*05:01:01:03", PGroup = "05:01P", GGroup = "05:01:01G", NmdpCode = "*05:SP"},
                         new AlleleTestData
                             {AlleleName = "*10:01:01:01", PGroup = "10:01P", GGroup = "10:01:01G", NmdpCode = "*10:WAW"},
                         new AlleleTestData
