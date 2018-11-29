@@ -1,5 +1,9 @@
-﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchGrade
     {
         /// <summary>
