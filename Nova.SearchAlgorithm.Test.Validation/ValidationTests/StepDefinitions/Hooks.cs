@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Autofac;
 using Newtonsoft.Json;
@@ -86,7 +87,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.TryGetValue<SearchAlgorithmApiResult>(out var singlePatientApiResult);
             ScenarioContext.Current.TryGetValue<List<PatientApiResult>>(out var patientApiResults);
 
-            var logLevel = ScenarioContext.Current.TestError == null ? LogLevel.Info : LogLevel.Error;
+            bool.TryParse(ConfigurationManager.AppSettings["log-successful-tests"], out var shouldLogSuccessfulTests);
+            var successLogLevel = shouldLogSuccessfulTests ? LogLevel.Info : LogLevel.Off;
+            var logLevel = ScenarioContext.Current.TestError == null ? successLogLevel : LogLevel.Error;
 
             logger.Log(logLevel, ScenarioContext.Current.ScenarioInfo.Title);
             if (singlePatientApiResult != null)
