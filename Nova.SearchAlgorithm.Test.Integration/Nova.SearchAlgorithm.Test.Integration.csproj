@@ -359,10 +359,12 @@
     <Compile Include="IntegrationTests\StorageEmulator.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaLookupRepositoryBase.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedAlleleNamesLookupRepository.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedTceLookupRepository.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaScoringLookupRepository.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaMatchingLookupRepository.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\FileBackedHlaLookupResultCollections.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedAlleleNameLookupResult.cs" />
+    <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedDpb1TceGroupsLookupResult.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaMatchingLookupResult.cs" />
     <Compile Include="Storage\FileBackedHlaLookupRepositories\Models\FileBackedHlaScoringLookupResult.cs" />
     <Compile Include="TestData\ITestHlaSet.cs" />
