@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         {
             validator = new LocusSearchHlaValidator();
         }
-        
+
         [Test]
         public void Validator_WhenNoHlaStringsAreProvided_ShouldHaveValidationError()
         {
@@ -36,7 +36,18 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         }
 
         [Test]
-        public void Validator_WhenOneHlaStringProvided_ShouldHaveValidationError()
+        public void Validator_WhenOnlyFirstHlaStringProvided_ShouldHaveValidationError()
+        {
+            var searchHla = new LocusSearchHla
+            {
+                SearchHla1 = "hla-string"
+            };
+            var result = validator.Validate(searchHla);
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validator_WhenOnlySecondHlaStringProvided_ShouldHaveValidationError()
         {
             var searchHla = new LocusSearchHla
             {
@@ -57,18 +68,31 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             var result = validator.Validate(searchHla);
             result.IsValid.Should().BeTrue();
         }
-        
+
         [Test]
-        public void Validator_WhenOneHlaStringNull_ShouldHaveValidationError()
+        public void Validator_WhenFirstHlaStringNull_ShouldHaveValidationError()
         {
             var searchHla = new LocusSearchHla
             {
+                SearchHla1 = null,
+                SearchHla2 = "not-null"
+            };
+            var result = validator.Validate(searchHla);
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validator_WhenSecondHlaStringNull_ShouldHaveValidationError()
+        {
+            var searchHla = new LocusSearchHla
+            {
+                SearchHla1 = "not-null",
                 SearchHla2 = null
             };
             var result = validator.Validate(searchHla);
             result.IsValid.Should().BeFalse();
         }
-        
+
         [Test]
         public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
         {
