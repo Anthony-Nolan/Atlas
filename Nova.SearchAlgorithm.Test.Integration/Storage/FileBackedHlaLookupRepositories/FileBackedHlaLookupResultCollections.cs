@@ -12,5 +12,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
         public IEnumerable<FileBackedAlleleNameLookupResult> AlleleNameLookupResults { get; set; }
         public IEnumerable<FileBackedHlaMatchingLookupResult> HlaMatchingLookupResults { get; set; }
         public IEnumerable<FileBackedHlaScoringLookupResult> HlaScoringLookupResults { get; set; }
+        public IEnumerable<FileBackedDpb1TceGroupsLookupResult> Dpb1TceGroupLookupResults { get; set; }
     }
 }

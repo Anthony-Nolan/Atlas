@@ -79,6 +79,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             builder.RegisterType<FileBackedHlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<FileBackedHlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<FileBackedAlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<FileBackedTceLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             
             // Clients
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();

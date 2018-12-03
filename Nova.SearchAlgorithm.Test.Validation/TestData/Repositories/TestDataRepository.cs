@@ -39,6 +39,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
             }
         }
 
+        public static IEnumerable<Donor> GetDonors(IEnumerable<int> donorIds)
+        {
+            using (var context = new SearchAlgorithmContext())
+            {
+                var donors = from d in context.Donors
+                    join id in donorIds
+                        on d.DonorId equals id
+                    select d;
+                return donors.ToList();
+            }
+        }
+
         private static void RemoveTestData()
         {
             using (var context = new SearchAlgorithmContext())
