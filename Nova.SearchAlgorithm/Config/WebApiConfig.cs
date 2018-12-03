@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Config
             config.Filters.Add(container.Resolve<ApiKeyRequiredAttribute>());
             config.Services.Replace(typeof(IExceptionHandler), new PassthroughExceptionHandler());
 
-            config.ConfigureValidation(container);
+            config.ConfigureValidation();
 
             config.ParameterBindingRules.BindFromUriOrEmpty<PaginationData>();
             config.ParameterBindingRules.BindFromUriOrEmpty<FilterBase>();

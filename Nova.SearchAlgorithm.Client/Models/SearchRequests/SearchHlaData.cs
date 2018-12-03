@@ -2,6 +2,7 @@
 
 namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
 {
+    [FluentValidation.Attributes.Validator(typeof(SearchHlaDataValidator))]
     public class SearchHlaData
     {
         /// <summary>
