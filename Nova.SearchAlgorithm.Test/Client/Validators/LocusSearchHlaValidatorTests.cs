@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         {
             validator = new LocusSearchHlaValidator();
         }
-        
+
         [Test]
         public void Validator_WhenNoHlaStringsAreProvided_ShouldHaveValidationError()
         {
@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             var result = validator.Validate(searchHla);
             result.IsValid.Should().BeTrue();
         }
-        
+
         [Test]
         public void Validator_WhenFirstHlaStringNull_ShouldHaveValidationError()
         {
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             var result = validator.Validate(searchHla);
             result.IsValid.Should().BeFalse();
         }
-        
+
         [Test]
         public void Validator_WhenSecondHlaStringNull_ShouldHaveValidationError()
         {
@@ -92,7 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
             var result = validator.Validate(searchHla);
             result.IsValid.Should().BeFalse();
         }
-        
+
         [Test]
         public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
         {
