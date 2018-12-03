@@ -46,9 +46,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             config.AddRule(LogLevel.Info, LogLevel.Fatal, logfileInfo);
             config.AddRule(LogLevel.Error, LogLevel.Fatal, logfileError);
-            
+
             LogManager.Configuration = config;
-            
+
             logger = LogManager.GetCurrentClassLogger();
         }
 
@@ -94,8 +94,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             logger.Log(logLevel, ScenarioContext.Current.ScenarioInfo.Title);
             if (singlePatientApiResult != null)
             {
-                LogSinglePatientSearchDetails(singlePatientApiResult, logLevel);                
+                LogSinglePatientSearchDetails(singlePatientApiResult, logLevel);
             }
+
             if (patientApiResults != null)
             {
                 LogMultiplePatientSearchDetails(patientApiResults, logLevel);
