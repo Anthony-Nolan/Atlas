@@ -27,9 +27,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 {
                     LocusSearchHlaA = new LocusSearchHla(),
                     LocusSearchHlaB = new LocusSearchHla(),
-                    LocusSearchHlaC = new LocusSearchHla(),
-                    LocusSearchHlaDpb1 = new LocusSearchHla(),
-                    LocusSearchHlaDqb1 = new LocusSearchHla(),
                     LocusSearchHlaDrb1 = new LocusSearchHla(),
                 }
             };
@@ -114,9 +111,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePosition position, string hlaString)
         {
+            // API level validation will fail if individual hla are null, but not if the locus is omitted altogether. 
+            // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should bve added
+            if (hlaString == null)
+            {
+                return this;
+            }
+            
             switch (locus)
             {
                 case Locus.A:
+                    if (searchRequest.SearchHlaData.LocusSearchHlaA == null)
+                    {
+                        searchRequest.SearchHlaData.LocusSearchHlaA = new LocusSearchHla();
+                    }
                     switch (position)
                     {
                         case TypePosition.One:
@@ -131,6 +139,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
                     break;
                 case Locus.B:
+                    if (searchRequest.SearchHlaData.LocusSearchHlaB == null)
+                    {
+                        searchRequest.SearchHlaData.LocusSearchHlaB = new LocusSearchHla();
+                    }
                     switch (position)
                     {
                         case TypePosition.One:
@@ -145,6 +157,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
                     break;
                 case Locus.C:
+                    if (searchRequest.SearchHlaData.LocusSearchHlaC == null)
+                    {
+                        searchRequest.SearchHlaData.LocusSearchHlaC = new LocusSearchHla();
+                    }
                     switch (position)
                     {
                         case TypePosition.One:
@@ -159,6 +175,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
                     break;
                 case Locus.Dpb1:
+                    if (searchRequest.SearchHlaData.LocusSearchHlaDpb1 == null)
+                    {
+                        searchRequest.SearchHlaData.LocusSearchHlaDpb1 = new LocusSearchHla();
+                    }
                     switch (position)
                     {
                         case TypePosition.One:
@@ -173,6 +193,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
                     break;
                 case Locus.Dqb1:
+                    if (searchRequest.SearchHlaData.LocusSearchHlaDqb1 == null)
+                    {
+                        searchRequest.SearchHlaData.LocusSearchHlaDqb1 = new LocusSearchHla();
+                    }
                     switch (position)
                     {
                         case TypePosition.One:
@@ -187,6 +211,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
                     break;
                 case Locus.Drb1:
+                    if (searchRequest.SearchHlaData.LocusSearchHlaDrb1 == null)
+                    {
+                        searchRequest.SearchHlaData.LocusSearchHlaDrb1 = new LocusSearchHla();
+                    }
                     switch (position)
                     {
                         case TypePosition.One:
