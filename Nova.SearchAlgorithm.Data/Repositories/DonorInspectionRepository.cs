@@ -74,7 +74,7 @@ WHERE DonorId > {highestDonorId}
             using (var conn = new SqlConnection(connectionString))
             {
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
-                foreach (var locus in LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1}))
+                foreach (var locus in LocusConfig.AllLoci().Except(new[] {Locus.Dpb1}))
                 {
                     var sql = $@"
 SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableNameHelper.MatchingTableName(locus)} m

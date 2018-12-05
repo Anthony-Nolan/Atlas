@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         /// <summary>
         /// Returns the loci for which match results have been set
         /// </summary>
-        public IEnumerable<Locus> MatchedLoci => LocusHelpers.AllLoci()
+        public IEnumerable<Locus> MatchedLoci => LocusConfig.AllLoci()
             .Where(l => MatchDetailsForLocus(l) != null);
         
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>

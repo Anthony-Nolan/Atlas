@@ -85,13 +85,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtAllPositions()
         {
-            return LocusHelpers.AllLoci().Aggregate(this,
+            return LocusConfig.AllLoci().Aggregate(this,
                 (current, locus) => current.WithNullAlleleAtPosition(locus, TypePosition.One).WithNullAlleleAtPosition(locus, TypePosition.Two));
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()
         {
-            return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithNonNullExpressionSuffixAt(locus));
+            return LocusConfig.AllLoci().Aggregate(this, (current, locus) => current.WithNonNullExpressionSuffixAt(locus));
         }
 
         public MetaDonorSelectionCriteria Build()

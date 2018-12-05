@@ -108,12 +108,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            await Task.WhenAll(LocusHelpers.AllLoci().Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusConfig.AllLoci().Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            await Task.WhenAll(LocusHelpers.AllLoci().Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusConfig.AllLoci().Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)

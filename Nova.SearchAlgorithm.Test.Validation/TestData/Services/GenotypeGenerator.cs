@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         private Genotype CreateGenotype(GenotypeCriteria criteria)
         {
             var hla = new PhenotypeInfo<TgsAllele>();
-            foreach (var locus in LocusHelpers.AllLoci())
+            foreach (var locus in LocusConfig.AllLoci())
             {
                 var randomTgsAllele1 = RandomTgsAllele(locus, TypePosition.One, criteria);
                 hla.SetAtPosition(locus, TypePosition.One, randomTgsAllele1);

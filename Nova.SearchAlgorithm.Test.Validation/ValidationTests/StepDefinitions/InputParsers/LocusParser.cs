@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.I
             {
                 case "each locus":
                 case "all loci":
-                    return LocusHelpers.AllLoci();
+                    return LocusConfig.AllLoci();
                 case "locus A":
                     return new[] {Locus.A};
                 case "locus B":

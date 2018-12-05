@@ -10,8 +10,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
     public abstract class WmdaRepositoryTestBase<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
         protected readonly string[] MolecularLoci =  { "A*", "B*", "C*", "DPB1*", "DQB1*", "DRB1*" };
-
-        // TODO: NOVA-1298 - Confirm that no DPB1 serology should be imported into matching dictionary
         protected readonly string[] SerologyLoci = { "A", "B", "Cw", "DQ", "DR" };
 
         protected IWmdaDataRepository WmdaDataRepository;

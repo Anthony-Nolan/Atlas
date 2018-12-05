@@ -285,7 +285,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSele
 
         public void UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution resolution)
         {
-            foreach (var locus in LocusHelpers.AllLoci())
+            foreach (var locus in LocusConfig.AllLoci())
             {
                 UpdateMatchingDonorTypingResolutionsAtLocus(locus, resolution);
             }
