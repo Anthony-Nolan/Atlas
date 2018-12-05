@@ -201,7 +201,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             switch (locusString)
             {
                 case "each locus":
-                    foreach (var locus in LocusConfig.AllLoci())
+                    foreach (var locus in LocusSettings.AllLoci)
                     {
                         factory.SetAlleleStringShouldContainDifferentGroupsAtLocus(locus);
                     }

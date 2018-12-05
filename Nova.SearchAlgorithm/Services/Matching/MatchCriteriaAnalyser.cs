@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
                 // Unless we allow 6+ mismatches total across A, B, DRB1, at least one of them must have at least one match
                 if (criteria.DonorMismatchCount < 6)
                 {
-                    lociToSearchInDatabase = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
+                    lociToSearchInDatabase = LocusSettings.MatchingPhaseIOnlyLoci.ToList();
                 }
                 else
                 {

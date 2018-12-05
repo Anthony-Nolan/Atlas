@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         
         public DatabaseDonorSelectionCriteriaBuilder WithAllLociAtTypingResolution(HlaTypingResolution resolution)
         {
-            foreach (var locus in LocusConfig.AllLoci())
+            foreach (var locus in LocusSettings.AllLoci)
             {
                 criteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
             }

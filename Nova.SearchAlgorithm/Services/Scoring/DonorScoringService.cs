@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         )
         {
             var scoreResult = new ScoreResult();
-            var scoredLoci = LocusConfig.AllLoci();
+            var scoredLoci = LocusSettings.AllLoci;
 
             foreach (var locus in scoredLoci)
             {

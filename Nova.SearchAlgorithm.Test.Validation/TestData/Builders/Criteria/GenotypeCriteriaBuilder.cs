@@ -123,7 +123,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public GenotypeCriteriaBuilder WithMatchLevelPossibleAtAllLoci(MatchLevel matchLevel)
         {
-            return LocusConfig.AllLoci().Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
+            return LocusSettings.AllLoci.Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
         }
 
         public GenotypeCriteriaBuilder WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()

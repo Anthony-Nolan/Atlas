@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Dapper;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Data.Models.Extensions;
-using Nova.SearchAlgorithm.Repositories.Donors;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.Entity;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
@@ -74,7 +71,7 @@ WHERE DonorId > {highestDonorId}
             using (var conn = new SqlConnection(connectionString))
             {
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
-                foreach (var locus in LocusConfig.AllLoci().Except(new[] {Locus.Dpb1}))
+                foreach (var locus in LocusSettings.MatchingOnlyLoci)
                 {
                     var sql = $@"
 SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableNameHelper.MatchingTableName(locus)} m

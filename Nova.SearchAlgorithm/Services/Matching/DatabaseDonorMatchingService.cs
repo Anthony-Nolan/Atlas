@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
         {
-            if (loci.Contains(Locus.Dpb1) || loci.Contains(Locus.Dqb1) || loci.Contains(Locus.C))
+            if (loci.Any(locus => !LocusSettings.MatchingPhaseIOnlyLoci.Contains(locus)))
             {
                 // Currently the logic here is not advised for these loci
                 // Donors can be untyped at these loci, which counts as a potential match

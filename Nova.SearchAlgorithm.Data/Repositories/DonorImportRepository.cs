@@ -1,16 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Dapper;
+﻿using Dapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Helpers;
-using Nova.SearchAlgorithm.Data.Models.Extensions;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
@@ -108,21 +106,17 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            await Task.WhenAll(LocusConfig.AllLoci().Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            await Task.WhenAll(LocusConfig.AllLoci().Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
         {
             donors = donors.ToList();
-            if (locus == Locus.Dpb1)
-            {
-                return;
-            }
 
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
@@ -148,11 +142,6 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
 
         private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
         {
-            if (locus == Locus.Dpb1)
-            {
-                return;
-            }
-
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 

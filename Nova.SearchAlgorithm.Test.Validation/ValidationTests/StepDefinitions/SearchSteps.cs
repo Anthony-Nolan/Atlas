@@ -171,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             var searchHla = patientDataProvider.GetPatientHla();
             var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
-            var fullyMatchedLoci = LocusConfig.AllLoci().Except(new[] {Locus.Dpb1, locus});
+            var fullyMatchedLoci = LocusSettings.MatchingOnlyLoci.Except(new[] {locus});
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(1)
@@ -190,7 +190,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
-            var allowedMismatchLoci = LocusConfig.AllLoci().Except(new[] {Locus.Dpb1});
+            var allowedMismatchLoci = LocusSettings.MatchingOnlyLoci;
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(2)
