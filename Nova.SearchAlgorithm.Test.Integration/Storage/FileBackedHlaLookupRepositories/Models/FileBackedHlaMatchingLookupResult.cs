@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
 {
     public class FileBackedHlaMatchingLookupResult : IHlaMatchingLookupResult
     {
-        public MatchLocus MatchLocus { get; }
+        public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise { get; }
@@ -15,13 +16,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
         public bool IsNullExpressingTyping { get; }
 
         public FileBackedHlaMatchingLookupResult(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             IEnumerable<string> matchingPGroups, 
             bool isNullExpressingTyping)
         {
-            MatchLocus = matchLocus;
+            Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             HlaInfoToSerialise = matchingPGroups;

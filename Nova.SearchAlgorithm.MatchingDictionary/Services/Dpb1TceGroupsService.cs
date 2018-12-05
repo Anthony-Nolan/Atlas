@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -47,7 +48,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private static IEnumerable<string> GetLookupNames(IWmdaHlaTyping tceGroup)
         {
-            var allele = new AlleleTyping(MatchLocus.Dpb1, tceGroup.Name);
+            var allele = new AlleleTyping(Locus.Dpb1, tceGroup.Name);
             return new[]
             {
                 allele.Name,

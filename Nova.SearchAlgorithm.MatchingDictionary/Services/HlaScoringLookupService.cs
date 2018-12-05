@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.Utils.ApplicationInsights;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         protected override IHlaScoringLookupResult ConsolidateHlaLookupResults(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             IEnumerable<IHlaScoringLookupResult> lookupResults)
         {
@@ -67,12 +67,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 case HlaTypingCategory.Allele:
                     return results.Count == 1
                         ? results.Single()
-                        : GetMultipleAlleleLookupResult(matchLocus, lookupName, scoringInfos);
+                        : GetMultipleAlleleLookupResult(locus, lookupName, scoringInfos);
 
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                 case HlaTypingCategory.NmdpCode:
-                    return GetConsolidatedMolecularLookupResult(matchLocus, lookupName, scoringInfos);
+                    return GetConsolidatedMolecularLookupResult(locus, lookupName, scoringInfos);
 
                 case HlaTypingCategory.XxCode:
                 case HlaTypingCategory.Serology:
@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         private static IHlaScoringLookupResult GetMultipleAlleleLookupResult(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             IEnumerable<IHlaScoringInfo> scoringInfos)
         {
@@ -96,7 +96,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 matchingSerologies);
 
             return new HlaScoringLookupResult(
-                matchLocus,
+                locus,
                 lookupName,
                 LookupNameCategory.MultipleAlleles,
                 multipleAlleleScoringInfo
@@ -104,7 +104,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         private static IHlaScoringLookupResult GetConsolidatedMolecularLookupResult(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             IEnumerable<IHlaScoringInfo> scoringInfos)
         {
@@ -120,7 +120,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 matchingSerologies);
 
             return new HlaScoringLookupResult(
-                matchLocus,
+                locus,
                 lookupName,
                 LookupNameCategory.MultipleAlleles,
                 consolidatedMolecularScoringInfo

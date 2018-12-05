@@ -43,12 +43,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         [Test]
         public void WmdaDataRepository_WmdaHlaTypingCollection_OnlyContainsMatchLoci()
         {
-            WmdaHlaTypings.Should().OnlyContain(typing => matchLoci.Contains(typing.Locus));               
+            WmdaHlaTypings.Should().OnlyContain(typing => matchLoci.Contains(typing.TypingLocus));               
         }
 
         protected TWmdaHlaTyping GetSingleWmdaHlaTyping(string wmdaLocus, string name)
         {
-            return WmdaHlaTypings.Single(s => s.Locus.Equals(wmdaLocus) && s.Name.Equals(name));
+            return WmdaHlaTypings.Single(s => s.TypingLocus.Equals(wmdaLocus) && s.Name.Equals(name));
         }
     }
 }

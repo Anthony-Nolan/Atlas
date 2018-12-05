@@ -37,9 +37,7 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var result = await locusHlaLookupService
-                .GetHlaMatchingLookupResults(
-                    locus.ToMatchLocus(), 
-                    new Tuple<string, string>(hla1, hla2));
+                .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2));
 
             return new Tuple<ExpandedHla, ExpandedHla>(
                 result.Item1.ToExpandedHla(hla1), 

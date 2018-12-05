@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
@@ -12,11 +13,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.ExpressingAllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_ExpressedAlleles_HaveCorrectMatchingSerology(
-            MatchLocus matchLocus,
+            Locus locus,
             string alleleName,
             object[] matchingSerologies)
         {
-            var actualMatchingSerologies = GetSingleMatchingTyping(matchLocus, alleleName).MatchingSerologies;
+            var actualMatchingSerologies = GetSingleMatchingTyping(locus, alleleName).MatchingSerologies;
             var expectedMatchingSerologies = matchingSerologies
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
@@ -45,11 +46,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.DeletedAllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_DeletedAlleles_IdenticalHlaUsedToFindMatchingSerology(
-            MatchLocus matchLocus,
+            Locus locus,
             string alleleName,
             object[] matchingSerologies)
         {
-            var actualMatchingSerologies = GetSingleMatchingTyping(matchLocus, alleleName).MatchingSerologies;
+            var actualMatchingSerologies = GetSingleMatchingTyping(locus, alleleName).MatchingSerologies;
             var expectedMatchingSerologies = matchingSerologies
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
@@ -60,18 +61,18 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void AlleleToSerologyMatching_DeletedAlleleWithNoIdenticalHla_HasNoMatchingSerology()
         {
-            var deletedNoIdentical = GetSingleMatchingTyping(MatchLocus.A, "02:100");
+            var deletedNoIdentical = GetSingleMatchingTyping(Locus.A, "02:100");
             deletedNoIdentical.MatchingSerologies.Should().BeEmpty();
         }
 
         [TestCaseSource(
             typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.AllelesMappedToSpecificSubtypeMatchingSerologies))]
-        public void AlleleToSerologyMatching_AlleleMappedToSpecificSubtype_HasCorrectMatchingSerologies(MatchLocus matchLocus,
+        public void AlleleToSerologyMatching_AlleleMappedToSpecificSubtype_HasCorrectMatchingSerologies(Locus locus,
             string alleleName,
             object[] matchingSerologies)
         {
-            var actualMatchingSerologies = GetSingleMatchingTyping(matchLocus, alleleName).MatchingSerologies;
+            var actualMatchingSerologies = GetSingleMatchingTyping(locus, alleleName).MatchingSerologies;
             var expectedMatchingSerologies = matchingSerologies
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
@@ -87,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             object[] matchingSerologies)
         {
             var actualMatchingSerologies = 
-                GetSingleMatchingTyping((MatchLocus)alleleDetails[0], alleleDetails[1].ToString())
+                GetSingleMatchingTyping((Locus)alleleDetails[0], alleleDetails[1].ToString())
                 .MatchingSerologies;
 
             var expectedMatchingSerologies = matchingSerologies
@@ -101,11 +102,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.AllelesOfUnknownSerology))]
         public void AlleleToSerologyMatching_AllelesOfUnknownSerology_HaveCorrectMatchingSerologies(
-            MatchLocus matchLocus,
+            Locus locus,
             string alleleName,
             object[] matchingSerologies)
         {
-            var actualMatchingSerologies = GetSingleMatchingTyping(matchLocus, alleleName).MatchingSerologies;
+            var actualMatchingSerologies = GetSingleMatchingTyping(locus, alleleName).MatchingSerologies;
             var expectedMatchingSerologies = matchingSerologies
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);

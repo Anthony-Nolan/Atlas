@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
                 .AlleleNameHistories
                 .SelectMany(history =>
                     history.DistinctAlleleNames, (history, historicalName) =>
-                    new HlaNom(TypingMethod.Molecular, history.Locus, historicalName))
+                    new HlaNom(TypingMethod.Molecular, history.TypingLocus, historicalName))
                 .Distinct()
                 .ToList();
         }
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
             return !historicalNamesAsTypings
                 .Any(historicalTyping =>
-                    historicalTyping.Locus.Equals(locus) && 
+                    historicalTyping.TypingLocus.Equals(locus) && 
                     historicalTyping.Name.Equals(alleleName));
         }
     }

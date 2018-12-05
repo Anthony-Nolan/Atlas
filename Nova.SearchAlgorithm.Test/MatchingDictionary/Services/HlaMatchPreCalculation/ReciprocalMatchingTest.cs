@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
@@ -8,18 +9,18 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
 {
     public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
-        [TestCase(MatchLocus.A, "02:01:100", "2")]
-        [TestCase(MatchLocus.B, "39:55", "39")]
-        [TestCase(MatchLocus.C, "01:80", "1")]
-        [TestCase(MatchLocus.Dqb1, "03:01:15", "7")]
-        [TestCase(MatchLocus.Drb1, "04:155", "4")]
+        [TestCase(Locus.A, "02:01:100", "2")]
+        [TestCase(Locus.B, "39:55", "39")]
+        [TestCase(Locus.C, "01:80", "1")]
+        [TestCase(Locus.Dqb1, "03:01:15", "7")]
+        [TestCase(Locus.Drb1, "04:155", "4")]
         public void HlaMatchPrecalculation_AlleleAndSerologyTypingsMatchReciprocally(
-            MatchLocus matchLocus,
+            Locus locus,
             string alleleName,
             string serologyName)
         {
-            var allele = GetSingleMatchingTyping(matchLocus, alleleName);
-            var serology = GetSingleMatchingTyping(matchLocus, serologyName);
+            var allele = GetSingleMatchingTyping(locus, alleleName);
+            var serology = GetSingleMatchingTyping(locus, serologyName);
 
             allele.MatchingSerologies
                 .Select(ser => ser.SerologyTyping as HlaTyping)

@@ -1,7 +1,7 @@
 ﻿using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IAlleleNamesLookupService
     {
-        Task<IEnumerable<string>> GetCurrentAlleleNames(MatchLocus matchLocus, string alleleLookupName);
+        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
     }
 
     public class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
@@ -26,9 +26,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.hlaCategorisationService = hlaCategorisationService;
         }
 
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(MatchLocus matchLocus, string alleleLookupName)
+        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await GetLookupResults(matchLocus, alleleLookupName);
+            return await GetLookupResults(locus, alleleLookupName);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -37,13 +37,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                    hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
         }
 
-        protected override async Task<IEnumerable<string>> PerformLookup(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName)
         {
-            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(matchLocus, lookupName);
+            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(locus, lookupName);
 
             if (alleleNameLookupResult == null)
             {
-                throw new InvalidHlaException(matchLocus, lookupName);
+                throw new InvalidHlaException(locus, lookupName);
             }
 
             return alleleNameLookupResult.CurrentAlleleNames;

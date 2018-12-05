@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions
             {
                 LookupName = lookupResult.LookupName,
                 OriginalName = originalName,
-                Locus = lookupResult.MatchLocus.ToLocus(),
+                Locus = lookupResult.Locus,
                 PGroups = lookupResult.MatchingPGroups
             };
         }

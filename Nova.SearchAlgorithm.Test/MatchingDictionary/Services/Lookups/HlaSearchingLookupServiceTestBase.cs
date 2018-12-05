@@ -1,12 +1,15 @@
-﻿using Nova.HLAService.Client;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NSubstitute.ReturnsExtensions;
@@ -14,8 +17,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -34,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         protected TService LookupService;
 
         protected MolecularLocusType MolecularLocus = MolecularLocusType.A;
-        protected MatchLocus MatchedLocus = MatchLocus.A;
+        protected Locus MatchedLocus = Locus.A;
 
         [SetUp]
         public void SetUpBeforeEachTest()

@@ -1,5 +1,4 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using System.Linq;
@@ -93,7 +92,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaLookupResult donorLookupResult)
         {
             return permissiveMismatchCalculator.IsPermissiveMismatch(
-                patientLookupResult.MatchLocus.ToLocus(),
+                patientLookupResult.Locus,
                 patientLookupResult.LookupName,
                 donorLookupResult.LookupName);
         }

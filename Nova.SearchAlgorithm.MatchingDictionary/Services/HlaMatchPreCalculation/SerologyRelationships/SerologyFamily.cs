@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
             Child = GetChild(relationships, serology);
 
             SerologyTyping = new SerologyTyping(
-                serology.Locus,
+                serology.TypingLocus,
                 serology.Name,
                 GetSerologySubtype(serology.Name),
                 isDeleted);

@@ -3,6 +3,7 @@ using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
 using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
@@ -18,20 +19,20 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             nameof(SerologyToSerologyMatchingTestCaseSources.ExpectedSerologyInfos)
             )]
         public void MatchedSerologies_WhenValidSerology_SerologyInfoCorrectlyAssigned(
-            string locus,
-            MatchLocus matchLocus,
+            string serologyLocus,
+            Locus locus,
             string serologyName,
             SerologySubtype serologySubtype,
             object[][] matchingSerologies)
         {
-            var actualSerologyInfo = GetSingleMatchingTyping(matchLocus, serologyName);
+            var actualSerologyInfo = GetSingleMatchingTyping(locus, serologyName);
 
-            var expectedSerologyTyping = new SerologyTyping(locus, serologyName, serologySubtype);
+            var expectedSerologyTyping = new SerologyTyping(serologyLocus, serologyName, serologySubtype);
 
             var expectedMatchingSerologies = matchingSerologies
                 .Select(m =>
                     new MatchingSerology(
-                        new SerologyTyping(locus, m[0].ToString(), (SerologySubtype)m[1]),
+                        new SerologyTyping(serologyLocus, m[0].ToString(), (SerologySubtype)m[1]),
                             (bool)m[2]));
 
             var expectedSerologyInfo = new SerologyInfoForMatching
@@ -47,7 +48,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedSerologies_WhenDeletedSerology_SerologyInfoCorrectlyAssigned()
         {
-            const MatchLocus matchLocus = MatchLocus.C;
+            const Locus matchLocus = Locus.C;
             const string deletedSerologyName = "11";
             const string serologyUsedInMatchingName = "1";
 
@@ -80,9 +81,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             var str = string.Join("\r\n", SharedTestDataCache
                 .GetMatchedHla()
                 .OfType<MatchedSerology>()
-                .OrderBy(s => s.HlaTyping.MatchLocus)
+                .OrderBy(s => s.HlaTyping.Locus)
                 .ThenBy(s => int.Parse(s.HlaTyping.Name))
-                .Select(s => $"{s.HlaTyping.MatchLocus.ToString().ToUpper()}\t{s.HlaTyping.Name}")
+                .Select(s => $"{s.HlaTyping.Locus.ToString().ToUpper()}\t{s.HlaTyping.Name}")
                 .ToList());
             Approvals.Verify(str);
         }

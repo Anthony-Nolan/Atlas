@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup
@@ -10,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLoo
 
     public class Dpb1TceGroupsLookupResult : IDpb1TceGroupsLookupResult
     {
-        public MatchLocus MatchLocus => MatchLocus.Dpb1;
+        public Locus Locus => Locus.Dpb1;
         public string LookupName { get; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TceGroup { get; }

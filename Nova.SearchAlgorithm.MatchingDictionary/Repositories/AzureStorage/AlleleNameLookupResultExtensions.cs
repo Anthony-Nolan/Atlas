@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             var currentAlleleNames = entity.GetHlaInfo<IEnumerable<string>>();
 
             return new AlleleNameLookupResult(
-                entity.MatchLocus, 
+                entity.Locus, 
                 entity.LookupName, 
                 currentAlleleNames);
         }

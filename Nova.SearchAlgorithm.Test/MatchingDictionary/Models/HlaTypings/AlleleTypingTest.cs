@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
@@ -35,11 +35,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedMolecularLocus))]
-        public void AlleleTyping_WhenNew_MatchLocusConvertedToMolecularLocusName(object[] alleleToTest, string expectedMolecularLocus)
+        public void AlleleTyping_WhenNew_MatchLocusConvertedToMolecularTypingLocusName(object[] alleleToTest, string expectedMolecularTypingLocus)
         {
             var actualAlleleTyping = GetActualAlleleTyping(alleleToTest);
 
-            actualAlleleTyping.Locus.Should().Be(expectedMolecularLocus);
+            actualAlleleTyping.TypingLocus.Should().Be(expectedMolecularTypingLocus);
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedExpressionSuffixes))]
@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 
         private static AlleleTyping GetActualAlleleTyping(IReadOnlyList<object> alleleToTest)
         {
-            return new AlleleTyping((MatchLocus)alleleToTest[0], GetAlleleName(alleleToTest));
+            return new AlleleTyping((Locus)alleleToTest[0], GetAlleleName(alleleToTest));
         }
 
         private static string GetAlleleName(IReadOnlyList<object> alleleToTest)

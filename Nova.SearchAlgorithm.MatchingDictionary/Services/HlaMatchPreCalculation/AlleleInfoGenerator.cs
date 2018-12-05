@@ -57,14 +57,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
 
         private AlleleTyping GetAlleleTypingFromIdenticalHla(HlaNom allele)
         {
-            var identicalHla = new HlaNom(TypingMethod.Molecular, allele.Locus, allele.IdenticalHla);
+            var identicalHla = new HlaNom(TypingMethod.Molecular, allele.TypingLocus, allele.IdenticalHla);
             return GetAlleleTyping(identicalHla);
         }
 
         private AlleleTyping GetAlleleTyping(HlaNom allele)
         {
             var alleleStatus = GetAlleleTypingStatus(allele);
-            return new AlleleTyping(allele.Locus, allele.Name, alleleStatus, allele.IsDeleted);
+            return new AlleleTyping(allele.TypingLocus, allele.Name, alleleStatus, allele.IsDeleted);
         }
 
         private AlleleTypingStatus GetAlleleTypingStatus(IWmdaHlaTyping allele)

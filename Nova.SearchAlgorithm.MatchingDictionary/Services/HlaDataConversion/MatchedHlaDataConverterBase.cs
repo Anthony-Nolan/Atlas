@@ -70,7 +70,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 .Where(x => x.allele.TypingForHlaLookupResult.Fields.Count() > 2)
                 .GroupBy(x => new
                 {
-                    x.allele.TypingForHlaLookupResult.MatchLocus,
+                    x.allele.TypingForHlaLookupResult.Locus,
                     x.nmdpLookupName
                 }, t => t.allele);
 
@@ -93,7 +93,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 .Where(matchedAllele => matchedAllele.TypingForHlaLookupResult.Fields.Count() > 1)
                 .GroupBy(matchedAllele => new
                 {
-                    matchedAllele.TypingForHlaLookupResult.MatchLocus,
+                    matchedAllele.TypingForHlaLookupResult.Locus,
                     LookupName = matchedAllele.TypingForHlaLookupResult.ToXxCodeLookupName()
                 });
 
@@ -117,7 +117,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 
         /// <summary>
         /// To create lookup result for an NMDP code allele, pass in a set of allele typings 
-        /// that map to the same MatchLocus & NMDP code allele lookup name value.
+        /// that map to the same Locus & NMDP code allele lookup name value.
         /// </summary>
         protected abstract IHlaLookupResult GetNmdpCodeAlleleLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
@@ -125,7 +125,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 
         /// <summary>
         /// To create an XX code lookup result, pass in a set of allele typings 
-        /// that map to the same MatchLocus & XX code lookup name value.
+        /// that map to the same Locus & XX code lookup name value.
         /// </summary>
         protected abstract IHlaLookupResult GetXxCodeLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources);

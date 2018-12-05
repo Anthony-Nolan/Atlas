@@ -6,14 +6,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public class HlaNom : IWmdaHlaTyping, IEquatable<HlaNom>
     {
         public TypingMethod TypingMethod { get; }
-        public string Locus { get; set; }
+        public string TypingLocus { get; set; }
         public string Name { get; set; }
         public bool IsDeleted { get; }
         public string IdenticalHla { get; }
 
         public HlaNom(TypingMethod typingMethod, string locus, string name, bool isDeleted = false, string identicalHla = "")
         {
-            Locus = locus;
+            TypingLocus = locus;
             Name = name;
             TypingMethod = typingMethod;
             IsDeleted = isDeleted;
@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public override string ToString()
         {
-            return $"locus: {Locus}, name: {Name}, deleted: {IsDeleted}, identicalHla: {IdenticalHla}";
+            return $"locus: {TypingLocus}, name: {Name}, deleted: {IsDeleted}, identicalHla: {IdenticalHla}";
         }
 
 
@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(this, other)) return true;
             return 
                 TypingMethod == other.TypingMethod && 
-                string.Equals(Locus, other.Locus) && 
+                string.Equals(TypingLocus, other.TypingLocus) && 
                 string.Equals(Name, other.Name) && 
                 IsDeleted == other.IsDeleted && 
                 string.Equals(IdenticalHla, other.IdenticalHla);
@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             unchecked
             {
                 var hashCode = (int) TypingMethod;
-                hashCode = (hashCode * 397) ^ Locus.GetHashCode();
+                hashCode = (hashCode * 397) ^ TypingLocus.GetHashCode();
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
                 hashCode = (hashCode * 397) ^ IsDeleted.GetHashCode();
                 hashCode = (hashCode * 397) ^ IdenticalHla.GetHashCode();

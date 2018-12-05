@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.HLAService.Client.Models;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -22,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         public void OneTimeSetUp()
         {
             MolecularLocus = MolecularLocusType.Dpb1;
-            MatchedLocus = MatchLocus.Dpb1;
+            MatchedLocus = Locus.Dpb1;
         }
 
         [SetUp]

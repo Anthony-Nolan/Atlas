@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
 
             var matchingSerologies = GetMatchingSerologiesFromSerologyAssignments(
                     hlaInfo.SerologyInfoForMatching,
-                    alleleTyping.MatchLocus,
+                    alleleTyping.Locus,
                     assignments
                     );
 
@@ -35,11 +36,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
 
         private static IEnumerable<MatchingSerology> GetMatchingSerologiesFromSerologyAssignments(
             IEnumerable<ISerologyInfoForMatching> serologiesInfo,
-            MatchLocus matchLocus,
+            Locus locus,
             IEnumerable<SerologyAssignment> serologyAssignments)
         {
             var serologiesForMatchLocus = serologiesInfo
-                .Where(serology => serology.HlaTyping.MatchLocus == matchLocus);
+                .Where(serology => serology.HlaTyping.Locus == locus);
 
             return serologyAssignments
                 .Join(serologiesForMatchLocus,

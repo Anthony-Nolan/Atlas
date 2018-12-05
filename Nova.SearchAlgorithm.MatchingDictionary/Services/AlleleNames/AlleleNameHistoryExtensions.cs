@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
             return alleleNameHistory
                 .DistinctAlleleNames
-                .Select(name => new AlleleNameLookupResult(alleleNameHistory.Locus, name, currentAlleleName));
+                .Select(name => new AlleleNameLookupResult(alleleNameHistory.TypingLocus, name, currentAlleleName));
         }
     }
 }

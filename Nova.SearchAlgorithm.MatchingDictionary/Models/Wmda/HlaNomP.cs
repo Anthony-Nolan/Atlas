@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public class HlaNomP : IWmdaAlleleGroup, IEquatable<HlaNomP>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public string Locus { get; set; }
+        public string TypingLocus { get; set; }
         public string Name { get; set; }
         public IEnumerable<string> Alleles { get; set; }
 
@@ -18,14 +18,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public HlaNomP(string locus, string name, IEnumerable<string> alleles)
         {
-            Locus = locus;
+            TypingLocus = locus;
             Name = name;
             Alleles = alleles;
         }
 
         public override string ToString()
         {
-            return $"locus: {Locus}, pGroup: {Name}, alleles: {string.Join("/", Alleles)}";
+            return $"locus: {TypingLocus}, pGroup: {Name}, alleles: {string.Join("/", Alleles)}";
         }
 
         public bool Equals(HlaNomP other)
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                string.Equals(Locus, other.Locus) 
+                string.Equals(TypingLocus, other.TypingLocus) 
                 && string.Equals(Name, other.Name) 
                 && Alleles.SequenceEqual(other.Alleles);
         }
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             unchecked
             {
-                var hashCode = Locus.GetHashCode();
+                var hashCode = TypingLocus.GetHashCode();
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
                 hashCode = (hashCode * 397) ^ Alleles.GetHashCode();
                 return hashCode;

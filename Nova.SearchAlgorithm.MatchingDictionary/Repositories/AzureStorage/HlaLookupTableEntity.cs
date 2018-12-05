@@ -1,5 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using System;
@@ -8,23 +9,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class HlaLookupTableEntity : TableEntity
     {
-        public string MatchLocusAsString { get; set; }
+        public string LocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
         public string LookupNameCategoryAsString { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
-        public MatchLocus MatchLocus => ParseStringToEnum<MatchLocus>(MatchLocusAsString);
+        public Locus Locus => ParseStringToEnum<Locus>(LocusAsString);
         public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
         public LookupNameCategory LookupNameCategory => ParseStringToEnum<LookupNameCategory>(LookupNameCategoryAsString);
 
         public HlaLookupTableEntity() { }
 
         public HlaLookupTableEntity(IHlaLookupResult lookupResult)
-            : base(HlaLookupTableKeyManager.GetEntityPartitionKey(lookupResult.MatchLocus), 
+            : base(HlaLookupTableKeyManager.GetEntityPartitionKey(lookupResult.Locus), 
                    HlaLookupTableKeyManager.GetEntityRowKey(lookupResult.LookupName, lookupResult.TypingMethod))
         {
-            MatchLocusAsString = lookupResult.MatchLocus.ToString();
+            LocusAsString = lookupResult.Locus.ToString();
             TypingMethodAsString = lookupResult.TypingMethod.ToString();
             LookupName = lookupResult.LookupName;
             SerialisedHlaInfo = SerialiseHlaInfo(lookupResult.HlaInfoToSerialise);

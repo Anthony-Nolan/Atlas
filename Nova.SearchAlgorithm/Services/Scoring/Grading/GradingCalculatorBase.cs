@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult patientLookupResult, 
             IHlaScoringLookupResult donorLookupResult)
         {
-            if (patientLookupResult.MatchLocus != donorLookupResult.MatchLocus)
+            if (patientLookupResult.Locus != donorLookupResult.Locus)
             {
                 throw new ArgumentException("Lookup results do not belong to same locus.");
             }

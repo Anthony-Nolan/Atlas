@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
@@ -13,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaDataConversio
         where TGenerator : IMatchedHlaDataConverterBase, new()
     {
         protected TGenerator LookupResultGenerator;
-        protected const MatchLocus MatchedLocus = MatchLocus.A;
+        protected const Locus MatchedLocus = Locus.A;
         protected const SerologySubtype SeroSubtype = SerologySubtype.Broad;
         protected const string SerologyName = "999";
         protected const string PGroupName = "999:999P";

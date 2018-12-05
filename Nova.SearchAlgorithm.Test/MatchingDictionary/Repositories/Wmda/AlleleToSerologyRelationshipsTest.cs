@@ -91,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
         public void WmdaDataRepository_WhenDpb1Allele_NoSerologyAssignmentsAreCaptured()
         {
             WmdaHlaTypings
-                .Where(hla => hla.Locus.Equals("DPB1*"))
+                .Where(hla => hla.TypingLocus.Equals("DPB1*"))
                 .SelectMany(hla => hla.Assignments)
                 .ShouldAllBeEquivalentTo(new List<SerologyAssignment>());
         }

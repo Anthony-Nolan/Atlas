@@ -9,18 +9,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
         public SerologySubtype SerologySubtype { get; }
 
         public SerologyTyping(SerologyTyping serologyTyping) 
-            : this(serologyTyping.Locus, serologyTyping.Name, serologyTyping.SerologySubtype, serologyTyping.IsDeleted)
+            : this(serologyTyping.TypingLocus, serologyTyping.Name, serologyTyping.SerologySubtype, serologyTyping.IsDeleted)
         {
         }
 
         public SerologyTyping(IWmdaHlaTyping hlaTyping, SerologySubtype serologySubtype, bool isDeleted = false) 
-            : this(hlaTyping.Locus, hlaTyping.Name, serologySubtype, isDeleted)
+            : this(hlaTyping.TypingLocus, hlaTyping.Name, serologySubtype, isDeleted)
         {
         }
 
         [JsonConstructor]
-        public SerologyTyping(string locus, string name, SerologySubtype serologySubtype, bool isDeleted = false) 
-            : base(TypingMethod.Serology, locus, name, isDeleted)
+        public SerologyTyping(string typingLocus, string name, SerologySubtype serologySubtype, bool isDeleted = false) 
+            : base(TypingMethod.Serology, typingLocus, name, isDeleted)
         {
             SerologySubtype = serologySubtype;
         }

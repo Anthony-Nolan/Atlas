@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public interface IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult
     {
-        Task<THlaLookupResult> GetHlaLookupResult(MatchLocus matchLocus, string hlaName);
+        Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName);
     }
 
     /// <summary>
@@ -55,9 +55,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.logger = logger;
         }
 
-        public async Task<THlaLookupResult> GetHlaLookupResult(MatchLocus matchLocus, string hlaName)
+        public async Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName)
         {
-            return await GetLookupResults(matchLocus, hlaName);
+            return await GetLookupResults(locus, hlaName);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -65,18 +65,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override async Task<THlaLookupResult> PerformLookup(MatchLocus matchLocus, string lookupName)
+        protected override async Task<THlaLookupResult> PerformLookup(Locus locus, string lookupName)
         {
-            return await GetSingleHlaLookupResult(matchLocus, lookupName);
+            return await GetSingleHlaLookupResult(locus, lookupName);
         }
 
-        private async Task<THlaLookupResult> GetSingleHlaLookupResult(MatchLocus matchLocus, string lookupName)
+        private async Task<THlaLookupResult> GetSingleHlaLookupResult(Locus locus, string lookupName)
         {
             var dictionaryLookup = GetHlaLookup(lookupName);
-            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(matchLocus, lookupName);
+            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(locus, lookupName);
             var lookupResults = ConvertTableEntitiesToLookupResults(lookupTableEntities);
 
-            return ConsolidateHlaLookupResults(matchLocus, lookupName, lookupResults);
+            return ConsolidateHlaLookupResults(locus, lookupName, lookupResults);
         }
 
         private HlaLookupBase GetHlaLookup(string lookupName)
@@ -98,7 +98,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IEnumerable<HlaLookupTableEntity> hlaLookupTableEntities);
 
         protected abstract THlaLookupResult ConsolidateHlaLookupResults(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             IEnumerable<THlaLookupResult> lookupResults);
     }

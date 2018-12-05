@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             var scoringInfo = GetPreCalculatedScoringInfo(entity);
 
             return new HlaScoringLookupResult(
-                entity.MatchLocus,
+                entity.Locus,
                 entity.LookupName,
                 entity.LookupNameCategory,
                 scoringInfo);

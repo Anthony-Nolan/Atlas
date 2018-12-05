@@ -22,12 +22,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
             return AllelesInCurrentVersionOfHlaNom
                 .Where(AlleleNameIsReserved)
-                .Select(allele => new AlleleNameLookupResult(allele.Locus, allele.Name, allele.Name));
+                .Select(allele => new AlleleNameLookupResult(allele.TypingLocus, allele.Name, allele.Name));
         }
 
         private bool AlleleNameIsReserved(HlaNom allele)
         {
-            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.Locus, allele.Name);
+            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name);
         }
     }
 }

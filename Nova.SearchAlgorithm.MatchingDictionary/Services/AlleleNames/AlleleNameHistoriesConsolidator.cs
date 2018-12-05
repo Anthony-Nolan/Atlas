@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
             var alleleNamesListedMoreThanOnce = alleleNameHistories
                 .SelectMany(
                     history => history.DistinctAlleleNames,
-                    (history, alleleName) => new { history.Locus, HlaId = history.Name, AlleleName = alleleName })
+                    (history, alleleName) => new { Locus = history.TypingLocus, HlaId = history.Name, AlleleName = alleleName })
                 .GroupBy(name => new HlaNom(TypingMethod.Molecular, name.Locus, name.AlleleName))
                 .Where(grouped => grouped.Count() > 1)
                 .Select(grouped => grouped.Key)

@@ -251,7 +251,6 @@
     <Compile Include="Models\Lookups\IHlaLookupResultSource.cs" />
     <Compile Include="Models\Lookups\MatchingLookup\IHlaMatchingLookupResult.cs" />
     <Compile Include="Models\HLATypings\HlaTyping.cs" />
-    <Compile Include="Models\HLATypings\MatchLocus.cs" />
     <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />

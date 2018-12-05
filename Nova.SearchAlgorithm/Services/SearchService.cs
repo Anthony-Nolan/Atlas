@@ -2,17 +2,16 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
+using Nova.Utils.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Extensions;
-using Nova.Utils.ApplicationInsights;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
@@ -108,7 +107,7 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
-                locus.ToMatchLocus(),
+                locus,
                 new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2));
 
             return new AlleleLevelLocusMatchCriteria

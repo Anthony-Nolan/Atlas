@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 {
@@ -19,8 +19,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
 
         private const char FieldDelimiter = ':';
 
-        public AlleleTyping(string locus, string name, AlleleTypingStatus status, bool isDeleted = false)
-                : base(TypingMethod.Molecular, locus, name, isDeleted)
+        public AlleleTyping(string typingLocus, string name, AlleleTypingStatus status, bool isDeleted = false)
+                : base(TypingMethod.Molecular, typingLocus, name, isDeleted)
         {
             Status = status;
             ExpressionSuffix = ExpressionSuffixParser.GetExpressionSuffix(name);
@@ -32,8 +32,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings
             NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
         }
 
-        public AlleleTyping(MatchLocus matchLocus, string name, bool isDeleted = false)
-            : this(matchLocus.ToMolecularLocusIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
+        public AlleleTyping(Locus locus, string name, bool isDeleted = false)
+            : this(locus.ToMolecularLocusIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
         {
         }
 

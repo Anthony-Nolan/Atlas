@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using System;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public interface ILocusHlaMatchingLookupService
     {
         Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
-            MatchLocus matchLocus, Tuple<string, string> locusTyping);
+            Locus locus, Tuple<string, string> locusTyping);
     }
 
     /// <inheritdoc />
@@ -27,10 +27,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
-            MatchLocus matchLocus,
+            Locus locus,
             Tuple<string, string> locusTyping)
         {
-            var locusLookupResults = await GetLocusLookupResults(matchLocus, locusTyping);
+            var locusLookupResults = await GetLocusLookupResults(locus, locusTyping);
 
             var result1 = HandleNullAlleles(locusLookupResults[0], locusLookupResults[1]);
             var result2 = HandleNullAlleles(locusLookupResults[1], locusLookupResults[0]);
@@ -39,12 +39,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         private async Task<IHlaMatchingLookupResult[]> GetLocusLookupResults(
-            MatchLocus matchLocus, 
+            Locus locus, 
             Tuple<string, string> locusHlaTyping)
         {
             return await Task.WhenAll(
-                singleHlaLookupService.GetHlaLookupResult(matchLocus, locusHlaTyping.Item1),
-                singleHlaLookupService.GetHlaLookupResult(matchLocus, locusHlaTyping.Item2));
+                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Item1),
+                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Item2));
         }
 
         private static IHlaMatchingLookupResult HandleNullAlleles(
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IHlaMatchingLookupResult otherLookupResult)
         {
             return new HlaMatchingLookupResult(
-                lookupResult.MatchLocus,
+                lookupResult.Locus,
                 lookupResult.LookupName,
                 lookupResult.TypingMethod,
                 lookupResult.MatchingPGroups.Union(otherLookupResult.MatchingPGroups));

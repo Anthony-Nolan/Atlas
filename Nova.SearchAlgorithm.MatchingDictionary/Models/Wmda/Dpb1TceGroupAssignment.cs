@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         /// <summary>
         /// Locus will always be DPB1*
         /// </summary>
-        public string Locus
+        public string TypingLocus
         {
             get => "DPB1*";
             set {  }
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                string.Equals(Locus, other.Locus) && 
+                string.Equals(TypingLocus, other.TypingLocus) && 
                 string.Equals(Name, other.Name) &&
                 string.Equals(VersionOneAssignment, other.VersionOneAssignment) && 
                 string.Equals(VersionTwoAssignment, other.VersionTwoAssignment);
@@ -57,7 +57,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             unchecked
             {
-                var hashCode = Locus.GetHashCode();
+                var hashCode = TypingLocus.GetHashCode();
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
                 hashCode = (hashCode * 397) ^ VersionOneAssignment.GetHashCode();
                 hashCode = (hashCode * 397) ^ VersionTwoAssignment.GetHashCode();

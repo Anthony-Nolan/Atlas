@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         private IAlleleNamesLookupService lookupService;
         private IAlleleNamesLookupRepository lookupRepository;
         private IHlaCategorisationService hlaCategorisationService;
-        private const MatchLocus MatchedLocus = MatchLocus.A;
+        private const Locus MatchedLocus = Locus.A;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()

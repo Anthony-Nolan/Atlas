@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
@@ -9,7 +10,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
 {
     public class FileBackedHlaScoringLookupResult : IHlaScoringLookupResult
     {
-        public MatchLocus MatchLocus { get; }
+        public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
@@ -17,13 +18,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
         public IHlaScoringInfo HlaScoringInfo { get; }
 
         public FileBackedHlaScoringLookupResult(
-            MatchLocus matchLocus, 
+            Locus locus, 
             string lookupName, 
             TypingMethod typingMethod, 
             LookupNameCategory lookupNameCategory,
             object hlaScoringInfo)
         {
-            MatchLocus = matchLocus;
+            Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             LookupNameCategory = lookupNameCategory;

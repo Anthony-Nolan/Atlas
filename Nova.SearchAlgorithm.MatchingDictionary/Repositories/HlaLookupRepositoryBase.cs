@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
@@ -11,7 +12,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {
         Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults);
-        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod);
+        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(Locus locus, string lookupName, TypingMethod typingMethod);
     }
 
     public abstract class HlaLookupRepositoryBase :
@@ -33,9 +34,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
             await RecreateDataTable(lookupResults, HlaLookupTableKeyManager.GetTablePartitionKeys());
         }
 
-        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(Locus locus, string lookupName, TypingMethod typingMethod)
         {
-            var partition = HlaLookupTableKeyManager.GetEntityPartitionKey(matchLocus);
+            var partition = HlaLookupTableKeyManager.GetEntityPartitionKey(locus);
             var rowKey = HlaLookupTableKeyManager.GetEntityRowKey(lookupName, typingMethod);
 
             return await GetDataIfExists(partition, rowKey);

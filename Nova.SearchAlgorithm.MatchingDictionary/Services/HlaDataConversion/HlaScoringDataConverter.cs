@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             var scoringInfo = SerologyScoringInfo.GetScoringInfo(lookupResultSource);
 
             return new HlaScoringLookupResult(
-                lookupResultSource.TypingForHlaLookupResult.MatchLocus,
+                lookupResultSource.TypingForHlaLookupResult.Locus,
                 lookupResultSource.TypingForHlaLookupResult.Name,
                 LookupNameCategory.Serology,
                 scoringInfo
@@ -75,7 +75,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 .TypingForHlaLookupResult;
 
             return new HlaScoringLookupResult(
-                firstAllele.MatchLocus,
+                firstAllele.Locus,
                 getLookupName(firstAllele),
                 lookupNameCategory,
                 getScoringInfo(sources)

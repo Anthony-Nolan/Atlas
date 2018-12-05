@@ -1,5 +1,4 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
@@ -118,7 +117,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         private bool IsPermissiveMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
             return permissiveMismatchCalculator.IsPermissiveMismatch(
-                patientInfo.Allele.MatchLocus.ToLocus(),
+                patientInfo.Allele.Locus,
                 patientInfo.Allele.Name,
                 donorInfo.Allele.Name);
         }
