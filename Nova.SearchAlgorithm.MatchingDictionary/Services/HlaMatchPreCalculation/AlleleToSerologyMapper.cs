@@ -39,11 +39,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
             Locus locus,
             IEnumerable<SerologyAssignment> serologyAssignments)
         {
-            var serologiesForMatchLocus = serologiesInfo
+            var serologiesForLocus = serologiesInfo
                 .Where(serology => serology.HlaTyping.Locus == locus);
 
             return serologyAssignments
-                .Join(serologiesForMatchLocus,
+                .Join(serologiesForLocus,
                     assignment => assignment.Name,
                     serology => serology.HlaTyping.Name,
                     (assignment, serology) => serology)

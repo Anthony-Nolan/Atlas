@@ -48,17 +48,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedSerologies_WhenDeletedSerology_SerologyInfoCorrectlyAssigned()
         {
-            const Locus matchLocus = Locus.C;
+            const Locus locus = Locus.C;
             const string deletedSerologyName = "11";
             const string serologyUsedInMatchingName = "1";
 
-            var actualSerologyInfo = GetSingleMatchingTyping(matchLocus, deletedSerologyName);
+            var actualSerologyInfo = GetSingleMatchingTyping(locus, deletedSerologyName);
 
-            const string locus = "Cw";
+            const string typingLocus = "Cw";
             var expectedDeletedSerology =
-                new SerologyTyping(locus, deletedSerologyName, SerologySubtype.NotSplit, true);
+                new SerologyTyping(typingLocus, deletedSerologyName, SerologySubtype.NotSplit, true);
             var expectedTypingUsedInMatching =
-                new SerologyTyping(locus, serologyUsedInMatchingName, SerologySubtype.NotSplit);
+                new SerologyTyping(typingLocus, serologyUsedInMatchingName, SerologySubtype.NotSplit);
             var expectedMatchingSerologies = new List<MatchingSerology>
             {
                 new MatchingSerology(expectedDeletedSerology, true),

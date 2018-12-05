@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
     {
         public IEnumerable<IAlleleInfoForMatching> GetAlleleMappingsForSerology(IHlaInfoToMapSerologyToAllele hlaInfo, ISerologyInfoForMatching serologyInfo)
         {
-            var matchLocus = serologyInfo.HlaTyping.Locus;
+            var locus = serologyInfo.HlaTyping.Locus;
             var matchingSerologyNames = serologyInfo.MatchingSerologies.Select(m => m.SerologyTyping.Name);
 
             return
@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
                 join alleleToSerology in hlaInfo.AlleleToSerologyRelationships
                     on new { WmdaLocus = alleleInfo.TypingUsedInMatching.TypingLocus, alleleInfo.TypingUsedInMatching.Name }
                     equals new { WmdaLocus = alleleToSerology.TypingLocus, alleleToSerology.Name }
-                where alleleInfo.TypingUsedInMatching.Locus.Equals(matchLocus)
+                where alleleInfo.TypingUsedInMatching.Locus.Equals(locus)
                       && alleleToSerology.Serologies.Intersect(matchingSerologyNames).Any()
                 select alleleInfo;
         }

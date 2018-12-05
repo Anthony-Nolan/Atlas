@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         [TestCase("Cw", Locus.C)]
         [TestCase("DQ", Locus.Dqb1)]
         [TestCase("DR", Locus.Drb1)]
-        public void HlaTyping_WhenSerologyTyping_LocusConvertedToMatchLocus(string serologyLocus, Locus expectedLocus)
+        public void HlaTyping_WhenSerologyTyping_SerologyLocusConvertedToLocus(string serologyLocus, Locus expectedLocus)
         {
             var actualHlaTyping = new HlaTyping(TypingMethod.Serology, serologyLocus, HlaName);
 
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         [TestCase("DPB1*", Locus.Dpb1)]
         [TestCase("DQB1*", Locus.Dqb1)]
         [TestCase("DRB1*", Locus.Drb1)]
-        public void HlaTyping_WhenMolecularTyping_LocusConvertedToMatchLocus(string molecularLocus, Locus expectedLocus)
+        public void HlaTyping_WhenMolecularTyping_MolecularLocusConvertedToLocus(string molecularLocus, Locus expectedLocus)
         {
             var actualHlaTyping = new HlaTyping(TypingMethod.Molecular, molecularLocus, HlaName);
 

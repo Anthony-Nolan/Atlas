@@ -35,11 +35,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedMolecularLocus))]
-        public void AlleleTyping_WhenNew_MatchLocusConvertedToMolecularTypingLocusName(object[] alleleToTest, string expectedMolecularTypingLocus)
+        public void AlleleTyping_WhenNew_LocusConvertedToTypingLocusName(object[] alleleToTest, string expectedTypingLocus)
         {
             var actualAlleleTyping = GetActualAlleleTyping(alleleToTest);
 
-            actualAlleleTyping.TypingLocus.Should().Be(expectedMolecularTypingLocus);
+            actualAlleleTyping.TypingLocus.Should().Be(expectedTypingLocus);
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedExpressionSuffixes))]

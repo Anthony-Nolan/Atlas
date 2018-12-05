@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return MatchingDictionaryLoci
                 .GetMatchLoci()
-                .Select(matchLocus => matchLocus.ToString());
+                .Select(locus => locus.ToString());
         }
 
         public static string GetEntityPartitionKey(Locus locus)

@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             return LociDetails.Select(n => n.MatchName);
         }
 
-        public static Locus GetMatchLocusFromTypingLocusIfExists(TypingMethod typingMethod, string locusName)
+        public static Locus GetLocusFromTypingLocusIfExists(TypingMethod typingMethod, string locusName)
         {
             var locusDetails = LociDetails.FirstOrDefault(locus =>
                 typingMethod == TypingMethod.Molecular ?

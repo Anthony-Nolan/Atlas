@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
         private IEnumerable<IHlaLookupResult> GetLookupResultsForNmdpCodeAlleleNames(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
-            var allelesGroupedByMatchLocusAndLookupName = matchedAlleles
+            var allelesGroupedByLocusAndLookupName = matchedAlleles
                 // We must use names both with and without the expression suffix. This is because truncated allele names with a null suffix mean a different thing than those without:
                 // e.g. 01:01 can refer to all 3/4 field alleles starting with 01:01, 01:01N refers only to the null alleles in this group
                 // Both can be used for lookup, so we must treat then independently
@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                     x.nmdpLookupName
                 }, t => t.allele);
 
-            return allelesGroupedByMatchLocusAndLookupName
+            return allelesGroupedByLocusAndLookupName
                 .Select(x => GetNmdpCodeAlleleLookupResult(x, x.Key.nmdpLookupName));
         }
 
@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
             // they lack field delimiters and will be assigned a field count of 1.
             // These alleles must be excluded from the lookup results.
 
-            var allelesGroupedByMatchLocusAndLookupName = matchedAlleles
+            var allelesGroupedByLocusAndLookupName = matchedAlleles
                 .Where(matchedAllele => matchedAllele.TypingForHlaLookupResult.Fields.Count() > 1)
                 .GroupBy(matchedAllele => new
                 {
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                     LookupName = matchedAllele.TypingForHlaLookupResult.ToXxCodeLookupName()
                 });
 
-            return allelesGroupedByMatchLocusAndLookupName
+            return allelesGroupedByLocusAndLookupName
                 .Select(GetXxCodeLookupResult);
         }
 
