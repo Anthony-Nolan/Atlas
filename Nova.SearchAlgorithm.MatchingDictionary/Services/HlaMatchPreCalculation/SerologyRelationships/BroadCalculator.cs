@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
         protected override IEnumerable<MatchingSerology> GetIndirectlyMatchingSerologies(SerologyFamily family)
         {
             var splits = family.Child.SplitAntigens
-                .Select(s => new HlaNom(TypingMethod.Serology, family.Child.Locus, s))
+                .Select(s => new HlaNom(TypingMethod.Serology, family.Child.TypingLocus, s))
                 .ToList();
 
             var splitsOfBroad = splits.Select(GetSplitMatchingSerology);

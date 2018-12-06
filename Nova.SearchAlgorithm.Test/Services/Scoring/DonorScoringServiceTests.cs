@@ -1,13 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
@@ -17,6 +12,9 @@ using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring
 {
@@ -71,7 +69,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
 
-            await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<MatchLocus>(), Arg.Any<string>());
+            await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<Locus>(), Arg.Any<string>());
         }
 
         [Test]
@@ -87,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new[] {result1}, patientHla);
 
-            await scoringLookupService.DidNotReceive().GetHlaLookupResult(locus.ToMatchLocus(), Arg.Is<string>(s => s != patientHlaAtLocus));
+            await scoringLookupService.DidNotReceive().GetHlaLookupResult(locus, Arg.Is<string>(s => s != patientHlaAtLocus));
         }
 
         [Test]
@@ -108,7 +106,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
 
-            await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<MatchLocus>(), Arg.Any<string>());
+            await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<Locus>(), Arg.Any<string>());
         }
 
         [Test]
@@ -121,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
 
-            await scoringLookupService.DidNotReceive().GetHlaLookupResult(Locus.B.ToMatchLocus(), Arg.Any<string>());
+            await scoringLookupService.DidNotReceive().GetHlaLookupResult(Locus.B, Arg.Any<string>());
         }
 
         [Test]
@@ -266,7 +264,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public async Task Score_ForUntypedDonorLoci_ReturnsIsDonorTypedAsFalse()
         {
             const Locus locus = Locus.A;
-            scoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), Arg.Any<string>()).ReturnsNull();
+            scoringLookupService.GetHlaLookupResult(locus, Arg.Any<string>()).ReturnsNull();
 
             var matchResult1 = new MatchResultBuilder().Build();
 
@@ -291,7 +289,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public async Task Score_ForTypedDonorLoci_ReturnsTypedLociCountEqualToNumberOfTypedLoci()
         {
             const Locus locus = Locus.A;
-            scoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), Arg.Any<string>()).ReturnsNull();
+            scoringLookupService.GetHlaLookupResult(locus, Arg.Any<string>()).ReturnsNull();
 
             var matchResult1 = new MatchResultBuilder().Build();
 

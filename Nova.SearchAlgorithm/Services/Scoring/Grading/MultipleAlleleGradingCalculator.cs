@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             var singleAlleleInfos = GetSingleAlleleInfos(lookupResult);
 
             return singleAlleleInfos.Select(alleleInfo => new HlaScoringLookupResult(
-                lookupResult.MatchLocus,
+                lookupResult.Locus,
                 alleleInfo.AlleleName,
                 LookupNameCategory.OriginalAllele,
                 alleleInfo));

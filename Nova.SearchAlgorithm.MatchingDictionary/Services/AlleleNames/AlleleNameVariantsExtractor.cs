@@ -27,14 +27,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName)
         {
             var typingFromCurrentName = new AlleleTyping(
-                alleleName.MatchLocus,
+                alleleName.Locus,
                 alleleName.CurrentAlleleNames.First());
 
             return typingFromCurrentName
                 .NameVariantsTruncatedByFieldAndOrExpressionSuffix
-                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.Locus, nameVariant))
+                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.TypingLocus, nameVariant))
                 .Select(nameVariant => new AlleleNameLookupResult(
-                    alleleName.MatchLocus,
+                    alleleName.Locus,
                     nameVariant,
                     alleleName.CurrentAlleleNames));
         }
@@ -42,9 +42,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         private static IEnumerable<IAlleleNameLookupResult> GroupAlleleNamesByLocusAndLookupName(IEnumerable<IAlleleNameLookupResult> alleleNameVariants)
         {
             var groupedEntries = alleleNameVariants
-                .GroupBy(e => new { e.MatchLocus, e.LookupName })
+                .GroupBy(e => new { e.Locus, e.LookupName })
                 .Select(e => new AlleleNameLookupResult(
-                    e.Key.MatchLocus,
+                    e.Key.Locus,
                     e.Key.LookupName,
                     e.SelectMany(x => x.CurrentAlleleNames).Distinct()
                 ));

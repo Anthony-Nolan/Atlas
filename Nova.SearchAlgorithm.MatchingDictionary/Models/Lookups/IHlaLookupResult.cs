@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups
     /// </summary>
     public interface IHlaLookupResult : IStorableInCloudTable<HlaLookupTableEntity>
     {
-        MatchLocus MatchLocus { get; }
+        Locus Locus { get; }
 
         /// <summary>
         /// LookupName refers to the HLA name as stored in the lookup repository.

@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -81,14 +82,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             });
         }
 
-        [TestCase("A*", MatchLocus.A, "01:01:01:01", "01:01P", "01:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Normal Allele")]
-        [TestCase("B*", MatchLocus.B, "39:01:01:02L", "39:01P", "39:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "L-Allele")]
-        [TestCase("C*", MatchLocus.C, "07:01:01:14Q", "07:01P", "07:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Q-Allele")]
-        [TestCase("B*", MatchLocus.B, "44:02:01:02S", "44:02P", "44:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "S-Allele")]
-        [TestCase("A*", MatchLocus.A, "29:01:01:02N", null, "29:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Null Allele")]
+        [TestCase("A*", Locus.A, "01:01:01:01", "01:01P", "01:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Normal Allele")]
+        [TestCase("B*", Locus.B, "39:01:01:02L", "39:01P", "39:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "L-Allele")]
+        [TestCase("C*", Locus.C, "07:01:01:14Q", "07:01P", "07:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Q-Allele")]
+        [TestCase("B*", Locus.B, "44:02:01:02S", "44:02P", "44:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "S-Allele")]
+        [TestCase("A*", Locus.A, "29:01:01:02N", null, "29:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Null Allele")]
         public void MatchedAlleles_ForVaryingExpressionStatuses_CorrectMatchingInfoAssigned(
-            string locus,
-            MatchLocus matchLocus,
+            string molecularLocus,
+            Locus locus,
             string alleleName,
             string pGroup,
             string gGroup,
@@ -97,23 +98,23 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         {
             var status = new AlleleTypingStatus(sequenceStatus, dnaCategory);
             var expected = BuildAlleleInfoForMatching(
-                new AlleleTyping(locus, alleleName, status),
-                new AlleleTyping(locus, alleleName, status),
+                new AlleleTyping(molecularLocus, alleleName, status),
+                new AlleleTyping(molecularLocus, alleleName, status),
                 pGroup,
                 gGroup);
 
-            var actual = GetSingleMatchingTyping(matchLocus, alleleName);
+            var actual = GetSingleMatchingTyping(locus, alleleName);
 
             Assert.AreEqual(expected, actual);
         }
 
-        [TestCase("A*", MatchLocus.A, "11:53", "11:02:01", "11:02P", "11:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele & Identical Hla are expressing")]
-        [TestCase("A*", MatchLocus.A, "01:34N", "01:01:38L", "01:01P", "01:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele is null; Identical Hla is expressing")]
-        [TestCase("A*", MatchLocus.A, "03:260", "03:284N", null, "03:284N", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele is expressing; Identical Hla is null")]
-        [TestCase("A*", MatchLocus.A, "02:100", "02:100", null, null, SequenceStatus.Unknown, DnaCategory.Unknown, Description = "Deleted Allele has no Identical Hla")]
+        [TestCase("A*", Locus.A, "11:53", "11:02:01", "11:02P", "11:02:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele & Identical Hla are expressing")]
+        [TestCase("A*", Locus.A, "01:34N", "01:01:38L", "01:01P", "01:01:01G", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele is null; Identical Hla is expressing")]
+        [TestCase("A*", Locus.A, "03:260", "03:284N", null, "03:284N", SequenceStatus.Full, DnaCategory.GDna, Description = "Deleted Allele is expressing; Identical Hla is null")]
+        [TestCase("A*", Locus.A, "02:100", "02:100", null, null, SequenceStatus.Unknown, DnaCategory.Unknown, Description = "Deleted Allele has no Identical Hla")]
         public void MatchedAlleles_WhenDeletedAllele_IdenticalHlaUsedToAssignMatchingInfo(
-            string locus,
-            MatchLocus matchLocus,
+            string molecularLocus,
+            Locus locus,
             string alleleName,
             string alleleNameUsedInMatching,
             string pGroup,
@@ -123,11 +124,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         {
             var alleleTypingStatus = new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown);
             var deletedAlleleTyping = new AlleleTyping(
-                locus, alleleName, alleleTypingStatus, true);
+                molecularLocus, alleleName, alleleTypingStatus, true);
 
             var usedInMatchingStatus = new AlleleTypingStatus(sequenceStatus, dnaCategory);
             var usedInMatching = new AlleleTyping(
-                locus, alleleNameUsedInMatching, usedInMatchingStatus, alleleNameUsedInMatching.Equals(alleleName));
+                molecularLocus, alleleNameUsedInMatching, usedInMatchingStatus, alleleNameUsedInMatching.Equals(alleleName));
 
             var expected = BuildAlleleInfoForMatching(
                 deletedAlleleTyping,
@@ -135,7 +136,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
                 pGroup,
                 gGroup);
 
-            var actual = GetSingleMatchingTyping(matchLocus, alleleName);
+            var actual = GetSingleMatchingTyping(locus, alleleName);
 
             Assert.AreEqual(expected, actual);
         }

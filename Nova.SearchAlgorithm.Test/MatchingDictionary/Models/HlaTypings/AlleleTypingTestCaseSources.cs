@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
@@ -12,15 +12,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         private const string ThreeFieldName = FieldValue + FieldDelimiter + FieldValue + FieldDelimiter + FieldValue;
         private const string TwoFieldName = FieldValue + FieldDelimiter + FieldValue;
 
-        private static readonly object[] NormallyExpressedFourFieldAllele = { MatchLocus.A, FourFieldName };
-        private static readonly object[] NormallyExpressedThreeFieldAllele = { MatchLocus.A, ThreeFieldName };
-        private static readonly object[] NormallyExpressedTwoFieldAllele = { MatchLocus.A, TwoFieldName };
-        private static readonly object[] LowExpressedAllele = { MatchLocus.B, FourFieldName + "L" };
-        private static readonly object[] QuestionableExpressedAllele = { MatchLocus.C, FourFieldName + "Q" };
-        private static readonly object[] SecretedExpressedAllele = { MatchLocus.Dqb1, FourFieldName + "S" };
-        private static readonly object[] AberrantExpressedAllele = { MatchLocus.Drb1, FourFieldName + "A" };
-        private static readonly object[] CytoplasmicExpressedAllele = { MatchLocus.Dpb1, FourFieldName + "C" };
-        private static readonly object[] NullExpressedAllele = { MatchLocus.B, FourFieldName + "N" };
+        private static readonly object[] NormallyExpressedFourFieldAllele = { Locus.A, FourFieldName };
+        private static readonly object[] NormallyExpressedThreeFieldAllele = { Locus.A, ThreeFieldName };
+        private static readonly object[] NormallyExpressedTwoFieldAllele = { Locus.A, TwoFieldName };
+        private static readonly object[] LowExpressedAllele = { Locus.B, FourFieldName + "L" };
+        private static readonly object[] QuestionableExpressedAllele = { Locus.C, FourFieldName + "Q" };
+        private static readonly object[] SecretedExpressedAllele = { Locus.Dqb1, FourFieldName + "S" };
+        private static readonly object[] AberrantExpressedAllele = { Locus.Drb1, FourFieldName + "A" };
+        private static readonly object[] CytoplasmicExpressedAllele = { Locus.Dpb1, FourFieldName + "C" };
+        private static readonly object[] NullExpressedAllele = { Locus.B, FourFieldName + "N" };
 
         public static readonly object[] AlleleTypingsToTest =
         {

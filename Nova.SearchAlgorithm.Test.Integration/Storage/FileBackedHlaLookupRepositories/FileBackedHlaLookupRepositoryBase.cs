@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -43,10 +44,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
             return Task.CompletedTask;
         }
 
-        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(MatchLocus matchLocus, string lookupName, TypingMethod typingMethod)
+        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(Locus locus, string lookupName, TypingMethod typingMethod)
         {
             var lookupResult = HlaLookupResults.FirstOrDefault(hla => 
-                hla.MatchLocus.Equals(matchLocus) && hla.LookupName == lookupName);
+                hla.Locus.Equals(locus) && hla.LookupName == lookupName);
 
             return Task.FromResult(lookupResult?.ConvertToTableEntity());
         }

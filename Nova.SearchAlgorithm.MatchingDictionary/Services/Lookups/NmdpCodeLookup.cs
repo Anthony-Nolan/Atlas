@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.Utils.ApplicationInsights;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
@@ -33,9 +33,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             this.logger = logger;
         }
 
-        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(MatchLocus matchLocus, string lookupName)
+        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName)
         {
-            if (memoryCache.TryGetValue($"Antigens_{matchLocus}", out Dictionary<string, string> antigenDictionary)
+            if (memoryCache.TryGetValue($"Antigens_{locus}", out Dictionary<string, string> antigenDictionary)
                 && antigenDictionary.TryGetValue("*" + lookupName, out var alleleString))
             {
                 return alleleSplitter.GetAlleleNamesFromAlleleString(alleleString);
@@ -43,11 +43,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 
             logger.SendTrace("Failed to lookup nmdp code from cache", LogLevel.Info, new Dictionary<string, string>
             {
-                {"MatchLocus", matchLocus.ToString()},
+                {"LocusName", locus.ToString()},
                 {"LookupName", lookupName}
             });
 
-            Enum.TryParse(matchLocus.ToString(), true, out MolecularLocusType molecularLocusType);
+            Enum.TryParse(locus.ToString(), true, out MolecularLocusType molecularLocusType);
             return await hlaServiceClient.GetAllelesForDefinedNmdpCode(molecularLocusType, lookupName);
         }
     }

@@ -10,7 +10,6 @@ using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
@@ -143,7 +142,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null 
-                ? await hlaScoringLookupService.GetHlaLookupResult(locus.ToMatchLocus(), hla)
+                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla)
                 : null;
         }
     }

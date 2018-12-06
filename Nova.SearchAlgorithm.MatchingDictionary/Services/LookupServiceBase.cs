@@ -1,5 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using System;
 using System.Threading.Tasks;
 
@@ -7,29 +7,29 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public abstract class LookupServiceBase<T>
     {
-        protected async Task<T> GetLookupResults(MatchLocus matchLocus, string lookupName)
+        protected async Task<T> GetLookupResults(Locus locus, string lookupName)
         {
             try
             {
                 if (!LookupNameIsValid(lookupName))
                 {
-                    throw new ArgumentException($"{lookupName} at locus {matchLocus} is not a valid lookup name.");
+                    throw new ArgumentException($"{lookupName} at locus {locus} is not a valid lookup name.");
                 }
 
                 var formattedLookupName = FormatLookupName(lookupName);
 
-                return await PerformLookup(matchLocus, formattedLookupName);
+                return await PerformLookup(locus, formattedLookupName);
             }
             catch (Exception ex)
             {
-                var msg = $"Failed to lookup '{lookupName}' at locus {matchLocus}.";
+                var msg = $"Failed to lookup '{lookupName}' at locus {locus}.";
                 throw new MatchingDictionaryException(msg, ex);
             }
         }
 
         protected abstract bool LookupNameIsValid(string lookupName);
 
-        protected abstract Task<T> PerformLookup(MatchLocus matchLocus, string lookupName);
+        protected abstract Task<T> PerformLookup(Locus locus, string lookupName);
 
         private static string FormatLookupName(string lookupName)
         {

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
@@ -30,8 +31,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services
             nullScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(NullAlleleName).Build();
             expressingScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(ExpressingAlleleName).Build();
 
-            nullSource.TypingForHlaLookupResult.Returns(new AlleleTyping(MatchLocus.A, NullAlleleName));
-            expressingSource.TypingForHlaLookupResult.Returns(new AlleleTyping(MatchLocus.A, ExpressingAlleleName));
+            nullSource.TypingForHlaLookupResult.Returns(new AlleleTyping(Locus.A, NullAlleleName));
+            expressingSource.TypingForHlaLookupResult.Returns(new AlleleTyping(Locus.A, ExpressingAlleleName));
         }
 
         [Test]

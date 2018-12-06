@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public class AlleleNameHistory : IWmdaHlaTyping
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public string Locus { get; set; }
+        public string TypingLocus { get; set; }
 
         /// <summary>
         /// HLA Accession ID
@@ -34,19 +34,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public AlleleNameHistory(string locus, string hlaId, IEnumerable<VersionedAlleleName> versionedAlleleNames)
         {
-            Locus = locus;
+            TypingLocus = locus;
             Name = hlaId;
             VersionedAlleleNames = versionedAlleleNames;
         }
 
         public bool DistinctAlleleNamesContain(IWmdaHlaTyping allele)
         {
-            return Locus.Equals(allele.Locus) && DistinctAlleleNames.Contains(allele.Name);
+            return TypingLocus.Equals(allele.TypingLocus) && DistinctAlleleNames.Contains(allele.Name);
         }
 
         public override string ToString()
         {
-            return $"locus: {Locus}, hlaId: {Name}";
+            return $"locus: {TypingLocus}, hlaId: {Name}";
         }
     }
 }

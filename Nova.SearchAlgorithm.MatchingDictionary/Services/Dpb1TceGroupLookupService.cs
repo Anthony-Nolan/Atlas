@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            var lookupResult = await GetHlaLookupResult(MatchLocus.Dpb1, dpb1HlaName);
+            var lookupResult = await GetHlaLookupResult(Locus.Dpb1, dpb1HlaName);
             return lookupResult.TceGroup;
         }
 
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         protected override IDpb1TceGroupsLookupResult ConsolidateHlaLookupResults(
-            MatchLocus matchLocus, 
+            Locus locus, 
             string lookupName,
             IEnumerable<IDpb1TceGroupsLookupResult> lookupResults)
         {

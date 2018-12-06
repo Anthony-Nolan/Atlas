@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.AlleleToSerology
 {
@@ -9,7 +10,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // normal Allele
-                MatchLocus.A, "01:01:01:01",
+                Locus.A, "01:01:01:01",
                 new[]
                 {
                     new object[] {"A", "1", SerologySubtype.NotSplit, true}
@@ -18,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // low Allele
-                MatchLocus.B, "39:01:01:02L",
+                Locus.B, "39:01:01:02L",
                 new[]
                 {
                     new object[] {"B", "3901", SerologySubtype.Associated, true},
@@ -29,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // questionable Allele
-                MatchLocus.C, "07:01:01:14Q",
+                Locus.C, "07:01:01:14Q",
                 new[]
                 {
                     new object[] {"Cw", "7", SerologySubtype.NotSplit, true}
@@ -39,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // secreted Allele
-                MatchLocus.B, "44:02:01:02S",
+                Locus.B, "44:02:01:02S",
                 new[]
                 {
                     new object[] {"B", "44", SerologySubtype.Split, true},
@@ -53,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // deleted allele with identical hla
-                MatchLocus.A, "11:53",
+                Locus.A, "11:53",
                 new[]
                 {
                     new object[] { "A", "11", SerologySubtype.NotSplit, true }
@@ -62,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // deleted allele is null, but identical is expressing
-                MatchLocus.A, "01:34N",
+                Locus.A, "01:34N",
                 new[]
                 {
                     new object[] { "A", "1", SerologySubtype.NotSplit, true }
@@ -71,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // deleted allele is expressing, but identical is null
-                MatchLocus.A, "03:260",
+                Locus.A, "03:260",
                 new object[][]{}
             }
         };
@@ -81,7 +82,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Broad with no Associated
-                MatchLocus.A, "26:10",
+                Locus.A, "26:10",
                 new[]
                 {
                     new object[] {"A", "10", SerologySubtype.Broad, true },
@@ -94,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Broad With Associated
-                MatchLocus.B, "40:26",
+                Locus.B, "40:26",
                 new[]
                 {
                     new object[] {"B", "21", SerologySubtype.Broad, true },
@@ -109,7 +110,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Split with no Associated
-                MatchLocus.C, "03:02:01",
+                Locus.C, "03:02:01",
                 new[]
                 {
                     new object[] {"Cw", "10", SerologySubtype.Split, true },
@@ -119,7 +120,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Split with Associated
-                MatchLocus.Drb1, "14:01:01",
+                Locus.Drb1, "14:01:01",
                 new[]
                 {
                     new object[] {"DR", "14", SerologySubtype.Split, true },
@@ -131,7 +132,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Associated directly to Broad
-                MatchLocus.B, "40:05:01:01",
+                Locus.B, "40:05:01:01",
                 new[]
                 {
                     new object[] {"B", "40", SerologySubtype.Broad, true },
@@ -144,7 +145,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Associated directly to Split
-                MatchLocus.A, "24:03:01:01",
+                Locus.A, "24:03:01:01",
                 new[]
                 {
                     new object[] {"A", "2403", SerologySubtype.Associated, true },
@@ -155,7 +156,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Associated directly to Not-Split
-                MatchLocus.Drb1, "01:03:02",
+                Locus.Drb1, "01:03:02",
                 new[]
                 {
                     new object[] {"DR", "103", SerologySubtype.Associated, true },
@@ -165,7 +166,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Not-Split has Associated
-                MatchLocus.B, "07:02:27",
+                Locus.B, "07:02:27",
                 new[]
                 {
                     new object[] {"B", "7", SerologySubtype.NotSplit, true },
@@ -175,7 +176,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Not-Split has no Associated
-                MatchLocus.Dqb1, "02:02:01:01",
+                Locus.Dqb1, "02:02:01:01",
                 new[]
                 {
                     new object[] {"DQ", "2", SerologySubtype.NotSplit, true }
@@ -183,11 +184,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             }
         };
 
-        private static readonly object[] B15BroadAllele = { MatchLocus.B, "15:33" };
-        private static readonly object[] B15SplitAllele = { MatchLocus.B, "15:01:01:01" };
-        private static readonly object[] B70BroadAllele = { MatchLocus.B, "15:09:01" };
-        private static readonly object[] B70SplitAllele = { MatchLocus.B, "15:03:01:01" };
-        private static readonly object[] B15And70BroadAllele = { MatchLocus.B, "15:36" };
+        private static readonly object[] B15BroadAllele = { Locus.B, "15:33" };
+        private static readonly object[] B15SplitAllele = { Locus.B, "15:01:01:01" };
+        private static readonly object[] B70BroadAllele = { Locus.B, "15:09:01" };
+        private static readonly object[] B70SplitAllele = { Locus.B, "15:03:01:01" };
+        private static readonly object[] B15And70BroadAllele = { Locus.B, "15:36" };
 
         public static readonly object[] B15AllelesMatchingSerologies =
         {
@@ -255,19 +256,19 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // No assignments
-                MatchLocus.C, "12:02:02:01",
+                Locus.C, "12:02:02:01",
                 new object[][]{}
             },
             new object[]
             {
                 // No assignments
-                MatchLocus.Dpb1, "01:01:01:01",
+                Locus.Dpb1, "01:01:01:01",
                 new object[][]{}
             },
             new object[]
             {
                 // Only has expert assignment
-                MatchLocus.C, "15:07",
+                Locus.C, "15:07",
                 new[]
                 {
                     new object[] {"Cw", "3", SerologySubtype.Broad, true},

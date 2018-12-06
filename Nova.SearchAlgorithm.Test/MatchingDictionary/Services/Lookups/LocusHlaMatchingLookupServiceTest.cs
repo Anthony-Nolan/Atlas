@@ -1,18 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
     [TestFixture]
     public class LocusHlaMatchingLookupServiceTest
     {
-        private const MatchLocus MatchedLocus = MatchLocus.A;
+        private const Locus MatchedLocus = Locus.A;
         private IHlaMatchingLookupService matchingLookupService;
         private ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
 

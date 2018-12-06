@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Exceptions
 {
@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Exceptions
         {
         }
 
-        public InvalidHlaException(MatchLocus matchLocus, string hlaName) : this(matchLocus.ToString(), hlaName)
+        public InvalidHlaException(Locus locus, string hlaName) : this(locus.ToString(), hlaName)
         {
         }
     }

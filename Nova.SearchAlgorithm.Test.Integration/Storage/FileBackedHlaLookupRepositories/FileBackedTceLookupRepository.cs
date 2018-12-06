@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {

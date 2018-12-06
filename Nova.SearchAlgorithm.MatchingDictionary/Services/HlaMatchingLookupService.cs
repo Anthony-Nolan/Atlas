@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         protected override IHlaMatchingLookupResult ConsolidateHlaLookupResults(
-            MatchLocus matchLocus, 
+            Locus locus, 
             string lookupName,
             IEnumerable<IHlaMatchingLookupResult> lookupResults)
         {
@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                 .Distinct();
 
             return new HlaMatchingLookupResult(
-                matchLocus,
+                locus,
                 lookupName,
                 typingMethod,
                 pGroups);

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
 {
@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
         protected override IHlaLookupResult GetSerologyLookupResult(IHlaLookupResultSource<SerologyTyping> lookupResultSource)
         {
             return new HlaMatchingLookupResult(
-                    lookupResultSource.TypingForHlaLookupResult.MatchLocus,
+                    lookupResultSource.TypingForHlaLookupResult.Locus,
                     lookupResultSource.TypingForHlaLookupResult.Name,
                     TypingMethod.Serology,
                     lookupResultSource.MatchingPGroups);
@@ -70,7 +70,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion
                 .Distinct();
 
             return new HlaMatchingLookupResult(
-                firstAllele.MatchLocus,
+                firstAllele.Locus,
                 getLookupName(firstAllele),
                 TypingMethod.Molecular,
                 pGroups

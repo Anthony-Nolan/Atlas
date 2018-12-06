@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
                 return serologyTyping;
             }
 
-            var identicalSerology = new HlaNom(TypingMethod.Serology, serology.Locus, serology.IdenticalHla);
+            var identicalSerology = new HlaNom(TypingMethod.Serology, serology.TypingLocus, serology.IdenticalHla);
             return GetSerologyTyping(identicalSerology);
         }
 

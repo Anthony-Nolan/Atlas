@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
@@ -8,7 +9,6 @@ using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
 using System;
-using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {

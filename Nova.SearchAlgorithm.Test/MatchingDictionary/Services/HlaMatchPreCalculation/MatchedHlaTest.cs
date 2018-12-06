@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void MatchedHla_ContainsOnlyMatchLoci()
         {        
-            MatchedHla.Select(m => m.HlaTyping.MatchLocus.ToString().ToUpper())
+            MatchedHla.Select(m => m.HlaTyping.Locus.ToString().ToUpper())
                 .Distinct()
                 .Should()
                 .OnlyContain(locus => ExpectedMatchLoci.Contains(locus));

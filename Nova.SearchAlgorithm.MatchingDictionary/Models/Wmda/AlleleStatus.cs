@@ -6,14 +6,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public class AlleleStatus : IWmdaHlaTyping, IEquatable<AlleleStatus>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public string Locus { get; set; }
+        public string TypingLocus { get; set; }
         public string Name { get; set; }
         public string SequenceStatus { get; }
         public string DnaCategory { get; }
 
         public AlleleStatus(string locus, string name, string sequenceStatus, string dnaCategory)
         {
-            Locus = locus;
+            TypingLocus = locus;
             Name = name;
             SequenceStatus = sequenceStatus;
             DnaCategory = dnaCategory;
@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public override string ToString()
         {
-            return $"locus: {Locus}, name: {Name}";
+            return $"locus: {TypingLocus}, name: {Name}";
         }
         
         public bool Equals(AlleleStatus other)
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                string.Equals(Locus, other.Locus) && 
+                string.Equals(TypingLocus, other.TypingLocus) && 
                 string.Equals(Name, other.Name) && 
                 string.Equals(SequenceStatus, other.SequenceStatus) && 
                 string.Equals(DnaCategory, other.DnaCategory);
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             unchecked
             {
-                var hashCode = Locus.GetHashCode();
+                var hashCode = TypingLocus.GetHashCode();
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
                 hashCode = (hashCode * 397) ^ SequenceStatus.GetHashCode();
                 hashCode = (hashCode * 397) ^ DnaCategory.GetHashCode();

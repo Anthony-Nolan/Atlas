@@ -8,14 +8,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public class RelDnaSer : IWmdaHlaTyping, IEquatable<RelDnaSer>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public string Locus { get; set; }
+        public string TypingLocus { get; set; }
         public string Name { get; set; }
         public IEnumerable<SerologyAssignment> Assignments { get; }
         public IEnumerable<string> Serologies { get; }
 
         public RelDnaSer(string locus, string name, IEnumerable<SerologyAssignment> assignments)
         {
-            Locus = locus;
+            TypingLocus = locus;
             Name = name;
             Assignments = assignments;
             Serologies = Assignments.Select(a => a.Name).Distinct().OrderBy(s => s);
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public override string ToString()
         {
-            return $"locus: {Locus}, allele: {Name}, assignments: {string.Join("/", Assignments)}";
+            return $"locus: {TypingLocus}, allele: {Name}, assignments: {string.Join("/", Assignments)}";
         }
 
         public bool Equals(RelDnaSer other)
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                string.Equals(Locus, other.Locus) 
+                string.Equals(TypingLocus, other.TypingLocus) 
                 && string.Equals(Name, other.Name) 
                 && Assignments.SequenceEqual(other.Assignments);
         }
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             unchecked
             {
-                var hashCode = Locus.GetHashCode();
+                var hashCode = TypingLocus.GetHashCode();
                 hashCode = (hashCode * 397) ^ Name.GetHashCode();
                 hashCode = (hashCode * 397) ^ Assignments.GetHashCode();
                 return hashCode;

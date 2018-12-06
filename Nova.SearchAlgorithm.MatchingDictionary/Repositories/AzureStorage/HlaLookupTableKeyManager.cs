@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +15,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
         {
             return MatchingDictionaryLoci
                 .GetMatchLoci()
-                .Select(matchLocus => matchLocus.ToString());
+                .Select(locus => locus.ToString());
         }
 
-        public static string GetEntityPartitionKey(MatchLocus matchLocus)
+        public static string GetEntityPartitionKey(Locus locus)
         {
-            return matchLocus.ToString();
+            return locus.ToString();
         }
 
         public static string GetEntityRowKey(string lookupName, TypingMethod typingMethod)

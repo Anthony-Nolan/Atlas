@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
@@ -8,10 +9,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         public SingleAlleleScoringInfo ScoringInfo { get; }
         public AlleleTyping Allele { get; }
 
-        public AlleleGradingInfo(MatchLocus matchLocus, IHlaScoringInfo scoringInfo)
+        public AlleleGradingInfo(Locus locus, IHlaScoringInfo scoringInfo)
         {
             ScoringInfo = (SingleAlleleScoringInfo)scoringInfo;
-            Allele = new AlleleTyping(matchLocus, ScoringInfo.AlleleName);
+            Allele = new AlleleTyping(locus, ScoringInfo.AlleleName);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             var matchingPGroups = entity.GetHlaInfo<IEnumerable<string>>();
 
             return new HlaMatchingLookupResult(
-                entity.MatchLocus, 
+                entity.Locus, 
                 entity.LookupName, 
                 entity.TypingMethod, 
                 matchingPGroups);

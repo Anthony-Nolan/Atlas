@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
             }
 
             return child.AssociatedAntigens
-                .Select(a => new SerologyTyping(child.Locus, a, SerologySubtype.Associated))
+                .Select(a => new SerologyTyping(child.TypingLocus, a, SerologySubtype.Associated))
                 .Select(ser => new MatchingSerology(ser, false));
         }
 

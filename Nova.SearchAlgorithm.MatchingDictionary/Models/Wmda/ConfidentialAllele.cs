@@ -6,18 +6,18 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
     public class ConfidentialAllele : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public string Locus { get; set; }
+        public string TypingLocus { get; set; }
         public string Name { get; set; }
 
         public ConfidentialAllele(string locus, string name)
         {
-            Locus = locus;
+            TypingLocus = locus;
             Name = name;
         }
 
         public override string ToString()
         {
-            return $"locus: {Locus}, name: {Name}";
+            return $"locus: {TypingLocus}, name: {Name}";
         }
 
         public bool Equals(IWmdaHlaTyping other)
@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                string.Equals(Locus, other.Locus) 
+                string.Equals(TypingLocus, other.TypingLocus) 
                 && string.Equals(Name, other.Name);
         }
 
@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
         {
             unchecked
             {
-                return (Locus.GetHashCode() * 397) ^ Name.GetHashCode();
+                return (TypingLocus.GetHashCode() * 397) ^ Name.GetHashCode();
             }
         }
     }

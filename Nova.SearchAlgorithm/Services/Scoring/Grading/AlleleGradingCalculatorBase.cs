@@ -21,11 +21,11 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             IHlaScoringLookupResult donorLookupResult)
         {
             var patientInfo = new AlleleGradingInfo(
-                patientLookupResult.MatchLocus,
+                patientLookupResult.Locus,
                 patientLookupResult.HlaScoringInfo);
 
             var donorInfo = new AlleleGradingInfo(
-                donorLookupResult.MatchLocus,
+                donorLookupResult.Locus,
                 donorLookupResult.HlaScoringInfo);
 
             return GetAlleleMatchGrade(patientInfo, donorInfo);

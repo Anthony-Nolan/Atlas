@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -10,9 +10,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
     {
         protected List<TMatchedOn> MatchedHla { get; set; }
 
-        protected TMatchedOn GetSingleMatchingTyping(MatchLocus matchLocus, string hlaName)
+        protected TMatchedOn GetSingleMatchingTyping(Locus locus, string hlaName)
         {
-            return MatchedHla.Single(m => m.HlaTyping.MatchLocus.Equals(matchLocus) && m.HlaTyping.Name.Equals(hlaName));
+            return MatchedHla.Single(m => m.HlaTyping.Locus.Equals(locus) && m.HlaTyping.Name.Equals(hlaName));
         }
 
         [OneTimeSetUp]

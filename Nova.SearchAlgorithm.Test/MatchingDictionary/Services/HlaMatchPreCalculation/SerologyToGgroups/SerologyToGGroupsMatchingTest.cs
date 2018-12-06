@@ -1,6 +1,6 @@
 ﻿using ApprovalTests;
 using ApprovalTests.Reporters;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Linq;
@@ -14,106 +14,106 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
         [Test]
         public void SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.A, "9"));
+            Approvals.Verify(GetGGroupsAsString(Locus.A, "9"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.Dqb1, "1"));
+            Approvals.Verify(GetGGroupsAsString(Locus.Dqb1, "1"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_BroadHasSplitAndAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "21"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "21"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_SplitHasAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "51"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "51"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_SplitNoAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.C, "10"));
+            Approvals.Verify(GetGGroupsAsString(Locus.C, "10"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_AssociatedWithSplit_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "3902"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "3902"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_AssociatedWithBroad_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "4005"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "4005"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_AssociatedWithNotSplit_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.Drb1, "103"));
+            Approvals.Verify(GetGGroupsAsString(Locus.Drb1, "103"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_NotSplitWithAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.A, "2"));
+            Approvals.Verify(GetGGroupsAsString(Locus.A, "2"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_NotSplitNoAssociated_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.A, "1"));
+            Approvals.Verify(GetGGroupsAsString(Locus.A, "1"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_Deleted_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.C, "11"));
+            Approvals.Verify(GetGGroupsAsString(Locus.C, "11"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_B15Broad_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "15"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "15"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_B15Split_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "62"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "62"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_B70Broad_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "70"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "70"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_B70Split_GGroupsAreCorrect()
         {
-            Approvals.Verify(GetGGroupsAsString(MatchLocus.B, "72"));
+            Approvals.Verify(GetGGroupsAsString(Locus.B, "72"));
         }
 
         [Test]
         public void SerologyToAlleleMatching_B15And70_ShareMatchingGGroups()
         {
-            var b15 = GetSingleMatchingTyping(MatchLocus.B, "15").MatchingGGroups;
-            var b70 = GetSingleMatchingTyping(MatchLocus.B, "70").MatchingGGroups;
+            var b15 = GetSingleMatchingTyping(Locus.B, "15").MatchingGGroups;
+            var b70 = GetSingleMatchingTyping(Locus.B, "70").MatchingGGroups;
 
             Approvals.Verify(string.Join("\r\n", b15.Intersect(b70).OrderBy(p => p)));
         }
 
-        private string GetGGroupsAsString(MatchLocus matchLocus, string serologyName)
+        private string GetGGroupsAsString(Locus locus, string serologyName)
         {
             return string.Join("\r\n",
-                GetSingleMatchingTyping(matchLocus, serologyName)
+                GetSingleMatchingTyping(locus, serologyName)
                 .MatchingGGroups
                 .OrderBy(p => p));
         }

@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
             const string alleleName = "02:100";
 
             Assert.IsEmpty(WmdaHlaTypings.Where(typing =>
-                typing.Locus.Equals(locus) &&
+                typing.TypingLocus.Equals(locus) &&
                 typing.VersionedAlleleNames.Select(x => x.AlleleName).Contains(alleleName)
                 ));
         }

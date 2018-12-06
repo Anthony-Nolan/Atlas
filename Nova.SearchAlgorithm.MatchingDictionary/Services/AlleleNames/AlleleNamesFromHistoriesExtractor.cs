@@ -1,9 +1,9 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         private string GetIdenticalToAlleleName(AlleleNameHistory history)
         {
             var mostRecentNameAsTyping = new HlaNom(
-                TypingMethod.Molecular, history.Locus, history.MostRecentAlleleName);
+                TypingMethod.Molecular, history.TypingLocus, history.MostRecentAlleleName);
 
             var identicalToAlleleName = AllelesInCurrentVersionOfHlaNom
                 .First(allele => allele.TypingEquals(mostRecentNameAsTyping))

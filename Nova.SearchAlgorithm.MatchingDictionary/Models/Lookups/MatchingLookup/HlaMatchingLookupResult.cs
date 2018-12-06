@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
         IHlaMatchingLookupResult,
         IEquatable<HlaMatchingLookupResult>
     {
-        public MatchLocus MatchLocus { get; }
+        public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public IEnumerable<string> MatchingPGroups { get; }
@@ -18,12 +19,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
         public object HlaInfoToSerialise => MatchingPGroups;
 
         public HlaMatchingLookupResult(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             IEnumerable<string> matchingPGroups)
         {
-            MatchLocus = matchLocus;
+            Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             MatchingPGroups = matchingPGroups;
@@ -39,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                MatchLocus == other.MatchLocus && 
+                Locus == other.Locus && 
                 string.Equals(LookupName, other.LookupName) && 
                 TypingMethod == other.TypingMethod && 
                 MatchingPGroups.SequenceEqual(other.MatchingPGroups);
@@ -57,7 +58,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
         {
             unchecked
             {
-                var hashCode = (int) MatchLocus;
+                var hashCode = (int) Locus;
                 hashCode = (hashCode * 397) ^ LookupName.GetHashCode();
                 hashCode = (hashCode * 397) ^ (int) TypingMethod;
                 hashCode = (hashCode * 397) ^ MatchingPGroups.GetHashCode();

@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
@@ -7,19 +8,19 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
 {
     public class FileBackedAlleleNameLookupResult : IAlleleNameLookupResult
     {
-        public MatchLocus MatchLocus { get; }
+        public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise { get; }
         public IEnumerable<string> CurrentAlleleNames { get; }
 
         public FileBackedAlleleNameLookupResult(
-            MatchLocus matchLocus,
+            Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             IEnumerable<string> currentAlleleNames)
         {
-            MatchLocus = matchLocus;
+            Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             HlaInfoToSerialise = currentAlleleNames;

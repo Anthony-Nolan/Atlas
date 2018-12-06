@@ -1,15 +1,16 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IAlleleNamesLookupRepository : IHlaLookupRepository
     {
-        Task<IAlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName);
+        Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName);
     }
 
     public class AlleleNamesLookupRepository : 
@@ -27,9 +28,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public async Task<IAlleleNameLookupResult> GetAlleleNameIfExists(MatchLocus matchLocus, string lookupName)
+        public async Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName)
         {
-            var entity = await GetHlaLookupTableEntityIfExists(matchLocus, lookupName, TypingMethod.Molecular);
+            var entity = await GetHlaLookupTableEntityIfExists(locus, lookupName, TypingMethod.Molecular);
 
             return entity?.ToAlleleNameLookupResult();
         }

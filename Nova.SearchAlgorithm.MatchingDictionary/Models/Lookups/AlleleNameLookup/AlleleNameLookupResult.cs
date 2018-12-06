@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup
 {
@@ -16,22 +17,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLooku
         IAlleleNameLookupResult, 
         IEquatable<AlleleNameLookupResult>
     {
-        public MatchLocus MatchLocus { get; }
+        public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public IEnumerable<string> CurrentAlleleNames { get; }
         public object HlaInfoToSerialise => CurrentAlleleNames;
 
-        public AlleleNameLookupResult(MatchLocus matchLocus, string lookupName, IEnumerable<string> currentAlleleNames)
+        public AlleleNameLookupResult(Locus locus, string lookupName, IEnumerable<string> currentAlleleNames)
         {
-            MatchLocus = matchLocus;
+            Locus = locus;
             LookupName = lookupName;
             CurrentAlleleNames = currentAlleleNames;
         }
 
         public AlleleNameLookupResult(string locus, string lookupName, string currentAlleleName)
         {
-            MatchLocus = MatchingDictionaryLoci.GetMatchLocusFromTypingLocusIfExists(TypingMethod.Molecular, locus);
+            Locus = MatchingDictionaryLoci.GetLocusFromTypingLocusIfExists(TypingMethod.Molecular, locus);
             LookupName = lookupName;
             CurrentAlleleNames = new[] {currentAlleleName};
         }
@@ -46,7 +47,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLooku
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return 
-                MatchLocus == other.MatchLocus && 
+                Locus == other.Locus && 
                 string.Equals(LookupName, other.LookupName) && 
                 CurrentAlleleNames.SequenceEqual(other.CurrentAlleleNames);
         }
@@ -63,7 +64,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLooku
         {
             unchecked
             {
-                var hashCode = (int) MatchLocus;
+                var hashCode = (int) Locus;
                 hashCode = (hashCode * 397) ^ LookupName.GetHashCode();
                 hashCode = (hashCode * 397) ^ CurrentAlleleNames.GetHashCode();
                 return hashCode;

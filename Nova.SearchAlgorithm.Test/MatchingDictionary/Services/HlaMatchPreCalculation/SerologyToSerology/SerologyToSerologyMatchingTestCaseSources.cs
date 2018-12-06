@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
@@ -9,7 +10,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Broad serology has at least one Split with an Associated antigen
-                "A", MatchLocus.A, "9", SerologySubtype.Broad,
+                "A", Locus.A, "9", SerologySubtype.Broad,
                 new[]
                 {
                     new object[]{"9", SerologySubtype.Broad, true},
@@ -21,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 //Broad serology has Splits with no Associated antigens
-                "DQ", MatchLocus.Dqb1, "1", SerologySubtype.Broad,
+                "DQ", Locus.Dqb1, "1", SerologySubtype.Broad,
                 new[]
                 {
                     new object[]{"1", SerologySubtype.Broad, true},
@@ -32,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Broad serology has its own Associated antigen
-                "B", MatchLocus.B, "21", SerologySubtype.Broad,
+                "B", Locus.B, "21", SerologySubtype.Broad,
                 new[]
                 {
                     new object[]{"21", SerologySubtype.Broad, true},
@@ -44,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Split serology has at least one Associated antigen
-                "B", MatchLocus.B, "51", SerologySubtype.Split,
+                "B", Locus.B, "51", SerologySubtype.Split,
                 new[]
                 {
                     new object[]{"51",SerologySubtype.Split, true},
@@ -56,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Split serology has no Associated antigens
-                "Cw", MatchLocus.C, "10", SerologySubtype.Split,
+                "Cw", Locus.C, "10", SerologySubtype.Split,
                 new[]
                 {
                     new object[]{"10",SerologySubtype.Split, true},
@@ -66,7 +67,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Associated serology is direct child of a Split antigen
-                "B", MatchLocus.B, "3902", SerologySubtype.Associated,
+                "B", Locus.B, "3902", SerologySubtype.Associated,
                 new[]
                 {
                     new object[] {"3902",SerologySubtype.Associated, true},
@@ -77,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Associated serology is direct child of a Broad antigen
-                "B", MatchLocus.B, "4005", SerologySubtype.Associated,
+                "B", Locus.B, "4005", SerologySubtype.Associated,
                 new[]
                 {
                     new object[] {"4005", SerologySubtype.Associated, true},
@@ -87,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Associated serology is direct child of a Not-Split antigen
-                "DR", MatchLocus.Drb1, "103", SerologySubtype.Associated,
+                "DR", Locus.Drb1, "103", SerologySubtype.Associated,
                 new[]
                 {
                     new object[] {"103",SerologySubtype.Associated, true},
@@ -97,7 +98,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Not-Split serology has at least one Associated antigen
-                "A", MatchLocus.A, "2", SerologySubtype.NotSplit,
+                "A", Locus.A, "2", SerologySubtype.NotSplit,
                 new[]
                 {
                     new object[]{"2",SerologySubtype.NotSplit, true},
@@ -108,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             new object[]
             {
                 // Not-Split serology with no Associated antigens
-                "DR", MatchLocus.Drb1, "9", SerologySubtype.NotSplit,
+                "DR", Locus.Drb1, "9", SerologySubtype.NotSplit,
                 new[]
                 {
                     new object[] {"9",SerologySubtype.NotSplit, true}

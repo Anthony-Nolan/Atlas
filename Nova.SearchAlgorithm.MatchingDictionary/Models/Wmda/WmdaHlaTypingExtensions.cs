@@ -14,24 +14,24 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda
 
         public static bool IsDrb345SerologyTyping(this IWmdaHlaTyping typing)
         {
-            return typing.Locus.Equals(Drb345Serologies.Locus) && Drb345Serologies.Typings.Contains(typing.Name);
+            return typing.TypingLocus.Equals(Drb345Serologies.Locus) && Drb345Serologies.Typings.Contains(typing.Name);
         }
 
         public static bool IsMatchingDictionaryLocusTyping(this IWmdaHlaTyping typing)
         {
             return typing.TypingMethod == TypingMethod.Molecular ?
-                MatchingDictionaryLoci.IsMolecularLocus(typing.Locus) :
-                    MatchingDictionaryLoci.IsSerologyLocus(typing.Locus) && !typing.IsDrb345SerologyTyping();
+                MatchingDictionaryLoci.IsMolecularLocus(typing.TypingLocus) :
+                    MatchingDictionaryLoci.IsSerologyLocus(typing.TypingLocus) && !typing.IsDrb345SerologyTyping();
         }
 
         public static bool TypingEquals(this IWmdaHlaTyping typing, IWmdaHlaTyping other)
         {
-            return typing.Locus.Equals(other.Locus) && typing.Name.Equals(other.Name);
+            return typing.TypingLocus.Equals(other.TypingLocus) && typing.Name.Equals(other.Name);
         }
 
         public static bool LocusEquals(this IWmdaHlaTyping typing, IWmdaHlaTyping other)
         {
-            return typing.Locus.Equals(other.Locus);
+            return typing.TypingLocus.Equals(other.TypingLocus);
         }
     }
 }
