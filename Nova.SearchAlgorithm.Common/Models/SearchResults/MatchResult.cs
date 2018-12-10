@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Nova.SearchAlgorithm.Common.Config;
 
 namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
@@ -47,7 +48,7 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         /// <summary>
         /// Returns the loci for which match results have been set
         /// </summary>
-        public IEnumerable<Locus> MatchedLoci => LocusHelpers.AllLoci()
+        public IEnumerable<Locus> MatchedLoci => LocusSettings.AllLoci
             .Where(l => MatchDetailsForLocus(l) != null);
         
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>

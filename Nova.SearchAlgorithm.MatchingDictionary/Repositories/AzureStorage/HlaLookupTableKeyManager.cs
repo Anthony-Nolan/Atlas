@@ -1,8 +1,8 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Common.Config;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
@@ -13,8 +13,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public static IEnumerable<string> GetTablePartitionKeys()
         {
-            return MatchingDictionaryLoci
-                .GetMatchLoci()
+            return LocusSettings
+                .AllLoci
                 .Select(locus => locus.ToString());
         }
 

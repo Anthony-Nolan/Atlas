@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -85,13 +86,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtAllPositions()
         {
-            return LocusHelpers.AllLoci().Aggregate(this,
+            return LocusSettings.AllLoci.Aggregate(this,
                 (current, locus) => current.WithNullAlleleAtPosition(locus, TypePosition.One).WithNullAlleleAtPosition(locus, TypePosition.Two));
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()
         {
-            return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithNonNullExpressionSuffixAt(locus));
+            return LocusSettings.AllLoci.Aggregate(this, (current, locus) => current.WithNonNullExpressionSuffixAt(locus));
         }
 
         public MetaDonorSelectionCriteria Build()

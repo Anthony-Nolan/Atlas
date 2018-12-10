@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers
@@ -12,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.I
             {
                 case "each locus":
                 case "all loci":
-                    return LocusHelpers.AllLoci();
+                    return LocusSettings.AllLoci;
                 case "locus A":
                     return new[] {Locus.A};
                 case "locus B":

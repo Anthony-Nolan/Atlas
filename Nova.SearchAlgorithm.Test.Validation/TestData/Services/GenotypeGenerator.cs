@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using System;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.Common.Config;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {
@@ -34,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         private Genotype CreateGenotype(GenotypeCriteria criteria)
         {
             var hla = new PhenotypeInfo<TgsAllele>();
-            foreach (var locus in LocusHelpers.AllLoci())
+            foreach (var locus in LocusSettings.AllLoci)
             {
                 var randomTgsAllele1 = RandomTgsAllele(locus, TypePosition.One, criteria);
                 hla.SetAtPosition(locus, TypePosition.One, randomTgsAllele1);

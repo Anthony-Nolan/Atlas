@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Config;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -171,7 +172,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             var searchHla = patientDataProvider.GetPatientHla();
             var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
-            var fullyMatchedLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1, locus});
+            var fullyMatchedLoci = LocusSettings.MatchingOnlyLoci.Except(new[] {locus});
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(1)
@@ -190,7 +191,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var patientDataProvider = ScenarioContext.Current.Get<IPatientDataProvider>();
             var searchRequestBuilder = ScenarioContext.Current.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
-            var allowedMismatchLoci = LocusHelpers.AllLoci().Except(new[] {Locus.Dpb1});
+            var allowedMismatchLoci = LocusSettings.MatchingOnlyLoci;
 
             var searchRequest = searchRequestBuilder
                 .WithTotalMismatchCount(2)

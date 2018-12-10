@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Config;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
@@ -99,7 +100,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         )
         {
             var scoreResult = new ScoreResult();
-            var scoredLoci = LocusHelpers.AllLoci();
+            var scoredLoci = LocusSettings.AllLoci;
 
             foreach (var locus in scoredLoci)
             {

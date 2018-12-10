@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
@@ -16,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders
         
         public DatabaseDonorSelectionCriteriaBuilder WithAllLociAtTypingResolution(HlaTypingResolution resolution)
         {
-            foreach (var locus in LocusHelpers.AllLoci())
+            foreach (var locus in LocusSettings.AllLoci)
             {
                 criteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
             }

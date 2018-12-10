@@ -164,6 +164,7 @@
     <Compile Include="Models\IStorableInCloudTable.cs" />
     <Compile Include="Models\InputDonorWithExpandedHla.cs" />
     <Compile Include="Models\Locus.cs" />
+    <Compile Include="Config\LocusSettings.cs" />
     <Compile Include="Models\LocusInfo.cs" />
     <Compile Include="Models\LocusSearchCriteria.cs" />
     <Compile Include="Models\Matching\DonorIdWithPGroupNames.cs" />
@@ -203,6 +204,7 @@
       <Name>Nova.SearchAlgorithm.Client</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

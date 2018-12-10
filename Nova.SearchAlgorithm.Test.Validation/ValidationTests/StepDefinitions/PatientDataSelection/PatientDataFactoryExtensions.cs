@@ -1,14 +1,13 @@
-﻿using System;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
-using System.Collections.Generic;
-using System.Linq;
 using Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
+using System.Linq;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -201,7 +200,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
             switch (locusString)
             {
                 case "each locus":
-                    foreach (var locus in LocusHelpers.AllLoci())
+                    foreach (var locus in LocusSettings.AllLoci)
                     {
                         factory.SetAlleleStringShouldContainDifferentGroupsAtLocus(locus);
                     }

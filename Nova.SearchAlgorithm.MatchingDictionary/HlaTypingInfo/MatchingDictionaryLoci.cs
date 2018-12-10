@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
     {
         private class LocusDetails
         {
-            public Locus MatchName { get; }
+            public Locus Locus { get; }
             public string MolecularName { get; }
             public string SerologyName { get; }
 
@@ -26,14 +26,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             public bool IsSerologyTypingDataRequired { get; }
 
             public LocusDetails(
-                Locus matchName, 
+                Locus locus, 
                 string molecularName, 
-                string serology = null, 
+                string serologyName = null, 
                 bool isSerologyTypingDataRequired = true)
             {
-                MatchName = matchName;
+                Locus = locus;
                 MolecularName = molecularName;
-                SerologyName = serology ?? string.Empty;
+                SerologyName = serologyName ?? string.Empty;
                 IsSerologyTypingDataRequired = isSerologyTypingDataRequired;
             }
         }
@@ -61,19 +61,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
                 .Contains(locusName);
         }
 
-        public static IEnumerable<Locus> GetMatchLoci()
-        {
-            return LociDetails.Select(n => n.MatchName);
-        }
-
-        public static Locus GetLocusFromTypingLocusIfExists(TypingMethod typingMethod, string locusName)
+        public static Locus GetLocusFromTypingLocusNameIfExists(TypingMethod typingMethod, string locusName)
         {
             var locusDetails = LociDetails.FirstOrDefault(locus =>
                 typingMethod == TypingMethod.Molecular ?
                     locus.MolecularName.Equals(locusName) :
                     locus.SerologyName.Equals(locusName));
 
-            return locusDetails?.MatchName ?? throw new LocusNameException(locusName);
+            return locusDetails?.Locus ?? throw new LocusNameException(locusName);
         }
 
         public static string GetSerologyLocusFromMolecularIfExists(string molecularLocusName)
@@ -83,11 +78,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             return locusDetails?.SerologyName ?? throw new LocusNameException(molecularLocusName);
         }
 
-        public static string ToMolecularLocusIfExists(this Locus locusName)
+        public static string ToMolecularLocusIfExists(this Locus locus)
         {
-            var locusDetails = LociDetails.FirstOrDefault(l => l.MatchName.Equals(locusName));
+            var locusDetails = LociDetails.FirstOrDefault(l => l.Locus.Equals(locus));
 
-            return locusDetails?.MolecularName ?? throw new LocusNameException(locusName.ToString());
+            return locusDetails?.MolecularName ?? throw new LocusNameException(locus.ToString());
         }
     }
 }

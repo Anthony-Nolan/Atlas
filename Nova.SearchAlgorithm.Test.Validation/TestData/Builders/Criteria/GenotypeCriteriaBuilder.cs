@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Exceptions;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
@@ -123,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public GenotypeCriteriaBuilder WithMatchLevelPossibleAtAllLoci(MatchLevel matchLevel)
         {
-            return LocusHelpers.AllLoci().Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
+            return LocusSettings.AllLoci.Aggregate(this, (current, locus) => current.WithMatchLevelPossibleAtLocus(matchLevel, locus));
         }
 
         public GenotypeCriteriaBuilder WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci()
