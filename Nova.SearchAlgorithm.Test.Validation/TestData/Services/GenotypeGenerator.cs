@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Test.Validation.TestData.Models.Hla;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using System;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.Common.Config;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {

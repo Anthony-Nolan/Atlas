@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Common.Models
+namespace Nova.SearchAlgorithm.Common.Config
 {
     /// <summary>
     /// Central location from which locus-based functionality can be controlled.
@@ -22,8 +23,8 @@ namespace Nova.SearchAlgorithm.Common.Models
         public static IEnumerable<Locus> MatchingOnlyLoci => AllSearchLoci.Except(new[] {Locus.Dpb1});
 
         /// <summary>
-        /// Loci that are only considered during Phase I of matching.
+        /// Only loci that are possible to match in Phase I of Matching.
         /// </summary>
-        public static IEnumerable<Locus> MatchingPhaseIOnlyLoci => new[] { Locus.A, Locus.B, Locus.Drb1 };
+        public static IEnumerable<Locus> LociPossibleToMatchInMatchingPhaseOne => new[] { Locus.A, Locus.B, Locus.Drb1 };
     }
 }
