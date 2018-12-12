@@ -350,6 +350,7 @@
     <Compile Include="Builders\ScoringInfo\ConsolidatedMolecularScoringInfoBuilder.cs" />
     <Compile Include="Builders\SearchResults\MatchAndScoreResultBuilder.cs" />
     <Compile Include="Builders\SearchResults\MatchResultBuilder.cs" />
+    <Compile Include="Builders\SearchResults\LocusScoreDetailsBuilder.cs" />
     <Compile Include="Builders\SearchResults\ScoreResultBuilder.cs" />
     <Compile Include="Client\Validators\LocusMismatchCriteriaValidatorTests.cs" />
     <Compile Include="Client\Validators\SearchHlaDataValidatorTests.cs" />
@@ -385,6 +386,7 @@
     <Compile Include="MatchingDictionary\Services\HlaMatchPreCalculation\SerologyToPgroups\SerologyToPGroupsMatchingTest.cs" />
     <Compile Include="MatchingDictionary\Services\MultipleAlleleNullFilterTests.cs" />
     <Compile Include="MatchingDictionary\SharedTestDataCache.cs" />
+    <Compile Include="Models\SearchResults\LocusScoreDetailsTests.cs" />
     <Compile Include="Models\SearchResults\MatchAndScoreResultTests.cs" />
     <Compile Include="Models\SearchResults\ScoreResultTests.cs" />
     <Compile Include="Services\DonorServiceTests.cs" />
