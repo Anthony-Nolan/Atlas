@@ -52,8 +52,8 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         {
             return new[]
                 {
-                    ScoreDetailsAtPosition1.MatchGrade != MatchGrade.Mismatch,
-                    ScoreDetailsAtPosition2.MatchGrade != MatchGrade.Mismatch
+                    ScoreDetailsAtPosition1.MatchConfidence != MatchConfidence.Mismatch,
+                    ScoreDetailsAtPosition2.MatchConfidence != MatchConfidence.Mismatch
                 }.AsEnumerable()
                 .Count(x => x);
         }
