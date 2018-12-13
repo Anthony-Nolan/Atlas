@@ -7,6 +7,8 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
     public class LocusScoreDetails
     {
         public bool IsLocusTyped { get; set; }
+        public LocusPositionScoreDetails ScoreDetailsAtPosition1 { get; set; }
+        public LocusPositionScoreDetails ScoreDetailsAtPosition2 { get; set; }
         
         /// <summary>
         /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm
@@ -38,9 +40,6 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
             }
         }
 
-        public LocusPositionScoreDetails ScoreDetailsAtPosition1;
-        public LocusPositionScoreDetails ScoreDetailsAtPosition2;
-
         public bool IsPotentialMatch => ScoreDetailsAtPosition1.MatchConfidence == MatchConfidence.Potential &&
                                         ScoreDetailsAtPosition2.MatchConfidence == MatchConfidence.Potential;
 
@@ -52,8 +51,8 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         {
             return new[]
                 {
-                    ScoreDetailsAtPosition1.MatchGrade != MatchGrade.Mismatch,
-                    ScoreDetailsAtPosition2.MatchGrade != MatchGrade.Mismatch
+                    ScoreDetailsAtPosition1.MatchConfidence != MatchConfidence.Mismatch,
+                    ScoreDetailsAtPosition2.MatchConfidence != MatchConfidence.Mismatch
                 }.AsEnumerable()
                 .Count(x => x);
         }
