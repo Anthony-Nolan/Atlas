@@ -103,7 +103,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         {
             if (Container.TryResolve(out SearchAlgorithmContext context))
             {
-                context.Database.Delete();
+                context.Donors.RemoveRange(context.Donors);
+                context.MatchingHlaAtA.RemoveRange(context.MatchingHlaAtA);
+                context.MatchingHlaAtB.RemoveRange(context.MatchingHlaAtB);
+                context.MatchingHlaAtC.RemoveRange(context.MatchingHlaAtC);
+                context.MatchingHlaAtDrb1.RemoveRange(context.MatchingHlaAtDrb1);
+                context.MatchingHlaAtDqb1.RemoveRange(context.MatchingHlaAtDqb1);
+                context.SaveChanges();
             }
         }
     }
