@@ -1,3 +1,16 @@
+locals {
+  app_settings = {
+    "donorservice.apikey"         = "${var.DONORSERVICE_APIKEY}"
+    "donorservice.baseurl"        = "${var.DONORSERVICE_BASEURL}"
+    "hlaservice.apikey"           = "${var.HLASERVICE_APIKEY}"
+    "hlaservice.baseurl"          = "${var.HLASERVICE_BASEURL}"
+    "insights.instrumentationKey" = "${azurerm_application_insights.search_algorithm.instrumentation_key}"
+  }
+
+  # This is the suggested syntax for dynamic maps. See: https://github.com/hashicorp/terraform/issues/2042#issuecomment-294556803
+  api_key_app_setting = "${map("apiKey:${var.APIKEY}", "true")}"
+}
+
 resource "azurerm_app_service_plan" "search_algorithm" {
   name                = "${local.environment}-SEARCH-ALGORITHM"
   location            = "${local.location}"
@@ -31,14 +44,7 @@ resource "azurerm_app_service" "search_algorithm" {
     always_on = true
   }
 
-  app_settings = {
-    "apiKey:${var.APIKEY}"        = true
-    "donorservice.apikey"         = "${var.DONORSERVICE_APIKEY}"
-    "donorservice.baseurl"        = "${var.DONORSERVICE_BASEURL}"
-    "hlaservice.apikey"           = "${var.HLASERVICE_APIKEY}"
-    "hlaservice.baseurl"          = "${var.HLASERVICE_BASEURL}"
-    "insights.instrumentationKey" = "${azurerm_application_insights.search_algorithm.instrumentation_key}"
-  }
+  app_settings = "${merge(local.app_settings, local.api_key_app_setting)}"
 
   connection_string = {
     name  = "HangfireSQLConnectionString"
