@@ -1,38 +1,38 @@
-variable service-plan-sku {
+variable SERVICE_PLAN_SKU {
   default = {
     tier = "Standard"
     size = "S1"
   }
 }
 
-variable donorservice_apiKey {
+variable DONORSERVICE_APIKEY {
   type = "string"
 }
 
-variable donorservice_baseUrl {
+variable DONORSERVICE_BASEURL {
   type = "string"
 }
 
-variable hlaservice_apiKey {
+variable HLASERVICE_APIKEY {
   type = "string"
 }
 
-variable hlaservice_baseUrl {
+variable HLASERVICE_BASEURL {
   type = "string"
 }
 
-variable apiKey {
+variable APIKEY {
   type = "string"
 }
 
-variable connection_string_hangfire {
+variable CONNECTION_STRING_HANGFIRE {
   type = "string"
 }
 
-variable connection_string_sql {
+variable CONNECTION_STRING_SQL {
   type = "string"
 }
 
-variable connection_string_storage {
+variable CONNECTION_STRING_STORAGE {
   type = "string"
 }

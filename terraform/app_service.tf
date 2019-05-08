@@ -4,8 +4,8 @@ resource "azurerm_app_service_plan" "search_algorithm" {
   resource_group_name = "${local.resource_group_name}"
 
   sku = {
-    tier = "${var.service-plan-sku["tier"]}"
-    size = "${var.service-plan-sku["size"]}"
+    tier = "${var.SERVICE_PLAN_SKU["tier"]}"
+    size = "${var.SERVICE_PLAN_SKU["size"]}"
   }
 }
 
@@ -32,29 +32,29 @@ resource "azurerm_app_service" "search_algorithm" {
   }
 
   app_settings = {
-    "apiKey:${var.apiKey}"        = true
-    "donorservice.apikey"         = "${var.donorservice_apiKey}"
-    "donorservice.baseurl"        = "${var.donorservice_baseUrl}"
-    "hlaservice.apikey"           = "${var.hlaservice_apiKey}"
-    "hlaservice.baseurl"          = "${var.hlaservice_baseUrl}"
+    "apiKey:${var.APIKEY}"        = true
+    "donorservice.apikey"         = "${var.DONORSERVICE_APIKEY}"
+    "donorservice.baseurl"        = "${var.DONORSERVICE_BASEURL}"
+    "hlaservice.apikey"           = "${var.HLASERVICE_APIKEY}"
+    "hlaservice.baseurl"          = "${var.HLASERVICE_BASEURL}"
     "insights.instrumentationKey" = "${azurerm_application_insights.search_algorithm.instrumentation_key}"
   }
 
   connection_string = {
     name  = "HangfireSQLConnectionString"
     type  = "SQLAzure"
-    value = "${var.connection_string_hangfire}"
+    value = "${var.CONNECTION_STRING_HANGFIRE}"
   }
 
   connection_string = {
     name  = "SQLConnectionString"
     type  = "SQLAzure"
-    value = "${var.connection_string_sql}"
+    value = "${var.CONNECTION_STRING_SQL}"
   }
 
   connection_string = {
     name  = "StorageConnectionString"
     type  = "SQLAzure"
-    value = "${var.connection_string_storage}"
+    value = "${var.CONNECTION_STRING_STORAGE}"
   }
 }
