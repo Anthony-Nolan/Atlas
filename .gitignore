@@ -263,3 +263,13 @@ paket-files/
 
 # Tools - we can ignore them
 .tools
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
