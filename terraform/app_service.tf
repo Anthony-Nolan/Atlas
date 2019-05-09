@@ -30,7 +30,7 @@ resource "azurerm_application_insights" "search_algorithm" {
 }
 
 resource "azurerm_app_service" "search_algorithm" {
-  name                = "${local.environment}-SEARCH-ALGORITHM-SERVICE"
+  name                = "${local.environment}-NOVA-SEARCH-ALGORITHM-SERVICE"
   resource_group_name = "${local.resource_group_name}"
   location            = "${local.location}"
   app_service_plan_id = "${azurerm_app_service_plan.search_algorithm.id}"
