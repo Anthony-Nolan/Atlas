@@ -36,20 +36,17 @@ resource "azurerm_app_service" "search_algorithm" {
   app_service_plan_id = "${azurerm_app_service_plan.search_algorithm.id}"
   https_only          = true
 
-  site_config = {
-    min_tls_version = "${local.min_tls_version}"
-
-    cors = {
-      allowed_orgins = "${local.cors_urls}"
-    }
-  }
-
   tags = {
     environment = "${local.environment}"
   }
 
   site_config = {
-    always_on = true
+    always_on       = true
+    min_tls_version = "${local.min_tls_version}"
+
+    cors = {
+      allowed_orgins = "${local.cors_urls}"
+    }
   }
 
   app_settings = "${merge(local.app_settings, local.api_key_app_setting)}"
