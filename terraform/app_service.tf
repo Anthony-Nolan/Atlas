@@ -45,7 +45,7 @@ resource "azurerm_app_service" "search_algorithm" {
     min_tls_version = "${local.min_tls_version}"
 
     cors = {
-      allowed_orgins = "${local.cors_urls}"
+      allowed_origins = "${local.cors_urls}"
     }
   }
 
