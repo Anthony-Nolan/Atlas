@@ -35,6 +35,11 @@ resource "azurerm_app_service" "search_algorithm" {
   location            = "${local.location}"
   app_service_plan_id = "${azurerm_app_service_plan.search_algorithm.id}"
   https_only          = true
+  min_tls_version     = "${local.min_tls_version}"
+
+  cors = {
+    allowed_orgins = "${local.cors_urls}"
+  }
 
   tags = {
     environment = "${local.environment}"

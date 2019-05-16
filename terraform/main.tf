@@ -23,6 +23,8 @@ locals {
   environment         = "${data.terraform_remote_state.nova_core.general.environment}"
   location            = "${data.terraform_remote_state.nova_core.nova_resource_group.location}"
   resource_group_name = "${data.terraform_remote_state.nova_core.nova_resource_group.name}"
+  min_tls_version     = "${data.terraform_remote_state.nova_core.general.min_tls_version}"
+  cors_urls           = "${data.terraform_remote_state.nova_core.general.cors_urls}"
 }
 
 provider "azurerm" {
