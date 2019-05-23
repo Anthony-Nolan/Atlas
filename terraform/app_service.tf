@@ -16,7 +16,7 @@ resource "azurerm_app_service_plan" "search_algorithm" {
   location            = "${local.location}"
   resource_group_name = "${local.resource_group_name}"
 
-  sku = {
+  sku {
     tier = "${var.SERVICE_PLAN_SKU["tier"]}"
     size = "${var.SERVICE_PLAN_SKU["size"]}"
   }
@@ -40,30 +40,30 @@ resource "azurerm_app_service" "search_algorithm" {
     environment = "${local.environment}"
   }
 
-  site_config = {
+  site_config {
     always_on       = true
     min_tls_version = "${local.min_tls_version}"
 
-    cors = {
+    cors {
       allowed_origins = ["${local.cors_urls}"]
     }
   }
 
   app_settings = "${merge(local.app_settings, local.api_key_app_setting)}"
 
-  connection_string = {
+  connection_string {
     name  = "HangfireSQLConnectionString"
     type  = "SQLAzure"
     value = "${var.CONNECTION_STRING_HANGFIRE}"
   }
 
-  connection_string = {
+  connection_string {
     name  = "SQLConnectionString"
     type  = "SQLAzure"
     value = "${var.CONNECTION_STRING_SQL}"
   }
 
-  connection_string = {
+  connection_string {
     name  = "StorageConnectionString"
     type  = "SQLAzure"
     value = "${var.CONNECTION_STRING_STORAGE}"
