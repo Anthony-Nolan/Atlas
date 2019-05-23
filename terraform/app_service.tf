@@ -38,9 +38,7 @@ resource "azurerm_app_service" "search_algorithm" {
   app_service_plan_id = azurerm_app_service_plan.search_algorithm.id
   https_only          = true
 
-  tags = {
-    environment = local.environment
-  }
+  tags = local.common_tags
 
   site_config {
     always_on       = true
