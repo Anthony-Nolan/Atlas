@@ -199,8 +199,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\IWmdaFileReader.cs" />
+    <Compile Include="Exceptions\CloudTableBatchInsertException.cs" />
     <Compile Include="Exceptions\MatchingDictionaryHttpException.cs" />
     <Compile Include="Exceptions\LocusNameException.cs" />
+    <Compile Include="Exceptions\MemoryCacheException.cs" />
     <Compile Include="Extensions\AlleleNameHistoryExtensions.cs" />
     <Compile Include="Extensions\AlleleNameLookupResultExtensions.cs" />
     <Compile Include="Extensions\AlleleTypingExtensions.cs" />
@@ -210,6 +212,7 @@
     <Compile Include="HlaTypingInfo\UnexpectedAlleleToSerologyMappings.cs" />
     <Compile Include="Models\HLATypings\TypingMethod.cs" />
     <Compile Include="Models\HLATypings\AlleleTypingStatus.cs" />
+    <Compile Include="Models\IStorableInCloudTable.cs" />
     <Compile Include="Models\LookupEntities\HlaLookupTableEntity.cs" />
     <Compile Include="Models\Lookups\Dpb1TceGroupLookup\Dpb1TceGroupsLookupResult.cs" />
     <Compile Include="Models\Lookups\HlaLookupResultCollections.cs" />
@@ -228,11 +231,15 @@
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapAlleleToSerology.cs" />
     <Compile Include="Models\MatchingTypings\IHlaInfoToMapSerologyToAllele.cs" />
     <Compile Include="Models\MatchingTypings\MatchingSerology.cs" />
+    <Compile Include="Models\TableReferenceTableEntity.cs" />
     <Compile Include="Models\Wmda\Dpb1TceGroupAssignment.cs" />
     <Compile Include="Models\Wmda\VersionedAlleleName.cs" />
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
+    <Compile Include="Repositories\AzureStorage\CloudTableBatchQueryAsync.cs" />
+    <Compile Include="Repositories\AzureStorage\CloudTableExtensions.cs" />
+    <Compile Include="Repositories\AzureStorage\CloudTableFactory.cs" />
     <Compile Include="Repositories\LookupRepositories\AlleleNamesLookupRepository.cs" />
     <Compile Include="Repositories\LookupRepositories\Dpb1TceGroupsLookupRepository.cs" />
     <Compile Include="Repositories\LookupRepositories\HlaLookupRepositoryBase.cs" />
@@ -247,6 +254,8 @@
     <Compile Include="Models\MatchingTypings\IMatchingGGroups.cs" />
     <Compile Include="Models\Wmda\HlaNomG.cs" />
     <Compile Include="Models\Wmda\IWmdaAlleleGroup.cs" />
+    <Compile Include="Repositories\LookupRepositories\LookupRepositoryBase.cs" />
+    <Compile Include="Repositories\TableReferenceRepository.cs" />
     <Compile Include="Services\AzureStorage\HlaLookupTableKeyManager.cs" />
     <Compile Include="Services\DataGeneration\AlleleNamesService.cs" />
     <Compile Include="Services\DataGeneration\AlleleNames\AlleleNameHistoriesConsolidator.cs" />

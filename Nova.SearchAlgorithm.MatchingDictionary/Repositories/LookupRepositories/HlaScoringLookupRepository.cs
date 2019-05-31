@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {

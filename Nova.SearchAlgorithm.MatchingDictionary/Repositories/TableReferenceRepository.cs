@@ -1,13 +1,16 @@
 ﻿using System;
-using Microsoft.WindowsAzure.Storage.Table;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     /// <summary>
     /// Holds the current table reference of various data tables.
     /// Some of our tables have their contents entirely regenerated from time to time.
-    /// Since deleting a table in azure is not immediate or even syncronous, we instead
+    /// Since deleting a table in azure is not immediate or even synchronous, we instead
     /// hold a reference via this repository to the "current" version of the table,
     /// generate a new table from scratch, then update the reference when done.
     /// </summary>

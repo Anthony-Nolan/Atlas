@@ -1,10 +1,10 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public class CloudTableBatchQueryAsync<TTableEntity> : IBatchQueryAsync<TTableEntity> 
         where TTableEntity : TableEntity, new()

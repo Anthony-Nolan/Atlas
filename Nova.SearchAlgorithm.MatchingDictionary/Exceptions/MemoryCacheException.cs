@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.SearchAlgorithm.Common.Exceptions
+namespace Nova.SearchAlgorithm.MatchingDictionary.Exceptions
 {
     public class MemoryCacheException : Exception
     {

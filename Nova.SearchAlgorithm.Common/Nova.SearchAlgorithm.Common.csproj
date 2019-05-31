@@ -155,13 +155,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Exceptions\CloudTableBatchInsertException.cs" />
-    <Compile Include="Exceptions\MemoryCacheException.cs" />
     <Compile Include="Models\AlleleLevelMatchCriteria.cs" />
     <Compile Include="Models\DonorResult.cs" />
     <Compile Include="Models\ExpandedHla.cs" />
     <Compile Include="Models\IBatchQueryAsync.cs" />
-    <Compile Include="Models\IStorableInCloudTable.cs" />
     <Compile Include="Models\InputDonorWithExpandedHla.cs" />
     <Compile Include="Models\Locus.cs" />
     <Compile Include="Config\LocusSettings.cs" />
@@ -180,16 +177,10 @@
     <Compile Include="Models\SearchResults\MatchAndScoreResult.cs" />
     <Compile Include="Models\TypePosition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repositories\CloudTableBatchQueryAsync.cs" />
-    <Compile Include="Repositories\CloudTableExtensions.cs" />
-    <Compile Include="Repositories\CloudTableFactory.cs" />
     <Compile Include="Repositories\IPGroupRepository.cs" />
-    <Compile Include="Repositories\LookupRepositoryBase.cs" />
     <Compile Include="Repositories\IDonorImportRepository.cs" />
     <Compile Include="Repositories\IDonorInspectionRepository.cs" />
     <Compile Include="Repositories\IDonorSearchRepository.cs" />
-    <Compile Include="Repositories\TableReferenceRepository.cs" />
-    <Compile Include="Repositories\TableReferenceTableEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -204,7 +195,6 @@
       <Name>Nova.SearchAlgorithm.Client</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

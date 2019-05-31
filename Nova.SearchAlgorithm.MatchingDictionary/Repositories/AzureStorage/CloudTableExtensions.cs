@@ -1,11 +1,11 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Common.Exceptions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public static class CloudTableExtensions
     {

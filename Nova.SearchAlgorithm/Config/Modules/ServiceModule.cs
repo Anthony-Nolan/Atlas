@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;

@@ -2,7 +2,7 @@
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public interface ICloudTableFactory
     {

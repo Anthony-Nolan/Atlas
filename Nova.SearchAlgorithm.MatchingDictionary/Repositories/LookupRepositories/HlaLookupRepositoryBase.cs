@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
