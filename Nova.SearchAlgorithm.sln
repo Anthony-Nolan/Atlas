@@ -6,11 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5979876-0294-475D-8970-A384B2DDEB8C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		Client.Jenkins = Client.Jenkins
 		nuget.config = nuget.config
 		README.md = README.md
-		Service.Jenkins = Service.Jenkins
-		ValidationTests.Jenkins = ValidationTests.Jenkins
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm", "Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj", "{B5CB5431-D854-4F2B-8ECA-06055376EE02}"
