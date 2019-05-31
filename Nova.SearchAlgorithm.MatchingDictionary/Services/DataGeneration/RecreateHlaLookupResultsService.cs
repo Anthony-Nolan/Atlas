@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IRecreateHlaLookupResultsService
     {
-        Task RecreateAllHlaLookupResults();
+        Task RecreateAllHlaLookupResults(string hlaDatabaseVersion);
     }
 
     public class RecreateHlaLookupResultsService : IRecreateHlaLookupResultsService
@@ -38,11 +38,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.dpb1TceGroupsLookupRepository = dpb1TceGroupsLookupRepository;
         }
 
-        public async Task RecreateAllHlaLookupResults()
+        public async Task RecreateAllHlaLookupResults(string hlaDatabaseVersion)
         {
             try
             {
-                var allHlaLookupResults = hlaLookupResultsService.GetAllHlaLookupResults();
+                var allHlaLookupResults = hlaLookupResultsService.GetAllHlaLookupResults(hlaDatabaseVersion);
                 await PersistHlaLookupResultCollection(allHlaLookupResults);
             }
             catch (Exception ex)

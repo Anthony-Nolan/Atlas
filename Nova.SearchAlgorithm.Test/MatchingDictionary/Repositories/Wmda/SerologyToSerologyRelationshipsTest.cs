@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.SerologyToSerologyRelationships, SerologyLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).SerologyToSerologyRelationships, SerologyLoci);
         }
 
         [TestCase("A", "9", new[] { "23", "24" }, new string[] { }, Description = "Broad serology with splits, but no associated")]

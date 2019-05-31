@@ -3,12 +3,13 @@ using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     public interface IReservedAlleleNamesExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames();
+        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion);
     }
 
     public class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase, IReservedAlleleNamesExtractor
@@ -18,16 +19,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames()
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion)
         {
-            return AllelesInCurrentVersionOfHlaNom
-                .Where(AlleleNameIsReserved)
+            return AllelesInVersionOfHlaNom(hlaDatabaseVersion)
+                .Where(a => AlleleNameIsReserved(a, hlaDatabaseVersion))
                 .Select(allele => new AlleleNameLookupResult(allele.TypingLocus, allele.Name, allele.Name));
         }
 
-        private bool AlleleNameIsReserved(HlaNom allele)
+        private bool AlleleNameIsReserved(HlaNom allele, string hlaDatabaseVersion)
         {
-            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name);
+            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name, hlaDatabaseVersion);
         }
     }
 }

@@ -331,6 +331,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\DonorImport\AntigenCachingService.cs" />
     <Compile Include="Services\DonorService.cs" />
+    <Compile Include="Services\MatchingDictionaryService.cs" />
     <Compile Include="Services\Matching\DatabaseFilteringAnalyser.cs" />
     <Compile Include="Services\Matching\DonorMatchingService.cs" />
     <Compile Include="Services\Matching\DatabaseDonorMatchingService.cs" />

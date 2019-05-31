@@ -3,10 +3,11 @@ using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
 using FluentAssertions;
-using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using Nova.Utils.Models;
 using NUnit.Framework;
+using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {

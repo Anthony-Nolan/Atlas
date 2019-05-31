@@ -236,6 +236,7 @@
     <Compile Include="Models\Wmda\VersionedAlleleName.cs" />
     <Compile Include="Models\Wmda\AlleleStatus.cs" />
     <Compile Include="Models\Wmda\AlleleNameHistory.cs" />
+    <Compile Include="Models\Wmda\WmdaDataset.cs" />
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\CloudTableBatchQueryAsync.cs" />
     <Compile Include="Repositories\AzureStorage\CloudTableExtensions.cs" />

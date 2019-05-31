@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.Serologies, SerologyLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).Serologies, SerologyLoci);
         }
 
         [TestCase("DQ", "1")]

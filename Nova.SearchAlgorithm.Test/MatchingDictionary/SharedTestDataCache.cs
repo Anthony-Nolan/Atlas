@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Test.MatchingDictionary.Data;
+using Nova.Utils.Models;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary
 {
@@ -11,18 +12,18 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary
     // This class will evaluate such data the first time it's requested, and serve it from a cache thereafter
     public static class SharedTestDataCache
     {
-        private const string HlaDatabaseVersionToTest = "3330";
-        
+        public const string HlaDatabaseVersionToTest = "3330";
+
         private static List<IMatchedHla> _matchedHla;
         private static WmdaDataRepository _wmdaDataRepository;
 
-        public static List<IMatchedHla> GetMatchedHla()
+        public static IEnumerable<IMatchedHla> GetMatchedHla()
         {
             if (_matchedHla == null)
             {
                 var wmdaDataRepository = GetWmdaDataRepository();
                 var hlaMatchPreCalculationService = new HlaMatchPreCalculationService(wmdaDataRepository);
-                _matchedHla = hlaMatchPreCalculationService.GetMatchedHla().ToList();
+                _matchedHla = hlaMatchPreCalculationService.GetMatchedHla(HlaDatabaseVersionToTest).ToList();
             }
 
             return _matchedHla;
@@ -34,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary
             if (_wmdaDataRepository == null)
             {
                 var testFileReader = new WmdaTestFileImporter();
-                _wmdaDataRepository = new WmdaDataRepository(testFileReader, HlaDatabaseVersionToTest);
+                _wmdaDataRepository = new WmdaDataRepository(testFileReader);
             }
 
             return _wmdaDataRepository;

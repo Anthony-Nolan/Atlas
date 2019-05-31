@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
     {
         public CloudTable GetTable(string tableReferenceString)
         {
-            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString);
+            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
             var tableClient = storageAccount.CreateCloudTableClient();
             var tableReference = tableClient.GetTableReference(tableReferenceString);
             tableReference.CreateIfNotExists();

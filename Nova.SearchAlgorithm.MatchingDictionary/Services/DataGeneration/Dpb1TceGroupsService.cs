@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IDpb1TceGroupsService
     {
-        IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults();
+        IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion);
     }
 
     /// <inheritdoc />
@@ -30,9 +30,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.wmdaDataRepository = wmdaDataRepository;
         }
 
-        public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults()
+        public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion)
         {
             var allResults = wmdaDataRepository
+                .GetWmdaDataset(hlaDatabaseVersion)
                 .Dpb1TceGroupAssignments
                 .SelectMany(GetLookupResultPerDpb1LookupName);
 

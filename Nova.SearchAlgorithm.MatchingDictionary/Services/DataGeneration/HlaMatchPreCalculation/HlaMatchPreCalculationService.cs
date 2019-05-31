@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -12,7 +13,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IHlaMatchPreCalculationService
     {
-        IEnumerable<IMatchedHla> GetMatchedHla();
+        IEnumerable<IMatchedHla> GetMatchedHla(string hlaDatabaseVersion);
     }
 
     public class HlaMatchPreCalculationService : IHlaMatchPreCalculationService
@@ -24,21 +25,21 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<IMatchedHla> GetMatchedHla()
+        public IEnumerable<IMatchedHla> GetMatchedHla(string hlaDatabaseVersion)
         {
-            var hlaInfo = GetHlaInfoForMatching();
+            var hlaInfo = GetHlaInfoForMatching(hlaDatabaseVersion);
             var hlaMatchers = new List<IHlaMatcher>{ new AlleleMatcher(), new SerologyMatcher() };
             var matchedHla = PreCalculateMatchedHla(hlaMatchers, hlaInfo);
 
             return matchedHla;
         }
 
-        private HlaInfoForMatching GetHlaInfoForMatching()
+        private HlaInfoForMatching GetHlaInfoForMatching(string hlaDatabaseVersion)
         {
             var alleleInfoGenerator = new AlleleInfoGenerator(dataRepository);
-            var alleleInfoForMatching = alleleInfoGenerator.GetAlleleInfoForMatching().ToList();
-            var serologyInfoForMatching = new SerologyInfoGenerator(dataRepository).GetSerologyInfoForMatching().ToList();
-            var alleleToSerologyRelationships = dataRepository.AlleleToSerologyRelationships.ToList();
+            var alleleInfoForMatching = alleleInfoGenerator.GetAlleleInfoForMatching(hlaDatabaseVersion).ToList();
+            var serologyInfoForMatching = new SerologyInfoGenerator(dataRepository).GetSerologyInfoForMatching(hlaDatabaseVersion).ToList();
+            var alleleToSerologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).AlleleToSerologyRelationships.ToList();
 
             return new HlaInfoForMatching(alleleInfoForMatching, serologyInfoForMatching, alleleToSerologyRelationships);
         }

@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.AlleleToSerologyRelationships, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).AlleleToSerologyRelationships, MolecularLoci);
         }
 
         [TestCase(
