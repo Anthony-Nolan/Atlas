@@ -16,8 +16,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMat
     {
         private readonly IWmdaDataRepository dataRepository;
 
-        private readonly Dictionary<string, WmdaSerologyInfo> wmdaSerologyInfos = new Dictionary<string, WmdaSerologyInfo>();
-
         public SerologyInfoGenerator(IWmdaDataRepository dataRepository)
         {
             this.dataRepository = dataRepository;
@@ -25,23 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMat
 
         public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(string hlaDatabaseVersion)
         {
-            return GetWmdaSerologyInfo(hlaDatabaseVersion).Serologies.Select(s => GetInfoForSingleSerology(s, hlaDatabaseVersion));
-        }
-
-        private WmdaSerologyInfo GetWmdaSerologyInfo(string hlaDatabaseVersion)
-        {
-            if (!wmdaSerologyInfos.TryGetValue(hlaDatabaseVersion, out var serologyInfo))
-            {
-                serologyInfo = new WmdaSerologyInfo
-                {
-                    // enumerating data collection here as it will be access hundreds of times
-                    Serologies = dataRepository.GetWmdaDataset(hlaDatabaseVersion).Serologies.ToList(),
-                    SerologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships.ToList()
-                };
-                wmdaSerologyInfos.Add(hlaDatabaseVersion, serologyInfo);
-            }
-
-            return serologyInfo;
+            return dataRepository.GetWmdaDataset(hlaDatabaseVersion).Serologies.Select(s => GetInfoForSingleSerology(s, hlaDatabaseVersion));
         }
 
         private ISerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology, string hlaDatabaseVersion)
@@ -58,7 +40,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMat
 
         private SerologyTyping GetSerologyTyping(HlaNom serology, string hlaDatabaseVersion)
         {
-            var serologyRelationships = GetWmdaSerologyInfo(hlaDatabaseVersion).SerologyRelationships;
+            var serologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships;
             var family = new SerologyFamily(serologyRelationships, serology, serology.IsDeleted);
             return family.SerologyTyping;
         }
@@ -87,7 +69,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMat
 
         private IEnumerable<MatchingSerology> GetMatchingSerologies(SerologyTyping serology, string hlaDatabaseVersion)
         {
-            var serologyRelationships = GetWmdaSerologyInfo(hlaDatabaseVersion).SerologyRelationships;
+            var serologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships;
 
             var calculator = new MatchingSerologyCalculatorFactory()
                 .GetMatchingSerologyCalculator(serology.SerologySubtype, serologyRelationships);
@@ -96,11 +78,5 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMat
 
             return calculator.GetMatchingSerologies(family);
         }
-    }
-
-    internal class WmdaSerologyInfo
-    {
-        public IEnumerable<HlaNom> Serologies { get; set; }
-        public List<RelSerSer> SerologyRelationships { get; set; }
     }
 }
