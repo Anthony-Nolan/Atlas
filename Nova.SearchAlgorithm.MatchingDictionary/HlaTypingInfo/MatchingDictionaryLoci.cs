@@ -71,13 +71,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.HlaTypingInfo
             return locusDetails?.Locus ?? throw new LocusNameException(locusName);
         }
 
-        public static string GetSerologyLocusFromMolecularIfExists(string molecularLocusName)
-        {
-            var locusDetails = LociDetails.FirstOrDefault(l => l.MolecularName.Equals(molecularLocusName));
-                
-            return locusDetails?.SerologyName ?? throw new LocusNameException(molecularLocusName);
-        }
-
         public static string ToMolecularLocusIfExists(this Locus locus)
         {
             var locusDetails = LociDetails.FirstOrDefault(l => l.Locus.Equals(locus));

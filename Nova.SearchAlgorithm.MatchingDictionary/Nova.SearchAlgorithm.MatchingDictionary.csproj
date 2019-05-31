@@ -228,13 +228,14 @@
     <Compile Include="Models\Wmda\WmdaHlaTypingExtensions.cs" />
     <Compile Include="Repositories\AzureStorage\Dpb1TceGroupLookupResultExtension.cs" />
     <Compile Include="Repositories\AzureStorage\AlleleNameLookupResultExtensions.cs" />
-    <Compile Include="Repositories\AlleleNamesLookupRepository.cs" />
     <Compile Include="Repositories\AzureStorage\HlaLookupTableEntity.cs" />
     <Compile Include="Repositories\AzureStorage\HlaLookupTableKeyManager.cs" />
     <Compile Include="Repositories\AzureStorage\HlaScoringLookupResultExtensions.cs" />
-    <Compile Include="Repositories\HlaLookupRepositoryBase.cs" />
-    <Compile Include="Repositories\Dpb1TceGroupsLookupRepository.cs" />
-    <Compile Include="Repositories\HlaScoringLookupRepository.cs" />
+    <Compile Include="Repositories\LookupRepositories\AlleleNamesLookupRepository.cs" />
+    <Compile Include="Repositories\LookupRepositories\Dpb1TceGroupsLookupRepository.cs" />
+    <Compile Include="Repositories\LookupRepositories\HlaLookupRepositoryBase.cs" />
+    <Compile Include="Repositories\LookupRepositories\HlaMatchingLookupRepository.cs" />
+    <Compile Include="Repositories\LookupRepositories\HlaScoringLookupRepository.cs" />
     <Compile Include="Repositories\WmdaExtractors\AlleleGroupExtractors\AlleleGroupExtractorBase.cs" />
     <Compile Include="Repositories\WmdaExtractors\AlleleGroupExtractors\GGroupExtractor.cs" />
     <Compile Include="Repositories\WmdaExtractors\AlleleGroupExtractors\PGroupExtractor.cs" />
@@ -317,7 +318,6 @@
     <Compile Include="Models\Wmda\SerologyAssignment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AzureStorage\HlaMatchingLookupResultExtensions.cs" />
-    <Compile Include="Repositories\HlaMatchingLookupRepository.cs" />
     <Compile Include="Repositories\WmdaDataRepository.cs" />
     <Compile Include="Services\HlaLookupResultsService.cs" />
     <Compile Include="Services\RecreateHlaLookupResultsService.cs" />
