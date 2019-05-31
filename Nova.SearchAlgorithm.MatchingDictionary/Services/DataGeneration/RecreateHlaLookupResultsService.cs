@@ -1,9 +1,9 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -55,14 +55,12 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         {
             // Matching dictionary lookups require an up-to-date collection of allele names,
             // so all collections must be recreated together; the order of execution is not important.
-
-            // TODO: NOVA-1477 - Investigate why these tasks are not being executed in parallel.
             await Task.WhenAll(
                 PersistAlleleNamesLookupResults(resultCollections.AlleleNameLookupResults),
                 PersistHlaMatchingLookupResults(resultCollections.HlaMatchingLookupResults),
                 PersistHlaScoringLookupResults(resultCollections.HlaScoringLookupResults),
                 PersistDpb1TceGroupLookupResults(resultCollections.Dpb1TceGroupLookupResults)
-            );            
+            );
         }
 
         private async Task PersistAlleleNamesLookupResults(IEnumerable<IHlaLookupResult> alleleNames)

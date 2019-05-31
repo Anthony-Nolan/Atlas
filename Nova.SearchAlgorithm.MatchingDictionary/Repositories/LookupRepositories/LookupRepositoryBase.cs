@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions)
         {
             var newDataTable = CreateNewDataTable();
-            InsertIntoDataTable(tableContents, partitions, newDataTable);
+            await InsertIntoDataTable(tableContents, partitions, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tableReferencePrefix, newDataTable.Name);
             cloudTable = null;
         }
@@ -121,7 +121,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             return tableFactory.GetTable(dataTableReference);
         }
 
-        private static void InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
+        private static async Task InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
         {
             var entities = contents
                 .Select(data => data.ConvertToTableEntity())
@@ -132,7 +132,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
                 var partitionedEntities = entities
                     .Where(entity => entity.PartitionKey.Equals(partition));
                 
-                dataTable.BatchInsert(partitionedEntities);
+                await dataTable.BatchInsert(partitionedEntities);
             }
         }
     }
