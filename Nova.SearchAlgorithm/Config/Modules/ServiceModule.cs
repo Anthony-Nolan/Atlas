@@ -92,7 +92,9 @@ namespace Nova.SearchAlgorithm.Config.Modules
             var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
-            builder.RegisterType<MatchingDictionaryService>().AsImplementedInterfaces()
+            builder.RegisterType<MatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
+            builder.RegisterType<WmdaHlaVersionProvider>().AsImplementedInterfaces()
                 .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
                 .InstancePerLifetimeScope();
         }

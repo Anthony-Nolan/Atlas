@@ -28,18 +28,21 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
         private readonly ILogger logger;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public SearchService(
             ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService,
-            ILogger logger
+            ILogger logger,
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider
         )
         {
             this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
             this.logger = logger;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
@@ -113,7 +116,8 @@ namespace Nova.SearchAlgorithm.Services
             var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 locus,
                 new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2),
-                Configuration.HlaDatabaseVersion);
+                wmdaHlaVersionProvider.GetHlaDatabaseVersion()
+            );
 
             return new AlleleLevelLocusMatchCriteria
             {

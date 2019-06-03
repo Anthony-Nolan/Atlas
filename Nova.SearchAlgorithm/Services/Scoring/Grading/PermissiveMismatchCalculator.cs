@@ -17,10 +17,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
     public class PermissiveMismatchCalculator : IPermissiveMismatchCalculator
     {
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
-        public PermissiveMismatchCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService)
+        public PermissiveMismatchCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService, IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName)
@@ -41,7 +43,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
         private Task<string> GetDpb1TceGroup(string alleleName)
         {
-            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, Configuration.HlaDatabaseVersion);
+            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
     }
 }

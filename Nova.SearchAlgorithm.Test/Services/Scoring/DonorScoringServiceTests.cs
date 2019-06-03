@@ -15,6 +15,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring
 {
@@ -47,14 +48,21 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidenceService = Substitute.For<IConfidenceService>();
             rankingService = Substitute.For<IRankingService>();
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
+            var wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(defaultMatchGradeResults);
             confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
 
-            donorScoringService =
-                new DonorScoringService(scoringLookupService, gradingService, confidenceService, rankingService, matchScoreCalculator);
+            donorScoringService = new DonorScoringService(
+                scoringLookupService,
+                gradingService,
+                confidenceService,
+                rankingService,
+                matchScoreCalculator,
+                wmdaHlaVersionProvider
+            );
         }
 
         [Test]

@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using NSubstitute;
 using NUnit.Framework;
@@ -23,7 +24,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
-            permissiveMismatchCalculator = new PermissiveMismatchCalculator(dpb1TceGroupLookupService);
+            var wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            
+            permissiveMismatchCalculator = new PermissiveMismatchCalculator(dpb1TceGroupLookupService, wmdaHlaVersionProvider);
         }
 
         #region Tests: Non-DPB1 Locus

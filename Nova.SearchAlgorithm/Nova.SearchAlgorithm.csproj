@@ -361,6 +361,7 @@
     <Compile Include="Services\Scoring\ScoringRequestService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\DonorImport\DonorImportService.cs" />
+    <Compile Include="Services\WmdaHlaVersionProvider.cs" />
     <Compile Include="Startup.cs" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>

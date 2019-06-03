@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
-        private readonly IMapper mapper;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public HlaUpdateService(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             IAntigenCachingService antigenCachingService,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IPGroupRepository pGroupRepository,
-            IMapper mapper)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.donorInspectionRepository = donorInspectionRepository;
@@ -54,7 +54,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
             this.antigenCachingService = antigenCachingService;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.pGroupRepository = pGroupRepository;
-            this.mapper = mapper;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task UpdateDonorHla()
@@ -104,9 +104,11 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
         private async Task PerformUpfrontSetup()
         {
+            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetHlaDatabaseVersion();
+            
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await hlaMatchingLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion);
-            await alleleNamesLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion);
+            await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+            await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
 
             // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
             await antigenCachingService.GenerateAntigenCache();

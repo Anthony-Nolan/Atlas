@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
-        private readonly string hlaDatabaseVersion;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public MatchingDictionaryService(
             IRecreateHlaLookupResultsService manageMatchingService,
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Services
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            string hlaDatabaseVersion)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.manageMatchingService = manageMatchingService;
             this.alleleNamesLookupService = alleleNamesLookupService;
@@ -43,37 +43,37 @@ namespace Nova.SearchAlgorithm.Services
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
-            this.hlaDatabaseVersion = hlaDatabaseVersion;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task RecreateMatchingDictionary()
         {
-            await manageMatchingService.RecreateAllHlaLookupResults(hlaDatabaseVersion);
+            await manageMatchingService.RecreateAllHlaLookupResults(wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, hlaDatabaseVersion);
+            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, hlaDatabaseVersion);
+            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
 
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, hlaDatabaseVersion);
+            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, hlaDatabaseVersion);
+            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()
         {
-            return hlaLookupResultsService.GetAllHlaLookupResults(hlaDatabaseVersion);
+            return hlaLookupResultsService.GetAllHlaLookupResults(wmdaHlaVersionProvider.GetHlaDatabaseVersion());
         }
     }
 }
