@@ -107,10 +107,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Dpb1TceGroupsLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<WmdaDataRepository>()
-                .AsImplementedInterfaces()
-                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
-                .InstancePerLifetimeScope();
+            builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();
