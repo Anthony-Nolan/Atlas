@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Config;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
@@ -40,7 +41,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
         private Task<string> GetDpb1TceGroup(string alleleName)
         {
-            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName);
+            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, Configuration.HlaDatabaseVersion);
         }
     }
 }

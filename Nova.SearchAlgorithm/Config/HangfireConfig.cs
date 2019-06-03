@@ -18,10 +18,10 @@ namespace Nova.SearchAlgorithm.Config
             app.UseHangfireServer();
             
             BackgroundJob.Enqueue<IAntigenCachingService>(antigenCachingService => antigenCachingService.GenerateAntigenCache());
-            BackgroundJob.Enqueue<IHlaMatchingLookupRepository>(hlaMatchingLookupRepository => hlaMatchingLookupRepository.LoadDataIntoMemory());
-            BackgroundJob.Enqueue<IAlleleNamesLookupRepository>(alleleNamesLookupRepository => alleleNamesLookupRepository.LoadDataIntoMemory());
-            BackgroundJob.Enqueue<IHlaScoringLookupRepository>(hlaScoringLookupRepository => hlaScoringLookupRepository.LoadDataIntoMemory());
-            BackgroundJob.Enqueue<IDpb1TceGroupsLookupRepository>(dpb1TceGroupsLookupRepository => dpb1TceGroupsLookupRepository.LoadDataIntoMemory());
+            BackgroundJob.Enqueue<IHlaMatchingLookupRepository>(hlaMatchingLookupRepository => hlaMatchingLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion));
+            BackgroundJob.Enqueue<IAlleleNamesLookupRepository>(alleleNamesLookupRepository => alleleNamesLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion));
+            BackgroundJob.Enqueue<IHlaScoringLookupRepository>(hlaScoringLookupRepository => hlaScoringLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion));
+            BackgroundJob.Enqueue<IDpb1TceGroupsLookupRepository>(dpb1TceGroupsLookupRepository => dpb1TceGroupsLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion));
         }
     }
 }

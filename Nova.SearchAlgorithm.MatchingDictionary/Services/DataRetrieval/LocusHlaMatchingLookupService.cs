@@ -13,7 +13,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public interface ILocusHlaMatchingLookupService
     {
         Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
-            Locus locus, Tuple<string, string> locusTyping);
+            Locus locus,
+            Tuple<string, string> locusTyping,
+            string hlaDatabaseVersion);
     }
 
     /// <inheritdoc />
@@ -28,9 +30,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
             Locus locus,
-            Tuple<string, string> locusTyping)
+            Tuple<string, string> locusTyping,
+            string hlaDatabaseVersion)
         {
-            var locusLookupResults = await GetLocusLookupResults(locus, locusTyping);
+            var locusLookupResults = await GetLocusLookupResults(locus, locusTyping, hlaDatabaseVersion);
 
             var result1 = HandleNullAlleles(locusLookupResults[0], locusLookupResults[1]);
             var result2 = HandleNullAlleles(locusLookupResults[1], locusLookupResults[0]);
@@ -39,12 +42,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         }
 
         private async Task<IHlaMatchingLookupResult[]> GetLocusLookupResults(
-            Locus locus, 
-            Tuple<string, string> locusHlaTyping)
+            Locus locus,
+            Tuple<string, string> locusHlaTyping,
+            string hlaDatabaseVersion)
         {
             return await Task.WhenAll(
-                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Item1),
-                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Item2));
+                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Item1, hlaDatabaseVersion),
+                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Item2, hlaDatabaseVersion));
         }
 
         private static IHlaMatchingLookupResult HandleNullAlleles(

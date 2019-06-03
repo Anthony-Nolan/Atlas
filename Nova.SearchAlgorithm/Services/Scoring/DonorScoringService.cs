@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Config;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
@@ -143,7 +144,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null 
-                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla)
+                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, Configuration.HlaDatabaseVersion)
                 : null;
         }
     }

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Config;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Nova.SearchAlgorithm.Services
@@ -29,11 +30,11 @@ namespace Nova.SearchAlgorithm.Services
         private readonly ILogger logger;
 
         public SearchService(
-            ILocusHlaMatchingLookupService locusHlaMatchingLookupService, 
+            ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService,
             ILogger logger
-            )
+        )
         {
             this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
@@ -45,10 +46,10 @@ namespace Nova.SearchAlgorithm.Services
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             var criteria = await GetMatchCriteria(searchRequest);
             var patientHla = GetPatientHla(searchRequest);
-            
+
             logger.SendTrace("Search timing: Looked up patient hla", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()}
@@ -56,22 +57,22 @@ namespace Nova.SearchAlgorithm.Services
             stopwatch.Restart();
 
             var matches = (await donorMatchingService.GetMatches(criteria)).ToList();
-            
+
             logger.SendTrace("Search timing: Matching complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"MatchedDonors", matches.Count().ToString()}
             });
             stopwatch.Restart();
-            
+
             var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla);
-            
+
             logger.SendTrace("Search timing: Scoring complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"MatchedDonors", matches.Count().ToString()}
             });
-            
+
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
@@ -99,7 +100,10 @@ namespace Nova.SearchAlgorithm.Services
             return criteria;
         }
 
-        private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(Locus locus, LocusMismatchCriteria mismatchCriteria, LocusSearchHla searchHla)
+        private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(
+            Locus locus,
+            LocusMismatchCriteria mismatchCriteria,
+            LocusSearchHla searchHla)
         {
             if (mismatchCriteria == null)
             {
@@ -108,7 +112,8 @@ namespace Nova.SearchAlgorithm.Services
 
             var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 locus,
-                new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2));
+                new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2),
+                Configuration.HlaDatabaseVersion);
 
             return new AlleleLevelLocusMatchCriteria
             {

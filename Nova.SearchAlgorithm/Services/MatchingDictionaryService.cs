@@ -53,22 +53,22 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName);
+            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, hlaDatabaseVersion);
         }
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName);
+            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, hlaDatabaseVersion);
         }
 
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName);
+            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, hlaDatabaseVersion);
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName);
+            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, hlaDatabaseVersion);
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()

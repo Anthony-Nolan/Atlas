@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
@@ -37,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var result = await locusHlaLookupService
-                .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2));
+                .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2), Configuration.HlaDatabaseVersion);
 
             return new Tuple<ExpandedHla, ExpandedHla>(
                 result.Item1.ToExpandedHla(hla1), 

@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
             return resultCollections.AlleleNameLookupResults;
         }
 
-        public Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName)
+        public Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaDatabaseVersion)
         {
             return Task.FromResult(HlaLookupResults
                 .SingleOrDefault(result => 

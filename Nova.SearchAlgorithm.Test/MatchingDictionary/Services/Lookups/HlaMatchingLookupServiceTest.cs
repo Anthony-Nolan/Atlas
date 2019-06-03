@@ -50,10 +50,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var thirdEntry = BuildTableEntityForSingleAllele(thirdAlleleName);
 
             HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular)
+                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry, thirdEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "");
             var expectedMatchingPGroups = new[] { firstAlleleName, secondAlleleName, thirdAlleleName };
 
             actualResult.MatchingPGroups.ShouldBeEquivalentTo(expectedMatchingPGroups);
@@ -76,10 +76,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var secondEntry = BuildTableEntityForSingleAllele(secondAlleleName);
 
             HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular)
+                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "");
             var expectedMatchingPGroups = expectedAlleleNames;
 
             actualResult.MatchingPGroups.ShouldBeEquivalentTo(expectedMatchingPGroups);

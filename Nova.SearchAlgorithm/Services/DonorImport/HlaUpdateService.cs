@@ -7,6 +7,7 @@ using AutoMapper;
 using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.Utils.ApplicationInsights;
@@ -104,8 +105,8 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
         private async Task PerformUpfrontSetup()
         {
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await hlaMatchingLookupRepository.LoadDataIntoMemory();
-            await alleleNamesLookupRepository.LoadDataIntoMemory();
+            await hlaMatchingLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion);
+            await alleleNamesLookupRepository.LoadDataIntoMemory(Configuration.HlaDatabaseVersion);
 
             // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
             await antigenCachingService.GenerateAntigenCache();

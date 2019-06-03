@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             lookupRepository.ClearReceivedCalls();
 
             lookupRepository
-                .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>())
+                .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(new AlleleNameLookupResult(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
         }
 
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
         {
             Assert.ThrowsAsync<MatchingDictionaryException>(
-                async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString));
+                async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString, ""));
         }
 
         [Test]
@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             hlaCategorisationService.GetHlaTypingCategory(notAlleleName).Returns(notAlleleTypingCategory);
 
             Assert.ThrowsAsync<MatchingDictionaryException>(
-                async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, notAlleleName));
+                async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, notAlleleName, ""));
         }
 
         [TestCase("*AlleleName", "AlleleName")]
@@ -65,9 +65,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         {
             hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);
 
-            await lookupService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName);
+            const string hlaDatabaseVersion = "3333";
+            await lookupService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName, hlaDatabaseVersion);
 
-            await lookupRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName);
+            await lookupRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName, hlaDatabaseVersion);
         }
     }
 }

@@ -19,8 +19,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         where TTableEntity : TableEntity, new()
         where TStorable : IStorableInCloudTable<TTableEntity>
     {
-        Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions);
-        Task LoadDataIntoMemory();
+        Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion);
+        Task LoadDataIntoMemory(string hlaDatabaseVersion);
     }
 
     public abstract class LookupRepositoryBase<TStorable, TTableEntity> :
@@ -32,38 +32,39 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
 
         private readonly ICloudTableFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
-        private readonly string tableReferencePrefix;
+        private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
         private CloudTable cloudTable;
 
         protected LookupRepositoryBase(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            string tableReferencePrefix,
+            string functionalTableReferencePrefix,
             IMemoryCache memoryCache,
             string cacheKey)
         {
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
-            this.tableReferencePrefix = tableReferencePrefix;
+            this.functionalTableReferencePrefix = functionalTableReferencePrefix;
             MemoryCache = memoryCache;
             this.cacheKey = cacheKey;
         }
 
-        public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions)
+        public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
         {
-            var newDataTable = CreateNewDataTable();
+            var tablePrefix = VersionedTableReferencePrefix(hlaDatabaseVersion);
+            var newDataTable = CreateNewDataTable(tablePrefix);
             await InsertIntoDataTable(tableContents, partitions, newDataTable);
-            await tableReferenceRepository.UpdateTableReference(tableReferencePrefix, newDataTable.Name);
+            await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
             cloudTable = null;
         }
 
         /// <summary>
         /// If you plan to use this repository with multiple async operations, this method should be called first
         /// </summary>
-        public async Task LoadDataIntoMemory()
+        public async Task LoadDataIntoMemory(string hlaDatabaseVersion)
         {
-            var currentDataTable = await GetCurrentDataTable();
+            var currentDataTable = await GetCurrentDataTable(hlaDatabaseVersion);
             var tableResults = new CloudTableBatchQueryAsync<TTableEntity>(currentDataTable);
             var dataToLoad = new Dictionary<string, TTableEntity>();
 
@@ -79,14 +80,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             MemoryCache.Set(cacheKey, dataToLoad);
         }
 
-        protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey)
+        protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey, string hlaDatabaseVersion)
         {
             if (MemoryCache.TryGetValue(cacheKey, out Dictionary<string, TTableEntity> tableEntities))
             {
                 return GetDataFromCache(partition, rowKey, tableEntities);
             }
 
-            await LoadDataIntoMemory();
+            await LoadDataIntoMemory(hlaDatabaseVersion);
             if (MemoryCache.TryGetValue(cacheKey, out tableEntities))
             {
                 return GetDataFromCache(partition, rowKey, tableEntities);
@@ -95,14 +96,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             throw new MemoryCacheException($"Failed to load data into the {cacheKey} cache");
         }
 
+        private string VersionedTableReferencePrefix(string hlaDatabaseVersion)
+        {
+            return $"{functionalTableReferencePrefix}{hlaDatabaseVersion}";
+        }
+
         /// <summary>
         /// The connection to the current data table is cached so we don't open unnecessary connections
         /// </summary>
-        private async Task<CloudTable> GetCurrentDataTable()
+        private async Task<CloudTable> GetCurrentDataTable(string hlaDatabaseVersion)
         {
             if (cloudTable == null)
             {
-                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tableReferencePrefix);
+                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaDatabaseVersion));
                 cloudTable = tableFactory.GetTable(dataTableReference);
             }
             return cloudTable;
@@ -115,9 +121,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             return tableEntity;
         }
 
-        private CloudTable CreateNewDataTable()
+        private CloudTable CreateNewDataTable(string tablePrefix)
         {
-            var dataTableReference = tableReferenceRepository.GetNewTableReference(tableReferencePrefix);
+            var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
             return tableFactory.GetTable(dataTableReference);
         }
 
