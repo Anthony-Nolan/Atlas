@@ -74,6 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             
             ServiceModule.RegisterSearchAlgorithmTypes(builder);
             ServiceModule.RegisterMatchingDictionaryTypes(builder);
+            ServiceModule.RegisterDataServices(builder);
             
             // Matching Dictionary Overrides
             builder.RegisterType<FileBackedHlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();

@@ -4,7 +4,6 @@ using Autofac;
 using Autofac.Integration.WebApi;
 using Microsoft.ApplicationInsights;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
@@ -37,24 +36,16 @@ namespace Nova.SearchAlgorithm.Config.Modules
         {
             RegisterSearchAlgorithmTypes(builder);
             RegisterMatchingDictionaryTypes(builder);
+            RegisterDataServices(builder);
         }
 
         public static void RegisterSearchAlgorithmTypes(ContainerBuilder builder)
         {
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-
             builder.RegisterInstance(AutomapperConfig.CreateMapper()).SingleInstance().AsImplementedInterfaces();
-
+            
             var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<SearchAlgorithmPersistentContext>().AsSelf().InstancePerLifetimeScope();
-
-            builder.RegisterType<DonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DonorImportRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<DonorInspectionRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<PGroupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorScoringService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Services.DonorService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -89,9 +80,6 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
-            builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
-
             var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
 
@@ -102,8 +90,24 @@ namespace Nova.SearchAlgorithm.Config.Modules
                 .InstancePerLifetimeScope();
         }
 
+        public static void RegisterDataServices(ContainerBuilder builder)
+        {
+            builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<DonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorImportRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DonorInspectionRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<PGroupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            
+            // Persistent storage
+            builder.RegisterType<SearchAlgorithmPersistentContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+        }
+
         public static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
         {
+            builder.RegisterType<CloudTableFactory>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<TableReferenceRepository>().AsImplementedInterfaces().SingleInstance();
+            
             builder.RegisterType<WmdaFileDownloader>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<HlaMatchingLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();

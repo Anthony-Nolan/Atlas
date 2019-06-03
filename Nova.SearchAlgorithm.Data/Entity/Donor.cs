@@ -57,6 +57,8 @@ namespace Nova.SearchAlgorithm.Data.Entity
             DRB1_2 = donor.MatchingHla.Drb1.Position2.OriginalName;
             DQB1_1 = donor.MatchingHla.Dqb1.Position1?.OriginalName;
             DQB1_2 = donor.MatchingHla.Dqb1.Position2?.OriginalName;
+            DPB1_1 = donor.MatchingHla.Dpb1.Position1?.OriginalName;
+            DPB1_2 = donor.MatchingHla.Dpb1.Position2?.OriginalName;
         }
     }
 }

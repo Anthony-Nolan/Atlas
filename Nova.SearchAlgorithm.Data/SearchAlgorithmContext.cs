@@ -21,7 +21,9 @@ namespace Nova.SearchAlgorithm.Data
         DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
         DbSet MatchingHlasAtLocus(Locus locus);
     }
-
+    
+    // We should only use entity framework for maintaining the database schema, and for test data
+    // In all other cases we should use Dapper within repositories, else we won't be able to switch between databases at runtime
     public class SearchAlgorithmContext : NovaDbContext, ISearchAlgorithmContext
     {
         private const string ConnectionStringName = "SqlConnectionString";
