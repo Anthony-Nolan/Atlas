@@ -10,7 +10,7 @@ using Nova.Utils.Entity;
 
 namespace Nova.SearchAlgorithm.Data
 {
-    public interface ISearchServiceContext : IDisposable
+    public interface ISearchAlgorithmContext : IDisposable
     {
         DbSet<Donor> Donors { get; set; }
         DbSet<PGroupName> PGroupNames { get; set; }
@@ -20,13 +20,11 @@ namespace Nova.SearchAlgorithm.Data
         DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
         DbSet MatchingHlasAtLocus(Locus locus);
-        DbSet<GradeWeighting> GradeWeightings { get; set; }
-        DbSet<ConfidenceWeighting> ConfidenceWeightings { get; set; }
     }
 
-    public class SearchAlgorithmContext : NovaDbContext, ISearchServiceContext
+    public class SearchAlgorithmContext : NovaDbContext, ISearchAlgorithmContext
     {
-        public const string ConnectionStringName = "SqlConnectionString";
+        private const string ConnectionStringName = "SqlConnectionString";
 
         public SearchAlgorithmContext() : this((IEntityLogger)null)
         {
@@ -58,8 +56,6 @@ namespace Nova.SearchAlgorithm.Data
         public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
-        public DbSet<GradeWeighting> GradeWeightings { get; set; }
-        public DbSet<ConfidenceWeighting> ConfidenceWeightings { get; set; }
 
         public DbSet MatchingHlasAtLocus(Locus locus)
         {

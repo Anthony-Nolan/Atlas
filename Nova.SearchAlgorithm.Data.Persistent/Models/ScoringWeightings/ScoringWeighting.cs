@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Nova.SearchAlgorithm.Data.Entity
+namespace Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings
 {
     public class ScoringWeighting
     {

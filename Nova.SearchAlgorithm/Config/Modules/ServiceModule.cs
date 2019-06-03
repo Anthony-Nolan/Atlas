@@ -6,6 +6,8 @@ using Microsoft.ApplicationInsights;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Data.Persistent;
+using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -46,6 +48,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             var sqlLogger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(sqlLogger).AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SearchAlgorithmContext>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<SearchAlgorithmPersistentContext>().AsSelf().InstancePerLifetimeScope();
 
             builder.RegisterType<DonorSearchRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DonorImportRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();

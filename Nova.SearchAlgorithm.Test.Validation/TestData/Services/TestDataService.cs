@@ -19,6 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
         
         public void SetupTestData()
         {
+            TestDataRepository.SetupPersistentDatabase();
             TestDataRepository.SetupDatabase();
             TestDataRepository.AddTestDonors(metaDonorRepository.AllMetaDonors().ToList().SelectMany(md => md.GetDatabaseDonors()));
         }

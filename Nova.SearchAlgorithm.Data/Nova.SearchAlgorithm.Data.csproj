@@ -173,11 +173,7 @@
     <Compile Include="Entity\MatchingHla\MatchingHlaAtC.cs" />
     <Compile Include="Entity\MatchingHla\MatchingHlaAtDqb1.cs" />
     <Compile Include="Entity\MatchingHla\MatchingHlaAtDrb1.cs" />
-    <Compile Include="Entity\ScoringWeightings\ConfidenceWeighting.cs" />
-    <Compile Include="Entity\ScoringWeightings\GradeWeighting.cs" />
-    <Compile Include="Entity\ScoringWeightings\ScoringWeighting.cs" />
     <Compile Include="Exceptions\DataHttpException.cs" />
-    <Compile Include="Extensions\DbSetExtensions.cs" />
     <Compile Include="Helpers\DistinctPGroupNameComparer.cs" />
     <Compile Include="Helpers\MatchingTableNameHelper.cs" />
     <Compile Include="Migrations\201806271340159_InitialCreate.cs" />
@@ -196,6 +192,10 @@
     <Compile Include="Migrations\201810091456157_AddScoringWeightingTables.Designer.cs">
       <DependentUpon>201810091456157_AddScoringWeightingTables.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906031247240_RemovePersistentData.cs" />
+    <Compile Include="Migrations\201906031247240_RemovePersistentData.Designer.cs">
+      <DependentUpon>201906031247240_RemovePersistentData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\DonorMatch.cs" />
     <Compile Include="Models\DonorMatchWithName.cs" />
     <Compile Include="Models\Extensions\InputDonorExtensions.cs" />
@@ -206,7 +206,6 @@
     <Compile Include="Repositories\DonorImportRepository.cs" />
     <Compile Include="Repositories\DonorInspectionRepository.cs" />
     <Compile Include="Repositories\PGroupRepository.cs" />
-    <Compile Include="Repositories\ScoringWeightingRepository.cs" />
     <Compile Include="Repositories\SqlDonorBatchQueryAsync.cs" />
     <Compile Include="Repositories\DonorSearchRepository.cs" />
     <Compile Include="SearchAlgorithmContext.cs" />
@@ -240,6 +239,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201810091456157_AddScoringWeightingTables.resx">
       <DependentUpon>201810091456157_AddScoringWeightingTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906031247240_RemovePersistentData.resx">
+      <DependentUpon>201906031247240_RemovePersistentData.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

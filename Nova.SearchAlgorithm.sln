@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.V
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Performance", "Nova.SearchAlgorithm.Test.Performance\Nova.SearchAlgorithm.Test.Performance.csproj", "{E6C0F9D3-32FF-4703-9088-63025D4E9E97}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data.Persistent", "Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj", "{7DC2A865-304B-402B-AC56-342681368568}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,12 +61,6 @@ Global
 		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7DC2A865-304B-402B-AC56-342681368568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7DC2A865-304B-402B-AC56-342681368568}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7DC2A865-304B-402B-AC56-342681368568}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{7DC2A865-304B-402B-AC56-342681368568}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.Build.0 = Release|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -95,6 +91,12 @@ Global
 		{E6C0F9D3-32FF-4703-9088-63025D4E9E97}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{E6C0F9D3-32FF-4703-9088-63025D4E9E97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E6C0F9D3-32FF-4703-9088-63025D4E9E97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

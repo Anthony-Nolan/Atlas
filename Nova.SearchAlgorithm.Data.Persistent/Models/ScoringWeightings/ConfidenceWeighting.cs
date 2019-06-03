@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.Data.Entity
+﻿namespace Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings
 {
     public class ConfidenceWeighting: ScoringWeighting
     {

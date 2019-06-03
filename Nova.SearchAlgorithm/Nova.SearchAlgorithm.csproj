@@ -392,6 +392,10 @@
       <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
       <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj">
+      <Project>{6f1bdea8-7527-4fb2-8500-3469f1b59a90}</Project>
+      <Name>Nova.SearchAlgorithm.Data.Persistent</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
       <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>
       <Name>Nova.SearchAlgorithm.Data</Name>
