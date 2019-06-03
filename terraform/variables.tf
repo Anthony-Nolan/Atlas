@@ -33,6 +33,10 @@ variable "CONNECTION_STRING_SQL" {
   type = string
 }
 
+variable "CONNECTION_STRING_SQL_PERSISTENT" {
+  type = string
+}
+
 variable "CONNECTION_STRING_STORAGE" {
   type = string
 }
