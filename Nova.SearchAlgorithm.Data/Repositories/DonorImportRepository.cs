@@ -150,9 +150,7 @@ WHERE DonorId = {existingDonor.DonorId}
 DELETE FROM {matchingTableName}
 WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
 ";
-                // QueryAsync throws exception with 'No columns were selected'
-                // https://github.com/StackExchange/Dapper/issues/591
-                conn.Query(deleteSql, null, transaction);
+                await conn.ExecuteAsync(deleteSql, null, transaction);
                 await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
 
                 transaction.Commit();

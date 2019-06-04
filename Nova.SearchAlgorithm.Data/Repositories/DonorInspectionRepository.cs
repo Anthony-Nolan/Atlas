@@ -18,18 +18,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DonorInspectionRepository : IDonorInspectionRepository
     {
-        private readonly SearchAlgorithmContext context;
-
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString;
 
-        public DonorInspectionRepository(SearchAlgorithmContext context)
+        public async Task<int> HighestDonorId()
         {
-            this.context = context;
-        }
-
-        public Task<int> HighestDonorId()
-        {
-            return context.Donors.OrderByDescending(d => d.DonorId).Take(1).Select(d => d.DonorId).FirstOrDefaultAsync();
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return (await conn.QueryAsync<int>("SELECT TOP (1) DonorId FROM Donors ORDER BY DonorId DESC")).SingleOrDefault();
+            }
         }
 
         public async Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate()
