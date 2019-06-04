@@ -103,7 +103,11 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DataRefreshHistoryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
-            builder.RegisterType<TransientSqlConnectionStringProvider>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<TransientSqlConnectionStringProvider>()
+                .WithParameter("connectionStringA", ConfigurationManager.ConnectionStrings["SqlConnectionStringA"].ConnectionString)
+                .WithParameter("connectionStringB", ConfigurationManager.ConnectionStrings["SqlConnectionStringB"].ConnectionString)
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
         }
 
         public static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
