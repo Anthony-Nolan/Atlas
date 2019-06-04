@@ -209,6 +209,7 @@
     <Compile Include="Repositories\SqlDonorBatchQueryAsync.cs" />
     <Compile Include="Repositories\DonorSearchRepository.cs" />
     <Compile Include="SearchAlgorithmContext.cs" />
+    <Compile Include="Services\IConnectionStringProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

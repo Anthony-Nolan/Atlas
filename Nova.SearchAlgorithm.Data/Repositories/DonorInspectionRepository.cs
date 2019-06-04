@@ -13,16 +13,21 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DonorInspectionRepository : IDonorInspectionRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString;
-
+        private readonly IConnectionStringProvider connectionStringProvider;
+        public DonorInspectionRepository(IConnectionStringProvider connectionStringProvider)
+        {
+            this.connectionStringProvider = connectionStringProvider;
+        }
+        
         public async Task<int> HighestDonorId()
         {
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 return (await conn.QueryAsync<int>("SELECT TOP (1) DonorId FROM Donors ORDER BY DonorId DESC")).SingleOrDefault();
             }
@@ -32,7 +37,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         {
             var highestDonorId = await GetHighestDonorIdForWhichHlaHasBeenProcessed();
             
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 var donors = conn.Query<Donor>($@"
 SELECT * FROM Donors d
@@ -44,7 +49,7 @@ WHERE DonorId > {highestDonorId}
 
         public async Task<DonorResult> GetDonor(int donorId)
         {
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 var donor = await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE DonorId = {donorId}");
                 return donor?.ToDonorResult();
@@ -65,7 +70,7 @@ WHERE DonorId > {highestDonorId}
             var results = donorIds
                 .Select(id => new DonorIdWithPGroupNames {DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>()})
                 .ToList();
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
                 foreach (var locus in LocusSettings.MatchingOnlyLoci)
@@ -104,7 +109,7 @@ ON m.DonorId = DonorIds.Id
                 return new List<DonorResult>();
             }
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 var sql = $@"
 SELECT * FROM Donors 
@@ -122,7 +127,7 @@ ON DonorId = DonorIds.Id
 
         private async Task<int> GetHighestDonorIdForWhichHlaHasBeenProcessed()
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 // A, B, and DRB1 should have entries for all donors, so we query the smallest of the three
                 return await connection.QuerySingleOrDefaultAsync<int>(@"

@@ -101,6 +101,9 @@ namespace Nova.SearchAlgorithm.Config.Modules
             // Persistent storage
             builder.RegisterType<SearchAlgorithmPersistentContext>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<ScoringWeightingRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<DataRefreshHistoryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
+            builder.RegisterType<TransientSqlConnectionStringProvider>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
 
         public static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)

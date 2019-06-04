@@ -11,18 +11,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DonorImportRepository : IDonorImportRepository
     {
         private readonly IPGroupRepository pGroupRepository;
+        private readonly IConnectionStringProvider connectionStringProvider;
 
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString;
-
-        public DonorImportRepository(IPGroupRepository pGroupRepository)
+        public DonorImportRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider)
         {
             this.pGroupRepository = pGroupRepository;
+            this.connectionStringProvider = connectionStringProvider;
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
@@ -66,7 +67,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                     donor.HlaNames.Drb1.Position1, donor.HlaNames.Drb1.Position2);
             }
 
-            using (var sqlBulk = new SqlBulkCopy(connectionString))
+            using (var sqlBulk = new SqlBulkCopy(connectionStringProvider.GetConnectionString()))
             {
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = "Donors";
@@ -91,7 +92,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public async Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 var existingDonors = await conn.QueryAsync<Donor>($@"
 SELECT * FROM Donors 
@@ -141,7 +142,7 @@ WHERE DonorId = {existingDonor.DonorId}
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
@@ -163,7 +164,7 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();

@@ -250,7 +250,7 @@ The following keys must be set in all of the secure settings configurations:
 
 The following connection strings must be set for Validation test in ConnectionStrings.config:
 - StorageConnectionString
-- SqlConnectionString
+- SqlConnectionStringA
 - HangfireSqlConnectionString
 
 ## Terminology

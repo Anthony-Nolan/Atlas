@@ -172,11 +172,18 @@
     <Compile Include="Migrations\201906031348235_InitialDatabaseSplit.Designer.cs">
       <DependentUpon>201906031348235_InitialDatabaseSplit.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906040942233_AddDataRefreshHistoryTable.cs" />
+    <Compile Include="Migrations\201906040942233_AddDataRefreshHistoryTable.Designer.cs">
+      <DependentUpon>201906040942233_AddDataRefreshHistoryTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\DataRefreshRecord.cs" />
     <Compile Include="Models\ScoringWeightings\ConfidenceWeighting.cs" />
     <Compile Include="Models\ScoringWeightings\GradeWeighting.cs" />
     <Compile Include="Models\ScoringWeightings\ScoringWeighting.cs" />
+    <Compile Include="Models\TransientDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\DataRefreshHistoryRepository.cs" />
     <Compile Include="Repositories\ScoringWeightingRepository.cs" />
     <Compile Include="SearchAlgorithmPersistentContext.cs" />
   </ItemGroup>
@@ -200,6 +207,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201906031348235_InitialDatabaseSplit.resx">
       <DependentUpon>201906031348235_InitialDatabaseSplit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906040942233_AddDataRefreshHistoryTable.resx">
+      <DependentUpon>201906040942233_AddDataRefreshHistoryTable.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

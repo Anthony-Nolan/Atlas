@@ -14,14 +14,20 @@ using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Extensions;
+using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DonorSearchRepository : IDonorSearchRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString;
+        private readonly IConnectionStringProvider connectionStringProvider;
 
+        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider)
+        {
+            this.connectionStringProvider = connectionStringProvider;
+        }
+        
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
@@ -93,7 +99,7 @@ WHERE {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL
 AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
 ";
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<int>(sql, commandTimeout: 300);
             }
@@ -127,7 +133,7 @@ ON (m.PGroup_Id = PGroupIds.PGroupId)
 
 GROUP BY InnerDonorId, TypePosition";
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
             }
@@ -175,7 +181,7 @@ ON (m.PGroup_Id = PGroupIds.PGroupId)
 
 GROUP BY m.DonorId, TypePosition";
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
             }

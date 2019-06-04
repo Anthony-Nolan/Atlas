@@ -2,6 +2,7 @@
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Reflection;
+using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Entity;
@@ -42,5 +43,6 @@ namespace Nova.SearchAlgorithm.Data.Persistent
         
         public DbSet<GradeWeighting> GradeWeightings { get; set; }
         public DbSet<ConfidenceWeighting> ConfidenceWeightings { get; set; }
+        public DbSet<DataRefreshRecord> DataRefreshRecords { get; set; }
     }
 }
