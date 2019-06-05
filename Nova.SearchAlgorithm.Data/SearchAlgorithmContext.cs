@@ -1,32 +1,14 @@
-﻿using System;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Reflection;
 using Nova.SearchAlgorithm.Data.Entity;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Entity;
 
 namespace Nova.SearchAlgorithm.Data
 {
     // We should only use entity framework for maintaining the database schema, and for test data
     // In all other cases we should use Dapper within repositories, else we won't be able to switch between databases at runtime
-    public class SearchAlgorithmContext : NovaDbContext
+    public class SearchAlgorithmContext : DbContext
     {
-        private const string ConnectionStringName = "SqlConnectionStringA";
-
-        public SearchAlgorithmContext() : this(null)
-        {
-        }
-
-        public SearchAlgorithmContext(IEntityLogger logger) : base(ConnectionStringName, logger)
-        {
-            var type = typeof(System.Data.Entity.SqlServer.SqlProviderServices);
-            if (type == null)
-            {
-                throw new Exception("Do not remove, ensures static reference to System.Data.Entity.SqlServer");
-            }
-        }
-
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             var assembly = Assembly.GetExecutingAssembly();

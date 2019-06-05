@@ -5,12 +5,12 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings
 {
     public class ScoringWeighting
     {
+        
         public int Id { get; set; }
         
         /// <summary>
         /// The name corresponding to an enum value (e.g. Grade, Confidence) in the codebase
         /// </summary>
-        [Index(IsUnique = true)]
         [StringLength(100)]
         public string Name { get; set; }
         

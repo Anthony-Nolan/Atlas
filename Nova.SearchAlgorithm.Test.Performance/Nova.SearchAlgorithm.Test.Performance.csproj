@@ -131,9 +131,9 @@
       <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
       <Name>Nova.SearchAlgorithm.Common.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj">
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration.Framework\Nova.SearchAlgorithm.Test.Integration.Framework.csproj">
       <Project>{09444497-e6f9-44b1-b7bb-f2a072c20ba5}</Project>
-      <Name>Nova.SearchAlgorithm.Test.Integration</Name>
+      <Name>Nova.SearchAlgorithm.Test.Integration.Framework</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

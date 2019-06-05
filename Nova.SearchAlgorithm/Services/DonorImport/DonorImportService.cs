@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.DonorService.Client;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Standard.Clients;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DonorImport
@@ -59,10 +59,10 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
             var page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
-            
+
             while (page.DonorsInfo.Any())
             {
                 await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToInputDonor()));
@@ -70,17 +70,17 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
                 stopwatch.Stop();
                 logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
                 {
-                    { "BatchSize", DonorPageSize.ToString() },
-                    { "BatchImportTime", stopwatch.ElapsedMilliseconds.ToString() },
-                });           
+                    {"BatchSize", DonorPageSize.ToString()},
+                    {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()},
+                });
                 stopwatch.Reset();
                 stopwatch.Start();
-                
+
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
                 nextId = page.LastId ?? (await donorInspectionRepository.HighestDonorId());
                 page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
             }
-            
+
             logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
     }

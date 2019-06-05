@@ -77,8 +77,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Nova.SearchAlgorithm.Core\Nova.SearchAlgorithm.Core.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj" />
     </ItemGroup>
 
     <ItemGroup>
