@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 
@@ -7,12 +6,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data
 {
     public class WmdaFileDownloader : IWmdaFileReader
     {
-        private static readonly string WmdaFileUri = ConfigurationManager.AppSettings["WmdaFileUri"];
+        private readonly string wmdaFileUri;
 
+        public WmdaFileDownloader(string wmdaFileUri)
+        {
+            this.wmdaFileUri = wmdaFileUri;
+        }
+        
         public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {
             return new WebClient()
-                .DownloadString($"{WmdaFileUri}{hlaDatabaseVersion}/{fileName}")
+                .DownloadString($"{wmdaFileUri}{hlaDatabaseVersion}/{fileName}")
                 .Split('\n')
                 .SkipWhile(line => line.StartsWith("#"));
         }

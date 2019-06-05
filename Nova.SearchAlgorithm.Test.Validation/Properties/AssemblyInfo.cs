@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Nova.SearchAlgorithm.Test.Validation")]
+[assembly: AssemblyTitle("Nova.SearchAlgorithm.Test.Framework.Validation")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Nova.SearchAlgorithm.Test.Validation")]
+[assembly: AssemblyProduct("Nova.SearchAlgorithm.Test.Framework.Validation")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

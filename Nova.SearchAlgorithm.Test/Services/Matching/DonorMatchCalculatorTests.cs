@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Services.Matching
 {
     [TestFixture]
-    public class DonorMatchCalculatorTests : TestBase<DonorMatchCalculator>
+    public class DonorMatchCalculatorTests
     {
         private IDonorMatchCalculator donorMatchCalculator;
 

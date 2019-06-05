@@ -220,11 +220,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
-      <Project>{ad4a122a-cbb7-4996-af5c-baed84271a9e}</Project>
+      <Project>{54da45f0-352e-4c23-a254-288a973450f2}</Project>
       <Name>Nova.SearchAlgorithm.Client</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
-      <Project>{FB453E02-3CE1-42E7-BDC4-13899B993F2A}</Project>
+      <Project>{d2872336-2826-4094-aa15-22a9c08e63f8}</Project>
       <Name>Nova.SearchAlgorithm.Common</Name>
     </ProjectReference>
   </ItemGroup>

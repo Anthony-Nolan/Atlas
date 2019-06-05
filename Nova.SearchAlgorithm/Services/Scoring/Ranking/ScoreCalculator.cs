@@ -1,6 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
-using Nova.SearchAlgorithm.Data.Repositories;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
 {

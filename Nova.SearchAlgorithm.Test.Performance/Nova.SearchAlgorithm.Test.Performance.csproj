@@ -123,13 +123,13 @@
     <Compile Include="TestCases.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Client.Framework\Nova.SearchAlgorithm.Client.Framework.csproj">
       <Project>{ad4a122a-cbb7-4996-af5c-baed84271a9e}</Project>
-      <Name>Nova.SearchAlgorithm.Client</Name>
+      <Name>Nova.SearchAlgorithm.Client.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Common.Framework\Nova.SearchAlgorithm.Common.Framework.csproj">
       <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
-      <Name>Nova.SearchAlgorithm.Common</Name>
+      <Name>Nova.SearchAlgorithm.Common.Framework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj">
       <Project>{09444497-e6f9-44b1-b7bb-f2a072c20ba5}</Project>

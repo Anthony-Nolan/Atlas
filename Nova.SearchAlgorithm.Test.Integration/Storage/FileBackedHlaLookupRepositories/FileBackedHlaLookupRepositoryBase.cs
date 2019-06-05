@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
         {
             var assem = System.Reflection.Assembly.GetExecutingAssembly();
             using (var stream =
-                assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.all_hla_lookup_results.json"))
+                assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Framework.Integration.Resources.MatchingDictionary.all_hla_lookup_results.json"))
             {
                 using (var reader = new StreamReader(stream))
                 {

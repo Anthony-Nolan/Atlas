@@ -385,13 +385,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
-      <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>
-      <Name>Nova.SearchAlgorithm.Client</Name>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Client.Framework\Nova.SearchAlgorithm.Client.Framework.csproj">
+      <Project>{ad4a122a-cbb7-4996-af5c-baed84271a9e}</Project>
+      <Name>Nova.SearchAlgorithm.Client.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Common.Framework\Nova.SearchAlgorithm.Common.Framework.csproj">
       <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
-      <Name>Nova.SearchAlgorithm.Common</Name>
+      <Name>Nova.SearchAlgorithm.Common.Framework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj">
       <Project>{6f1bdea8-7527-4fb2-8500-3469f1b59a90}</Project>
@@ -401,9 +401,9 @@
       <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>
       <Name>Nova.SearchAlgorithm.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj">
+    <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary.Framework\Nova.SearchAlgorithm.MatchingDictionary.Framework.csproj">
       <Project>{478d829d-9aa2-4de2-9fdd-dee35e50111e}</Project>
-      <Name>Nova.SearchAlgorithm.MatchingDictionary</Name>
+      <Name>Nova.SearchAlgorithm.MatchingDictionary.Framework</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
@@ -412,8 +412,8 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+<!--  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />-->
+<!--  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />-->
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">

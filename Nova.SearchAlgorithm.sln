@@ -12,21 +12,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm", "Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj", "{B5CB5431-D854-4F2B-8ECA-06055376EE02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test", "Nova.SearchAlgorithm.Test\Nova.SearchAlgorithm.Test.csproj", "{9CC4E912-0886-4713-99F8-19A4980031CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Framework", "Nova.SearchAlgorithm.Test.Framework\Nova.SearchAlgorithm.Test.Framework.csproj", "{9CC4E912-0886-4713-99F8-19A4980031CA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{4A86A10C-666D-41A0-B5CB-9B080736923B}"
 	ProjectSection(SolutionItems) = preProject
-		jenkins_unittests.bat = jenkins_unittests.bat
 		UnitTests.nunit = UnitTests.nunit
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client", "Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj", "{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client.Framework", "Nova.SearchAlgorithm.Client.Framework\Nova.SearchAlgorithm.Client.Framework.csproj", "{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data", "Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj", "{7DC2A865-304B-402B-AC56-342681368568}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary.Framework", "Nova.SearchAlgorithm.MatchingDictionary.Framework\Nova.SearchAlgorithm.MatchingDictionary.Framework.csproj", "{478D829D-9AA2-4DE2-9FDD-DEE35E50111E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Common", "Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj", "{FB453E02-3CE1-42E7-BDC4-13899B993F2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Common.Framework", "Nova.SearchAlgorithm.Common.Framework\Nova.SearchAlgorithm.Common.Framework.csproj", "{FB453E02-3CE1-42E7-BDC4-13899B993F2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Integration", "Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj", "{09444497-E6F9-44B1-B7BB-F2A072C20BA5}"
 EndProject
@@ -35,6 +34,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Performance", "Nova.SearchAlgorithm.Test.Performance\Nova.SearchAlgorithm.Test.Performance.csproj", "{E6C0F9D3-32FF-4703-9088-63025D4E9E97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data.Persistent", "Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj", "{7DC2A865-304B-402B-AC56-342681368568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Core", "Nova.SearchAlgorithm.Core\Nova.SearchAlgorithm.Core.csproj", "{F338A6D4-4AAD-424E-B93E-A058332EFB0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Common", "Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj", "{D2872336-2826-4094-AA15-22A9C08E63F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client", "Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj", "{54DA45F0-352E-4C23-A254-288A973450F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{AD274093-21A1-42A2-A07C-7BE4573F01DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test", "Nova.SearchAlgorithm.Test\Nova.SearchAlgorithm.Test.csproj", "{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +106,36 @@ Global
 		{7DC2A865-304B-402B-AC56-342681368568}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DC2A865-304B-402B-AC56-342681368568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F338A6D4-4AAD-424E-B93E-A058332EFB0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F338A6D4-4AAD-424E-B93E-A058332EFB0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F338A6D4-4AAD-424E-B93E-A058332EFB0F}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{F338A6D4-4AAD-424E-B93E-A058332EFB0F}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{F338A6D4-4AAD-424E-B93E-A058332EFB0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F338A6D4-4AAD-424E-B93E-A058332EFB0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2872336-2826-4094-AA15-22A9C08E63F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2872336-2826-4094-AA15-22A9C08E63F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2872336-2826-4094-AA15-22A9C08E63F8}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2872336-2826-4094-AA15-22A9C08E63F8}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{D2872336-2826-4094-AA15-22A9C08E63F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2872336-2826-4094-AA15-22A9C08E63F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54DA45F0-352E-4C23-A254-288A973450F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54DA45F0-352E-4C23-A254-288A973450F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54DA45F0-352E-4C23-A254-288A973450F2}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{54DA45F0-352E-4C23-A254-288A973450F2}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{54DA45F0-352E-4C23-A254-288A973450F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54DA45F0-352E-4C23-A254-288A973450F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD274093-21A1-42A2-A07C-7BE4573F01DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD274093-21A1-42A2-A07C-7BE4573F01DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD274093-21A1-42A2-A07C-7BE4573F01DC}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD274093-21A1-42A2-A07C-7BE4573F01DC}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{AD274093-21A1-42A2-A07C-7BE4573F01DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD274093-21A1-42A2-A07C-7BE4573F01DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

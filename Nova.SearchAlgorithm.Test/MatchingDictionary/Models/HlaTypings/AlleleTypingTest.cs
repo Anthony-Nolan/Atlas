@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         public void AlleleTyping_WhenAlleleStatusNotSupplied_AlleleStatusSetToUnknown(object[] alleleToTest)
         {
             var actualAlleleTyping = GetActualAlleleTyping(alleleToTest);
-
+            
             actualAlleleTyping.Status.SequenceStatus.Should().Be(SequenceStatus.Unknown);
             actualAlleleTyping.Status.DnaCategory.Should().Be(DnaCategory.Unknown);
         }
