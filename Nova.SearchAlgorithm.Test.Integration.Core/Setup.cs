@@ -1,4 +1,5 @@
 using System.Data.Entity.Migrations;
+using Microsoft.EntityFrameworkCore;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Persistent;
 using NUnit.Framework;
@@ -17,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration
 
         private static void SetupPersistentDatabase()
         {
-            using (var context = new SearchAlgorithmPersistentContext())
+            using (var context = new SearchAlgorithmPersistentContext(new DbContextOptions<SearchAlgorithmPersistentContext>()))
             {
                 context.Database.CreateIfNotExists();
                 var config = new Data.Persistent.Migrations.Configuration();

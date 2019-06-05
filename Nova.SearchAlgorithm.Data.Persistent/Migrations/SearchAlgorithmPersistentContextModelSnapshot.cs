@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Core.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Nova.SearchAlgorithm.Data.Persistent.Models.DataRefreshRecord", b =>
+            modelBuilder.Entity("Nova.SearchAlgorithm.Data.Framework.Persistent.Models.DataRefreshRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Core.Migrations
                     b.ToTable("DataRefreshHistory");
                 });
 
-            modelBuilder.Entity("Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings.ConfidenceWeighting", b =>
+            modelBuilder.Entity("Nova.SearchAlgorithm.Data.Framework.Persistent.Models.ScoringWeightings.ConfidenceWeighting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Core.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings.GradeWeighting", b =>
+            modelBuilder.Entity("Nova.SearchAlgorithm.Data.Framework.Persistent.Models.ScoringWeightings.GradeWeighting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

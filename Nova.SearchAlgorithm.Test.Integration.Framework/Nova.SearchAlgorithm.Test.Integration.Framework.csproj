@@ -407,13 +407,13 @@
       <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
       <Name>Nova.SearchAlgorithm.Common.Framework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Framework\Nova.SearchAlgorithm.Data.Framework.csproj">
+      <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>
+      <Name>Nova.SearchAlgorithm.Data.Framework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj">
       <Project>{a3c005fb-959b-4ddb-a1d6-5ac20c4fcec4}</Project>
       <Name>Nova.SearchAlgorithm.Data.Persistent</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
-      <Project>{7DC2A865-304B-402B-AC56-342681368568}</Project>
-      <Name>Nova.SearchAlgorithm.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary.Framework\Nova.SearchAlgorithm.MatchingDictionary.Framework.csproj">
       <Project>{478d829d-9aa2-4de2-9fdd-dee35e50111e}</Project>
