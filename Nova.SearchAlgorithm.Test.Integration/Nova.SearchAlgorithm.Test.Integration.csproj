@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <RootNamespace>Nova.SearchAlgorithm.Test.Integration</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\MatchingDictionary\all_hla_lookup_results.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
+      <PackageReference Include="EntityFramework" Version="6.2.0" />
+      <PackageReference Include="FluentAssertions" Version="4.19.3" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
+      <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
+      <PackageReference Include="Nova.Utils" Version="10.1.3" />
+      <PackageReference Include="NSubstitute" Version="2.0.3" />
+      <PackageReference Include="NUnit" Version="3.6.1" />
+      <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+      <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj" />
+      <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Nova.DonorService.SearchAlgorithm.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\Nova.Donor\Nova.DonorService.SearchAlgorithm.Models\bin\Debug\netstandard2.0\Nova.DonorService.SearchAlgorithm.Models.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

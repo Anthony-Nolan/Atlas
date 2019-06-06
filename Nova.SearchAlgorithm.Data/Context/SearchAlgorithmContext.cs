@@ -8,7 +8,8 @@ namespace Nova.SearchAlgorithm.Data
     // In all other cases we should use Dapper within repositories, else we won't be able to switch between databases at runtime
     public class SearchAlgorithmContext : DbContext
     {
-        public SearchAlgorithmContext(DbContextOptions options) : base(options)
+        // ReSharper disable once SuggestBaseTypeForParameter
+        public SearchAlgorithmContext(DbContextOptions<SearchAlgorithmContext> options) : base(options)
         {
         }
         

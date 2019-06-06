@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 		UnitTests.nunit = UnitTests.nunit
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Integration.Framework", "Nova.SearchAlgorithm.Test.Integration.Framework\Nova.SearchAlgorithm.Test.Integration.Framework.csproj", "{09444497-E6F9-44B1-B7BB-F2A072C20BA5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Validation", "Nova.SearchAlgorithm.Test.Validation\Nova.SearchAlgorithm.Test.Validation.csproj", "{C320E568-8D97-490E-AFDA-57CE50ED2893}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Performance", "Nova.SearchAlgorithm.Test.Performance\Nova.SearchAlgorithm.Test.Performance.csproj", "{E6C0F9D3-32FF-4703-9088-63025D4E9E97}"
@@ -31,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Matchi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test", "Nova.SearchAlgorithm.Test\Nova.SearchAlgorithm.Test.csproj", "{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Integration.Core", "Nova.SearchAlgorithm.Test.Integration.Core\Nova.SearchAlgorithm.Test.Integration.Core.csproj", "{CCF7F1D7-CF66-4C8C-92EF-08FB1B61EDAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Integration", "Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj", "{CCF7F1D7-CF66-4C8C-92EF-08FB1B61EDAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data.Persistent", "Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj", "{16308F16-5D27-4233-B56B-C498CDA60050}"
 EndProject
@@ -44,12 +42,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09444497-E6F9-44B1-B7BB-F2A072C20BA5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C320E568-8D97-490E-AFDA-57CE50ED2893}.Development|Any CPU.ActiveCfg = Debug|Any CPU

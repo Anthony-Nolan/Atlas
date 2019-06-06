@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 
 namespace Nova.SearchAlgorithm.Data.Context
@@ -11,6 +12,20 @@ namespace Nova.SearchAlgorithm.Data.Context
         public SearchAlgorithmContext CreateDbContext(string[] args)
         {
             return CreateWithBasePath(Directory.GetCurrentDirectory());
+        }
+
+        public SearchAlgorithmContext Create(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
+            }
+
+            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmContext>();
+
+            optionsBuilder.UseSqlServer(connectionString);
+
+            return new SearchAlgorithmContext(optionsBuilder.Options);
         }
 
         private SearchAlgorithmContext CreateWithBasePath(string basePath)
@@ -29,20 +44,6 @@ namespace Nova.SearchAlgorithm.Data.Context
             }
 
             return Create(connectionString);
-        }
-
-        private SearchAlgorithmContext Create(string connectionString)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
-            }
-
-            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmContext>();
-
-            optionsBuilder.UseSqlServer(connectionString);
-
-            return new SearchAlgorithmContext(optionsBuilder.Options);
         }
     }
 }

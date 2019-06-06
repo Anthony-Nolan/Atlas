@@ -1,5 +1,8 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Exceptions;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Data.Entity
 {
@@ -8,6 +11,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
         public long Id { get; set; }
         public int DonorId { get; set; }
         public int TypePosition { get; set; }
+        [ForeignKey("PGroup_Id")]
         public PGroupName PGroup { get; set; }
 
         public static MatchingHla EmptyMatchingEntityForLocus(Locus locus)

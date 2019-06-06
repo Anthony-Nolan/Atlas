@@ -10,7 +10,8 @@ namespace Nova.SearchAlgorithm.Data.Persistent
 {
     public class SearchAlgorithmPersistentContext : DbContext
     {
-        public SearchAlgorithmPersistentContext(DbContextOptions options) : base(options)
+        // ReSharper disable once SuggestBaseTypeForParameter
+        public SearchAlgorithmPersistentContext(DbContextOptions<SearchAlgorithmPersistentContext> options) : base(options)
         {
         }
 
@@ -46,7 +47,7 @@ namespace Nova.SearchAlgorithm.Data.Persistent
 
         private static IEnumerable<ConfidenceWeighting> SeededConfidenceWeights()
         {
-            var confidences = Enum.GetValues(typeof(MatchConfidence)).Cast<MatchGrade>();
+            var confidences = Enum.GetValues(typeof(MatchConfidence)).Cast<MatchConfidence>();
             return confidences.Select((c, i) => new ConfidenceWeighting {Name = c.ToString(), Weight = DefaultWeight, Id = i + 1});
         }
     }

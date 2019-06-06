@@ -13,6 +13,20 @@ namespace Nova.SearchAlgorithm.Data.Persistent
             return CreateWithBasePath(Directory.GetCurrentDirectory());
         }
 
+        public SearchAlgorithmPersistentContext Create(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
+            }
+
+            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmPersistentContext>();
+
+            optionsBuilder.UseSqlServer(connectionString);
+
+            return new SearchAlgorithmPersistentContext(optionsBuilder.Options);
+        }
+
         private SearchAlgorithmPersistentContext CreateWithBasePath(string basePath)
         {
             var builder = new ConfigurationBuilder()
@@ -29,20 +43,6 @@ namespace Nova.SearchAlgorithm.Data.Persistent
             }
 
             return Create(connectionString);
-        }
-
-        private SearchAlgorithmPersistentContext Create(string connectionString)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
-            }
-
-            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmPersistentContext>();
-
-            optionsBuilder.UseSqlServer(connectionString);
-
-            return new SearchAlgorithmPersistentContext(optionsBuilder.Options);
         }
     }
 }
