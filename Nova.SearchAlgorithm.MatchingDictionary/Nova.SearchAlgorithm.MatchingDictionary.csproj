@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
-        <RootNamespace>Nova.SearchAlgorithm.MatchingDictionary.Core</RootNamespace>
+        <RootNamespace>Nova.SearchAlgorithm.MatchingDictionary</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

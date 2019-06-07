@@ -1,80 +1,76 @@
 ﻿using System.Collections.Generic;
 using System.Data.Entity.Migrations;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Persistent;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
+    public interface ITestDataRepository
+    {
+        void SetupPersistentDatabase();
+        void SetupDatabase();
+        void AddTestDonors(IEnumerable<Donor> donors);
+        IEnumerable<Donor> GetDonors(IEnumerable<int> donorIds);
+    }
+
     /// <summary>
     /// Repository layer for interacting with test SQL database
     /// </summary>
-    public static class TestDataRepository
+    public class TestDataRepository : ITestDataRepository
     {
-        public static void SetupPersistentDatabase()
+        private readonly SearchAlgorithmContext context;
+        private readonly SearchAlgorithmPersistentContext persistentContext;
+
+        public TestDataRepository(SearchAlgorithmContext context, SearchAlgorithmPersistentContext persistentContext)
         {
-            using (var context = new SearchAlgorithmPersistentContext())
-            {
-                context.Database.CreateIfNotExists();
-                var config = new Data.Persistent.Migrations.Configuration();
-                var migrator = new DbMigrator(config);
-                migrator.Update();
-            }
+            this.context = context;
+            this.persistentContext = persistentContext;
         }
 
-        public static void SetupDatabase()
+        public void SetupPersistentDatabase()
         {
-            using (var context = new SearchAlgorithmContext())
-            {
-                context.Database.CreateIfNotExists();
-                var config = new Data.Migrations.Configuration();
-                var migrator = new DbMigrator(config);
-                migrator.Update();
-                RemoveTestData();
-            }
+            persistentContext.Database.Migrate();
         }
 
-        public static void AddTestDonors(IEnumerable<Donor> donors)
+        public void SetupDatabase()
         {
-            using (var context = new SearchAlgorithmContext())
+            context.Database.Migrate();
+        }
+
+        public void AddTestDonors(IEnumerable<Donor> donors)
+        {
+            foreach (var donor in donors)
             {
-                foreach (var donor in donors)
+                if (!context.Donors.Any(d => d.DonorId == donor.DonorId))
                 {
-                    if (!context.Donors.Any(d => d.DonorId == donor.DonorId))
-                    {
-                        context.Donors.Add(donor);
-                    }
+                    context.Donors.Add(donor);
                 }
-
-                context.SaveChanges();
             }
+
+            context.SaveChanges();
         }
 
-        public static IEnumerable<Donor> GetDonors(IEnumerable<int> donorIds)
+        public IEnumerable<Donor> GetDonors(IEnumerable<int> donorIds)
         {
-            using (var context = new SearchAlgorithmContext())
-            {
-                var donors = from d in context.Donors
-                    join id in donorIds
-                        on d.DonorId equals id
-                    select d;
-                return donors.ToList();
-            }
+            var donors = from d in context.Donors
+                join id in donorIds
+                    on d.DonorId equals id
+                select d;
+            return donors.ToList();
         }
 
-        private static void RemoveTestData()
+        private void RemoveTestData()
         {
-            using (var context = new SearchAlgorithmContext())
-            {
-                context.Donors.RemoveRange(context.Donors);
-                context.MatchingHlaAtA.RemoveRange(context.MatchingHlaAtA);
-                context.MatchingHlaAtB.RemoveRange(context.MatchingHlaAtB);
-                context.MatchingHlaAtC.RemoveRange(context.MatchingHlaAtC);
-                context.MatchingHlaAtDrb1.RemoveRange(context.MatchingHlaAtDrb1);
-                context.MatchingHlaAtDqb1.RemoveRange(context.MatchingHlaAtDqb1);
-                context.SaveChanges();
-            }
+            context.Donors.RemoveRange(context.Donors);
+            context.MatchingHlaAtA.RemoveRange(context.MatchingHlaAtA);
+            context.MatchingHlaAtB.RemoveRange(context.MatchingHlaAtB);
+            context.MatchingHlaAtC.RemoveRange(context.MatchingHlaAtC);
+            context.MatchingHlaAtDrb1.RemoveRange(context.MatchingHlaAtDrb1);
+            context.MatchingHlaAtDqb1.RemoveRange(context.MatchingHlaAtDqb1);
+            context.SaveChanges();
         }
     }
 }

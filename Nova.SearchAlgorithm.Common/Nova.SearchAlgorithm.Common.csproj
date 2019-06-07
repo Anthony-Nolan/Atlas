@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>Nova.SearchAlgorithm.Common.Core</RootNamespace>
+        <RootNamespace>Nova.SearchAlgorithm</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

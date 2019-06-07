@@ -1,4 +1,4 @@
-using Nova.SearchAlgorithm.Standard.Clients;
+using Nova.SearchAlgorithm.Clients;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
 {

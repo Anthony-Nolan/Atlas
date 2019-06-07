@@ -2,12 +2,14 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
-        <RootNamespace>Nova.SearchAlgorithm.Standard</RootNamespace>
+        <RootNamespace>Nova.SearchAlgorithm</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="6.1.1" />
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
     </ItemGroup>
 

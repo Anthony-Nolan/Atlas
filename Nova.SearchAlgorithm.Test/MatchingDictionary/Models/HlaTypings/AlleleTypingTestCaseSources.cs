@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
 {
@@ -12,15 +13,15 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Models.HlaTypings
         private const string ThreeFieldName = FieldValue + FieldDelimiter + FieldValue + FieldDelimiter + FieldValue;
         private const string TwoFieldName = FieldValue + FieldDelimiter + FieldValue;
 
-        private static readonly object[] NormallyExpressedFourFieldAllele = { Locus.A, FourFieldName };
-        private static readonly object[] NormallyExpressedThreeFieldAllele = { Locus.A, ThreeFieldName };
-        private static readonly object[] NormallyExpressedTwoFieldAllele = { Locus.A, TwoFieldName };
-        private static readonly object[] LowExpressedAllele = { Locus.B, FourFieldName + "L" };
-        private static readonly object[] QuestionableExpressedAllele = { Locus.C, FourFieldName + "Q" };
-        private static readonly object[] SecretedExpressedAllele = { Locus.Dqb1, FourFieldName + "S" };
-        private static readonly object[] AberrantExpressedAllele = { Locus.Drb1, FourFieldName + "A" };
-        private static readonly object[] CytoplasmicExpressedAllele = { Locus.Dpb1, FourFieldName + "C" };
-        private static readonly object[] NullExpressedAllele = { Locus.B, FourFieldName + "N" };
+        private static readonly Allele NormallyExpressedFourFieldAllele = new Allele { Locus = Locus.A, Name = FourFieldName };
+        private static readonly Allele NormallyExpressedThreeFieldAllele = new Allele { Locus = Locus.A, Name = ThreeFieldName };
+        private static readonly Allele NormallyExpressedTwoFieldAllele = new Allele { Locus = Locus.A, Name = TwoFieldName };
+        private static readonly Allele LowExpressedAllele = new Allele { Locus = Locus.B, Name = FourFieldName + "L" };
+        private static readonly Allele QuestionableExpressedAllele = new Allele { Locus = Locus.C, Name = FourFieldName + "Q" };
+        private static readonly Allele SecretedExpressedAllele = new Allele { Locus = Locus.Dqb1, Name = FourFieldName + "S" };
+        private static readonly Allele AberrantExpressedAllele = new Allele { Locus = Locus.Drb1, Name = FourFieldName + "A" };
+        private static readonly Allele CytoplasmicExpressedAllele = new Allele { Locus = Locus.Dpb1, Name = FourFieldName + "C" };
+        private static readonly Allele NullExpressedAllele = new Allele { Locus = Locus.B, Name = FourFieldName + "N" };
 
         public static readonly object[] AlleleTypingsToTest =
         {

@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <VersionPrefix>7.0.0</VersionPrefix>
-        <RootNamespace>Nova.SearchAlgorithm.Client.Core</RootNamespace>
+        <RootNamespace>Nova.SearchAlgorithm.Client</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -5,9 +5,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
 {
     public static class DependencyInjection
     {
-        private static ServiceProvider _provider;
+        private static IServiceProvider _provider;
 
-        public static ServiceProvider Provider
+        public static IServiceProvider Provider
         {
             get
             {

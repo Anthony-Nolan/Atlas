@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
+namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
 {
     public interface IStorageEmulator
     {

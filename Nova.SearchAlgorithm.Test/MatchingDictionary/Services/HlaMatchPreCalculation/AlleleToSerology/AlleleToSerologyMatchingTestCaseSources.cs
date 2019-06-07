@@ -184,11 +184,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             }
         };
 
-        private static readonly object[] B15BroadAllele = { Locus.B, "15:33" };
-        private static readonly object[] B15SplitAllele = { Locus.B, "15:01:01:01" };
-        private static readonly object[] B70BroadAllele = { Locus.B, "15:09:01" };
-        private static readonly object[] B70SplitAllele = { Locus.B, "15:03:01:01" };
-        private static readonly object[] B15And70BroadAllele = { Locus.B, "15:36" };
+        private static readonly Allele B15BroadAllele = new Allele{ Locus = Locus.B, Name = "15:33" };
+        private static readonly Allele B15SplitAllele = new Allele{ Locus = Locus.B, Name = "15:01:01:01" };
+        private static readonly Allele B70BroadAllele = new Allele{ Locus = Locus.B, Name = "15:09:01" };
+        private static readonly Allele B70SplitAllele = new Allele{ Locus = Locus.B, Name = "15:03:01:01" };
+        private static readonly Allele B15And70BroadAllele = new Allele{ Locus = Locus.B, Name = "15:36" };
 
         public static readonly object[] B15AllelesMatchingSerologies =
         {

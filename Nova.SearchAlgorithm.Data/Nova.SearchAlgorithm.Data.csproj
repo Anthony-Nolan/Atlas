@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
+        <RootNamespace>Nova.SearchAlgorithm.Data</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

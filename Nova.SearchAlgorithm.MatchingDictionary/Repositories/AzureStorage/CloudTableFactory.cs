@@ -12,9 +12,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
     public class CloudTableFactory : ICloudTableFactory
     {
+        private readonly string storageConnectionString;
+        public CloudTableFactory(string storageConnectionString)
+        {
+            this.storageConnectionString = storageConnectionString;
+        }
+        
         public async Task <CloudTable> GetTable(string tableReferenceString)
         {
-            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+            var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             var tableClient = storageAccount.CreateCloudTableClient();
             var tableReference = tableClient.GetTableReference(tableReferenceString);
             await tableReference.CreateIfNotExistsAsync();

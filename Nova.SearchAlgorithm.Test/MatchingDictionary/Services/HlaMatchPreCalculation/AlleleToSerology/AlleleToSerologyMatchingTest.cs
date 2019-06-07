@@ -84,11 +84,11 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             typeof(AlleleToSerologyMatchingTestCaseSources),
             nameof(AlleleToSerologyMatchingTestCaseSources.B15AllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_B15Alleles_HaveCorrectMatchingSerologies(
-            object[] alleleDetails,
+            Allele alleleDetails,
             object[] matchingSerologies)
         {
             var actualMatchingSerologies = 
-                GetSingleMatchingTyping((Locus)alleleDetails[0], alleleDetails[1].ToString())
+                GetSingleMatchingTyping(alleleDetails.Locus, alleleDetails.Name)
                 .MatchingSerologies;
 
             var expectedMatchingSerologies = matchingSerologies
