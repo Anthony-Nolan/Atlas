@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
+using Nova.SearchAlgorithm.Test.Validation.DependencyInjection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
@@ -26,16 +29,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         private static LoggingConfiguration config;
 
         [BeforeTestRun]
-        public static void BeforeTestRun()
+        public static async Task BeforeTestRun()
         {
             SetupLogging();
 
-            serviceProvider = DependencyInjection.CreateProvider();
+            serviceProvider = DependencyInjection.DependencyInjection.CreateProvider();
             var testDataService = serviceProvider.GetService<ITestDataService>();
 
             testDataService.SetupTestData();
             AlgorithmTestingService.StartServer();
-            AlgorithmTestingService.RunHlaRefresh();
+            await AlgorithmTestingService.RunHlaRefresh();
         }
 
         private static void SetupLogging()
@@ -88,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             ScenarioContext.Current.TryGetValue<SearchAlgorithmApiResult>(out var singlePatientApiResult);
             ScenarioContext.Current.TryGetValue<List<PatientApiResult>>(out var patientApiResults);
 
-            bool.TryParse(ConfigurationManager.AppSettings["log-successful-tests"], out var shouldLogSuccessfulTests);
+            var shouldLogSuccessfulTests = serviceProvider.GetService<IOptions<ValidationTestSettings>>().Value.LogSuccessfulTests;
             var successLogLevel = shouldLogSuccessfulTests ? LogLevel.Info : LogLevel.Off;
             var logLevel = ScenarioContext.Current.TestError == null ? successLogLevel : LogLevel.Error;
 

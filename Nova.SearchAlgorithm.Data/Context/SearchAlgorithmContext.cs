@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Data
             {
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
             }
-
+            
             base.OnModelCreating(modelBuilder);
         }
 

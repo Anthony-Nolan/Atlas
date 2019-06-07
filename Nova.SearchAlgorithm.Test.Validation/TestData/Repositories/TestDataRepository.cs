@@ -38,6 +38,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
         public void SetupDatabase()
         {
             context.Database.Migrate();
+            // Ensure we have fresh data on each run. Done in setup rather than teardown to avoid data issues if the test suites are terminated early
+            RemoveTestData();
         }
 
         public void AddTestDonors(IEnumerable<Donor> donors)

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Api;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -23,7 +25,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
 
         public static void StartServer()
         {
-            var builder = new WebHostBuilder().UseStartup<Startup>();
+            var builder = new WebHostBuilder()
+                .UseContentRoot(Environment.CurrentDirectory)
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    config.AddJsonFile("appsettings.json", true, true);
+                    config.AddUserSecrets("841c4767-6a3e-4edc-bae0-f657a980f940");
+                })
+                .UseStartup<Startup>();
             server = new TestServer(builder);
         }
 
@@ -56,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
             {
                 Donors = donors
             };
-            
+
             var result = await server.CreateRequest("/donor/batch")
                 .AddHeader(ApiKeyHeader, ApiKey)
                 .And(request => request.Content = SerialiseToJson(batch))
@@ -68,11 +77,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
             }
         }
 
-        public static void RunHlaRefresh()
+        public static async Task RunHlaRefresh()
         {
-            Task.Run(() => server.CreateRequest("/trigger-donor-hla-update")
+            var response = await server.CreateRequest("/trigger-donor-hla-update")
                 .AddHeader(ApiKeyHeader, ApiKey)
-                .PostAsync()).Wait();
+                .PostAsync();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("Donor HLA Refresh Failed");
+            }
         }
 
         private static StringContent SerialiseToJson(object obj)

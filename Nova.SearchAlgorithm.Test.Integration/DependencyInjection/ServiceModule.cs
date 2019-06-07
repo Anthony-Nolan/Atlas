@@ -9,7 +9,6 @@ using Nova.HLAService.Client;
 using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.Test.Integration.IntegrationTests;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.Models;

@@ -9,27 +9,10 @@ namespace Nova.SearchAlgorithm.Data.Context
 {
     public class ContextFactory : IDesignTimeDbContextFactory<SearchAlgorithmContext>
     {
+        // This method is called by entity framework to create a context when generating/running migrations
         public SearchAlgorithmContext CreateDbContext(string[] args)
         {
-            return CreateWithBasePath(Directory.GetCurrentDirectory());
-        }
-
-        public SearchAlgorithmContext Create(string connectionString)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
-            }
-
-            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmContext>();
-
-            optionsBuilder.UseSqlServer(connectionString);
-
-            return new SearchAlgorithmContext(optionsBuilder.Options);
-        }
-
-        private SearchAlgorithmContext CreateWithBasePath(string basePath)
-        {
+            var basePath = Directory.GetCurrentDirectory();
             var builder = new ConfigurationBuilder()
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json");
@@ -44,6 +27,20 @@ namespace Nova.SearchAlgorithm.Data.Context
             }
 
             return Create(connectionString);
+        }
+
+        public SearchAlgorithmContext Create(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
+            }
+
+            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmContext>();
+
+            optionsBuilder.UseSqlServer(connectionString);
+
+            return new SearchAlgorithmContext(optionsBuilder.Options);
         }
     }
 }

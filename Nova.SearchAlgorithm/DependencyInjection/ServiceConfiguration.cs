@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +10,7 @@ using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterDataServices(this IServiceCollection services)
         {
             services.AddScoped(sp =>
-                new Data.Context.ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
+                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
             );
             services.AddScoped<IDonorSearchRepository, DonorSearchRepository>();
             services.AddScoped<IDonorImportRepository, DonorImportRepository>();
@@ -127,7 +127,9 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             );
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
-            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>();
+            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>(sp =>
+                new WmdaFileDownloader(sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri)
+            );
 
             services.AddScoped<IHlaMatchingLookupRepository, HlaMatchingLookupRepository>();
             services.AddScoped<IHlaScoringLookupRepository, HlaScoringLookupRepository>();

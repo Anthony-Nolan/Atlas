@@ -8,27 +8,10 @@ namespace Nova.SearchAlgorithm.Data.Persistent
 {
     public class ContextFactory : IDesignTimeDbContextFactory<SearchAlgorithmPersistentContext>
     {
+        // This method is called by entity framework to create a context when generating/running migrations
         public SearchAlgorithmPersistentContext CreateDbContext(string[] args)
         {
-            return CreateWithBasePath(Directory.GetCurrentDirectory());
-        }
-
-        public SearchAlgorithmPersistentContext Create(string connectionString)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
-            }
-
-            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmPersistentContext>();
-
-            optionsBuilder.UseSqlServer(connectionString);
-
-            return new SearchAlgorithmPersistentContext(optionsBuilder.Options);
-        }
-
-        private SearchAlgorithmPersistentContext CreateWithBasePath(string basePath)
-        {
+            var basePath = Directory.GetCurrentDirectory();
             var builder = new ConfigurationBuilder()
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json");
@@ -43,6 +26,20 @@ namespace Nova.SearchAlgorithm.Data.Persistent
             }
 
             return Create(connectionString);
+        }
+
+        public SearchAlgorithmPersistentContext Create(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
+            }
+
+            var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmPersistentContext>();
+
+            optionsBuilder.UseSqlServer(connectionString);
+
+            return new SearchAlgorithmPersistentContext(optionsBuilder.Options);
         }
     }
 }
