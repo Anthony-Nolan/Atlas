@@ -1,12 +1,15 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Common.Exceptions;
-using Nova.SearchAlgorithm.Common.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.WindowsAzure.Storage.Table;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositories
 {
     /// <summary>
     /// Generic repository that persists data to a CloudTable

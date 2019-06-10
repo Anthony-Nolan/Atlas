@@ -1,18 +1,19 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
-    public interface IHlaScoringLookupRepository : IHlaLookupRepository
+    public interface IDpb1TceGroupsLookupRepository : IHlaLookupRepository
     {
     }
 
-    public class HlaScoringLookupRepository : HlaLookupRepositoryBase, IHlaScoringLookupRepository
+    public class Dpb1TceGroupsLookupRepository : HlaLookupRepositoryBase, IDpb1TceGroupsLookupRepository
     {
-        private const string DataTableReferencePrefix = "HlaScoringLookupData";
-        private const string CacheKey = "HlaScoringLookup";
+        private const string DataTableReferencePrefix = "Dpb1TceGroupsLookupData";
+        private const string CacheKey = "Dpb1TceGroupsLookup";
 
-        public HlaScoringLookupRepository(
+        public Dpb1TceGroupsLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IMemoryCache memoryCache)

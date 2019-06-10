@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Nova.SearchAlgorithm.Common.Exceptions
+namespace Nova.SearchAlgorithm.MatchingDictionary.Exceptions
 {
     public class CloudTableBatchInsertException : Exception
     {
