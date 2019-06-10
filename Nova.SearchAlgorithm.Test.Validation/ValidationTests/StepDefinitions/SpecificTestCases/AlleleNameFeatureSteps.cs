@@ -7,6 +7,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
     [Binding]
     public class AlleleNameFeatureSteps
     {
+        private readonly ScenarioContext scenarioContext;
+        
+        public AlleleNameFeatureSteps(ScenarioContext scenarioContext)
+        {
+            this.scenarioContext = scenarioContext;
+        }
+
+        
         [Given(@"the matching donor has a deleted allele")]
         public async Task GivenADonorWithADeletedAllele()
         {
@@ -26,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
 
-            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
 
         [Given(@"the patient has a deleted allele")]
@@ -48,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
             
-            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
         
         [Given(@"the matching donor has an old version of a renamed allele")]
@@ -70,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
             
-            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
         
         [Given(@"the patient has an old version of a renamed allele")]
@@ -92,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
             
-            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
     }
 }

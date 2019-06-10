@@ -10,15 +10,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
 {
     public static class SpecificTestDataSteps
     {
-        public static async Task GivenDonorAndPatientHla(Nova.Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla, PhenotypeInfo<string> patientHla)
+        public static async Task GivenDonorAndPatientHla(
+            Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla,
+            PhenotypeInfo<string> patientHla,
+            ScenarioContext scenarioContext)
         {
-            await GivenDonorHla(donorHla);
-            GivenPatientHla(patientHla);
+            await GivenDonorHla(donorHla, scenarioContext);
+            GivenPatientHla(patientHla, scenarioContext);
         }
         
-        public static async Task GivenDonorHla(Nova.Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla)
+        public static async Task GivenDonorHla(Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla, ScenarioContext scenarioContext)
         {
-            var staticDataProvider = ScenarioContext.Current.Get<IStaticDataProvider>();
+            var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
             var inputDonor = new InputDonor
             {
                 DonorId = DonorIdGenerator.NextId(),
@@ -34,18 +37,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
 
             staticDataProvider.SetExpectedDonorIds(new[] {inputDonor.DonorId});
 
-            ScenarioContext.Current.Set(staticDataProvider);
-            ScenarioContext.Current.Set((IExpectedDonorProvider) staticDataProvider);
+            scenarioContext.Set(staticDataProvider);
+            scenarioContext.Set((IExpectedDonorProvider) staticDataProvider);
         }
         
-        public static void GivenPatientHla(PhenotypeInfo<string> patientHla)
+        public static void GivenPatientHla(PhenotypeInfo<string> patientHla, ScenarioContext scenarioContext)
         {
-            var staticDataProvider = ScenarioContext.Current.Get<IStaticDataProvider>();
+            var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
             
             staticDataProvider.SetPatientHla(patientHla);
 
-            ScenarioContext.Current.Set(staticDataProvider);
-            ScenarioContext.Current.Set((IPatientDataProvider) staticDataProvider);
+            scenarioContext.Set(staticDataProvider);
+            scenarioContext.Set((IPatientDataProvider) staticDataProvider);
         }
     }
 }
