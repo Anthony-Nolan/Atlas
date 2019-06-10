@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(hlaString1, hlaString2), "");
+                new Tuple<string, string>(hlaString1, hlaString2), "hla-db-version");
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }
@@ -86,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(typingInPosition1, typingInPosition2), "");
+                new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }
@@ -119,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(typingInPosition1, typingInPosition2), "");
+                new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }

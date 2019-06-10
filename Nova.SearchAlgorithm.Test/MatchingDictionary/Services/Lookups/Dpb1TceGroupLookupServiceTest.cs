@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "");
+            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "hla-db-version");
 
             actualResult.Should().Be(sharedTceGroup);
         }
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "");
+            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "hla-db-version");
 
             actualResult.Should().Be(ExpectedNoTceGroupAssignment);
         }
@@ -131,7 +131,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "");
+            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "hla-db-version");
 
             actualResult.Should().Be(sharedTceGroup);
         }
@@ -164,7 +164,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "");
+            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "hla-db-version");
 
             actualResult.Should().Be(ExpectedNoTceGroupAssignment);
         }

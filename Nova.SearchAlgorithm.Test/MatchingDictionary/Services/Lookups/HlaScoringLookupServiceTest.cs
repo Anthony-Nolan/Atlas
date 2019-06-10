@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                     TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "");
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
             var expectedResult = BuildMultipleAlleleLookupResult(expectedLookupName, expectedCurrentAlleleNames);
 
             actualResult.Should().Be(expectedResult);
@@ -99,7 +99,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry, thirdEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "");
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
             var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, alleleNames);
 
             actualResult.Should().Be(expectedResult);
@@ -153,7 +153,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "");
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
             var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, expectedAlleleNames);
 
             actualResult.Should().Be(expectedResult);
