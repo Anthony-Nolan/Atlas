@@ -32,16 +32,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.DependencyInjection
             services.AddSingleton<IMetaDonorsData, MetaDonorsData>();
             services.AddSingleton<IMetaDonorRepository, MetaDonorRepository>();
 
-            services.AddScoped<IAlleleRepository, AlleleRepository>();
-            services.AddScoped<ITestDataService, TestDataService>();
+            // Services will only be fetched from .NET Core DI once per scenario, in the "BeforeScenario" hook.
+            // As such these are closer to a scoped lifetime than a transient one in usage. 
+            // We do not use "AddScoped" here as the DI framework does not appear consider new tests a different scope
+            services.AddTransient<IAlleleRepository, AlleleRepository>();
+            services.AddTransient<ITestDataService, TestDataService>();
             
-            services.AddScoped<IPatientDataFactory, PatientDataFactory>();
-            services.AddScoped<IMultiplePatientDataFactory, MultiplePatientDataFactory>();
-            services.AddScoped<IStaticDataProvider, StaticDataProvider>();
+            services.AddTransient<IPatientDataFactory, PatientDataFactory>();
+            services.AddTransient<IMultiplePatientDataFactory, MultiplePatientDataFactory>();
+            services.AddTransient<IStaticDataProvider, StaticDataProvider>();
             
-            services.AddScoped<IMetaDonorSelector, MetaDonorSelector>();
-            services.AddScoped<IDatabaseDonorSelector, DatabaseDonorSelector>();
-            services.AddScoped<IPatientHlaSelector, PatientHlaSelector>();
+            services.AddTransient<IMetaDonorSelector, MetaDonorSelector>();
+            services.AddTransient<IDatabaseDonorSelector, DatabaseDonorSelector>();
+            services.AddTransient<IPatientHlaSelector, PatientHlaSelector>();
 
             RegisterDataServices(services);
 
