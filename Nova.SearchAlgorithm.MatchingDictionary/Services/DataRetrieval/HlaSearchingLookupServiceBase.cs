@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     public interface IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult
     {
-        Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName);
+        Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaDatabaseVersion);
     }
 
     /// <summary>
@@ -55,9 +55,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.logger = logger;
         }
 
-        public async Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName)
+        public async Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaDatabaseVersion)
         {
-            return await GetLookupResults(locus, hlaName);
+            return await GetLookupResults(locus, hlaName, hlaDatabaseVersion);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -65,15 +65,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override async Task<THlaLookupResult> PerformLookup(Locus locus, string lookupName)
+        protected override async Task<THlaLookupResult> PerformLookup(Locus locus, string lookupName, string hlaDatabaseVersion)
         {
-            return await GetSingleHlaLookupResult(locus, lookupName);
+            return await GetSingleHlaLookupResult(locus, lookupName, hlaDatabaseVersion);
         }
 
-        private async Task<THlaLookupResult> GetSingleHlaLookupResult(Locus locus, string lookupName)
+        private async Task<THlaLookupResult> GetSingleHlaLookupResult(Locus locus, string lookupName, string hlaDatabaseVersion)
         {
             var dictionaryLookup = GetHlaLookup(lookupName);
-            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(locus, lookupName);
+            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaDatabaseVersion);
             var lookupResults = ConvertTableEntitiesToLookupResults(lookupTableEntities);
 
             return ConsolidateHlaLookupResults(locus, lookupName, lookupResults);

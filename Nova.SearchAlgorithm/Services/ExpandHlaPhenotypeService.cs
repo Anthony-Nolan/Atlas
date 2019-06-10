@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 
@@ -15,10 +16,12 @@ namespace Nova.SearchAlgorithm.Services
     public class ExpandHlaPhenotypeService : IExpandHlaPhenotypeService
     {
         private readonly ILocusHlaMatchingLookupService locusHlaLookupService;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
-        public ExpandHlaPhenotypeService(ILocusHlaMatchingLookupService locusHlaLookupService)
+        public ExpandHlaPhenotypeService(ILocusHlaMatchingLookupService locusHlaLookupService, IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.locusHlaLookupService = locusHlaLookupService;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype)
@@ -37,7 +40,7 @@ namespace Nova.SearchAlgorithm.Services
             }
 
             var result = await locusHlaLookupService
-                .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2));
+                .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2), wmdaHlaVersionProvider.GetHlaDatabaseVersion());
 
             return new Tuple<ExpandedHla, ExpandedHla>(
                 result.Item1.ToExpandedHla(hla1), 

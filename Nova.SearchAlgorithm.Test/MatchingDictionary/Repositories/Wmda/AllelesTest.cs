@@ -8,7 +8,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.Alleles, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).Alleles, MolecularLoci);
         }
         
         [TestCase("A*", "01:26")]

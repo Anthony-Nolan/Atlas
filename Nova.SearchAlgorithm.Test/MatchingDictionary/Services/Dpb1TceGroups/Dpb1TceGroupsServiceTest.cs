@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Dpb1TceGroups
             var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
 
             tceGroupsLookupResults = new Dpb1TceGroupsService(dataRepository)
-                .GetDpb1TceGroupLookupResults()
+                .GetDpb1TceGroupLookupResults(SharedTestDataCache.HlaDatabaseVersionToTest)
                 .ToList();
         }
 

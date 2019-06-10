@@ -4,52 +4,58 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     public interface IAlleleNamesFromHistoriesExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames();
+        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion);
     }
 
     public class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
     {
-        private readonly List<AlleleNameHistory> consolidatedAlleleNameHistories;
+        private readonly IAlleleNameHistoriesConsolidator historiesConsolidator;
+
+        private IEnumerable<AlleleNameHistory> ConsolidatedAlleleNameHistories(string hlaDatabaseVersion)
+        {
+            return historiesConsolidator.GetConsolidatedAlleleNameHistories(hlaDatabaseVersion).ToList();
+        }
 
         public AlleleNamesFromHistoriesExtractor(
             IAlleleNameHistoriesConsolidator historiesConsolidator,
-            IWmdaDataRepository dataRepository) 
+            IWmdaDataRepository dataRepository)
             : base(dataRepository)
         {
-            consolidatedAlleleNameHistories = historiesConsolidator.GetConsolidatedAlleleNameHistories().ToList();
+            this.historiesConsolidator = historiesConsolidator;
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames()
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion)
         {
-            return consolidatedAlleleNameHistories
-                .SelectMany(GetAlleleNamesFromSingleHistory);
+            return ConsolidatedAlleleNameHistories(hlaDatabaseVersion)
+                .SelectMany(h => GetAlleleNamesFromSingleHistory(h, hlaDatabaseVersion));
         }
 
-        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromSingleHistory(AlleleNameHistory history)
+        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromSingleHistory(AlleleNameHistory history, string hlaDatabaseVersion)
         {
-            var currentAlleleName = GetCurrentAlleleName(history);
+            var currentAlleleName = GetCurrentAlleleName(history, hlaDatabaseVersion);
 
             return !string.IsNullOrEmpty(currentAlleleName)
                 ? history.ToAlleleNameLookupResults(currentAlleleName)
                 : new List<AlleleNameLookupResult>();
         }
 
-        private string GetCurrentAlleleName(AlleleNameHistory history)
+        private string GetCurrentAlleleName(AlleleNameHistory history, string hlaDatabaseVersion)
         {
-            return history.CurrentAlleleName ?? GetIdenticalToAlleleName(history);
+            return history.CurrentAlleleName ?? GetIdenticalToAlleleName(history, hlaDatabaseVersion);
         }
 
-        private string GetIdenticalToAlleleName(AlleleNameHistory history)
+        private string GetIdenticalToAlleleName(AlleleNameHistory history, string hlaDatabaseVersion)
         {
             var mostRecentNameAsTyping = new HlaNom(
                 TypingMethod.Molecular, history.TypingLocus, history.MostRecentAlleleName);
 
-            var identicalToAlleleName = AllelesInCurrentVersionOfHlaNom
+            var identicalToAlleleName = AllelesInVersionOfHlaNom(hlaDatabaseVersion)
                 .First(allele => allele.TypingEquals(mostRecentNameAsTyping))
                 .IdenticalHla;
 

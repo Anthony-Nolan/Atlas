@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Config;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {
@@ -27,13 +28,15 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         private readonly IConfidenceService confidenceService;
         private readonly IRankingService rankingService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public DonorScoringService(
             IHlaScoringLookupService hlaScoringLookupService,
             IGradingService gradingService,
             IConfidenceService confidenceService,
             IRankingService rankingService,
-            IMatchScoreCalculator matchScoreCalculator
+            IMatchScoreCalculator matchScoreCalculator,
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider
         )
         {
             this.hlaScoringLookupService = hlaScoringLookupService;
@@ -41,6 +44,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             this.confidenceService = confidenceService;
             this.rankingService = rankingService;
             this.matchScoreCalculator = matchScoreCalculator;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(
@@ -143,7 +147,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null 
-                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla)
+                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, wmdaHlaVersionProvider.GetHlaDatabaseVersion())
                 : null;
         }
     }

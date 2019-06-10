@@ -12,8 +12,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {
-        Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults);
-        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(Locus locus, string lookupName, TypingMethod typingMethod);
+        Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion);
+
+        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+            Locus locus,
+            string lookupName,
+            TypingMethod typingMethod,
+            string hlaDatabaseVersion);
     }
 
     public abstract class HlaLookupRepositoryBase :
@@ -21,26 +26,30 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         IHlaLookupRepository
     {
         protected HlaLookupRepositoryBase(
-            ICloudTableFactory factory, 
+            ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            string dataTableReferencePrefix,
+            string dataFunctionalTableReferencePrefix,
             IMemoryCache memoryCache,
             string cacheKey)
-            : base(factory, tableReferenceRepository, dataTableReferencePrefix, memoryCache, cacheKey)
+            : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, memoryCache, cacheKey)
         {
         }
 
-        public async Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults)
+        public async Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion)
         {
-            await RecreateDataTable(lookupResults, HlaLookupTableKeyManager.GetTablePartitionKeys());
+            await RecreateDataTable(lookupResults, HlaLookupTableKeyManager.GetTablePartitionKeys(), hlaDatabaseVersion);
         }
 
-        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(Locus locus, string lookupName, TypingMethod typingMethod)
+        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+            Locus locus,
+            string lookupName,
+            TypingMethod typingMethod,
+            string hlaDatabaseVersion)
         {
             var partition = HlaLookupTableKeyManager.GetEntityPartitionKey(locus);
             var rowKey = HlaLookupTableKeyManager.GetEntityRowKey(lookupName, typingMethod);
 
-            return await GetDataIfExists(partition, rowKey);
+            return await GetDataIfExists(partition, rowKey, hlaDatabaseVersion);
         }
     }
 }

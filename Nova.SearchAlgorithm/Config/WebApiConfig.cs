@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Config
 
         private static void ConfigureServicePoint()
         {
-            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString);
+            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
             var servicePoint = ServicePointManager.FindServicePoint(storageAccount.TableEndpoint);
             servicePoint.UseNagleAlgorithm = false;
             servicePoint.Expect100Continue = false;

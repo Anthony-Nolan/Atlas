@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Data
 {
     public class WmdaFileDownloader : IWmdaFileReader
     {
-        private static readonly string WmdaFileUri = ConfigurationManager.ConnectionStrings["WmdaFileUri"].ConnectionString;
+        private static readonly string WmdaFileUri = ConfigurationManager.AppSettings["WmdaFileUri"];
 
         public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {

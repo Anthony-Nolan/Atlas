@@ -19,11 +19,11 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
             return (TEntity)tableResult.Result;
         }
 
-        public static void BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)
+        public static async Task BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)
             where TEntity : TableEntity
         {
             var entitiesList = entities.ToList();
-            for (var i = 0; i < entitiesList.Count; i = i + BatchSize)
+            for (var i = 0; i < entitiesList.Count; i += BatchSize)
             {
                 var batchToInsert = entitiesList.Skip(i).Take(BatchSize).ToList();
                 var batchOperation = new TableBatchOperation();
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 
                 try
                 {
-                    table.ExecuteBatch(batchOperation);
+                    await table.ExecuteBatchAsync(batchOperation);
                 }
                 catch (StorageException ex)
                 {

@@ -5,6 +5,7 @@ locals {
     "hlaservice.apikey"           = var.HLASERVICE_APIKEY
     "hlaservice.baseurl"          = var.HLASERVICE_BASEURL
     "insights.instrumentationKey" = azurerm_application_insights.search_algorithm.instrumentation_key
+    "StorageConnectionString"     = var.CONNECTION_STRING_STORAGE
   }
 
   # This is the suggested syntax for dynamic maps. See: https://github.com/hashicorp/terraform/issues/2042#issuecomment-294556803
@@ -61,12 +62,6 @@ resource "azurerm_app_service" "search_algorithm" {
     name  = "SQLConnectionString"
     type  = "SQLAzure"
     value = var.CONNECTION_STRING_SQL
-  }
-
-  connection_string {
-    name  = "StorageConnectionString"
-    type  = "SQLAzure"
-    value = var.CONNECTION_STRING_STORAGE
   }
 }
 

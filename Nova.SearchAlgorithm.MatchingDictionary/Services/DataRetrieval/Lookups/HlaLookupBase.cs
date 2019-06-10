@@ -21,27 +21,35 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
         /// Lookup the submitted HLA details.
         /// </summary>
         /// <exception cref="InvalidHlaException">Thrown if no lookup results found.</exception>
-        public abstract Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(Locus locus, string lookupName);
+        public abstract Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(Locus locus, string lookupName, string hlaDatabaseVersion);
 
         protected async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
-            Locus locus, string lookupName, TypingMethod typingMethod)
+            Locus locus,
+            string lookupName,
+            TypingMethod typingMethod,
+            string hlaDatabaseVersion)
         {
-            var lookupResult = await GetLookupResultFromRepository(locus, lookupName, typingMethod);
+            var lookupResult = await GetLookupResultFromRepository(locus, lookupName, typingMethod, hlaDatabaseVersion);
             return lookupResult ?? throw new InvalidHlaException(locus, lookupName);
         }
 
         protected async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntity(
             Locus locus,
             string lookupName,
-            TypingMethod typingMethod
+            TypingMethod typingMethod,
+            string hlaDatabaseVersion
         )
         {
-            return await GetLookupResultFromRepository(locus, lookupName, typingMethod);
+            return await GetLookupResultFromRepository(locus, lookupName, typingMethod, hlaDatabaseVersion);
         }
 
-        private async Task<HlaLookupTableEntity> GetLookupResultFromRepository(Locus locus, string lookupName, TypingMethod typingMethod)
+        private async Task<HlaLookupTableEntity> GetLookupResultFromRepository(
+            Locus locus,
+            string lookupName,
+            TypingMethod typingMethod,
+            string hlaDatabaseVersion)
         {
-            return await hlaLookupRepository.GetHlaLookupTableEntityIfExists(locus, lookupName, typingMethod);
+            return await hlaLookupRepository.GetHlaLookupTableEntityIfExists(locus, lookupName, typingMethod, hlaDatabaseVersion);
         }
     }
 }

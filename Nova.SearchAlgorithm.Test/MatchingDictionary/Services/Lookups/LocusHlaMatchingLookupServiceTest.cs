@@ -38,12 +38,12 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             const string pGroup2 = "p-group-2";
 
             var lookupResult1 =
-                new HlaMatchingLookupResult(MatchedLocus, hlaString1, typingMethod1, new[] { pGroup1 });
+                new HlaMatchingLookupResult(MatchedLocus, hlaString1, typingMethod1, new[] {pGroup1});
             var lookupResult2 =
-                new HlaMatchingLookupResult(MatchedLocus, hlaString2, typingMethod2, new[] { pGroup2 });
+                new HlaMatchingLookupResult(MatchedLocus, hlaString2, typingMethod2, new[] {pGroup2});
 
             matchingLookupService
-                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>())
+                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(lookupResult1, lookupResult2);
 
             var expectedResults =
@@ -52,8 +52,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                     lookupResult2);
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
-                    MatchedLocus,
-                    new Tuple<string, string>(hlaString1, hlaString2));
+                MatchedLocus,
+                new Tuple<string, string>(hlaString1, hlaString2), "hla-db-version");
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }
@@ -68,16 +68,16 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             const string pGroup = "expressed-hla-p-group";
 
             var expressedHlaResult =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, expressedHlaTypingMethod, new[] { pGroup });
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, expressedHlaTypingMethod, new[] {pGroup});
             var nullAlleleResult =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new string[]{});
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new string[] { });
 
             matchingLookupService
-                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>())
+                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(expressedHlaResult, nullAlleleResult);
 
             var nullAlleleResultWithExpressedPGroup =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new[] { pGroup });
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new[] {pGroup});
 
             var expectedResults =
                 new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
@@ -86,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(typingInPosition1, typingInPosition2));
+                new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }
@@ -103,14 +103,14 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var nullAlleleResult =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new string[] { });
             var expressedHlaResult =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] { pGroup });
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] {pGroup});
 
             matchingLookupService
-                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>())
+                .GetHlaLookupResult(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(nullAlleleResult, expressedHlaResult);
 
             var nullAlleleResultWithExpressedPGroup =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new[] { pGroup });
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new[] {pGroup});
 
             var expectedResults =
                 new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
@@ -119,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(typingInPosition1, typingInPosition2));
+                new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
             actualResults.ShouldBeEquivalentTo(expectedResults);
         }

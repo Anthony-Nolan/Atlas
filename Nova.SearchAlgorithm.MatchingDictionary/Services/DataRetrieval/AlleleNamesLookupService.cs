@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
     public interface IAlleleNamesLookupService
     {
-        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
+        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaDatabaseVersion);
     }
 
     public class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
@@ -26,9 +26,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.hlaCategorisationService = hlaCategorisationService;
         }
 
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
+        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaDatabaseVersion)
         {
-            return await GetLookupResults(locus, alleleLookupName);
+            return await GetLookupResults(locus, alleleLookupName, hlaDatabaseVersion);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -37,9 +37,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                    hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
         }
 
-        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName)
+        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaDatabaseVersion)
         {
-            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(locus, lookupName);
+            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(locus, lookupName, hlaDatabaseVersion);
 
             if (alleleNameLookupResult == null)
             {

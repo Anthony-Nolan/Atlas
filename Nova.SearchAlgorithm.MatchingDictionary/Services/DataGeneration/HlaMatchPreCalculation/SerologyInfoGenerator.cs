@@ -6,7 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyRelationships;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {
     /// <summary>
     /// Pulls together data from different WMDA files
@@ -14,41 +14,38 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
     /// </summary>
     internal class SerologyInfoGenerator
     {
-        private readonly IEnumerable<HlaNom> serologies;
-        private readonly List<RelSerSer> serologyRelationships;
+        private readonly IWmdaDataRepository dataRepository;
 
         public SerologyInfoGenerator(IWmdaDataRepository dataRepository)
         {
-            serologies = dataRepository.Serologies;
-
-            // enumerating data collection here as it will be access hundreds of times
-            serologyRelationships = dataRepository.SerologyToSerologyRelationships.ToList();
+            this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching()
+        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(string hlaDatabaseVersion)
         {
-            return serologies.Select(GetInfoForSingleSerology);
+            return dataRepository.GetWmdaDataset(hlaDatabaseVersion).Serologies.Select(s => GetInfoForSingleSerology(s, hlaDatabaseVersion));
         }
 
-        private ISerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology)
+        private ISerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology, string hlaDatabaseVersion)
         {
-            var serologyTyping = GetSerologyTyping(serology);
-            var usedInMatching = GetTypingUsedInMatching(serology, serologyTyping);
-            var matchingSerologies = GetAllMatchingSerologies(serologyTyping, usedInMatching);
+            var serologyTyping = GetSerologyTyping(serology, hlaDatabaseVersion);
+            var usedInMatching = GetTypingUsedInMatching(serology, serologyTyping, hlaDatabaseVersion);
+            var matchingSerologies = GetAllMatchingSerologies(serologyTyping, usedInMatching, hlaDatabaseVersion);
 
             return new SerologyInfoForMatching(
-                serologyTyping, 
-                usedInMatching, 
+                serologyTyping,
+                usedInMatching,
                 matchingSerologies);
         }
 
-        private SerologyTyping GetSerologyTyping(HlaNom serology)
+        private SerologyTyping GetSerologyTyping(HlaNom serology, string hlaDatabaseVersion)
         {
+            var serologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships;
             var family = new SerologyFamily(serologyRelationships, serology, serology.IsDeleted);
             return family.SerologyTyping;
         }
 
-        private SerologyTyping GetTypingUsedInMatching(HlaNom serology, SerologyTyping serologyTyping)
+        private SerologyTyping GetTypingUsedInMatching(HlaNom serology, SerologyTyping serologyTyping, string hlaDatabaseVersion)
         {
             if (string.IsNullOrEmpty(serology.IdenticalHla))
             {
@@ -56,21 +53,24 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculatio
             }
 
             var identicalSerology = new HlaNom(TypingMethod.Serology, serology.TypingLocus, serology.IdenticalHla);
-            return GetSerologyTyping(identicalSerology);
+            return GetSerologyTyping(identicalSerology, hlaDatabaseVersion);
         }
 
         private IEnumerable<MatchingSerology> GetAllMatchingSerologies(
             SerologyTyping serologyTyping,
-            SerologyTyping usedInMatching)
+            SerologyTyping usedInMatching,
+            string hlaDatabaseVersion)
         {
-            var matchedToSerologyTyping = GetMatchingSerologies(serologyTyping);
-            var matchedToUsedInMatching = GetMatchingSerologies(usedInMatching);
+            var matchedToSerologyTyping = GetMatchingSerologies(serologyTyping, hlaDatabaseVersion);
+            var matchedToUsedInMatching = GetMatchingSerologies(usedInMatching, hlaDatabaseVersion);
 
             return matchedToSerologyTyping.Union(matchedToUsedInMatching);
         }
 
-        private IEnumerable<MatchingSerology> GetMatchingSerologies(SerologyTyping serology)
+        private IEnumerable<MatchingSerology> GetMatchingSerologies(SerologyTyping serology, string hlaDatabaseVersion)
         {
+            var serologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships;
+
             var calculator = new MatchingSerologyCalculatorFactory()
                 .GetMatchingSerologyCalculator(serology.SerologySubtype, serologyRelationships);
 

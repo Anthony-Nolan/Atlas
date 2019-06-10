@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
     /// </summary>
     public interface IHlaLookupResultsService
     {
-        HlaLookupResultCollections GetAllHlaLookupResults();
+        HlaLookupResultCollections GetAllHlaLookupResults(string hlaDatabaseVersion);
     }
 
     public class HlaLookupResultsService : IHlaLookupResultsService
@@ -40,17 +40,17 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.dpb1TceGroupsService = dpb1TceGroupsService;
         }
 
-        public HlaLookupResultCollections GetAllHlaLookupResults()
+        public HlaLookupResultCollections GetAllHlaLookupResults(string hlaDatabaseVersion)
         {
             try
             {
-                var alleleNameLookupResults = GetAlleleNamesAndTheirVariants();
+                var alleleNameLookupResults = GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
 
-                var precalculatedMatchedHla = GetPrecalculateMatchedHla().ToList();
-                var matchingLookupResults = GetMatchingLookupResults(precalculatedMatchedHla);
-                var scoringLookupResults = GetScoringLookupResults(precalculatedMatchedHla);
+                var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaDatabaseVersion).ToList();
+                var matchingLookupResults = GetMatchingLookupResults(preCalculatedMatchedHla);
+                var scoringLookupResults = GetScoringLookupResults(preCalculatedMatchedHla);
 
-                var dpb1TceGroupLookupResults = GetDpb1TceGroupLookupResults();
+                var dpb1TceGroupLookupResults = GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
 
                 return new HlaLookupResultCollections
                 {
@@ -66,14 +66,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             }
         }
 
-        private IEnumerable<IMatchedHla> GetPrecalculateMatchedHla()
+        private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaDatabaseVersion)
         {
-            return matchPreCalculationService.GetMatchedHla();
+            return matchPreCalculationService.GetMatchedHla(hlaDatabaseVersion);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants()
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaDatabaseVersion)
         {
-            return alleleNamesService.GetAlleleNamesAndTheirVariants();
+            return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
         }
 
         private IEnumerable<IHlaLookupResult> GetMatchingLookupResults(IEnumerable<IMatchedHla> matchedHla)
@@ -86,9 +86,9 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             return hlaScoringDataConverter.ConvertToHlaLookupResults(matchedHla);
         }
 
-        private IEnumerable<IHlaLookupResult> GetDpb1TceGroupLookupResults()
+        private IEnumerable<IHlaLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion)
         {
-            return dpb1TceGroupsService.GetDpb1TceGroupLookupResults();
+            return dpb1TceGroupsService.GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
         }
     }
 }

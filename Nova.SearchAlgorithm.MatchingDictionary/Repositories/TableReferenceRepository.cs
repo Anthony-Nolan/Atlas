@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 

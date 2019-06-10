@@ -1,35 +1,50 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
+namespace Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames
 {
     public abstract class AlleleNamesExtractorBase
     {
-        protected readonly List<HlaNom> AllelesInCurrentVersionOfHlaNom;
-        private readonly List<HlaNom> historicalNamesAsTypings;
+        private readonly IWmdaDataRepository dataRepository;
+        private readonly Dictionary<string, IList<HlaNom>> historicAlleleNamesCache = new Dictionary<string, IList<HlaNom>>();
 
         protected AlleleNamesExtractorBase(IWmdaDataRepository dataRepository)
         {
-            AllelesInCurrentVersionOfHlaNom = dataRepository.Alleles.ToList();
-
-            historicalNamesAsTypings = dataRepository
-                .AlleleNameHistories
-                .SelectMany(history =>
-                    history.DistinctAlleleNames, (history, historicalName) =>
-                    new HlaNom(TypingMethod.Molecular, history.TypingLocus, historicalName))
-                .Distinct()
-                .ToList();
+            this.dataRepository = dataRepository;
         }
 
-        protected bool AlleleNameIsNotInHistories(string locus, string alleleName)
+        protected IEnumerable<HlaNom> AllelesInVersionOfHlaNom(string hlaDatabaseVersion)
         {
-            return !historicalNamesAsTypings
-                .Any(historicalTyping =>
-                    historicalTyping.TypingLocus.Equals(locus) && 
-                    historicalTyping.Name.Equals(alleleName));
+            return dataRepository.GetWmdaDataset(hlaDatabaseVersion).Alleles;
+        }
+
+        protected bool AlleleNameIsNotInHistories(string locus, string alleleName, string hlaDatabaseVersion)
+        {
+            return !GetHistoricNamesAsTypings(hlaDatabaseVersion).Any(historicalTyping =>
+                historicalTyping.TypingLocus.Equals(locus) &&
+                historicalTyping.Name.Equals(alleleName)
+            );
+        }
+
+        private IList<HlaNom> GetHistoricNamesAsTypings(string hlaDatabaseVersion)
+        {
+            if (!historicAlleleNamesCache.TryGetValue(hlaDatabaseVersion, out var data))
+            {
+                var dataset = dataRepository.GetWmdaDataset(hlaDatabaseVersion);
+                data = dataset
+                    .AlleleNameHistories
+                    .SelectMany(history =>
+                        history.DistinctAlleleNames, (history, historicalName) =>
+                        new HlaNom(TypingMethod.Molecular, history.TypingLocus, historicalName))
+                    .Distinct()
+                    .ToList();
+                historicAlleleNamesCache.Add(hlaDatabaseVersion, data);
+            }
+
+            return data;
         }
     }
 }

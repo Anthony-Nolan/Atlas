@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             var expectedCurrentAlleleNames = new List<string> {firstAlleleName, secondAlleleName};
             AlleleNamesLookupService
-                .GetCurrentAlleleNames(MatchedLocus, expectedLookupName)
+                .GetCurrentAlleleNames(MatchedLocus, expectedLookupName, Arg.Any<string>())
                 .Returns(expectedCurrentAlleleNames);
 
             // return null on submitted name to emulate scenario that requires a current name lookup
@@ -54,7 +54,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(
                     MatchedLocus,
                     expectedLookupName,
-                    TypingMethod.Molecular)
+                    TypingMethod.Molecular,
+                    Arg.Any<string>())
                 .ReturnsNull();
 
             // return entries using current names list
@@ -64,10 +65,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 .GetHlaLookupTableEntityIfExists(
                     MatchedLocus,
                     Arg.Is<string>(x => x.Equals(firstAlleleName) || x.Equals(secondAlleleName)),
-                    TypingMethod.Molecular)
+                    TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
             var expectedResult = BuildMultipleAlleleLookupResult(expectedLookupName, expectedCurrentAlleleNames);
 
             actualResult.Should().Be(expectedResult);
@@ -95,10 +96,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var thirdEntry = BuildTableEntityForSingleAllele(thirdAlleleName);
 
             HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular)
+                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry, thirdEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
             var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, alleleNames);
 
             actualResult.Should().Be(expectedResult);
@@ -124,10 +125,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var secondEntry = BuildTableEntityForSingleAllele(nullAlleleName);
 
             HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular)
+                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
             
-            var result = await LookupService.GetHlaLookupResult(MatchedLocus, lookupName);
+            var result = await LookupService.GetHlaLookupResult(MatchedLocus, lookupName, "");
 
             result.HlaScoringInfo.MatchingGGroups.Single().Should().Be($"{expressingAlleleName}G");
         }
@@ -149,10 +150,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var secondEntry = BuildTableEntityForSingleAllele(secondAlleleName);
 
             HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular)
+                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
                 .Returns(firstEntry, secondEntry);
 
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName);
+            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
             var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, expectedAlleleNames);
 
             actualResult.Should().Be(expectedResult);

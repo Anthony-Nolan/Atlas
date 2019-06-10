@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 {
     public interface IAlleleNameVariantsExtractor
     {
-        IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames);
+        IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaDatabaseVersion);
     }
 
     public class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
@@ -18,13 +19,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
         {
         }
 
-        public IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames)
+        public IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaDatabaseVersion)
         {
-            var variantsNotFoundInHistories = originalAlleleNames.SelectMany(GetAlleleNameVariantsNotFoundInHistories);
+            var variantsNotFoundInHistories = originalAlleleNames.SelectMany(n => GetAlleleNameVariantsNotFoundInHistories(n, hlaDatabaseVersion)).ToList();
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName)
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName, string hlaDatabaseVersion)
         {
             var typingFromCurrentName = new AlleleTyping(
                 alleleName.Locus,
@@ -32,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames
 
             return typingFromCurrentName
                 .NameVariantsTruncatedByFieldAndOrExpressionSuffix
-                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.TypingLocus, nameVariant))
+                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.TypingLocus, nameVariant, hlaDatabaseVersion))
                 .Select(nameVariant => new AlleleNameLookupResult(
                     alleleName.Locus,
                     nameVariant,

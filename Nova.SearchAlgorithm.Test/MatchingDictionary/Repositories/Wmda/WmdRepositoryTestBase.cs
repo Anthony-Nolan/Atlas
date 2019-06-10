@@ -9,6 +9,8 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {
     public abstract class WmdaRepositoryTestBase<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
+        protected const string HlaDatabaseVersionToTest = "3330";
+
         protected readonly string[] MolecularLoci =  { "A*", "B*", "C*", "DPB1*", "DQB1*", "DRB1*" };
         protected readonly string[] SerologyLoci = { "A", "B", "Cw", "DQ", "DR" };
 

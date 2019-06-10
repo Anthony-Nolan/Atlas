@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.Dpb1TceGroupAssignments, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).Dpb1TceGroupAssignments, MolecularLoci);
         }
 
         [TestCase("17:01:01:01", "1", "1",

@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {
@@ -23,7 +24,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.AlleleNames
             var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
 
             alleleNameLookupResults = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
-                .GetAlleleNamesAndTheirVariants()
+                .GetAlleleNamesAndTheirVariants(SharedTestDataCache.HlaDatabaseVersionToTest)
                 .ToList();
         }
 

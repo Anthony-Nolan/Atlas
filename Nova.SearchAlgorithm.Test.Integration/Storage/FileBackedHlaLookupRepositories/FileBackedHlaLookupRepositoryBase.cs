@@ -26,27 +26,31 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
             PopulateHlaLookupResults();
         }
 
-        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, IEnumerable<string> partitions)
+        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task LoadDataIntoMemory()
+        public Task LoadDataIntoMemory(string hlaDatabaseVersion)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults)
+        public Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(Locus locus, string lookupName, TypingMethod typingMethod)
+        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+            Locus locus,
+            string lookupName,
+            TypingMethod typingMethod,
+            string hlaDatabaseVersion)
         {
-            var lookupResult = HlaLookupResults.FirstOrDefault(hla => 
+            var lookupResult = HlaLookupResults.FirstOrDefault(hla =>
                 hla.Locus.Equals(locus) && hla.LookupName == lookupName);
 
             return Task.FromResult(lookupResult?.ConvertToTableEntity());
@@ -61,7 +65,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
         private static FileBackedHlaLookupResultCollections GetLookupResultsFromJsonFile()
         {
             var assem = System.Reflection.Assembly.GetExecutingAssembly();
-            using (var stream = assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.all_hla_lookup_results.json"))
+            using (var stream =
+                assem.GetManifestResourceStream("Nova.SearchAlgorithm.Test.Integration.Resources.MatchingDictionary.all_hla_lookup_results.json"))
             {
                 using (var reader = new StreamReader(stream))
                 {

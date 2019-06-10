@@ -12,6 +12,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
+using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.DonorImport;
@@ -59,7 +60,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<DonorImportService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaUpdateService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AntigenCachingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            
+
             // Matching Services
             builder.RegisterType<DonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<DatabaseDonorMatchingService>().AsImplementedInterfaces().InstancePerLifetimeScope();
@@ -81,7 +82,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             builder.RegisterType<AlleleStringSplitterService>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<HlaCategorisationService>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            
+
             builder.RegisterType<AppSettingsApiKeyProvider>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ApiKeyRequiredAttribute>().AsSelf().SingleInstance();
 
@@ -90,6 +91,12 @@ namespace Nova.SearchAlgorithm.Config.Modules
 
             var logger = new RequestAwareLogger(new TelemetryClient(), ConfigurationManager.AppSettings["insights.logLevel"].ToLogLevel());
             builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+
+            builder.RegisterType<MatchingDictionaryService>().AsImplementedInterfaces().InstancePerLifetimeScope();
+
+            builder.RegisterType<WmdaHlaVersionProvider>().AsImplementedInterfaces()
+                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
+                .InstancePerLifetimeScope();
         }
 
         public static void RegisterMatchingDictionaryTypes(ContainerBuilder builder)
@@ -100,10 +107,7 @@ namespace Nova.SearchAlgorithm.Config.Modules
             builder.RegisterType<HlaScoringLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNamesLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Dpb1TceGroupsLookupRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<WmdaDataRepository>()
-                .AsImplementedInterfaces()
-                .WithParameter("hlaDatabaseVersion", Configuration.HlaDatabaseVersion)
-                .InstancePerLifetimeScope();
+            builder.RegisterType<WmdaDataRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
 
             builder.RegisterType<AlleleNameHistoriesConsolidator>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<AlleleNamesFromHistoriesExtractor>().AsImplementedInterfaces().InstancePerLifetimeScope();

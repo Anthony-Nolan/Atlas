@@ -1,6 +1,7 @@
-﻿using Nova.SearchAlgorithm.MatchingDictionary.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Wmda;
-using System.Collections.Generic;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.HlaNomExtractors;
@@ -10,60 +11,53 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IWmdaDataRepository
     {
-        string HlaDatabaseVersion { get; }
-        IEnumerable<HlaNom> Serologies { get; }
-        IEnumerable<HlaNom> Alleles { get; }
-        IEnumerable<HlaNomP> PGroups { get; }
-        IEnumerable<HlaNomG> GGroups { get; }
-        IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; }
-        IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; }
-        IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; }
-        IEnumerable<AlleleStatus> AlleleStatuses { get; }
-        IEnumerable<AlleleNameHistory> AlleleNameHistories { get; }
-        IEnumerable<Dpb1TceGroupAssignment> Dpb1TceGroupAssignments { get; }
+        WmdaDataset GetWmdaDataset(string hlaDatabaseVersion);
     }
 
     public class WmdaDataRepository : IWmdaDataRepository
     {
-        public string HlaDatabaseVersion { get; }
-        public IEnumerable<HlaNom> Serologies { get; private set; }
-        public IEnumerable<HlaNom> Alleles { get; private set; }
-        public IEnumerable<HlaNomP> PGroups { get; private set; }
-        public IEnumerable<HlaNomG> GGroups { get; private set; }
-        public IEnumerable<RelSerSer> SerologyToSerologyRelationships { get; private set; }
-        public IEnumerable<RelDnaSer> AlleleToSerologyRelationships { get; private set; }
-        public IEnumerable<ConfidentialAllele> ConfidentialAlleles { get; private set; }
-        public IEnumerable<AlleleStatus> AlleleStatuses { get; private set; }
-        public IEnumerable<AlleleNameHistory> AlleleNameHistories { get; private set; }
-        public IEnumerable<Dpb1TceGroupAssignment> Dpb1TceGroupAssignments { get; private set; }
+        private readonly Dictionary<string, WmdaDataset> wmdaDatasets = new Dictionary<string, WmdaDataset>();
 
         private readonly IWmdaFileReader wmdaFileReader;
 
-        public WmdaDataRepository(IWmdaFileReader wmdaFileReader, string hlaDatabaseVersion)
+        public WmdaDataRepository(IWmdaFileReader wmdaFileReader)
         {
             this.wmdaFileReader = wmdaFileReader;
-            HlaDatabaseVersion = hlaDatabaseVersion;
-            PopulateWmdaDataCollections();
         }
 
-        private void PopulateWmdaDataCollections()
+        public WmdaDataset GetWmdaDataset(string hlaDatabaseVersion)
         {
-            Serologies = GetWmdaData(new SerologyExtractor());
-            Alleles = GetWmdaData(new AlleleExtractor());
-            PGroups = GetWmdaData(new PGroupExtractor());
-            GGroups = GetWmdaData(new GGroupExtractor());
-            SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor());
-            AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor());
-            ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor());
-            AlleleStatuses = GetWmdaData(new AlleleStatusExtractor());
-            AlleleNameHistories = GetWmdaData(new AlleleHistoryExtractor());
-            Dpb1TceGroupAssignments = GetWmdaData(new Dpb1TceGroupAssignmentExtractor());
+            if (!wmdaDatasets.TryGetValue(hlaDatabaseVersion, out var dataset))
+            {
+                dataset = FetchWmdaDataCollections(hlaDatabaseVersion);
+                wmdaDatasets.Add(hlaDatabaseVersion, dataset);
+            }
+
+            return dataset;
         }
 
-        private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor)
+        private WmdaDataset FetchWmdaDataCollections(string hlaDatabaseVersion)
+        {
+            return new WmdaDataset
+            {
+                HlaDatabaseVersion = hlaDatabaseVersion,
+                Serologies = GetWmdaData(new SerologyExtractor(), hlaDatabaseVersion).ToList(),
+                Alleles = GetWmdaData(new AlleleExtractor(), hlaDatabaseVersion).ToList(),
+                PGroups = GetWmdaData(new PGroupExtractor(), hlaDatabaseVersion).ToList(),
+                GGroups = GetWmdaData(new GGroupExtractor(), hlaDatabaseVersion).ToList(),
+                SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor(), hlaDatabaseVersion).ToList(),
+                AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor(), hlaDatabaseVersion).ToList(),
+                ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor(), hlaDatabaseVersion).ToList(),
+                AlleleStatuses = GetWmdaData(new AlleleStatusExtractor(), hlaDatabaseVersion).ToList(),
+                AlleleNameHistories = GetWmdaData(new AlleleHistoryExtractor(), hlaDatabaseVersion).ToList(),
+                Dpb1TceGroupAssignments = GetWmdaData(new Dpb1TceGroupAssignmentExtractor(), hlaDatabaseVersion).ToList(),
+            };
+        }
+
+        private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor, string hlaDatabaseVersion)
             where TWmdaHlaTyping : IWmdaHlaTyping
         {
-            return extractor.GetWmdaHlaTypingsForMatchingDictionaryLoci(wmdaFileReader, HlaDatabaseVersion);
+            return extractor.GetWmdaHlaTypingsForMatchingDictionaryLoci(wmdaFileReader, hlaDatabaseVersion);
         }
     }
 }

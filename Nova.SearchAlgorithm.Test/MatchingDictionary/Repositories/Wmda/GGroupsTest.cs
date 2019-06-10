@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GGroups, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).GGroups, MolecularLoci);
         }
 
         [TestCase("C*", "02:14:01G", new[] { "02:14:01", "02:14:02" }, Description = "G group of alleles of same subtype")]
