@@ -1,7 +1,7 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "test-storage",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet",
     "Client.HlaService.BaseUrl": "https://dev-nova-app-hla-service.azurewebsites.net/",
     "Client.HlaService.ApiKey": "override-this",
