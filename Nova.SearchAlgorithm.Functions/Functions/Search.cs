@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Services;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
@@ -18,10 +20,11 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         }
 
         [FunctionName("Search")]
-        public async Task Run([HttpTrigger] HttpRequest request)
+        public async Task<IEnumerable<SearchResult>> Run([HttpTrigger] HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             var results = await searchService.Search(searchRequest);
+            return results;
         }
     }
 }

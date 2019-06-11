@@ -14,8 +14,8 @@
     "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
   },
   "ConnectionStrings": {
-    "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithmIntegration;Integrated Security=True;MultipleActiveResultSets=True;",
-    "SqlB": "Data Source=(local);Initial Catalog=SearchAlgorithmIntegrationB;Integrated Security=True;MultipleActiveResultSets=True;",
+    "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithm;Integrated Security=True;MultipleActiveResultSets=True;",
+    "SqlB": "Data Source=(local);Initial Catalog=SearchAlgorithmB;Integrated Security=True;MultipleActiveResultSets=True;",
     "PersistentSql": "Data Source=(local);Initial Catalog=SearchAlgorithmPersistent;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }
