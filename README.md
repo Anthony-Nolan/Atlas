@@ -83,6 +83,10 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
     - The service makes use of Entity Framework (EFCore) Code-First migrations. The models and repositories for data access
     are found within the `Nova.SearchAlgorithm.Data` and `Nova.SearchAlgorithm.Data.Persistent` projects.
     - Before running the app, migrations must be run using `dotnet ef database update -p <projectName>` from a terminal (or `Update-Database` from the nuget package manager)
+        - Note that the data project maintains two databases, referred to as "A" and "B". EF core will use the app setting 
+        for database "A" by default, defined in `ContextFactory.cs`. To locally test the hot-swapping feature, migrations will need to be
+        run manually against both databases, A and B. In many cases just picking a database and always using one will be ok for 
+        local development, as the swap will only occur when the hla refresh job is run. 
     - After changing any data models, a migration must be created with `dotnet ef migrations add -p <projectName>` (or `Add-Migration <migration-name>` in nuget package manager), then run as above
       - **Important Note Regarding Migrations:** The `MatchingHlaAt<Locus>` tables are so large that the entity framework 
       migration runner has been known to struggle to cope with large migrations of existing data. 
