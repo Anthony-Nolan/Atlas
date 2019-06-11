@@ -23,8 +23,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         public async Task<IEnumerable<SearchResult>> RunSearch([HttpTrigger] HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            var results = await searchService.Search(searchRequest);
-            return results;
+            return await searchService.Search(searchRequest);
         }
     }
 }
