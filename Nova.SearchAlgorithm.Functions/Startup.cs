@@ -1,12 +1,15 @@
+using System.Linq;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.Functions;
 using Nova.SearchAlgorithm.Settings;
 
 [assembly: FunctionsStartup(typeof(Startup))]
+
 namespace Nova.SearchAlgorithm.Functions
 {
     public class Startup : FunctionsStartup
@@ -22,11 +25,27 @@ namespace Nova.SearchAlgorithm.Functions
 
         private void RegisterSettings(IFunctionsHostBuilder builder)
         {
+            AddUserSecrets(builder);
             RegisterSettings<ApplicationInsightsSettings>(builder);
             RegisterSettings<AzureStorageSettings>(builder);
             RegisterSettings<DonorServiceSettings>(builder);
             RegisterSettings<HlaServiceSettings>(builder);
             RegisterSettings<WmdaSettings>(builder);
+        }
+
+        private static void AddUserSecrets(IFunctionsHostBuilder functionsHostBuilder)
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            // Fetch the existing IConfiguration set up by the azure functions framework
+            var descriptor = functionsHostBuilder.Services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            if (descriptor?.ImplementationInstance is IConfigurationRoot configuration)
+            {
+                // IMPORTANT: We must re-add the old configuration to ensure we do not lose any settings e.g. those from host.json, which are set up by the framework
+                configurationBuilder.AddConfiguration(configuration);
+            }
+
+            configurationBuilder.AddUserSecrets("710bde86-9075-4086-9657-ad605368265f");
+            functionsHostBuilder.Services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), configurationBuilder.Build()));
         }
 
         /// <summary>
@@ -60,7 +79,7 @@ namespace Nova.SearchAlgorithm.Functions
                 case AzureStorageSettings azureStorageSettings:
                     azureStorageSettings.ConnectionString = config.GetSection("AzureStorage.ConnectionString").Value;
                     break;
-                case DonorServiceSettings donorServiceSettings: 
+                case DonorServiceSettings donorServiceSettings:
                     donorServiceSettings.ApiKey = config.GetSection("Client.DonorService.ApiKey").Value;
                     donorServiceSettings.BaseUrl = config.GetSection("Client.DonorService.BaseUrl").Value;
                     break;
