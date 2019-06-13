@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         {
             SetupLogging();
 
-            serviceProvider = DependencyInjection.DependencyInjection.CreateProvider();
+            serviceProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
             var testDataService = serviceProvider.GetService<ITestDataService>();
 
             testDataService.SetupTestData();

@@ -88,8 +88,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
 
-            services.AddSingleton<IApiKeyProvider, AppSettingsApiKeyProvider>();
-
             services.AddScoped<IMatchingDictionaryService, MatchingDictionaryService>();
 
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>(sp =>
@@ -99,9 +97,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped(sp =>
-                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
-            );
             services.AddScoped<IDonorSearchRepository, DonorSearchRepository>();
             services.AddScoped<IDonorImportRepository, DonorImportRepository>();
             services.AddScoped<IDonorInspectionRepository, DonorInspectionRepository>();
