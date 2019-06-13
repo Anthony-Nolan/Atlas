@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <OutputPath>bin/</OutputPath>
         <UserSecretsId>841c4767-6a3e-4edc-bae0-f657a980f940</UserSecretsId>
     </PropertyGroup>
 

@@ -3,6 +3,8 @@
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <VersionPrefix>7.0.0</VersionPrefix>
         <AzureFunctionsVersion>v2</AzureFunctionsVersion>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <OutputPath>bin/</OutputPath>
         <UserSecretsId>710bde86-9075-4086-9657-ad605368265f</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>
