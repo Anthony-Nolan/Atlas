@@ -184,17 +184,17 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             }
         };
 
-        private static readonly Allele B15BroadAllele = new Allele{ Locus = Locus.B, Name = "15:33" };
-        private static readonly Allele B15SplitAllele = new Allele{ Locus = Locus.B, Name = "15:01:01:01" };
-        private static readonly Allele B70BroadAllele = new Allele{ Locus = Locus.B, Name = "15:09:01" };
-        private static readonly Allele B70SplitAllele = new Allele{ Locus = Locus.B, Name = "15:03:01:01" };
-        private static readonly Allele B15And70BroadAllele = new Allele{ Locus = Locus.B, Name = "15:36" };
+        private static readonly AlleleTestCase B15BroadAlleleTestCase = new AlleleTestCase{ Locus = Locus.B, Name = "15:33" };
+        private static readonly AlleleTestCase B15SplitAlleleTestCase = new AlleleTestCase{ Locus = Locus.B, Name = "15:01:01:01" };
+        private static readonly AlleleTestCase B70BroadAlleleTestCase = new AlleleTestCase{ Locus = Locus.B, Name = "15:09:01" };
+        private static readonly AlleleTestCase B70SplitAlleleTestCase = new AlleleTestCase{ Locus = Locus.B, Name = "15:03:01:01" };
+        private static readonly AlleleTestCase B15And70BroadAlleleTestCase = new AlleleTestCase{ Locus = Locus.B, Name = "15:36" };
 
         public static readonly object[] B15AllelesMatchingSerologies =
         {
             new object[]
             {
-                B15BroadAllele,
+                B15BroadAlleleTestCase,
                 new[]
                 {
                     new object[] {"B", "15", SerologySubtype.Broad, true },
@@ -207,7 +207,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             },
             new object[]
             {
-                B15SplitAllele,
+                B15SplitAlleleTestCase,
                 new[]
                 {
                     new object[] {"B", "62", SerologySubtype.Split, true },
@@ -216,7 +216,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             },
             new object[]
             {
-                B70BroadAllele,
+                B70BroadAlleleTestCase,
                 new[]
                 {
                     new object[] {"B", "70", SerologySubtype.Broad, true },
@@ -226,7 +226,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             },
             new object[]
             {
-                B70SplitAllele,
+                B70SplitAlleleTestCase,
                 new[]
                 {
                     new object[] {"B", "72", SerologySubtype.Split, true },
@@ -235,7 +235,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalcu
             },
             new object[]
             {
-                B15And70BroadAllele,
+                B15And70BroadAlleleTestCase,
                 new[]
                 {
                     new object[] {"B", "15", SerologySubtype.Broad, true },

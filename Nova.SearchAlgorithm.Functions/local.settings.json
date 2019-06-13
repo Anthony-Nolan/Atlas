@@ -1,0 +1,21 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS.WORKER.RUNTIME": "dotnet",
+    "Client.HlaService.BaseUrl": "https://dev-nova-app-hla-service.azurewebsites.net/",
+    "Client.HlaService.ApiKey": "override-this",
+    "Client.DonorService.BaseUrl": "https://dev-nova-app-donor-service.azurewebsites.net/",
+    "Client.DonorService.ApiKey": "override-this",
+    "ApplicationInsights.InstrumentationKey": "key",
+    "ApplicationInsights.LogLevel": "Info",
+    "AzureStorage.ConnectionString": "UseDevelopmentStorage=true",
+    "Wmda.HlaDatabaseVersion": "3330",
+    "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
+  },
+  "ConnectionStrings": {
+    "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithm;Integrated Security=True;MultipleActiveResultSets=True;",
+    "SqlB": "Data Source=(local);Initial Catalog=SearchAlgorithmB;Integrated Security=True;MultipleActiveResultSets=True;",
+    "PersistentSql": "Data Source=(local);Initial Catalog=SearchAlgorithmPersistent;Integrated Security=True;MultipleActiveResultSets=True;"
+  }
+}

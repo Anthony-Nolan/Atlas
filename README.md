@@ -25,6 +25,11 @@ The solution is split across multiple projects:
 - Nova.SearchAlgorithm.Data.Persistent
     - Manages the persistent database, i.e. any data that does not require re-processing regularly. 
     - Uses Entity Framework for schema management and querying
+- Nova.SearchAlgorithm.Functions
+    - Azure Functions App - this is the main entry point for the algorithm, as many of its features are long running and 
+    better suited to a functions app than a traditional web api. 
+    - Note that this app should always be deployed to an *app service plan* not a consumption plan - as we require the 
+    longer timeout of an app service plan, plus we do not want the app to automatically scale
 - Nova.SearchAlgorithm.MatchingDictionary
     - Responsible for maintaining and accessing the "matching dictionary" - a set of tables in Azure Storage which act 
     as an interface for allele details published by WMDA
@@ -45,12 +50,24 @@ The solution is split across multiple projects:
 
 #### Local Settings
 
-Settings for each project are defined in the `appsettings.json` file. 
+Settings for each non-functions project are defined in the `appsettings.json` file. 
 
 In some cases these settings will need overriding locally - either for secure values (e.g. api keys), or if you 
 want to use a different service (e.g. donor service, azure storage account, service bus)
 
 This is achieved with User Secrets: https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows
+
+##### Azure Functions Settings
+
+Azure functions requires a different settings configuration. With the "Values" object in `local.settings.json`, it expects a 
+collection of string app settings - these reflect a 1:1 mapping with the app settings configured in Azure for deployed environments
+    
+> Warning! Attempting to use nested objects in this configuration file will prevent the app settings from loading, with no warning from the functions host
+
+To enable a shared configuration pattern across both the functions project, and api used for testing, the Options pattern is used: 
+
+- In the API project(s), we use the standard implementation of the [options pattern within .NET Core DI](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-2.2), in `ServiceConfiguration.cs`
+- In the Functions project, we bypass this configuration setup and instead explicitly register the IOptions<TSettings> objects we instantiate - in `Setup.cs`
 
 #### Storage
 
@@ -66,6 +83,10 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
     - The service makes use of Entity Framework (EFCore) Code-First migrations. The models and repositories for data access
     are found within the `Nova.SearchAlgorithm.Data` and `Nova.SearchAlgorithm.Data.Persistent` projects.
     - Before running the app, migrations must be run using `dotnet ef database update -p <projectName>` from a terminal (or `Update-Database` from the nuget package manager)
+        - Note that the data project maintains two databases, referred to as "A" and "B". EF core will use the app setting 
+        for database "A" by default, defined in `ContextFactory.cs`. To locally test the hot-swapping feature, migrations will need to be
+        run manually against both databases, A and B. In many cases just picking a database and always using one will be ok for 
+        local development, as the swap will only occur when the hla refresh job is run. 
     - After changing any data models, a migration must be created with `dotnet ef migrations add -p <projectName>` (or `Add-Migration <migration-name>` in nuget package manager), then run as above
       - **Important Note Regarding Migrations:** The `MatchingHlaAt<Locus>` tables are so large that the entity framework 
       migration runner has been known to struggle to cope with large migrations of existing data. 

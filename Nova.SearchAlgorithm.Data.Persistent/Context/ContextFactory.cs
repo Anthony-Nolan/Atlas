@@ -18,6 +18,8 @@ namespace Nova.SearchAlgorithm.Data.Persistent
 
             var config = builder.Build();
 
+            // This is the default connection string to be used when running migrations locally
+            // When running, the connection string should be passed manually into the Create method in this class.
             var connectionString = config.GetConnectionString("PersistentSql");
 
             if (string.IsNullOrWhiteSpace(connectionString))
