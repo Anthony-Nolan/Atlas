@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Services
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
             mapper = AutomapperConfig.CreateMapper();
-            donorService = new DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
+            donorService = new SearchAlgorithm.Services.DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
         }
 
         [Test]
