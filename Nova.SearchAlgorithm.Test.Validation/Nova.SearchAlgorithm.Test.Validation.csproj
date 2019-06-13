@@ -1,705 +1,81 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.props')" />
-  <Import Project="..\packages\NUnit3TestAdapter.3.11.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.11.0\build\net35\NUnit3TestAdapter.props')" />
-  <Import Project="..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.props" Condition="Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.props')" />
-  <Import Project="..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nova.SearchAlgorithm.Test.Validation</RootNamespace>
-    <AssemblyName>Nova.SearchAlgorithm.Test.Validation</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
-    <IsCodedUITest>False</IsCodedUITest>
-    <TestProjectType>UnitTest</TestProjectType>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
-    <StyleCopEnabled Condition="'$(NCrunch)' == '1'">false</StyleCopEnabled>
-    <ProjectGuid>{C320E568-8D97-490E-AFDA-57CE50ED2893}</ProjectGuid>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <Content Include="Settings\SecureSettings.config">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <None Include="Settings\SecureSettings.config">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="AlphaFS, Version=2.1.0.0, Culture=neutral, PublicKeyToken=4d31a58f7d7ad5c9, processorArchitecture=MSIL">
-      <HintPath>..\packages\AlphaFS.2.1.3\lib\net452\AlphaFS.dll</HintPath>
-    </Reference>
-    <Reference Include="ApprovalTests, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
-      <HintPath>..\packages\ApprovalTests.3.0.14\lib\net45\ApprovalTests.dll</HintPath>
-    </Reference>
-    <Reference Include="ApprovalUtilities, Version=3.0.0.0, Culture=neutral, PublicKeyToken=11bd7d124fc62e0f, processorArchitecture=MSIL">
-      <HintPath>..\packages\ApprovalUtilities.3.0.14\lib\net45\ApprovalUtilities.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.6.2\lib\net45\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac.Integration.Owin, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.Owin.4.1.0\lib\net45\Autofac.Integration.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac.Integration.WebApi.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.WebApi2.Owin.4.0.0\lib\net45\Autofac.Integration.WebApi.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
-    </Reference>
-    <Reference Include="Castle.Core, Version=4.1.1.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
-      <HintPath>..\packages\Castle.Core.4.1.1\lib\net45\Castle.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentAssertions, Version=4.19.3.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.19.3\lib\net45\FluentAssertions.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentAssertions.Core, Version=4.19.3.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.19.3\lib\net45\FluentAssertions.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentValidation, Version=7.0.0.0, Culture=neutral, PublicKeyToken=7de548da2fbae0f0, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentValidation.7.5.2\lib\net45\FluentValidation.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.2.4.0\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AI.DependencyCollector, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.5.1\lib\net45\Microsoft.AI.DependencyCollector.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AI.PerfCounterCollector, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.5.1\lib\net45\Microsoft.AI.PerfCounterCollector.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AI.ServerTelemetryChannel, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.5.1\lib\net45\Microsoft.AI.ServerTelemetryChannel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AI.Web, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.Web.2.5.1\lib\net45\Microsoft.AI.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AI.WindowsServer, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.2.5.1\lib\net45\Microsoft.AI.WindowsServer.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ApplicationInsights, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.2.5.1\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.TelemetryCorrelation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.TelemetryCorrelation.1.0.0\lib\net45\Microsoft.AspNet.TelemetryCorrelation.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.22.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Data.Edm, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Edm.5.8.2\lib\net40\Microsoft.Data.Edm.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.OData.5.8.2\lib\net40\Microsoft.Data.OData.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.Services.Client, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Services.Client.5.8.2\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Caching.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Caching.Abstractions.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Caching.Memory.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Caching.Memory.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.1.1\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Options, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Options.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Primitives, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\packages\Microsoft.Extensions.Primitives.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Hosting, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Hosting.3.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Testing, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Testing.3.1.0\lib\net45\Microsoft.Owin.Testing.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceBus, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\WindowsAzure.ServiceBus.4.1.10\lib\net45\Microsoft.ServiceBus.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Win32.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Win32.Primitives.4.0.1\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAzure.Storage, Version=8.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\WindowsAzure.Storage.8.7.0\lib\net45\Microsoft.WindowsAzure.Storage.dll</HintPath>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json.Schema, Version=3.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.Schema.3.0.2\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c">
-      <HintPath>..\packages\NLog.4.5.11\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Nova.HLAService.Client, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Nova.HLAService.Client.3.0.0\lib\net462\Nova.HLAService.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Nova.Utils, Version=8.6.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Nova.Utils.8.6.1\lib\net462\Nova.Utils.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Nova.Utils.Entity, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.Entity.3.3.2\lib\net462\Nova.Utils.Entity.dll</HintPath>
-    </Reference>
-    <Reference Include="Nova.Utils.TestUtils, Version=3.3.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nova.Utils.TestUtils.3.3.2\lib\net462\Nova.Utils.TestUtils.dll</HintPath>
-    </Reference>
-    <Reference Include="Nova.Utils.WebApi, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Nova.Utils.WebApi.6.0.0\lib\net462\Nova.Utils.WebApi.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NSubstitute, Version=2.0.2.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
-      <HintPath>..\packages\NSubstitute.2.0.2\lib\net45\NSubstitute.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.6.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
-      <HintPath>..\packages\Oracle.ManagedDataAccess.12.2.1100\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.AppContext.4.1.0\lib\net46\System.AppContext.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.ComponentModel.Annotations, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ComponentModel.Annotations.4.4.1\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.ComponentModel.Primitives, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ComponentModel.Primitives.4.3.0\lib\net45\System.ComponentModel.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Console, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Console.4.0.0\lib\net46\System.Console.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.4.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Diagnostics.Tracing, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.Tracing.4.1.0\lib\net462\System.Diagnostics.Tracing.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Globalization.Calendars, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Globalization.Calendars.4.0.1\lib\net46\System.Globalization.Calendars.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.4.1.0\lib\net462\System.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.4.1.0\lib\net46\System.IO.Compression.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.ZipFile.4.0.1\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.FileSystem, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.4.0.1\lib\net46\System.IO.FileSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.0.1\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>..\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.3.3\lib\net46\System.Net.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.4\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Sockets, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Sockets.4.1.0\lib\net46\System.Net.Sockets.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reflection, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reflection.4.1.0\lib\net462\System.Reflection.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reflection.TypeExtensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reflection.TypeExtensions.4.1.0\lib\net462\System.Reflection.TypeExtensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.4.1.0\lib\net462\System.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.1\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.Extensions.4.1.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.InteropServices, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.InteropServices.4.1.0\lib\net462\System.Runtime.InteropServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.0.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Spatial, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Spatial.5.8.2\lib\net40\System.Spatial.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Http, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.4\lib\net45\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.Owin, Version=5.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.0\lib\net45\System.Web.Http.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="TechTalk.SpecFlow, Version=2.3.2.0, Culture=neutral, PublicKeyToken=0778194805d6db41">
-      <HintPath>..\packages\SpecFlow.2.3.2\lib\net45\TechTalk.SpecFlow.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <Choose>
-    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <Otherwise />
-  </Choose>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\Builders\Criteria\DatabaseDonorSelectionCriteriaBuilder.cs" />
-    <Compile Include="TestData\Builders\Criteria\GenotypeCriteriaBuilder.cs" />
-    <Compile Include="TestData\Builders\Criteria\MetaDonorSelectionCriteriaBuilder.cs" />
-    <Compile Include="TestData\Builders\Criteria\PatientHlaSelectionCriteriaBuilder.cs" />
-    <Compile Include="TestData\Builders\DonorBuilder.cs" />
-    <Compile Include="TestData\Builders\MetaDonorBuilder.cs" />
-    <Compile Include="TestData\Exceptions\DonorNotFoundException.cs" />
-    <Compile Include="TestData\Exceptions\HlaSelectionException.cs" />
-    <Compile Include="TestData\Exceptions\InvalidTestDataException.cs" />
-    <Compile Include="TestData\Exceptions\MetaDonorNotFoundException.cs" />
-    <Compile Include="TestData\Helpers\AlleleSplitter.cs" />
-    <Compile Include="TestData\Helpers\RandomSelectionHelper.cs" />
-    <Compile Include="TestData\Models\Hla\AlleleStringOptions.cs" />
-    <Compile Include="TestData\Models\MatchOrientation.cs" />
-    <Compile Include="TestData\Models\PatientHlaSource.cs" />
-    <Compile Include="TestData\Models\SearchAlgorithmApiResult.cs" />
-    <Compile Include="TestData\Models\Hla\AlleleTestData.cs" />
-    <Compile Include="TestData\Models\Hla\Dataset.cs" />
-    <Compile Include="TestData\Models\Hla\Genotype.cs" />
-    <Compile Include="TestData\Models\Hla\GenotypeCriteria.cs" />
-    <Compile Include="TestData\Models\Hla\HlaTypingResolution.cs" />
-    <Compile Include="TestData\Models\Hla\TgsAllele.cs" />
-    <Compile Include="TestData\Models\MatchLevel.cs" />
-    <Compile Include="TestData\Models\MetaDonor.cs" />
-    <Compile Include="TestData\Models\PatientDataSelection\DatabaseDonorSpecification.cs" />
-    <Compile Include="TestData\Models\PatientDataSelection\MetaDonorSelectionCriteria.cs" />
-    <Compile Include="TestData\Models\PatientDataSelection\PatientHlaSelectionCriteria.cs" />
-    <Compile Include="TestData\Models\PatientApiResult.cs" />
-    <Compile Include="TestData\Repositories\AlleleRepository.cs" />
-    <Compile Include="TestData\Repositories\MetaDonorRepository.cs" />
-    <Compile Include="TestData\Repositories\TestDataRepository.cs" />
-    <Compile Include="TestData\Resources\Alleles\AllelesWithDifferentThirdField.cs" />
-    <Compile Include="TestData\Resources\Alleles\AllelesWithNonNullExpressionSuffix.cs" />
-    <Compile Include="TestData\Resources\Alleles\MatchGrades\CDnaMatchingAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\MatchGrades\GGroupMatchingAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\MatchGrades\PGroupMatchingAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\NonMatchingAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\NullAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\TGS\FourFieldAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\TGS\ThreeFieldAlleles.cs" />
-    <Compile Include="TestData\Resources\Alleles\TGS\TwoFieldAlleles.cs" />
-    <Compile Include="TestData\Resources\MetaDonorsData.cs" />
-    <Compile Include="TestData\Resources\SpecificTestCases\HlaData\AllMatchGrades.cs" />
-    <Compile Include="TestData\Resources\SpecificTestCases\TestCaseTypingResolutions.cs" />
-    <Compile Include="TestData\Services\AlleleStringAlleleSelector.cs" />
-    <Compile Include="TestData\Services\DonorIdGenerator.cs" />
-    <Compile Include="TestData\Services\GenotypeGenerator.cs" />
-    <Compile Include="TestData\Services\IExpectedDonorProvider.cs" />
-    <Compile Include="TestData\Services\IPatientDataProvider.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\DatabaseDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\MetaDonorSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\DataSelectors\PatientHlaSelector.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\MultiplePatientDataFactory.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\PatientFactories\PatientDataFactory.cs" />
-    <Compile Include="TestData\Services\PatientDataSelection\StaticDataSelection\StaticDataProvider.cs" />
-    <Compile Include="TestData\Services\TestDataService.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\AlleleStringAlleleSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\GenotypeGeneratorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\Models\Hla\TgsAlleleTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\DatabaseDonorSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\MetaDonorSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\DataSelectors\PatientHlaSelectorTests.cs" />
-    <Compile Include="ValidationFrameworkUnitTests\PatientDataSelection\PatientFactories\PatientDataFactoryTests.cs" />
-    <Compile Include="ValidationTests\AlgorithmTestingService.cs" />
-    <Compile Include="ValidationTests\Features\AlleleNames\AlleleNames.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AlleleNames.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FourMismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MoreThanFourMismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Search.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SingleMismatch.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ThreeMismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TwoMismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\AlignedRegistries.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AlignedRegistries.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Search.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>BetterMatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>EightOutOfTenMatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>WorseMatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FullMatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\NullAlleles\NullAlleles.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>NullAlleles.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\Scoring\MatchConfidences.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MatchConfidences.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\Scoring\MatchGrades.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MatchGrades.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MatchCountRanking.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AlignedRegistries.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Search.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\AlignedRegistries.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AlignedRegistries.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Mismatches.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MultiplePatients.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Search.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TypingResolutions.feature</DependentUpon>
-    </Compile>
-    <Compile Include="ValidationTests\StepDefinitions\Hooks.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\InputParsers\LocusParser.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\InputParsers\OrientationParser.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\InputParsers\PositionParser.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultiplePatientDataSelectionSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\MultipleDonorPatientDataSelectionSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\PatientDataFactoryExtensions.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\PatientDataSelection\SingleDonorPatientDataSelectionSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\ScoringSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\SearchSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\Dpb1PermissiveMismatchFeatureSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\AlleleNameFeatureSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\FeatureDefinedTestDataSteps.cs" />
-    <Compile Include="ValidationTests\StepDefinitions\SpecificTestCases\SpecificTestDataSteps.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature" />
-    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature" />
-    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature" />
-    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature" />
-    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature" />
-    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature" />
-    <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\AlignedRegistries.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\AlignedRegistries.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature" />
-    <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature" />
-    <Content Include="ValidationTests\Features\ValidationREADME.md" />
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Search.feature.cs</LastGenOutput>
-    </None>
-    <None Include="ValidationTests\Features\Scoring\MatchConfidences.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>MatchConfidences.feature.cs</LastGenOutput>
-    </None>
-    <None Include="ValidationTests\Features\Scoring\MatchGrades.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Ranking.feature.cs</LastGenOutput>
-    </None>
-    <None Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>MatchCountRanking.feature.cs</LastGenOutput>
-    </None>
-    <None Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Search.feature.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj">
-      <Project>{AD4A122A-CBB7-4996-AF5C-BAED84271A9E}</Project>
-      <Name>Nova.SearchAlgorithm.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
-      <Project>{FB453E02-3CE1-42E7-BDC4-13899B993F2A}</Project>
-      <Name>Nova.SearchAlgorithm.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj">
-      <Project>{a3c005fb-959b-4ddb-a1d6-5ac20c4fcec4}</Project>
-      <Name>Nova.SearchAlgorithm.Data.Persistent</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
-      <Project>{7DC2A865-304B-402B-AC56-342681368568}</Project>
-      <Name>Nova.SearchAlgorithm.Data</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj">
-      <Project>{478d829d-9aa2-4de2-9fdd-dee35e50111e}</Project>
-      <Name>Nova.SearchAlgorithm.MatchingDictionary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj">
-      <Project>{09444497-e6f9-44b1-b7bb-f2a072c20ba5}</Project>
-      <Name>Nova.SearchAlgorithm.Test.Integration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj">
-      <Project>{B5CB5431-D854-4F2B-8ECA-06055376EE02}</Project>
-      <Name>Nova.SearchAlgorithm</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <UserSecretsId>841c4767-6a3e-4edc-bae0-f657a980f940</UserSecretsId>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props'))" />
-    <Error Condition="!Exists('..\packages\SpecFlow.2.3.2\build\SpecFlow.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SpecFlow.2.3.2\build\SpecFlow.targets'))" />
-    <Error Condition="!Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.props'))" />
-    <Error Condition="!Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.targets'))" />
-    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.11.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.11.0\build\net35\NUnit3TestAdapter.props'))" />
-    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.props'))" />
-    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets'))" />
-  </Target>
-  <Import Project="..\packages\SpecFlow.2.3.2\build\SpecFlow.targets" Condition="Exists('..\packages\SpecFlow.2.3.2\build\SpecFlow.targets')" />
-  <Import Project="..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.targets" Condition="Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.2.3.2\build\SpecFlow.Tools.MsBuild.Generation.targets')" />
-  <Import Project="..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+    <Target Name="AfterUpdateFeatureFilesInProject">
+        <!-- include any generated SpecFlow files in the compilation of the project if not included yet -->
+        <ItemGroup>
+            <Compile Include="**\*.feature.cs" Exclude="@(Compile)" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\AlignedRegistries.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\AlignedRegistries.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature" />
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature" />
+        <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature" />
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature" />
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature" />
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature" />
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature" />
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature" />
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature" />
+        <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
+        <Content Include="ValidationTests\Features\Scoring\MatchConfidences.feature" />
+        <Content Include="ValidationTests\Features\Scoring\MatchGrades.feature" />
+        <Content Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature" />
+        <Content Include="ValidationTests\Features\ValidationREADME.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="4.19.3" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+        <PackageReference Include="NLog" Version="4.6.4" />
+        <PackageReference Include="NSubstitute" Version="2.0.3" />
+        <PackageReference Include="NUnit" Version="3.12.0" />
+        <PackageReference Include="NUnit.ConsoleRunner" Version="3.10.0" />
+        <PackageReference Include="NUnit.Extension.NUnitProjectLoader" Version="3.6.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+        <PackageReference Include="Pickles.CommandLine" Version="2.20.1" />
+        <PackageReference Include="SpecFlow" Version="3.0.220" />
+        <PackageReference Include="SpecFlow.NUnit" Version="3.0.220" />
+        <PackageReference Include="SpecFlow.NUnit.Runners" Version="3.0.220" />
+        <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.0.220" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Nova.SearchAlgorithm.Api\Nova.SearchAlgorithm.Api.csproj" />
+        <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj" />
+        <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj" />
+        <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj" />
+        <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj" />
+        <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -11,17 +11,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     public class TestDataService: ITestDataService
     {
         private readonly IMetaDonorRepository metaDonorRepository;
+        private readonly ITestDataRepository testDataRepository;
 
-        public TestDataService(IMetaDonorRepository metaDonorRepository)
+        public TestDataService(IMetaDonorRepository metaDonorRepository, ITestDataRepository testDataRepository)
         {
             this.metaDonorRepository = metaDonorRepository;
+            this.testDataRepository = testDataRepository;
         }
         
         public void SetupTestData()
         {
-            TestDataRepository.SetupPersistentDatabase();
-            TestDataRepository.SetupDatabase();
-            TestDataRepository.AddTestDonors(metaDonorRepository.AllMetaDonors().ToList().SelectMany(md => md.GetDatabaseDonors()));
+            testDataRepository.SetupPersistentDatabase();
+            testDataRepository.SetupDatabase();
+            testDataRepository.AddTestDonors(metaDonorRepository.AllMetaDonors().ToList().SelectMany(md => md.GetDatabaseDonors()));
         }
     }
 }

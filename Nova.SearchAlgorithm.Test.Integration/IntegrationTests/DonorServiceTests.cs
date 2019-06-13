@@ -1,11 +1,12 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using Nova.Utils.Http.Exceptions;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 {
     [TestFixture]
-    public class DonorServiceTests : IntegrationTestBase
+    public class DonorServiceTests
     {
         private IDonorService donorService;
         private IDonorInspectionRepository donorInspectionRepository;
@@ -21,8 +22,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         [SetUp]
         public void SetUp()
         {
-            donorService = Container.Resolve<IDonorService>();
-            donorInspectionRepository = Container.Resolve<IDonorInspectionRepository>();
+            donorService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorService>();
+            donorInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
         }
 
         [Test]

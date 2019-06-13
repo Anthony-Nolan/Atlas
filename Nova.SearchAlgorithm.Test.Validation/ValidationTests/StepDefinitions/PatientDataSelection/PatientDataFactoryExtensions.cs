@@ -32,8 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetAsSixOutOfSixMatch();
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -51,8 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     mismatchCount = 2;
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             var loci = LocusParser.ParseLoci(locusType);
@@ -98,8 +96,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory = SetDonorTypingCategoryAtAllLoci(factory, typingCategory);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -144,8 +141,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetAsMatchLevelAtAllLoci(MatchLevel.FirstTwoFieldAllele);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -162,8 +158,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetMatchingDonorType(DonorType.Cord);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -188,8 +183,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.SetMatchingRegistry(RegistryCode.WBS);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -207,8 +201,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
 
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -233,8 +226,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 case "an 'L'":
                     throw new InvalidTestDataException("Cannot select a specific non-null expression suffix - this functionality will need adding");
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;
@@ -298,8 +290,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 case "ambiguously (multiple P groups)":
                     return HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups;
                 default:
-                    ScenarioContext.Current.Pending();
-                    return HlaTypingResolution.Tgs;
+                    throw new PendingStepException();
             }
         }
 
@@ -373,8 +364,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Arbitrary);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
-                    break;
+                    throw new PendingStepException();
             }
 
             return factory;

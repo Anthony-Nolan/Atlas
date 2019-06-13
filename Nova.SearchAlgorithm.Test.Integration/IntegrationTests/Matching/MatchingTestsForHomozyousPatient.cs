@@ -1,17 +1,18 @@
-﻿using Autofac;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -39,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusXxCodes)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSerologies)]
-    public class MatchingTestsForHomozygousPatient : IntegrationTestBase
+    public class MatchingTestsForHomozygousPatient
     {
         private class LocusTypingInfo
         {
@@ -92,7 +93,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
+            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(
                 LocusUnderTest,
                 MatchingDonorType);
@@ -101,17 +102,17 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             SetPatientMatchingHlaPhenotype();
             AddDonorsToRepository();
         }
+        
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            DatabaseManager.ClearDatabase();
+        }
 
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            donorMatchingService = Container.Resolve<IDonorMatchingService>();
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            ClearDatabase();
+            donorMatchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
         }
 
         [Test]
@@ -164,7 +165,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void AddDonorsToRepository()
         {
-            var importRepo = Container.Resolve<IDonorImportRepository>();
+            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
             foreach (var donor in BuildInputDonors())
             {
                 Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();

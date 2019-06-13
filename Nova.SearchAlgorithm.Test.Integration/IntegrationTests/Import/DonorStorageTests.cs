@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Autofac;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
-    public class DonorStorageTests : IntegrationTestBase
+    public class DonorStorageTests
     {
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
@@ -66,8 +67,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void ResolveSearchRepo()
         {
-            importRepo = Container.Resolve<IDonorImportRepository>();
-            inspectionRepo = Container.Resolve<IDonorInspectionRepository>();
+            importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            inspectionRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
         }
 
         [Test]

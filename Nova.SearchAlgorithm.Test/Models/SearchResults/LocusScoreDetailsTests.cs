@@ -1,9 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using System;
-using System.Text.RegularExpressions;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 

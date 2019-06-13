@@ -1,17 +1,18 @@
-﻿using Autofac;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 {
-    public class SingleDonorSearchTests : IntegrationTestBase
+    public class SingleDonorSearchTests
     {
         private ISearchService searchService;
 
@@ -70,8 +71,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
-            var donorRepository = Container.Resolve<IDonorImportRepository>();
+            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
 
             donor = new InputDonorWithExpandedHla
             {
@@ -86,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [SetUp]
         public void ResolveSearchService()
         {
-            searchService = Container.Resolve<ISearchService>();
+            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
 
         [Test]

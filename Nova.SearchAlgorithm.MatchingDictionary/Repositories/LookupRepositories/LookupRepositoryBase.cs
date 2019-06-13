@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
         {
             var tablePrefix = VersionedTableReferencePrefix(hlaDatabaseVersion);
-            var newDataTable = CreateNewDataTable(tablePrefix);
+            var newDataTable = await CreateNewDataTable(tablePrefix);
             await InsertIntoDataTable(tableContents, partitions, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
             cloudTable = null;
@@ -109,7 +109,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             if (cloudTable == null)
             {
                 var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaDatabaseVersion));
-                cloudTable = tableFactory.GetTable(dataTableReference);
+                cloudTable = await tableFactory.GetTable(dataTableReference);
             }
             return cloudTable;
         }
@@ -121,10 +121,10 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             return tableEntity;
         }
 
-        private CloudTable CreateNewDataTable(string tablePrefix)
+        private async Task<CloudTable> CreateNewDataTable(string tablePrefix)
         {
             var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
-            return tableFactory.GetTable(dataTableReference);
+            return await tableFactory.GetTable(dataTableReference);
         }
 
         private static async Task InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)

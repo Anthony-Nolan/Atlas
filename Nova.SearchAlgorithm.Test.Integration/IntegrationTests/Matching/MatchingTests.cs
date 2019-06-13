@@ -1,18 +1,20 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
 // ReSharper disable InconsistentNaming
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
-    public class MatchingTests : IntegrationTestBase
+    public class MatchingTests
     {
         private IDonorMatchingService matchingService;
         private InputDonorWithExpandedHla cordDonorWithFullHomozygousMatchAtLocusA;
@@ -42,13 +44,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void ResolveSearchRepo()
         {
-            matchingService = Container.Resolve<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
         }
         
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var importRepo = Container.Resolve<IDonorImportRepository>();
+            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
 
             cordDonorWithFullHomozygousMatchAtLocusA = GetDefaultInputDonorBuilder().Build();
 
@@ -132,6 +134,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             {
                 Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
+        }
+
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            DatabaseManager.ClearDatabase();
         }
         
         [Test]

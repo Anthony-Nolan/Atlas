@@ -1,5 +1,5 @@
 ﻿using System;
-using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
+using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;

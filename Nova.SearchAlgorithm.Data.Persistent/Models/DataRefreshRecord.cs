@@ -8,7 +8,6 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Models
     {
         public int Id { get; set; }
         public DateTime RefreshBeginUtc { get; set; }
-        [Index]
         public DateTime? RefreshEndUtc { get; set; }
         
         /// <summary>

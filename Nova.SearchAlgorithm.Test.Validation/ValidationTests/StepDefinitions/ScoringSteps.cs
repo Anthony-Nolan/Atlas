@@ -13,6 +13,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
     [Binding]
     public class ScoringSteps
     {
+        private readonly ScenarioContext scenarioContext;
+
+        public ScoringSteps(ScenarioContext scenarioContext)
+        {
+            this.scenarioContext = scenarioContext;
+        }
+
         [Then("the match grade should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
         {
@@ -52,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         [Then("(.*) should be returned above (.*)")]
         public void ThenXShouldBeReturnedAboveY(string higherResultType, string lowerResultType)
         {
-            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
             var results = apiResult.Results.SearchResults.ToList();
@@ -99,10 +106,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
-        private static SearchResult GetSearchResultForSingleDonor()
+        private SearchResult GetSearchResultForSingleDonor()
         {
-            var expectedDonorProvider = ScenarioContext.Current.Get<IExpectedDonorProvider>();
-            var apiResult = ScenarioContext.Current.Get<SearchAlgorithmApiResult>();
+            var expectedDonorProvider = scenarioContext.Get<IExpectedDonorProvider>();
+            var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
             return apiResult
@@ -111,7 +118,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 .Single(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
-        private static IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
+        private IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
         {
             switch (grades.ToLower())
             {
@@ -132,12 +139,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "mismatch":
                     return new[] { MatchGrade.Mismatch };
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     return new List<MatchGrade>();
             }
         }
 
-        private static MatchConfidence? ParseExpectedMatchConfidence(string confidence)
+        private MatchConfidence? ParseExpectedMatchConfidence(string confidence)
         {
             switch (confidence)
             {
@@ -150,12 +157,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "Mismatch":
                     return MatchConfidence.Mismatch;
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     return null;
             }
         }
 
-        private static IEnumerable<Locus> ParseExpectedLoci(string locus)
+        private IEnumerable<Locus> ParseExpectedLoci(string locus)
         {
             var allLoci = new[] { Locus.A, Locus.B, Locus.C, Locus.Dpb1, Locus.Dqb1, Locus.Drb1 };
             var expectedLoci = new List<Locus>();
@@ -192,26 +199,26 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     expectedLoci.Add(Locus.Drb1);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     break;
             }
 
             return expectedLoci;
         }
 
-        private static TypePosition?[] ParseExpectedPositions(string position)
+        private TypePosition?[] ParseExpectedPositions(string position)
         {
             switch (position)
             {
                 case "both positions":
                     return new TypePosition?[] { TypePosition.One, TypePosition.Two };
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     return null;
             }
         }
 
-        private static SearchResult ParseResultType(List<SearchResult> results, string resultType)
+        private SearchResult ParseResultType(List<SearchResult> results, string resultType)
         {
             switch (resultType)
             {
@@ -244,7 +251,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 case "a full potential match":
                     return results.Find(r => IsMatchConfidenceAtMatchedLoci(r, MatchConfidence.Potential));
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     return null;
             }
         }

@@ -1,5 +1,4 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Test.Performance.Models
 {

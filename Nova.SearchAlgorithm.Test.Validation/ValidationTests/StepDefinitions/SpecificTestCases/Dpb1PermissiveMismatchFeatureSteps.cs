@@ -8,6 +8,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
     [Binding]
     public class Dpb1PermissiveMismatchFeatureSteps
     {
+        private readonly ScenarioContext scenarioContext;
+        
+        public Dpb1PermissiveMismatchFeatureSteps(ScenarioContext scenarioContext)
+        {
+            this.scenarioContext = scenarioContext;
+        }
+        
         [Given(@"the patient and donor have mismatched DPB1 alleles with (.*) TCE group assignments")]
         public async Task GivenPatientAndDonorWithMismatchedDpb1Alleles(string tceGroupAssignments)
         {
@@ -53,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
                 Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
             };
 
-            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla);
+            await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
     }
 }

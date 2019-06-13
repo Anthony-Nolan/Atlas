@@ -22,14 +22,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 
     public class TableReferenceRepository : ITableReferenceRepository
     {
-        public const string CloudTableReference = "TableReferences";
-        private readonly CloudTable table;
+        private readonly ICloudTableFactory factory;
+        private const string CloudTableReference = "TableReferences";
+        private CloudTable table;
 
         public TableReferenceRepository(ICloudTableFactory factory)
         {
-            table = factory.GetTable(CloudTableReference);
+            this.factory = factory;
         }
-
+        
         public async Task<string> GetCurrentTableReference(string tablePrefix)
         {
             var entity = await GetExistingTableEntity(tablePrefix);
@@ -48,14 +49,19 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public async Task UpdateTableReference(string tablePrefix, string tableReference)
         {
             var insertOrReplaceOperation = TableOperation.InsertOrReplace(new TableReferenceTableEntity(tablePrefix, tableReference));
-            await table.ExecuteAsync(insertOrReplaceOperation);
+            await (await GetTable()).ExecuteAsync(insertOrReplaceOperation);
+        }
+
+        private async Task<CloudTable> GetTable()
+        {
+            return table ?? (table = await factory.GetTable(CloudTableReference));
         }
 
         private async Task<TableReferenceTableEntity> GetExistingTableEntity(string tablePrefix)
         {
             var partition = TableReferenceTableEntity.GetPartition();
             var rowKey = tablePrefix;
-            var entity = await table.GetEntityByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey);
+            var entity = await (await GetTable()).GetEntityByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey);
             return entity;
         }
 

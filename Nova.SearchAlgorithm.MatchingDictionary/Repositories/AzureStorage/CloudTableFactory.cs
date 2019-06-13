@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -6,17 +7,23 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage
 {
     public interface ICloudTableFactory
     {
-        CloudTable GetTable(string tableReferenceString);
+        Task<CloudTable> GetTable(string tableReferenceString);
     }
 
     public class CloudTableFactory : ICloudTableFactory
     {
-        public CloudTable GetTable(string tableReferenceString)
+        private readonly string storageConnectionString;
+        public CloudTableFactory(string storageConnectionString)
         {
-            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+            this.storageConnectionString = storageConnectionString;
+        }
+        
+        public async Task <CloudTable> GetTable(string tableReferenceString)
+        {
+            var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             var tableClient = storageAccount.CreateCloudTableClient();
             var tableReference = tableClient.GetTableReference(tableReferenceString);
-            tableReference.CreateIfNotExists();
+            await tableReference.CreateIfNotExistsAsync();
             return new CloudTable(tableReference.StorageUri, tableClient.Credentials);
         }
     }

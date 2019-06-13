@@ -5,7 +5,7 @@ using Nova.Utils.Http.Exceptions;
 namespace Nova.SearchAlgorithm.Data.Exceptions
 {
     /// <summary>
-    /// Exception for issues which occur in the Nova.SearchAlgorithm.Data project.
+    /// Exception for issues which occur in the Nova.SearchAlgorithm.Data.Framework project.
     /// </summary>
     public class DataHttpException : NovaHttpException
     {

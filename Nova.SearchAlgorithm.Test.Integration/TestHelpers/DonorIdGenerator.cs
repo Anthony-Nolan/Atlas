@@ -1,20 +1,15 @@
 ﻿namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
 {
-    public interface IDonorIdGenerator
-    {
-        int NextId();
-    }
-
     /// <summary>
     /// Shared auto-incrementer to generate unique donor ids across all integration test fixtures
     /// </summary>
-    public class DonorIdGenerator: IDonorIdGenerator
+    public static class DonorIdGenerator
     {
-        private int nextId;
+        private static int _nextId;
         
-        public int NextId()
+        public static int NextId()
         {
-            return ++nextId;
+            return ++_nextId;
         }
     }
 }

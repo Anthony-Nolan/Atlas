@@ -1,16 +1,17 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -19,7 +20,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     /// either patient and/or donor has a null allele within an allele string typing.
     /// Only one locus is under test to keep things simple.
     /// </summary>
-    public class MatchingTestsForNullAlleleInString : IntegrationTestBase
+    public class MatchingTestsForNullAlleleInString
     {
         private const Locus LocusUnderTest = Locus.A;
         private const DonorType MatchingDonorType = DonorType.Adult;
@@ -57,22 +58,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             originalHlaPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(LocusUnderTest, MatchingDonorType);
-            expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
-            donorImportRepository = Container.Resolve<IDonorImportRepository>();
+            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            donorImportRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
 
             BuildPatientPhenotypes();
+        }
+        
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            DatabaseManager.ClearDatabase();
         }
 
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            donorMatchingService = Container.Resolve<IDonorMatchingService>();
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            ClearDatabase();
+            donorMatchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
         }
 
         #region Allele String vs. Single Allele

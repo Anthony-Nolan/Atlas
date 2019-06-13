@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 
@@ -21,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
     /// This fixture focuses on one locus with a single null allele typing at one position;
     /// there are other integration tests that cover expressing vs. expressing scoring.
     /// </summary>
-    public class ScoringTestsForSingleNullAllele : IntegrationTestBase
+    public class ScoringTestsForSingleNullAllele
     {
         private const Locus LocusUnderTest = Locus.A;
         private const TypePosition PositionUnderTest = TypePosition.One;
@@ -54,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [SetUp]
         public void ResolveSearchService()
         {
-            searchService = Container.Resolve<ISearchService>();
+            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
     
         [Test]
@@ -158,7 +159,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
 
         private int SetUpTestDonor(PhenotypeInfo<string> donorPhenotype)
         {
-            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
+            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
             var matchingHlaPhenotype = expandHlaPhenotypeService
                 .GetPhenotypeOfExpandedHla(donorPhenotype)
                 .Result;
@@ -167,7 +168,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            var donorRepository = Container.Resolve<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
 
             return testDonor.DonorId;

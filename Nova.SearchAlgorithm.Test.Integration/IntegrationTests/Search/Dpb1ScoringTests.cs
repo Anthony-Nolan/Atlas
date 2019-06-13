@@ -1,14 +1,15 @@
-﻿using Autofac;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Linq;
-using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -17,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     /// <summary>
     /// Tests to cover the DPB1 permissive mismatch feature.
     /// </summary>
-    public class Dpb1ScoringTests : IntegrationTestBase
+    public class Dpb1ScoringTests
     {
         private const string DefaultDpb1Hla = "01:01:01:01";
         private const string MismatchedDpb1HlaWithSameTceGroup = "02:01:02:01";
@@ -44,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         [SetUp]
         public void ResolveSearchService()
         {
-            searchService = Container.Resolve<ISearchService>();
+            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
 
         [Test]
@@ -171,14 +172,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
             var testDonor = BuildTestDonor(testDonorPhenotype);
-            var donorRepository = Container.Resolve<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
             return testDonor.DonorId;
         }
 
-        private InputDonorWithExpandedHla BuildTestDonor(PhenotypeInfo<string> testDonorPhenotype)
+        private static InputDonorWithExpandedHla BuildTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
-            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
+            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
 
             var matchingHlaPhenotype = expandHlaPhenotypeService
                 .GetPhenotypeOfExpandedHla(testDonorPhenotype)

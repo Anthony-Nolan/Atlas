@@ -1,15 +1,16 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -22,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     /// as expected when run as part of the larger search algorithm service,
     /// and that the results of scoring are consistent with those of matching.
     /// </summary>
-    public class ScoringTests : IntegrationTestBase
+    public class ScoringTests
     {
         private ISearchService searchService;
         private ITestHlaSet defaultHlaSet;
@@ -37,14 +38,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
             testDonor = BuildTestDonor();
-            var donorRepository = Container.Resolve<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
         }
 
         [SetUp]
         public void ResolveSearchService()
         {
-            searchService = Container.Resolve<ISearchService>();
+            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
 
         #region Scoring of the different HLA typing categories
@@ -264,7 +265,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
         private InputDonorWithExpandedHla BuildTestDonor()
         {
-            var expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
+            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
 
             var matchingHlaPhenotype = expandHlaPhenotypeService
                 .GetPhenotypeOfExpandedHla(defaultHlaSet.SixLocus_SingleExpressingAlleles)

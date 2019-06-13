@@ -14,6 +14,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
     [Binding]
     public class SingleDonorPatientDataSelectionSteps
     {
+        private readonly ScenarioContext scenarioContext;
+
+        public SingleDonorPatientDataSelectionSteps(ScenarioContext scenarioContext)
+        {
+            this.scenarioContext = scenarioContext;
+        }
+
         [Given(@"a patient and a donor")]
         public void GivenAPatientAndADonor()
         {
@@ -28,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
         [Given(@"the patient is untyped at Locus (.*)")]
         public void GivenThePatientIsUntypedAt(string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
 
             switch (locus)
             {
@@ -49,25 +56,25 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 case "DRB1":
                     throw new Exception("Loci A, B, DRB1 cannot be untyped");
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
         
         [Given(@"the patient is (.*) typed at (.*)")]
         public void GivenThePatientIsUntypedAt(string typingCategory, string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetPatientTypingCategoryAt(typingCategory, locus);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the patient is homozygous at (.*)")]
         public void GivenThePatientIsHomozygousAt(string locusString)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             var loci = LocusParser.ParseLoci(locusString);
 
             foreach (var locus in loci)
@@ -75,41 +82,41 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 patientDataFactory.SetPatientHomozygousAtLocus(locus);
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor is a (.*) match")]
         [Given(@"the matching donor is a (.*) match")]
         public void GivenTheMatchingDonorIsOfMatchType(string matchType)
         {
-            var patientDataFactory = (PatientDataFactory) ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = (PatientDataFactory) scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchType(matchType);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor has a (.*) mismatch at (.*)")]
         [Given(@"the matching donor has a (.*) mismatch at (.*)")]
         public void GivenTheMatchingDonorHasAMismatchAt(string mismatchType, string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMismatches(mismatchType, locus);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor has a mismatch at (.*) at (.*)")]
         [Given(@"the matching donor has a mismatch at (.*) at (.*)")]
         public void GivenTheMatchingDonorHasAMismatchAtPosition(string locus, string position)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMismatchAt(locus, position);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor is untyped at (.*)")]
         [Given(@"the matching donor is untyped at (.*)")]
         public void GivenTheMatchingDonorIsUntypedAt(string locusString)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             var loci = LocusParser.ParseLoci(locusString).ToList();
 
             var lociWithMandatoryTyping = new[] {Locus.A, Locus.B, Locus.Drb1};
@@ -123,41 +130,41 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(locus, HlaTypingResolution.Untyped);
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor is of type (.*)")]
         [Given(@"the matching donor is of type (.*)")]
         public void GivenTheMatchingDonorIsOfDonorType(string donorType)
         {
-            var metaDonorSelector = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var metaDonorSelector = scenarioContext.Get<IPatientDataFactory>();
             metaDonorSelector.SetMatchDonorType(donorType);
-            ScenarioContext.Current.Set(metaDonorSelector);
+            scenarioContext.Set(metaDonorSelector);
         }
 
         [Given(@"the donor is (.*) typed at (.*)")]
         [Given(@"the matching donor is (.*) typed at (.*)")]
         public void GivenTheMatchingDonorIsHlaTyped(string typingCategory, string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchTypingCategories(typingCategory, locus);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor's allele string contains different antigen groups at (.*)")]
         [Given(@"the matching donor's allele string contains different antigen groups at (.*)")]
         public void GivenTheMatchingDonorsAlleleStringContainsDifferentAntigenGroupsAt(string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetAlleleStringShouldContainDifferentGroupsAt(locus);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor is homozygous at (.*)")]
         [Given(@"the matching donor is homozygous at (.*)")]
         public void GivenTheMatchingDonorIsHomozygousAt(string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
 
             switch (locus)
             {
@@ -188,63 +195,63 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                     patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
                     break;
                 default:
-                    ScenarioContext.Current.Pending();
+                    scenarioContext.Pending();
                     break;
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the match orientation is (.*) at (.*)")]
         public void GivenTheMatchOrientationIs(string orientation, string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchOrientationsAt(orientation, locus);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the donor is in registry: (.*)")]
         [Given(@"the matching donor is in registry: (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string registry)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchDonorRegistry(registry);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"the match level is (.*)")]
         public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchLevelAtAllLoci(matchLevel);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
         
         [Given(@"the donor has an allele with (.*) expression suffix at (.*)")]
         [Given(@"the matching donor has an allele with (.*) expression suffix at (.*)")]
         public void GivenTheMatchingDonorIsInRegistry(string expressionSuffixType, string locus)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetExpressionSuffixAt(expressionSuffixType, locus);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
         
         [Given(@"the donor has a null allele at (.*) at (.*)")]
         [Given(@"the matching donor has a null allele at (.*) at (.*)")]
         public void GivenTheMatchingDonorHasANullAllele(string locus, string position)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetNullAlleleAt(locus, position);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
         
         [Given(@"the patient has a null allele at (.*) at (.*)")]
         [Given(@"the patient has a different null allele at (.*) at (.*)")]
         public void GivenThePatientHasADifferentNullAllele(string locus, string position)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetPatientNonMatchingNullAlleleAt(locus, position);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
     }
 }

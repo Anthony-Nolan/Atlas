@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
+using FluentValidation.Attributes;
 
 namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
 {
-    [FluentValidation.Attributes.Validator(typeof(LocusMismatchCriteriaValidator))]
+    [Validator(typeof(LocusMismatchCriteriaValidator))]
     public class LocusMismatchCriteria
     {
         /// <summary>

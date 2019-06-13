@@ -1,13 +1,14 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -16,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Locus.Drb1)]
     [TestFixture(Locus.Dqb1)]
     [TestFixture(Locus.C)]
-    public class MatchingTestsAtASingleLocus : IntegrationTestBase
+    public class MatchingTestsAtASingleLocus
     {
         private IDonorMatchingService matchingService;
         private InputDonorWithExpandedHla donorWithFullHomozygousMatchAtLocus;
@@ -45,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void ResolveSearchRepo()
         {
-            matchingService = Container.Resolve<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
         }
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var importRepo = Container.Resolve<IDonorImportRepository>();
+            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
 
             var defaultRequiredHla = new ExpandedHla {PGroups = matchingPGroups};
             donorWithFullHomozygousMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
@@ -132,11 +133,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
-
+        
         [OneTimeTearDown]
-        public void OneTimeTearDown()
+        public void TearDown()
         {
-            ClearDatabase();
+            DatabaseManager.ClearDatabase();
         }
 
         [Test]

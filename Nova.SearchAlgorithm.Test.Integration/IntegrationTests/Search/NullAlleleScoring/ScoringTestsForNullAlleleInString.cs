@@ -1,15 +1,16 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlleleScoring
 {
@@ -18,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
     /// when run as part of the larger search algorithm service.
     /// This fixture focuses on one locus with an allele string typing at one position.
     /// </summary>
-    public class ScoringTestsForNullAlleleInString : IntegrationTestBase
+    public class ScoringTestsForNullAlleleInString
     {
         private const Locus LocusUnderTest = Locus.A;
         private const TypePosition PositionUnderTest = TypePosition.One;
@@ -58,8 +59,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
-            expandHlaPhenotypeService = Container.Resolve<IExpandHlaPhenotypeService>();
-            donorRepository = Container.Resolve<IDonorImportRepository>();
+            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
 
             // Matching & scoring assertions are based on the following assumptions:
             // In v.3.3.0 of HLA db, the null allele below is the only null member of the group of alleles beginning with the same first two fields.
@@ -104,7 +105,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [SetUp]
         public void ResolveSearchService()
         {
-            searchService = Container.Resolve<ISearchService>();
+            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
 
         #region Two-Field Name, No Expression Letter

@@ -1,18 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using Autofac;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
+using Nova.SearchAlgorithm.Test.Validation.DependencyInjection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Resources;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using NUnit.Framework.Interfaces;
 using TechTalk.SpecFlow;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
@@ -20,21 +24,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
     [Binding]
     public sealed class Hooks
     {
-        private static IContainer container;
+        private static IServiceProvider serviceProvider;
         private static Logger logger;
         private static LoggingConfiguration config;
+        private readonly ScenarioContext scenarioContext;
+
+        public Hooks(ScenarioContext scenarioContext)
+        {
+            this.scenarioContext = scenarioContext;
+        }
 
         [BeforeTestRun]
-        public static void BeforeTestRun()
+        public static async Task BeforeTestRun()
         {
             SetupLogging();
 
-            container = CreateContainer();
-            var testDataService = container.Resolve<ITestDataService>();
+            serviceProvider = DependencyInjection.DependencyInjection.CreateProvider();
+            var testDataService = serviceProvider.GetService<ITestDataService>();
 
             testDataService.SetupTestData();
             AlgorithmTestingService.StartServer();
-            AlgorithmTestingService.RunHlaRefresh();
+            await AlgorithmTestingService.RunHlaRefresh();
         }
 
         private static void SetupLogging()
@@ -59,39 +69,39 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         }
 
         [BeforeScenario]
-        public static void BeforeScenario()
+        public void BeforeScenario()
         {
-            var patientDataFactory = container.Resolve<IPatientDataFactory>();
+            var patientDataFactory = serviceProvider.GetService<IPatientDataFactory>();
 
-            ScenarioContext.Current.Set(new SearchRequestBuilder());
-            ScenarioContext.Current.Set(patientDataFactory);
-            ScenarioContext.Current.Set(container.Resolve<IStaticDataProvider>());
-            ScenarioContext.Current.Set(container.Resolve<IMultiplePatientDataFactory>());
+            scenarioContext.Set(new SearchRequestBuilder());
+            scenarioContext.Set(patientDataFactory);
+            scenarioContext.Set(serviceProvider.GetService<IStaticDataProvider>());
+            scenarioContext.Set(serviceProvider.GetService<IMultiplePatientDataFactory>());
 
             // By default, inject the patient data factory as the patient & donor data provider.
             // If using specific test case hla data, this should be overridden in a step definition
-            ScenarioContext.Current.Set((IPatientDataProvider) patientDataFactory);
-            ScenarioContext.Current.Set((IExpectedDonorProvider) patientDataFactory);
+            scenarioContext.Set((IPatientDataProvider) patientDataFactory);
+            scenarioContext.Set((IExpectedDonorProvider) patientDataFactory);
         }
 
         [AfterScenario]
-        public static void AfterScenario()
+        public void AfterScenario()
         {
             LogScenario();
         }
 
-        private static void LogScenario()
+        private void LogScenario()
         {
             LogManager.Configuration = config;
 
-            ScenarioContext.Current.TryGetValue<SearchAlgorithmApiResult>(out var singlePatientApiResult);
-            ScenarioContext.Current.TryGetValue<List<PatientApiResult>>(out var patientApiResults);
+            scenarioContext.TryGetValue<SearchAlgorithmApiResult>(out var singlePatientApiResult);
+            scenarioContext.TryGetValue<List<PatientApiResult>>(out var patientApiResults);
 
-            bool.TryParse(ConfigurationManager.AppSettings["log-successful-tests"], out var shouldLogSuccessfulTests);
+            var shouldLogSuccessfulTests = serviceProvider.GetService<IOptions<ValidationTestSettings>>().Value.LogSuccessfulTests;
             var successLogLevel = shouldLogSuccessfulTests ? LogLevel.Info : LogLevel.Off;
-            var logLevel = ScenarioContext.Current.TestError == null ? successLogLevel : LogLevel.Error;
+            var logLevel = scenarioContext.TestError == null ? successLogLevel : LogLevel.Error;
 
-            logger.Log(logLevel, ScenarioContext.Current.ScenarioInfo.Title);
+            logger.Log(logLevel, scenarioContext.ScenarioInfo.Title);
             if (singlePatientApiResult != null)
             {
                 LogSinglePatientSearchDetails(singlePatientApiResult, logLevel);
@@ -103,17 +113,19 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
-        private static void LogMultiplePatientSearchDetails(IReadOnlyCollection<PatientApiResult> patientApiResults, LogLevel logLevel)
+        private void LogMultiplePatientSearchDetails(IReadOnlyCollection<PatientApiResult> patientApiResults, LogLevel logLevel)
         {
-            var factory = ScenarioContext.Current.Get<IMultiplePatientDataFactory>();
+            var factory = scenarioContext.Get<IMultiplePatientDataFactory>();
 
             foreach (var patientDataFactory in factory.PatientDataFactories)
             {
                 var patientHla = ((IPatientDataProvider) patientDataFactory).GetPatientHla();
                 var expectedDonors = ((IExpectedDonorProvider) patientDataFactory).GetExpectedMatchingDonorIds();
 
-                var donors = TestDataRepository.GetDonors(patientApiResults.Single(r => r.ExpectedDonorProvider == patientDataFactory)
-                    .ApiResult.Results.SearchResults.Select(r => r.DonorId)).ToList();
+                var donors = serviceProvider.GetService<ITestDataRepository>()
+                    .GetDonors(patientApiResults.Single(r =>
+                        r.ExpectedDonorProvider == patientDataFactory).ApiResult.Results.SearchResults.Select(r => r.DonorId))
+                    .ToList();
 
                 logger.Log(logLevel, "PATIENT HLA:");
                 logger.Log(logLevel, JsonConvert.SerializeObject(patientHla));
@@ -128,12 +140,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
-        private static void LogSinglePatientSearchDetails(SearchAlgorithmApiResult singlePatientApiResult, LogLevel logLevel)
+        private void LogSinglePatientSearchDetails(SearchAlgorithmApiResult singlePatientApiResult, LogLevel logLevel)
         {
-            var patientHla = ScenarioContext.Current.Get<IPatientDataProvider>().GetPatientHla();
-            var expectedDonors = ScenarioContext.Current.Get<IExpectedDonorProvider>().GetExpectedMatchingDonorIds();
+            var patientHla = scenarioContext.Get<IPatientDataProvider>().GetPatientHla();
+            var expectedDonors = scenarioContext.Get<IExpectedDonorProvider>().GetExpectedMatchingDonorIds();
 
-            var donors = TestDataRepository.GetDonors(singlePatientApiResult.Results.SearchResults.Select(r => r.DonorId)).ToList();
+            var donors = serviceProvider.GetService<ITestDataRepository>()
+                .GetDonors(singlePatientApiResult.Results.SearchResults.Select(r => r.DonorId)).ToList();
 
             logger.Log(logLevel, "PATIENT HLA:");
             logger.Log(logLevel, JsonConvert.SerializeObject(patientHla));
@@ -145,30 +158,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 logger.Log(logLevel, JsonConvert.SerializeObject(match));
                 logger.Log(logLevel, JsonConvert.SerializeObject(donors.Single(d => d.DonorId == match.DonorId)));
             }
-        }
-
-        private static IContainer CreateContainer()
-        {
-            var builder = new ContainerBuilder();
-
-            // As some of the meta donors are generated dynamically at runtime, the repository must be a singleton
-            // Otherwise, the meta-donors will be regenerated on lookup, and no longer match the ones in the database
-            builder.RegisterType<MetaDonorsData>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MetaDonorRepository>().AsImplementedInterfaces().SingleInstance();
-
-            builder.RegisterType<AlleleRepository>().AsImplementedInterfaces();
-
-            builder.RegisterType<TestDataService>().AsImplementedInterfaces();
-
-            builder.RegisterType<PatientDataFactory>().AsImplementedInterfaces();
-            builder.RegisterType<MultiplePatientDataFactory>().AsImplementedInterfaces();
-            builder.RegisterType<StaticDataProvider>().AsImplementedInterfaces();
-
-            builder.RegisterType<MetaDonorSelector>().AsImplementedInterfaces();
-            builder.RegisterType<DatabaseDonorSelector>().AsImplementedInterfaces();
-            builder.RegisterType<PatientHlaSelector>().AsImplementedInterfaces();
-
-            return builder.Build();
         }
     }
 }

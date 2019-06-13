@@ -1,21 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
-using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Data.Models.Extensions;
 using Nova.SearchAlgorithm.Data.Services;
-using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {

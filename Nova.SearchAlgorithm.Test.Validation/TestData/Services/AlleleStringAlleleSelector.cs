@@ -27,13 +27,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             if (dataset == Dataset.AlleleStringOfSubtypesPossible)
             {
                 var allelesValidForAlleleStringOfSubtypes = GetAllelesValidForAlleleStringOfSubtypes(alleles, selectedAllele);
-                if (CollectionExtensions.IsNullOrEmpty(allelesValidForAlleleStringOfSubtypes))
+                if (allelesValidForAlleleStringOfSubtypes.IsNullOrEmpty())
                 {
                     throw new InvalidTestDataException("Allele string of subtypes required, but no valid alleles to use in the string exist");
                 }
 
-                allelesForAlleleStringOfSubtypes =
-                    RandomSelectionHelper.GetRandomSelection<AlleleTestData>(allelesValidForAlleleStringOfSubtypes, 1, 10).ToList();
+                allelesForAlleleStringOfSubtypes = allelesValidForAlleleStringOfSubtypes.GetRandomSelection(1, 10).ToList();
             }
 
             return allelesForAlleleStringOfSubtypes;

@@ -16,10 +16,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
     [Binding]
     public class MultipleDonorPatientDataSelectionSteps
     {
+        private readonly ScenarioContext scenarioContext;
+
+        public MultipleDonorPatientDataSelectionSteps(ScenarioContext scenarioContext)
+        {
+            this.scenarioContext = scenarioContext;
+        }
+        
         [Given(@"a patient has multiple matches at different typing resolutions")]
         public void GivenAPatientHasMultipleMatchesAtDifferentTypingResolutions()
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
 
             var allResolutions = new[]
             {
@@ -40,13 +47,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 patientDataFactory.AddFullDonorTypingResolution(resolutionSet);
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"a patient has multiple matches with different match counts")]
         public void GivenAPatientHasMultipleMatchesWithDifferentMatchCounts()
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
 
             var expectedDatabaseDonors = new List<DatabaseDonorSpecification>
             {
@@ -77,13 +84,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 patientDataFactory.AddExpectedDatabaseDonor(databaseDonor);
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"a patient has multiple matches with different match confidences")]
         public void GivenAPatientHasMultipleMatchesWithDifferentMatchConfidences()
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
 
             var resolutions = new[]
             {
@@ -97,23 +104,23 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 patientDataFactory.AddFullDonorTypingResolution(new PhenotypeInfo<HlaTypingResolution>(resolution));
             }
 
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"all matching donors are of type (.*)")]
         public void GivenAllMatchingDonorsAreOfDonorType(string donorType)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchDonorType(donorType);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
 
         [Given(@"all matching donors are in registry: (.*)")]
         public void GivenAllMatchingDonorsAreInRegistry(string registry)
         {
-            var patientDataFactory = ScenarioContext.Current.Get<IPatientDataFactory>();
+            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchDonorRegistry(registry);
-            ScenarioContext.Current.Set(patientDataFactory);
+            scenarioContext.Set(patientDataFactory);
         }
     }
 }

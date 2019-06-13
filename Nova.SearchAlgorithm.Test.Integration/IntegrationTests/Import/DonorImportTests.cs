@@ -1,29 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Autofac;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
+using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NSubstitute;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
-    public class DonorImportTests : IntegrationTestBase
+    public class DonorImportTests
     {
         private IDonorImportService donorImportService;
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
-
-        private static readonly DonorInfoForSearchAlgorithmPage EmptyDonorPage = new DonorInfoForSearchAlgorithmPage
-        {
-            DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
-        };
+        
+        private IDonorServiceClient MockDonorServiceClient { get; set; }
 
         private const string DefaultDonorType = "a";
         private const string DefaultRegistryCode = "DKMS";
@@ -31,10 +31,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void SetUp()
         {
-            importRepo = Container.Resolve<IDonorImportRepository>();
-            inspectionRepo = Container.Resolve<IDonorInspectionRepository>();
-            donorImportService = Container.Resolve<IDonorImportService>();
+            importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            inspectionRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+            donorImportService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportService>();
 
+            MockDonorServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IDonorServiceClient>();
+            
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
             {
                 DonorsInfo = new List<DonorInfoForSearchAlgorithm>()

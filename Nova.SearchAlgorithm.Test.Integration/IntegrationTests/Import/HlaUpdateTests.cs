@@ -1,19 +1,20 @@
-﻿using Autofac;
-using FluentAssertions;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Services.DonorImport;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
+using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
-    public class HlaUpdateTests : IntegrationTestBase
+    public class HlaUpdateTests
     {
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
@@ -25,9 +26,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void ResolveSearchRepo()
         {
-            importRepo = Container.Resolve<IDonorImportRepository>();
-            inspectionRepo = Container.Resolve<IDonorInspectionRepository>();
-            updateService = Container.Resolve<IHlaUpdateService>();
+            importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            inspectionRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+            updateService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaUpdateService>();
         }
 
         [Test]
