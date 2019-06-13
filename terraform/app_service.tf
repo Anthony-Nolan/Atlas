@@ -63,5 +63,11 @@ resource "azurerm_app_service" "search_algorithm" {
     type  = "SQLAzure"
     value = var.CONNECTION_STRING_SQL
   }
+
+  connection_string {
+    name  = "PersistentSQLConnectionString"
+    type  = "SQLAzure"
+    value = var.CONNECTION_STRING_SQL_PERSISTENT
+  }
 }
 

@@ -3,6 +3,7 @@ using System.Data.Entity.Migrations;
 using System.Linq;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Persistent;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {
@@ -11,6 +12,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
     /// </summary>
     public static class TestDataRepository
     {
+        public static void SetupPersistentDatabase()
+        {
+            using (var context = new SearchAlgorithmPersistentContext())
+            {
+                context.Database.CreateIfNotExists();
+                var config = new Data.Persistent.Migrations.Configuration();
+                var migrator = new DbMigrator(config);
+                migrator.Update();
+            }
+        }
+
         public static void SetupDatabase()
         {
             using (var context = new SearchAlgorithmContext())

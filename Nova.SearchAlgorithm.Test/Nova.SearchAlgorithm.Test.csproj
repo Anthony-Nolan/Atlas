@@ -409,6 +409,7 @@
     <Compile Include="Services\Scoring\Confidence\ConfidenceCalculatorTests.cs" />
     <Compile Include="Services\Scoring\Confidence\ConfidenceServiceTests.cs" />
     <Compile Include="Services\Scoring\DonorScoringServiceTests.cs" />
+    <Compile Include="Services\TransientSqlConnectionStringProviderTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MatchingDictionary\Repositories\Wmda\ConfidentialAlleleTest.cs" />
@@ -453,6 +454,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
       <Project>{FB453E02-3CE1-42E7-BDC4-13899B993F2A}</Project>
       <Name>Nova.SearchAlgorithm.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj">
+      <Project>{a3c005fb-959b-4ddb-a1d6-5ac20c4fcec4}</Project>
+      <Name>Nova.SearchAlgorithm.Data.Persistent</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
       <Project>{7DC2A865-304B-402B-AC56-342681368568}</Project>

@@ -3,7 +3,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Nova.SearchAlgorithm.Data.Extensions
+namespace Nova.SearchAlgorithm.Data.Persistent.Extensions
 {
     public static class DbSetExtensions
     {

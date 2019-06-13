@@ -329,6 +329,7 @@
     <Compile Include="Extensions\MatchingDictionaryConversionExtensions\MatchingLookupResultExtensions.cs" />
     <Compile Include="Extensions\SearchHlaDataExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\TransientSqlConnectionStringProvider.cs" />
     <Compile Include="Services\DonorImport\AntigenCachingService.cs" />
     <Compile Include="Services\DonorService.cs" />
     <Compile Include="Services\MatchingDictionaryService.cs" />
@@ -391,6 +392,10 @@
     <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj">
       <Project>{fb453e02-3ce1-42e7-bdc4-13899b993f2a}</Project>
       <Name>Nova.SearchAlgorithm.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj">
+      <Project>{6f1bdea8-7527-4fb2-8500-3469f1b59a90}</Project>
+      <Name>Nova.SearchAlgorithm.Data.Persistent</Name>
     </ProjectReference>
     <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj">
       <Project>{7dc2a865-304b-402b-ac56-342681368568}</Project>

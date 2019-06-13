@@ -10,20 +10,20 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DonorImportRepository : IDonorImportRepository
     {
-        private readonly SearchAlgorithmContext context;
         private readonly IPGroupRepository pGroupRepository;
+        private readonly IConnectionStringProvider connectionStringProvider;
 
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString;
-
-        public DonorImportRepository(SearchAlgorithmContext context, IPGroupRepository pGroupRepository)
+        public DonorImportRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider)
         {
-            this.context = context;
             this.pGroupRepository = pGroupRepository;
+            this.connectionStringProvider = connectionStringProvider;
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
@@ -67,7 +67,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                     donor.HlaNames.Drb1.Position1, donor.HlaNames.Drb1.Position2);
             }
 
-            using (var sqlBulk = new SqlBulkCopy(connectionString))
+            using (var sqlBulk = new SqlBulkCopy(connectionStringProvider.GetConnectionString()))
             {
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = "Donors";
@@ -87,22 +87,42 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             await AddMatchingPGroupsForExistingDonorBatch(donors);
         }
 
-        // Performance of Entity Framework may not be sufficient to efficiently import large quantities of donors.
-        // Consider re-writing this with Dapper if we prove to need to process large donor batches
+        // Performance may not be sufficient to efficiently import large quantities of donors.
+        // Consider re-writing this if we prove to need to process large donor batches
         public async Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
-            var donorIds = donors.Select(d => d.DonorId);
-            var existingDonors = from donor in context.Donors
-                join id in donorIds on donor.DonorId equals id
-                select donor;
-            foreach (var existingDonor in existingDonors.ToList())
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
-                existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
+                var existingDonors = await conn.QueryAsync<Donor>($@"
+SELECT * FROM Donors 
+WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
+");
+                foreach (var existingDonor in existingDonors.ToList())
+                {
+                    existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
+                    await conn.ExecuteAsync($@"
+UPDATE Donors 
+SET DonorType = {((int) existingDonor.DonorType).ToString()},
+RegistryCode = {((int) existingDonor.RegistryCode).ToString()},
+A_1 = '{existingDonor.A_1}',
+A_2 = '{existingDonor.A_2}',
+B_1 = '{existingDonor.B_1}',
+B_2 = '{existingDonor.B_2}',
+C_1 = '{existingDonor.C_1}',
+C_2 = '{existingDonor.C_2}',
+DRB1_1 = '{existingDonor.DRB1_1}',
+DRB1_2 = '{existingDonor.DRB1_2}',
+DQB1_1 = '{existingDonor.DQB1_1}',
+DQB1_2 = '{existingDonor.DQB1_2}',
+DPB1_1 = '{existingDonor.DPB1_1}',
+DPB1_2 = '{existingDonor.DPB1_2}'
+WHERE DonorId = {existingDonor.DonorId}
+");
+                }
             }
 
             await ReplaceMatchingGroupsForExistingDonorBatch(donors);
-            await context.SaveChangesAsync();
         }
 
         public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
@@ -122,7 +142,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
@@ -131,9 +151,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 DELETE FROM {matchingTableName}
 WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
 ";
-                // QueryAsync throws exception with 'No columns were selected'
-                // https://github.com/StackExchange/Dapper/issues/591
-                conn.Query(deleteSql, null, transaction);
+                await conn.ExecuteAsync(deleteSql, null, transaction);
                 await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
 
                 transaction.Commit();
@@ -146,7 +164,7 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();

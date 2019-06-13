@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Persistent.Models.ScoringWeightings;
 
-namespace Nova.SearchAlgorithm.Data.Repositories
+namespace Nova.SearchAlgorithm.Data.Persistent.Repositories
 {
     public interface IScoringWeightingRepository
     {
@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         private readonly IEnumerable<GradeWeighting> gradeWeightings;
         private readonly IEnumerable<ConfidenceWeighting> confidenceWeightings;
 
-        public ScoringWeightingRepository(SearchAlgorithmContext context)
+        public ScoringWeightingRepository(SearchAlgorithmPersistentContext context)
         {
             gradeWeightings = context.Set<GradeWeighting>().ToList();
             confidenceWeightings = context.Set<ConfidenceWeighting>().ToList();
