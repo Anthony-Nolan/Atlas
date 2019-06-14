@@ -5,31 +5,15 @@ variable "SERVICE_PLAN_SKU" {
   }
 }
 
-variable "DONORSERVICE_APIKEY" {
-  type = string
-}
-
-variable "DONORSERVICE_BASEURL" {
-  type = string
-}
-
-variable "HLASERVICE_APIKEY" {
-  type = string
-}
-
-variable "HLASERVICE_BASEURL" {
-  type = string
-}
-
 variable "APIKEY" {
   type = string
 }
 
-variable "CONNECTION_STRING_HANGFIRE" {
+variable "CONNECTION_STRING_SQL_A" {
   type = string
 }
 
-variable "CONNECTION_STRING_SQL" {
+variable "CONNECTION_STRING_SQL_B" {
   type = string
 }
 
