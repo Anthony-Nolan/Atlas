@@ -12,14 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         public void Setup()
         {
             DependencyInjection.DependencyInjection.Provider = ServiceConfiguration.CreateProvider();
-            DependencyInjection.DependencyInjection.Provider.GetService<IStorageEmulator>().Start();
             ResetDatabase();
-        }
-
-        [OneTimeTearDown]
-        public void TearDown()
-        {
-            DependencyInjection.DependencyInjection.Provider.GetService<IStorageEmulator>().Stop();
         }
 
         private static void ResetDatabase()

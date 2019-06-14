@@ -56,10 +56,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
             // Integration Test Types
             services.AddScoped<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
 
-            services.AddSingleton<IStorageEmulator, StorageEmulator>(sp =>
-                new StorageEmulator(sp.GetService<IOptions<IntegrationTestSettings>>().Value.StorageEmulatorLocation)
-            );
-
             return services.BuildServiceProvider();
         }
 
