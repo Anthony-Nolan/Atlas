@@ -12,7 +12,7 @@ using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
     [UseReporter(typeof(NUnitReporter))]
-    [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
+    [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
         [TestCaseSource(

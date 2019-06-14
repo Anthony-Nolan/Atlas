@@ -48,6 +48,13 @@ The solution is split across multiple projects:
 
 ## Start Up Guide
 
+#### Git Configuration On Windows
+
+Some of the files in the matching dictionary tests are longer than the 260 character limit in Git for Windows. 
+To get around this on a Windows machine, run the following command: 
+
+`git config --system core.longpaths true`
+
 #### Local Settings
 
 Settings for each non-functions project are defined in the `appsettings.json` file. 
