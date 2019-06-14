@@ -1,7 +1,7 @@
 locals {
   func_app_settings = {
-    "Client.DonorService.ApiKey"                = data.terraform_remote_state.donor.outputs.donor_service.api_key
-    "Client.DonorService.BaseUrl"               = data.terraform_remote_state.donor.outputs.donor_service.base_url
+    "Client.DonorService.ApiKey"                = var.DONOR_SERVICE_API_KEY
+    "Client.DonorService.BaseUrl"               = var.DONOR_SERVICE_BASE_URL
     "Client.HlaService.ApiKey"                  = data.terraform_remote_state.hla.outputs.hla_service.api_key
     "Client.HlaService.BaseUrl"                 = data.terraform_remote_state.hla.outputs.hla_service.base_url
     "ApplicationInsights.InstrumentationKey"    = azurerm_application_insights.search_algorithm.instrumentation_key

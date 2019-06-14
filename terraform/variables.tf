@@ -25,3 +25,11 @@ variable "CONNECTION_STRING_STORAGE" {
   type = string
 }
 
+variable "DONOR_SERVICE_API_KEY" {
+  type = string
+}
+
+variable "DONOR_SERVICE_BASE_URL" {
+  type = string
+}
+
