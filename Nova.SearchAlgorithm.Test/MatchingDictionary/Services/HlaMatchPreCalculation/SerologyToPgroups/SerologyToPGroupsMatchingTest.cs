@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Linq;
+using ApprovalTests.Reporters.TestFrameworks;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
 {

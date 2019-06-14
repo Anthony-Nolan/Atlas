@@ -2,6 +2,7 @@
 using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
+using ApprovalTests.Reporters.TestFrameworks;
 using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
