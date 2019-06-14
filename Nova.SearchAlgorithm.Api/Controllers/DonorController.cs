@@ -23,13 +23,6 @@ namespace Nova.SearchAlgorithm.Api.Controllers
             return await donorService.CreateDonor(donor);
         }
 
-        [HttpPut]
-        [Route("")]
-        public async Task<InputDonor> UpdateDonor([FromBody] InputDonor donor)
-        {
-            return await donorService.UpdateDonor(donor);
-        }
-
         [HttpPost]
         [Route("batch")]
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch([FromBody] InputDonorBatch donorBatch)
@@ -39,9 +32,9 @@ namespace Nova.SearchAlgorithm.Api.Controllers
 
         [HttpPut]
         [Route("batch")]
-        public async Task<IEnumerable<InputDonor>> UpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        public async Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
         {
-            return await donorService.UpdateDonorBatch(donorBatch.Donors);
+            return await donorService.CreateOrUpdateDonorBatch(donorBatch.Donors);
         }
     }
 }
