@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Data
     public class WmdaTestFileImporter : IWmdaFileReader
     {
         private static readonly string TestDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        private const string FilePath = "\\MatchingDictionary\\Data\\wmda-v";
+        private const string FilePath = "/MatchingDictionary/Data/wmda-v";
 
         public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
         {
