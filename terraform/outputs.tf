@@ -1,6 +1,6 @@
 output "search_algorithm_service" {
   value = {
-    base_url = azurerm_app_service.search_algorithm.default_site_hostname
+    base_url = "https://${azurerm_function_app.search_algorithm_function.default_hostname}"
     api_key  = var.APIKEY
   }
 }
