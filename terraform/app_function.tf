@@ -33,7 +33,7 @@ resource "azurerm_application_insights" "search_algorithm" {
   resource_group_name = local.resource_group_name
 }
 
-resource "azurerm_function_app" "search-algorithm_function" {
+resource "azurerm_function_app" "search_algorithm_function" {
   name                      = "${local.environment}-NOVA-SEARCH-ALGORITHM-FUNCTION"
   resource_group_name       = local.resource_group_name
   location                  = local.location
