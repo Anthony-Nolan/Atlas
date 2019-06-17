@@ -1,13 +1,16 @@
 locals {
   func_app_settings = {
+    "ApplicationInsights.InstrumentationKey"    = azurerm_application_insights.search_algorithm.instrumentation_key
+    //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
+    "APPINSIGHTS_INSTRUMENTATIONKEY"            = azurerm_application_insights.search_algorithm.instrumentation_key
+    "ApplicationInsights.LogLevel"              = var.APPLICATION_INSIGHTS_LOG_LEVEL,
+    "AzureStorage.ConnectionString"             = var.CONNECTION_STRING_STORAGE
     "Client.DonorService.ApiKey"                = data.terraform_remote_state.donor.outputs.donor_service.api_key
     "Client.DonorService.BaseUrl"               = data.terraform_remote_state.donor.outputs.donor_service.base_url
     "Client.HlaService.ApiKey"                  = data.terraform_remote_state.hla.outputs.hla_service.api_key
     "Client.HlaService.BaseUrl"                 = data.terraform_remote_state.hla.outputs.hla_service.base_url
-    "ApplicationInsights.InstrumentationKey"    = azurerm_application_insights.search_algorithm.instrumentation_key
-//  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
-    "APPINSIGHTS_INSTRUMENTATIONKEY"            = azurerm_application_insights.search_algorithm.instrumentation_key
-    "AzureStorage.ConnectionString"             = var.CONNECTION_STRING_STORAGE
+    "Wmda.HlaDatabaseVersion"                   = var.WMDA_HLA_DATABASE_VERSION
+    "Wmda.WmdaFileUri"                          = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
   }
 }

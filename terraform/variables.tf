@@ -25,11 +25,17 @@ variable "CONNECTION_STRING_STORAGE" {
   type = string
 }
 
-variable "DONOR_SERVICE_API_KEY" {
+variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type = string
+  default = "Info"
 }
 
-variable "DONOR_SERVICE_BASE_URL" {
+variable "WMDA_HLA_DATABASE_VERSION" {
   type = string
+  default = "3330"
 }
 
+variable "WMDA_FILE_URL" {
+  type = string
+  default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
+}
