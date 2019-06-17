@@ -5,6 +5,8 @@ locals {
     "Client.HlaService.ApiKey"                  = data.terraform_remote_state.hla.outputs.hla_service.api_key
     "Client.HlaService.BaseUrl"                 = data.terraform_remote_state.hla.outputs.hla_service.base_url
     "ApplicationInsights.InstrumentationKey"    = azurerm_application_insights.search_algorithm.instrumentation_key
+//  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
+    "APPINSIGHTS_INSTRUMENTATIONKEY"            = azurerm_application_insights.search_algorithm.instrumentation_key
     "AzureStorage.ConnectionString"             = var.CONNECTION_STRING_STORAGE
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
   }
@@ -36,6 +38,10 @@ resource "azurerm_function_app" "search-algorithm_function" {
   https_only                = true
   version                   = "~2"
   storage_connection_string = local.function_storage_connection_string
+
+  site_config {
+    always_on = true
+  }
 
   tags = local.common_tags
 
