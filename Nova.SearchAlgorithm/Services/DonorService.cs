@@ -16,6 +16,7 @@ namespace Nova.SearchAlgorithm.Services
         Task<InputDonor> UpdateDonor(InputDonor inputDonor);
         Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors);
         Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonor);
+        Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors);
     }
 
     public class DonorService : IDonorService
@@ -39,12 +40,12 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task<InputDonor> CreateDonor(InputDonor inputDonor)
         {
-            return (await CreateDonorBatch(new[] {inputDonor})).Single();
+            return (await CreateDonorBatch(new[] { inputDonor })).Single();
         }
 
         public async Task<InputDonor> UpdateDonor(InputDonor inputDonor)
         {
-            return (await UpdateDonorBatch(new[] {inputDonor})).Single();
+            return (await UpdateDonorBatch(new[] { inputDonor })).Single();
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
@@ -66,6 +67,25 @@ namespace Nova.SearchAlgorithm.Services
                 }
             ));
             await donorImportRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+
+            return await GetDonors(inputDonors.Select(d => d.DonorId));
+        }
+
+        public async Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors)
+        {
+            var existingDonors = (await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId)));
+            var updateDonors = inputDonors.Where(id => existingDonors.Any(ed => ed.DonorId == id.DonorId));
+            var newDonors = inputDonors.Where(id => existingDonors.All(ed => ed.DonorId != id.DonorId));
+
+            if (newDonors.Any())
+            {
+                await CreateDonorBatch(newDonors);
+            }
+
+            if (updateDonors.Any())
+            {
+                await UpdateDonorBatch(updateDonors);
+            }
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
