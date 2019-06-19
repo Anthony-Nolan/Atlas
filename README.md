@@ -48,10 +48,16 @@ The solution is split across multiple projects:
 
 ## Start Up Guide
 
+#### Development Environment
+
+Some of the files in the matching dictionary tests are longer than the 260 character limit in Git for Windows. 
+There are known issues trying to load the Test project in Visual Studio 2017 due to this. The issue is not present in 
+Visual Studio 2019 (or Rider), so a compatible IDE will be necessary to load the test project.
+
 #### Git Configuration On Windows
 
 Some of the files in the matching dictionary tests are longer than the 260 character limit in Git for Windows. 
-To get around this on a Windows machine, run the following command: 
+To get around this on a Windows machine, run the following command (as an administrator): 
 
 `git config --system core.longpaths true`
 
