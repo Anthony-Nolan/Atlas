@@ -37,9 +37,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 
         public void SetupDatabase()
         {
-            context.Database.Migrate();
             // Ensure we have fresh data on each run. Done in setup rather than teardown to avoid data issues if the test suites are terminated early
             RemoveTestData();
+            context.Database.Migrate();
         }
 
         public void AddTestDonors(IEnumerable<Donor> donors)
@@ -66,12 +66,12 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 
         private void RemoveTestData()
         {
-            context.Donors.RemoveRange(context.Donors);
-            context.MatchingHlaAtA.RemoveRange(context.MatchingHlaAtA);
-            context.MatchingHlaAtB.RemoveRange(context.MatchingHlaAtB);
-            context.MatchingHlaAtC.RemoveRange(context.MatchingHlaAtC);
-            context.MatchingHlaAtDrb1.RemoveRange(context.MatchingHlaAtDrb1);
-            context.MatchingHlaAtDqb1.RemoveRange(context.MatchingHlaAtDqb1);
+            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
+            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtA]");
+            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtB]");
+            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtC]");
+            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDrb1]");
+            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDqb1]");
             context.SaveChanges();
         }
     }

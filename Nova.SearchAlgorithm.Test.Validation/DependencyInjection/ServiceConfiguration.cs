@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.DependencyInjection
     /// Used to set up dependency injection for the validation test framework itself.
     /// Note that the injected configuration is for the validation project - for the in memory api the configuration is set up elsewhere
     /// </summary>
-    public static class DependencyInjection
+    public static class ServiceConfiguration
     {
         public static ServiceProvider CreateProvider()
         {

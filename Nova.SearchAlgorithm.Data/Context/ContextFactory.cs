@@ -19,7 +19,9 @@ namespace Nova.SearchAlgorithm.Data.Context
 
             var config = builder.Build();
 
-            var connectionString = config.GetConnectionString("SqlA");
+            // This is the default connection string to be used when running migrations locally
+            // When running, the connection string should be passed manually into the Create method in this class.
+            var connectionString = config.GetConnectionString("Sql");
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {

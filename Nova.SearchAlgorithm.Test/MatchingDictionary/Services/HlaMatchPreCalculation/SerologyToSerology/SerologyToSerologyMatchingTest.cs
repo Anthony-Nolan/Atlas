@@ -2,6 +2,7 @@
 using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
+using ApprovalTests.Reporters.TestFrameworks;
 using FluentAssertions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
@@ -12,7 +13,7 @@ using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
     [UseReporter(typeof(NUnitReporter))]
-    [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
+    [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
         [TestCaseSource(

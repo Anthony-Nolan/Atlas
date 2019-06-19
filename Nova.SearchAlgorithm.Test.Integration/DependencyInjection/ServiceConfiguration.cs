@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nova.HLAService.Client;
 using Nova.SearchAlgorithm.Clients;
+using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
@@ -16,7 +17,7 @@ using NSubstitute;
 
 namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
 {
-    public class ServiceModule
+    public class ServiceConfiguration
     {
         public static IServiceProvider CreateProvider()
         {
@@ -34,6 +35,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
             services.RegisterSearchAlgorithmTypes();
             services.RegisterMatchingDictionaryTypes();
             services.RegisterDataServices();
+            
+            services.AddScoped(sp =>
+                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
+            );
 
             // Matching Dictionary Overrides
             services.AddScoped<IHlaScoringLookupRepository, FileBackedHlaScoringLookupRepository>();
@@ -50,10 +55,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
 
             // Integration Test Types
             services.AddScoped<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
-
-            services.AddSingleton<IStorageEmulator, StorageEmulator>(sp =>
-                new StorageEmulator(sp.GetService<IOptions<IntegrationTestSettings>>().Value.StorageEmulatorLocation)
-            );
 
             return services.BuildServiceProvider();
         }

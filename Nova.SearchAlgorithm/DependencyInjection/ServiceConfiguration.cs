@@ -1,6 +1,7 @@
 using System;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -49,6 +50,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
         {
+            services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
+
             services.AddSingleton(sp => AutomapperConfig.CreateMapper());
 
             services.AddSingleton<ILogger>(sp =>
@@ -85,8 +88,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
 
-            services.AddSingleton<IApiKeyProvider, AppSettingsApiKeyProvider>();
-
             services.AddScoped<IMatchingDictionaryService, MatchingDictionaryService>();
 
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>(sp =>
@@ -96,9 +97,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped(sp =>
-                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
-            );
             services.AddScoped<IDonorSearchRepository, DonorSearchRepository>();
             services.AddScoped<IDonorImportRepository, DonorImportRepository>();
             services.AddScoped<IDonorInspectionRepository, DonorInspectionRepository>();

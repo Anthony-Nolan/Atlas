@@ -4,11 +4,12 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Linq;
+using ApprovalTests.Reporters.TestFrameworks;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
 {
     [UseReporter(typeof(NUnitReporter))]
-    [ApprovalTests.Namers.UseApprovalSubdirectory("../../../../Resources/MDPreCalc")]
+    [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]
     public class SerologyToPGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
         [Test]
