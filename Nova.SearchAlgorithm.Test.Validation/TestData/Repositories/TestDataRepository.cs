@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity.Migrations;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Nova.SearchAlgorithm.Data;
@@ -66,13 +67,34 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 
         private void RemoveTestData()
         {
-            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
-            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtA]");
-            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtB]");
-            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtC]");
-            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDrb1]");
-            context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDqb1]");
-            context.SaveChanges();
+            if (DoesDonorTableExist())
+            {
+                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
+                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtA]");
+                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtB]");
+                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtC]");
+                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDrb1]");
+                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDqb1]");
+                context.SaveChanges();
+            }
+        }
+
+        private bool DoesDonorTableExist()
+        {
+            var conn = context.Database.GetDbConnection();
+            if (conn.State.Equals(ConnectionState.Closed))
+            {
+                conn.Open();
+            }
+
+            using (var command = conn.CreateCommand())
+            {
+                command.CommandText = @"
+    SELECT 1 FROM sys.tables AS T 
+        INNER JOIN sys.schemas AS S ON T.schema_id = S.schema_id
+    WHERE T.Name = 'Donors'";
+                return command.ExecuteScalar() != null;
+            }
         }
     }
 }
