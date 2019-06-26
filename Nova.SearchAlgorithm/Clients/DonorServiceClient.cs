@@ -1,18 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
 using Nova.Utils.Http;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Clients
 {
     public interface IDonorServiceClient
     {
+        /// <summary>
+        /// Returns information required for the new search algorithm for a single donor.
+        /// Only contains information required to perform search and not for display in the frontend.
+        /// </summary>
+        Task<DonorInfoForSearchAlgorithm> GetDonorInfoForSearchAlgorithm(int donorId);
+
         /// <summary>
         /// Returns a page of donors information which is required for the new search algorithm.
         /// These donors Info only contain the information required to do a search with the new algorithm and not for display in the frontend.
@@ -49,6 +55,12 @@ namespace Nova.SearchAlgorithm.Clients
 
         public DonorServiceClient(ClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null, IErrorsParser errorsParser = null) : base(settings, logger, handler, errorsParser)
         {
+        }
+
+        public async Task<DonorInfoForSearchAlgorithm> GetDonorInfoForSearchAlgorithm(int donorId)
+        {
+            var request = GetRequest(HttpMethod.Get, $"donors-info-for-search-algorithm/{donorId}");
+            return await MakeRequestAsync<DonorInfoForSearchAlgorithm>(request);
         }
 
         public async Task<DonorInfoForSearchAlgorithmPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)

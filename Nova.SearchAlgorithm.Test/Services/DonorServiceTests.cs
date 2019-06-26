@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
@@ -9,6 +7,8 @@ using Nova.SearchAlgorithm.Services;
 using Nova.Utils.Http.Exceptions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services
 {
@@ -38,7 +38,6 @@ namespace Nova.SearchAlgorithm.Test.Services
 
             Assert.ThrowsAsync<NovaHttpException>(() => donorService.CreateDonor(new InputDonor()));
         }
-
 
         [Test]
         public async Task CreateDonor_WhenDonorDoesNotExist_CreatesDonor()
@@ -75,6 +74,25 @@ namespace Nova.SearchAlgorithm.Test.Services
 
             await importRepository.Received()
                 .UpdateBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+        }
+
+        [Test]
+        public void DeleteDonor_WhenDonorDoesNotExist_ThrowsException()
+        {
+            const int donorId = 123;
+            Assert.ThrowsAsync<NovaNotFoundException>(() => donorService.DeleteDonor(donorId));
+        }
+
+        [Test]
+        public async Task DeleteDonor_WhenDonorExists_DeletesDonor()
+        {
+            const int donorId = 123;
+
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
+
+            await donorService.DeleteDonor(donorId);
+
+            await importRepository.Received().DeleteDonorAndItsExpandedHla(donorId);
         }
     }
 }

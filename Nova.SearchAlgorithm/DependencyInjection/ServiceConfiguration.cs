@@ -60,6 +60,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.DonorService>();
+            services.AddScoped<IDonorManagementService, DonorManagementService>();
 
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorImportService, DonorImportService>();
