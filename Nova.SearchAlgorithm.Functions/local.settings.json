@@ -8,7 +8,10 @@
     "Client.DonorService.ApiKey": "override-this",
     "Client.DonorService.BaseUrl": "https://dev-nova-app-donor-service.azurewebsites.net/",
     "Client.HlaService.ApiKey": "override-this",
-    "Client.HlaService.BaseUrl": "https://dev-nova-app-hla-service.azurewebsites.net/",
+    "Client.HlaService.BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
+    "DonorManagement.Topic": "updated-searchable-donors",
+    "DonorManagement.Subscription": "local",
+    "MessagingServiceBus.ConnectionString": "override-this",
     "Wmda.HlaDatabaseVersion": "3330",
     "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"

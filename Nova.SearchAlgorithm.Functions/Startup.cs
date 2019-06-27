@@ -62,11 +62,11 @@ namespace Nova.SearchAlgorithm.Functions
             builder.Services.AddSingleton<IOptions<TSettings>>(sp =>
             {
                 var config = sp.GetService<IConfiguration>();
-                return new OptionsWrapper<TSettings>(BuildWmdaSettings<TSettings>(config));
+                return new OptionsWrapper<TSettings>(BuildSettings<TSettings>(config));
             });
         }
 
-        private static TSettings BuildWmdaSettings<TSettings>(IConfiguration config) where TSettings : class, new()
+        private static TSettings BuildSettings<TSettings>(IConfiguration config) where TSettings : class, new()
         {
             var settings = new TSettings();
 
