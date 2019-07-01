@@ -24,10 +24,11 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         }
 
         [FunctionName("InitiateSearch")]
-        public async Task<string> InitiateSearch([HttpTrigger] HttpRequest request)
+        public async Task<SearchInitiationResponse> InitiateSearch([HttpTrigger] HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            return await searchDispatcher.DispatchSearch(searchRequest);
+            var id = await searchDispatcher.DispatchSearch(searchRequest);
+            return new SearchInitiationResponse {SearchIdentifier = id};
         }
 
         [FunctionName("RunSearch")]

@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Client
     public interface ISearchAlgorithmClient
     {
         Task<ScoringResult> Score(ScoringRequest scoringRequest);
-        Task<string> InitiateSearch(SearchRequest searchRequest);
+        Task<SearchInitiationResponse> InitiateSearch(SearchRequest searchRequest);
     }
 
     public class SearchAlgorithmClient : ClientBase, ISearchAlgorithmClient
@@ -21,14 +21,14 @@ namespace Nova.SearchAlgorithm.Client
 
         public async Task<ScoringResult> Score(ScoringRequest scoringRequest)
         {
-            var request = GetRequest(HttpMethod.Post, "api/Score");
+            var request = GetRequest(HttpMethod.Post, "api/Score", body: scoringRequest);
             return await MakeRequestAsync<ScoringResult>(request);
         }
 
-        public async Task<string> InitiateSearch(SearchRequest searchRequest)
+        public async Task<SearchInitiationResponse> InitiateSearch(SearchRequest searchRequest)
         {
-            var request = GetRequest(HttpMethod.Post, "api/InitiateSearch");
-            return await MakeRequestAsync<string>(request);
+            var request = GetRequest(HttpMethod.Post, "api/InitiateSearch", body: searchRequest);
+            return await MakeRequestAsync<SearchInitiationResponse>(request);
         }
     }
 }
