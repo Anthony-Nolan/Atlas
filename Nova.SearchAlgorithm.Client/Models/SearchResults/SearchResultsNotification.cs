@@ -5,5 +5,9 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         public string SearchRequestId { get; set; }
         public bool WasSuccessful { get; set; }
         public int? NumberOfResults { get; set; }
+        /// <summary>
+        /// The version of the deployed search algorithm that ran the search request
+        /// </summary>
+        public string SearchAlgorithmServiceVersion { get; set; }
     }
 }

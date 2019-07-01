@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
@@ -52,23 +53,25 @@ namespace Nova.SearchAlgorithm.Services.Search
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
+            var searchResultsNotification = new SearchResultsNotification
+            {
+                SearchRequestId = searchRequestId,
+                SearchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString()
+            };
+
             try
             {
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
                 await blobStorageClient.UploadResults(searchRequestId, results);
-                await searchServiceBusClient.PublishToResultsNotificationTopic(new SearchResultsNotification
-                {
-                    SearchRequestId = searchRequestId,
-                    WasSuccessful = true,
-                    NumberOfResults = results.Count
-                });
+                searchResultsNotification.WasSuccessful = true;
+                searchResultsNotification.NumberOfResults = results.Count;
+                await searchServiceBusClient.PublishToResultsNotificationTopic(searchResultsNotification);
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
-                await searchServiceBusClient.PublishToResultsNotificationTopic(
-                    new SearchResultsNotification {SearchRequestId = searchRequestId, WasSuccessful = false}
-                );
+                searchResultsNotification.WasSuccessful = false;
+                await searchServiceBusClient.PublishToResultsNotificationTopic(searchResultsNotification);
             }
         }
     }
