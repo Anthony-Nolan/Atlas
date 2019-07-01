@@ -4,5 +4,6 @@ namespace Nova.SearchAlgorithm.Settings
     {
         public string ConnectionString { get; set; }
         public string SearchRequestsQueue { get; set; }
+        public string SearchResultsTopic { get; set; }
     }
 }

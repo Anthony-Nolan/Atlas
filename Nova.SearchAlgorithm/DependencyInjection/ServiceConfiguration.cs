@@ -23,6 +23,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.AzureStorage;
 using Nova.SearchAlgorithm.Services.DonorImport;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
@@ -99,9 +100,18 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {
                 var serviceBusSettings = sp.GetService<IOptions<MessagingServiceBusSettings>>().Value;
-                return new SearchServiceBusClient(serviceBusSettings.ConnectionString, serviceBusSettings.SearchRequestsQueue);
+                return new SearchServiceBusClient(
+                    serviceBusSettings.ConnectionString,
+                    serviceBusSettings.SearchRequestsQueue,
+                    serviceBusSettings.SearchResultsTopic
+                );
             });
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
+            services.AddScoped<IBlobStorageClient, BlobStorageClient>(sp =>
+            {
+                var azureStorageSettings = sp.GetService<IOptions<AzureStorageSettings>>().Value;
+                return new BlobStorageClient(azureStorageSettings.ConnectionString, azureStorageSettings.SearchResultsBlobContainer);
+            });
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
