@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.Search;
 
 namespace Nova.SearchAlgorithm.Api.Controllers
 {

@@ -29,6 +29,7 @@ using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Auth;
@@ -46,6 +47,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<ApplicationInsightsSettings>(configuration.GetSection("ApplicationInsights"));
             services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
             services.Configure<WmdaSettings>(configuration.GetSection("Wmda"));
+            services.Configure<WmdaSettings>(configuration.GetSection("ServiceBus"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -93,6 +95,13 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>(sp =>
                 new WmdaHlaVersionProvider(sp.GetService<IOptions<WmdaSettings>>().Value.HlaDatabaseVersion)
             );
+
+            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
+            {
+                var serviceBusSettings = sp.GetService<IOptions<MessagingServiceBusSettings>>().Value;
+                return new SearchServiceBusClient(serviceBusSettings.ConnectionString, serviceBusSettings.SearchRequestsQueue);
+            });
+            services.AddScoped<ISearchDispatcher, SearchDispatcher>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
