@@ -1,6 +1,8 @@
 using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -44,7 +46,7 @@ namespace Nova.SearchAlgorithm.Functions
                 configurationBuilder.AddConfiguration(configuration);
             }
 
-            configurationBuilder.AddUserSecrets("710bde86-9075-4086-9657-ad605368265f");
+            configurationBuilder.AddUserSecrets(Assembly.GetExecutingAssembly());
             functionsHostBuilder.Services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), configurationBuilder.Build()));
         }
 

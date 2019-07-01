@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Api;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -29,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.AddJsonFile("appsettings.json", true, true);
-                    config.AddUserSecrets("841c4767-6a3e-4edc-bae0-f657a980f940");
+                    config.AddUserSecrets(Assembly.GetExecutingAssembly());
                 })
                 .UseStartup<Startup>();
             server = new TestServer(builder);
