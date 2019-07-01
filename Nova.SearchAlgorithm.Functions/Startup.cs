@@ -23,17 +23,20 @@ namespace Nova.SearchAlgorithm.Functions
             builder.Services.RegisterSearchAlgorithmTypes();
         }
 
-        private void RegisterSettings(IFunctionsHostBuilder builder)
+        private static void RegisterSettings(IFunctionsHostBuilder builder)
         {
-            AddUserSecrets(builder);
-            RegisterSettings<ApplicationInsightsSettings>(builder);
-            RegisterSettings<AzureStorageSettings>(builder);
-            RegisterSettings<DonorServiceSettings>(builder);
-            RegisterSettings<HlaServiceSettings>(builder);
-            RegisterSettings<WmdaSettings>(builder);
+            builder.AddUserSecrets();
+            builder.RegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
+            builder.RegisterSettings<AzureStorageSettings>("AzureStorage");
+            builder.RegisterSettings<DonorServiceSettings>("Client.DonorService");
+            builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
+            builder.RegisterSettings<WmdaSettings>("Wmda");
         }
+    }
 
-        private static void AddUserSecrets(IFunctionsHostBuilder functionsHostBuilder)
+    internal static class FunctionsHostBuilderExtensions
+    {
+        public static void AddUserSecrets(this IFunctionsHostBuilder functionsHostBuilder)
         {
             var configurationBuilder = new ConfigurationBuilder();
             // Fetch the existing IConfiguration set up by the azure functions framework
@@ -57,40 +60,24 @@ namespace Nova.SearchAlgorithm.Functions
         /// This method explicitly sets up the IOptions classes that would be set up by "services.Configure".
         /// All further DI can assume these IOptions are present in either scenario
         /// </summary>
-        private static void RegisterSettings<TSettings>(IFunctionsHostBuilder builder) where TSettings : class, new()
+        public static void RegisterSettings<TSettings>(this IFunctionsHostBuilder builder, string configPrefix = "") where TSettings : class, new()
         {
             builder.Services.AddSingleton<IOptions<TSettings>>(sp =>
             {
                 var config = sp.GetService<IConfiguration>();
-                return new OptionsWrapper<TSettings>(BuildWmdaSettings<TSettings>(config));
+                return new OptionsWrapper<TSettings>(BuildSettings<TSettings>(config, configPrefix));
             });
         }
 
-        private static TSettings BuildWmdaSettings<TSettings>(IConfiguration config) where TSettings : class, new()
+        private static TSettings BuildSettings<TSettings>(IConfiguration config, string configPrefix) where TSettings : class, new()
         {
             var settings = new TSettings();
 
-            switch (settings)
+            var properties = typeof(TSettings).GetProperties();
+            foreach (var property in properties)
             {
-                case ApplicationInsightsSettings applicationInsightsSettings:
-                    applicationInsightsSettings.InstrumentationKey = config.GetSection("ApplicationInsights.InstrumentationKey").Value;
-                    applicationInsightsSettings.LogLevel = config.GetSection("ApplicationInsights.LogLevel").Value;
-                    break;
-                case AzureStorageSettings azureStorageSettings:
-                    azureStorageSettings.ConnectionString = config.GetSection("AzureStorage.ConnectionString").Value;
-                    break;
-                case DonorServiceSettings donorServiceSettings:
-                    donorServiceSettings.ApiKey = config.GetSection("Client.DonorService.ApiKey").Value;
-                    donorServiceSettings.BaseUrl = config.GetSection("Client.DonorService.BaseUrl").Value;
-                    break;
-                case HlaServiceSettings hlaServiceSettings:
-                    hlaServiceSettings.ApiKey = config.GetSection("Client.HlaService.ApiKey").Value;
-                    hlaServiceSettings.BaseUrl = config.GetSection("Client.HlaService.BaseUrl").Value;
-                    break;
-                case WmdaSettings wmdaSettings:
-                    wmdaSettings.HlaDatabaseVersion = config.GetSection("Wmda.HlaDatabaseVersion").Value;
-                    wmdaSettings.WmdaFileUri = config.GetSection("Wmda.FileUri").Value;
-                    break;
+                var value = config.GetSection($"{configPrefix}.{property.Name}")?.Value;
+                property.SetValue(settings, value);
             }
 
             return settings;
