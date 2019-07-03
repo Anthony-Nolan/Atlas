@@ -1,12 +1,15 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using FluentValidation;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.AzureStorage;
 using Nova.SearchAlgorithm.Services.Search;
+using Nova.SearchAlgorithm.Test.Builders;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Http.Exceptions;
 using NSubstitute;
@@ -38,9 +41,17 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         [Test]
         public async Task DispatchSearch_DispatchesSearchWithId()
         {
-            await searchDispatcher.DispatchSearch(new SearchRequest());
+            await searchDispatcher.DispatchSearch(new SearchRequestBuilder().Build());
 
             await searchServiceBusClient.Received().PublishToSearchQueue(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
+        }
+        
+        [Test]
+        public void DispatchSearch_ValidatesSearchRequest()
+        {
+            var invalidSearchRequest = new SearchRequest();
+            
+            Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
         }
 
         [Test]
