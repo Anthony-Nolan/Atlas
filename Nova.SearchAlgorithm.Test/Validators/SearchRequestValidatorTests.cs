@@ -3,6 +3,7 @@ using FluentAssertions;
 using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Validators;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Client.Validators

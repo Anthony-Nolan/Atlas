@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Functions", "Nova.SearchAlgorithm.Functions\Nova.SearchAlgorithm.Functions.csproj", "{174168A1-CF51-433F-B39A-0FE774986352}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client.Models", "Nova.SearchAlgorithm.Client.Models\Nova.SearchAlgorithm.Client.Models.csproj", "{388B175F-8166-4703-A7F3-6891DA1F118E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -118,6 +120,12 @@ Global
 		{174168A1-CF51-433F-B39A-0FE774986352}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{174168A1-CF51-433F-B39A-0FE774986352}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{174168A1-CF51-433F-B39A-0FE774986352}.Release|Any CPU.Build.0 = Release|Any CPU
+		{388B175F-8166-4703-A7F3-6891DA1F118E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{388B175F-8166-4703-A7F3-6891DA1F118E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{388B175F-8166-4703-A7F3-6891DA1F118E}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{388B175F-8166-4703-A7F3-6891DA1F118E}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{388B175F-8166-4703-A7F3-6891DA1F118E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{388B175F-8166-4703-A7F3-6891DA1F118E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

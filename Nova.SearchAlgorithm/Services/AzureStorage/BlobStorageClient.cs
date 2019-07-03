@@ -9,7 +9,8 @@ namespace Nova.SearchAlgorithm.Services.AzureStorage
 {
     public interface IBlobStorageClient
     {
-        Task UploadResults(string requestId, IEnumerable<SearchResult> searchResults);
+        Task UploadResults(string requestId, SearchResultSet searchResultSet);
+        string GetResultsContainerName();
     }
     
     public class BlobStorageClient : IBlobStorageClient
@@ -23,11 +24,16 @@ namespace Nova.SearchAlgorithm.Services.AzureStorage
             this.resultsContainerName = resultsContainerName;
         }
         
-        public async Task UploadResults(string requestId, IEnumerable<SearchResult> searchResults)
+        public async Task UploadResults(string requestId, SearchResultSet searchResultSet)
         {
             var blockBlob = await GetBlockBlob(requestId);
-            var serialisedResults = JsonConvert.SerializeObject(searchResults);
+            var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
             await blockBlob.UploadTextAsync(serialisedResults);
+        }
+
+        public string GetResultsContainerName()
+        {
+            return resultsContainerName;
         }
 
         private async Task<CloudBlockBlob> GetBlockBlob(string requestId)

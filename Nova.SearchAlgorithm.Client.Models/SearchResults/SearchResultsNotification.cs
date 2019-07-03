@@ -9,5 +9,6 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         /// The version of the deployed search algorithm that ran the search request
         /// </summary>
         public string SearchAlgorithmServiceVersion { get; set; }
+        public string BlobStorageContainerName { get; set; }
     }
 }

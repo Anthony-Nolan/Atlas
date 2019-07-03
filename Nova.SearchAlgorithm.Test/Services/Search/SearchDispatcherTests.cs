@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
             
             await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = id});
 
-            await blobStorageClient.Received().UploadResults(id, Arg.Any<IEnumerable<SearchResult>>());
+            await blobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
         }
 
         [Test]

@@ -1,8 +1,5 @@
-﻿using FluentValidation;
-
-namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
 {
-    [FluentValidation.Attributes.Validator(typeof(MismatchCriteriaValidator))]
     public class MismatchCriteria
     {
         /// <summary>
@@ -40,16 +37,5 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchDrb1 { get; set; }
-    }
-
-    public class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
-    {
-        public MismatchCriteriaValidator()
-        {
-            RuleFor(x => x.LocusMismatchA).NotNull();
-            RuleFor(x => x.LocusMismatchB).NotNull();
-            RuleFor(x => x.LocusMismatchDrb1).NotNull();
-            RuleFor(x => x.DonorMismatchCount).NotNull().GreaterThanOrEqualTo(0).LessThanOrEqualTo(4);
-        }
     }
 }

@@ -1,8 +1,5 @@
-﻿using FluentValidation;
-
-namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
+﻿namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
 {
-    [FluentValidation.Attributes.Validator(typeof(SearchHlaDataValidator))]
     public class SearchHlaData
     {
         /// <summary>
@@ -40,15 +37,5 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
         /// Required.
         /// </summary>
         public LocusSearchHla LocusSearchHlaDrb1 { get; set; }
-    }
-    
-    public class SearchHlaDataValidator : AbstractValidator<SearchHlaData>
-    {
-        public SearchHlaDataValidator()
-        {
-            RuleFor(x => x.LocusSearchHlaA).NotNull();
-            RuleFor(x => x.LocusSearchHlaB).NotNull();
-            RuleFor(x => x.LocusSearchHlaDrb1).NotNull();
-        }
     }
 }
