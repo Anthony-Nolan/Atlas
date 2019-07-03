@@ -10,5 +10,6 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
         /// </summary>
         public string SearchAlgorithmServiceVersion { get; set; }
         public string BlobStorageContainerName { get; set; }
+        public long SearchTimeInMilliseconds { get; set; }
     }
 }

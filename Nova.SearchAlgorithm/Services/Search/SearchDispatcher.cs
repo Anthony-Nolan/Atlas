@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -56,30 +57,41 @@ namespace Nova.SearchAlgorithm.Services.Search
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
-            var searchResultsNotification = new SearchResultsNotification
-            {
-                SearchRequestId = searchRequestId,
-                SearchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString()
-            };
+            var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
             try
             {
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
+                stopwatch.Stop();
+                
                 await blobStorageClient.UploadResults(searchRequestId, new SearchResultSet
                 {
                     SearchResults = results,
                     TotalResults = results.Count
                 });
-                searchResultsNotification.WasSuccessful = true;
-                searchResultsNotification.NumberOfResults = results.Count;
-                searchResultsNotification.BlobStorageContainerName = blobStorageClient.GetResultsContainerName();
-                await searchServiceBusClient.PublishToResultsNotificationTopic(searchResultsNotification);
+                var notification = new SearchResultsNotification
+                {
+                    SearchRequestId = searchRequestId,
+                    SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    WasSuccessful = true,
+                    NumberOfResults = results.Count,
+                    BlobStorageContainerName = blobStorageClient.GetResultsContainerName(),
+                    SearchTimeInMilliseconds = stopwatch.ElapsedMilliseconds
+                };
+                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
-                searchResultsNotification.WasSuccessful = false;
-                await searchServiceBusClient.PublishToResultsNotificationTopic(searchResultsNotification);
+                var notification = new SearchResultsNotification
+                {
+                    WasSuccessful = false,
+                    SearchRequestId = searchRequestId,
+                    SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion
+                };
+                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }
         }
     }
