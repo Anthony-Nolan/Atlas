@@ -1,4 +1,9 @@
-﻿using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
@@ -7,15 +12,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.Utils.ApplicationInsights;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Config;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.Services.Search
 {
     public interface ISearchService
     {

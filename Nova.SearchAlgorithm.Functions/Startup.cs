@@ -2,7 +2,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -33,6 +32,7 @@ namespace Nova.SearchAlgorithm.Functions
             builder.RegisterSettings<DonorServiceSettings>("Client.DonorService");
             builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
             builder.RegisterSettings<WmdaSettings>("Wmda");
+            builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
         }
     }
 

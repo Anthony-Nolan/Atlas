@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Validators;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Client.Validators
