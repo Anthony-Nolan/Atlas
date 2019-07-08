@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
     {
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
-        private IBlobStorageClient blobStorageClient;
+        private IResultsBlobStorageClient resultsBlobStorageClient;
 
         private SearchDispatcher searchDispatcher;
 
@@ -32,10 +32,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         {
             searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             searchService = Substitute.For<ISearchService>();
-            blobStorageClient = Substitute.For<IBlobStorageClient>();
+            resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             var logger = Substitute.For<ILogger>();
 
-            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchService, blobStorageClient, logger);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchService, resultsBlobStorageClient, logger);
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
             
             await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = id});
 
-            await blobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
+            await resultsBlobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
         }
 
         [Test]

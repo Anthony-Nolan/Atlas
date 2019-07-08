@@ -17,6 +17,7 @@
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
       <PackageReference Include="Nova.DonorService.SearchAlgorithm.Models" Version="1.0.0" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
+      <PackageReference Include="Nova.Utils.Storage" Version="11.0.4" />
     </ItemGroup>
 
     <ItemGroup>

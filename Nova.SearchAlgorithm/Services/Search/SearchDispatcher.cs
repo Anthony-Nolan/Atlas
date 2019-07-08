@@ -24,18 +24,18 @@ namespace Nova.SearchAlgorithm.Services.Search
     {
         private readonly ISearchServiceBusClient searchServiceBusClient;
         private readonly ISearchService searchService;
-        private readonly IBlobStorageClient blobStorageClient;
+        private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
 
         public SearchDispatcher(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
-            IBlobStorageClient blobStorageClient,
+            IResultsBlobStorageClient resultsBlobStorageClient,
             ILogger logger)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
-            this.blobStorageClient = blobStorageClient;
+            this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
         }
 
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Services.Search
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
                 stopwatch.Stop();
                 
-                await blobStorageClient.UploadResults(searchRequestId, new SearchResultSet
+                await resultsBlobStorageClient.UploadResults(searchRequestId, new SearchResultSet
                 {
                     SearchResults = results,
                     TotalResults = results.Count
@@ -77,7 +77,7 @@ namespace Nova.SearchAlgorithm.Services.Search
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
-                    BlobStorageContainerName = blobStorageClient.GetResultsContainerName(),
+                    BlobStorageContainerName = resultsBlobStorageClient.GetResultsContainerName(),
                     SearchTimeInMilliseconds = stopwatch.ElapsedMilliseconds
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
