@@ -198,7 +198,16 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             };
             var logger = new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
 
-            return new HlaServiceClient(clientSettings, logger);
+            try
+            {
+                return new HlaServiceClient(clientSettings, logger);
+            }
+            // When running on startup, the client setup will often throw a NullReferenceException.
+            // This appears to go away when running not immediately after startup, so we retry once to circumvent
+            catch (NullReferenceException)
+            {
+                return new HlaServiceClient(clientSettings, logger);
+            }
         }
 
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
