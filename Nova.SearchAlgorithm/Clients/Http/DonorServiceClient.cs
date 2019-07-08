@@ -9,7 +9,7 @@ using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
 using Nova.Utils.Http;
 
-namespace Nova.SearchAlgorithm.Clients
+namespace Nova.SearchAlgorithm.Clients.Http
 {
     public interface IDonorServiceClient
     {

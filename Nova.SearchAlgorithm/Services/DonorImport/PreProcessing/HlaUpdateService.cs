@@ -8,9 +8,11 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport
+namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
 {
     public interface IHlaUpdateService
     {

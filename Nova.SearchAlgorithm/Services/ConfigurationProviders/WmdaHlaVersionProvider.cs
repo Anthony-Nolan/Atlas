@@ -1,4 +1,4 @@
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
 {
     public interface IWmdaHlaVersionProvider
     {

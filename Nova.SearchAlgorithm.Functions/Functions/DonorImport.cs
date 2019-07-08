@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
 {

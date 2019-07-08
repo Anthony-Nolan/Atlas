@@ -2,6 +2,7 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using NSubstitute;
 using NUnit.Framework;
 

@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 {
