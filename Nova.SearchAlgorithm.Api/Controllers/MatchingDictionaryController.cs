@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.Api.Controllers
 {

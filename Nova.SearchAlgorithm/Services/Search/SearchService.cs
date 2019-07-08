@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.Utils.ApplicationInsights;

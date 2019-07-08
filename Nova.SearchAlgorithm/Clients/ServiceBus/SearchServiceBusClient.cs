@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Models;
 
-namespace Nova.SearchAlgorithm.Clients
+namespace Nova.SearchAlgorithm.Clients.ServiceBus
 {
     public interface ISearchServiceBusClient
     {

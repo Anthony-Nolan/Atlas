@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using NSubstitute;
 using NUnit.Framework;

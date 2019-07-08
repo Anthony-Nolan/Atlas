@@ -1,13 +1,10 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Storage;
 
-namespace Nova.SearchAlgorithm.Services.AzureStorage
+namespace Nova.SearchAlgorithm.Clients.AzureStorage
 {
     public interface IResultsBlobStorageClient
     {

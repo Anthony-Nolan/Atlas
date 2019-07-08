@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.Services.MatchingDictionary
 {
     public interface IExpandHlaPhenotypeService
     {

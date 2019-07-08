@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
 {

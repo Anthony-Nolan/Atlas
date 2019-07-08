@@ -7,8 +7,9 @@ using FluentValidation;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Clients;
+using Nova.SearchAlgorithm.Clients.AzureStorage;
+using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Services.AzureStorage;
 using Nova.SearchAlgorithm.Validators;
 using Nova.Utils.ApplicationInsights;
 

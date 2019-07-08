@@ -1,10 +1,9 @@
 using System;
-using System.Configuration;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
 {
     /// <summary>
     /// Provides the connection string needed to query the non-persistent sql database.

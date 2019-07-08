@@ -9,9 +9,8 @@ using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Models;
-using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport
+namespace Nova.SearchAlgorithm.Services.MatchingDictionary
 {
     public interface IAntigenCachingService
     {

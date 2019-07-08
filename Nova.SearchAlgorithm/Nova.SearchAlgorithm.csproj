@@ -28,8 +28,4 @@
       <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Include="Resources\DonorPhenotypesSample.csv" />
-    </ItemGroup>
-
 </Project>
