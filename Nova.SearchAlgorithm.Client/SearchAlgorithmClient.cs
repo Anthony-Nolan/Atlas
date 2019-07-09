@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Client
         Task<SearchInitiationResponse> InitiateSearch(SearchRequest searchRequest);
     }
 
-    public class SearchAlgorithmClient : ClientBase, ISearchAlgorithmClient
+    public class SearchAlgorithmClient : FunctionsClientBase, ISearchAlgorithmClient
     {
         public SearchAlgorithmClient(ClientSettings settings, ILogger logger) : base(settings, logger)
         {
