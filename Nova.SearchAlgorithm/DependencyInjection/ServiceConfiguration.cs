@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Clients;
+using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
@@ -52,7 +53,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<ApplicationInsightsSettings>(configuration.GetSection("ApplicationInsights"));
             services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
             services.Configure<WmdaSettings>(configuration.GetSection("Wmda"));
-            services.Configure<WmdaSettings>(configuration.GetSection("ServiceBus"));
+            services.Configure<MessagingServiceBusSettings>(configuration.GetSection("MessagingServiceBus"));
+            services.Configure<AzureManagementSettings>(configuration.GetSection("AzureManagement"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -117,6 +119,9 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 var logger = sp.GetService<ILogger>();
                 return new ResultsBlobStorageClient(azureStorageSettings.ConnectionString, logger, azureStorageSettings.SearchResultsBlobContainer);
             });
+
+            services.AddScoped<IAzureManagementClient, AzureManagementClient>();
+            services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
