@@ -87,12 +87,12 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
         }
     }
 
-    class AppSettingsResponse
+    internal class AppSettingsResponse
     {
         public Dictionary<string, string> properties { get; set; }
     }
 
-    class UpdateSettingsBody
+    internal class UpdateSettingsBody
     {
         public string kind { get; set; }
         public Dictionary<string, string> properties { get; set; }
