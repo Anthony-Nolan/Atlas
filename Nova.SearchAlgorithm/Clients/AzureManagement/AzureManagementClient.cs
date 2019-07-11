@@ -82,6 +82,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
         private async Task Authenticate()
         {
             var authToken = await azureAuthenticationClient.GetAuthToken(AzureManagementScope);
+            httpClient.DefaultRequestHeaders.Remove("Authorization");
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {authToken}");
         }
     }
