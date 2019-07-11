@@ -27,6 +27,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DonorImport;
 using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
@@ -122,6 +123,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IAzureManagementClient, AzureManagementClient>();
             services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
+            services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
