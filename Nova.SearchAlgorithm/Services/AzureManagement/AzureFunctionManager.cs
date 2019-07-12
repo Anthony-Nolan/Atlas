@@ -5,8 +5,8 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
 {
     public interface IAzureFunctionManager
     {
-        Task StartFunction(string functionName);
-        Task StopFunction(string functionName);
+        Task StartFunction(string functionsAppName, string functionName);
+        Task StopFunction(string functionsAppName, string functionName);
     }
 
     public class AzureFunctionManager : IAzureFunctionManager
@@ -18,14 +18,14 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
             this.azureManagementClient = azureManagementClient;
         }
 
-        public async Task StartFunction(string functionName)
+        public async Task StartFunction(string functionsAppName, string functionName)
         {
-            await azureManagementClient.SetApplicationSetting(GetDisabledAppSetting(functionName), "false");
+            await azureManagementClient.SetApplicationSetting(functionsAppName, GetDisabledAppSetting(functionName), "false");
         }
 
-        public async Task StopFunction(string functionName)
+        public async Task StopFunction(string functionsAppName, string functionName)
         {
-            await azureManagementClient.SetApplicationSetting(GetDisabledAppSetting(functionName), "true");
+            await azureManagementClient.SetApplicationSetting(functionsAppName, GetDisabledAppSetting(functionName), "true");
         }
 
         private static string GetDisabledAppSetting(string functionName)

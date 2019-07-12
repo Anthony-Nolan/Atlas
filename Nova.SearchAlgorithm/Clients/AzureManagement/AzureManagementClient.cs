@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 {
     public interface IAzureManagementClient
     {
-        Task SetApplicationSetting(string key, string value);
+        Task SetApplicationSetting(string appServiceName, string key, string value);
 
         /// <returns>The DateTime at which the scaling operation began</returns>
         Task<DateTime> UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize);
@@ -44,15 +44,15 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             httpClient = new HttpClient {BaseAddress = new Uri(AzureManagementBaseUrl)};
         }
 
-        public async Task SetApplicationSetting(string key, string value)
+        public async Task SetApplicationSetting(string appServiceName, string key, string value)
         {
             await Authenticate();
 
-            var appSettings = await FetchAppSettings();
+            var appSettings = await FetchAppSettings(appServiceName);
 
             appSettings[key] = value;
 
-            await PostAppSettings(appSettings);
+            await PostAppSettings(appServiceName, appSettings);
         }
 
         public async Task<DateTime> UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize)
@@ -118,9 +118,9 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             throw new NotImplementedException();
         }
 
-        private async Task<Dictionary<string, string>> FetchAppSettings()
+        private async Task<Dictionary<string, string>> FetchAppSettings(string appServiceName)
         {
-            var getAppSettingsUrl = $"{GetAppSettingsUrlPath()}/list?api-version={AzureAppSettingsApiVersion}";
+            var getAppSettingsUrl = $"{GetAppSettingsUrlPath(appServiceName)}/list?api-version={AzureAppSettingsApiVersion}";
 
             var responseMessage = await httpClient.PostAsync(getAppSettingsUrl, new StringContent(""));
             if (!responseMessage.IsSuccessStatusCode)
@@ -132,10 +132,10 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             return appSettings;
         }
 
-        private async Task PostAppSettings(Dictionary<string, string> appSettings)
+        private async Task PostAppSettings(string appServiceName, Dictionary<string, string> appSettings)
         {
             var updateSettingsBody = new UpdateSettingsBody {properties = appSettings};
-            var postAppSettingsUrl = $"{GetAppSettingsUrlPath()}?api-version={AzureAppSettingsApiVersion}";
+            var postAppSettingsUrl = $"{GetAppSettingsUrlPath(appServiceName)}?api-version={AzureAppSettingsApiVersion}";
             var stringContent = new StringContent(JsonConvert.SerializeObject(updateSettingsBody), Encoding.UTF8, "application/json");
 
             var updateResponse = await httpClient.PutAsync(postAppSettingsUrl, stringContent);
@@ -146,9 +146,9 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             }
         }
 
-        private string GetAppSettingsUrlPath()
+        private string GetAppSettingsUrlPath(string appServiceName)
         {
-            return $"{GetResourceGroupUrlPath(settings.ResourceGroupName)}/providers/Microsoft.Web/sites/{settings.FunctionName}/config/appsettings";
+            return $"{GetResourceGroupUrlPath(settings.ResourceGroupName)}/providers/Microsoft.Web/sites/{appServiceName}/config/appsettings";
         }
 
         private string GetDatabaseUrlPath(string databaseName)

@@ -24,21 +24,23 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
         [Test]
         public async Task StartFunction_SetsFunctionDisabledAppSettingToFalse()
         {
+            const string functionAppName = "TEST-FUNCTIONS-APP";
             const string functionName = "TestFunction";
 
-            await azureFunctionManager.StartFunction(functionName);
+            await azureFunctionManager.StartFunction(functionAppName, functionName);
 
-            await azureManagementClient.Received().SetApplicationSetting($"AzureWebJobs.{functionName}.Disabled", "false");
+            await azureManagementClient.Received().SetApplicationSetting(functionAppName, $"AzureWebJobs.{functionName}.Disabled", "false");
         }
 
         [Test]
         public async Task StopFunction_SetsFunctionDisabledAppSettingToTrue()
         {
+            const string functionAppName = "TEST-FUNCTIONS-APP";
             const string functionName = "TestFunction";
 
-            await azureFunctionManager.StopFunction(functionName);
+            await azureFunctionManager.StopFunction(functionAppName, functionName);
 
-            await azureManagementClient.Received().SetApplicationSetting($"AzureWebJobs.{functionName}.Disabled", "true");
+            await azureManagementClient.Received().SetApplicationSetting(functionAppName, $"AzureWebJobs.{functionName}.Disabled", "true");
         }
     }
 }

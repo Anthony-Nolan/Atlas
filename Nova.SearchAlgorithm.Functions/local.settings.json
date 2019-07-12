@@ -7,7 +7,6 @@
     "AzureManagement.ClientSecret": "override-this",
     "AzureManagement.DatabaseServerName": "dev-nova-db",
     "AzureManagement.DatabaseResourceGroupName": "DEV-NOVA-RESOURCE_GROUP",
-    "AzureManagement.FunctionName": "DEV-NOVA-SEARCH-ALGORITHM-FUNCTION",
     "AzureManagement.ResourceGroupName": "DEV-NOVA-RESOURCE-GROUP",
     "AzureManagement.SubscriptionId": "6114522f-eea5-44ab-94ab-af37ffffc4d3",
     "AzureStorage.ConnectionString": "UseDevelopmentStorage=true",
