@@ -38,6 +38,7 @@ using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Services.Search;
+using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
@@ -66,6 +67,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddSingleton(sp => AutomapperConfig.CreateMapper());
 
+            services.AddScoped<IThreadSleeper, ThreadSleeper>();
             services.AddSingleton<ILogger>(sp =>
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
@@ -127,6 +129,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IAzureAppServiceManagementClient, AzureAppServiceManagementClient>();
             services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
             services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
+            services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)

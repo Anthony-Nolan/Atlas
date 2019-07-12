@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Models.AzureManagement
         public string DatabaseName { get; set; }
         public string Operation { get; set; }
         public int PercentComplete { get; set; }
-        public string State { get; set; }
+        public AzureDatabaseOperationState State { get; set; }
         public DateTime StartTime { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement.Extensions
         {
             string name;
             string tier;
-            int capacity;
+            int? capacity = null;
 
             switch (databaseSize)
             {
@@ -29,6 +29,9 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement.Extensions
                 case AzureDatabaseSize.P15:
                     name = tier = "Premium";
                     capacity = 4000;
+                    break;
+                case AzureDatabaseSize.Basic:
+                    name = tier = "Basic";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(databaseSize), databaseSize, null);

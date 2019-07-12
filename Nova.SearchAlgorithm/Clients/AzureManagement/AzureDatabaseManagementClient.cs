@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
     public interface IAzureDatabaseManagementClient
     {
         /// <returns>The DateTime at which the scaling operation began</returns>
-        Task<DateTime> UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize);
+        Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize);
 
         Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName);
     }
@@ -34,7 +35,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             databaseServerName = azureSettings.Value.ServerName;
         }
 
-        public async Task<DateTime> UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize)
+        public async Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize)
         {
             await Authenticate();
 
@@ -55,14 +56,32 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 
         public async Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName)
         {
-            throw new NotImplementedException();
+            await Authenticate();
+
+            var operationsUrl = $"{GetDatabaseUrlPath(databaseName)}/operations?api-version={AzureApiVersion}";
+
+            var response = await HttpClient.GetAsync(operationsUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new AzureManagementException();
+            }
+
+            var operationsResponseData = JsonConvert.DeserializeObject<DatabaseOperationResponse>(await response.Content.ReadAsStringAsync());
+
+            return operationsResponseData.value.Select(o => new DatabaseOperation
+            {
+                Operation = o.properties.operation,
+                State = o.properties.state,
+                PercentComplete = o.properties.percentComplete,
+                DatabaseName = o.properties.databaseName,
+                StartTime = o.properties.startTime,
+            });
         }
 
         private string GetDatabaseUrlPath(string databaseName)
         {
-            return
-                $"{GetResourceGroupUrlPath()}/providers/Microsoft.Sql/servers/{databaseServerName}/databases/{databaseName}";
+            return $"{GetResourceGroupUrlPath()}/providers/Microsoft.Sql/servers/{databaseServerName}/databases/{databaseName}";
         }
-
     }
 }
