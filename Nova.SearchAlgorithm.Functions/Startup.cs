@@ -33,6 +33,7 @@ namespace Nova.SearchAlgorithm.Functions
             builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
             builder.RegisterSettings<WmdaSettings>("Wmda");
             builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
+            builder.RegisterSettings<AzureManagementSettings>("AzureManagement");
         }
     }
 
