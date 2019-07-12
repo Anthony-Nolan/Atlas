@@ -48,6 +48,8 @@ resource "azurerm_function_app" "search_algorithm_function" {
 
   site_config {
     always_on = true
+
+    min_tls_version = local.min_tls_version
   }
 
   tags = local.common_tags
