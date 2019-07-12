@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels;
+using Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.AppSettings;
+using Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.Database;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Settings;
@@ -168,34 +171,5 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             httpClient.DefaultRequestHeaders.Remove("Authorization");
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {authToken}");
         }
-    }
-
-    internal class AppSettingsResponse
-    {
-        public Dictionary<string, string> properties { get; set; }
-    }
-
-    internal class UpdateSettingsBody
-    {
-        public string kind { get; set; }
-        public Dictionary<string, string> properties { get; set; }
-    }
-
-    internal class UpdateDatabaseResponse
-    {
-        public DateTime startTime { get; set; }
-    }
-
-    internal class DatabaseOperationResponse
-    {
-        public DatabaseOperationProperties properties { get; set; }
-    }
-
-    internal class DatabaseOperationProperties
-    {
-        public int percentComplete { get; set; }
-        public string operation { get; set; }
-        public string state { get; set; }
-        public string startTime { get; set; }
     }
 }
