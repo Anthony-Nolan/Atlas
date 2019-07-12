@@ -1,12 +1,23 @@
 namespace Nova.SearchAlgorithm.Settings
 {
-    public class AzureManagementSettings
+    public class AzureAuthenticationSettings
     {
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
-        public string SubscriptionId { get; set; }
+    }
+    
+    public class AzureManagementSettings
+    {
         public string ResourceGroupName { get; set; }
-        public string DatabaseServerName { get; set; }
-        public string DatabaseResourceGroupName { get; set; }
+        public string SubscriptionId { get; set; }
+    }
+
+    public class AzureAppServiceManagementSettings : AzureManagementSettings
+    {
+    }
+
+    public class AzureDatabaseManagementSettings : AzureManagementSettings
+    {
+        public string ServerName { get; set; }
     }
 }

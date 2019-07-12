@@ -11,9 +11,9 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
 
     public class AzureFunctionManager : IAzureFunctionManager
     {
-        private readonly IAzureManagementClient azureManagementClient;
+        private readonly IAzureAppServiceManagementClient azureManagementClient;
 
-        public AzureFunctionManager(IAzureManagementClient azureManagementClient)
+        public AzureFunctionManager(IAzureAppServiceManagementClient azureManagementClient)
         {
             this.azureManagementClient = azureManagementClient;
         }

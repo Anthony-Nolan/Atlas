@@ -21,9 +21,9 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
         private const string OAuthBaseUrl = "https://login.microsoftonline.com/ukmarrow.org/oauth2/v2.0/token";
 
         private readonly HttpClient httpClient;
-        private readonly AzureManagementSettings settings;
+        private readonly AzureAuthenticationSettings settings;
 
-        public AzureAuthenticationClient(IOptions<AzureManagementSettings> azureFunctionOptions)
+        public AzureAuthenticationClient(IOptions<AzureAuthenticationSettings> azureFunctionOptions)
         {
             settings = azureFunctionOptions.Value;
 

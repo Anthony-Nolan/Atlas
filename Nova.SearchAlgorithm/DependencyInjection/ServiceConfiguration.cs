@@ -55,7 +55,9 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
             services.Configure<WmdaSettings>(configuration.GetSection("Wmda"));
             services.Configure<MessagingServiceBusSettings>(configuration.GetSection("MessagingServiceBus"));
-            services.Configure<AzureManagementSettings>(configuration.GetSection("AzureManagement"));
+            services.Configure<AzureAuthenticationSettings>(configuration.GetSection("AzureManagement.Authentication"));
+            services.Configure<AzureAppServiceManagementSettings>(configuration.GetSection("AzureManagement.AppService"));
+            services.Configure<AzureDatabaseManagementSettings>(configuration.GetSection("AzureManagement.Database"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -121,7 +123,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 return new ResultsBlobStorageClient(azureStorageSettings.ConnectionString, logger, azureStorageSettings.SearchResultsBlobContainer);
             });
 
-            services.AddScoped<IAzureManagementClient, AzureManagementClient>();
+            services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
+            services.AddScoped<IAzureAppServiceManagementClient, AzureAppServiceManagementClient>();
             services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
             services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
         }
