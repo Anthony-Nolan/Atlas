@@ -6,6 +6,5 @@ namespace Nova.SearchAlgorithm.Settings
         public string ClientSecret { get; set; }
         public string SubscriptionId { get; set; }
         public string ResourceGroupName { get; set; }
-        public string FunctionName { get; set; }
     }
 }

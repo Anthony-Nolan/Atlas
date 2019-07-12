@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 {
     public interface IAzureManagementClient
     {
-        Task SetApplicationSetting(string key, string value);
+        Task SetApplicationSetting(string appServiceName, string key, string value);
     }
 
     public class AzureManagementClient : IAzureManagementClient
@@ -34,20 +34,20 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             httpClient = new HttpClient {BaseAddress = new Uri(AzureManagementBaseUrl)};
         }
 
-        public async Task SetApplicationSetting(string key, string value)
+        public async Task SetApplicationSetting(string appServiceName, string key, string value)
         {
             await Authenticate();
 
-            var appSettings = await FetchAppSettings();
+            var appSettings = await FetchAppSettings(appServiceName);
 
             appSettings[key] = value;
 
-            await PostAppSettings(appSettings);
+            await PostAppSettings(appServiceName, appSettings);
         }
 
-        private async Task<Dictionary<string, string>> FetchAppSettings()
+        private async Task<Dictionary<string, string>> FetchAppSettings(string appServiceName)
         {
-            var getAppSettingsUrl = $"{GetAppSettingsUrlPath()}/list?api-version={AzureApiVersion}";
+            var getAppSettingsUrl = $"{GetAppSettingsUrlPath(appServiceName)}/list?api-version={AzureApiVersion}";
 
             var responseMessage = await httpClient.PostAsync(getAppSettingsUrl, new StringContent(""));
             if (!responseMessage.IsSuccessStatusCode)
@@ -59,10 +59,10 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             return appSettings;
         }
 
-        private async Task PostAppSettings(Dictionary<string, string> appSettings)
+        private async Task PostAppSettings(string appServiceName, Dictionary<string, string> appSettings)
         {
             var updateSettingsBody = new UpdateSettingsBody {properties = appSettings};
-            var postAppSettingsUrl = $"{GetAppSettingsUrlPath()}?api-version={AzureApiVersion}";
+            var postAppSettingsUrl = $"{GetAppSettingsUrlPath(appServiceName)}?api-version={AzureApiVersion}";
             var stringContent = new StringContent(JsonConvert.SerializeObject(updateSettingsBody), Encoding.UTF8, "application/json");
             
             var updateResponse = await httpClient.PutAsync(postAppSettingsUrl, stringContent);
@@ -73,10 +73,10 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             }
         }
 
-        private string GetAppSettingsUrlPath()
+        private string GetAppSettingsUrlPath(string appServiceName)
         {
             return
-                $"subscriptions/{settings.SubscriptionId}/resourceGroups/{settings.ResourceGroupName}/providers/Microsoft.Web/sites/{settings.FunctionName}/config/appsettings";
+                $"subscriptions/{settings.SubscriptionId}/resourceGroups/{settings.ResourceGroupName}/providers/Microsoft.Web/sites/{appServiceName}/config/appsettings";
         }
 
         private async Task Authenticate()

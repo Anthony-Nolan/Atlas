@@ -7,7 +7,6 @@
     "AzureManagement.ClientSecret": "override-this",
     "AzureManagement.SubscriptionId":  "6114522f-eea5-44ab-94ab-af37ffffc4d3",
     "AzureManagement.ResourceGroupName": "DEV-NOVA-RESOURCE-GROUP",
-    "AzureManagement.FunctionName":  "DEV-NOVA-SEARCH-ALGORITHM-FUNCTION",
     "AzureStorage.ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage.SearchResultsBlobContainer": "search-algorithm-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
