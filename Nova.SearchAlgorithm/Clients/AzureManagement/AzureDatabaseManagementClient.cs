@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.Database;
+using Nova.SearchAlgorithm.Clients.AzureManagement.Extensions;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Settings;
@@ -41,7 +42,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 
             var response = await HttpClient.PatchAsync(
                 updateSizeUrl,
-                new StringContent(GetDatabaseUpdateBody(databaseSize), Encoding.UTF8, "application/json")
+                new StringContent(databaseSize.ToAzureApiUpdateBody(), Encoding.UTF8, "application/json")
             );
 
             if (!response.IsSuccessStatusCode)
@@ -50,45 +51,6 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             }
 
             return JsonConvert.DeserializeObject<UpdateDatabaseResponse>(await response.Content.ReadAsStringAsync()).startTime;
-        }
-
-        private string GetDatabaseUpdateBody(AzureDatabaseSize databaseSize)
-        {
-            string name;
-            string tier;
-            int capacity;
-
-            switch (databaseSize)
-            {
-                case AzureDatabaseSize.S0:
-                    name = tier = "Standard";
-                    capacity = 10;
-                    break;
-                case AzureDatabaseSize.S3:
-                    name = tier = "Standard";
-                    capacity = 100;
-                    break;
-                case AzureDatabaseSize.S4:
-                    name = tier = "Standard";
-                    capacity = 200;
-                    break;
-                case AzureDatabaseSize.P15:
-                    name = tier = "Premium";
-                    capacity = 4000;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(databaseSize), databaseSize, null);
-            }
-
-            dynamic skuObject = new System.Dynamic.ExpandoObject();
-            skuObject.name = name;
-            skuObject.tier = tier;
-            skuObject.capacity = capacity;
-
-            dynamic body = new System.Dynamic.ExpandoObject();
-            body.sku = skuObject;
-
-            return JsonConvert.SerializeObject(body);
         }
 
         public async Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName)
