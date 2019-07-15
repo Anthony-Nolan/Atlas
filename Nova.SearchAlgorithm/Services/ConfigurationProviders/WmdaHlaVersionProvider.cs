@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     {
         /// <returns>The version of the wmda hla data currently in use by the algorithm</returns>
         string GetActiveHlaDatabaseVersion();
+
         /// <returns>The latest published version of the wmda hla data</returns>
         string GetLatestHlaDatabaseVersion();
     }
@@ -20,24 +21,30 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         private readonly string wmdaBaseUrl;
         private readonly WebClient webClient;
 
+        private string latestHlaDatabaseVersion;
+
         public WmdaHlaVersionProvider(IOptions<WmdaSettings> wmdaSettings, IDataRefreshHistoryRepository dataRefreshHistoryRepository)
         {
             wmdaBaseUrl = wmdaSettings.Value.WmdaFileUri;
             webClient = new WebClient();
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
         }
-        
+
         public string GetActiveHlaDatabaseVersion()
         {
             return dataRefreshHistoryRepository.GetActiveWmdaDataVersion();
         }
-        
+
         public string GetLatestHlaDatabaseVersion()
         {
-            var versionReport = webClient.DownloadString($"{wmdaBaseUrl}Latest/version_report.txt");
-            var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("# version"));
-            var version = string.Join("", versionLine.Split(' ').Last().Split('.'));
-            return version;
+            if (latestHlaDatabaseVersion == null)
+            {
+                var versionReport = webClient.DownloadString($"{wmdaBaseUrl}Latest/version_report.txt");
+                var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("# version"));
+                latestHlaDatabaseVersion = string.Join("", versionLine.Split(' ').Last().Split('.'));
+            }
+
+            return latestHlaDatabaseVersion;
         }
     }
 }

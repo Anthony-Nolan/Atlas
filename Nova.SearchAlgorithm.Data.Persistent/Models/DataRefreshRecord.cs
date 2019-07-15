@@ -15,5 +15,6 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Models
         /// </summary>
         public string Database { get; set; }
         public string WmdaDatabaseVersion { get; set; }
+        public bool? WasSuccessful { get; set; }
     }
 }
