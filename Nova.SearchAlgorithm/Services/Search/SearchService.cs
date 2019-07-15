@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Services.Search
             var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 locus,
                 new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2),
-                wmdaHlaVersionProvider.GetHlaDatabaseVersion()
+                wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion()
             );
 
             return new AlleleLevelLocusMatchCriteria

@@ -70,14 +70,14 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
 
-            services.AddScoped<IWmdaLatestVersionFetcher, WmdaLatestVersionFetcher>();
-
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.Donors.DonorService>();
 
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorImporter, DonorImporter>();
             services.AddScoped<IHlaProcessor, HlaProcessor>();
+            services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
+            services.AddScoped<IDataRefreshService, DataRefreshService>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services
@@ -104,9 +104,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IMatchingDictionaryService, MatchingDictionaryService>();
 
-            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>(sp =>
-                new WmdaHlaVersionProvider(sp.GetService<IOptions<WmdaSettings>>().Value.HlaDatabaseVersion)
-            );
+            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {

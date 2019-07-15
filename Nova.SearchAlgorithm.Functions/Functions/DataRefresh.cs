@@ -9,16 +9,19 @@ namespace Nova.SearchAlgorithm.Functions.Functions
     {
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
+        private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
 
         public DataRefresh(IDonorImporter donorImporter, IHlaProcessor hlaProcessor, IDataRefreshOrchestrator dataRefreshOrchestrator)
         {
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
+            this.dataRefreshOrchestrator = dataRefreshOrchestrator;
         }
 
         [FunctionName("RunDataRefresh")]
         public async Task RunDataRefresh([HttpTrigger] HttpRequest httpRequest)
         {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
 
         [FunctionName("RunDonorImport")]

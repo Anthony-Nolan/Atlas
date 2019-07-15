@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetHlaDatabaseVersion();
+            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
             await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);

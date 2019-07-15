@@ -148,7 +148,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null 
-                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, wmdaHlaVersionProvider.GetHlaDatabaseVersion())
+                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion())
                 : null;
         }
     }

@@ -108,7 +108,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task PerformUpfrontSetup()
         {
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetHlaDatabaseVersion();
+            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
             
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
             await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);

@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
         private Task<string> GetDpb1TceGroup(string alleleName)
         {
-            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, wmdaHlaVersionProvider.GetHlaDatabaseVersion());
+            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
     }
 }
