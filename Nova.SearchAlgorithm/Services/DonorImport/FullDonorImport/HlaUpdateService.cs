@@ -25,36 +25,36 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
 
     public class HlaUpdateService : IHlaUpdateService
     {
-        private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
-        private readonly IDonorInspectionRepository donorInspectionRepository;
-        private readonly IDonorImportRepository donorImportRepository;
         private readonly ILogger logger;
-        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
+        private readonly IDonorImportRepository donorImportRepository;
+        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public HlaUpdateService(
-            IExpandHlaPhenotypeService expandHlaPhenotypeService,
-            IDonorInspectionRepository donorInspectionRepository,
-            IDonorImportRepository donorImportRepository,
             ILogger logger,
-            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
+            IDonorImportRepository donorImportRepository,
+            IDonorInspectionRepository donorInspectionRepository,
+            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
-            IPGroupRepository pGroupRepository,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IPGroupRepository pGroupRepository)
         {
-            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
-            this.donorInspectionRepository = donorInspectionRepository;
-            this.donorImportRepository = donorImportRepository;
             this.logger = logger;
-            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
+            this.donorImportRepository = donorImportRepository;
+            this.donorInspectionRepository = donorInspectionRepository;
+            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.pGroupRepository = pGroupRepository;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task UpdateDonorHla()
@@ -82,6 +82,10 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
             {
                 logger.SendEvent(new HlaRefreshFailureEventModel(e));
                 throw;
+            }
+            finally
+            {
+                await PerformTearDown();
             }
         }
 
@@ -116,6 +120,13 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
             // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
             var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
             pGroupRepository.InsertPGroups(pGroups);
+
+            await donorImportRepository.FullHlaRefreshSetUp();
+        }
+
+        private async Task PerformTearDown()
+        {
+            await donorImportRepository.FullHlaRefreshTearDown();
         }
 
         private async Task<InputDonorWithExpandedHla> FetchDonorHlaData(DonorResult donor)
