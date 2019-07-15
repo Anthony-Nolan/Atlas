@@ -99,7 +99,7 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
         - Note that the data project maintains two databases, referred to as "A" and "B". EF core will use the app setting 
         for database "A" by default, defined in `ContextFactory.cs`. To locally test the hot-swapping feature, migrations will need to be
         run manually against both databases, A and B. In many cases just picking a database and always using one will be ok for 
-        local development, as the swap will only occur when the hla refresh job is run. 
+        local development, as the swap will only occur when the data refresh job is run. 
     - After changing any data models, a migration must be created with `dotnet ef migrations add -p <projectName>` (or `Add-Migration <migration-name>` in nuget package manager), then run as above
       - **Important Note Regarding Migrations:** The `MatchingHlaAt<Locus>` tables are so large that the entity framework 
       migration runner has been known to struggle to cope with large migrations of existing data. 
@@ -117,9 +117,9 @@ deployed development instances of these service - locally the api keys for these
 
 The service has three pre-processing stages that will need to be run locally before it will be possible to run a search.
 
-Note that steps 2 and 3 are only independent when running a "full" donor import - i.e. importing all donors into a fresh database, then 
-running an hla refresh. This full import will only happen when the algorithm is first deployed, and from then on every three months when the underlying
-WMDA provided HLA information changes. The continuous donor import for new/updated donor information will import the donor and update HLA in the same step.
+Note that steps 2 and 3 are only independent when running a "full" data refresh - i.e. importing all donors into a fresh database, then 
+processing hla. This full refresh will only happen when the algorithm is first deployed, and from then on every three months when the underlying
+WMDA provided HLA information changes. The continuous donor import for new/updated donor information will import the donor and process HLA in the same step.
 
 ### (1) Matching Dictionary
 
@@ -137,16 +137,16 @@ The pre-processing job fetches up to date information from WMDA, and populates t
 The donors against which we run searches are imported from Anthony Nolan's `Solar` Oracle database, via the `DonorService`.
 We only store as much information as is needed for a search - ID, Registry, Donor Type, and HLA information.
 
-- Start the job by POST-ing to the `/trigger-donor-import` endpoint
+- Start the job by triggering the `RunDonorImport` function
 - The job is expected to take several hours to run
 - The job will only be re-run in full when WMDA data is updated (every 3 months). 
     - A smaller donor import of only new/changed donors should be configured to run overnight (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
-### (3) Hla Refresh
+### (3) Hla Processing
 
 For each donor, we expand all hla into corresponding p-groups, and store a relation in the appropriate `<MatchingHlaAt<Locus>` table
 
-- Start the job by POST-ing to the `/trigger-donor-hla-update` endpoint
+- Start the job by triggering the `ProcessDonorHla` function
 - The job is expected to take multiple hours to run
 - The job will only be re-run in full when WMDA data is updated (every 3 months). 
     - New/changed donors should have these relations (re-)calculated as they change (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
@@ -196,7 +196,7 @@ This involves running SQL queries against the MatchingHlaAtX tables, per locus.
 Any donors with at least one match (shared p-group) at the given locus are returned.
 
 - N.B. As untyped loci are considered potential matches, running this level of matching against the C and DQB1 tables (where many donors are untyped) will result 
-in a large numebr of results. It is not recommended to match on these loci in the database for this reason.
+in a large number of results. It is not recommended to match on these loci in the database for this reason.
 
 These results will be filtered, such that only donors matching the mismatch criteria of all database-matched loci, plus the total mismatch criteria, are returned
 

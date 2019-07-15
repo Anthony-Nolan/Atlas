@@ -2,8 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Services;
-using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.Donors;
 
 namespace Nova.SearchAlgorithm.Api.Controllers
 {

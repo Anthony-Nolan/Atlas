@@ -9,9 +9,12 @@ using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
+namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
-    public interface IDonorImportService
+    /// <summary>
+    /// Responsible for fetching all eligible donors for the search algorithm
+    /// </summary>
+    public interface IDonorImporter
     {
         /// <summary>
         /// Fetches all donors with a higher id than the highest existing donor, and stores their data in the donor table
@@ -20,7 +23,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         Task StartDonorImport();
     }
 
-    public class DonorImportService : IDonorImportService
+    public class DonorImporter : IDonorImporter
     {
         private const int DonorPageSize = 100;
 
@@ -29,7 +32,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
-        public DonorImportService(
+        public DonorImporter(
             IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             IDonorServiceClient donorServiceClient,

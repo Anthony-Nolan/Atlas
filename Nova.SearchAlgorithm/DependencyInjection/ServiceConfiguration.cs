@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.Http;
@@ -26,11 +25,10 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
-using Nova.SearchAlgorithm.Services.DonorImport;
-using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
+using Nova.SearchAlgorithm.Services.DataRefresh;
+using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Scoring;
@@ -75,11 +73,11 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IWmdaLatestVersionFetcher, WmdaLatestVersionFetcher>();
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
-            services.AddScoped<IDonorService, Services.DonorImport.DonorService>();
+            services.AddScoped<IDonorService, Services.Donors.DonorService>();
 
             services.AddScoped<ISearchService, SearchService>();
-            services.AddScoped<IDonorImportService, DonorImportService>();
-            services.AddScoped<IHlaUpdateService, HlaUpdateService>();
+            services.AddScoped<IDonorImporter, DonorImporter>();
+            services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services

@@ -12,9 +12,9 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
+namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
-    public interface IHlaUpdateService
+    public interface IHlaProcessor
     {
         /// <summary>
         /// For any donors with a higher id than the last updated donor, fetches p-groups for all donor's hla
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         Task UpdateDonorHla();
     }
 
-    public class HlaUpdateService : IHlaUpdateService
+    public class HlaProcessor : IHlaProcessor
     {
         private readonly ILogger logger;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
 
-        public HlaUpdateService(
+        public HlaProcessor(
             ILogger logger,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
