@@ -25,6 +25,76 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             this.connectionStringProvider = connectionStringProvider;
         }
 
+        public async Task FullHlaRefreshSetUp()
+        {
+            const string indexRemovalSql = @"
+DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtA;
+DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtB;
+DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtC;
+DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtDrb1;
+DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtDqb1;
+DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtA;
+DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtB;
+DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtC;
+DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtDrb1;
+DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtDqb1;
+";
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                await conn.ExecuteAsync(indexRemovalSql);
+            }
+        }
+
+        public async Task FullHlaRefreshTearDown()
+        {
+            const string indexAdditionSql = @"
+CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+ON MatchingHlaAtA (PGroup_Id, DonorId)
+INCLUDE (TypePosition)
+
+CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+ON MatchingHlaAtB (PGroup_Id, DonorId)
+INCLUDE (TypePosition)
+
+CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+ON MatchingHlaAtC (PGroup_Id, DonorId)
+INCLUDE (TypePosition)
+
+CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+ON MatchingHlaAtDrb1 (PGroup_Id, DonorId)
+INCLUDE (TypePosition)
+
+CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+ON MatchingHlaAtDqb1 (PGroup_Id, DonorId)
+INCLUDE (TypePosition)
+
+
+CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+ON MatchingHlaAtA (DonorId)
+INCLUDE (TypePosition, PGroup_Id)
+
+CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+ON MatchingHlaAtB (DonorId)
+INCLUDE (TypePosition, PGroup_Id)
+
+CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+ON MatchingHlaAtC (DonorId)
+INCLUDE (TypePosition, PGroup_Id)
+
+CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+ON MatchingHlaAtDrb1 (DonorId)
+INCLUDE (TypePosition, PGroup_Id)
+
+CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+ON MatchingHlaAtDqb1 (DonorId)
+INCLUDE (TypePosition, PGroup_Id)
+";
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                await conn.ExecuteAsync(indexAdditionSql);
+            }
+        }
+
         public async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
         {
             var rawInputDonors = donors.ToList();
