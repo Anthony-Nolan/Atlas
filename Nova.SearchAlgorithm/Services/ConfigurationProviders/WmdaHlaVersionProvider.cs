@@ -22,6 +22,7 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         private readonly WebClient webClient;
 
         private string latestHlaDatabaseVersion;
+        private string currentHlaDatabaseVersion;
 
         public WmdaHlaVersionProvider(IOptions<WmdaSettings> wmdaSettings, IDataRefreshHistoryRepository dataRefreshHistoryRepository)
         {
@@ -32,7 +33,7 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaDatabaseVersion()
         {
-            return dataRefreshHistoryRepository.GetActiveWmdaDataVersion();
+            return currentHlaDatabaseVersion ?? (currentHlaDatabaseVersion = dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
         }
 
         public string GetLatestHlaDatabaseVersion()

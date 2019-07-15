@@ -18,7 +18,7 @@
     "Client.HlaService.ApiKey": "override-this",
     "Client.HlaService.BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
     "MessagingServiceBus.ConnectionString": "override-this",
-    "MessagingServiceBus.SearchRequestsQueue": "search-algorithm-search-requests",
+    "MessagingServiceBus.SearchRequestsQueue": "search-algorithm-search-requests-local",
     "MessagingServiceBus.SearchResultsTopic": "search-algorithm-results-notifications",
     "Wmda.HlaDatabaseVersion": "3330",
     "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
