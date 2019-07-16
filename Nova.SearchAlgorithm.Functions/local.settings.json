@@ -17,6 +17,13 @@
     "Client.DonorService.BaseUrl": "https://dev-nova-app-donor-service.azurewebsites.net/",
     "Client.HlaService.ApiKey": "override-this",
     "Client.HlaService.BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
+    "DataRefresh.ActiveDatabaseSize": "S0",
+    "DataRefresh.DatabaseAName": "DEV-NOVA-DB-SEARCH-ALGORITHM",
+    "DataRefresh.DatabaseBName": "DEV-NOVA-DB-SEARCH-ALGORITHM-B",
+    "DataRefresh.DonorImportFunctionName": "local",
+    "DataRefresh.DonorFunctionsAppName": "DonorImport",
+    "DataRefresh.DormantDatabaseSize": "S3",
+    "DataRefresh.RefreshDatabaseSize": "S4",
     "MessagingServiceBus.ConnectionString": "override-this",
     "MessagingServiceBus.SearchRequestsQueue": "search-algorithm-search-requests-local",
     "MessagingServiceBus.SearchResultsTopic": "search-algorithm-results-notifications",
@@ -25,7 +32,7 @@
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
   "ConnectionStrings": {
-    "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithm;Integrated Security=True;MultipleActiveResultSets=True;",
+    "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithmA;Integrated Security=True;MultipleActiveResultSets=True;",
     "SqlB": "Data Source=(local);Initial Catalog=SearchAlgorithmB;Integrated Security=True;MultipleActiveResultSets=True;",
     "PersistentSql": "Data Source=(local);Initial Catalog=SearchAlgorithmPersistent;Integrated Security=True;MultipleActiveResultSets=True;"
   }

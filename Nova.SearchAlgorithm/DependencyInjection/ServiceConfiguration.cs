@@ -57,6 +57,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<AzureAuthenticationSettings>(configuration.GetSection("AzureManagement.Authentication"));
             services.Configure<AzureAppServiceManagementSettings>(configuration.GetSection("AzureManagement.AppService"));
             services.Configure<AzureDatabaseManagementSettings>(configuration.GetSection("AzureManagement.Database"));
+            services.Configure<DataRefreshSettings>(configuration.GetSection("DataRefresh"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
