@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Settings;
 
@@ -38,7 +39,10 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         public async Task RefreshData(TransientDatabase databaseToRefresh, string wmdaDatabaseVersion)
         {
             await azureFunctionManager.StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
-            await azureDatabaseManager.UpdateDatabaseSize(GetAzureDatabaseName(databaseToRefresh), settings.RefreshDatabaseSize);
+            await azureDatabaseManager.UpdateDatabaseSize(
+                GetAzureDatabaseName(databaseToRefresh),
+                settings.RefreshDatabaseSize.ToAzureDatabaseSize()
+            );
         }
 
         private string GetAzureDatabaseName(TransientDatabase transientDatabaseType)

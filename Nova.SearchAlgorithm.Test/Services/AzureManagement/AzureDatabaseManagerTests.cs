@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.Utility;
+using Nova.SearchAlgorithm.Settings;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -35,7 +37,11 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
                 }
             });
 
-            azureDatabaseManager = new AzureDatabaseManager(azureManagementClient, threadSleeper);
+            azureDatabaseManager = new AzureDatabaseManager(
+                azureManagementClient,
+                threadSleeper,
+                Substitute.For<IOptions<AzureDatabaseManagementSettings>>()
+            );
         }
 
         [Test]
