@@ -1,4 +1,6 @@
 using System;
+using LazyCache;
+using LazyCache.Providers;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
@@ -70,6 +72,9 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddSingleton<ILogger>(sp =>
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
+            services.AddTransient<IAppCache, CachingService>(sp =>
+                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+            );
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.Donors.DonorService>();
@@ -140,8 +145,10 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             // Persistent storage
             services.AddScoped(sp =>
-                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"])
-            );
+            {
+                var persistentConnectionString = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"];
+                return new ContextFactory().Create(persistentConnectionString);
+            });
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
 
@@ -149,7 +156,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 new TransientSqlConnectionStringProvider(
                     sp.GetService<IDataRefreshHistoryRepository>(),
                     sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"],
-                    sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"]
+                    sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"],
+                    sp.GetService<IAppCache>()
                 )
             );
         }

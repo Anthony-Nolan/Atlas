@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Net;
+using LazyCache;
 using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Settings;
@@ -18,34 +19,34 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     public class WmdaHlaVersionProvider : IWmdaHlaVersionProvider
     {
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
+        private readonly IAppCache cache;
         private readonly string wmdaBaseUrl;
         private readonly WebClient webClient;
 
-        private string latestHlaDatabaseVersion;
-        private string currentHlaDatabaseVersion;
-
-        public WmdaHlaVersionProvider(IOptions<WmdaSettings> wmdaSettings, IDataRefreshHistoryRepository dataRefreshHistoryRepository)
+        public WmdaHlaVersionProvider(
+            IOptions<WmdaSettings> wmdaSettings,
+            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
+            IAppCache cache)
         {
             wmdaBaseUrl = wmdaSettings.Value.WmdaFileUri;
             webClient = new WebClient();
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
+            this.cache = cache;
         }
 
         public string GetActiveHlaDatabaseVersion()
         {
-            return currentHlaDatabaseVersion ?? (currentHlaDatabaseVersion = dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
+            return cache.GetOrAdd("currentWmdaVersion", () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
         }
 
         public string GetLatestHlaDatabaseVersion()
         {
-            if (latestHlaDatabaseVersion == null)
+            return cache.GetOrAdd("latestWmdaVersion", () =>
             {
                 var versionReport = webClient.DownloadString($"{wmdaBaseUrl}Latest/version_report.txt");
                 var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("# version"));
-                latestHlaDatabaseVersion = string.Join("", versionLine.Split(' ').Last().Split('.'));
-            }
-
-            return latestHlaDatabaseVersion;
+                return string.Join("", versionLine.Split(' ').Last().Split('.'));
+            });
         }
     }
 }
