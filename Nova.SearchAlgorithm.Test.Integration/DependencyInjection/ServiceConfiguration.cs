@@ -4,15 +4,12 @@ using System.IO;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Nova.HLAService.Client;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
-using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.Utils.Models;
 using NSubstitute;
 

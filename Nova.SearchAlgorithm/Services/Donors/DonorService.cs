@@ -26,18 +26,18 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
     public class DonorService : IDonorService
     {
-        private readonly IDonorImportRepository donorImportRepository;
+        private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IMapper mapper;
 
         public DonorService(
-            IDonorImportRepository donorImportRepository,
+            IDonorUpdateRepository donorUpdateRepository,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IDonorInspectionRepository donorInspectionRepository,
             IMapper mapper)
         {
-            this.donorImportRepository = donorImportRepository;
+            this.donorUpdateRepository = donorUpdateRepository;
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.donorInspectionRepository = donorInspectionRepository;
             this.mapper = mapper;
@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     return CombineDonorAndExpandedHla(d, hla);
                 }
             ));
-            await donorImportRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
@@ -112,7 +112,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     return CombineDonorAndExpandedHla(d, hla);
                 }
             ));
-            await donorImportRepository.UpdateBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+            await donorUpdateRepository.UpdateBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }

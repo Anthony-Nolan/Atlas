@@ -166,10 +166,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void AddDonorsToRepository()
         {
-            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
             foreach (var donor in BuildInputDonors())
             {
-                Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
+                Task.Run(() => donorRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
 

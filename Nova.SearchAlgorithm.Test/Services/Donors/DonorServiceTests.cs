@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Services
     public class DonorServiceTests
     {
         private IDonorService donorService;
-        private IDonorImportRepository importRepository;
+        private IDonorUpdateRepository updateRepository;
         private IDonorInspectionRepository inspectionRepository;
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IMapper mapper;
@@ -25,11 +25,11 @@ namespace Nova.SearchAlgorithm.Test.Services
         [SetUp]
         public void SetUp()
         {
-            importRepository = Substitute.For<IDonorImportRepository>();
+            updateRepository = Substitute.For<IDonorUpdateRepository>();
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
             mapper = AutomapperConfig.CreateMapper();
-            donorService = new SearchAlgorithm.Services.Donors.DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
+            donorService = new SearchAlgorithm.Services.Donors.DonorService(updateRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Services
             };
             await donorService.CreateDonor(inputDonor);
 
-            await importRepository.Received()
+            await updateRepository.Received()
                 .InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
 
@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Services
 
             await donorService.UpdateDonor(inputDonor);
 
-            await importRepository.Received()
+            await updateRepository.Received()
                 .UpdateBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
     }

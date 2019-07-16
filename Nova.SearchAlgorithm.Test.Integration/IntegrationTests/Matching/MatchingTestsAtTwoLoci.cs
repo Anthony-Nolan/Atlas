@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
 
             cordDonorWithNoMatchAtEitherLocus = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(0)
@@ -141,7 +141,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             };
             foreach (var donor in allDonors)
             {
-                Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
+                Task.Run(() => donorRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
         

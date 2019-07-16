@@ -55,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var updateRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
 
             var defaultRequiredHla = new ExpandedHla {PGroups = matchingPGroups};
             donorWithFullHomozygousMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
@@ -130,7 +130,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             foreach (var donor in allDonors)
             {
-                Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
+                Task.Run(() => updateRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
         

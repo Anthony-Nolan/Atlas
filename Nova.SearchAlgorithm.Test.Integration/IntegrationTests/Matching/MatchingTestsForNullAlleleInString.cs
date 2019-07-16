@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
@@ -45,7 +44,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<string> originalHlaPhenotype;
         private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
-        private IDonorImportRepository donorImportRepository;
+        private IDonorUpdateRepository donorUpdateRepository;
         private IDonorMatchingService donorMatchingService;
 
         private PhenotypeInfo<ExpandedHla> patientWithNullAlleleInStringAndExpressingAllele;
@@ -60,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             originalHlaPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(LocusUnderTest, MatchingDonorType);
             expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
-            donorImportRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            donorUpdateRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
 
             BuildPatientPhenotypes();
         }
@@ -470,7 +469,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithMatchingHla(donorPhenotype)
                 .Build();
 
-            await donorImportRepository.InsertDonorWithExpandedHla(donor);
+            await donorUpdateRepository.InsertDonorWithExpandedHla(donor);
 
             return donor.DonorId;
         }

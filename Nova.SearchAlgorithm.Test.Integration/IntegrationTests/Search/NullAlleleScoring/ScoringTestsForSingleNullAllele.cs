@@ -170,7 +170,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
 
             return testDonor.DonorId;

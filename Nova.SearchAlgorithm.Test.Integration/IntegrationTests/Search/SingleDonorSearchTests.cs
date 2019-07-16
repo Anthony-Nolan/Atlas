@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public void ImportTestDonor()
         {
             var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
 
             donor = new InputDonorWithExpandedHla
             {

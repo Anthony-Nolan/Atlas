@@ -171,10 +171,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             return phenotype;
         }
 
-        private int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
+        private static int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
             var testDonor = BuildTestDonor(testDonorPhenotype);
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
             return testDonor.DonorId;
         }
