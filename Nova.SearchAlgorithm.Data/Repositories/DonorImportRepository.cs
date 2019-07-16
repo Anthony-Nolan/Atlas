@@ -11,11 +11,15 @@ using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Services;
+// ReSharper disable InconsistentNaming
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DonorImportRepository : IDonorImportRepository
     {
+        private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
+        private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
+        
         private readonly IPGroupRepository pGroupRepository;
         private readonly IConnectionStringProvider connectionStringProvider;
 
@@ -27,17 +31,17 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public async Task FullHlaRefreshSetUp()
         {
-            const string indexRemovalSql = @"
-DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtA;
-DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtB;
-DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtC;
-DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtDrb1;
-DROP INDEX IX_PGroup_Id_DonorId__TypePosition ON MatchingHlaAtDqb1;
-DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtA;
-DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtB;
-DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtC;
-DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtDrb1;
-DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtDqb1;
+            var indexRemovalSql = $@"
+DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtA;
+DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtB;
+DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtC;
+DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDrb1;
+DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDqb1;
+DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtA;
+DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtB;
+DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
+DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
+DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
 ";
             using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
@@ -47,45 +51,45 @@ DROP INDEX IX_DonorId__PGroup_Id_TypePosition ON MatchingHlaAtDqb1;
 
         public async Task FullHlaRefreshTearDown()
         {
-            const string indexAdditionSql = @"
-CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+            var indexAdditionSql = $@"
+CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
 ON MatchingHlaAtA (PGroup_Id, DonorId)
 INCLUDE (TypePosition)
 
-CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
 ON MatchingHlaAtB (PGroup_Id, DonorId)
 INCLUDE (TypePosition)
 
-CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
 ON MatchingHlaAtC (PGroup_Id, DonorId)
 INCLUDE (TypePosition)
 
-CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
 ON MatchingHlaAtDrb1 (PGroup_Id, DonorId)
 INCLUDE (TypePosition)
 
-CREATE INDEX IX_PGroup_Id_DonorId__TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
 ON MatchingHlaAtDqb1 (PGroup_Id, DonorId)
 INCLUDE (TypePosition)
 
 
-CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtA (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 
-CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtB (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 
-CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtC (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 
-CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtDrb1 (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 
-CREATE INDEX IX_DonorId__PGroup_Id_TypePosition
+CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtDqb1 (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 ";
