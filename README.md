@@ -115,7 +115,11 @@ deployed development instances of these service - locally the api keys for these
 
 ## Pre-Processing 
 
-The service has three pre-processing stages that will need to be run locally before it will be posisble to run a search.
+The service has three pre-processing stages that will need to be run locally before it will be possible to run a search.
+
+Note that steps 2 and 3 are only independent when running a "full" donor import - i.e. importing all donors into a fresh database, then 
+running an hla refresh. This full import will only happen when the algorithm is first deployed, and from then on every three months when the underlying
+WMDA provided HLA information changes. The continuous donor import for new/updated donor information will import the donor and update HLA in the same step.
 
 ### (1) Matching Dictionary
 
@@ -135,8 +139,8 @@ We only store as much information as is needed for a search - ID, Registry, Dono
 
 - Start the job by POST-ing to the `/trigger-donor-import` endpoint
 - The job is expected to take several hours to run
-- The job should never need re-running in full. 
-    - A smaller donor import of only new/changed donors should be configured to run overnight (at time of writing, 07/08/2018, this is yet to be implemented)
+- The job will only be re-run in full when WMDA data is updated (every 3 months). 
+    - A smaller donor import of only new/changed donors should be configured to run overnight (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
 ### (3) Hla Refresh
 
@@ -144,9 +148,8 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 
 - Start the job by POST-ing to the `/trigger-donor-hla-update` endpoint
 - The job is expected to take multiple hours to run
-- The job should never need re-running in full. 
-    - New/changed donors should have these relations (re-)calculated as part of the overnight donor import (at time of writing, 07/08/2018, this is yet to be implemented)
-    - When hla information from WMDA changes (every 3 months) a subset of this job will need re-running on affected donors (at time of writing, 07/08/2018, this is yet to be implemented)
+- The job will only be re-run in full when WMDA data is updated (every 3 months). 
+    - New/changed donors should have these relations (re-)calculated as they change (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
 ## Search
 
