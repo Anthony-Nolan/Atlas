@@ -14,28 +14,16 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     /// </summary>
     public abstract class TransientSqlConnectionStringProvider : IConnectionStringProvider
     {
-        private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        protected readonly ConnectionStrings connectionStrings;
-        private readonly IAppCache cache;
+        protected readonly IActiveDatabaseProvider ActiveDatabaseProvider;
 
-        protected TransientSqlConnectionStringProvider(
-            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            ConnectionStrings connectionStrings,
-            IAppCache cache)
+        protected readonly ConnectionStrings ConnectionStrings;
+
+        protected TransientSqlConnectionStringProvider(ConnectionStrings connectionStrings, IActiveDatabaseProvider activeDatabaseProvider)
         {
-            this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            this.connectionStrings = connectionStrings;
-            this.cache = cache;
+            ConnectionStrings = connectionStrings;
+            ActiveDatabaseProvider = activeDatabaseProvider;
         }
 
         public abstract string GetConnectionString();
-
-        protected TransientDatabase GetActiveDatabase()
-        {
-            // Caching this rather than fetching every time means that all queries within the lifetime of this class will access the same database,
-            // even if the refresh job finishes mid-request.
-            // As such it is especially important that this class be injected once per lifetime scope (i.e. singleton per http request)
-            return cache.GetOrAdd("database", () => dataRefreshHistoryRepository.GetActiveDatabase() ?? TransientDatabase.DatabaseA);
-        }
     }
 }

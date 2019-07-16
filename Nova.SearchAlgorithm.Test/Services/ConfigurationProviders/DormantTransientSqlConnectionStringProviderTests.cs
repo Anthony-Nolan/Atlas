@@ -1,9 +1,5 @@
 using FluentAssertions;
-using LazyCache;
-using LazyCache.Providers;
-using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
-using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Settings;
@@ -21,45 +17,34 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
             TransientB = "connection-B"
         };
 
-        private IDataRefreshHistoryRepository historyRepository;
+        private IActiveDatabaseProvider activeDatabaseProvider;
 
-        private IAppCache cache;
-
-        private IConnectionStringProvider dormantConnectionStringProvider;
+        private IConnectionStringProvider activeConnectionStringProvider;
         
         [SetUp]
         public void SetUp()
         {
-            historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
+            activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             
-            dormantConnectionStringProvider = new DormantTransientSqlConnectionStringProvider(historyRepository, connectionStrings, cache);
+            activeConnectionStringProvider = new DormantTransientSqlConnectionStringProvider(connectionStrings, activeDatabaseProvider);
         }
 
         [Test]
-        public void GetConnectionString_WhenNoHistoryFound_DefaultsToDatabaseB()
+        public void GetConnectionString_WhenDatabaseAActive_ReturnsDatabaseB()
         {
-            var connectionString = dormantConnectionStringProvider.GetConnectionString();
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            
+            var connectionString = activeConnectionStringProvider.GetConnectionString();
 
             connectionString.Should().Be(connectionStrings.TransientB);
         }
 
         [Test]
-        public void GetConnectionString_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseB()
+        public void GetConnectionString_WhenDatabaseBActive_ReturnsDatabaseA()
         {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
             
-            var connectionString = dormantConnectionStringProvider.GetConnectionString();
-
-            connectionString.Should().Be(connectionStrings.TransientB);
-        }
-
-        [Test]
-        public void GetConnectionString_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseA()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
-            
-            var connectionString = dormantConnectionStringProvider.GetConnectionString();
+            var connectionString = activeConnectionStringProvider.GetConnectionString();
 
             connectionString.Should().Be(connectionStrings.TransientA);
         }

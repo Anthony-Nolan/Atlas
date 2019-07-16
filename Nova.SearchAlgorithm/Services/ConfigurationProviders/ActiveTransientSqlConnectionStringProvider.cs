@@ -1,7 +1,5 @@
 using System;
-using LazyCache;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
-using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Settings;
 
 namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
@@ -13,22 +11,21 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     public class ActiveTransientSqlConnectionStringProvider : TransientSqlConnectionStringProvider
     {
         public ActiveTransientSqlConnectionStringProvider(
-            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             ConnectionStrings connectionStrings,
-            IAppCache cache) : base(dataRefreshHistoryRepository, connectionStrings, cache)
+            IActiveDatabaseProvider activeDatabaseProvider) : base(connectionStrings, activeDatabaseProvider)
         {
         }
 
         public override string GetConnectionString()
         {
-            var database = GetActiveDatabase();
+            var database = ActiveDatabaseProvider.GetActiveDatabase();
 
             switch (database)
             {
                 case TransientDatabase.DatabaseA:
-                    return connectionStrings.TransientA;
+                    return ConnectionStrings.TransientA;
                 case TransientDatabase.DatabaseB:
-                    return connectionStrings.TransientB;
+                    return ConnectionStrings.TransientB;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

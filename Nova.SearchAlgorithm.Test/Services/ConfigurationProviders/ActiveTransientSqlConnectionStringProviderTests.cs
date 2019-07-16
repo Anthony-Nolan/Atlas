@@ -1,9 +1,5 @@
 using FluentAssertions;
-using LazyCache;
-using LazyCache.Providers;
-using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
-using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Settings;
@@ -21,33 +17,22 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
             TransientB = "connection-B"
         };
 
-        private IDataRefreshHistoryRepository historyRepository;
-
-        private IAppCache cache;
+        private IActiveDatabaseProvider activeDatabaseProvider;
 
         private IConnectionStringProvider activeConnectionStringProvider;
         
         [SetUp]
         public void SetUp()
         {
-            historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
+            activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             
-            activeConnectionStringProvider = new ActiveTransientSqlConnectionStringProvider(historyRepository, connectionStrings, cache);
+            activeConnectionStringProvider = new ActiveTransientSqlConnectionStringProvider(connectionStrings, activeDatabaseProvider);
         }
 
         [Test]
-        public void GetConnectionString_WhenNoHistoryFound_DefaultsToDatabaseA()
+        public void GetConnectionString_WhenDatabaseAActive_ReturnsDatabaseA()
         {
-            var connectionString = activeConnectionStringProvider.GetConnectionString();
-
-            connectionString.Should().Be(connectionStrings.TransientA);
-        }
-
-        [Test]
-        public void GetConnectionString_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseA()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
             
             var connectionString = activeConnectionStringProvider.GetConnectionString();
 
@@ -55,9 +40,9 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         }
 
         [Test]
-        public void GetConnectionString_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseB()
+        public void GetConnectionString_WhenDatabaseBActive_ReturnsDatabaseB()
         {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
             
             var connectionString = activeConnectionStringProvider.GetConnectionString();
 
