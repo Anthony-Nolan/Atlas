@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
 //            await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
             await donorImporter.ImportDonors();
-            await hlaProcessor.UpdateDonorHla();
+            await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
 
             await AzureInfrastructureTearDown(databaseToRefresh);
         }

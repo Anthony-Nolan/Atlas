@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
@@ -10,12 +11,18 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
-        public DataRefresh(IDonorImporter donorImporter, IHlaProcessor hlaProcessor, IDataRefreshOrchestrator dataRefreshOrchestrator)
+        public DataRefresh(
+            IDonorImporter donorImporter,
+            IHlaProcessor hlaProcessor,
+            IDataRefreshOrchestrator dataRefreshOrchestrator,
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         [FunctionName("RunDataRefresh")]
@@ -33,7 +40,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         [FunctionName("ProcessDonorHla")]
         public async Task RunHlaRefresh([HttpTrigger] HttpRequest httpRequest)
         {
-            await hlaProcessor.UpdateDonorHla();
+            await hlaProcessor.UpdateDonorHla(wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
     }
 }

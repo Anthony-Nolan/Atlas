@@ -9,7 +9,6 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 
@@ -21,13 +20,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// For any donors with a higher id than the last updated donor, fetches p-groups for all donor's hla
         /// And stores the pre-processed p-groups for use in matching
         /// </summary>
-        Task UpdateDonorHla();
+        Task UpdateDonorHla(string hlaDatabaseVersion);
     }
 
     public class HlaProcessor : IHlaProcessor
     {
         private readonly ILogger logger;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
@@ -38,7 +36,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         public HlaProcessor(
             ILogger logger,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
             IDonorImportRepository donorImportRepository,
@@ -48,7 +45,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IPGroupRepository pGroupRepository)
         {
             this.logger = logger;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
             this.donorImportRepository = donorImportRepository;
@@ -58,11 +54,11 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.pGroupRepository = pGroupRepository;
         }
 
-        public async Task UpdateDonorHla()
+        public async Task UpdateDonorHla(string hlaDatabaseVersion)
         {
             try
             {
-                await PerformUpfrontSetup();
+                await PerformUpfrontSetup(hlaDatabaseVersion);
             }
             catch (Exception e)
             {
@@ -75,8 +71,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate();
                 while (batchedQuery.HasMoreResults)
                 {
-                    var donorBatch = await batchedQuery.RequestNextAsync();
-                    await UpdateDonorBatch(donorBatch.ToList());
+                    var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
+                    await UpdateDonorBatch(donorBatch, hlaDatabaseVersion);
                 }
             }
             catch (Exception e)
@@ -90,12 +86,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch)
+        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch, string hlaDatabaseVersion)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var donorHlaData = await Task.WhenAll(donorBatch.Select(FetchDonorHlaData));
+            var donorHlaData = await Task.WhenAll(donorBatch.Select(d => FetchDonorHlaData(d, hlaDatabaseVersion)));
             var inputDonors = donorHlaData.Where(x => x != null).ToList();
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(inputDonors);
 
@@ -107,11 +103,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             });
         }
 
-        private async Task PerformUpfrontSetup()
+        private async Task PerformUpfrontSetup(string hlaDatabaseVersion)
         {
-            // TODO: THIS IS NOT GOOD FOR THE DATA REFRESH!
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
-            
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
             await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
@@ -131,11 +124,11 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             await donorImportRepository.FullHlaRefreshTearDown();
         }
 
-        private async Task<InputDonorWithExpandedHla> FetchDonorHlaData(DonorResult donor)
+        private async Task<InputDonorWithExpandedHla> FetchDonorHlaData(DonorResult donor, string hlaDatabaseVersion)
         {
             try
             {
-                var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames);
+                var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames, hlaDatabaseVersion);
 
                 return new InputDonorWithExpandedHla
                 {

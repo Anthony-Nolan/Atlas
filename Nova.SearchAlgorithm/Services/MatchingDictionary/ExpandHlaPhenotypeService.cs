@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
 {
     public interface IExpandHlaPhenotypeService
     {
-        Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype);
+        Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype, string hlaDatabaseVersion = null);
     }
 
     /// <inheritdoc />
@@ -24,27 +24,29 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
-        public async Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype)
+        public async Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype, string hlaDatabaseVersion)
         {
-            return await hlaPhenotype.WhenAllLoci(GetExpandedHla);
+            if (hlaDatabaseVersion == null)
+            {
+                hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
+            }
+
+            return await hlaPhenotype.WhenAllLoci((l, h1, h2) => GetExpandedHla(l, h1, h2, hlaDatabaseVersion));
         }
 
-        private async Task<Tuple<ExpandedHla, ExpandedHla>> GetExpandedHla(
-            Locus locus,
-            string hla1,
-            string hla2)
+        private async Task<Tuple<ExpandedHla, ExpandedHla>> GetExpandedHla(Locus locus, string hla1, string hla2, string hlaDatabaseVersion)
         {
             if (hla1 == null || hla2 == null)
             {
                 return new Tuple<ExpandedHla, ExpandedHla>(null, null);
             }
 
-            var result = await locusHlaLookupService
+            var (item1, item2) = await locusHlaLookupService
                 .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2), wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
 
             return new Tuple<ExpandedHla, ExpandedHla>(
-                result.Item1.ToExpandedHla(hla1), 
-                result.Item2.ToExpandedHla(hla2));
+                item1.ToExpandedHla(hla1),
+                item2.ToExpandedHla(hla2));
         }
     }
 }
