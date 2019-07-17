@@ -1,26 +1,24 @@
-﻿using Dapper;
+﻿using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
+using Dapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Helpers;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Config;
-using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Services;
+
 // ReSharper disable InconsistentNaming
 
-namespace Nova.SearchAlgorithm.Data.Repositories
+namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorImportRepository : DonorUpdateRepositoryBase, IDonorImportRepository
     {
         private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
-        
-        public DonorImportRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository, connectionStringProvider)
+
+        public DonorImportRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository,
+            connectionStringProvider)
         {
         }
 
@@ -91,6 +89,23 @@ INCLUDE (TypePosition, PGroup_Id)
             using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(indexAdditionSql);
+            }
+        }
+
+        public async Task RemoveAllDonorInformation()
+        {
+            const string dropAllDonorInfoSql = @"
+TRUNCATE TABLE [Donors]
+TRUNCATE TABLE [MatchingHlaAtA]
+TRUNCATE TABLE [MatchingHlaAtB]
+TRUNCATE TABLE [MatchingHlaAtC]
+TRUNCATE TABLE [MatchingHlaAtDrb1]
+TRUNCATE TABLE [MatchingHlaAtDqb1]
+";
+
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                await conn.ExecuteAsync(dropAllDonorInfoSql);
             }
         }
 

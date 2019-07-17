@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
@@ -20,35 +21,35 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// Fetches all donors with a higher id than the highest existing donor, and stores their data in the donor table
         /// Does not perform analysis of donor p-groups
         /// </summary>
-        Task StartDonorImport();
+        Task ImportDonors();
     }
 
     public class DonorImporter : IDonorImporter
     {
         private const int DonorPageSize = 100;
 
-        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IDataRefreshRepository repository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImporter(
-            IDonorInspectionRepository donorInspectionRepository,
+            IDataRefreshRepository repository,
             IDonorImportRepository donorImportRepository,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
-            this.donorInspectionRepository = donorInspectionRepository;
+            this.repository = repository;
             this.donorImportRepository = donorImportRepository;
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
         }
 
-        public async Task StartDonorImport()
+        public async Task ImportDonors()
         {
             try
             {
-                await ContinueDonorImport(await donorInspectionRepository.HighestDonorId());
+                await ContinueDonorImport(await repository.HighestDonorId());
             }
             catch (Exception ex)
             {
@@ -80,7 +81,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 stopwatch.Start();
 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-                nextId = page.LastId ?? (await donorInspectionRepository.HighestDonorId());
+                nextId = page.LastId ?? (await repository.HighestDonorId());
                 page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
             }
 

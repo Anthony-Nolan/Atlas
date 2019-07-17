@@ -4,6 +4,8 @@ using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;

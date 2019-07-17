@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
@@ -30,7 +31,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
-        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IDataRefreshRepository repository;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
@@ -41,7 +42,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
             IDonorImportRepository donorImportRepository,
-            IDonorInspectionRepository donorInspectionRepository,
+            IDataRefreshRepository repository,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IPGroupRepository pGroupRepository)
@@ -51,7 +52,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
             this.donorImportRepository = donorImportRepository;
-            this.donorInspectionRepository = donorInspectionRepository;
+            this.repository = repository;
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.pGroupRepository = pGroupRepository;
@@ -71,7 +72,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             try
             {
-                var batchedQuery = await donorInspectionRepository.DonorsAddedSinceLastHlaUpdate();
+                var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate();
                 while (batchedQuery.HasMoreResults)
                 {
                     var donorBatch = await batchedQuery.RequestNextAsync();
@@ -108,6 +109,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task PerformUpfrontSetup()
         {
+            // TODO: THIS IS NOT GOOD FOR THE DATA REFRESH!
             var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
             
             // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache

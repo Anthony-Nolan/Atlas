@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {

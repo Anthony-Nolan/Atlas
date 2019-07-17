@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Matching

@@ -1,8 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Settings;
 
@@ -26,22 +29,56 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IAzureDatabaseManager azureDatabaseManager;
 
+        private readonly IDonorImportRepository donorImportRepository;
+
+        private readonly IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
+        private readonly IDonorImporter donorImporter;
+        private readonly IHlaProcessor hlaProcessor;
+
         public DataRefreshService(
             IOptions<DataRefreshSettings> dataRefreshSettings,
             IAzureFunctionManager azureFunctionManager,
-            IAzureDatabaseManager azureDatabaseManager)
+            IAzureDatabaseManager azureDatabaseManager,
+            IDonorImportRepository donorImportRepository,
+            IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
+            IDonorImporter donorImporter,
+            IHlaProcessor hlaProcessor)
         {
             this.azureFunctionManager = azureFunctionManager;
             this.azureDatabaseManager = azureDatabaseManager;
+            this.donorImportRepository = donorImportRepository;
+            this.recreateMatchingDictionaryService = recreateMatchingDictionaryService;
+            this.donorImporter = donorImporter;
+            this.hlaProcessor = hlaProcessor;
             settings = dataRefreshSettings.Value;
         }
 
         public async Task RefreshData(TransientDatabase databaseToRefresh, string wmdaDatabaseVersion)
         {
-            await azureFunctionManager.StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
-            await azureDatabaseManager.UpdateDatabaseSize(
-                GetAzureDatabaseName(databaseToRefresh),
-                settings.RefreshDatabaseSize.ToAzureDatabaseSize()
+            await AzureInfrastructureSetUp(databaseToRefresh);
+            await donorImportRepository.RemoveAllDonorInformation();
+
+//            await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
+            await donorImporter.ImportDonors();
+            await hlaProcessor.UpdateDonorHla();
+
+            await AzureInfrastructureTearDown(databaseToRefresh);
+        }
+
+        private async Task AzureInfrastructureSetUp(TransientDatabase refreshDatabase)
+        {
+            await Task.WhenAll(
+                azureFunctionManager.StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName),
+                azureDatabaseManager.UpdateDatabaseSize(GetAzureDatabaseName(refreshDatabase), settings.RefreshDatabaseSize.ToAzureDatabaseSize())
+            );
+        }
+
+        private async Task AzureInfrastructureTearDown(TransientDatabase refreshDatabase)
+        {
+            await Task.WhenAll(
+                azureDatabaseManager.UpdateDatabaseSize(GetAzureDatabaseName(refreshDatabase), settings.ActiveDatabaseSize.ToAzureDatabaseSize()),
+                azureDatabaseManager.UpdateDatabaseSize(GetOtherDatabaseName(refreshDatabase), settings.DormantDatabaseSize.ToAzureDatabaseSize()),
+                azureFunctionManager.StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName)
             );
         }
 
@@ -55,6 +92,19 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                     return settings.DatabaseBName;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transientDatabaseType), transientDatabaseType, null);
+            }
+        }
+
+        private string GetOtherDatabaseName(TransientDatabase databaseToRefresh)
+        {
+            switch (databaseToRefresh)
+            {
+                case TransientDatabase.DatabaseA:
+                    return settings.DatabaseBName;
+                case TransientDatabase.DatabaseB:
+                    return settings.DatabaseAName;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(databaseToRefresh), databaseToRefresh, null);
             }
         }
     }

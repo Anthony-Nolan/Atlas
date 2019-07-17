@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
 {
     /// <summary>
     /// Responsible for one-off, full donor imports
@@ -21,6 +21,12 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         /// e.g. Re-adding indexes in a SQL implementation
         /// </summary>
         Task FullHlaRefreshTearDown();
+
+        /// <summary>
+        /// Removes all donors, and all p-group data
+        /// </summary>
+        /// <returns></returns>
+        Task RemoveAllDonorInformation();
 
         /// <summary>
         /// Insert a batch of donors into the database.

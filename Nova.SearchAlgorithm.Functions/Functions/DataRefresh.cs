@@ -27,7 +27,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         [FunctionName("RunDonorImport")]
         public async Task RunDonorImport([HttpTrigger] HttpRequest httpRequest)
         {
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
         }
 
         [FunctionName("ProcessDonorHla")]

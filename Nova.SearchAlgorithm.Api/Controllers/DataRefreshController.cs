@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Api.Controllers
         [Route("trigger-donor-import")]
         public async Task TriggerImport()
         {
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
         }
         
         [HttpPost]

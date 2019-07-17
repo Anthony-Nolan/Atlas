@@ -1,18 +1,18 @@
-﻿using Dapper;
-using Nova.SearchAlgorithm.Common.Config;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.Matching;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Entity;
-using Nova.SearchAlgorithm.Data.Helpers;
-using Nova.SearchAlgorithm.Data.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
+using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.Matching;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Helpers;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Services;
 
-namespace Nova.SearchAlgorithm.Data.Repositories
+namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {
     public class DonorInspectionRepository : IDonorInspectionRepository
     {
@@ -20,28 +20,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         public DonorInspectionRepository(IConnectionStringProvider connectionStringProvider)
         {
             this.connectionStringProvider = connectionStringProvider;
-        }
-        
-        public async Task<int> HighestDonorId()
-        {
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
-            {
-                return (await conn.QueryAsync<int>("SELECT TOP (1) DonorId FROM Donors ORDER BY DonorId DESC")).SingleOrDefault();
-            }
-        }
-
-        public async Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate()
-        {
-            var highestDonorId = await GetHighestDonorIdForWhichHlaHasBeenProcessed();
-            
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
-            {
-                var donors = conn.Query<Donor>($@"
-SELECT * FROM Donors d
-WHERE DonorId > {highestDonorId}
-");
-                return new SqlDonorBatchQueryAsync(donors);
-            }
         }
 
         public async Task<DonorResult> GetDonor(int donorId)
@@ -119,18 +97,6 @@ ON DonorId = DonorIds.Id
 ";
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
                 return donors.Select(d => d.ToDonorResult());
-            }
-        }
-
-        private async Task<int> GetHighestDonorIdForWhichHlaHasBeenProcessed()
-        {
-            using (var connection = new SqlConnection(connectionStringProvider.GetConnectionString()))
-            {
-                // A, B, and DRB1 should have entries for all donors, so we query the smallest of the three
-                return await connection.QuerySingleOrDefaultAsync<int>(@"
-SELECT TOP(1) DonorId FROM MatchingHlaAtDrb1 m
-ORDER BY m.DonorId DESC
-", 0);
             }
         }
     }

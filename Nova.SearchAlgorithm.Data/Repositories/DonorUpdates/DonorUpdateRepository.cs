@@ -1,19 +1,20 @@
-﻿using Dapper;
-using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Helpers;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Services;
+
 // ReSharper disable InconsistentNaming
 
-namespace Nova.SearchAlgorithm.Data.Repositories
+namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {

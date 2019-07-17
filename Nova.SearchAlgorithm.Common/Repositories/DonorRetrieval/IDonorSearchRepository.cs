@@ -4,8 +4,11 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Repositories.Donors;
 
-namespace Nova.SearchAlgorithm.Common.Repositories
+namespace Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval
 {
+    /// <summary>
+    /// Fetches filtered donors, based on a set of matching criteria
+    /// </summary>
     public interface IDonorSearchRepository
     {
         /// <summary>
