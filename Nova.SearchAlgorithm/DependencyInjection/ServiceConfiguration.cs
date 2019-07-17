@@ -68,6 +68,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
 
+            services.AddScoped<IWmdaLatestVersionFetcher, WmdaLatestVersionFetcher>();
+
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.DonorImport.DonorService>();
 
