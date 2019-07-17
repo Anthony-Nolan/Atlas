@@ -29,7 +29,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
         private IAzureFunctionManager azureFunctionManager;
         private IAzureDatabaseManager azureDatabaseManager;
-        private IAzureDatabaseNameProvider azureDatabaseNameProvider;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
 
@@ -44,7 +43,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
-            azureDatabaseNameProvider = Substitute.For<IAzureDatabaseNameProvider>();
 
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
@@ -59,7 +57,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 dataRefreshHistoryRepository,
                 azureFunctionManager,
                 azureDatabaseManager,
-                azureDatabaseNameProvider
+                new AzureDatabaseNameProvider(settingsOptions)
             );
         }
 

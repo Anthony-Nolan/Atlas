@@ -23,7 +23,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
         private IOptions<DataRefreshSettings> settingsOptions;
         private IActiveDatabaseProvider activeDatabaseProvider;
-        private IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private IAzureDatabaseManager azureDatabaseManager;
         private IDonorImportRepository donorImportRepository;
         private IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
@@ -37,7 +36,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
-            azureDatabaseNameProvider = Substitute.For<IAzureDatabaseNameProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             recreateMatchingDictionaryService = Substitute.For<IRecreateHlaLookupResultsService>();
@@ -49,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             dataRefreshService = new DataRefreshService(
                 settingsOptions,
                 activeDatabaseProvider,
-                azureDatabaseNameProvider,
+                new AzureDatabaseNameProvider(settingsOptions),
                 azureDatabaseManager,
                 donorImportRepository,
                 recreateMatchingDictionaryService,
@@ -57,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 hlaProcessor
             );
         }
-        
+
         [Test]
         public async Task RefreshData_ScalesDormantDatabase()
         {
@@ -139,8 +137,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_RunsAzureSetUp_BeforeRefresh()
         {
             var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
                 .With(s => s.RefreshDatabaseSize, "P15")
                 .Build();
             settingsOptions.Value.Returns(settings);
@@ -158,10 +154,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_RunsAzureTearDown_AfterRefresh()
         {
             var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
                 .With(s => s.ActiveDatabaseSize, "S4")
-                .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
             settingsOptions.Value.Returns(settings);
 
@@ -178,10 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_RunsAzureDatabaseSetUp_BeforeTearDown()
         {
             var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
                 .With(s => s.ActiveDatabaseSize, "S4")
-                .With(s => s.DormantDatabaseSize, "S0")
                 .With(s => s.RefreshDatabaseSize, "P15")
                 .Build();
             settingsOptions.Value.Returns(settings);
@@ -199,8 +189,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_WhenMatchingDictionaryRecreationFails_ScalesRefreshDatabaseToDormantSize()
         {
             var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
@@ -208,9 +196,56 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             recreateMatchingDictionaryService.RecreateAllHlaLookupResults(Arg.Any<string>()).Throws(new Exception());
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
-            
-            await azureDatabaseManager.UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            try
+            {
+                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            }
+            catch (Exception)
+            {
+                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            }
+        }
+
+        [Test]
+        public async Task RefreshData_WhenDonorImportFails_ScalesRefreshDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
+            donorImporter.ImportDonors().Throws(new Exception());
+
+            try
+            {
+                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            }
+            catch (Exception)
+            {
+                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            }
+        }
+
+        [Test]
+        public async Task RefreshData_WhenHlaProcessingFails_ScalesRefreshDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
+            hlaProcessor.UpdateDonorHla(Arg.Any<string>()).Throws(new Exception());
+
+            try
+            {
+                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            }
+            catch (Exception)
+            {
+                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            }
         }
     }
 }

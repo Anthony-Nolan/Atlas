@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Settings;
@@ -59,14 +60,20 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         public async Task RefreshData(string wmdaDatabaseVersion)
         {
-            await ScaleUpDatabase();
-            await donorImportRepository.RemoveAllDonorInformation();
-
-            await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
-            await donorImporter.ImportDonors();
-            await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
-
-            await ScaleDownDatabase();
+            try
+            {
+                await ScaleUpDatabase();
+                await donorImportRepository.RemoveAllDonorInformation();
+                await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
+                await donorImporter.ImportDonors();
+                await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
+                await ScaleDownDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
+            }
+            catch (Exception)
+            {
+                await ScaleDownDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
+                throw;
+            }
         }
 
         private async Task ScaleUpDatabase()
@@ -76,11 +83,10 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.RefreshDatabaseSize.ToAzureDatabaseSize());
         }
 
-        private async Task ScaleDownDatabase()
+        private async Task ScaleDownDatabase(AzureDatabaseSize targetSize)
         {
-            var settings = settingsOptions.Value;
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.ActiveDatabaseSize.ToAzureDatabaseSize());
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
         }
     }
 }
