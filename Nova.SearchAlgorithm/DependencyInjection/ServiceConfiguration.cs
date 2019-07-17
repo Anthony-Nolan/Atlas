@@ -91,6 +91,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IConnectionStringProvider, ActiveTransientSqlConnectionStringProvider>();
             services.AddScoped<DormantTransientSqlConnectionStringProvider>();
             services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
+            services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.Donors.DonorService>();

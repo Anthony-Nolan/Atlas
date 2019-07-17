@@ -15,10 +15,11 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     {
         /// <summary>
         /// Performs all pre-processing required for running of the search algorithm:
+        /// - Scales up target database 
         /// - Recreates Matching Dictionary
         /// - Imports all donors
         /// - Processes HLA for imported donors
-        /// Also coordinates infrastructure changes necessary for the performant running of the data refresh
+        /// - Scales down target database
         /// </summary>
         Task RefreshData(string wmdaDatabaseVersion);
     }
@@ -27,7 +28,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     {
         private readonly IOptions<DataRefreshSettings> settingsOptions;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
-        private readonly IAzureFunctionManager azureFunctionManager;
+        private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
 
         private readonly IDonorImportRepository donorImportRepository;
@@ -39,7 +40,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         public DataRefreshService(
             IOptions<DataRefreshSettings> dataRefreshSettingsOptions,
             IActiveDatabaseProvider activeDatabaseProvider,
-            IAzureFunctionManager azureFunctionManager,
+            IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IAzureDatabaseManager azureDatabaseManager,
             IDonorImportRepository donorImportRepository,
             IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
@@ -47,7 +48,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IHlaProcessor hlaProcessor)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
-            this.azureFunctionManager = azureFunctionManager;
+            this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
             this.donorImportRepository = donorImportRepository;
             this.recreateMatchingDictionaryService = recreateMatchingDictionaryService;
@@ -58,53 +59,28 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         public async Task RefreshData(string wmdaDatabaseVersion)
         {
-            await AzureInfrastructureSetUp();
+            await ScaleUpDatabase();
             await donorImportRepository.RemoveAllDonorInformation();
 
             await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
             await donorImporter.ImportDonors();
             await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
 
-            await AzureInfrastructureTearDown();
+            await ScaleDownDatabase();
         }
 
-        private async Task AzureInfrastructureSetUp()
+        private async Task ScaleUpDatabase()
         {
             var settings = settingsOptions.Value;
-            var databaseName = GetAzureDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-
-            await Task.WhenAll(
-                azureFunctionManager.StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName),
-                azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.RefreshDatabaseSize.ToAzureDatabaseSize())
-            );
+            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.RefreshDatabaseSize.ToAzureDatabaseSize());
         }
 
-        private async Task AzureInfrastructureTearDown()
+        private async Task ScaleDownDatabase()
         {
             var settings = settingsOptions.Value;
-            var refreshDatabaseName = GetAzureDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            var otherDatabaseName = GetAzureDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-
-            await Task.WhenAll(
-                azureDatabaseManager.UpdateDatabaseSize(refreshDatabaseName, settings.ActiveDatabaseSize.ToAzureDatabaseSize()),
-                azureDatabaseManager.UpdateDatabaseSize(otherDatabaseName, settings.DormantDatabaseSize.ToAzureDatabaseSize()),
-                azureFunctionManager.StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName)
-            );
-        }
-
-        private string GetAzureDatabaseName(TransientDatabase transientDatabaseType)
-        {
-            var settings = settingsOptions.Value;
-
-            switch (transientDatabaseType)
-            {
-                case TransientDatabase.DatabaseA:
-                    return settings.DatabaseAName;
-                case TransientDatabase.DatabaseB:
-                    return settings.DatabaseBName;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(transientDatabaseType), transientDatabaseType, null);
-            }
+            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.ActiveDatabaseSize.ToAzureDatabaseSize());
         }
     }
 }

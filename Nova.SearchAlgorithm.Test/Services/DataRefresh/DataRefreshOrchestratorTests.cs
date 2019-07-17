@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
+using Nova.SearchAlgorithm.Models.AzureManagement;
+using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
+using Nova.SearchAlgorithm.Settings;
+using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
 using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -16,10 +21,15 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
     public class DataRefreshOrchestratorTests
     {
         private ILogger logger;
+        private IOptions<DataRefreshSettings> settingsOptions;
         private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshService dataRefreshService;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
+
+        private IAzureFunctionManager azureFunctionManager;
+        private IAzureDatabaseManager azureDatabaseManager;
+        private IAzureDatabaseNameProvider azureDatabaseNameProvider;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
 
@@ -27,20 +37,29 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public void SetUp()
         {
             logger = Substitute.For<ILogger>();
+            settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshService = Substitute.For<IDataRefreshService>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
+            azureFunctionManager = Substitute.For<IAzureFunctionManager>();
+            azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
+            azureDatabaseNameProvider = Substitute.For<IAzureDatabaseNameProvider>();
 
+            settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
             wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("new");
 
             dataRefreshOrchestrator = new DataRefreshOrchestrator(
                 logger,
+                settingsOptions,
                 wmdaHlaVersionProvider,
                 activeDatabaseProvider,
                 dataRefreshService,
-                dataRefreshHistoryRepository
+                dataRefreshHistoryRepository,
+                azureFunctionManager,
+                azureDatabaseManager,
+                azureDatabaseNameProvider
             );
         }
 
@@ -194,6 +213,49 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), false);
+        }
+        
+        [Test]
+        public async Task RefreshData_StopsDonorImportFunction()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DonorFunctionsAppName, "functions-app")
+                .With(s => s.DonorImportFunctionName, "import-func")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureFunctionManager.Received().StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+        }
+
+        [Test]
+        public async Task RefreshData_RestartsDonorImportFunction()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DonorFunctionsAppName, "functions-app")
+                .With(s => s.DonorImportFunctionName, "import-func")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+        }
+        
+        [Test]
+        public async Task RefreshData_ScalesActiveDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureDatabaseManager.UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
     }
 }
