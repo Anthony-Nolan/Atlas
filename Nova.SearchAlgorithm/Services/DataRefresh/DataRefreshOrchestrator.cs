@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         public async Task RefreshDataIfNecessary()
         {
-            if (ShouldRunDataRefresh())
+            if (HasNewWmdaDataBeenPublished() && !IsRefreshInProgress())
             {
                 await RunDataRefresh();
             }
@@ -106,18 +106,13 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             var settings = settingsOptions.Value;
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.RefreshDatabaseSize.ToAzureDatabaseSize());
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.DormantDatabaseSize.ToAzureDatabaseSize());
         }
 
         private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess)
         {
             await dataRefreshHistoryRepository.UpdateFinishTime(recordId, DateTime.UtcNow);
             await dataRefreshHistoryRepository.UpdateSuccessFlag(recordId, wasSuccess);
-        }
-
-        private bool ShouldRunDataRefresh()
-        {
-            return HasNewWmdaDataBeenPublished() && !IsRefreshInProgress();
         }
 
         private bool HasNewWmdaDataBeenPublished()

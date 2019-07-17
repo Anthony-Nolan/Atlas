@@ -253,7 +253,38 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await azureDatabaseManager.UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+        }
+        
+        [Test]
+        public async Task RefreshData_WhenRefreshFails_DoesNotScaleActiveDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception());
+            
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+        }
+        
+        [Test]
+        public async Task RefreshData_WhenRefreshFails_RestartsDonorImportFunction()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DonorFunctionsAppName, "functions-app")
+                .With(s => s.DonorImportFunctionName, "import-func")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception());
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
         }
     }
 }
