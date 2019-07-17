@@ -53,6 +53,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
             catch (Exception ex)
             {
+                logger.SendTrace($"Donor Import Failed: {ex.Message}", LogLevel.Error);
                 throw new DonorImportHttpException("Unable to complete donor import: " + ex.Message, ex);
             }
         }

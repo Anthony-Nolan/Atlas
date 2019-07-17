@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -10,6 +11,7 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
     public class AzureFunctionManagerTests
     {
         private IAzureAppServiceManagementClient azureManagementClient;
+        private ILogger logger;
 
         private IAzureFunctionManager azureFunctionManager;
 
@@ -17,8 +19,9 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
         public void SetUp()
         {
             azureManagementClient = Substitute.For<IAzureAppServiceManagementClient>();
+            logger = Substitute.For<ILogger>();
 
-            azureFunctionManager = new AzureFunctionManager(azureManagementClient);
+            azureFunctionManager = new AzureFunctionManager(azureManagementClient, logger);
         }
 
         [Test]

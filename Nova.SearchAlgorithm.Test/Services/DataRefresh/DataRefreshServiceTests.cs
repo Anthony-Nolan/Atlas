@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -30,6 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         private IHlaProcessor hlaProcessor;
 
         private IDataRefreshService dataRefreshService;
+        private ILogger logger;
 
         [SetUp]
         public void SetUp()
@@ -41,6 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             recreateMatchingDictionaryService = Substitute.For<IRecreateHlaLookupResultsService>();
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
+            logger = Substitute.For<ILogger>();
 
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
@@ -52,7 +55,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 donorImportRepository,
                 recreateMatchingDictionaryService,
                 donorImporter,
-                hlaProcessor
+                hlaProcessor,
+                logger
             );
         }
 

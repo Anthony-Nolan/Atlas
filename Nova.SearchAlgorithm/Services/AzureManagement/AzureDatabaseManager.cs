@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.AzureManagement
 {
@@ -23,15 +24,18 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
 
         private readonly IAzureDatabaseManagementClient databaseManagementClient;
         private readonly IThreadSleeper threadSleeper;
+        private readonly ILogger logger;
         private readonly bool isLocal;
 
         public AzureDatabaseManager(
             IAzureDatabaseManagementClient databaseManagementClient,
             IThreadSleeper threadSleeper,
-            IOptions<AzureDatabaseManagementSettings> settings)
+            IOptions<AzureDatabaseManagementSettings> settings,
+            ILogger logger)
         {
             this.databaseManagementClient = databaseManagementClient;
             this.threadSleeper = threadSleeper;
+            this.logger = logger;
             isLocal = settings.Value.ServerName == LocalServerName;
         }
 
@@ -39,16 +43,19 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
         {
             if (isLocal)
             {
+                logger.SendTrace("Running locally - will not update database", LogLevel.Trace);
                 // If running locally, we don't want to make changes to Azure infrastructure
                 return;
             }
             
+            logger.SendTrace($"Initialising scaling of database: {databaseName} to size: {databaseSize}", LogLevel.Info);
             var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize);
 
             DatabaseOperation databaseOperation;
 
             do
             {
+                logger.SendTrace($"Waiting for scaling to complete: {databaseName} to size: {databaseSize}", LogLevel.Info);
                 threadSleeper.Sleep(OperationPollTimeMilliseconds);
                 databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
             } while (databaseOperation.State == AzureDatabaseOperationState.InProgress ||
@@ -56,8 +63,11 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
 
             if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
             {
+                logger.SendTrace($"Error scaling {databaseName} to size: {databaseSize}. State: {databaseOperation.State}", LogLevel.Info);
                 throw new AzureManagementException();
             }
+            
+            logger.SendTrace($"Finished scaling {databaseName} to size: {databaseSize}", LogLevel.Info);
         }
 
         private async Task<DatabaseOperation> GetDatabaseOperation(string databaseName, DateTime operationStartTime)

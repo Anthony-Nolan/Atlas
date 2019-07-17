@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -25,31 +26,41 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IHlaMatchingDataConverter hlaMatchingDataConverter;
         private readonly IHlaScoringDataConverter hlaScoringDataConverter;
         private readonly IDpb1TceGroupsService dpb1TceGroupsService;
+        private readonly ILogger logger;
 
         public HlaLookupResultsService(
             IHlaMatchPreCalculationService matchPreCalculationService,
             IAlleleNamesService alleleNamesService,
             IHlaMatchingDataConverter hlaMatchingDataConverter,
             IHlaScoringDataConverter hlaScoringDataConverter,
-            IDpb1TceGroupsService dpb1TceGroupsService)
+            IDpb1TceGroupsService dpb1TceGroupsService,
+            ILogger logger)
         {
             this.matchPreCalculationService = matchPreCalculationService;
             this.alleleNamesService = alleleNamesService;
             this.hlaMatchingDataConverter = hlaMatchingDataConverter;
             this.hlaScoringDataConverter = hlaScoringDataConverter;
             this.dpb1TceGroupsService = dpb1TceGroupsService;
+            this.logger = logger;
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults(string hlaDatabaseVersion)
         {
             try
             {
+                logger.SendTrace("MatchingDictionary: Processing Allele Names", LogLevel.Info);
                 var alleleNameLookupResults = GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
-
+                
+                logger.SendTrace("MatchingDictionary: Processing Pre-calculated match hla", LogLevel.Info);
                 var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaDatabaseVersion).ToList();
+                
+                logger.SendTrace("MatchingDictionary: Processing Matching lookup", LogLevel.Info);
                 var matchingLookupResults = GetMatchingLookupResults(preCalculatedMatchedHla);
+
+                logger.SendTrace("MatchingDictionary: Processing Scoring lookup", LogLevel.Info);
                 var scoringLookupResults = GetScoringLookupResults(preCalculatedMatchedHla);
 
+                logger.SendTrace("MatchingDictionary: Processing TCE group lookup", LogLevel.Info);
                 var dpb1TceGroupLookupResults = GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
 
                 return new HlaLookupResultCollections

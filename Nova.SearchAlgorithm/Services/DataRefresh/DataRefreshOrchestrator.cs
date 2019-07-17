@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IWmdaHlaVersionProvider wmdaHlaVersionProvider,
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshService dataRefreshService,
-            IDataRefreshHistoryRepository dataRefreshHistoryRepository, 
+            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IAzureFunctionManager azureFunctionManager,
             IAzureDatabaseManager azureDatabaseManager,
             IAzureDatabaseNameProvider azureDatabaseNameProvider)
@@ -53,10 +53,19 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         public async Task RefreshDataIfNecessary()
         {
-            if (HasNewWmdaDataBeenPublished() && !IsRefreshInProgress())
+            if (!HasNewWmdaDataBeenPublished())
             {
-                await RunDataRefresh();
+                logger.SendTrace("No new WMDA Hla data has been published. Data refresh not started.", LogLevel.Info);
+                return;
             }
+
+            if (IsRefreshInProgress())
+            {
+                logger.SendTrace("Data refresh is already in progress. Data refresh not started.", LogLevel.Info);
+                return;
+            }
+
+            await RunDataRefresh();
         }
 
         private async Task RunDataRefresh()
@@ -89,24 +98,29 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await AzureFunctionsTearDown();
             }
         }
-        
+
         private async Task AzureFunctionsSetUp()
         {
-            var settings = settingsOptions.Value;
-            await azureFunctionManager.StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+            var donorFunctionsAppName = settingsOptions.Value.DonorFunctionsAppName;
+            var donorImportFunctionName = settingsOptions.Value.DonorImportFunctionName;
+            logger.SendTrace($"DATA REFRESH SET UP: Disabling donor import function with name: {donorImportFunctionName}", LogLevel.Info);
+            await azureFunctionManager.StopFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
         private async Task AzureFunctionsTearDown()
         {
-            var settings = settingsOptions.Value;
-            await azureFunctionManager.StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+            var donorFunctionsAppName = settingsOptions.Value.DonorFunctionsAppName;
+            var donorImportFunctionName = settingsOptions.Value.DonorImportFunctionName;
+            logger.SendTrace($"DATA REFRESH TEAR DOWN: Re-enabling donor import function with name: {donorImportFunctionName}", LogLevel.Info);
+            await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
-        
+
         private async Task ScaleDownPreviouslyActiveDatabase()
         {
-            var settings = settingsOptions.Value;
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.DormantDatabaseSize.ToAzureDatabaseSize());
+            var dormantSize = settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize();
+            logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}", LogLevel.Info);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);
         }
 
         private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess)
