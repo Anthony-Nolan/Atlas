@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         [Test]
         public void GetConnectionString_WhenDatabaseAActive_ReturnsDatabaseB()
         {
-            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseB);
             
             var connectionString = activeConnectionStringProvider.GetConnectionString();
 
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         [Test]
         public void GetConnectionString_WhenDatabaseBActive_ReturnsDatabaseA()
         {
-            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             
             var connectionString = activeConnectionStringProvider.GetConnectionString();
 

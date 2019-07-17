@@ -25,5 +25,18 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         }
 
         public abstract string GetConnectionString();
+
+        protected string GetConnectionString(TransientDatabase database)
+        {
+            switch (database)
+            {
+                case TransientDatabase.DatabaseA:
+                    return ConnectionStrings.TransientA;
+                case TransientDatabase.DatabaseB:
+                    return ConnectionStrings.TransientB;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 }

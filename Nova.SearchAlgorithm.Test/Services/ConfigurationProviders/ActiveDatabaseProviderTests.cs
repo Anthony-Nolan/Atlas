@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         }
 
         [Test]
-        public void GetConnectionString_WhenNoHistoryFound_DefaultsToDatabaseA()
+        public void GetActiveDatabase_WhenNoHistoryFound_DefaultsToDatabaseA()
         {
             var database = activeDatabaseProvider.GetActiveDatabase();
 
@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         }
 
         [Test]
-        public void GetConnectionString_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseA()
+        public void GetActiveDatabase_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseA()
         {
             historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         }
 
         [Test]
-        public void GetConnectionString_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseB()
+        public void GetActiveDatabase_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseB()
         {
             historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
 
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         }
 
         [Test]
-        public void GetConnectionString_CachesDatabaseValue()
+        public void GetActiveDatabase_CachesDatabaseValue()
         {
             historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA, TransientDatabase.DatabaseB);
 
@@ -69,6 +69,46 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
 
             database1.Should().Be(TransientDatabase.DatabaseA);
             database2.Should().Be(TransientDatabase.DatabaseA);
+        }
+
+        [Test]
+        public void GetDormantDatabase_WhenNoHistoryFound_DefaultsToDatabaseB()
+        {
+            var database = activeDatabaseProvider.GetDormantDatabase();
+
+            database.Should().Be(TransientDatabase.DatabaseB);
+        }
+
+        [Test]
+        public void GetDormantDatabase_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseB()
+        {
+            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+
+            var database = activeDatabaseProvider.GetDormantDatabase();
+
+            database.Should().Be(TransientDatabase.DatabaseB);
+        }
+
+        [Test]
+        public void GetDormantDatabase_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseA()
+        {
+            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+
+            var database = activeDatabaseProvider.GetDormantDatabase();
+
+            database.Should().Be(TransientDatabase.DatabaseA);
+        }
+
+        [Test]
+        public void GetDormantDatabase_CachesDatabaseValue()
+        {
+            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA, TransientDatabase.DatabaseB);
+
+            var database1 = activeDatabaseProvider.GetDormantDatabase();
+            var database2 = activeDatabaseProvider.GetDormantDatabase();
+
+            database1.Should().Be(TransientDatabase.DatabaseB);
+            database2.Should().Be(TransientDatabase.DatabaseB);
         }
     }
 }

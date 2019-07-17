@@ -17,6 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
     {
         private ILogger logger;
         private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshService dataRefreshService;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
@@ -27,13 +28,20 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             logger = Substitute.For<ILogger>();
             wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshService = Substitute.For<IDataRefreshService>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
 
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
             wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("new");
 
-            dataRefreshOrchestrator = new DataRefreshOrchestrator(logger, wmdaHlaVersionProvider, dataRefreshService, dataRefreshHistoryRepository);
+            dataRefreshOrchestrator = new DataRefreshOrchestrator(
+                logger,
+                wmdaHlaVersionProvider,
+                activeDatabaseProvider,
+                dataRefreshService,
+                dataRefreshHistoryRepository
+            );
         }
 
         [Test]
@@ -45,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>());
+            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
 
         [Test]
@@ -56,7 +64,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.Received().RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>());
+            await dataRefreshService.Received().RefreshData(Arg.Any<string>());
         }
 
         [Test]
@@ -68,7 +76,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>());
+            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
 
         [Test]
@@ -79,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.Received().RefreshData(Arg.Any<TransientDatabase>(), latestWmdaVersion);
+            await dataRefreshService.Received().RefreshData(latestWmdaVersion);
         }
 
         [Test]
@@ -105,7 +113,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_WhenDatabaseAActive_StoresRefreshRecordOfDatabaseB()
         {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseB);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -117,55 +125,13 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_WhenDatabaseBActive_StoresRefreshRecordOfDatabaseA()
         {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
                 r.Database == "DatabaseA"
             ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenNoDatabaseActive_StoresRefreshRecordOfDatabaseA()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns((TransientDatabase?) null);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
-                r.Database == "DatabaseA"
-            ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenDatabaseAActive_RefreshesDatabaseB()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshService.RefreshData(TransientDatabase.DatabaseB, Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenDatabaseBActive_RefreshesDatabaseA()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshService.RefreshData(TransientDatabase.DatabaseA, Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenNoDatabaseActive_RefreshesDatabaseA()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns((TransientDatabase?) null);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshService.RefreshData(TransientDatabase.DatabaseA, Arg.Any<string>());
         }
 
         [Test]
@@ -180,7 +146,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 r.WmdaDatabaseVersion == latestWmdaVersion
             ));
         }
-        
+
         [Test]
         public async Task RefreshDataIfNecessary_WhenJobSuccessful_StoresRecordAsSuccess()
         {
@@ -188,7 +154,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), true);
         }
-        
+
         [Test]
         public async Task RefreshDataIfNecessary_WhenJobSuccessful_StoresFinishTime()
         {
@@ -201,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_LogsExceptionDetails()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>()).Throws(new Exception(exceptionMessage));
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -212,7 +178,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresFinishTime()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>()).Throws(new Exception(exceptionMessage));
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -223,7 +189,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>()).Throws(new Exception(exceptionMessage));
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 

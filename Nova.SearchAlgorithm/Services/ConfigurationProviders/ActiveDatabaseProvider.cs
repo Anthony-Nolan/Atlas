@@ -1,3 +1,4 @@
+using System;
 using LazyCache;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
@@ -7,6 +8,7 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     public interface IActiveDatabaseProvider
     {
         TransientDatabase GetActiveDatabase();
+        TransientDatabase GetDormantDatabase();
     }
 
     public class ActiveDatabaseProvider : IActiveDatabaseProvider
@@ -26,6 +28,21 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
             // even if the refresh job finishes mid-request.
             // As such it is especially important that this class be injected once per lifetime scope (i.e. singleton per http request)
             return cache.GetOrAdd("database", () => dataRefreshHistoryRepository.GetActiveDatabase() ?? TransientDatabase.DatabaseA);
+        }
+
+        public TransientDatabase GetDormantDatabase()
+        {
+            var activeDatabase = GetActiveDatabase();
+
+            switch (activeDatabase)
+            {
+                case TransientDatabase.DatabaseA:
+                    return TransientDatabase.DatabaseB;
+                case TransientDatabase.DatabaseB:
+                    return TransientDatabase.DatabaseA;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

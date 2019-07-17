@@ -1,5 +1,3 @@
-using System;
-using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Settings;
 
 namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
@@ -12,23 +10,15 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     {
         public DormantTransientSqlConnectionStringProvider(
             ConnectionStrings connectionStrings,
-            IActiveDatabaseProvider activeDatabaseProvider) : base(connectionStrings, activeDatabaseProvider)
+            IActiveDatabaseProvider activeDatabaseProvider
+        ) : base(connectionStrings, activeDatabaseProvider)
         {
         }
 
         public override string GetConnectionString()
         {
-            var database = ActiveDatabaseProvider.GetActiveDatabase();
-
-            switch (database)
-            {
-                case TransientDatabase.DatabaseA:
-                    return ConnectionStrings.TransientB;
-                case TransientDatabase.DatabaseB:
-                    return ConnectionStrings.TransientA;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var database = ActiveDatabaseProvider.GetDormantDatabase();
+            return GetConnectionString(database);
         }
     }
 }

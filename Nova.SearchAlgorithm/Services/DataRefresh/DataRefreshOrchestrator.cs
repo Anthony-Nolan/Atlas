@@ -19,10 +19,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
         private readonly IDataRefreshService dataRefreshService;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
+        private readonly IActiveDatabaseProvider activeDatabaseProvider;
 
         public DataRefreshOrchestrator(
             ILogger logger,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshService dataRefreshService,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository)
         {
@@ -30,6 +32,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
             this.dataRefreshService = dataRefreshService;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
+            this.activeDatabaseProvider = activeDatabaseProvider;
         }
 
         public async Task RefreshDataIfNecessary()
@@ -42,12 +45,11 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task RunDataRefresh()
         {
-            var databaseToRefresh = DatabaseToRefresh();
             var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion();
 
             var dataRefreshRecord = new DataRefreshRecord
             {
-                Database = databaseToRefresh.ToString(),
+                Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshBeginUtc = DateTime.UtcNow,
                 WmdaDatabaseVersion = wmdaDatabaseVersion,
             };
@@ -56,7 +58,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             try
             {
-                await dataRefreshService.RefreshData(databaseToRefresh, wmdaDatabaseVersion);
+                await dataRefreshService.RefreshData(wmdaDatabaseVersion);
                 await MarkDataHistoryRecordAsComplete(recordId, true);
             }
             catch (Exception e)
@@ -87,21 +89,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private bool IsRefreshInProgress()
         {
             return dataRefreshHistoryRepository.GetInProgressJobs().Any();
-        }
-
-        private TransientDatabase DatabaseToRefresh()
-        {
-            var activeDatabase = dataRefreshHistoryRepository.GetActiveDatabase();
-            switch (activeDatabase)
-            {
-                case TransientDatabase.DatabaseA:
-                    return TransientDatabase.DatabaseB;
-                case TransientDatabase.DatabaseB:
-                case null:
-                    return TransientDatabase.DatabaseA;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
     }
 }
