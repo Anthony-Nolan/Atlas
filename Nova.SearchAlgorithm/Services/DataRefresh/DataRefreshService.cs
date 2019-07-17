@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Extensions;
@@ -26,7 +25,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
     public class DataRefreshService : IDataRefreshService
     {
-        private readonly DataRefreshSettings settings;
+        private readonly IOptions<DataRefreshSettings> settingsOptions;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IAzureDatabaseManager azureDatabaseManager;
@@ -38,7 +37,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IHlaProcessor hlaProcessor;
 
         public DataRefreshService(
-            IOptions<DataRefreshSettings> dataRefreshSettings,
+            IOptions<DataRefreshSettings> dataRefreshSettingsOptions,
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureFunctionManager azureFunctionManager,
             IAzureDatabaseManager azureDatabaseManager,
@@ -54,7 +53,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.recreateMatchingDictionaryService = recreateMatchingDictionaryService;
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
-            settings = dataRefreshSettings.Value;
+            settingsOptions = dataRefreshSettingsOptions;
         }
 
         public async Task RefreshData(string wmdaDatabaseVersion)
@@ -71,8 +70,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task AzureInfrastructureSetUp()
         {
+            var settings = settingsOptions.Value;
             var databaseName = GetAzureDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            
+
             await Task.WhenAll(
                 azureFunctionManager.StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName),
                 azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.RefreshDatabaseSize.ToAzureDatabaseSize())
@@ -81,9 +81,10 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task AzureInfrastructureTearDown()
         {
+            var settings = settingsOptions.Value;
             var refreshDatabaseName = GetAzureDatabaseName(activeDatabaseProvider.GetDormantDatabase());
             var otherDatabaseName = GetAzureDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-            
+
             await Task.WhenAll(
                 azureDatabaseManager.UpdateDatabaseSize(refreshDatabaseName, settings.ActiveDatabaseSize.ToAzureDatabaseSize()),
                 azureDatabaseManager.UpdateDatabaseSize(otherDatabaseName, settings.DormantDatabaseSize.ToAzureDatabaseSize()),
@@ -93,6 +94,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private string GetAzureDatabaseName(TransientDatabase transientDatabaseType)
         {
+            var settings = settingsOptions.Value;
+
             switch (transientDatabaseType)
             {
                 case TransientDatabase.DatabaseA:
