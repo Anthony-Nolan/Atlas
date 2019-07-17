@@ -25,8 +25,14 @@ namespace Nova.SearchAlgorithm.Functions.Functions
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
+        [FunctionName("RunDataRefreshManual")]
+        public async Task RunDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
+        {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+        }
+
         [FunctionName("RunDataRefresh")]
-        public async Task RunDataRefresh([HttpTrigger] HttpRequest httpRequest)
+        public async Task RunDataRefresh([TimerTrigger("%DataRefresh.CronTab%")] TimerInfo timerInfo)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
