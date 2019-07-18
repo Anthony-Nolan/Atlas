@@ -66,9 +66,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
                 await RecreateMatchingDictionary(wmdaDatabaseVersion);
                 await RemoveExistingDonorData();
+                await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
                 await ImportDonors();
                 await ProcessDonorHla(wmdaDatabaseVersion);
                 await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
