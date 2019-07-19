@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -117,6 +118,29 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
         public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             await base.AddMatchingPGroupsForExistingDonorBatch(donors);
+        }
+
+        public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
+        {
+            donorIds = donorIds.ToList();
+            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtA");
+            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtB");
+            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtC");
+            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDqb1");
+            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDrb1");
+        }
+
+        private async Task RemoveRGroupsForDonorBatchAtLocus(IEnumerable<int> donorIds, string locusTableName)
+        {
+            var removalSql = $@"
+DELETE FROM {locusTableName}
+WHERE DonorId IN ({string.Join(",", donorIds)});
+";
+
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                await conn.ExecuteAsync(removalSql);
+            }
         }
     }
 }

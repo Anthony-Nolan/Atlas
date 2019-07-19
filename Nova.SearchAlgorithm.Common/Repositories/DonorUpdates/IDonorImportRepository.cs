@@ -39,5 +39,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
         /// Used when adding donors
         /// </summary>
         Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors);
+
+        Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds);
     }
 }

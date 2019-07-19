@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
@@ -12,12 +13,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     public class DataRefreshRepository : IDataRefreshRepository
     {
         private readonly IConnectionStringProvider connectionStringProvider;
-        
+
         public DataRefreshRepository(IConnectionStringProvider connectionStringProvider)
         {
             this.connectionStringProvider = connectionStringProvider;
         }
-        
+
         public async Task<int> HighestDonorId()
         {
             using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
@@ -26,17 +27,20 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        public async Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate()
+        public async Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate(int batchSize)
         {
             var highestDonorId = await GetHighestDonorIdForWhichHlaHasBeenProcessed();
-            
+
+            // Continue from an earlier donor than the highest imported donor id, in case hla processing was only successful for some loci for previous batch
+            var donorToContinueFrom = highestDonorId - (batchSize * 2);
+
             using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
                 var donors = conn.Query<Donor>($@"
 SELECT * FROM Donors d
-WHERE DonorId > {highestDonorId}
+WHERE DonorId > {donorToContinueFrom}
 ");
-                return new SqlDonorBatchQueryAsync(donors);
+                return new SqlDonorBatchQueryAsync(donors, batchSize);
             }
         }
 
@@ -44,11 +48,20 @@ WHERE DonorId > {highestDonorId}
         {
             using (var connection = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
-                // A, B, and DRB1 should have entries for all donors, so we query the smallest of the three
-                return await connection.QuerySingleOrDefaultAsync<int>(@"
+                var maxDonorIdAtDrb1 = await connection.QuerySingleOrDefaultAsync<int>(@"
 SELECT TOP(1) DonorId FROM MatchingHlaAtDrb1 m
 ORDER BY m.DonorId DESC
 ", 0);
+                var maxDonorIdAtB = await connection.QuerySingleOrDefaultAsync<int>(@"
+SELECT TOP(1) DonorId FROM MatchingHlaAtB m
+ORDER BY m.DonorId DESC
+", 0);
+                var maxDonorIdAtA = await connection.QuerySingleOrDefaultAsync<int>(@"
+SELECT TOP(1) DonorId FROM MatchingHlaAtA m
+ORDER BY m.DonorId DESC
+", 0);
+
+                return Math.Min(maxDonorIdAtA, Math.Min(maxDonorIdAtB, maxDonorIdAtDrb1));
             }
         }
     }

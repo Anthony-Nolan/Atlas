@@ -25,6 +25,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
     public class HlaProcessor : IHlaProcessor
     {
+        private const int BatchSize = 1000;
+        
         private readonly ILogger logger;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
@@ -68,11 +70,19 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             try
             {
-                var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate();
+                var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate(BatchSize);
+                var batchCount = 0;
                 while (batchedQuery.HasMoreResults)
                 {
                     var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
-                    await UpdateDonorBatch(donorBatch, hlaDatabaseVersion);
+                    
+                    // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
+                    // This ensures we do not end up with duplicate p-groups in the matching hla tables
+                    // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
+                    var shouldRemovePGroups = batchCount < 2;
+                    
+                    await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
+                    batchCount++;
                 }
             }
             catch (Exception e)
@@ -86,10 +96,16 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch, string hlaDatabaseVersion)
+        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch, string hlaDatabaseVersion, bool shouldRemovePGroups)
         {
+            donorBatch = donorBatch.ToList();
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            if (shouldRemovePGroups)
+            {
+                await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
+            }
 
             var donorHlaData = await Task.WhenAll(donorBatch.Select(d => FetchDonorHlaData(d, hlaDatabaseVersion)));
             var inputDonors = donorHlaData.Where(x => x != null).ToList();
