@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             if (donorAvailabilityUpdate.IsAvailableForSearch)
             {
-                await AddDonor(donorAvailabilityUpdate);
+                await AddOrUpdateDonor(donorAvailabilityUpdate);
             }
             else
             {
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.Services
             }
         }
 
-        private async Task AddDonor(DonorAvailabilityUpdate donorAvailabilityUpdate)
+        private async Task AddOrUpdateDonor(DonorAvailabilityUpdate donorAvailabilityUpdate)
         {
             await donorService.CreateOrUpdateDonorBatch(new[]
             {

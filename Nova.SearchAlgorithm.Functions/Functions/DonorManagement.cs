@@ -18,8 +18,8 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         [FunctionName("ManageDonorByAvailability")]
         public async Task Run(
             [ServiceBusTrigger(
-                "%DonorManagement.Topic%",
-                "%DonorManagement.Subscription%",
+                "%MessagingServiceBus.DonorManagement.Topic%",
+                "%MessagingServiceBus.DonorManagement.Subscription%",
                 Connection = "MessagingServiceBus.ConnectionString")]
             string message)
         {

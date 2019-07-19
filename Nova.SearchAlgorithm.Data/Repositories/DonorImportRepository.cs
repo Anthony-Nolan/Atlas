@@ -132,7 +132,7 @@ WHERE DonorId = {existingDonor.DonorId}
                 var transaction = conn.BeginTransaction();
 
                 await DeleteMatchingGroupsForExistingDonor(donorId, conn, transaction);
-                await conn.ExecuteAsync($@"DELETE Donors WHERE DonorId = {donorId}", null, transaction);
+                await conn.ExecuteAsync("DELETE Donors WHERE DonorId = @DonorId", new { DonorId = donorId }, transaction);
 
                 transaction.Commit();
                 conn.Close();
@@ -235,8 +235,8 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
         private static async Task DeleteMatchingGroupsForExistingDonorAtLocus(Locus locus, int donorId, IDbConnection connection, IDbTransaction transaction)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId = {donorId}";
-            await connection.ExecuteAsync(deleteSql, null, transaction);
+            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId = @DonorId";
+            await connection.ExecuteAsync(deleteSql, new { DonorId = donorId }, transaction);
         }
     }
 }
