@@ -26,16 +26,16 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         public async Task FullHlaRefreshSetUp()
         {
             var indexRemovalSql = $@"
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtA;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtB;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtC;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDrb1;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDqb1;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtA;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtB;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtA;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtB;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtC;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDrb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDqb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtA;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtB;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
 ";
             using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
