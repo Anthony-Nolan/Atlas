@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+            logger.SendTrace($"Requesting {DonorPageSize} donors from ID {nextId} onwards", LogLevel.Trace);
             var page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
 
             while (page.DonorsInfo.Any())
@@ -76,6 +76,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
                 {
                     {"BatchSize", DonorPageSize.ToString()},
+                    {"ImportedDonors", page.DonorsInfo.Count().ToString()},
                     {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()},
                 });
                 stopwatch.Reset();
