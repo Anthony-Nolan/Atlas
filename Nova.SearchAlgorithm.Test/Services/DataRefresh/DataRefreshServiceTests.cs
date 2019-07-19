@@ -251,5 +251,13 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
             }
         }
+
+        [Test]
+        public async Task RefreshData_WhenContinued_DoesNotRemoveOldData()
+        {
+            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion, true);
+
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+        }
     }
 }

@@ -23,7 +23,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// - Processes HLA for imported donors
         /// - Scales down target database
         /// </summary>
-        Task RefreshData(string wmdaDatabaseVersion);
+        /// <param name="wmdaDatabaseVersion">The version of the wmda hla database to use for this refresh</param>
+        /// <param name="isContinuedRefresh">
+        /// If true, continues a data refresh where it left off, without removing all donor information
+        /// This relies on the individual steps of the refresh process bring resilient to interruption
+        /// </param>
+        Task RefreshData(string wmdaDatabaseVersion, bool isContinuedRefresh = false);
     }
 
     public class DataRefreshService : IDataRefreshService
@@ -62,12 +67,15 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             settingsOptions = dataRefreshSettingsOptions;
         }
 
-        public async Task RefreshData(string wmdaDatabaseVersion)
+        public async Task RefreshData(string wmdaDatabaseVersion, bool isContinuedRefresh)
         {
             try
             {
                 await RecreateMatchingDictionary(wmdaDatabaseVersion);
-                await RemoveExistingDonorData();
+                if (!isContinuedRefresh)
+                {
+                    await RemoveExistingDonorData();
+                }
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
                 await ImportDonors();
                 await ProcessDonorHla(wmdaDatabaseVersion);

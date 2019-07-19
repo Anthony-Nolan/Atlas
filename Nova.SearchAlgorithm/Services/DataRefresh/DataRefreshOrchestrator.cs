@@ -14,7 +14,11 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
     public interface IDataRefreshOrchestrator
     {
-        Task RefreshDataIfNecessary();
+        /// <param name="isContinuedRefresh">
+        /// If true, the refresh will not remove existing data, instead only importing / processing new donors.
+        /// This should only be triggered manually if a refresh failed
+        /// </param>
+        Task RefreshDataIfNecessary(bool isContinuedRefresh = false);
     }
 
     public class DataRefreshOrchestrator : IDataRefreshOrchestrator
@@ -51,7 +55,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
         }
 
-        public async Task RefreshDataIfNecessary()
+        public async Task RefreshDataIfNecessary(bool isContinuedRefresh)
         {
             if (!HasNewWmdaDataBeenPublished())
             {
@@ -65,10 +69,10 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 return;
             }
 
-            await RunDataRefresh();
+            await RunDataRefresh(isContinuedRefresh);
         }
 
-        private async Task RunDataRefresh()
+        private async Task RunDataRefresh(bool isContinuedRefresh)
         {
             var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion();
 
@@ -84,7 +88,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             try
             {
                 await AzureFunctionsSetUp();
-                await dataRefreshService.RefreshData(wmdaDatabaseVersion);
+                await dataRefreshService.RefreshData(wmdaDatabaseVersion, isContinuedRefresh);
                 await MarkDataHistoryRecordAsComplete(recordId, true);
                 await ScaleDownPreviouslyActiveDatabase();
             }
