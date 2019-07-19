@@ -89,7 +89,7 @@ INCLUDE (TypePosition, PGroup_Id)
 ";
             using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(indexAdditionSql);
+                await conn.ExecuteAsync(indexAdditionSql, commandTimeout: 10800);
             }
         }
 
