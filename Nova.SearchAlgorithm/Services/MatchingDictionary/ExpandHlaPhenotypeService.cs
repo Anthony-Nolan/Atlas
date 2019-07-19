@@ -41,8 +41,8 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
                 return new Tuple<ExpandedHla, ExpandedHla>(null, null);
             }
 
-            var (item1, item2) = await locusHlaLookupService
-                .GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2), wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            var (item1, item2) =
+                await locusHlaLookupService.GetHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2), hlaDatabaseVersion);
 
             return new Tuple<ExpandedHla, ExpandedHla>(
                 item1.ToExpandedHla(hla1),
