@@ -1,6 +1,6 @@
 ﻿using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Services;
 using NSubstitute;
 using NUnit.Framework;
@@ -13,67 +13,52 @@ namespace Nova.SearchAlgorithm.Test.Services
     [TestFixture]
     public class DonorManagementServiceTests
     {
-        private IDonorServiceClient donorServiceClient;
         private IDonorService donorService;
         private IDonorManagementService donorManagementService;
 
         [SetUp]
         public void SetUp()
         {
-            donorServiceClient = Substitute.For<IDonorServiceClient>();
             donorService = Substitute.For<IDonorService>();
 
-            donorServiceClient
-                .GetDonorInfoForSearchAlgorithm(Arg.Any<int>())
-                .Returns(new DonorInfoForSearchAlgorithm
-                {
-                    DonorId = 999999,
-                    DonorType = "Adult",
-                    RegistryCode = "AN"
-                });
-
-            donorManagementService = new DonorManagementService(donorServiceClient, donorService);
+            donorManagementService = new DonorManagementService(donorService);
         }
 
         [Test]
-        public async Task ManageDonorByAvailability_DonorIsAvailableForSearch_GetsDonorInfo()
-        {
-            const int donorId = 123;
-
-            await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                IsAvailableForSearch = true
-            });
-
-            await donorServiceClient
-                .Received(1)
-                .GetDonorInfoForSearchAlgorithm(donorId);
-        }
-
-        [Test]
-        public async Task ManageDonorByAvailability_DonorIsAvailableForSearch_DonorIsAdded()
+        public async Task ManageDonorByAvailability_DonorIsAvailableForSearch_DonorIsAddedOrUpdated()
         {
             const int donorId = 456;
-
-            donorServiceClient
-                .GetDonorInfoForSearchAlgorithm(donorId)
-                .Returns(new DonorInfoForSearchAlgorithm
-                {
-                    DonorId = donorId,
-                    DonorType = "Adult",
-                    RegistryCode = "AN"
-                });
+            const string registryCode = "AN";
+            const string donorType = "A";
 
             await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
             {
                 DonorId = donorId,
+                DonorInfoForSearchAlgorithm = new DonorInfoForSearchAlgorithm { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
                 IsAvailableForSearch = true
             });
 
             await donorService
                 .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x => x.Single().DonorId == donorId));
+                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x => 
+                    x.Single().DonorId == donorId &&
+                    x.Single().RegistryCode == RegistryCode.AN &&
+                    x.Single().DonorType == DonorType.Adult));
+        }
+
+        [Test]
+        public async Task ManageDonorByAvailability_DonorIsAvailableForSearch_DonorIsNotDeleted()
+        {
+            const int donorId = 456;
+            const string registryCode = "AN";
+            const string donorType = "A";
+
+            await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
+            {
+                DonorId = donorId,
+                DonorInfoForSearchAlgorithm = new DonorInfoForSearchAlgorithm { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
+                IsAvailableForSearch = true
+            });
 
             await donorService
                 .Received(0)
@@ -94,6 +79,18 @@ namespace Nova.SearchAlgorithm.Test.Services
             await donorService
                 .Received(1)
                 .DeleteDonor(Arg.Is<int>(x => x == donorId));
+        }
+
+        [Test]
+        public async Task ManageDonorByAvailability_DonorIsNotAvailableForSearch_DonorIsNotAddedOrUpdated()
+        {
+            const int donorId = 789;
+
+            await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
+            {
+                DonorId = donorId,
+                IsAvailableForSearch = false
+            });
 
             await donorService
                 .Received(0)

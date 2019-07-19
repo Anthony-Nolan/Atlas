@@ -1,5 +1,4 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Extensions;
 using System.Threading.Tasks;
 
@@ -15,15 +14,10 @@ namespace Nova.SearchAlgorithm.Services
 
     public class DonorManagementService : IDonorManagementService
     {
-        private readonly IDonorServiceClient donorServiceClient;
         private readonly IDonorService donorService;
 
-        public DonorManagementService(
-            IDonorServiceClient donorServiceClient,
-            IDonorService donorService
-        )
+        public DonorManagementService(IDonorService donorService)
         {
-            this.donorServiceClient = donorServiceClient;
             this.donorService = donorService;
         }
 
@@ -31,7 +25,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             if (donorAvailabilityUpdate.IsAvailableForSearch)
             {
-                await AddDonor(donorAvailabilityUpdate.DonorId);
+                await AddDonor(donorAvailabilityUpdate);
             }
             else
             {
@@ -39,10 +33,12 @@ namespace Nova.SearchAlgorithm.Services
             }
         }
 
-        private async Task AddDonor(int donorId)
+        private async Task AddDonor(DonorAvailabilityUpdate donorAvailabilityUpdate)
         {
-            var donorInfo = await donorServiceClient.GetDonorInfoForSearchAlgorithm(donorId);
-            await donorService.CreateOrUpdateDonorBatch(new[] {donorInfo.ToInputDonor()});
+            await donorService.CreateOrUpdateDonorBatch(new[]
+            {
+                donorAvailabilityUpdate.DonorInfoForSearchAlgorithm.ToInputDonor()
+            });
         }
 
         private async Task RemoveDonor(int donorId)
