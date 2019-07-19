@@ -10,5 +10,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories
     {
         Task<int> HighestDonorId();
         Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate(int batchSize);
+        Task<int> GetDonorCount();
     }
 }

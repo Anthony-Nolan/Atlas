@@ -44,6 +44,18 @@ WHERE DonorId > {donorToContinueFrom}
             }
         }
 
+        public async Task<int> GetDonorCount()
+        {
+            const string sql = @"
+SELECT COUNT(*) FROM DONORS
+";
+            
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                return await conn.QueryFirstAsync<int>(sql);
+            }
+        }
+
         private async Task<int> GetHighestDonorIdForWhichHlaHasBeenProcessed()
         {
             using (var connection = new SqlConnection(connectionStringProvider.GetConnectionString()))

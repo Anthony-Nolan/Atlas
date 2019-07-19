@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
-        private readonly IDataRefreshRepository repository;
+        private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
             IDonorImportRepository donorImportRepository,
-            IDataRefreshRepository repository,
+            IDataRefreshRepository dataRefreshRepository,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IPGroupRepository pGroupRepository)
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
             this.donorImportRepository = donorImportRepository;
-            this.repository = repository;
+            this.dataRefreshRepository = dataRefreshRepository;
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.pGroupRepository = pGroupRepository;
@@ -70,8 +70,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             try
             {
-                var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate(BatchSize);
-                var batchCount = 0;
+                var totalDonorCount = await dataRefreshRepository.GetDonorCount();
+                var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
+                var donorsProcessed = 0;
                 while (batchedQuery.HasMoreResults)
                 {
                     var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
@@ -79,10 +80,11 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                     // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
                     // This ensures we do not end up with duplicate p-groups in the matching hla tables
                     // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
-                    var shouldRemovePGroups = batchCount < 2;
+                    var shouldRemovePGroups = donorsProcessed < 2 * BatchSize;
                     
                     await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
-                    batchCount++;
+                    donorsProcessed += BatchSize;
+                    logger.SendTrace($"Hla Processing {donorsProcessed/totalDonorCount}% complete", LogLevel.Info);
                 }
             }
             catch (Exception e)
