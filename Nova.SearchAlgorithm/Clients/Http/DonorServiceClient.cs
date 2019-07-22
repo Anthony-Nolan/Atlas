@@ -14,12 +14,6 @@ namespace Nova.SearchAlgorithm.Clients.Http
     public interface IDonorServiceClient
     {
         /// <summary>
-        /// Returns information required for the new search algorithm for a single donor.
-        /// Only contains information required to perform search and not for display in the frontend.
-        /// </summary>
-        Task<DonorInfoForSearchAlgorithm> GetDonorInfoForSearchAlgorithm(int donorId);
-
-        /// <summary>
         /// Returns a page of donors information which is required for the new search algorithm.
         /// These donors Info only contain the information required to do a search with the new algorithm and not for display in the frontend.
         /// Useful for any client wishing to process all donors information one page at a time.
