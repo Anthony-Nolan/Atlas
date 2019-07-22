@@ -2,7 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Config.Mappings
+namespace Nova.SearchAlgorithm.Mappings
 {
     public class InputDonorProfile : Profile
     {

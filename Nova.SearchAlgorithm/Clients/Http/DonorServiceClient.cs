@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
 using Nova.Utils.Http;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Clients.Http
 {

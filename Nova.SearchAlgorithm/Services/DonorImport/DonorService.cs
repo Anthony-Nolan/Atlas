@@ -1,13 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.Http.Exceptions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.DonorImport
 {
@@ -15,6 +15,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
     {
         Task<InputDonor> CreateDonor(InputDonor inputDonor);
         Task<InputDonor> UpdateDonor(InputDonor inputDonor);
+        Task DeleteDonor(int donorId);
         Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors);
         Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonor);
         Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors);
@@ -47,6 +48,18 @@ namespace Nova.SearchAlgorithm.Services.DonorImport
         public async Task<InputDonor> UpdateDonor(InputDonor inputDonor)
         {
             return (await UpdateDonorBatch(new[] { inputDonor })).Single();
+        }
+
+        public async Task DeleteDonor(int donorId)
+        {
+            var existingDonors = await donorInspectionRepository.GetDonors(new[] { donorId });
+
+            if (!existingDonors.Any())
+            {
+                throw new NovaNotFoundException($"Donor ID {donorId} does not exist in the database.");
+            }
+
+            await donorImportRepository.DeleteDonorAndItsExpandedHla(donorId);
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
