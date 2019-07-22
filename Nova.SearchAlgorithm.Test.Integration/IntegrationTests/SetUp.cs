@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         private static void ResetDatabase()
         {
             DatabaseManager.SetupDatabase();
-            DatabaseManager.ClearDatabase();
+            DatabaseManager.ClearDatabases();
         }
     }
 }

@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
@@ -28,19 +29,18 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     {
         private const int DonorPageSize = 100;
 
-        private readonly IDataRefreshRepository repository;
+        private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImporter(
-            IDataRefreshRepository repository,
-            IDonorImportRepository donorImportRepository,
+            ITransientRepositoryFactory repositoryFactory,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
-            this.repository = repository;
-            this.donorImportRepository = donorImportRepository;
+            dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
+            donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
         }
@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ContinueDonorImport(await repository.HighestDonorId());
+                await ContinueDonorImport(await dataRefreshRepository.HighestDonorId());
             }
             catch (Exception ex)
             {
@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 stopwatch.Start();
 
                 logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-                nextId = page.LastId ?? (await repository.HighestDonorId());
+                nextId = page.LastId ?? (await dataRefreshRepository.HighestDonorId());
                 page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
             }
 

@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
@@ -41,7 +42,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
             testDonor = BuildTestDonor();
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
         }
 

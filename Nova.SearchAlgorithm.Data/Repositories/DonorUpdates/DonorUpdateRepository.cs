@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         public async Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var existingDonors = await conn.QueryAsync<Donor>($@"
 SELECT * FROM Donors 
@@ -84,7 +84,7 @@ WHERE DonorId = {existingDonor.DonorId}
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();

@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -56,7 +57,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var updateRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var updateRepo = repositoryFactory.GetDonorUpdateRepository();
 
             var defaultRequiredHla = new ExpandedHla {PGroups = matchingPGroups};
             donorWithFullHomozygousMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
@@ -138,7 +140,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeTearDown]
         public void TearDown()
         {
-            DatabaseManager.ClearDatabase();
+            DatabaseManager.ClearDatabases();
         }
 
         [Test]

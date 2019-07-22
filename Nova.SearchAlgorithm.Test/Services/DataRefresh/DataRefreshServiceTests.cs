@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
@@ -32,6 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
         private IDataRefreshService dataRefreshService;
         private ILogger logger;
+        private ITransientRepositoryFactory transientRepositoryFactory;
 
         [SetUp]
         public void SetUp()
@@ -40,11 +42,13 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
+            transientRepositoryFactory = Substitute.For<ITransientRepositoryFactory>();
             recreateMatchingDictionaryService = Substitute.For<IRecreateHlaLookupResultsService>();
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             logger = Substitute.For<ILogger>();
 
+            transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
             dataRefreshService = new DataRefreshService(
@@ -52,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 activeDatabaseProvider,
                 new AzureDatabaseNameProvider(settingsOptions),
                 azureDatabaseManager,
-                donorImportRepository,
+                transientRepositoryFactory,
                 recreateMatchingDictionaryService,
                 donorImporter,
                 hlaProcessor,
@@ -60,6 +64,12 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             );
         }
 
+        [Test]
+        public void DataRefreshService_UsesDormantDonorImportDatabase()
+        {
+            transientRepositoryFactory.Received().GetDonorImportRepository(false);
+        }
+        
         [Test]
         public async Task RefreshData_ScalesDormantDatabase()
         {

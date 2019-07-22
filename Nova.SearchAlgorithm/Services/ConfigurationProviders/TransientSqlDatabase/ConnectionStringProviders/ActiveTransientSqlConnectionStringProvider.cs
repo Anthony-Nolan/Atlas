@@ -1,6 +1,7 @@
+using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Settings;
 
-namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
+namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders
 {
     /// <summary>
     /// Provides the connection string needed to query the non-persistent sql database.
@@ -14,10 +15,9 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         {
         }
 
-        public override string GetConnectionString()
+        protected override TransientDatabase DatabaseType()
         {
-            var database = ActiveDatabaseProvider.GetActiveDatabase();
-            return GetConnectionString(database);
+            return ActiveDatabaseProvider.GetActiveDatabase();
         }
     }
 }

@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 

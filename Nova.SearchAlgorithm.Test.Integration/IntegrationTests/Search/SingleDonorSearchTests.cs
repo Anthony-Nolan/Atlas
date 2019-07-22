@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
@@ -75,7 +76,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         public void ImportTestDonor()
         {
             var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
             donor = new InputDonorWithExpandedHla
             {

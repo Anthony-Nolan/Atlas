@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.Http.Exceptions;
@@ -23,15 +24,21 @@ namespace Nova.SearchAlgorithm.Test.Services
         private IDonorInspectionRepository inspectionRepository;
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IMapper mapper;
+        private ITransientRepositoryFactory repositoryFactory;
 
         [SetUp]
         public void SetUp()
         {
             updateRepository = Substitute.For<IDonorUpdateRepository>();
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
+            repositoryFactory = Substitute.For<ITransientRepositoryFactory>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
             mapper = AutomapperConfig.CreateMapper();
-            donorService = new SearchAlgorithm.Services.Donors.DonorService(updateRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
+
+            repositoryFactory.GetDonorInspectionRepository().Returns(inspectionRepository);
+            repositoryFactory.GetDonorUpdateRepository().Returns(updateRepository);
+            
+            donorService = new SearchAlgorithm.Services.Donors.DonorService(expandHlaPhenotypeService, repositoryFactory, mapper);
         }
 
         [Test]

@@ -10,18 +10,15 @@ using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
-    public class DataRefreshRepository : IDataRefreshRepository
+    public class DataRefreshRepository : Repository, IDataRefreshRepository
     {
-        private readonly IConnectionStringProvider connectionStringProvider;
-
-        public DataRefreshRepository(IConnectionStringProvider connectionStringProvider)
+        public DataRefreshRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
-            this.connectionStringProvider = connectionStringProvider;
         }
 
         public async Task<int> HighestDonorId()
         {
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return (await conn.QueryAsync<int>("SELECT TOP (1) DonorId FROM Donors ORDER BY DonorId DESC")).SingleOrDefault();
             }
@@ -34,7 +31,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             // Continue from an earlier donor than the highest imported donor id, in case hla processing was only successful for some loci for previous batch
             var donorToContinueFrom = highestDonorId - (batchSize * 2);
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var donors = conn.Query<Donor>($@"
 SELECT * FROM Donors d
@@ -50,7 +47,7 @@ WHERE DonorId > {donorToContinueFrom}
 SELECT COUNT(*) FROM DONORS
 ";
             
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryFirstAsync<int>(sql);
             }
@@ -58,7 +55,7 @@ SELECT COUNT(*) FROM DONORS
 
         private async Task<int> GetHighestDonorIdForWhichHlaHasBeenProcessed()
         {
-            using (var connection = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var maxDonorIdAtDrb1 = await connection.QuerySingleOrDefaultAsync<int>(@"
 SELECT TOP(1) DonorId FROM MatchingHlaAtDrb1 m

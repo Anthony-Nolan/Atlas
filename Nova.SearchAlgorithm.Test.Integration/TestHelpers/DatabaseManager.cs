@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Data;
 using Nova.SearchAlgorithm.Data.Persistent;
@@ -16,21 +17,34 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
             var transientContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
 
+            var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
+            var transientContextB = new Data.Context.ContextFactory().Create(connectionStringB);
+            
             if (transientContext == null || persistentContext == null)
             {
                 throw new Exception("Database context could resolved - DI has not been correctly configured.");
             }
 
-            transientContext?.Database.Migrate();
-            persistentContext?.Database.Migrate();
+            transientContext.Database.Migrate();
+            transientContextB?.Database.Migrate();
+            persistentContext.Database.Migrate();
         }
         
         /// <summary>
         /// Clears the test database of data. Can be accessed by fixtures to run after each fixture, but not after each test.
         /// </summary>
-        public static void ClearDatabase()
+        public static void ClearDatabases()
         {
-            var context = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
+            var transientContextA = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
+            ClearDatabase(transientContextA);
+            
+            var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
+            var transientContextB = new Data.Context.ContextFactory().Create(connectionStringB);
+            ClearDatabase(transientContextB);
+        }
+
+        private static void ClearDatabase(DbContext context)
+        {
             if (context != null)
             {
                 context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
@@ -39,6 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
                 context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtC]");
                 context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDrb1]");
                 context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDqb1]");
+                context.Database.ExecuteSqlCommand("DELETE FROM PGroupNames");
             }
         }
     }

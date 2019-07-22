@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Repositories.Donors;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
@@ -48,7 +49,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var matchFilteringService = new MatchFilteringService();
             var databaseFilteringAnalyser = Substitute.For<IDatabaseFilteringAnalyser>();
             var pGroupRepository = Substitute.For<IPGroupRepository>();
-            donorMatchingService = new DatabaseDonorMatchingService(donorSearchRepository, matchFilteringService, databaseFilteringAnalyser, pGroupRepository);
+            var repositoryFactory = Substitute.For<ITransientRepositoryFactory>();
+
+            repositoryFactory.GetDonorSearchRepository().Returns(donorSearchRepository);
+            repositoryFactory.GetPGroupRepository().Returns(pGroupRepository);
+            
+            donorMatchingService = new DatabaseDonorMatchingService(repositoryFactory, matchFilteringService, databaseFilteringAnalyser);
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>

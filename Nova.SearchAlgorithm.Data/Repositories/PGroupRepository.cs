@@ -11,19 +11,17 @@ using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
-    public class PGroupRepository : IPGroupRepository
+    public class PGroupRepository : Repository, IPGroupRepository
     {
-        private readonly IConnectionStringProvider connectionStringProvider;
         private Dictionary<string, PGroupName> pGroupDictionary;
 
-        public PGroupRepository(IConnectionStringProvider connectionStringProvider)
+        public PGroupRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
-            this.connectionStringProvider = connectionStringProvider;
         }
-        
+
         public void InsertPGroups(IEnumerable<string> pGroups)
         {
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
 
@@ -74,7 +72,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)
 
             int newId;
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 newId = conn.Query<int>(sql, new {PGroupName = pGroupName}).Single();
             }
@@ -90,13 +88,13 @@ SELECT CAST(SCOPE_IDENTITY() as int)
             {
                 return new List<int>();
             }
-            
+
             var sql = $@"
 SELECT p.Id FROM PGroupNames p
 WHERE p.Name IN ('{string.Join("', '", pGroupNames)}') 
 ";
-            
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<int>(sql);
             }
@@ -104,7 +102,7 @@ WHERE p.Name IN ('{string.Join("', '", pGroupNames)}')
 
         private void CachePGroupDictionary()
         {
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var innerPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames");
                 pGroupDictionary = innerPGroups.Distinct(new DistinctPGroupNameComparer()).ToDictionary(p => p.Name);

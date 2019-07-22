@@ -37,7 +37,7 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
 DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
 DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
 ";
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(indexRemovalSql);
             }
@@ -87,7 +87,7 @@ CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtDqb1 (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 ";
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(indexAdditionSql, commandTimeout: 10800);
             }
@@ -104,7 +104,7 @@ TRUNCATE TABLE [MatchingHlaAtDrb1]
 TRUNCATE TABLE [MatchingHlaAtDqb1]
 ";
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(dropAllDonorInfoSql);
             }
@@ -137,7 +137,7 @@ DELETE FROM {locusTableName}
 WHERE DonorId IN ({string.Join(",", donorIds)});
 ";
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(removalSql);
             }

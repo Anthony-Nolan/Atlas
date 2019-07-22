@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 
@@ -50,7 +51,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IAzureDatabaseManager azureDatabaseManager,
-            IDonorImportRepository donorImportRepository,
+            ITransientRepositoryFactory repositoryFactory,
             IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
@@ -59,7 +60,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
-            this.donorImportRepository = donorImportRepository;
+            donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.recreateMatchingDictionaryService = recreateMatchingDictionaryService;
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;

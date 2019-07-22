@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Settings;
 using NSubstitute;
 using NUnit.Framework;
