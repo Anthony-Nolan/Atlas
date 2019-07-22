@@ -47,5 +47,10 @@ namespace Nova.SearchAlgorithm.Common.Repositories
         /// Will create the hla matches.
         /// </summary>
         Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
+
+        /// <summary>
+        /// Deletes a donor along with its matching P groups.
+        /// </summary>
+        Task DeleteDonorAndItsExpandedHla(int donorId);
     }
 }
