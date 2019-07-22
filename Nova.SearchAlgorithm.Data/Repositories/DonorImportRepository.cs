@@ -1,16 +1,16 @@
 ﻿using Dapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Helpers;
+using Nova.SearchAlgorithm.Data.Services;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Config;
-using Nova.SearchAlgorithm.Data.Entity;
-using Nova.SearchAlgorithm.Data.Services;
 // ReSharper disable InconsistentNaming
 
 namespace Nova.SearchAlgorithm.Data.Repositories
@@ -198,6 +198,21 @@ WHERE DonorId = {existingDonor.DonorId}
             await ReplaceMatchingGroupsForExistingDonorBatch(donors);
         }
 
+        public async Task DeleteDonorAndItsExpandedHla(int donorId)
+        {
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+
+                await DeleteMatchingGroupsForExistingDonor(donorId, conn, transaction);
+                await conn.ExecuteAsync("DELETE Donors WHERE DonorId = @DonorId", new { DonorId = donorId }, transaction);
+
+                transaction.Commit();
+                conn.Close();
+            }
+        }
+
         public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
             await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
@@ -284,6 +299,18 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
                 sqlBulk.DestinationTableName = tableName;
                 await sqlBulk.WriteToServerAsync(dataTable);
             }
+        }
+
+        private static async Task DeleteMatchingGroupsForExistingDonor(int donorId, IDbConnection connection, IDbTransaction transaction)
+        {
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => DeleteMatchingGroupsForExistingDonorAtLocus(l, donorId, connection, transaction)));
+        }
+
+        private static async Task DeleteMatchingGroupsForExistingDonorAtLocus(Locus locus, int donorId, IDbConnection connection, IDbTransaction transaction)
+        {
+            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
+            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId = @DonorId";
+            await connection.ExecuteAsync(deleteSql, new { DonorId = donorId }, transaction);
         }
     }
 }
