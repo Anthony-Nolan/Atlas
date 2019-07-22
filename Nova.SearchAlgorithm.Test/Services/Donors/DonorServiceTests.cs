@@ -95,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Services
 
             await donorService.DeleteDonor(donorId);
 
-            await importRepository.Received().DeleteDonorAndItsExpandedHla(donorId);
+            await updateRepository.Received().DeleteDonorAndItsExpandedHla(donorId);
         }
     }
 }

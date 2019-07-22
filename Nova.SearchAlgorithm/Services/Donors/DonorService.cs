@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                 throw new NovaNotFoundException($"Donor ID {donorId} does not exist in the database.");
             }
 
-            await donorImportRepository.DeleteDonorAndItsExpandedHla(donorId);
+            await donorUpdateRepository.DeleteDonorAndItsExpandedHla(donorId);
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)

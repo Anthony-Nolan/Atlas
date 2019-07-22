@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.Http.Exceptions;
 using NSubstitute.ExceptionExtensions;
 
