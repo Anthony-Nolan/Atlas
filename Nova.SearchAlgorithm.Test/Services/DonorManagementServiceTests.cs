@@ -2,11 +2,15 @@
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.ApplicationInsights;
+using Nova.Utils.Http.Exceptions;
+using NSubstitute.ExceptionExtensions;
 
 namespace Nova.SearchAlgorithm.Test.Services
 {
@@ -14,14 +18,17 @@ namespace Nova.SearchAlgorithm.Test.Services
     public class DonorManagementServiceTests
     {
         private IDonorService donorService;
+        private ILogger logger;
         private IDonorManagementService donorManagementService;
 
         [SetUp]
         public void SetUp()
         {
-            donorService = Substitute.For<IDonorService>();
 
-            donorManagementService = new DonorManagementService(donorService);
+            donorService = Substitute.For<IDonorService>();
+            logger = Substitute.For<ILogger>();
+
+            donorManagementService = new DonorManagementService(donorService, logger);
         }
 
         [Test]
@@ -95,6 +102,25 @@ namespace Nova.SearchAlgorithm.Test.Services
             await donorService
                 .Received(0)
                 .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<InputDonor>>());
+        }
+
+        [Test]
+        public async Task ManageDonorByAvailability_DonorForDeletionNotFound_ErrorIsLogged()
+        {
+            const int donorId = 789;
+
+            donorService.DeleteDonor(donorId).Throws(new NovaNotFoundException("error-message"));
+
+            await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
+            {
+                DonorId = donorId,
+                IsAvailableForSearch = false
+            });
+
+            logger.Received().SendEvent(Arg.Is<DonorDeletionFailureEventModel>(x => 
+                x.Level == LogLevel.Error &&
+                x.Properties.ContainsKey("DonorId") &&
+                x.Properties.ContainsValue(donorId.ToString())));
         }
     }
 }
