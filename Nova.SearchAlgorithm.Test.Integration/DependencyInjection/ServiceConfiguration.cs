@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Nova.HLAService.Client;
 using Nova.SearchAlgorithm.Clients;
+using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;

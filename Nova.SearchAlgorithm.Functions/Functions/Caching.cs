@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
 {

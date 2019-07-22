@@ -1,4 +1,6 @@
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
@@ -21,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.DependencyInjection
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddUserSecrets("841c4767-6a3e-4edc-bae0-f657a980f940")
+                .AddUserSecrets(Assembly.GetExecutingAssembly())
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);

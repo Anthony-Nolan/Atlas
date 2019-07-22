@@ -9,6 +9,16 @@ variable "APIKEY" {
   type = string
 }
 
+variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
+  type = string
+  default = "Info"
+}
+
+variable "AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER" {
+  type = string
+  default = "search-algorithm-results"
+}
+
 variable "CONNECTION_STRING_SQL_A" {
   type = string
 }
@@ -25,9 +35,18 @@ variable "CONNECTION_STRING_STORAGE" {
   type = string
 }
 
-variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
+variable "MESSAGING_BUS_CONNECTION_STRING" {
   type = string
-  default = "Info"
+}
+
+variable "MESSAGING_BUS_SEARCH_REQUESTS_QUEUE" {
+  type = string
+  default = "search-algorithm-search-requests"
+}
+
+variable "MESSAGING_BUS_SEARCH_RESULTS_TOPIC" {
+  type = string
+  default = "search-algorithm-results-notifications"
 }
 
 variable "WMDA_HLA_DATABASE_VERSION" {

@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NUnit.Framework;
 

@@ -9,9 +9,13 @@ using Newtonsoft.Json;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Clients;
+using Nova.SearchAlgorithm.Clients.AzureManagement;
+using Nova.SearchAlgorithm.Clients.AzureStorage;
+using Nova.SearchAlgorithm.Clients.Http;
+using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Config;
-using Nova.SearchAlgorithm.Data.Context;
+using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
@@ -23,15 +27,19 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.AzureManagement;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Scoring;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Auth;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -46,6 +54,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<ApplicationInsightsSettings>(configuration.GetSection("ApplicationInsights"));
             services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
             services.Configure<WmdaSettings>(configuration.GetSection("Wmda"));
+            services.Configure<MessagingServiceBusSettings>(configuration.GetSection("MessagingServiceBus"));
+            services.Configure<AzureManagementSettings>(configuration.GetSection("AzureManagement"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -57,6 +67,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddSingleton<ILogger>(sp =>
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
+
+            services.AddScoped<IWmdaLatestVersionFetcher, WmdaLatestVersionFetcher>();
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.DonorService>();
@@ -94,6 +106,27 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>(sp =>
                 new WmdaHlaVersionProvider(sp.GetService<IOptions<WmdaSettings>>().Value.HlaDatabaseVersion)
             );
+
+            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
+            {
+                var serviceBusSettings = sp.GetService<IOptions<MessagingServiceBusSettings>>().Value;
+                return new SearchServiceBusClient(
+                    serviceBusSettings.ConnectionString,
+                    serviceBusSettings.SearchRequestsQueue,
+                    serviceBusSettings.SearchResultsTopic
+                );
+            });
+            services.AddScoped<ISearchDispatcher, SearchDispatcher>();
+            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>(sp =>
+            {
+                var azureStorageSettings = sp.GetService<IOptions<AzureStorageSettings>>().Value;
+                var logger = sp.GetService<ILogger>();
+                return new ResultsBlobStorageClient(azureStorageSettings.ConnectionString, logger, azureStorageSettings.SearchResultsBlobContainer);
+            });
+
+            services.AddScoped<IAzureManagementClient, AzureManagementClient>();
+            services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
+            services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
@@ -105,7 +138,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             // Persistent storage
             services.AddScoped(sp =>
-                new Data.Persistent.ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"])
+                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"])
             );
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();

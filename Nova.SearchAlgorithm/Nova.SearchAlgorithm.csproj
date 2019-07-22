@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <RootNamespace>Nova.SearchAlgorithm</RootNamespace>
+        <Version>0.8</Version>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
         <LangVersion>latest</LangVersion>
@@ -10,22 +11,21 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="6.1.1" />
+      <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
       <PackageReference Include="Nova.DonorService.SearchAlgorithm.Models" Version="1.0.0" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
+      <PackageReference Include="Nova.Utils.Storage" Version="11.0.4" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Nova.SearchAlgorithm.Client.Models\Nova.SearchAlgorithm.Client.Models.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Resources\DonorPhenotypesSample.csv" />
     </ItemGroup>
 
 </Project>
