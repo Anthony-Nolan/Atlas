@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IWmdaLatestVersionFetcher, WmdaLatestVersionFetcher>();
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
-            services.AddScoped<IDonorService, Services.DonorService>();
+            services.AddScoped<IDonorService, Services.DonorImport.DonorService>();
             services.AddScoped<IDonorManagementService, DonorManagementService>();
 
             services.AddScoped<ISearchService, SearchService>();
