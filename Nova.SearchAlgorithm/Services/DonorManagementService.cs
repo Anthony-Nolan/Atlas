@@ -1,5 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Extensions;
+﻿using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Models;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services
@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             await donorService.CreateOrUpdateDonorBatch(new[]
             {
-                donorAvailabilityUpdate.DonorInfoForSearchAlgorithm.ToInputDonor()
+                donorAvailabilityUpdate.DonorInfo.ToInputDonor()
             });
         }
 

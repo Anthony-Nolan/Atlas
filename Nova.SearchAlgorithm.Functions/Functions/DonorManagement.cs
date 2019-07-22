@@ -1,6 +1,6 @@
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services;
 using System.Threading.Tasks;
 

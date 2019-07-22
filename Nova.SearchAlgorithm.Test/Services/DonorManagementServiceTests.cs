@@ -1,6 +1,6 @@
-﻿using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services;
 using NSubstitute;
 using NUnit.Framework;
@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Services
             await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
             {
                 DonorId = donorId,
-                DonorInfoForSearchAlgorithm = new DonorInfoForSearchAlgorithm { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
+                DonorInfo = new DonorInfo { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
                 IsAvailableForSearch = true
             });
 
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Services
             await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
             {
                 DonorId = donorId,
-                DonorInfoForSearchAlgorithm = new DonorInfoForSearchAlgorithm { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
+                DonorInfo = new DonorInfo { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
                 IsAvailableForSearch = true
             });
 
