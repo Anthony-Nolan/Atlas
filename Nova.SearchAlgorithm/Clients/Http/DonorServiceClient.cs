@@ -51,12 +51,6 @@ namespace Nova.SearchAlgorithm.Clients.Http
         {
         }
 
-        public async Task<DonorInfoForSearchAlgorithm> GetDonorInfoForSearchAlgorithm(int donorId)
-        {
-            var request = GetRequest(HttpMethod.Get, $"donors-info-for-search-algorithm/{donorId}");
-            return await MakeRequestAsync<DonorInfoForSearchAlgorithm>(request);
-        }
-
         public async Task<DonorInfoForSearchAlgorithmPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
         {
             var parameters = new List<KeyValuePair<string, string>>
