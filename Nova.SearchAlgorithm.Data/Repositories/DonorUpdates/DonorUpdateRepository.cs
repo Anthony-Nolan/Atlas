@@ -74,7 +74,7 @@ WHERE DonorId = {existingDonor.DonorId}
 
         public async Task DeleteDonorAndItsExpandedHla(int donorId)
         {
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
