@@ -18,8 +18,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
 
-        public DonorImportRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository,
-            connectionStringProvider)
+        public DonorImportRepository(
+            IPGroupRepository pGroupRepository, 
+            IConnectionStringProvider connectionStringProvider) : base(pGroupRepository, connectionStringProvider)
         {
         }
 

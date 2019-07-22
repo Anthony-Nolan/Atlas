@@ -72,6 +72,33 @@ WHERE DonorId = {existingDonor.DonorId}
             await ReplaceMatchingGroupsForExistingDonorBatch(donors);
         }
 
+        public async Task DeleteDonorAndItsExpandedHla(int donorId)
+        {
+            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+
+                await DeleteMatchingGroupsForExistingDonor(donorId, conn, transaction);
+                await conn.ExecuteAsync("DELETE Donors WHERE DonorId = @DonorId", new { DonorId = donorId }, transaction);
+
+                transaction.Commit();
+                conn.Close();
+            }
+        }
+        
+        private static async Task DeleteMatchingGroupsForExistingDonor(int donorId, IDbConnection connection, IDbTransaction transaction)
+        {
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => DeleteMatchingGroupsForExistingDonorAtLocus(l, donorId, connection, transaction)));
+        }
+
+        private static async Task DeleteMatchingGroupsForExistingDonorAtLocus(Locus locus, int donorId, IDbConnection connection, IDbTransaction transaction)
+        {
+            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
+            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId = @DonorId";
+            await connection.ExecuteAsync(deleteSql, new { DonorId = donorId }, transaction);
+        }
+
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
             await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
