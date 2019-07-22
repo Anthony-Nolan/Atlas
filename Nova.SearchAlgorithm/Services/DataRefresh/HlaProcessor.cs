@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                     
                     await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
                     donorsProcessed += BatchSize;
-                    logger.SendTrace($"Hla Processing {(donorsProcessed/totalDonorCount):0.00%} complete", LogLevel.Info);
+                    logger.SendTrace($"Hla Processing {(double) donorsProcessed/totalDonorCount:0.00%} complete", LogLevel.Info);
                 }
             }
             catch (Exception e)
