@@ -1,5 +1,8 @@
-﻿using Nova.SearchAlgorithm.Extensions;
+﻿using Nova.SearchAlgorithm.ApplicationInsights;
+using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Models;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Http.Exceptions;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services
@@ -15,10 +18,14 @@ namespace Nova.SearchAlgorithm.Services
     public class DonorManagementService : IDonorManagementService
     {
         private readonly IDonorService donorService;
+        private readonly ILogger logger;
 
-        public DonorManagementService(IDonorService donorService)
+        public DonorManagementService(
+            IDonorService donorService,
+            ILogger logger)
         {
             this.donorService = donorService;
+            this.logger = logger;
         }
 
         public async Task ManageDonorByAvailability(DonorAvailabilityUpdate donorAvailabilityUpdate)
@@ -43,7 +50,14 @@ namespace Nova.SearchAlgorithm.Services
 
         private async Task RemoveDonor(int donorId)
         {
-            await donorService.DeleteDonor(donorId);
+            try
+            {
+                await donorService.DeleteDonor(donorId);
+            }
+            catch (NovaNotFoundException exception)
+            {
+                logger.SendEvent(new DonorDeletionFailureEventModel(exception, donorId.ToString()));
+            }
         }
     }
 }
