@@ -56,7 +56,8 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
 
             if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
             {
-                throw new AzureManagementException();
+                throw new AzureManagementException(
+                    $"Database scaling operation of {databaseName} to size {databaseSize} failed. Check Azure for details");
             }
         }
 
