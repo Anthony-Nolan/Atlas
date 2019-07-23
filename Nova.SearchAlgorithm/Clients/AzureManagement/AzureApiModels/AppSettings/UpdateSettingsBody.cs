@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 // ReSharper disable InconsistentNaming
 
@@ -6,7 +7,10 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.AppSetting
 {
     internal class UpdateSettingsBody
     {
-        public string kind { get; set; }
-        public Dictionary<string, string> properties { get; set; }
+        [JsonProperty("kind")]
+        public string Kind { get; set; }
+        
+        [JsonProperty("properties")]
+        public Dictionary<string, string> Properties { get; set; }
     }
 }

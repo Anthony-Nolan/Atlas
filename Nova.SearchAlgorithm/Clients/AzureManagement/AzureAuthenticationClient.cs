@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             }
 
             var responseBody = JsonConvert.DeserializeObject<OAuthResponse>(await response.Content.ReadAsStringAsync());
-            return responseBody.access_token;
+            return responseBody.AccessToken;
         }
     }
 }
