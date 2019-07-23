@@ -1,5 +1,3 @@
-// ReSharper disable InconsistentNaming
-
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -26,16 +24,16 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.Database
     {
         [JsonProperty("percentComplete")]
         public int PercentComplete { get; set; }
-        
+
         [JsonProperty("operation")]
         public string Operation { get; set; }
-        
+
         [JsonProperty("state")]
         public AzureDatabaseOperationState State { get; set; }
-        
+
         [JsonProperty("startTime")]
         public DateTime StartTime { get; set; }
-        
+
         [JsonProperty("databaseName")]
         public string DatabaseName { get; set; }
     }

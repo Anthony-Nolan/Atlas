@@ -1,5 +1,3 @@
-// ReSharper disable InconsistentNaming
-
 using Newtonsoft.Json;
 
 namespace Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels

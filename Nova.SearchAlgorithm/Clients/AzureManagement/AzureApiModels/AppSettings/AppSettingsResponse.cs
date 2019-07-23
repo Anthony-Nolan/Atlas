@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-// ReSharper disable InconsistentNaming
-
 namespace Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.AppSettings
 {
     // ReSharper disable once ClassNeverInstantiated.Global
