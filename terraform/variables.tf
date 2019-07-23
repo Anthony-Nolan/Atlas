@@ -99,6 +99,16 @@ variable "MESSAGING_BUS_CONNECTION_STRING" {
   type = string
 }
 
+variable "MESSAGING_BUS_DONOR_TOPIC" {
+  type = string
+  default = "updated-searchable-donors"
+}
+
+variable "MESSAGING_BUS_DONOR_SUBSCRIPTION" {
+  type = string
+  default = "searchalgorithm"
+}
+
 variable "MESSAGING_BUS_SEARCH_REQUESTS_QUEUE" {
   type = string
   default = "search-algorithm-search-requests"
