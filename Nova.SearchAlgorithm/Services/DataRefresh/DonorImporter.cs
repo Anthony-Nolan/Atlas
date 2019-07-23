@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
@@ -48,7 +49,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ContinueDonorImport(await donorInspectionRepository.HighestDonorId());
+                await ContinueDonorImport();
             }
             catch (Exception ex)
             {
@@ -56,15 +57,14 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task ContinueDonorImport(int lastId)
+        private async Task ContinueDonorImport()
         {
-            var nextId = lastId;
+            var nextId = await donorInspectionRepository.HighestDonorId();
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-            var page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+            var page = await FetchDonorPage(nextId);
 
             while (page.DonorsInfo.Any())
             {
@@ -79,12 +79,17 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 stopwatch.Reset();
                 stopwatch.Start();
 
-                logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-                nextId = page.LastId ?? (await donorInspectionRepository.HighestDonorId());
-                page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+                nextId = page.LastId ?? await donorInspectionRepository.HighestDonorId();
+                page = await FetchDonorPage(nextId);
             }
 
             logger.SendTrace("Donor import is complete", LogLevel.Info);
+        }
+
+        private async Task<DonorInfoForSearchAlgorithmPage> FetchDonorPage(int nextId)
+        {
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+            return await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
         }
     }
 }
