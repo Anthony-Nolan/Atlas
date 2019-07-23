@@ -9,14 +9,14 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
     [TestFixture]
     public class AzureFunctionManagerTests
     {
-        private IAzureManagementClient azureManagementClient;
+        private IAzureAppServiceManagementClient azureManagementClient;
 
         private IAzureFunctionManager azureFunctionManager;
 
         [SetUp]
         public void SetUp()
         {
-            azureManagementClient = Substitute.For<IAzureManagementClient>();
+            azureManagementClient = Substitute.For<IAzureAppServiceManagementClient>();
 
             azureFunctionManager = new AzureFunctionManager(azureManagementClient);
         }

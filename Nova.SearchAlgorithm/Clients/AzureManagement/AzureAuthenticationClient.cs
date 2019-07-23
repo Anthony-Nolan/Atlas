@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Settings;
 
@@ -18,10 +19,11 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
     public class AzureAuthenticationClient : IAzureAuthenticationClient
     {
         private const string OAuthBaseUrl = "https://login.microsoftonline.com/ukmarrow.org/oauth2/v2.0/token";
-        private readonly HttpClient httpClient;
-        private readonly AzureManagementSettings settings;
 
-        public AzureAuthenticationClient(IOptions<AzureManagementSettings> azureFunctionOptions)
+        private readonly HttpClient httpClient;
+        private readonly AzureAuthenticationSettings settings;
+
+        public AzureAuthenticationClient(IOptions<AzureAuthenticationSettings> azureFunctionOptions)
         {
             settings = azureFunctionOptions.Value;
 
@@ -47,12 +49,7 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             }
 
             var responseBody = JsonConvert.DeserializeObject<OAuthResponse>(await response.Content.ReadAsStringAsync());
-            return responseBody.access_token;
+            return responseBody.AccessToken;
         }
-    }
-
-    class OAuthResponse
-    {
-        public string access_token { get; set; }
     }
 }
