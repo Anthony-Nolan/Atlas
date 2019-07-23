@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
         {
             azureManagementClient = Substitute.For<IAzureDatabaseManagementClient>();
             threadSleeper = Substitute.For<IThreadSleeper>();
-            var settings = Substitute.For<IOptions<AzureDatabaseManagementSettings>>();
+            var settingsOptions = Substitute.For<IOptions<AzureDatabaseManagementSettings>>();
 
             var defaultOperationTime = DateTime.UtcNow;
             azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(defaultOperationTime);
@@ -37,12 +37,12 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
                     State = AzureDatabaseOperationState.Succeeded, StartTime = defaultOperationTime
                 }
             });
-            settings.Value.Returns(new AzureDatabaseManagementSettings());
+            settingsOptions.Value.Returns(new AzureDatabaseManagementSettings{ ServerName = "server-name"});
 
             azureDatabaseManager = new AzureDatabaseManager(
                 azureManagementClient,
                 threadSleeper,
-                settings
+                settingsOptions
             );
         }
 
