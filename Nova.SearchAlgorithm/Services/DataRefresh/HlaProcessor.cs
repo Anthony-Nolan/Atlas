@@ -12,18 +12,19 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
+namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
-    public interface IHlaUpdateService
+    public interface IHlaProcessor
     {
         /// <summary>
-        /// For any donors with a higher id than the last updated donor, fetches p-groups for all donor's hla
-        /// And stores the pre-processed p-groups for use in matching
+        /// For any donors with a higher id than the last updated donor:
+        ///  - Fetches p-groups for all donor's hla
+        ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
         Task UpdateDonorHla();
     }
 
-    public class HlaUpdateService : IHlaUpdateService
+    public class HlaProcessor : IHlaProcessor
     {
         private readonly ILogger logger;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
@@ -35,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
 
-        public HlaUpdateService(
+        public HlaProcessor(
             ILogger logger,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
@@ -59,24 +60,11 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
 
         public async Task UpdateDonorHla()
         {
-            try
-            {
-                await PerformUpfrontSetup();
-            }
-            catch (Exception e)
-            {
-                logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
-                throw;
-            }
+            await PerformUpfrontSetup();
 
             try
             {
-                var batchedQuery = await donorInspectionRepository.DonorsAddedSinceLastHlaUpdate();
-                while (batchedQuery.HasMoreResults)
-                {
-                    var donorBatch = await batchedQuery.RequestNextAsync();
-                    await UpdateDonorBatch(donorBatch.ToList());
-                }
+                await PerformHlaUpdate();
             }
             catch (Exception e)
             {
@@ -86,6 +74,42 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
             finally
             {
                 await PerformTearDown();
+            }
+        }
+
+        private async Task PerformUpfrontSetup()
+        {
+            try
+            {
+                var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
+
+                // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
+                await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+                await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+
+                // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
+                await antigenCachingService.GenerateAntigenCache();
+
+                // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
+                var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
+                pGroupRepository.InsertPGroups(pGroups);
+
+                await donorImportRepository.FullHlaRefreshSetUp();
+            }
+            catch (Exception e)
+            {
+                logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
+                throw;
+            }
+        }
+
+        private async Task PerformHlaUpdate()
+        {
+            var batchedQuery = await donorInspectionRepository.DonorsAddedSinceLastHlaUpdate();
+            while (batchedQuery.HasMoreResults)
+            {
+                var donorBatch = await batchedQuery.RequestNextAsync();
+                await UpdateDonorBatch(donorBatch.ToList());
             }
         }
 
@@ -104,24 +128,6 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
                 {"NumberOfDonors", inputDonors.Count().ToString()},
                 {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
             });
-        }
-
-        private async Task PerformUpfrontSetup()
-        {
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetHlaDatabaseVersion();
-            
-            // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-            await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-            await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-
-            // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
-            await antigenCachingService.GenerateAntigenCache();
-
-            // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
-            var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
-            pGroupRepository.InsertPGroups(pGroups);
-
-            await donorImportRepository.FullHlaRefreshSetUp();
         }
 
         private async Task PerformTearDown()

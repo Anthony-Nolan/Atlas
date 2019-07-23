@@ -3,8 +3,7 @@ using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Config;
-using Nova.SearchAlgorithm.Services;
-using Nova.SearchAlgorithm.Services.DonorImport;
+using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.Http.Exceptions;
 using NSubstitute;
@@ -30,7 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Services
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
             mapper = AutomapperConfig.CreateMapper();
-            donorService = new SearchAlgorithm.Services.DonorImport.DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
+            donorService = new SearchAlgorithm.Services.Donors.DonorService(importRepository, expandHlaPhenotypeService, inspectionRepository, mapper);
         }
 
         [Test]

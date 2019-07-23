@@ -6,13 +6,11 @@ using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.Services.DonorImport;
-using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
+using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NSubstitute;
 using NUnit.Framework;
@@ -21,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 {
     public class DonorImportTests
     {
-        private IDonorImportService donorImportService;
+        private IDonorImporter donorImporter;
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
         
@@ -35,7 +33,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
             inspectionRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-            donorImportService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportService>();
+            donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
 
             MockDonorServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IDonorServiceClient>();
             
@@ -56,7 +54,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 DonorWithId(lowerId),
             });
 
-            await donorImportService.StartDonorImport();
+            await donorImporter.StartDonorImport();
 
             await MockDonorServiceClient.Received().GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), higherId);
         }
@@ -82,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
                 });
 
-            await donorImportService.StartDonorImport();
+            await donorImporter.StartDonorImport();
             var donor = await inspectionRepo.GetDonor(newDonorId);
 
             donor.Should().NotBeNull();
@@ -112,7 +110,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
                 });
 
-            await donorImportService.StartDonorImport();
+            await donorImporter.StartDonorImport();
             var donor = await inspectionRepo.GetDonor(newDonorId);
 
             donor.DonorType.Should().Be(expectedDonorType);
@@ -139,7 +137,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
                 });
 
-            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImportService.StartDonorImport());
+            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.StartDonorImport());
         }
 
         [TestCase("DKMS", RegistryCode.DKMS)]
@@ -168,7 +166,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
                 });
 
-            await donorImportService.StartDonorImport();
+            await donorImporter.StartDonorImport();
             var donor = await inspectionRepo.GetDonor(newDonorId);
 
             donor.RegistryCode.Should().Be(expectedRegistry);
@@ -195,7 +193,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
                 });
 
-            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImportService.StartDonorImport());
+            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.StartDonorImport());
         }
 
         private static InputDonor DonorWithId(int id)

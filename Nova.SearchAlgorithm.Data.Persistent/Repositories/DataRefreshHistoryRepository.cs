@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 
 namespace Nova.SearchAlgorithm.Data.Persistent.Repositories
@@ -8,6 +11,14 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Repositories
     {
         /// <returns>The transient database for which the refresh job was most recently completed</returns>
         TransientDatabase? GetActiveDatabase();
+        
+        /// <returns>The wmda database version used in the most recently completed refresh job</returns>
+        string GetActiveWmdaDataVersion();
+
+        IEnumerable<DataRefreshRecord> GetInProgressJobs();
+        Task<int> Create(DataRefreshRecord dataRefreshRecord);
+        Task UpdateFinishTime(int recordId, DateTime finishTimeUtc);
+        Task UpdateSuccessFlag(int recordId, bool wasSuccess);
     }
     
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -21,7 +32,7 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Repositories
         
         public TransientDatabase? GetActiveDatabase()
         {
-            var lastCompletedRecord = GetLastCompletedRecord();
+            var lastCompletedRecord = GetLastSuccessfulRecord();
             if (lastCompletedRecord == null)
             {
                 return null;
@@ -29,10 +40,42 @@ namespace Nova.SearchAlgorithm.Data.Persistent.Repositories
             return (TransientDatabase) Enum.Parse(typeof(TransientDatabase), lastCompletedRecord.Database);
         }
 
-        private DataRefreshRecord GetLastCompletedRecord()
+        public string GetActiveWmdaDataVersion()
+        {
+            var lastCompletedRecord = GetLastSuccessfulRecord();
+            return lastCompletedRecord?.WmdaDatabaseVersion;
+        }
+
+        public IEnumerable<DataRefreshRecord> GetInProgressJobs()
+        {
+            return context.DataRefreshRecords.Where(r => r.RefreshEndUtc == null);
+        }
+
+        public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
+        {
+            context.DataRefreshRecords.Add(dataRefreshRecord);
+            await context.SaveChangesAsync();
+            return dataRefreshRecord.Id;
+        }
+
+        public async Task UpdateFinishTime(int recordId, DateTime finishTimeUtc)
+        {
+            var record = await context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
+            record.RefreshEndUtc = finishTimeUtc;
+            await context.SaveChangesAsync();
+        }
+
+        public async Task UpdateSuccessFlag(int recordId, bool wasSuccess)
+        {
+            var record = await context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
+            record.WasSuccessful = wasSuccess;
+            await context.SaveChangesAsync();
+        }
+
+        private DataRefreshRecord GetLastSuccessfulRecord()
         {
             return context.DataRefreshRecords
-                .Where(r => r.RefreshEndUtc != null)
+                .Where(r => r.RefreshEndUtc != null && r.WasSuccessful == true)
                 .OrderByDescending(r => r.RefreshEndUtc)
                 .FirstOrDefault();
         }

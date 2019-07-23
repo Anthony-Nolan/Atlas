@@ -9,8 +9,12 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport
+namespace Nova.SearchAlgorithm.Services.Donors
 {
+    /// <summary>
+    /// Responsible for handling inbound donor inserts/updates.
+    /// Differentiated from the `IDonorImportService` as it listens for inbound data, rather than polling an external service
+    /// </summary>
     public interface IDonorService
     {
         Task<InputDonor> CreateDonor(InputDonor inputDonor);

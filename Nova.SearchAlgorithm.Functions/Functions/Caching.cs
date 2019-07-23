@@ -1,9 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
-using Nova.SearchAlgorithm.Services.DonorImport;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
@@ -47,7 +45,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetHlaDatabaseVersion();
+            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
             await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);

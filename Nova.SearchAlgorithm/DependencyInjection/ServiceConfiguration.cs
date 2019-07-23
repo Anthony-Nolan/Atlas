@@ -1,4 +1,6 @@
 using System;
+using LazyCache;
+using LazyCache.Providers;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
@@ -8,7 +10,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.Http;
@@ -29,8 +30,8 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
-using Nova.SearchAlgorithm.Services.DonorImport;
-using Nova.SearchAlgorithm.Services.DonorImport.PreProcessing;
+using Nova.SearchAlgorithm.Services.DataRefresh;
+using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Scoring;
@@ -59,6 +60,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<AzureAuthenticationSettings>(configuration.GetSection("AzureManagement.Authentication"));
             services.Configure<AzureAppServiceManagementSettings>(configuration.GetSection("AzureManagement.AppService"));
             services.Configure<AzureDatabaseManagementSettings>(configuration.GetSection("AzureManagement.Database"));
+            services.Configure<DataRefreshSettings>(configuration.GetSection("DataRefresh"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -71,16 +73,19 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddSingleton<ILogger>(sp =>
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
-
-            services.AddScoped<IWmdaLatestVersionFetcher, WmdaLatestVersionFetcher>();
+            services.AddTransient<IAppCache, CachingService>(sp =>
+                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+            );
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
-            services.AddScoped<IDonorService, Services.DonorImport.DonorService>();
+            services.AddScoped<IDonorService, Services.Donors.DonorService>();
             services.AddScoped<IDonorManagementService, DonorManagementService>();
 
             services.AddScoped<ISearchService, SearchService>();
-            services.AddScoped<IDonorImportService, DonorImportService>();
-            services.AddScoped<IHlaUpdateService, HlaUpdateService>();
+            services.AddScoped<IDonorImporter, DonorImporter>();
+            services.AddScoped<IHlaProcessor, HlaProcessor>();
+            services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
+            services.AddScoped<IDataRefreshService, DataRefreshService>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services
@@ -107,9 +112,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IMatchingDictionaryService, MatchingDictionaryService>();
 
-            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>(sp =>
-                new WmdaHlaVersionProvider(sp.GetService<IOptions<WmdaSettings>>().Value.HlaDatabaseVersion)
-            );
+            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {
@@ -144,8 +147,10 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             // Persistent storage
             services.AddScoped(sp =>
-                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"])
-            );
+            {
+                var persistentConnectionString = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"];
+                return new ContextFactory().Create(persistentConnectionString);
+            });
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
 
@@ -153,7 +158,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 new TransientSqlConnectionStringProvider(
                     sp.GetService<IDataRefreshHistoryRepository>(),
                     sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"],
-                    sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"]
+                    sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"],
+                    sp.GetService<IAppCache>()
                 )
             );
         }

@@ -36,6 +36,7 @@ namespace Nova.SearchAlgorithm.Functions
             builder.RegisterSettings<AzureAuthenticationSettings>("AzureManagement.Authentication");
             builder.RegisterSettings<AzureAppServiceManagementSettings>("AzureManagement.AppService");
             builder.RegisterSettings<AzureDatabaseManagementSettings>("AzureManagement.Database");
+            builder.RegisterSettings<DataRefreshSettings>("DataRefresh");
         }
     }
 

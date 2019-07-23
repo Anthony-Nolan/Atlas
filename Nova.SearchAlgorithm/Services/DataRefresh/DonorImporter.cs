@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
+namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
-    public interface IDonorImportService
+    /// <summary>
+    /// Responsible for fetching all eligible donors for the search algorithm
+    /// </summary>
+    public interface IDonorImporter
     {
         /// <summary>
         /// Fetches all donors with a higher id than the highest existing donor, and stores their data in the donor table
@@ -20,7 +24,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         Task StartDonorImport();
     }
 
-    public class DonorImportService : IDonorImportService
+    public class DonorImporter : IDonorImporter
     {
         private const int DonorPageSize = 100;
 
@@ -29,7 +33,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
-        public DonorImportService(
+        public DonorImporter(
             IDonorInspectionRepository donorInspectionRepository,
             IDonorImportRepository donorImportRepository,
             IDonorServiceClient donorServiceClient,
@@ -45,7 +49,7 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
         {
             try
             {
-                await ContinueDonorImport(await donorInspectionRepository.HighestDonorId());
+                await ContinueDonorImport();
             }
             catch (Exception ex)
             {
@@ -53,15 +57,14 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
             }
         }
 
-        private async Task ContinueDonorImport(int lastId)
+        private async Task ContinueDonorImport()
         {
-            var nextId = lastId;
+            var nextId = await donorInspectionRepository.HighestDonorId();
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-            var page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+            var page = await FetchDonorPage(nextId);
 
             while (page.DonorsInfo.Any())
             {
@@ -76,12 +79,17 @@ namespace Nova.SearchAlgorithm.Services.DonorImport.PreProcessing
                 stopwatch.Reset();
                 stopwatch.Start();
 
-                logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-                nextId = page.LastId ?? (await donorInspectionRepository.HighestDonorId());
-                page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+                nextId = page.LastId ?? await donorInspectionRepository.HighestDonorId();
+                page = await FetchDonorPage(nextId);
             }
 
             logger.SendTrace("Donor import is complete", LogLevel.Info);
+        }
+
+        private async Task<DonorInfoForSearchAlgorithmPage> FetchDonorPage(int nextId)
+        {
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+            return await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
         }
     }
 }
