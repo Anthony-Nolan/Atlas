@@ -28,6 +28,9 @@
     "MessagingServiceBus.ConnectionString": "override-this",
     "MessagingServiceBus.SearchRequestsQueue": "search-algorithm-search-requests-local",
     "MessagingServiceBus.SearchResultsTopic": "search-algorithm-results-notifications",
+    "NotificationsServiceBus.AlertsTopic": "support-alerts",
+    "NotificationsServiceBus.ConnectionString": "override-this",
+    "NotificationsServiceBus.NotificationsTopic": "support-notifications",
     "Wmda.HlaDatabaseVersion": "3330",
     "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"

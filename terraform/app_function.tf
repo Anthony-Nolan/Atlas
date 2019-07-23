@@ -28,6 +28,9 @@ locals {
     "MessagingServiceBus.ConnectionString"         = var.MESSAGING_BUS_CONNECTION_STRING
     "MessagingServiceBus.SearchRequestsQueue"      = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
     "MessagingServiceBus.SearchResultsTopic"       = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
+    "NotificationsServiceBus.AlertsTopic"          = var.NOTIFICATIONS_BUS_ALERTS_TOPIC
+    "NotificationsServiceBus.ConnectionString"     = var.NOTIFICATIONS_BUS_CONNECTION_STRING
+    "NotificationsServiceBus.NotificationsTopic"   = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC
     "Wmda.HlaDatabaseVersion"                      = var.WMDA_HLA_DATABASE_VERSION
     "Wmda.WmdaFileUri"                             = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"    = "1"
