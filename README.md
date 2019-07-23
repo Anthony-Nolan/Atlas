@@ -30,6 +30,9 @@ The solution is split across multiple projects:
     better suited to a functions app than a traditional web api. 
     - Note that this app should always be deployed to an *app service plan* not a consumption plan - as we require the 
     longer timeout of an app service plan, plus we do not want the app to automatically scale
+- Nova.SearchAlgorithm.Functions.DonorManagement
+    - Azure functions app responsible only for ongoing donor imports / updates
+    - Needs to be an independent app so that the three-monthly full data refresh can disable these functions for the duration of the refresh
 - Nova.SearchAlgorithm.MatchingDictionary
     - Responsible for maintaining and accessing the "matching dictionary" - a set of tables in Azure Storage which act 
     as an interface for allele details published by WMDA

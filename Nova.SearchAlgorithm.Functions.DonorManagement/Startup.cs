@@ -1,11 +1,11 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.DependencyInjection;
-using Nova.SearchAlgorithm.Functions;
 using Nova.SearchAlgorithm.Settings;
+using Startup = Nova.SearchAlgorithm.Functions.DonorManagement.Startup;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
-namespace Nova.SearchAlgorithm.Functions
+namespace Nova.SearchAlgorithm.Functions.DonorManagement
 {
     public class Startup : FunctionsStartup
     {
@@ -22,15 +22,7 @@ namespace Nova.SearchAlgorithm.Functions
         {
             builder.AddUserSecrets();
             builder.RegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
-            builder.RegisterSettings<AzureStorageSettings>("AzureStorage");
-            builder.RegisterSettings<DonorServiceSettings>("Client.DonorService");
-            builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
-            builder.RegisterSettings<WmdaSettings>("Wmda");
             builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
-            builder.RegisterSettings<AzureAuthenticationSettings>("AzureManagement.Authentication");
-            builder.RegisterSettings<AzureAppServiceManagementSettings>("AzureManagement.AppService");
-            builder.RegisterSettings<AzureDatabaseManagementSettings>("AzureManagement.Database");
-            builder.RegisterSettings<DataRefreshSettings>("DataRefresh");
         }
     }
 }
