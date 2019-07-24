@@ -39,8 +39,8 @@ locals {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.search_algorithm.instrumentation_key
     "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL,
     "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
-    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
-    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
+    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
+    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
   }
 }
