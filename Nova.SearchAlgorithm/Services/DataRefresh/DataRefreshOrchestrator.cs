@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// If true, the refresh will not remove existing data, instead only importing / processing new donors.
         /// This should only be triggered manually if a refresh failed
         /// </param>
-        Task RefreshDataIfNecessary(bool isContinuedRefresh = false);
+        Task RefreshDataIfNecessary(bool shouldForceRefresh = false, bool isContinuedRefresh = false);
     }
 
     public class DataRefreshOrchestrator : IDataRefreshOrchestrator
@@ -59,9 +59,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.notificationSender = notificationSender;
         }
 
-        public async Task RefreshDataIfNecessary(bool isContinuedRefresh)
+        public async Task RefreshDataIfNecessary(bool shouldForceRefresh, bool isContinuedRefresh)
         {
-            if (!HasNewWmdaDataBeenPublished())
+            if (!shouldForceRefresh && !HasNewWmdaDataBeenPublished())
             {
                 logger.SendTrace("No new WMDA Hla data has been published. Data refresh not started.", LogLevel.Info);
                 return;

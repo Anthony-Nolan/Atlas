@@ -77,6 +77,18 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
+        
+        [Test]
+        public async Task RefreshDataIfNecessary_WhenCurrentWmdaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
+        {
+            const string wmdaVersion = "3330";
+            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(wmdaVersion);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
+
+            await dataRefreshService.Received().RefreshData(Arg.Any<string>());
+        }
 
         [Test]
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_TriggersDataRefresh()
@@ -97,6 +109,16 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
+        }
+        
+        [Test]
+        public async Task RefreshDataIfNecessary_WhenShouldForceRefresh_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
             await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
