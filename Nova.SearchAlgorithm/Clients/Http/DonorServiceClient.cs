@@ -1,13 +1,11 @@
-using Newtonsoft.Json;
-using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
-using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Client;
-using Nova.Utils.Http;
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Nova.DonorService.Client.Models.SearchableDonors;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Client;
+using Nova.Utils.Http;
 
 namespace Nova.SearchAlgorithm.Clients.Http
 {
@@ -23,21 +21,7 @@ namespace Nova.SearchAlgorithm.Clients.Http
         /// that any client paging through donors won't miss out if donors are inserted or deleted in-between page requests.
         /// If null or omitted, the first page of results will be returned.</param>
         /// <returns>A page of donors Info for search algorithm</returns>
-        Task<DonorInfoForSearchAlgorithmPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null);
-
-        /// <summary>
-        /// Returns all donors whose personal details have changed since the provided date.
-        /// </summary>
-        /// <param name="dateSince">Donors who have changed on or since this date will be returned.</param>
-        /// <returns>A list of donors.</returns>
-        Task<List<DonorInfoForSearchAlgorithm>> GetDonorsInfoForSearchAlgorithmChangedSince(DateTime dateSince);
-
-        /// <summary>
-        /// Returns all donors info for the new search algorithm whose HLA details have changed since the provided date.
-        /// </summary>
-        /// <param name="dateSince">Donors info who have changed on or since this date will be returned.</param>
-        /// <returns>A list of donors info for the new search algorithm.</returns>
-        Task<List<DonorInfoForSearchAlgorithm>> GetDonorsInfoHlaChangedSince(DateTime dateSince);
+        Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null);
     }
 
     public class DonorServiceClient : ClientBase, IDonorServiceClient
@@ -51,7 +35,7 @@ namespace Nova.SearchAlgorithm.Clients.Http
         {
         }
 
-        public async Task<DonorInfoForSearchAlgorithmPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
+        public async Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
         {
             var parameters = new List<KeyValuePair<string, string>>
             {
@@ -63,27 +47,7 @@ namespace Nova.SearchAlgorithm.Clients.Http
             }
 
             var request = GetRequest(HttpMethod.Get, "donors-info-for-search-algorithm", parameters);
-            return await MakeRequestAsync<DonorInfoForSearchAlgorithmPage>(request);
-        }
-
-        public async Task<List<DonorInfoForSearchAlgorithm>> GetDonorsInfoForSearchAlgorithmChangedSince(DateTime dateSince)
-        {
-            var parameters = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("dateSince", dateSince.ToString())
-            };
-            var request = GetRequest(HttpMethod.Get, "donors-info-for-search-algorithm/changed-since", parameters);
-            return await MakeRequestAsync<List<DonorInfoForSearchAlgorithm>>(request);
-        }
-
-        public async Task<List<DonorInfoForSearchAlgorithm>> GetDonorsInfoHlaChangedSince(DateTime dateSince)
-        {
-            var parameters = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("dateSince", dateSince.ToString())
-            };
-            var request = GetRequest(HttpMethod.Get, "donors-info-for-search-algorithm/hla-changed-since", parameters);
-            return await MakeRequestAsync<List<DonorInfoForSearchAlgorithm>>(request);
+            return await MakeRequestAsync<SearchableDonorInformationPage>(request);
         }
     }
 }

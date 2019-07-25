@@ -4,7 +4,7 @@ using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
-namespace Nova.SearchAlgorithm.Config.Mappings
+namespace Nova.SearchAlgorithm.Mapping
 {
     public class ScoringResultProfile : Profile
     {
