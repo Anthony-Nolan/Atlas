@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
                 var donorAvailabilityUpdate = new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
-                    DonorInfo = update.SearchableDonorInformation.ToInputDonor(),
+                    DonorInfo = update.SearchableDonorInformation?.ToInputDonor(),
                     IsAvailableForSearch = update.IsAvailableForSearch
                 };
                 return donorAvailabilityUpdate;
