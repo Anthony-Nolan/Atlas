@@ -2,8 +2,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
-using Nova.DonorService.SearchAlgorithm.Models.DonorInfoForSearchAlgorithm;
+using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Clients.Http;
@@ -22,7 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorImporter donorImporter;
         private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
-        
+
         private IDonorServiceClient MockDonorServiceClient { get; set; }
 
         private const string DefaultDonorType = "a";
@@ -36,10 +35,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
 
             MockDonorServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IDonorServiceClient>();
-            
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
             {
-                DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                DonorsInfo = new List<SearchableDonorInformation>()
             });
         }
 
@@ -63,11 +62,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task DonorImport_AddsNewDonorsToDatabase()
         {
             var newDonorId = DonorIdGenerator.NextId();
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    DonorsInfo = new List<SearchableDonorInformation>
                     {
-                        new DonorInfoForSearchAlgorithm
+                        new SearchableDonorInformation
                         {
                             DonorId = newDonorId,
                             DonorType = DefaultDonorType,
@@ -75,9 +74,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                         }
                     }
                 },
-                new DonorInfoForSearchAlgorithmPage
+                new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                    DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
             await donorImporter.StartDonorImport();
@@ -93,11 +92,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task DonorImport_ParsesDonorTypeCorrectly(string rawDonorType, DonorType expectedDonorType)
         {
             var newDonorId = DonorIdGenerator.NextId();
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    DonorsInfo = new List<SearchableDonorInformation>
                     {
-                        new DonorInfoForSearchAlgorithm
+                        new SearchableDonorInformation
                         {
                             DonorId = newDonorId,
                             DonorType = rawDonorType,
@@ -105,9 +104,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                         }
                     }
                 },
-                new DonorInfoForSearchAlgorithmPage
+                new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                    DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
             await donorImporter.StartDonorImport();
@@ -115,16 +114,16 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 
             donor.DonorType.Should().Be(expectedDonorType);
         }
-        
+
         [Test]
         public void DonorImport_WhenDonorHasUnrecognisedDonorType_ThrowsException()
         {
             const string unexpectedDonorType = "fossil";
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    DonorsInfo = new List<SearchableDonorInformation>
                     {
-                        new DonorInfoForSearchAlgorithm
+                        new SearchableDonorInformation
                         {
                             DonorId = DonorIdGenerator.NextId(),
                             DonorType = unexpectedDonorType,
@@ -132,9 +131,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                         }
                     }
                 },
-                new DonorInfoForSearchAlgorithmPage
+                new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                    DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
             Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.StartDonorImport());
@@ -149,11 +148,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task DonorImport_ParsesRegistryCorrectly(string rawRegistry, RegistryCode expectedRegistry)
         {
             var newDonorId = DonorIdGenerator.NextId();
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    DonorsInfo = new List<SearchableDonorInformation>
                     {
-                        new DonorInfoForSearchAlgorithm
+                        new SearchableDonorInformation
                         {
                             DonorId = newDonorId,
                             DonorType = DefaultDonorType,
@@ -161,9 +160,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                         }
                     }
                 },
-                new DonorInfoForSearchAlgorithmPage
+                new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                    DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
             await donorImporter.StartDonorImport();
@@ -171,16 +170,16 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 
             donor.RegistryCode.Should().Be(expectedRegistry);
         }
-        
+
         [Test]
         public void DonorImport_WhenDonorHasUnrecognisedRegistryCode_ThrowsException()
         {
             const string unexpectedRegistryCode = "MARS";
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new DonorInfoForSearchAlgorithmPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>
+                    DonorsInfo = new List<SearchableDonorInformation>
                     {
-                        new DonorInfoForSearchAlgorithm
+                        new SearchableDonorInformation
                         {
                             DonorId = DonorIdGenerator.NextId(),
                             DonorType = DefaultDonorType,
@@ -188,9 +187,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                         }
                     }
                 },
-                new DonorInfoForSearchAlgorithmPage
+                new SearchableDonorInformationPage
                 {
-                    DonorsInfo = new List<DonorInfoForSearchAlgorithm>()
+                    DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
             Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.StartDonorImport());
@@ -205,9 +204,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 DonorId = id,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A = { Position1 = "01:01", Position2 = "30:02:01:01"},
-                    B = { Position1 = "07:02", Position2 = "08:01"},
-                    Drb1 = { Position1 = "01:11", Position2 = "03:41"},
+                    A = {Position1 = "01:01", Position2 = "30:02:01:01"},
+                    B = {Position1 = "07:02", Position2 = "08:01"},
+                    Drb1 = {Position1 = "01:11", Position2 = "03:41"},
                 }
             };
         }

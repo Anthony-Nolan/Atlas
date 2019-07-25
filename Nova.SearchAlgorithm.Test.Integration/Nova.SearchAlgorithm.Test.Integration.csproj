@@ -34,6 +34,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="Nova.DonorService.Client.Models, Version=2.10.1.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\Nova.Donor\Nova.DonorService.Client.Models\bin\Debug\netstandard2.0\Nova.DonorService.Client.Models.dll</HintPath>
+      </Reference>
       <Reference Include="Nova.DonorService.SearchAlgorithm.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\..\Nova.Donor\Nova.DonorService.SearchAlgorithm.Models\bin\Debug\netstandard2.0\Nova.DonorService.SearchAlgorithm.Models.dll</HintPath>
       </Reference>

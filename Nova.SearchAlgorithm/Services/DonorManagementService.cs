@@ -1,5 +1,4 @@
 ﻿using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Http.Exceptions;
@@ -45,7 +44,7 @@ namespace Nova.SearchAlgorithm.Services
         {
             await donorService.CreateOrUpdateDonorBatch(new[]
             {
-                donorAvailabilityUpdate.DonorInfo.ToInputDonor()
+                donorAvailabilityUpdate.DonorInfo
             });
         }
 
