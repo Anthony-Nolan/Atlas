@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
@@ -28,18 +29,18 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     {
         private const int DonorPageSize = 100;
 
-        private readonly IDataRefreshRepository repository;
+        private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImporter(
-            IDataRefreshRepository repository,
+            IDataRefreshRepository dataRefreshRepository,
             IDonorImportRepository donorImportRepository,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
-            this.repository = repository;
+            this.dataRefreshRepository = dataRefreshRepository;
             this.donorImportRepository = donorImportRepository;
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
@@ -49,7 +50,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ContinueDonorImport(await repository.HighestDonorId());
+                await ContinueDonorImport();
             }
             catch (Exception ex)
             {
@@ -58,15 +59,14 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task ContinueDonorImport(int lastId)
+        private async Task ContinueDonorImport()
         {
-            var nextId = lastId;
+            var nextId = await dataRefreshRepository.HighestDonorId();
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-            var page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+            var page = await FetchDonorPage(nextId);
 
             while (page.DonorsInfo.Any())
             {
@@ -81,12 +81,17 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 stopwatch.Reset();
                 stopwatch.Start();
 
-                logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-                nextId = page.LastId ?? (await repository.HighestDonorId());
-                page = await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+                nextId = page.LastId ?? await dataRefreshRepository.HighestDonorId();
+                page = await FetchDonorPage(nextId);
             }
 
             logger.SendTrace("Donor import is complete", LogLevel.Info);
+        }
+
+        private async Task<SearchableDonorInformationPage> FetchDonorPage(int nextId)
+        {
+            logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
+            return await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaDatabaseVersion()
         {
-            return cache.GetOrAdd("currentWmdaVersion", () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
+            return cache.GetOrAdd("activeWmdaVersion", () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
         }
 
         public string GetLatestHlaDatabaseVersion()

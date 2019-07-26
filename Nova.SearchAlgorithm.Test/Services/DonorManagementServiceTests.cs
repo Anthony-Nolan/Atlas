@@ -36,13 +36,13 @@ namespace Nova.SearchAlgorithm.Test.Services
         public async Task ManageDonorByAvailability_DonorIsAvailableForSearch_DonorIsAddedOrUpdated()
         {
             const int donorId = 456;
-            const string registryCode = "AN";
-            const string donorType = "A";
+            const RegistryCode registryCode = RegistryCode.AN;
+            const DonorType donorType = DonorType.Adult;
 
             await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
             {
                 DonorId = donorId,
-                DonorInfo = new DonorInfo { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
+                DonorInfo = new InputDonor { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
                 IsAvailableForSearch = true
             });
 
@@ -50,21 +50,19 @@ namespace Nova.SearchAlgorithm.Test.Services
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x => 
                     x.Single().DonorId == donorId &&
-                    x.Single().RegistryCode == RegistryCode.AN &&
-                    x.Single().DonorType == DonorType.Adult));
+                    x.Single().RegistryCode == registryCode &&
+                    x.Single().DonorType == donorType));
         }
 
         [Test]
         public async Task ManageDonorByAvailability_DonorIsAvailableForSearch_DonorIsNotDeleted()
         {
             const int donorId = 456;
-            const string registryCode = "AN";
-            const string donorType = "A";
 
             await donorManagementService.ManageDonorByAvailability(new DonorAvailabilityUpdate
             {
                 DonorId = donorId,
-                DonorInfo = new DonorInfo { DonorId = donorId, RegistryCode = registryCode, DonorType = donorType },
+                DonorInfo = new InputDonor { DonorId = donorId, RegistryCode = RegistryCode.AN, DonorType = DonorType.Adult },
                 IsAvailableForSearch = true
             });
 
