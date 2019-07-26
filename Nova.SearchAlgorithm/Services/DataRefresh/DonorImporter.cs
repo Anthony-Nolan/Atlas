@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
+using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
@@ -87,7 +87,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
 
-        private async Task<DonorInfoForSearchAlgorithmPage> FetchDonorPage(int nextId)
+        private async Task<SearchableDonorInformationPage> FetchDonorPage(int nextId)
         {
             logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
             return await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);

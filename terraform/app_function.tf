@@ -26,6 +26,8 @@ locals {
     "DataRefresh.DormantDatabaseSize"              = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh.RefreshDatabaseSize"              = var.DATA_REFRESH_DB_SIZE_REFRESH
     "MessagingServiceBus.ConnectionString"         = var.MESSAGING_BUS_CONNECTION_STRING
+    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
+    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "MessagingServiceBus.SearchRequestsQueue"      = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
     "MessagingServiceBus.SearchResultsTopic"       = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
     "Wmda.HlaDatabaseVersion"                      = var.WMDA_HLA_DATABASE_VERSION

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Nova.DonorService.Client.Models.DonorInfoForSearchAlgorithm;
+using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
 using Nova.Utils.Http;
@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Clients.Http
         /// that any client paging through donors won't miss out if donors are inserted or deleted in-between page requests.
         /// If null or omitted, the first page of results will be returned.</param>
         /// <returns>A page of donors Info for search algorithm</returns>
-        Task<DonorInfoForSearchAlgorithmPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null);
+        Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null);
     }
 
     public class DonorServiceClient : ClientBase, IDonorServiceClient
@@ -29,7 +29,7 @@ namespace Nova.SearchAlgorithm.Clients.Http
         {
         }
 
-        public async Task<DonorInfoForSearchAlgorithmPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
+        public async Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
         {
             var parameters = new List<KeyValuePair<string, string>>
             {
@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Clients.Http
             }
 
             var request = GetRequest(HttpMethod.Get, "donors-info-for-search-algorithm", parameters);
-            return await MakeRequestAsync<DonorInfoForSearchAlgorithmPage>(request);
+            return await MakeRequestAsync<SearchableDonorInformationPage>(request);
         }
     }
 }
