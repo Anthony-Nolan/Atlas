@@ -12,7 +12,6 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder);
-            builder.Services.RegisterClients();
             builder.Services.RegisterDataServices();
             builder.Services.RegisterMatchingDictionaryTypes();
             builder.Services.RegisterSearchAlgorithmTypes();

@@ -10,13 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoMapper" Version="6.1.1" />
+      <PackageReference Include="AutoMapper" Version="8.1.1" />
       <PackageReference Include="LazyCache" Version="2.0.1" />
       <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
-      <PackageReference Include="Nova.DonorService.SearchAlgorithm.Models" Version="1.0.0" />
+      <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
       <PackageReference Include="Nova.Utils.Notifications" Version="11.0.5" />
       <PackageReference Include="Nova.Utils.Storage" Version="11.0.4" />

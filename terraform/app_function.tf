@@ -26,6 +26,8 @@ locals {
     "DataRefresh.DormantDatabaseSize"              = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh.RefreshDatabaseSize"              = var.DATA_REFRESH_DB_SIZE_REFRESH
     "MessagingServiceBus.ConnectionString"         = var.MESSAGING_BUS_CONNECTION_STRING
+    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
+    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "MessagingServiceBus.SearchRequestsQueue"      = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
     "MessagingServiceBus.SearchResultsTopic"       = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
     "NotificationsServiceBus.AlertsTopic"          = var.NOTIFICATIONS_BUS_ALERTS_TOPIC
@@ -42,8 +44,8 @@ locals {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.search_algorithm.instrumentation_key
     "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL,
     "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
-    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
-    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
+    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
+    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
   }
 }

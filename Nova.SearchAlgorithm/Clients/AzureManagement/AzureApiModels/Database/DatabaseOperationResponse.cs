@@ -1,7 +1,6 @@
-// ReSharper disable InconsistentNaming
-
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 
 namespace Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.Database
@@ -9,22 +8,33 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement.AzureApiModels.Database
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class DatabaseOperationResponse
     {
-        public IEnumerable<DatabaseOperationValue> value { get; set; }
+        [JsonProperty("value")]
+        public IEnumerable<DatabaseOperationValue> Value { get; set; }
     }
 
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class DatabaseOperationValue
     {
-        public DatabaseOperationProperties properties { get; set; }
+        [JsonProperty("properties")]
+        public DatabaseOperationProperties Properties { get; set; }
     }
 
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class DatabaseOperationProperties
     {
-        public int percentComplete { get; set; }
-        public string operation { get; set; }
-        public AzureDatabaseOperationState state { get; set; }
-        public DateTime startTime { get; set; }
-        public string databaseName { get; set; }
+        [JsonProperty("percentComplete")]
+        public int PercentComplete { get; set; }
+
+        [JsonProperty("operation")]
+        public string Operation { get; set; }
+
+        [JsonProperty("state")]
+        public AzureDatabaseOperationState State { get; set; }
+
+        [JsonProperty("startTime")]
+        public DateTime StartTime { get; set; }
+
+        [JsonProperty("databaseName")]
+        public string DatabaseName { get; set; }
     }
 }
