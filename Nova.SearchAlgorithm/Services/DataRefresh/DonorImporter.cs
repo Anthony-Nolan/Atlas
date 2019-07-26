@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.Utils.ApplicationInsights;
@@ -21,31 +22,31 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// Fetches all donors with a higher id than the highest existing donor, and stores their data in the donor table
         /// Does not perform analysis of donor p-groups
         /// </summary>
-        Task StartDonorImport();
+        Task ImportDonors();
     }
 
     public class DonorImporter : IDonorImporter
     {
         private const int DonorPageSize = 100;
 
-        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly ILogger logger;
 
         public DonorImporter(
-            IDonorInspectionRepository donorInspectionRepository,
+            IDataRefreshRepository dataRefreshRepository,
             IDonorImportRepository donorImportRepository,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
-            this.donorInspectionRepository = donorInspectionRepository;
+            this.dataRefreshRepository = dataRefreshRepository;
             this.donorImportRepository = donorImportRepository;
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
         }
 
-        public async Task StartDonorImport()
+        public async Task ImportDonors()
         {
             try
             {
@@ -59,7 +60,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task ContinueDonorImport()
         {
-            var nextId = await donorInspectionRepository.HighestDonorId();
+            var nextId = await dataRefreshRepository.HighestDonorId();
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -79,7 +80,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 stopwatch.Reset();
                 stopwatch.Start();
 
-                nextId = page.LastId ?? await donorInspectionRepository.HighestDonorId();
+                nextId = page.LastId ?? await dataRefreshRepository.HighestDonorId();
                 page = await FetchDonorPage(nextId);
             }
 

@@ -1,23 +1,38 @@
 locals {
   func_app_settings = {
-    "ApplicationInsights.InstrumentationKey"           = azurerm_application_insights.search_algorithm.instrumentation_key
+    "ApplicationInsights.InstrumentationKey"       = azurerm_application_insights.search_algorithm.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
-    "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.search_algorithm.instrumentation_key
-    "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL,
-    "AzureStorage.ConnectionString"                    = var.CONNECTION_STRING_STORAGE
-    "AzureStorage.SearchResultsBlobContainer"          = var.AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER
-    "Client.DonorService.ApiKey"                       = data.terraform_remote_state.donor.outputs.donor_service.api_key
-    "Client.DonorService.BaseUrl"                      = data.terraform_remote_state.donor.outputs.donor_service.base_url
-    "Client.HlaService.ApiKey"                         = data.terraform_remote_state.hla.outputs.hla_service.api_key
-    "Client.HlaService.BaseUrl"                        = data.terraform_remote_state.hla.outputs.hla_service.base_url
-    "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
+    "APPINSIGHTS_INSTRUMENTATIONKEY"               = azurerm_application_insights.search_algorithm.instrumentation_key
+    "ApplicationInsights.LogLevel"                 = var.APPLICATION_INSIGHTS_LOG_LEVEL,
+    "AzureManagement.Authentication.ClientId"      = var.AZURE_CLIENT_ID
+    "AzureManagement.Authentication.ClientSecret"  = var.AZURE_CLIENT_SECRET
+    "AzureManagement.AppService.ResourceGroupName" = azurerm_app_service_plan.search_algorithm.resource_group_name
+    "AzureManagement.AppService.SubscriptionId"    = var.FUNCTION_APP_SUBSCRIPTION_ID
+    "AzureManagement.Database.ServerName"          = var.DATABASE_SERVER_NAME
+    "AzureManagement.Database.ResourceGroupName"   = var.DATABASE_RESOURCE_GROUP
+    "AzureManagement.Database.SubscriptionId"      = var.DATABASE_SUBSCRIPTION_ID
+    "AzureStorage.ConnectionString"                = var.CONNECTION_STRING_STORAGE
+    "AzureStorage.SearchResultsBlobContainer"      = var.AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER
+    "Client.DonorService.ApiKey"                   = data.terraform_remote_state.donor.outputs.donor_service.api_key
+    "Client.DonorService.BaseUrl"                  = data.terraform_remote_state.donor.outputs.donor_service.base_url
+    "Client.HlaService.ApiKey"                     = data.terraform_remote_state.hla.outputs.hla_service.api_key
+    "Client.HlaService.BaseUrl"                    = data.terraform_remote_state.hla.outputs.hla_service.base_url
+    "DataRefresh.ActiveDatabaseSize"               = var.DATA_REFRESH_DB_SIZE_ACTIVE
+    "DataRefresh.CronTab"                          = var.DATA_REFRESH_CRONTAB
+    "DataRefresh.DatabaseAName"                    = var.DATA_REFRESH_DATABASE_A_NAME
+    "DataRefresh.DatabaseBName"                    = var.DATA_REFRESH_DATABASE_B_NAME
+    "DataRefresh.DonorImportFunctionName"          = var.DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME
+    "DataRefresh.DonorFunctionsAppName"            = var.DATA_REFRESH_DONOR_IMPORT_FUNCTIONS_APP_NAME
+    "DataRefresh.DormantDatabaseSize"              = var.DATA_REFRESH_DB_SIZE_DORMANT
+    "DataRefresh.RefreshDatabaseSize"              = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "MessagingServiceBus.ConnectionString"         = var.MESSAGING_BUS_CONNECTION_STRING
     "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
     "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
-    "MessagingServiceBus.SearchRequestsQueue"          = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
-    "MessagingServiceBus.SearchResultsTopic"           = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
-    "Wmda.HlaDatabaseVersion"                          = var.WMDA_HLA_DATABASE_VERSION
-    "Wmda.WmdaFileUri"                                 = var.WMDA_FILE_URL
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
+    "MessagingServiceBus.SearchRequestsQueue"      = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
+    "MessagingServiceBus.SearchResultsTopic"       = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
+    "Wmda.HlaDatabaseVersion"                      = var.WMDA_HLA_DATABASE_VERSION
+    "Wmda.WmdaFileUri"                             = var.WMDA_FILE_URL
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"    = "1"
   }
 }
 

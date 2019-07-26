@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
@@ -10,16 +11,28 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
-        public DataRefresh(IDonorImporter donorImporter, IHlaProcessor hlaProcessor, IDataRefreshOrchestrator dataRefreshOrchestrator)
+        public DataRefresh(
+            IDonorImporter donorImporter,
+            IHlaProcessor hlaProcessor,
+            IDataRefreshOrchestrator dataRefreshOrchestrator,
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+        }
+
+        [FunctionName("RunDataRefreshManual")]
+        public async Task RunDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
+        {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
 
         [FunctionName("RunDataRefresh")]
-        public async Task RunDataRefresh([HttpTrigger] HttpRequest httpRequest)
+        public async Task RunDataRefresh([TimerTrigger("%DataRefresh.CronTab%")] TimerInfo timerInfo)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
@@ -27,13 +40,13 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         [FunctionName("RunDonorImport")]
         public async Task RunDonorImport([HttpTrigger] HttpRequest httpRequest)
         {
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
         }
 
         [FunctionName("ProcessDonorHla")]
         public async Task RunHlaRefresh([HttpTrigger] HttpRequest httpRequest)
         {
-            await hlaProcessor.UpdateDonorHla();
+            await hlaProcessor.UpdateDonorHla(wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
     }
 }

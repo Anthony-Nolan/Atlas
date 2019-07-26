@@ -8,6 +8,8 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NUnit.Framework;
@@ -20,6 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorInspectionRepository inspectionRepo;
         private IHlaProcessor processor;
 
+        private const string DefaultHlaDatabaseVersion = "3330";
         // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
         private readonly Tuple<string, int> hlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 213);
 
@@ -37,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
-            await processor.UpdateDonorHla();
+            await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
             var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
@@ -49,7 +52,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
-            await processor.UpdateDonorHla();
+            await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
             pGroups.First().PGroupNames.A.Position1.Count().Should().Be(hlaWithKnownPGroups1.Item2);
@@ -61,11 +64,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
 
-            await processor.UpdateDonorHla();
+            await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
             var initialPGroupCountAtA1 =
                 (await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId})).First().PGroupNames.A.Position1.Count();
 
-            await processor.UpdateDonorHla();
+            await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
             pGroups.First().PGroupNames.A.Position1.Count().Should().Be(initialPGroupCountAtA1);
         }
@@ -75,11 +78,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var inputDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
-            await processor.UpdateDonorHla();
+            await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
             var newDonor = DonorWithId(DonorIdGenerator.NextId());
             await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
-            await processor.UpdateDonorHla();
+            await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {newDonor.DonorId});
             pGroups.Should().NotBeEmpty();

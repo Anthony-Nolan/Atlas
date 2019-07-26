@@ -2,6 +2,8 @@ using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.Http.Exceptions;
 using System.Collections.Generic;
@@ -27,18 +29,18 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
     public class DonorService : IDonorService
     {
-        private readonly IDonorImportRepository donorImportRepository;
+        private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IMapper mapper;
 
         public DonorService(
-            IDonorImportRepository donorImportRepository,
+            IDonorUpdateRepository donorUpdateRepository,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IDonorInspectionRepository donorInspectionRepository,
             IMapper mapper)
         {
-            this.donorImportRepository = donorImportRepository;
+            this.donorUpdateRepository = donorUpdateRepository;
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.donorInspectionRepository = donorInspectionRepository;
             this.mapper = mapper;
@@ -63,7 +65,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                 throw new NovaNotFoundException($"Donor ID {donorId} does not exist in the database.");
             }
 
-            await donorImportRepository.DeleteDonorAndItsExpandedHla(donorId);
+            await donorUpdateRepository.DeleteDonorAndItsExpandedHla(donorId);
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
@@ -84,7 +86,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     return CombineDonorAndExpandedHla(d, hla);
                 }
             ));
-            await donorImportRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }
@@ -125,7 +127,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     return CombineDonorAndExpandedHla(d, hla);
                 }
             ));
-            await donorImportRepository.UpdateBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+            await donorUpdateRepository.UpdateBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
 
             return await GetDonors(inputDonors.Select(d => d.DonorId));
         }

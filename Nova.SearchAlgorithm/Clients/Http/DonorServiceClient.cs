@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
@@ -26,11 +25,6 @@ namespace Nova.SearchAlgorithm.Clients.Http
 
     public class DonorServiceClient : ClientBase, IDonorServiceClient
     {
-        public DonorServiceClient(string baseUrl, string apiKey, string clientName, JsonSerializerSettings jsonSettings) 
-            : base(new ClientSettings{ApiKey = apiKey, BaseUrl = baseUrl, ClientName = "search_algorithm__donor_service_client", JsonSettings = jsonSettings})
-        {
-        }
-
         public DonorServiceClient(ClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null, IErrorsParser errorsParser = null) : base(settings, logger, handler, errorsParser)
         {
         }

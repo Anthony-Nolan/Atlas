@@ -15,10 +15,14 @@ using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
@@ -42,6 +46,7 @@ using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Http.Exceptions;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -65,6 +70,13 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
         {
+            services.AddScoped(sp => new ConnectionStrings
+            {
+                Persistent = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"],
+                TransientA = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"],
+                TransientB = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"],
+            });
+
             services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
 
             services.AddSingleton(sp => AutomapperConfig.CreateMapper());
@@ -76,6 +88,11 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddTransient<IAppCache, CachingService>(sp =>
                 new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
             );
+
+            services.AddScoped<IConnectionStringProvider, ActiveTransientSqlConnectionStringProvider>();
+            services.AddScoped<DormantTransientSqlConnectionStringProvider>();
+            services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
+            services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.Donors.DonorService>();
@@ -141,7 +158,16 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterDataServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorSearchRepository, DonorSearchRepository>();
-            services.AddScoped<IDonorImportRepository, DonorImportRepository>();
+            services.AddScoped<IDonorImportRepository, DonorImportRepository>(sp =>
+                new DonorImportRepository(
+                    sp.GetService<IPGroupRepository>(),
+                    sp.GetService<DormantTransientSqlConnectionStringProvider>()
+                )
+            );
+            services.AddScoped<IDataRefreshRepository, DataRefreshRepository>(sp =>
+                new DataRefreshRepository(sp.GetService<DormantTransientSqlConnectionStringProvider>())
+            );
+            services.AddScoped<IDonorUpdateRepository, DonorUpdateRepository>();
             services.AddScoped<IDonorInspectionRepository, DonorInspectionRepository>();
             services.AddScoped<IPGroupRepository, PGroupRepository>();
 
@@ -153,15 +179,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             });
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
-
-            services.AddScoped<IConnectionStringProvider, TransientSqlConnectionStringProvider>(sp =>
-                new TransientSqlConnectionStringProvider(
-                    sp.GetService<IDataRefreshHistoryRepository>(),
-                    sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"],
-                    sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"],
-                    sp.GetService<IAppCache>()
-                )
-            );
         }
 
         public static void RegisterMatchingDictionaryTypes(this IServiceCollection services)

@@ -14,6 +14,14 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   default = "Info"
 }
 
+variable "AZURE_CLIENT_ID" {
+  type = string
+}
+
+variable "AZURE_CLIENT_SECRET" {
+  type = string
+}
+
 variable "AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER" {
   type = string
   default = "search-algorithm-results"
@@ -32,6 +40,58 @@ variable "CONNECTION_STRING_SQL_PERSISTENT" {
 }
 
 variable "CONNECTION_STRING_STORAGE" {
+  type = string
+}
+
+variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
+  type = string
+  default = "S4"
+}
+
+variable "DATA_REFRESH_DB_SIZE_DORMANT" {
+  type = string
+  default = "S0"
+}
+
+variable "DATA_REFRESH_DB_SIZE_REFRESH" {
+  type = string
+  default = "S0"
+}
+
+variable "DATA_REFRESH_CRONTAB" {
+  type = string
+  default = "0 0 0 * * Monday"
+}
+
+variable "DATA_REFRESH_DATABASE_A_NAME" {
+  type = string
+}
+
+variable "DATA_REFRESH_DATABASE_B_NAME" {
+  type = string
+}
+
+variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
+  type = string
+}
+
+variable "DATA_REFRESH_DONOR_IMPORT_FUNCTIONS_APP_NAME" {
+  type = string
+}
+
+variable "DATABASE_RESOURCE_GROUP" {
+  type = string
+}
+
+variable "DATABASE_SERVER_NAME" {
+  type = string
+}
+
+variable "DATABASE_SUBSCRIPTION_ID" {
+  type = string
+}
+
+variable "FUNCTION_APP_SUBSCRIPTION_ID" {
   type = string
 }
 

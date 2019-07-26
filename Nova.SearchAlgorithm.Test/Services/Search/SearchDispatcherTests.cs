@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Builders;
 using Nova.Utils.ApplicationInsights;
@@ -25,6 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
         private IResultsBlobStorageClient resultsBlobStorageClient;
+        private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         private SearchDispatcher searchDispatcher;
 
@@ -34,9 +36,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
             searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             searchService = Substitute.For<ISearchService>();
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
+            wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
             var logger = Substitute.For<ILogger>();
 
-            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchService, resultsBlobStorageClient, logger);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchService, resultsBlobStorageClient, logger, wmdaHlaVersionProvider);
         }
 
         [Test]
@@ -84,6 +87,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
+            ));
+        }
+
+        [Test]
+        public async Task RunSearch_PublishesWmdaVersionInNotification()
+        {
+            const string wmdaVersion = "wmda-version";
+            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            
+            await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = "id"});
+
+            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
+                r.WmdaHlaDatabaseVersion == wmdaVersion
             ));
         }
 

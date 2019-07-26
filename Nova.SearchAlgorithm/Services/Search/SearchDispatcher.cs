@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Validators;
 using Nova.Utils.ApplicationInsights;
 
@@ -27,17 +28,20 @@ namespace Nova.SearchAlgorithm.Services.Search
         private readonly ISearchService searchService;
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
+        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public SearchDispatcher(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
             IResultsBlobStorageClient resultsBlobStorageClient,
-            ILogger logger)
+            ILogger logger, 
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
+            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         /// <returns>A unique identifier for the dispatched search request</returns>
@@ -59,6 +63,7 @@ namespace Nova.SearchAlgorithm.Services.Search
         {
             var searchRequestId = identifiedSearchRequest.Id;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
 
             try
             {
@@ -76,6 +81,7 @@ namespace Nova.SearchAlgorithm.Services.Search
                 {
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    WmdaHlaDatabaseVersion = hlaDatabaseVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = resultsBlobStorageClient.GetResultsContainerName(),
@@ -90,7 +96,8 @@ namespace Nova.SearchAlgorithm.Services.Search
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
-                    SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion
+                    SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    WmdaHlaDatabaseVersion = hlaDatabaseVersion
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }

@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
+using Nova.SearchAlgorithm.Models.AzureManagement;
+using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
+using Nova.SearchAlgorithm.Settings;
+using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
 using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -16,9 +21,14 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
     public class DataRefreshOrchestratorTests
     {
         private ILogger logger;
+        private IOptions<DataRefreshSettings> settingsOptions;
         private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshService dataRefreshService;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
+
+        private IAzureFunctionManager azureFunctionManager;
+        private IAzureDatabaseManager azureDatabaseManager;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
 
@@ -26,14 +36,29 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public void SetUp()
         {
             logger = Substitute.For<ILogger>();
+            settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshService = Substitute.For<IDataRefreshService>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
+            azureFunctionManager = Substitute.For<IAzureFunctionManager>();
+            azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
 
+            settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
             wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("new");
 
-            dataRefreshOrchestrator = new DataRefreshOrchestrator(logger, wmdaHlaVersionProvider, dataRefreshService, dataRefreshHistoryRepository);
+            dataRefreshOrchestrator = new DataRefreshOrchestrator(
+                logger,
+                settingsOptions,
+                wmdaHlaVersionProvider,
+                activeDatabaseProvider,
+                dataRefreshService,
+                dataRefreshHistoryRepository,
+                azureFunctionManager,
+                azureDatabaseManager,
+                new AzureDatabaseNameProvider(settingsOptions)
+            );
         }
 
         [Test]
@@ -45,7 +70,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>());
+            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
 
         [Test]
@@ -56,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.Received().RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>());
+            await dataRefreshService.Received().RefreshData(Arg.Any<string>());
         }
 
         [Test]
@@ -68,7 +93,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>());
+            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
 
         [Test]
@@ -79,7 +104,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.Received().RefreshData(Arg.Any<TransientDatabase>(), latestWmdaVersion);
+            await dataRefreshService.Received().RefreshData(latestWmdaVersion);
         }
 
         [Test]
@@ -105,7 +130,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_WhenDatabaseAActive_StoresRefreshRecordOfDatabaseB()
         {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseB);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -117,55 +142,13 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_WhenDatabaseBActive_StoresRefreshRecordOfDatabaseA()
         {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
                 r.Database == "DatabaseA"
             ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenNoDatabaseActive_StoresRefreshRecordOfDatabaseA()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns((TransientDatabase?) null);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
-                r.Database == "DatabaseA"
-            ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenDatabaseAActive_RefreshesDatabaseB()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshService.RefreshData(TransientDatabase.DatabaseB, Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenDatabaseBActive_RefreshesDatabaseA()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshService.RefreshData(TransientDatabase.DatabaseA, Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenNoDatabaseActive_RefreshesDatabaseA()
-        {
-            dataRefreshHistoryRepository.GetActiveDatabase().Returns((TransientDatabase?) null);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshService.RefreshData(TransientDatabase.DatabaseA, Arg.Any<string>());
         }
 
         [Test]
@@ -180,7 +163,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 r.WmdaDatabaseVersion == latestWmdaVersion
             ));
         }
-        
+
         [Test]
         public async Task RefreshDataIfNecessary_WhenJobSuccessful_StoresRecordAsSuccess()
         {
@@ -188,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), true);
         }
-        
+
         [Test]
         public async Task RefreshDataIfNecessary_WhenJobSuccessful_StoresFinishTime()
         {
@@ -201,7 +184,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_LogsExceptionDetails()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>()).Throws(new Exception(exceptionMessage));
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -212,7 +195,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresFinishTime()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>()).Throws(new Exception(exceptionMessage));
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -223,11 +206,85 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData(Arg.Any<TransientDatabase>(), Arg.Any<string>()).Throws(new Exception(exceptionMessage));
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), false);
+        }
+        
+        [Test]
+        public async Task RefreshData_StopsDonorImportFunction()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DonorFunctionsAppName, "functions-app")
+                .With(s => s.DonorImportFunctionName, "import-func")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureFunctionManager.Received().StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+        }
+
+        [Test]
+        public async Task RefreshData_RestartsDonorImportFunction()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DonorFunctionsAppName, "functions-app")
+                .With(s => s.DonorImportFunctionName, "import-func")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+        }
+        
+        [Test]
+        public async Task RefreshData_ScalesActiveDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+        }
+        
+        [Test]
+        public async Task RefreshData_WhenRefreshFails_DoesNotScaleActiveDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception());
+            
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+        }
+        
+        [Test]
+        public async Task RefreshData_WhenRefreshFails_RestartsDonorImportFunction()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DonorFunctionsAppName, "functions-app")
+                .With(s => s.DonorImportFunctionName, "import-func")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception());
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
@@ -166,10 +167,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void AddDonorsToRepository()
         {
-            var importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
             foreach (var donor in BuildInputDonors())
             {
-                Task.Run(() => importRepo.InsertDonorWithExpandedHla(donor)).Wait();
+                Task.Run(() => donorRepo.InsertDonorWithExpandedHla(donor)).Wait();
             }
         }
 

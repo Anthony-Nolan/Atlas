@@ -8,6 +8,8 @@ using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
@@ -53,7 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                 DonorWithId(lowerId),
             });
 
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
 
             await MockDonorServiceClient.Received().GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), higherId);
         }
@@ -79,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
             var donor = await inspectionRepo.GetDonor(newDonorId);
 
             donor.Should().NotBeNull();
@@ -109,7 +111,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
             var donor = await inspectionRepo.GetDonor(newDonorId);
 
             donor.DonorType.Should().Be(expectedDonorType);
@@ -136,7 +138,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.StartDonorImport());
+            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.ImportDonors());
         }
 
         [TestCase("DKMS", RegistryCode.DKMS)]
@@ -165,7 +167,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            await donorImporter.StartDonorImport();
+            await donorImporter.ImportDonors();
             var donor = await inspectionRepo.GetDonor(newDonorId);
 
             donor.RegistryCode.Should().Be(expectedRegistry);
@@ -192,7 +194,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.StartDonorImport());
+            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.ImportDonors());
         }
 
         private static InputDonor DonorWithId(int id)

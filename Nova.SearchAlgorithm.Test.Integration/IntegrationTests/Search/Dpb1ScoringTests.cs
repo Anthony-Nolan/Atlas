@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
@@ -171,10 +172,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             return phenotype;
         }
 
-        private int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
+        private static int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
             var testDonor = BuildTestDonor(testDonorPhenotype);
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
+            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
             return testDonor.DonorId;
         }
