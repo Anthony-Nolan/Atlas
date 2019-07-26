@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
-        <VersionPrefix>7.0.2</VersionPrefix>
+        <VersionPrefix>7.1.0</VersionPrefix>
         <AzureFunctionsVersion>v2</AzureFunctionsVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
@@ -14,6 +14,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.28" />
+        <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
     </ItemGroup>
     <ItemGroup>
         <None Update="host.json">

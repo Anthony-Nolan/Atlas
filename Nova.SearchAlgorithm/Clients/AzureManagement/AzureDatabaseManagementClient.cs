@@ -48,10 +48,11 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new AzureManagementException();
+                throw new AzureManagementException(
+                    $"Failed to trigger database scaling of {databaseName} to size {databaseSize}. {await response.Content.ReadAsStringAsync()}");
             }
 
-            return JsonConvert.DeserializeObject<UpdateDatabaseResponse>(await response.Content.ReadAsStringAsync()).startTime;
+            return JsonConvert.DeserializeObject<UpdateDatabaseResponse>(await response.Content.ReadAsStringAsync()).StartTime;
         }
 
         public async Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName)
@@ -64,18 +65,19 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new AzureManagementException();
+                throw new AzureManagementException(
+                    $"Failed to fetch ongoing database operations for {databaseName}. {await response.Content.ReadAsStringAsync()}");
             }
 
             var operationsResponseData = JsonConvert.DeserializeObject<DatabaseOperationResponse>(await response.Content.ReadAsStringAsync());
 
-            return operationsResponseData.value.Select(o => new DatabaseOperation
+            return operationsResponseData.Value.Select(o => new DatabaseOperation
             {
-                Operation = o.properties.operation,
-                State = o.properties.state,
-                PercentComplete = o.properties.percentComplete,
-                DatabaseName = o.properties.databaseName,
-                StartTime = o.properties.startTime,
+                Operation = o.Properties.Operation,
+                State = o.Properties.State,
+                PercentComplete = o.Properties.PercentComplete,
+                DatabaseName = o.Properties.DatabaseName,
+                StartTime = o.Properties.StartTime,
             });
         }
 

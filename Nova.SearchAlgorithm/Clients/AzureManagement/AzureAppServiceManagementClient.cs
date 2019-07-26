@@ -44,15 +44,16 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
             var responseMessage = await HttpClient.PostAsync(getAppSettingsUrl, new StringContent(""));
             if (!responseMessage.IsSuccessStatusCode)
             {
-                throw new AzureManagementException();
+                throw new AzureManagementException(
+                    $"Failed to fetch app settings for {appServiceName}. {await responseMessage.Content.ReadAsStringAsync()}");
             }
 
-            return JsonConvert.DeserializeObject<AppSettingsResponse>(await responseMessage.Content.ReadAsStringAsync()).properties;
+            return JsonConvert.DeserializeObject<AppSettingsResponse>(await responseMessage.Content.ReadAsStringAsync()).Properties;
         }
 
         private async Task PostAppSettings(string appServiceName, Dictionary<string, string> appSettings)
         {
-            var updateSettingsBody = new UpdateSettingsBody {properties = appSettings};
+            var updateSettingsBody = new UpdateSettingsBody {Properties = appSettings};
             var postAppSettingsUrl = $"{GetAppSettingsUrlPath(appServiceName)}?api-version={AzureApiVersion}";
             var stringContent = new StringContent(JsonConvert.SerializeObject(updateSettingsBody), Encoding.UTF8, "application/json");
 
@@ -60,7 +61,8 @@ namespace Nova.SearchAlgorithm.Clients.AzureManagement
 
             if (!updateResponse.IsSuccessStatusCode)
             {
-                throw new AzureManagementException();
+                throw new AzureManagementException(
+                    $"Failed to update app settings for {appServiceName}. {await updateResponse.Content.ReadAsStringAsync()}");
             }
         }
 

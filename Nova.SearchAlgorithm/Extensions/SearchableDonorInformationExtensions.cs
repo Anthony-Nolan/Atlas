@@ -1,13 +1,13 @@
-﻿using Nova.SearchAlgorithm.Client.Models.Donors;
+﻿using Nova.DonorService.Client.Models.SearchableDonors;
+using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Helpers;
-using Nova.SearchAlgorithm.Models;
 
 namespace Nova.SearchAlgorithm.Extensions
 {
-    public static class DonorInfoExtensions
+    public static class SearchableDonorInformationExtensions
     {
-        public static InputDonor ToInputDonor(this DonorInfo donor)
+        public static InputDonor ToInputDonor(this SearchableDonorInformation donor)
         {
             return new InputDonor
             {
@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Extensions
             };
         }
 
-        private static PhenotypeInfo<string> HlaAsPhenotype(this DonorInfo donor)
+        private static PhenotypeInfo<string> HlaAsPhenotype(this SearchableDonorInformation donor)
         {
             return new PhenotypeInfo<string>
             {

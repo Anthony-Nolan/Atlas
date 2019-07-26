@@ -64,7 +64,8 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
             if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
             {
                 logger.SendTrace($"Error scaling {databaseName} to size: {databaseSize}. State: {databaseOperation.State}", LogLevel.Info);
-                throw new AzureManagementException();
+                throw new AzureManagementException(
+                    $"Database scaling operation of {databaseName} to size {databaseSize} failed. Check Azure for details");
             }
             
             logger.SendTrace($"Finished scaling {databaseName} to size: {databaseSize}", LogLevel.Info);
