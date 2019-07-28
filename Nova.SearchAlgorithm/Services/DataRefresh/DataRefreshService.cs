@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Settings;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
@@ -37,6 +38,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
+        private readonly ILogger logger;
 
         public DataRefreshService(
             IOptions<DataRefreshSettings> dataRefreshSettingsOptions,
@@ -46,7 +48,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IDonorImportRepository donorImportRepository,
             IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
             IDonorImporter donorImporter,
-            IHlaProcessor hlaProcessor)
+            IHlaProcessor hlaProcessor,
+            ILogger logger)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
@@ -55,6 +58,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.recreateMatchingDictionaryService = recreateMatchingDictionaryService;
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
+            this.logger = logger;
             settingsOptions = dataRefreshSettingsOptions;
         }
 
@@ -62,30 +66,49 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ScaleUpDatabase();
-                await donorImportRepository.RemoveAllDonorInformation();
-                await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
-                await donorImporter.ImportDonors();
-                await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
-                await ScaleDownDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
+                await RecreateMatchingDictionary(wmdaDatabaseVersion);
+                await RemoveExistingDonorData();
+                await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
+                await ImportDonors();
+                await ProcessDonorHla(wmdaDatabaseVersion);
+                await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
             }
             catch (Exception)
             {
-                await ScaleDownDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
+                logger.SendTrace($"DATA REFRESH: Refresh failed. Scaling down database to dormant size: {wmdaDatabaseVersion}", LogLevel.Info);
+                await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
                 throw;
             }
         }
 
-        private async Task ScaleUpDatabase()
+        private async Task RecreateMatchingDictionary(string wmdaDatabaseVersion)
         {
-            var settings = settingsOptions.Value;
-            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, settings.RefreshDatabaseSize.ToAzureDatabaseSize());
+            logger.SendTrace($"DATA REFRESH: Recreating matching dictionary for hla database version: {wmdaDatabaseVersion}", LogLevel.Info);
+            await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
         }
 
-        private async Task ScaleDownDatabase(AzureDatabaseSize targetSize)
+        private async Task RemoveExistingDonorData()
+        {
+            logger.SendTrace("DATA REFRESH: Removing existing donor data", LogLevel.Info);
+            await donorImportRepository.RemoveAllDonorInformation();
+        }
+
+        private async Task ImportDonors()
+        {
+            logger.SendTrace("DATA REFRESH: Importing Donors", LogLevel.Info);
+            await donorImporter.ImportDonors();
+        }
+
+        private async Task ProcessDonorHla(string wmdaDatabaseVersion)
+        {
+            logger.SendTrace($"DATA REFRESH: Processing Donor hla using hla database version: {wmdaDatabaseVersion}", LogLevel.Info);
+            await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
+        }
+
+        private async Task ScaleDatabase(AzureDatabaseSize targetSize)
         {
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
+            logger.SendTrace($"DATA REFRESH: Scaling database: {databaseName} to size {targetSize}", LogLevel.Info);
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
         }
     }

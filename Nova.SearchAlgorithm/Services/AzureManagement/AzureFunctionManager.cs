@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.AzureManagement
 {
@@ -14,21 +15,26 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
         private const string LocalAppName = "local";
 
         private readonly IAzureAppServiceManagementClient azureManagementClient;
+        private readonly ILogger logger;
 
-        public AzureFunctionManager(IAzureAppServiceManagementClient azureManagementClient)
+        public AzureFunctionManager(IAzureAppServiceManagementClient azureManagementClient, ILogger logger)
         {
             this.azureManagementClient = azureManagementClient;
+            this.logger = logger;
         }
 
         public async Task StartFunction(string functionsAppName, string functionName)
         {
             if (IsLocal(functionsAppName))
             {
+                logger.SendTrace("Running locally - will not update functions app", LogLevel.Trace);
                 // If running locally, we don't want to make changes to Azure infrastructure
                 return;
             }
 
+            logger.SendTrace($"Starting function: {functionName}", LogLevel.Info);
             await azureManagementClient.SetApplicationSetting(functionsAppName, GetDisabledAppSetting(functionName), "false");
+            logger.SendTrace($"Function started: {functionName}", LogLevel.Info);
         }
 
         public async Task StopFunction(string functionsAppName, string functionName)
@@ -39,7 +45,9 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
                 return;
             }
 
+            logger.SendTrace($"Stopping function: {functionName}", LogLevel.Info);
             await azureManagementClient.SetApplicationSetting(functionsAppName, GetDisabledAppSetting(functionName), "true");
+            logger.SendTrace($"Function stopped: {functionName}", LogLevel.Info);
         }
 
         private static bool IsLocal(string functionsAppName)

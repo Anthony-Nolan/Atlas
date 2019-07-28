@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -23,26 +24,32 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IHlaScoringLookupRepository hlaScoringLookupRepository;
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
+        private readonly ILogger logger;
 
         public RecreateHlaLookupResultsService(
             IHlaLookupResultsService hlaLookupResultsService,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IHlaScoringLookupRepository hlaScoringLookupRepository,
-            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository)
+            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository,
+            ILogger logger)
         {
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.hlaScoringLookupRepository = hlaScoringLookupRepository;
             this.dpb1TceGroupsLookupRepository = dpb1TceGroupsLookupRepository;
+            this.logger = logger;
         }
 
         public async Task RecreateAllHlaLookupResults(string hlaDatabaseVersion)
         {
             try
             {
+                logger.SendTrace("MatchingDictionary: Fetching all lookup results", LogLevel.Info);
                 var allHlaLookupResults = hlaLookupResultsService.GetAllHlaLookupResults(hlaDatabaseVersion);
+                
+                logger.SendTrace("MatchingDictionary: Persisting lookup results", LogLevel.Info);
                 await PersistHlaLookupResultCollection(allHlaLookupResults, hlaDatabaseVersion);
             }
             catch (Exception ex)

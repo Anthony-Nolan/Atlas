@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -18,6 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
     {
         private IAzureDatabaseManagementClient azureManagementClient;
         private IThreadSleeper threadSleeper;
+        private ILogger logger;
 
         private IAzureDatabaseManager azureDatabaseManager;
 
@@ -27,6 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
             azureManagementClient = Substitute.For<IAzureDatabaseManagementClient>();
             threadSleeper = Substitute.For<IThreadSleeper>();
             var settingsOptions = Substitute.For<IOptions<AzureDatabaseManagementSettings>>();
+            logger = Substitute.For<ILogger>();
 
             var defaultOperationTime = DateTime.UtcNow;
             azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(defaultOperationTime);
@@ -42,7 +45,8 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
             azureDatabaseManager = new AzureDatabaseManager(
                 azureManagementClient,
                 threadSleeper,
-                settingsOptions
+                settingsOptions,
+                logger
             );
         }
 

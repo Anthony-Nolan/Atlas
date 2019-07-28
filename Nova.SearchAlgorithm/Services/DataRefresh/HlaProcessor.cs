@@ -74,30 +74,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task PerformUpfrontSetup(string hlaDatabaseVersion)
-        {
-            try
-            {
-                // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-                await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-                await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-
-                // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
-                await antigenCachingService.GenerateAntigenCache();
-
-                // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
-                var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
-                pGroupRepository.InsertPGroups(pGroups);
-
-                await donorImportRepository.FullHlaRefreshSetUp();
-            }
-            catch (Exception e)
-            {
-                logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
-                throw;
-            }
-        }
-
         private async Task PerformHlaUpdate(string hlaDatabaseVersion)
         {
             var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate();
@@ -120,13 +96,42 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             stopwatch.Stop();
             logger.SendTrace("Updated Donors", LogLevel.Info, new Dictionary<string, string>
             {
-                {"NumberOfDonors", inputDonors.Count().ToString()},
+                {"NumberOfDonors", inputDonors.Count.ToString()},
                 {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
             });
         }
 
+        private async Task PerformUpfrontSetup(string hlaDatabaseVersion)
+        {
+            try
+            {
+                logger.SendTrace("HLA PROCESSOR: caching matching dictionary tables", LogLevel.Info);
+                // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
+                await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+                await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+
+                logger.SendTrace("HLA PROCESSOR: caching antigens from hla service", LogLevel.Info);
+                // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
+                await antigenCachingService.GenerateAntigenCache();
+
+                logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
+                // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
+                var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
+                pGroupRepository.InsertPGroups(pGroups);
+
+                logger.SendTrace("HLA PROCESSOR: preparing database", LogLevel.Info);
+                await donorImportRepository.FullHlaRefreshSetUp();
+            }
+            catch (Exception e)
+            {
+                logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
+                throw;
+            }
+        }
+
         private async Task PerformTearDown()
         {
+            logger.SendTrace("HLA PROCESSOR: restoring database", LogLevel.Info);
             await donorImportRepository.FullHlaRefreshTearDown();
         }
 
