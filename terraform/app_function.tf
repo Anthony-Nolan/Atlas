@@ -30,7 +30,6 @@ locals {
     "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "MessagingServiceBus.SearchRequestsQueue"      = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
     "MessagingServiceBus.SearchResultsTopic"       = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
-    "Wmda.HlaDatabaseVersion"                      = var.WMDA_HLA_DATABASE_VERSION
     "Wmda.WmdaFileUri"                             = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"    = "1"
   }
