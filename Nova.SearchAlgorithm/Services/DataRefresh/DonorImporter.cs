@@ -9,7 +9,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly ILogger logger;
 
         public DonorImporter(
-            ITransientRepositoryFactory repositoryFactory,
+            IDormantRepositoryFactory repositoryFactory,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {

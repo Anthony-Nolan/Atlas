@@ -3,6 +3,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
@@ -22,7 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         private IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private IPGroupRepository pGroupRepository;
-        private ITransientRepositoryFactory repositoryFactory;
+        private IDormantRepositoryFactory repositoryFactory;
 
         private IHlaProcessor hlaProcessor;
 
@@ -37,7 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             hlaMatchingLookupRepository = Substitute.For<IHlaMatchingLookupRepository>();
             alleleNamesLookupRepository = Substitute.For<IAlleleNamesLookupRepository>();
             pGroupRepository = Substitute.For<IPGroupRepository>();
-            repositoryFactory = Substitute.For<ITransientRepositoryFactory>();
+            repositoryFactory = Substitute.For<IDormantRepositoryFactory>();
 
             repositoryFactory.GetDataRefreshRepository().Returns(dataRefreshRepository);
             repositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
@@ -51,27 +52,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 hlaMatchingLookupRepository,
                 alleleNamesLookupRepository
             );
-        }
-
-        [Test]
-        public void HlaProcessor_UsesDormantPGroupRepository()
-        {
-            repositoryFactory.Received().GetPGroupRepository(false);
-            repositoryFactory.DidNotReceive().GetPGroupRepository(true);
-        }
-
-        [Test]
-        public void HlaProcessor_UsesDormantDonorImportRepository()
-        {
-            repositoryFactory.Received().GetDonorImportRepository(false);
-            repositoryFactory.DidNotReceive().GetDonorImportRepository(true);
-        }
-
-        [Test]
-        public void HlaProcessor_UsesDormantDataRefreshRepository()
-        {
-            repositoryFactory.Received().GetDataRefreshRepository(false);
-            repositoryFactory.DidNotReceive().GetDataRefreshRepository(true);
         }
     }
 }

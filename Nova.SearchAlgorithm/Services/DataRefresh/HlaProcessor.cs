@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 
@@ -42,16 +43,16 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             ILogger logger,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
-            ITransientRepositoryFactory repositoryFactory,
+            IDormantRepositoryFactory repositoryFactory,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupRepository alleleNamesLookupRepository)
         {
             this.logger = logger;
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
-            donorImportRepository = repositoryFactory.GetDonorImportRepository(false);
-            dataRefreshRepository = repositoryFactory.GetDataRefreshRepository(false);
-            pGroupRepository = repositoryFactory.GetPGroupRepository(false);
+            donorImportRepository = repositoryFactory.GetDonorImportRepository();
+            dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
+            pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
         }
