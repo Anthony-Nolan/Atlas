@@ -12,6 +12,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DataRefreshRepository : Repository, IDataRefreshRepository
     {
+        public static int NumberOfBatchesOverlapOnRestart = 2;
+    
         public DataRefreshRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
         }
@@ -29,7 +31,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             var highestDonorId = await GetHighestDonorIdForWhichHlaHasBeenProcessed();
 
             // Continue from an earlier donor than the highest imported donor id, in case hla processing was only successful for some loci for previous batch
-            var donorToContinueFrom = highestDonorId - (batchSize * 2);
+            var donorToContinueFrom = highestDonorId - (batchSize * NumberOfBatchesOverlapOnRestart);
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
@@ -58,16 +60,13 @@ SELECT COUNT(*) FROM DONORS
             using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var maxDonorIdAtDrb1 = await connection.QuerySingleOrDefaultAsync<int>(@"
-SELECT TOP(1) DonorId FROM MatchingHlaAtDrb1 m
-ORDER BY m.DonorId DESC
+SELECT MAX(DonorId) FROM MatchingHlaAtDrb1
 ", 0);
                 var maxDonorIdAtB = await connection.QuerySingleOrDefaultAsync<int>(@"
-SELECT TOP(1) DonorId FROM MatchingHlaAtB m
-ORDER BY m.DonorId DESC
+SELECT MAX(DonorId) FROM MatchingHlaAtB
 ", 0);
                 var maxDonorIdAtA = await connection.QuerySingleOrDefaultAsync<int>(@"
-SELECT TOP(1) DonorId FROM MatchingHlaAtA m
-ORDER BY m.DonorId DESC
+SELECT MAX(DonorId) FROM MatchingHlaAtA
 ", 0);
 
                 return Math.Min(maxDonorIdAtA, Math.Min(maxDonorIdAtB, maxDonorIdAtDrb1));
