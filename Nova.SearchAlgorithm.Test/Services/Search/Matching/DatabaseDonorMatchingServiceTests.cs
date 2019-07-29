@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Builders;
 using NSubstitute;
@@ -49,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
             var matchFilteringService = new MatchFilteringService();
             var databaseFilteringAnalyser = Substitute.For<IDatabaseFilteringAnalyser>();
             var pGroupRepository = Substitute.For<IPGroupRepository>();
-            var repositoryFactory = Substitute.For<ITransientRepositoryFactory>();
+            var repositoryFactory = Substitute.For<IActiveRepositoryFactory>();
 
             repositoryFactory.GetDonorSearchRepository().Returns(donorSearchRepository);
             repositoryFactory.GetPGroupRepository().Returns(pGroupRepository);

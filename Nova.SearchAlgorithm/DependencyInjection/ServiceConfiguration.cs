@@ -14,16 +14,9 @@ using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
-using Nova.SearchAlgorithm.Data.Repositories;
-using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -36,6 +29,7 @@ using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -48,7 +42,6 @@ using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Http.Exceptions;
 using Nova.Utils.Notifications;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
@@ -168,8 +161,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactory>();
-
+            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactoryBase>();
             // Persistent storage
             services.AddScoped(sp =>
             {

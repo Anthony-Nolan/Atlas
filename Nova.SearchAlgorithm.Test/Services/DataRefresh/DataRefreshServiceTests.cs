@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
@@ -33,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
         private IDataRefreshService dataRefreshService;
         private ILogger logger;
-        private ITransientRepositoryFactory transientRepositoryFactory;
+        private IDormantRepositoryFactory transientRepositoryFactory;
 
         [SetUp]
         public void SetUp()
@@ -42,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
-            transientRepositoryFactory = Substitute.For<ITransientRepositoryFactory>();
+            transientRepositoryFactory = Substitute.For<IDormantRepositoryFactory>();
             recreateMatchingDictionaryService = Substitute.For<IRecreateHlaLookupResultsService>();
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
@@ -62,12 +63,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 hlaProcessor,
                 logger
             );
-        }
-
-        [Test]
-        public void DataRefreshService_UsesDormantDonorImportDatabase()
-        {
-            transientRepositoryFactory.Received().GetDonorImportRepository(false);
         }
         
         [Test]

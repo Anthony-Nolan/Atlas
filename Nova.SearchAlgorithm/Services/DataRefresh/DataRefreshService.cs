@@ -2,13 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 
@@ -51,7 +50,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IAzureDatabaseManager azureDatabaseManager,
-            ITransientRepositoryFactory repositoryFactory,
+            IDormantRepositoryFactory repositoryFactory,
             IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,

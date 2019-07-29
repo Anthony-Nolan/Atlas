@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NUnit.Framework;
 
@@ -71,11 +72,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void ResolveSearchRepo()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
             // By default donor update and import will happen on different databases - override this for these tests so the same database is used throughout
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
-            donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository(false);
-            inspectionRepo = repositoryFactory.GetDonorInspectionRepository(false);
+            donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
+            inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
         }
 
         [Test]

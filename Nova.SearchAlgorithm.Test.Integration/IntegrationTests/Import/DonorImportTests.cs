@@ -12,6 +12,7 @@ using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NSubstitute;
@@ -33,11 +34,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void SetUp()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
 
             importRepo = repositoryFactory.GetDonorImportRepository();
             // We want to inspect the dormant database, as this is what the import will have run on
-            inspectionRepo = repositoryFactory.GetDonorInspectionRepository(false);
+            inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
             donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
 
             MockDonorServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IDonorServiceClient>();

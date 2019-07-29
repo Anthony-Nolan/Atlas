@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {
@@ -40,7 +41,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
         private readonly IPGroupRepository pGroupRepository;
 
         public DatabaseDonorMatchingService(
-            ITransientRepositoryFactory repositoryFactory,
+            IActiveRepositoryFactory repositoryFactory,
             IMatchFilteringService matchFilteringService,
             IDatabaseFilteringAnalyser databaseFilteringAnalyser
         )

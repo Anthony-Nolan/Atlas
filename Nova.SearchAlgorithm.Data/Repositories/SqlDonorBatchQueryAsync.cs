@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
         private readonly int batchSize;
 
         // Note that giving this class an IQueryable rather than IEnumerable will leave an open db connection through EF
-        // No other IO can be performed by Entity Framework while this is the case - may be worth investigating using IEnumerable instead
+        // No other IO can be performed by Entity Framework while this is the case - do not change to IQueryable
         public SqlDonorBatchQueryAsync(IEnumerable<Donor> donors, int batchSize = DefaultBatchSize)
         {
             this.batchSize = batchSize;

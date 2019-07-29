@@ -124,14 +124,14 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
         public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
-            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtA");
-            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtB");
-            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtC");
-            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDqb1");
-            await RemoveRGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDrb1");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtA");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtB");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtC");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDqb1");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDrb1");
         }
 
-        private async Task RemoveRGroupsForDonorBatchAtLocus(IEnumerable<int> donorIds, string locusTableName)
+        private async Task RemovePGroupsForDonorBatchAtLocus(IEnumerable<int> donorIds, string locusTableName)
         {
             var removalSql = $@"
 DELETE FROM {locusTableName}
