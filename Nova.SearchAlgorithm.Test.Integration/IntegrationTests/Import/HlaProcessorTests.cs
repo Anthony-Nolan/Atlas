@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NSubstitute;
@@ -26,15 +27,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         private const string DefaultHlaDatabaseVersion = "3330";
         // We know the number of p-groups for a given hla string, from the in memory matching dictionary. If the underlying data changes, this may become incorrect.
         private readonly Tuple<string, int> hlaWithKnownPGroups1 = new Tuple<string, int>("01:XX", 213);
-        private ITransientRepositoryFactory repositoryFactory;
 
         [SetUp]
         public void ResolveSearchRepo()
         {
-            repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
             importRepo = repositoryFactory.GetDonorImportRepository();
             // We want to inspect the dormant database, as this is what the import will have run on
-            inspectionRepo = repositoryFactory.GetDonorInspectionRepository(false);
+            inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
             processor = DependencyInjection.DependencyInjection.Provider.GetService<IHlaProcessor>();
         }
         

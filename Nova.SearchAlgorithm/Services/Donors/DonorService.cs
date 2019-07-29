@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {
@@ -37,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
         public DonorService(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
-            ITransientRepositoryFactory repositoryFactory,
+            IActiveRepositoryFactory repositoryFactory,
             IMapper mapper)
         {
             this.mapper = mapper;

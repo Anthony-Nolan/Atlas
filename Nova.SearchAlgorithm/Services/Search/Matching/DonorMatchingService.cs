@@ -7,6 +7,7 @@ using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Matching
@@ -26,7 +27,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public DonorMatchingService(
             IDatabaseDonorMatchingService databaseDonorMatchingService,
-            ITransientRepositoryFactory transientRepositoryFactory,
+            IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
             ILogger logger)

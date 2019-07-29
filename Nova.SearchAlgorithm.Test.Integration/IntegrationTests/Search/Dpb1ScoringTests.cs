@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Integration.TestData;

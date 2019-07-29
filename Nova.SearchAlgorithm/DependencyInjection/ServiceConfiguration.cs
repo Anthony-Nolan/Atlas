@@ -36,6 +36,7 @@ using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -159,7 +160,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactory>();
+            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactoryBase>();
             
             // Persistent storage
             services.AddScoped(sp =>
