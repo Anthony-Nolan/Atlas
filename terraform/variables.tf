@@ -119,11 +119,6 @@ variable "MESSAGING_BUS_SEARCH_RESULTS_TOPIC" {
   default = "search-algorithm-results-notifications"
 }
 
-variable "WMDA_HLA_DATABASE_VERSION" {
-  type = string
-  default = "3330"
-}
-
 variable "WMDA_FILE_URL" {
   type = string
   default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"

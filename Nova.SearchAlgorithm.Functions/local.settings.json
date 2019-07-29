@@ -30,7 +30,6 @@
     "MessagingServiceBus.SearchResultsTopic": "search-algorithm-results-notifications",
     "MessagingServiceBus.DonorManagement.Topic": "updated-searchable-donors",
     "MessagingServiceBus.DonorManagement.Subscription": "local",
-    "Wmda.HlaDatabaseVersion": "3330",
     "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
