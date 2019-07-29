@@ -1,12 +1,9 @@
 using System;
-using System.Threading.Tasks;
-using LazyCache;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
-using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Settings;
 
-namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
+namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders
 {
     /// <summary>
     /// Provides the connection string needed to query the non-persistent sql database.
@@ -16,24 +13,30 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
     {
         protected readonly IActiveDatabaseProvider ActiveDatabaseProvider;
 
-        protected readonly ConnectionStrings ConnectionStrings;
+        private readonly ConnectionStrings connectionStrings;
 
         protected TransientSqlConnectionStringProvider(ConnectionStrings connectionStrings, IActiveDatabaseProvider activeDatabaseProvider)
         {
-            ConnectionStrings = connectionStrings;
+            this.connectionStrings = connectionStrings;
             ActiveDatabaseProvider = activeDatabaseProvider;
         }
 
-        public abstract string GetConnectionString();
+        public string GetConnectionString()
+        {
+            var database = DatabaseType();
+            return GetConnectionString(database);  
+        }
 
-        protected string GetConnectionString(TransientDatabase database)
+        protected abstract TransientDatabase DatabaseType();
+
+        private string GetConnectionString(TransientDatabase database)
         {
             switch (database)
             {
                 case TransientDatabase.DatabaseA:
-                    return ConnectionStrings.TransientA;
+                    return connectionStrings.TransientA;
                 case TransientDatabase.DatabaseB:
-                    return ConnectionStrings.TransientB;
+                    return connectionStrings.TransientB;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

@@ -7,11 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
@@ -29,11 +31,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [SetUp]
         public void ResolveSearchRepo()
         {
-            importRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportRepository>();
-            inspectionRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
+            importRepo = repositoryFactory.GetDonorImportRepository();
+            // We want to inspect the dormant database, as this is what the import will have run on
+            inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
             processor = DependencyInjection.DependencyInjection.Provider.GetService<IHlaProcessor>();
         }
-
+        
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {

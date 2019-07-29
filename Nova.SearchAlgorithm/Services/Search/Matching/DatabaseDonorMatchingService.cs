@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {
@@ -39,16 +41,15 @@ namespace Nova.SearchAlgorithm.Services.Matching
         private readonly IPGroupRepository pGroupRepository;
 
         public DatabaseDonorMatchingService(
-            IDonorSearchRepository donorSearchRepository,
+            IActiveRepositoryFactory repositoryFactory,
             IMatchFilteringService matchFilteringService,
-            IDatabaseFilteringAnalyser databaseFilteringAnalyser,
-            IPGroupRepository pGroupRepository
+            IDatabaseFilteringAnalyser databaseFilteringAnalyser
         )
         {
-            this.donorSearchRepository = donorSearchRepository;
+            donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
+            pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.matchFilteringService = matchFilteringService;
             this.databaseFilteringAnalyser = databaseFilteringAnalyser;
-            this.pGroupRepository = pGroupRepository;
         }
 
         public async Task<IEnumerable<MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, IList<Locus> loci)

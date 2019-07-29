@@ -14,15 +14,15 @@ using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 {
-    public abstract class DonorUpdateRepositoryBase
+    public abstract class DonorUpdateRepositoryBase : Repository
     {
         protected readonly IPGroupRepository pGroupRepository;
-        protected readonly IConnectionStringProvider connectionStringProvider;
 
-        protected DonorUpdateRepositoryBase(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider)
+        protected DonorUpdateRepositoryBase(
+            IPGroupRepository pGroupRepository, 
+            IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
             this.pGroupRepository = pGroupRepository;
-            this.connectionStringProvider = connectionStringProvider;
         }
         
         protected async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
                     donor.HlaNames.Drb1.Position1, donor.HlaNames.Drb1.Position2);
             }
 
-            using (var sqlBulk = new SqlBulkCopy(connectionStringProvider.GetConnectionString()))
+            using (var sqlBulk = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString()))
             {
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = "Donors";
@@ -84,7 +84,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();

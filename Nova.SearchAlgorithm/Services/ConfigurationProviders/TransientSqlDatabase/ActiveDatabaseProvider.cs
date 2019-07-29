@@ -3,7 +3,7 @@ using LazyCache;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 
-namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
+namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase
 {
     public interface IActiveDatabaseProvider
     {

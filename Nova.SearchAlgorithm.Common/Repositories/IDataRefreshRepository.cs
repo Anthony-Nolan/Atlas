@@ -9,6 +9,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories
     public interface IDataRefreshRepository
     {
         Task<int> HighestDonorId();
-        Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate();
+        Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate(int batchSize);
+        Task<int> GetDonorCount();
     }
 }

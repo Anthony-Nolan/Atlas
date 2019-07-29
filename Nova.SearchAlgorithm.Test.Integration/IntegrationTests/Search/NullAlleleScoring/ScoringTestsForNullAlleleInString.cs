@@ -8,6 +8,8 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
@@ -62,8 +64,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
             expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
-            donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
+            donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
             // Matching & scoring assertions are based on the following assumptions:
             // In v.3.3.0 of HLA db, the null allele below is the only null member of the group of alleles beginning with the same first two fields.

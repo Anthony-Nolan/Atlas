@@ -4,12 +4,14 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.Http.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {
@@ -35,15 +37,14 @@ namespace Nova.SearchAlgorithm.Services.Donors
         private readonly IMapper mapper;
 
         public DonorService(
-            IDonorUpdateRepository donorUpdateRepository,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
-            IDonorInspectionRepository donorInspectionRepository,
+            IActiveRepositoryFactory repositoryFactory,
             IMapper mapper)
         {
-            this.donorUpdateRepository = donorUpdateRepository;
-            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
-            this.donorInspectionRepository = donorInspectionRepository;
             this.mapper = mapper;
+            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
+            donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
+            donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
         }
 
         public async Task<InputDonor> CreateDonor(InputDonor inputDonor)

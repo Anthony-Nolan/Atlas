@@ -34,6 +34,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
@@ -89,7 +92,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
             );
 
-            services.AddScoped<IConnectionStringProvider, ActiveTransientSqlConnectionStringProvider>();
+            services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
             services.AddScoped<DormantTransientSqlConnectionStringProvider>();
             services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
             services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
@@ -157,20 +160,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped<IDonorSearchRepository, DonorSearchRepository>();
-            services.AddScoped<IDonorImportRepository, DonorImportRepository>(sp =>
-                new DonorImportRepository(
-                    sp.GetService<IPGroupRepository>(),
-                    sp.GetService<DormantTransientSqlConnectionStringProvider>()
-                )
-            );
-            services.AddScoped<IDataRefreshRepository, DataRefreshRepository>(sp =>
-                new DataRefreshRepository(sp.GetService<DormantTransientSqlConnectionStringProvider>())
-            );
-            services.AddScoped<IDonorUpdateRepository, DonorUpdateRepository>();
-            services.AddScoped<IDonorInspectionRepository, DonorInspectionRepository>();
-            services.AddScoped<IPGroupRepository, PGroupRepository>();
-
+            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactoryBase>();
+            
             // Persistent storage
             services.AddScoped(sp =>
             {

@@ -14,17 +14,15 @@ using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {
-    public class DonorInspectionRepository : IDonorInspectionRepository
+    public class DonorInspectionRepository : Repository, IDonorInspectionRepository
     {
-        private readonly IConnectionStringProvider connectionStringProvider;
-        public DonorInspectionRepository(IConnectionStringProvider connectionStringProvider)
+        public DonorInspectionRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
-            this.connectionStringProvider = connectionStringProvider;
         }
 
         public async Task<DonorResult> GetDonor(int donorId)
         {
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var donor = await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE DonorId = {donorId}");
                 return donor?.ToDonorResult();
@@ -45,7 +43,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
             var results = donorIds
                 .Select(id => new DonorIdWithPGroupNames {DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>()})
                 .ToList();
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
                 foreach (var locus in LocusSettings.MatchingOnlyLoci)
@@ -84,7 +82,7 @@ ON m.DonorId = DonorIds.Id
                 return new List<DonorResult>();
             }
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var sql = $@"
 SELECT * FROM Donors 

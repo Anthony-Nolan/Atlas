@@ -6,6 +6,8 @@ using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -23,8 +25,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         [SetUp]
         public void SetUp()
         {
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+
             donorService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorService>();
-            donorInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+            donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
         }
 
         [Test]

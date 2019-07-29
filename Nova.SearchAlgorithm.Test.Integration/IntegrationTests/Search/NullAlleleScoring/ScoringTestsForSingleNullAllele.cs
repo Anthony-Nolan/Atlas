@@ -8,6 +8,8 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
@@ -160,7 +162,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
             homozygousLocusDonorId = SetUpTestDonor(homozygousByTypingAtOneLocusPhenotype);
         }
 
-        private int SetUpTestDonor(PhenotypeInfo<string> donorPhenotype)
+        private static int SetUpTestDonor(PhenotypeInfo<string> donorPhenotype)
         {
             var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
             var matchingHlaPhenotype = expandHlaPhenotypeService
@@ -171,7 +173,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            var donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
 
             return testDonor.DonorId;

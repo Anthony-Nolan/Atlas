@@ -9,6 +9,8 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
@@ -108,7 +110,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeTearDown]
         public void TearDown()
         {
-            DatabaseManager.ClearDatabase();
+            DatabaseManager.ClearDatabases();
         }
 
         [SetUp]
@@ -167,7 +169,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void AddDonorsToRepository()
         {
-            var donorRepo = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdateRepository>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var donorRepo = repositoryFactory.GetDonorUpdateRepository();
             foreach (var donor in BuildInputDonors())
             {
                 Task.Run(() => donorRepo.InsertDonorWithExpandedHla(donor)).Wait();

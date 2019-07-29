@@ -7,8 +7,11 @@ using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 
@@ -26,11 +29,13 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
     public class HlaProcessor : IHlaProcessor
     {
+        private const int BatchSize = 1000;
+        
         private readonly ILogger logger;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
-        private readonly IDataRefreshRepository repository;
+        private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
@@ -39,20 +44,18 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             ILogger logger,
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
-            IDonorImportRepository donorImportRepository,
-            IDataRefreshRepository repository,
+            IDormantRepositoryFactory repositoryFactory,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
-            IAlleleNamesLookupRepository alleleNamesLookupRepository,
-            IPGroupRepository pGroupRepository)
+            IAlleleNamesLookupRepository alleleNamesLookupRepository)
         {
             this.logger = logger;
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
-            this.donorImportRepository = donorImportRepository;
-            this.repository = repository;
+            donorImportRepository = repositoryFactory.GetDonorImportRepository();
+            dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
+            pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
-            this.pGroupRepository = pGroupRepository;
         }
 
         public async Task UpdateDonorHla(string hlaDatabaseVersion)
@@ -76,18 +79,34 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task PerformHlaUpdate(string hlaDatabaseVersion)
         {
-            var batchedQuery = await repository.DonorsAddedSinceLastHlaUpdate();
-            while (batchedQuery.HasMoreResults)
-            {
-                var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
-                await UpdateDonorBatch(donorBatch, hlaDatabaseVersion);
+            var totalDonorCount = await dataRefreshRepository.GetDonorCount();
+                var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
+                var donorsProcessed = 0;
+                while (batchedQuery.HasMoreResults)
+                {
+                    var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
+                    
+                    // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
+                    // This ensures we do not end up with duplicate p-groups in the matching hla tables
+                    // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
+                    var shouldRemovePGroups = donorsProcessed < DataRefreshRepository.NumberOfBatchesOverlapOnRestart * BatchSize;
+                    
+                    await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
+                    donorsProcessed += BatchSize;
+                    logger.SendTrace($"Hla Processing {(double) donorsProcessed/totalDonorCount:0.00%} complete", LogLevel.Info);
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch, string hlaDatabaseVersion)
+        private async Task UpdateDonorBatch(IEnumerable<DonorResult> donorBatch, string hlaDatabaseVersion, bool shouldRemovePGroups)
         {
+            donorBatch = donorBatch.ToList();
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            if (shouldRemovePGroups)
+            {
+                await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
+            }
 
             var donorHlaData = await Task.WhenAll(donorBatch.Select(d => FetchDonorHlaData(d, hlaDatabaseVersion)));
             var inputDonors = donorHlaData.Where(x => x != null).ToList();

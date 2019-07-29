@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
@@ -35,13 +36,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly ILogger logger;
 
         public DonorImporter(
-            IDataRefreshRepository dataRefreshRepository,
-            IDonorImportRepository donorImportRepository,
+            IDormantRepositoryFactory repositoryFactory,
             IDonorServiceClient donorServiceClient,
             ILogger logger)
         {
-            this.dataRefreshRepository = dataRefreshRepository;
-            this.donorImportRepository = donorImportRepository;
+            dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
+            donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorServiceClient = donorServiceClient;
             this.logger = logger;
         }
@@ -76,6 +76,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
                 {
                     {"BatchSize", DonorPageSize.ToString()},
+                    {"ImportedDonors", page.DonorsInfo.Count().ToString()},
                     {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()},
                 });
                 stopwatch.Reset();

@@ -10,12 +10,15 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     public class SqlDonorBatchQueryAsync : IBatchQueryAsync<DonorResult>
     {
         private readonly IEnumerator<Donor> enumerator;
-        private const int BatchSize = 1000;
+        private const int DefaultBatchSize = 1000;
+
+        private readonly int batchSize;
 
         // Note that giving this class an IQueryable rather than IEnumerable will leave an open db connection through EF
-        // No other IO can be performed by Entity Framework while this is the case - may be worth investigating using IEnumerable instead
-        public SqlDonorBatchQueryAsync(IEnumerable<Donor> donors)
+        // No other IO can be performed by Entity Framework while this is the case - do not change to IQueryable
+        public SqlDonorBatchQueryAsync(IEnumerable<Donor> donors, int batchSize = DefaultBatchSize)
         {
+            this.batchSize = batchSize;
             enumerator = donors.GetEnumerator();
             HasMoreResults = enumerator.MoveNext();
         }
@@ -32,7 +35,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return Task.Run(() =>
             {
                 var donors = new List<DonorResult>();
-                for (var i = 0; i < BatchSize; i++)
+                for (var i = 0; i < batchSize; i++)
                 {
                     if (HasMoreResults)
                     {

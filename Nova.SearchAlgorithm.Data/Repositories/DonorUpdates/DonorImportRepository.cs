@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -26,18 +27,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         public async Task FullHlaRefreshSetUp()
         {
             var indexRemovalSql = $@"
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtA;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtB;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtC;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDrb1;
-DROP INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDqb1;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtA;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtB;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
-DROP INDEX {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtA;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtB;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtC;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDrb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDqb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtA;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtB;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
+DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
 ";
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(indexRemovalSql);
             }
@@ -87,9 +88,9 @@ CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtDqb1 (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 ";
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(indexAdditionSql);
+                await conn.ExecuteAsync(indexAdditionSql, commandTimeout: 10800);
             }
         }
 
@@ -104,7 +105,7 @@ TRUNCATE TABLE [MatchingHlaAtDrb1]
 TRUNCATE TABLE [MatchingHlaAtDqb1]
 ";
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(dropAllDonorInfoSql);
             }
@@ -118,6 +119,29 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
         public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             await base.AddMatchingPGroupsForExistingDonorBatch(donors);
+        }
+
+        public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
+        {
+            donorIds = donorIds.ToList();
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtA");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtB");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtC");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDqb1");
+            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDrb1");
+        }
+
+        private async Task RemovePGroupsForDonorBatchAtLocus(IEnumerable<int> donorIds, string locusTableName)
+        {
+            var removalSql = $@"
+DELETE FROM {locusTableName}
+WHERE DonorId IN ({string.Join(",", donorIds)});
+";
+
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                await conn.ExecuteAsync(removalSql);
+            }
         }
     }
 }

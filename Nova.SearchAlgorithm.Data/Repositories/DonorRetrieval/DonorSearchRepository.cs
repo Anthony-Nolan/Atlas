@@ -14,15 +14,12 @@ using Nova.SearchAlgorithm.Repositories.Donors;
 
 namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {
-    public class DonorSearchRepository : IDonorSearchRepository
+    public class DonorSearchRepository : Repository, IDonorSearchRepository
     {
-        private readonly IConnectionStringProvider connectionStringProvider;
-
-        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider)
+        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
-            this.connectionStringProvider = connectionStringProvider;
         }
-        
+
         public async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
@@ -77,7 +74,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
                 .Concat(matchingPGroupResults[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus)))
                 .Concat(untypedDonorResults);
         }
-        
+
         private async Task<IEnumerable<int>> GetUntypedDonorsAtLocus(Locus locus, IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
@@ -94,7 +91,7 @@ WHERE {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL
 AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
 ";
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<int>(sql, commandTimeout: 300);
             }
@@ -128,7 +125,7 @@ ON (m.PGroup_Id = PGroupIds.PGroupId)
 
 GROUP BY InnerDonorId, TypePosition";
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
             }
@@ -149,8 +146,8 @@ GROUP BY InnerDonorId, TypePosition";
             if (filteringOptions.ShouldFilterOnDonorType || filteringOptions.ShouldFilterOnRegistry)
             {
                 var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
-                var registryClause = filteringOptions.ShouldFilterOnRegistry 
-                    ? $"AND d.RegistryCode IN ({string.Join(",", registryCodes.Select(id => (int) id))})" 
+                var registryClause = filteringOptions.ShouldFilterOnRegistry
+                    ? $"AND d.RegistryCode IN ({string.Join(",", registryCodes.Select(id => (int) id))})"
                     : "";
 
                 filterQuery = $@"
@@ -160,7 +157,7 @@ ON m.DonorId = d.DonorId
 {registryClause}
 ";
             }
-            
+
 
             var sql = $@"
 SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
@@ -176,7 +173,7 @@ ON (m.PGroup_Id = PGroupIds.PGroupId)
 
 GROUP BY m.DonorId, TypePosition";
 
-            using (var conn = new SqlConnection(connectionStringProvider.GetConnectionString()))
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
             }

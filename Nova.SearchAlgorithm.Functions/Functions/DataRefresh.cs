@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
+using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 
@@ -29,6 +30,12 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         public async Task RunDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
+        }
+
+        [FunctionName("ContinueDataRefreshManual")]
+        public async Task ContinueDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
+        {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(true);
         }
 
         [FunctionName("RunDataRefresh")]
