@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Functions
             RegisterSettings(builder);
             builder.Services.RegisterClients();
             builder.Services.RegisterDataServices();
-            builder.Services.RegisterMatchingDictionaryTypes();
+            builder.Services.RegisterAllMatchingDictionaryTypes();
             builder.Services.RegisterSearchAlgorithmTypes();
         }
 

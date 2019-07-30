@@ -3,7 +3,7 @@ locals {
     "ApplicationInsights.InstrumentationKey"       = azurerm_application_insights.search_algorithm.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"               = azurerm_application_insights.search_algorithm.instrumentation_key
-    "ApplicationInsights.LogLevel"                 = var.APPLICATION_INSIGHTS_LOG_LEVEL,
+    "ApplicationInsights.LogLevel"                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureManagement.Authentication.ClientId"      = var.AZURE_CLIENT_ID
     "AzureManagement.Authentication.ClientSecret"  = var.AZURE_CLIENT_SECRET
     "AzureManagement.AppService.ResourceGroupName" = azurerm_app_service_plan.search_algorithm.resource_group_name
@@ -39,7 +39,8 @@ locals {
     "ApplicationInsights.InstrumentationKey"           = azurerm_application_insights.search_algorithm.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.search_algorithm.instrumentation_key
-    "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL,
+    "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
+	"AzureStorage.ConnectionString"                    = var.CONNECTION_STRING_STORAGE
     "Client.HlaService.ApiKey"                         = data.terraform_remote_state.hla.outputs.hla_service.api_key
     "Client.HlaService.BaseUrl"                        = data.terraform_remote_state.hla.outputs.hla_service.base_url
     "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING

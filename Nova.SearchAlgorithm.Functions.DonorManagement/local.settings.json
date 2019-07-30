@@ -5,6 +5,7 @@
     "ApplicationInsights.LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "AzureStorage.ConnectionString": "UseDevelopmentStorage=true",
     "Client.HlaService.ApiKey": "override-this",
     "Client.HlaService.BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
     "MessagingServiceBus.ConnectionString": "override-this",
