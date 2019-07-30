@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var updateRepo = repositoryFactory.GetDonorUpdateRepository();
 
             var defaultRequiredHla = new ExpandedHla {PGroups = matchingPGroups};

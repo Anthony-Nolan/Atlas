@@ -160,7 +160,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactoryBase>();
+            services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
+            services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
             
             // Persistent storage
             services.AddScoped(sp =>
