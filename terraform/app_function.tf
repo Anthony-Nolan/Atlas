@@ -13,8 +13,9 @@ locals {
     "AzureManagement.Database.SubscriptionId"      = var.DATABASE_SUBSCRIPTION_ID
     "AzureStorage.ConnectionString"                = var.CONNECTION_STRING_STORAGE
     "AzureStorage.SearchResultsBlobContainer"      = var.AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER
-    "Client.DonorService.ApiKey"                   = data.terraform_remote_state.donor.outputs.donor_service.api_key
-    "Client.DonorService.BaseUrl"                  = data.terraform_remote_state.donor.outputs.donor_service.base_url
+    // TODO: NOVA-3557: Replace with terraformed donor service details
+    "Client.DonorService.ApiKey"                   = var.DONORSERVICE_APIKEY
+    "Client.DonorService.BaseUrl"                  = var.DONORSERVICE_BASEURL
     "Client.HlaService.ApiKey"                     = data.terraform_remote_state.hla.outputs.hla_service.api_key
     "Client.HlaService.BaseUrl"                    = data.terraform_remote_state.hla.outputs.hla_service.base_url
     "DataRefresh.ActiveDatabaseSize"               = var.DATA_REFRESH_DB_SIZE_ACTIVE

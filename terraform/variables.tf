@@ -91,6 +91,14 @@ variable "DATABASE_SUBSCRIPTION_ID" {
   type = string
 }
 
+variable "DONORSERVICE_APIKEY" {
+  type = string
+}
+
+variable "DONORSERVICE_BASEURL" {
+  type = string
+}
+
 variable "FUNCTION_APP_SUBSCRIPTION_ID" {
   type = string
 }
