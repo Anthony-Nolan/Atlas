@@ -35,6 +35,14 @@ variable "CONNECTION_STRING_STORAGE" {
   type = string
 }
 
+variable "DONORSERVICE_APIKEY" {
+  type = string
+}
+
+variable "DONORSERVICE_BASEURL" {
+  type = string
+}
+
 variable "MESSAGING_BUS_CONNECTION_STRING" {
   type = string
 }
