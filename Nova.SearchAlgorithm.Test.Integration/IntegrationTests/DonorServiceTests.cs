@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         [SetUp]
         public void SetUp()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
 
             donorService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorService>();
             donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();

@@ -177,7 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private static int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
             var testDonor = BuildTestDonor(testDonorPhenotype);
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
             return testDonor.DonorId;
