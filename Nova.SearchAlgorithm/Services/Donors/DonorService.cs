@@ -38,6 +38,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
         public DonorService(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
+            // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory repositoryFactory,
             IMapper mapper)
         {
