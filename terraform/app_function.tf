@@ -39,6 +39,8 @@ locals {
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.search_algorithm.instrumentation_key
     "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL,
+    "Client.HlaService.ApiKey"                         = data.terraform_remote_state.hla.outputs.hla_service.api_key
+    "Client.HlaService.BaseUrl"                        = data.terraform_remote_state.hla.outputs.hla_service.base_url
     "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
     "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
     "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION

@@ -217,6 +217,11 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped(GetDonorServiceClient);
         }
 
+        public static void RegisterHlaServiceClient(this IServiceCollection services)
+        {
+            services.AddScoped(GetHlaServiceClient);
+        }
+
         private static IHlaServiceClient GetHlaServiceClient(IServiceProvider sp)
         {
             var hlaServiceSettings = sp.GetService<IOptions<HlaServiceSettings>>().Value;
