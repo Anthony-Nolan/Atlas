@@ -20,9 +20,7 @@ namespace Nova.SearchAlgorithm.Services
         private readonly IDonorService donorService;
         private readonly ILogger logger;
 
-        public DonorManagementService(
-            IDonorService donorService,
-            ILogger logger)
+        public DonorManagementService(IDonorService donorService, ILogger logger)
         {
             this.donorService = donorService;
             this.logger = logger;

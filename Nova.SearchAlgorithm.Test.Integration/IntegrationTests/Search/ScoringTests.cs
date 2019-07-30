@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             mismatchHlaSet = new TestHla.HeterozygousSet2();
 
             testDonor = BuildTestDonor();
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
             donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
         }

@@ -161,7 +161,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
-            services.AddScoped<ITransientRepositoryFactory, TransientRepositoryFactoryBase>();
+            services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
+            services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
             // Persistent storage
             services.AddScoped(sp =>
             {
@@ -212,8 +213,13 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterClients(this IServiceCollection services)
         {
-            services.AddScoped(GetHlaServiceClient);
+            RegisterHlaServiceClient(services);
             services.AddScoped(GetDonorServiceClient);
+        }
+
+        public static void RegisterHlaServiceClient(this IServiceCollection services)
+        {
+            services.AddScoped(GetHlaServiceClient);
         }
 
         private static IHlaServiceClient GetHlaServiceClient(IServiceProvider sp)

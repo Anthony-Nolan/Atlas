@@ -1,17 +1,19 @@
 {
-    "IsEncrypted": false,
-    "Values": {
-        "ApplicationInsights.InstrumentationKey": "key",
-        "ApplicationInsights.LogLevel": "Info",
-        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-        "MessagingServiceBus.ConnectionString": "override-this",
-        "MessagingServiceBus.DonorManagement.Topic": "updated-searchable-donors",
-        "MessagingServiceBus.DonorManagement.Subscription": "local"
-    },
-    "ConnectionStrings": {
-        "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithmA;Integrated Security=True;MultipleActiveResultSets=True;",
-        "SqlB": "Data Source=(local);Initial Catalog=SearchAlgorithmB;Integrated Security=True;MultipleActiveResultSets=True;",
-        "PersistentSql": "Data Source=(local);Initial Catalog=SearchAlgorithmPersistent;Integrated Security=True;MultipleActiveResultSets=True;"
-    }
+  "IsEncrypted": false,
+  "Values": {
+    "ApplicationInsights.InstrumentationKey": "key",
+    "ApplicationInsights.LogLevel": "Info",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "Client.HlaService.ApiKey": "override-this",
+    "Client.HlaService.BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
+    "MessagingServiceBus.ConnectionString": "override-this",
+    "MessagingServiceBus.DonorManagement.Topic": "updated-searchable-donors",
+    "MessagingServiceBus.DonorManagement.Subscription": "local"
+  },
+  "ConnectionStrings": {
+    "SqlA": "Data Source=(local);Initial Catalog=SearchAlgorithmA;Integrated Security=True;MultipleActiveResultSets=True;",
+    "SqlB": "Data Source=(local);Initial Catalog=SearchAlgorithmB;Integrated Security=True;MultipleActiveResultSets=True;",
+    "PersistentSql": "Data Source=(local);Initial Catalog=SearchAlgorithmPersistent;Integrated Security=True;MultipleActiveResultSets=True;"
+  }
 }

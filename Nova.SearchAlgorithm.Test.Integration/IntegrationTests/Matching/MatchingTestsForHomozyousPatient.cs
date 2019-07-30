@@ -169,7 +169,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void AddDonorsToRepository()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepo = repositoryFactory.GetDonorUpdateRepository();
             foreach (var donor in BuildInputDonors())
             {

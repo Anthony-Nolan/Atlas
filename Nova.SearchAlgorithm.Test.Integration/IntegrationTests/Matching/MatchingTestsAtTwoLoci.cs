@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<ITransientRepositoryFactory>();
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepo = repositoryFactory.GetDonorUpdateRepository();
 
             cordDonorWithNoMatchAtEitherLocus = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
