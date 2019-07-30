@@ -59,15 +59,15 @@ SELECT COUNT(*) FROM DONORS
         {
             using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var maxDonorIdAtDrb1 = await connection.QuerySingleOrDefaultAsync<int>(@"
+                var maxDonorIdAtDrb1 = await connection.QuerySingleOrDefaultAsync<int?>(@"
 SELECT MAX(DonorId) FROM MatchingHlaAtDrb1
-", 0);
-                var maxDonorIdAtB = await connection.QuerySingleOrDefaultAsync<int>(@"
+", 0) ?? 0;
+                var maxDonorIdAtB = await connection.QuerySingleOrDefaultAsync<int?>(@"
 SELECT MAX(DonorId) FROM MatchingHlaAtB
-", 0);
-                var maxDonorIdAtA = await connection.QuerySingleOrDefaultAsync<int>(@"
+", 0) ?? 0;
+                var maxDonorIdAtA = await connection.QuerySingleOrDefaultAsync<int?>(@"
 SELECT MAX(DonorId) FROM MatchingHlaAtA
-", 0);
+", 0) ?? 0;
 
                 return Math.Min(maxDonorIdAtA, Math.Min(maxDonorIdAtB, maxDonorIdAtDrb1));
             }
