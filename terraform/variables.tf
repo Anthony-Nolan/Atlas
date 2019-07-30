@@ -133,11 +133,6 @@ variable "NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC" {
   default = "support-notifications"
 }
 
-variable "WMDA_HLA_DATABASE_VERSION" {
-  type = string
-  default = "3330"
-}
-
 variable "WMDA_FILE_URL" {
   type = string
   default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"

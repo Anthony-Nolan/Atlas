@@ -31,7 +31,6 @@
     "NotificationsServiceBus.AlertsTopic": "support-alerts",
     "NotificationsServiceBus.ConnectionString": "override-this",
     "NotificationsServiceBus.NotificationsTopic": "support-notifications",
-    "Wmda.HlaDatabaseVersion": "3330",
     "Wmda.WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
