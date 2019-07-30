@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
             services.Configure<IntegrationTestSettings>(configuration.GetSection("Testing"));
 
             services.RegisterSearchAlgorithmTypes();
-            services.RegisterMatchingDictionaryTypes();
+            services.RegisterAllMatchingDictionaryTypes();
             services.RegisterDataServices();
             
             services.AddScoped(sp =>

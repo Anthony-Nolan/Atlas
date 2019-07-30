@@ -172,23 +172,41 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
+        
+        public static void RegisterAllMatchingDictionaryTypes(this IServiceCollection services)
+        {
+            RegisterMatchingDictionaryLookupStorageTypes(services);
+            RegisterMatchingDictionaryPreCalculationTypes(services);
+            RegisterMatchingDictionaryLookupServices(services);
+        }
 
-        public static void RegisterMatchingDictionaryTypes(this IServiceCollection services)
+        public static void RegisterTypesNeededForMatchingDictionaryLookups(this IServiceCollection services)
+        {
+            RegisterMatchingDictionaryLookupStorageTypes(services);
+            RegisterMatchingDictionaryLookupServices(services);
+        }
+
+        private static void RegisterMatchingDictionaryLookupStorageTypes(this IServiceCollection services)
         {
             services.AddSingleton<ICloudTableFactory, CloudTableFactory>(sp =>
                 new CloudTableFactory(sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString)
             );
-            services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
-            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>(sp =>
-                new WmdaFileDownloader(sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri)
-            );
+            services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
             services.AddScoped<IHlaMatchingLookupRepository, HlaMatchingLookupRepository>();
             services.AddScoped<IHlaScoringLookupRepository, HlaScoringLookupRepository>();
             services.AddScoped<IAlleleNamesLookupRepository, AlleleNamesLookupRepository>();
             services.AddScoped<IDpb1TceGroupsLookupRepository, Dpb1TceGroupsLookupRepository>();
+        }
+
+        private static void RegisterMatchingDictionaryPreCalculationTypes(this IServiceCollection services)
+        {
             services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
+
+            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>(sp =>
+                new WmdaFileDownloader(sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri)
+            );
 
             services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();
             services.AddScoped<IAlleleNamesFromHistoriesExtractor, AlleleNamesFromHistoriesExtractor>();
@@ -202,7 +220,10 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IHlaScoringDataConverter, HlaScoringDataConverter>();
 
             services.AddScoped<IRecreateHlaLookupResultsService, RecreateHlaLookupResultsService>();
+        }
 
+        private static void RegisterMatchingDictionaryLookupServices(this IServiceCollection services)
+        {
             services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
             services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
             services.AddScoped<ILocusHlaMatchingLookupService, LocusHlaMatchingLookupService>();

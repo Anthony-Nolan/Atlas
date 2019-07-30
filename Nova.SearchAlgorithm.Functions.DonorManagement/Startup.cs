@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
             RegisterSettings(builder);
             builder.Services.RegisterHlaServiceClient();
             builder.Services.RegisterDataServices();
-            builder.Services.RegisterMatchingDictionaryTypes();
+            builder.Services.RegisterTypesNeededForMatchingDictionaryLookups();
             builder.Services.RegisterSearchAlgorithmTypes();
         }
 
@@ -22,6 +22,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
         {
             builder.AddUserSecrets();
             builder.RegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
+            builder.RegisterSettings<AzureStorageSettings>("AzureStorage");
             builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
             builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
         }

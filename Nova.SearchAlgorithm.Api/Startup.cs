@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Api
         {
             services.RegisterSettings(configuration);
             services.RegisterSearchAlgorithmTypes();
-            services.RegisterMatchingDictionaryTypes();
+            services.RegisterAllMatchingDictionaryTypes();
             services.RegisterDataServices();
             services.RegisterClients();
 
