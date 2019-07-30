@@ -213,7 +213,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         public static void RegisterClients(this IServiceCollection services)
         {
-            services.AddScoped(GetHlaServiceClient);
+            RegisterHlaServiceClient(services);
             services.AddScoped(GetDonorServiceClient);
         }
 
