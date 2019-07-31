@@ -1,53 +1,22 @@
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Newtonsoft.Json;
-using Nova.DonorService.Client.Models.DonorUpdate;
-using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Functions.DonorManagement.Services;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
 {
     public class DonorManagement
     {
-        private readonly IDonorManagementService donorManagementService;
-
-        public DonorManagement(IDonorManagementService donorManagementService)
+        private readonly IDonorUpdateProcessor donorUpdateProcessor;
+        
+        public DonorManagement(IDonorUpdateProcessor donorUpdateProcessor)
         {
-            this.donorManagementService = donorManagementService;
+            this.donorUpdateProcessor = donorUpdateProcessor;
         }
 
         [FunctionName("ManageDonorByAvailability")]
-        public async Task Run(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus.DonorManagement.Topic%",
-                "%MessagingServiceBus.DonorManagement.Subscription%",
-                Connection = "MessagingServiceBus.ConnectionString")]
-            string message)
+        public async Task Run([TimerTrigger("%MessagingServiceBus.DonorManagement.CronSchedule%")] TimerInfo myTimer)
         {
-            var update = JsonConvert.DeserializeObject<SearchableDonorUpdateModel>(message);
-            var donorAvailabilityUpdate = MapDonorAvailabilityUpdate(update);
-            await donorManagementService.ManageDonorByAvailability(donorAvailabilityUpdate);
-        }
-
-        /// <summary>
-        /// Map directly rather than using automapper to improve performance
-        /// </summary>
-        private static DonorAvailabilityUpdate MapDonorAvailabilityUpdate(SearchableDonorUpdateModel update)
-        {
-            if (int.TryParse(update.DonorId, out var donorId))
-            {
-                var donorAvailabilityUpdate = new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    DonorInfo = update.SearchableDonorInformation?.ToInputDonor(),
-                    IsAvailableForSearch = update.IsAvailableForSearch
-                };
-                return donorAvailabilityUpdate;
-            };
-            
-            throw new DonorImportException($"Could not parse donor id: {update.DonorId} to an int");;
+            await donorUpdateProcessor.ProcessDonorUpdates();
         }
     }
 }

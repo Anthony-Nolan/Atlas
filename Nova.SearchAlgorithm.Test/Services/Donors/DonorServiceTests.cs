@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -86,22 +88,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public void DeleteDonor_WhenDonorDoesNotExist_ThrowsException()
-        {
-            const int donorId = 123;
-            Assert.ThrowsAsync<NovaNotFoundException>(() => donorService.DeleteDonor(donorId));
-        }
-
-        [Test]
-        public async Task DeleteDonor_WhenDonorExists_DeletesDonor()
+        public async Task DeleteDonorBatch_DeletesDonor()
         {
             const int donorId = 123;
 
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
-            await donorService.DeleteDonor(donorId);
+            await donorService.DeleteDonorBatch(new []{donorId});
 
-            await updateRepository.Received().DeleteDonorAndItsExpandedHla(donorId);
+            await updateRepository.Received().DeleteDonorBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
     }
 }

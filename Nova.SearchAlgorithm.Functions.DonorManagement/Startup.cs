@@ -1,5 +1,12 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.DependencyInjection;
+using Nova.SearchAlgorithm.Functions.DonorManagement.Services;
+using Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus;
+using Nova.SearchAlgorithm.Functions.DonorManagement.Settings;
+using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Settings;
 using Startup = Nova.SearchAlgorithm.Functions.DonorManagement.Startup;
 
@@ -16,6 +23,8 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
             builder.Services.RegisterDataServices();
             builder.Services.RegisterTypesNeededForMatchingDictionaryLookups();
             builder.Services.RegisterSearchAlgorithmTypes();
+
+            RegisterFunctionServices(builder);
         }
 
         private static void RegisterSettings(IFunctionsHostBuilder builder)
@@ -25,6 +34,29 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
             builder.RegisterSettings<AzureStorageSettings>("AzureStorage");
             builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
             builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
+            builder.RegisterSettings<DonorManagementSettings>("MessagingServiceBus.DonorManagement");
+        }
+
+        private static void RegisterFunctionServices(IFunctionsHostBuilder builder)
+        {
+            builder.Services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
+                new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
+            );
+
+            builder.Services.AddScoped<IMessageReceiverService<SearchableDonorUpdateModel>, MessageReceiverService<SearchableDonorUpdateModel>>(sp =>
+            {
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var factory = sp.GetService<IMessageReceiverFactory>();
+                return new MessageReceiverService<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
+            });
+
+            builder.Services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
+            {
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var messageReceiverService = sp.GetService<IMessageReceiverService<SearchableDonorUpdateModel>>();
+                var managementService = sp.GetService<IDonorManagementService>();
+                return new DonorUpdateProcessor(messageReceiverService, managementService, int.Parse(settings.BatchSize));
+            });
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Models;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Http.Exceptions;
-using System.Threading.Tasks;
+﻿using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services
 {
@@ -12,49 +11,48 @@ namespace Nova.SearchAlgorithm.Services
     /// </summary>
     public interface IDonorManagementService
     {
-        Task ManageDonorByAvailability(DonorAvailabilityUpdate donorAvailabilityUpdate);
+        Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates);
     }
 
     public class DonorManagementService : IDonorManagementService
     {
         private readonly IDonorService donorService;
-        private readonly ILogger logger;
 
-        public DonorManagementService(IDonorService donorService, ILogger logger)
+        public DonorManagementService(IDonorService donorService)
         {
             this.donorService = donorService;
-            this.logger = logger;
         }
 
-        public async Task ManageDonorByAvailability(DonorAvailabilityUpdate donorAvailabilityUpdate)
+        public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
         {
-            if (donorAvailabilityUpdate.IsAvailableForSearch)
+            var allUpdates = donorAvailabilityUpdates.ToList();
+            await AddOrUpdateDonors(allUpdates);
+            await RemoveDonors(allUpdates);
+        }
+
+        private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var availableDonors = updates
+                .Where(update => update.IsAvailableForSearch)
+                .Select(d => d.DonorInfo)
+                .ToList();
+
+            if (availableDonors.Any())
             {
-                await AddOrUpdateDonor(donorAvailabilityUpdate);
-            }
-            else
-            {
-                await RemoveDonor(donorAvailabilityUpdate.DonorId);
+                await donorService.CreateOrUpdateDonorBatch(availableDonors);
             }
         }
 
-        private async Task AddOrUpdateDonor(DonorAvailabilityUpdate donorAvailabilityUpdate)
+        private async Task RemoveDonors(IEnumerable<DonorAvailabilityUpdate> updates)
         {
-            await donorService.CreateOrUpdateDonorBatch(new[]
-            {
-                donorAvailabilityUpdate.DonorInfo
-            });
-        }
+            var unavailableDonorIds = updates
+                .Where(update => !update.IsAvailableForSearch)
+                .Select(d => d.DonorId)
+                .ToList();
 
-        private async Task RemoveDonor(int donorId)
-        {
-            try
+            if (unavailableDonorIds.Any())
             {
-                await donorService.DeleteDonor(donorId);
-            }
-            catch (NovaNotFoundException exception)
-            {
-                logger.SendEvent(new DonorDeletionFailureEventModel(exception, donorId.ToString()));
+                await donorService.DeleteDonorBatch(unavailableDonorIds);
             }
         }
     }
