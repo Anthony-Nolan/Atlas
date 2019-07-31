@@ -79,7 +79,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private async Task RunDataRefresh(bool isContinuedRefresh)
         {
             await notificationSender.SendInitialisationNotification();
-            var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion();
+            var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             var dataRefreshRecord = new DataRefreshRecord
             {
@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private bool HasNewWmdaDataBeenPublished()
         {
             var activeHlaDataVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
-            var latestHlaDataVersion = wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion();
+            var latestHlaDataVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return activeHlaDataVersion != latestHlaDataVersion;
         }
 

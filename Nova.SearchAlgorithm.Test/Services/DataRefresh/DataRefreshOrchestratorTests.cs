@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("new");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("new");
 
             dataRefreshOrchestrator = new DataRefreshOrchestrator(
                 logger,
@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             const string wmdaVersion = "3330";
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(wmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(wmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_TriggersDataRefresh()
         {
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("3370");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("3370");
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -105,7 +105,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
         {
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("3370");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("3370");
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
@@ -127,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_TriggersDataRefreshWithLatestWmdaVersion()
         {
             const string latestWmdaVersion = "3370";
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(latestWmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(latestWmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -182,7 +182,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_StoresRefreshRecordOfWmdaVersion()
         {
             const string latestWmdaVersion = "latest-wmda";
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(latestWmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(latestWmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
