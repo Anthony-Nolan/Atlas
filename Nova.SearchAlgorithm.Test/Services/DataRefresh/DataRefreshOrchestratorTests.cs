@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             const string wmdaVersion = "3330";
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(wmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(wmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
