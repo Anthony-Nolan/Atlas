@@ -127,6 +127,20 @@ variable "MESSAGING_BUS_SEARCH_RESULTS_TOPIC" {
   default = "search-algorithm-results-notifications"
 }
 
+variable "NOTIFICATIONS_BUS_ALERTS_TOPIC" {
+  type = string
+  default = "support-alerts"
+}
+
+variable "NOTIFICATIONS_BUS_CONNECTION_STRING" {
+  type = string
+}
+
+variable "NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC" {
+  type = string
+  default = "support-notifications"
+}
+
 variable "WMDA_FILE_URL" {
   type = string
   default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
