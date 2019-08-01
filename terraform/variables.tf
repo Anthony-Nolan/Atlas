@@ -75,10 +75,6 @@ variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
   type = string
 }
 
-variable "DATA_REFRESH_DONOR_IMPORT_FUNCTIONS_APP_NAME" {
-  type = string
-}
-
 variable "DATABASE_RESOURCE_GROUP" {
   type = string
 }
