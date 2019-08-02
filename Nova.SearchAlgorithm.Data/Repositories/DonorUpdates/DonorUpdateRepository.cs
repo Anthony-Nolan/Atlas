@@ -161,6 +161,7 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
             {
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = tableName;
+                sqlBulk.BulkCopyTimeout = 14400;
                 await sqlBulk.WriteToServerAsync(dataTable);
             }
         }
