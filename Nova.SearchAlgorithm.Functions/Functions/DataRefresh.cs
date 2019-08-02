@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         [FunctionName("ContinueDataRefreshManual")]
         public async Task ContinueDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary(true);
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(isContinuedRefresh: true);
         }
 
         /// <summary>

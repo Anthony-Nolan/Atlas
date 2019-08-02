@@ -15,6 +15,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
     public interface IDataRefreshOrchestrator
     {
+        /// <param name="shouldForceRefresh">
+        /// If true, the refresh will occur regardless of whether a new hla database version has been published
+        /// </param>
         /// <param name="isContinuedRefresh">
         /// If true, the refresh will not remove existing data, instead only importing / processing new donors.
         /// This should only be triggered manually if a refresh failed
