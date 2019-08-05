@@ -25,9 +25,16 @@ namespace Nova.SearchAlgorithm.Services
 
         public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
         {
-            var allUpdates = donorAvailabilityUpdates.ToList();
-            await AddOrUpdateDonors(allUpdates);
-            await RemoveDonors(allUpdates);
+            var updates = GetLatestUpdatePerDonorInBatch(donorAvailabilityUpdates).ToList();
+            await AddOrUpdateDonors(updates);
+            await RemoveDonors(updates);
+        }
+
+        private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdatePerDonorInBatch(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            return updates
+                .GroupBy(u => u.DonorId)
+                .Select(grp => grp.OrderByDescending(u => u.UpdateSequenceNumber).First());
         }
 
         private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)

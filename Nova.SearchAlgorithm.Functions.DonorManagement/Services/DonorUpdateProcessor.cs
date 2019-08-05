@@ -1,6 +1,7 @@
 ﻿using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Functions.DonorManagement.Models;
 using Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services;
@@ -37,25 +38,24 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services
             await donorManagementService.ManageDonorBatchByAvailability(donorAvailabilityUpdates);
         }
 
-
-
         /// <summary>
         /// Map directly rather than using AutoMapper to improve performance
         /// </summary>
-        private static DonorAvailabilityUpdate MapDonorAvailabilityUpdate(SearchableDonorUpdateModel update)
+        private static DonorAvailabilityUpdate MapDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdateModel> update)
         {
-            if (int.TryParse(update.DonorId, out var donorId))
+            if (int.TryParse(update.DeserializedBody.DonorId, out var donorId))
             {
                 var donorAvailabilityUpdate = new DonorAvailabilityUpdate
                 {
+                    UpdateSequenceNumber = update.SequenceNumber,
                     DonorId = donorId,
-                    DonorInfo = update.SearchableDonorInformation?.ToInputDonor(),
-                    IsAvailableForSearch = update.IsAvailableForSearch
+                    DonorInfo = update.DeserializedBody.SearchableDonorInformation?.ToInputDonor(),
+                    IsAvailableForSearch = update.DeserializedBody.IsAvailableForSearch
                 };
                 return donorAvailabilityUpdate;
             };
 
-            throw new DonorImportException($"Could not parse donor id: {update.DonorId} to an int"); ;
+            throw new DonorImportException($"Could not parse donor id: {update.DeserializedBody.DonorId} to an int"); ;
         }
     }
 }
