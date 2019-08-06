@@ -1,9 +1,12 @@
-﻿namespace Nova.SearchAlgorithm.Functions.DonorManagement.Models
+﻿using System;
+
+namespace Nova.SearchAlgorithm.Functions.DonorManagement.Models
 {
     public class ServiceBusMessage<T>
     {
         public long SequenceNumber { get; set; }
         public string LockToken { get; set; }
+        public DateTime LockedUntilUtc { get; set; }
         public T DeserializedBody { get; set; }
     }
 }

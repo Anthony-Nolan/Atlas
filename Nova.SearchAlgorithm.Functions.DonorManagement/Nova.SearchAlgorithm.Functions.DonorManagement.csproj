@@ -15,6 +15,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.28" />
+        <PackageReference Include="NeoSmart.AsyncLock" Version="0.3.0.2" />
     </ItemGroup>
     <ItemGroup>
         <None Update="host.json">

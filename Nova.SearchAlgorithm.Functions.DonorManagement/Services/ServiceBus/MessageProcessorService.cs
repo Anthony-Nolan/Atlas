@@ -2,7 +2,6 @@
 using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Functions.DonorManagement.Exceptions;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Extensions;
 using Nova.SearchAlgorithm.Functions.DonorManagement.Models;
 using System;
 using System.Collections.Generic;
@@ -33,22 +32,28 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus
         {
             var messages = (await GetServiceBusMessages(batchSize)).ToList();
 
-            try
+            using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
             {
-                await processMessagesFuncAsync(messages);
-                await messages.CompleteMessagesAsync(messageReceiver);
-            }
-            catch (Exception ex)
-            {
-                await messages.AbandonMessagesAsync(messageReceiver);
-                throw new MessageProcessorException<T>(messages, ex);
+                try
+                {
+                    await processMessagesFuncAsync(messages);
+                }
+                catch (Exception ex)
+                {
+                    await messageBatchLock.AbandonBatchAsync();
+                    throw new MessageBatchException<T>(nameof(ProcessMessageBatch), messages, ex);
+                }
+
+                await messageBatchLock.CompleteBatchAsync();
             }
         }
 
         private async Task<IEnumerable<ServiceBusMessage<T>>> GetServiceBusMessages(int batchSize)
         {
             var batch = await messageReceiver.ReceiveAsync(batchSize);
-            return batch.Select(GetServiceBusMessage);
+            return batch != null
+                ? batch.Select(GetServiceBusMessage)
+                : new List<ServiceBusMessage<T>>();
         }
 
         private static ServiceBusMessage<T> GetServiceBusMessage(Message message)
@@ -59,6 +64,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus
             {
                 SequenceNumber = message.SystemProperties.SequenceNumber,
                 LockToken = message.SystemProperties.LockToken,
+                LockedUntilUtc = message.SystemProperties.LockedUntilUtc,
                 DeserializedBody = body
             };
         }
