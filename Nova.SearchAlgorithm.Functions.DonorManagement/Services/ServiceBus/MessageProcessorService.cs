@@ -31,8 +31,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus
 
         public async Task ProcessMessageBatch(int batchSize, Func<IEnumerable<ServiceBusMessage<T>>, Task> processMessagesFuncAsync)
         {
-            var batch = await messageReceiver.ReceiveAsync(batchSize);
-            var messages = GetServiceBusMessages(batch).ToList();
+            var messages = (await GetServiceBusMessages(batchSize)).ToList();
 
             try
             {
@@ -46,21 +45,22 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus
             }
         }
 
-        private static IEnumerable<ServiceBusMessage<T>> GetServiceBusMessages(IEnumerable<Message> batch)
+        private async Task<IEnumerable<ServiceBusMessage<T>>> GetServiceBusMessages(int batchSize)
         {
-            var deserializedMessages = new List<ServiceBusMessage<T>>();
-            foreach (var message in batch)
-            {
-                var body = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
-                deserializedMessages.Add(new ServiceBusMessage<T>
-                {
-                    SequenceNumber = message.SystemProperties.SequenceNumber,
-                    LockToken = message.SystemProperties.LockToken,
-                    DeserializedBody = body
-                });
-            }
+            var batch = await messageReceiver.ReceiveAsync(batchSize);
+            return batch.Select(GetServiceBusMessage);
+        }
 
-            return deserializedMessages;
+        private static ServiceBusMessage<T> GetServiceBusMessage(Message message)
+        {
+            var body = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
+
+            return new ServiceBusMessage<T>
+            {
+                SequenceNumber = message.SystemProperties.SequenceNumber,
+                LockToken = message.SystemProperties.LockToken,
+                DeserializedBody = body
+            };
         }
     }
 }
