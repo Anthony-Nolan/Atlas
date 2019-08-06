@@ -43,17 +43,17 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
                 new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
             );
 
-            builder.Services.AddScoped<IMessageReceiverService<SearchableDonorUpdateModel>, MessageReceiverService<SearchableDonorUpdateModel>>(sp =>
+            builder.Services.AddScoped<IMessageProcessorService<SearchableDonorUpdateModel>, MessageProcessorService<SearchableDonorUpdateModel>>(sp =>
             {
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                return new MessageReceiverService<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
+                return new MessageProcessorService<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
             });
 
             builder.Services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
             {
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
-                var messageReceiverService = sp.GetService<IMessageReceiverService<SearchableDonorUpdateModel>>();
+                var messageReceiverService = sp.GetService<IMessageProcessorService<SearchableDonorUpdateModel>>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 return new DonorUpdateProcessor(messageReceiverService, managementService, int.Parse(settings.BatchSize));
             });

@@ -5,6 +5,7 @@ using Nova.SearchAlgorithm.Functions.DonorManagement.Models;
 using Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,25 +18,32 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services
 
     public class DonorUpdateProcessor : IDonorUpdateProcessor
     {
-        private readonly IMessageReceiverService<SearchableDonorUpdateModel> messageReceiverService;
+        private readonly IMessageProcessorService<SearchableDonorUpdateModel> messageProcessorService;
         private readonly IDonorManagementService donorManagementService;
         private readonly int batchSize;
 
         public DonorUpdateProcessor(
-            IMessageReceiverService<SearchableDonorUpdateModel> messageReceiverService,
+            IMessageProcessorService<SearchableDonorUpdateModel> messageProcessorService,
             IDonorManagementService donorManagementService,
             int batchSize)
         {
-            this.messageReceiverService = messageReceiverService;
+            this.messageProcessorService = messageProcessorService;
             this.donorManagementService = donorManagementService;
             this.batchSize = batchSize;
         }
 
         public async Task ProcessDonorUpdates()
         {
-            var updates = await messageReceiverService.ReceiveMessageBatch(batchSize);
-            var donorAvailabilityUpdates = updates.Select(MapDonorAvailabilityUpdate);
-            await donorManagementService.ManageDonorBatchByAvailability(donorAvailabilityUpdates);
+            await messageProcessorService.ProcessMessageBatch(batchSize, async batch =>
+            {
+                await ProcessMessages(batch);
+            });
+        }
+
+        private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
+        {
+            var updates = messageBatch.Select(MapDonorAvailabilityUpdate);
+            await donorManagementService.ManageDonorBatchByAvailability(updates);
         }
 
         /// <summary>
