@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5979876-0294-475D-8970-A384B2DDEB8C}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,33 +15,35 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 		UnitTests.nunit = UnitTests.nunit
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm", "Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj", "{F338A6D4-4AAD-424E-B93E-A058332EFB0F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm", "Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj", "{F338A6D4-4AAD-424E-B93E-A058332EFB0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Common", "Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj", "{D2872336-2826-4094-AA15-22A9C08E63F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Common", "Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj", "{D2872336-2826-4094-AA15-22A9C08E63F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client", "Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj", "{54DA45F0-352E-4C23-A254-288A973450F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Client", "Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj", "{54DA45F0-352E-4C23-A254-288A973450F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{AD274093-21A1-42A2-A07C-7BE4573F01DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.MatchingDictionary", "Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj", "{AD274093-21A1-42A2-A07C-7BE4573F01DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test", "Nova.SearchAlgorithm.Test\Nova.SearchAlgorithm.Test.csproj", "{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Test", "Nova.SearchAlgorithm.Test\Nova.SearchAlgorithm.Test.csproj", "{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Integration", "Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj", "{CCF7F1D7-CF66-4C8C-92EF-08FB1B61EDAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Test.Integration", "Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj", "{CCF7F1D7-CF66-4C8C-92EF-08FB1B61EDAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data.Persistent", "Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj", "{16308F16-5D27-4233-B56B-C498CDA60050}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Data.Persistent", "Nova.SearchAlgorithm.Data.Persistent\Nova.SearchAlgorithm.Data.Persistent.csproj", "{16308F16-5D27-4233-B56B-C498CDA60050}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Data", "Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj", "{8CC0CF9B-9E01-4046-A68F-FC7406BDE4C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Data", "Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj", "{8CC0CF9B-9E01-4046-A68F-FC7406BDE4C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Validation", "Nova.SearchAlgorithm.Test.Validation\Nova.SearchAlgorithm.Test.Validation.csproj", "{DC6E0755-0D5E-4616-9FAC-D57378DACF8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Test.Validation", "Nova.SearchAlgorithm.Test.Validation\Nova.SearchAlgorithm.Test.Validation.csproj", "{DC6E0755-0D5E-4616-9FAC-D57378DACF8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Api", "Nova.SearchAlgorithm.Api\Nova.SearchAlgorithm.Api.csproj", "{2B54C9D8-49A4-4E14-9151-5F7E994543EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Api", "Nova.SearchAlgorithm.Api\Nova.SearchAlgorithm.Api.csproj", "{2B54C9D8-49A4-4E14-9151-5F7E994543EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Test.Performance", "Nova.SearchAlgorithm.Test.Performance\Nova.SearchAlgorithm.Test.Performance.csproj", "{D27D67C5-8D27-49A9-9AA7-969CCB56F559}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Test.Performance", "Nova.SearchAlgorithm.Test.Performance\Nova.SearchAlgorithm.Test.Performance.csproj", "{D27D67C5-8D27-49A9-9AA7-969CCB56F559}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Functions", "Nova.SearchAlgorithm.Functions\Nova.SearchAlgorithm.Functions.csproj", "{174168A1-CF51-433F-B39A-0FE774986352}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Functions", "Nova.SearchAlgorithm.Functions\Nova.SearchAlgorithm.Functions.csproj", "{174168A1-CF51-433F-B39A-0FE774986352}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Client.Models", "Nova.SearchAlgorithm.Client.Models\Nova.SearchAlgorithm.Client.Models.csproj", "{388B175F-8166-4703-A7F3-6891DA1F118E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Client.Models", "Nova.SearchAlgorithm.Client.Models\Nova.SearchAlgorithm.Client.Models.csproj", "{388B175F-8166-4703-A7F3-6891DA1F118E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Functions.DonorManagement", "Nova.SearchAlgorithm.Functions.DonorManagement\Nova.SearchAlgorithm.Functions.DonorManagement.csproj", "{6D940CC3-DE66-4B55-9625-4D7254708B1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nova.SearchAlgorithm.Functions.DonorManagement", "Nova.SearchAlgorithm.Functions.DonorManagement\Nova.SearchAlgorithm.Functions.DonorManagement.csproj", "{6D940CC3-DE66-4B55-9625-4D7254708B1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.SearchAlgorithm.Functions.DonorManagement.Test", "Nova.SearchAlgorithm.Functions.DonorManagement.Test\Nova.SearchAlgorithm.Functions.DonorManagement.Test.csproj", "{CF0C73AF-C72D-451E-82F5-9BF24318405E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -134,6 +136,12 @@ Global
 		{6D940CC3-DE66-4B55-9625-4D7254708B1A}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{6D940CC3-DE66-4B55-9625-4D7254708B1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D940CC3-DE66-4B55-9625-4D7254708B1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF0C73AF-C72D-451E-82F5-9BF24318405E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF0C73AF-C72D-451E-82F5-9BF24318405E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF0C73AF-C72D-451E-82F5-9BF24318405E}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF0C73AF-C72D-451E-82F5-9BF24318405E}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{CF0C73AF-C72D-451E-82F5-9BF24318405E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF0C73AF-C72D-451E-82F5-9BF24318405E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
