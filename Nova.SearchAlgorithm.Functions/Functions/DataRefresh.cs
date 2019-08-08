@@ -2,58 +2,54 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
 {
     public class DataRefresh
     {
-        private readonly IDonorImporter donorImporter;
-        private readonly IHlaProcessor hlaProcessor;
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
-        public DataRefresh(
-            IDonorImporter donorImporter,
-            IHlaProcessor hlaProcessor,
-            IDataRefreshOrchestrator dataRefreshOrchestrator,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+        public DataRefresh(IDataRefreshOrchestrator dataRefreshOrchestrator)
         {
-            this.donorImporter = donorImporter;
-            this.hlaProcessor = hlaProcessor;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
+        /// <summary>
+        /// Runs a full data refresh, regardless of whether the existing database is using the latest version of the hla database
+        /// </summary>
+        [FunctionName("ForceDataRefresh")]
+        public async Task ForceDataRefresh([HttpTrigger] HttpRequest httpRequest)
+        {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
+        }
+
+        /// <summary>
+        /// Runs a full data refresh, if necessary
+        /// </summary>
         [FunctionName("RunDataRefreshManual")]
         public async Task RunDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
 
+        /// <summary>
+        /// Runs a full data refresh, without clearing out old data - can be used when an in progress job failed near the end of the job,
+        /// To avoid importing / processing donors more than necessary
+        /// </summary>
         [FunctionName("ContinueDataRefreshManual")]
         public async Task ContinueDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary(true);
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(isContinuedRefresh: true);
         }
 
+        /// <summary>
+        /// Runs a full data refresh, if necessary
+        /// </summary>
         [FunctionName("RunDataRefresh")]
         public async Task RunDataRefresh([TimerTrigger("%DataRefresh.CronTab%")] TimerInfo timerInfo)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
-        }
-
-        [FunctionName("RunDonorImport")]
-        public async Task RunDonorImport([HttpTrigger] HttpRequest httpRequest)
-        {
-            await donorImporter.ImportDonors();
-        }
-
-        [FunctionName("ProcessDonorHla")]
-        public async Task RunHlaRefresh([HttpTrigger] HttpRequest httpRequest)
-        {
-            await hlaProcessor.UpdateDonorHla(wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
     }
 }

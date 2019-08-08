@@ -12,8 +12,13 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         /// <returns>The version of the wmda hla data currently in use by the algorithm</returns>
         string GetActiveHlaDatabaseVersion();
 
-        /// <returns>The latest published version of the wmda hla data</returns>
-        string GetLatestHlaDatabaseVersion();
+        /// <summary>
+        /// Fetches the last stable hla database version.
+        /// Our definition of "stable" here is that another version has since been published.
+        /// So if 3370 was the latest version, we consider it unstable, and return the previous version - 3360
+        /// </summary>
+        /// <returns>The latest stable database version, in the format "3370" (i.e. major & minor versions only, no dots)</returns>
+        string GetLatestStableHlaDatabaseVersion();
     }
 
     public class WmdaHlaVersionProvider : IWmdaHlaVersionProvider
@@ -39,13 +44,18 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
             return cache.GetOrAdd("activeWmdaVersion", () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
         }
 
-        public string GetLatestHlaDatabaseVersion()
+        public string GetLatestStableHlaDatabaseVersion()
         {
             return cache.GetOrAdd("latestWmdaVersion", () =>
             {
-                var versionReport = webClient.DownloadString($"{wmdaBaseUrl}Latest/version_report.txt");
-                var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("# version"));
-                return string.Join("", versionLine.Split(' ').Last().Split('.'));
+                // The currently recommended way of finding out the last-but-one version is from the header of the "Allelelist_history.txt" file, 
+                // which contains all historic versions of the database
+                var versionReport = webClient.DownloadString($"{wmdaBaseUrl}Latest/Allelelist_history.txt");
+                var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("HLA_ID"));
+                
+                // The first item in the header line is the name, "HLA_ID". Then the versions are listed in reverse chronological order.
+                // So the second item is the latest version, and the third is the latest stable version
+                return versionLine.Split(",")[2];
             });
         }
     }

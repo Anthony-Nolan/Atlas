@@ -12,6 +12,7 @@ using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -30,6 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
         private IAzureFunctionManager azureFunctionManager;
         private IAzureDatabaseManager azureDatabaseManager;
+        private INotificationSender notificationSender;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
 
@@ -44,10 +46,11 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
+            notificationSender = Substitute.For<INotificationSender>();
 
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("new");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("new");
 
             dataRefreshOrchestrator = new DataRefreshOrchestrator(
                 logger,
@@ -58,7 +61,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 dataRefreshHistoryRepository,
                 azureFunctionManager,
                 azureDatabaseManager,
-                new AzureDatabaseNameProvider(settingsOptions)
+                new AzureDatabaseNameProvider(settingsOptions),
+                notificationSender
             );
         }
 
@@ -67,18 +71,30 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             const string wmdaVersion = "3330";
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(wmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(wmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
+        }
+        
+        [Test]
+        public async Task RefreshDataIfNecessary_WhenCurrentWmdaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
+        {
+            const string wmdaVersion = "3330";
+            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(wmdaVersion);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
+
+            await dataRefreshService.Received().RefreshData(Arg.Any<string>());
         }
 
         [Test]
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_TriggersDataRefresh()
         {
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("3370");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("3370");
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -89,10 +105,20 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
         {
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns("3370");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("3370");
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
+        }
+        
+        [Test]
+        public async Task RefreshDataIfNecessary_WhenShouldForceRefresh_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
             await dataRefreshService.DidNotReceive().RefreshData(Arg.Any<string>());
         }
@@ -101,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_TriggersDataRefreshWithLatestWmdaVersion()
         {
             const string latestWmdaVersion = "3370";
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(latestWmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(latestWmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -156,7 +182,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_StoresRefreshRecordOfWmdaVersion()
         {
             const string latestWmdaVersion = "latest-wmda";
-            wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion().Returns(latestWmdaVersion);
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(latestWmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -286,6 +312,32 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
+        }
+        
+        [Test]
+        public async Task RefreshData_SendsNotificationOnInitialisation()
+        {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await notificationSender.Received().SendInitialisationNotification();
+        }
+        
+        [Test]
+        public async Task RefreshData_SendsNotificationOnSuccess()
+        {
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await notificationSender.Received().SendSuccessNotification();
+        }
+        
+        [Test]
+        public async Task RefreshData_SendsAlertOnFailure()
+        {
+            dataRefreshService.RefreshData(Arg.Any<string>()).Throws(new Exception());
+            
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await notificationSender.Received().SendFailureAlert();
         }
     }
 }

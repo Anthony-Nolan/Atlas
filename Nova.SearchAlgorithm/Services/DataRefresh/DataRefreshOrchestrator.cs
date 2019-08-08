@@ -15,11 +15,14 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
     public interface IDataRefreshOrchestrator
     {
+        /// <param name="shouldForceRefresh">
+        /// If true, the refresh will occur regardless of whether a new hla database version has been published
+        /// </param>
         /// <param name="isContinuedRefresh">
         /// If true, the refresh will not remove existing data, instead only importing / processing new donors.
         /// This should only be triggered manually if a refresh failed
         /// </param>
-        Task RefreshDataIfNecessary(bool isContinuedRefresh = false);
+        Task RefreshDataIfNecessary(bool shouldForceRefresh = false, bool isContinuedRefresh = false);
     }
 
     public class DataRefreshOrchestrator : IDataRefreshOrchestrator
@@ -33,6 +36,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseManager azureDatabaseManager;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
+        private readonly INotificationSender notificationSender;
 
         public DataRefreshOrchestrator(
             ILogger logger,
@@ -43,7 +47,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IAzureFunctionManager azureFunctionManager,
             IAzureDatabaseManager azureDatabaseManager,
-            IAzureDatabaseNameProvider azureDatabaseNameProvider)
+            IAzureDatabaseNameProvider azureDatabaseNameProvider,
+            INotificationSender notificationSender)
         {
             this.logger = logger;
             this.settingsOptions = settingsOptions;
@@ -54,11 +59,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.azureFunctionManager = azureFunctionManager;
             this.azureDatabaseManager = azureDatabaseManager;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
+            this.notificationSender = notificationSender;
         }
 
-        public async Task RefreshDataIfNecessary(bool isContinuedRefresh)
+        public async Task RefreshDataIfNecessary(bool shouldForceRefresh, bool isContinuedRefresh)
         {
-            if (!HasNewWmdaDataBeenPublished())
+            if (!shouldForceRefresh && !HasNewWmdaDataBeenPublished())
             {
                 logger.SendTrace("No new WMDA Hla data has been published. Data refresh not started.", LogLevel.Info);
                 return;
@@ -75,7 +81,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task RunDataRefresh(bool isContinuedRefresh)
         {
-            var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion();
+            await notificationSender.SendInitialisationNotification();
+            var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             var dataRefreshRecord = new DataRefreshRecord
             {
@@ -92,10 +99,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await dataRefreshService.RefreshData(wmdaDatabaseVersion, isContinuedRefresh);
                 await MarkDataHistoryRecordAsComplete(recordId, true);
                 await ScaleDownPreviouslyActiveDatabase();
+                await notificationSender.SendSuccessNotification();
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
+                await notificationSender.SendFailureAlert();
                 await MarkDataHistoryRecordAsComplete(recordId, false);
             }
             finally
@@ -137,7 +146,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private bool HasNewWmdaDataBeenPublished()
         {
             var activeHlaDataVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
-            var latestHlaDataVersion = wmdaHlaVersionProvider.GetLatestHlaDatabaseVersion();
+            var latestHlaDataVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return activeHlaDataVersion != latestHlaDataVersion;
         }
 

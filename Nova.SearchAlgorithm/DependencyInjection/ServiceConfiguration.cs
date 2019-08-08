@@ -41,6 +41,7 @@ using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 using System;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
@@ -61,6 +62,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<AzureAppServiceManagementSettings>(configuration.GetSection("AzureManagement.AppService"));
             services.Configure<AzureDatabaseManagementSettings>(configuration.GetSection("AzureManagement.Database"));
             services.Configure<DataRefreshSettings>(configuration.GetSection("DataRefresh"));
+            services.Configure<NotificationsServiceBusSettings>(configuration.GetSection("NotificationsServiceBus"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -98,6 +100,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshService, DataRefreshService>();
+            services.AddScoped<INotificationSender, NotificationSender>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services
@@ -148,13 +151,18 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
             services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
             services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
+
+            services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
+            {
+                var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
+                return new NotificationsClient(settings.ConnectionString, settings.NotificationsTopic, settings.AlertsTopic);
+            });
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
         {
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
-            
             // Persistent storage
             services.AddScoped(sp =>
             {
