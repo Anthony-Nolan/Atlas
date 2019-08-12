@@ -1,17 +1,15 @@
 using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.Http.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {
@@ -23,7 +21,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
     {
         Task<InputDonor> CreateDonor(InputDonor inputDonor);
         Task<InputDonor> UpdateDonor(InputDonor inputDonor);
-        Task DeleteDonor(int donorId);
+        Task DeleteDonorBatch(IEnumerable<int> donorIds);
         Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors);
         Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonor);
         Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors);
@@ -58,16 +56,9 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return (await UpdateDonorBatch(new[] { inputDonor })).Single();
         }
 
-        public async Task DeleteDonor(int donorId)
+        public async Task DeleteDonorBatch(IEnumerable<int> donorIds)
         {
-            var existingDonors = await donorInspectionRepository.GetDonors(new[] { donorId });
-
-            if (!existingDonors.Any())
-            {
-                throw new NovaNotFoundException($"Donor ID {donorId} does not exist in the database.");
-            }
-
-            await donorUpdateRepository.DeleteDonorAndItsExpandedHla(donorId);
+            await donorUpdateRepository.DeleteDonorBatch(donorIds);
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)

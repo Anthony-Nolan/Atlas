@@ -11,8 +11,8 @@
 
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="7.5.2" />
-      <PackageReference Include="Nova.Utils" Version="11.0.5" />
-      <PackageReference Include="Nova.Utils.Client" Version="11.0.5" />
+      <PackageReference Include="Nova.Utils" Version="11.1.0" />
+      <PackageReference Include="Nova.Utils.Client" Version="11.1.0" />
     </ItemGroup>
 
     <ItemGroup>

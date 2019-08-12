@@ -72,31 +72,33 @@ WHERE DonorId = {existingDonor.DonorId}
             await ReplaceMatchingGroupsForExistingDonorBatch(donors);
         }
 
-        public async Task DeleteDonorAndItsExpandedHla(int donorId)
+        public async Task DeleteDonorBatch(IEnumerable<int> donorIds)
         {
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
                 var transaction = conn.BeginTransaction();
 
-                await DeleteMatchingGroupsForExistingDonor(donorId, conn, transaction);
-                await conn.ExecuteAsync("DELETE Donors WHERE DonorId = @DonorId", new { DonorId = donorId }, transaction);
+                var donorIdsAsString = string.Join(",", donorIds);
+
+                await DeleteMatchingGroupsForExistingDonors(donorIdsAsString, conn, transaction);
+                await conn.ExecuteAsync($"DELETE Donors WHERE DonorId IN ({donorIdsAsString})", null, transaction);
 
                 transaction.Commit();
                 conn.Close();
             }
         }
         
-        private static async Task DeleteMatchingGroupsForExistingDonor(int donorId, IDbConnection connection, IDbTransaction transaction)
+        private static async Task DeleteMatchingGroupsForExistingDonors(string donorIds, IDbConnection connection, IDbTransaction transaction)
         {
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => DeleteMatchingGroupsForExistingDonorAtLocus(l, donorId, connection, transaction)));
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => DeleteMatchingGroupsForExistingDonorsAtLocus(l, donorIds, connection, transaction)));
         }
 
-        private static async Task DeleteMatchingGroupsForExistingDonorAtLocus(Locus locus, int donorId, IDbConnection connection, IDbTransaction transaction)
+        private static async Task DeleteMatchingGroupsForExistingDonorsAtLocus(Locus locus, string donorIds, IDbConnection connection, IDbTransaction transaction)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId = @DonorId";
-            await connection.ExecuteAsync(deleteSql, new { DonorId = donorId }, transaction);
+            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId IN ({donorIds})";
+            await connection.ExecuteAsync(deleteSql, null, transaction);
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)

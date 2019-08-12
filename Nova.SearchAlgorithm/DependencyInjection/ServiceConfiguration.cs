@@ -1,4 +1,3 @@
-using System;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.ApplicationInsights;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
@@ -24,13 +24,13 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.HlaDataConversion;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
+using Nova.SearchAlgorithm.Services.DonorManagement;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
@@ -43,6 +43,8 @@ using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
+using Nova.Utils.ServiceBus.BatchReceiving;
+using System;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -63,6 +65,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.Configure<AzureDatabaseManagementSettings>(configuration.GetSection("AzureManagement.Database"));
             services.Configure<DataRefreshSettings>(configuration.GetSection("DataRefresh"));
             services.Configure<NotificationsServiceBusSettings>(configuration.GetSection("NotificationsServiceBus"));
+            services.Configure<DonorManagementSettings>(configuration.GetSection("MessagingServiceBus.DonorManagement"));
         }
 
         public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
@@ -93,7 +96,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.Donors.DonorService>();
-            services.AddScoped<IDonorManagementService, DonorManagementService>();
 
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorImporter, DonorImporter>();
@@ -281,6 +283,30 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             var logger = new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
 
             return new DonorServiceClient(clientSettings, logger);
+        }
+
+        public static void RegisterDonorManagementServices(this IServiceCollection services)
+        {
+            services.AddScoped<IDonorManagementService, DonorManagementService>();
+
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
+                new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
+            );
+
+            services.AddScoped<IMessageProcessor<SearchableDonorUpdateModel>, MessageProcessor<SearchableDonorUpdateModel>>(sp =>
+            {
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var factory = sp.GetService<IMessageReceiverFactory>();
+                return new MessageProcessor<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
+            });
+
+            services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
+            {
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdateModel>>();
+                var managementService = sp.GetService<IDonorManagementService>();
+                return new DonorUpdateProcessor(messageReceiverService, managementService, int.Parse(settings.BatchSize));
+            });
         }
     }
 }

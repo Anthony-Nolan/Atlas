@@ -47,6 +47,8 @@ locals {
     "Client.HlaService.ApiKey"                         = data.terraform_remote_state.hla.outputs.hla_service.api_key
     "Client.HlaService.BaseUrl"                        = data.terraform_remote_state.hla.outputs.hla_service.base_url
     "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
+	"MessagingServiceBus.DonorManagement.BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
+	"MessagingServiceBus.DonorManagement.CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
     "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
     "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"

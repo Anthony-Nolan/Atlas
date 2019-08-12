@@ -103,6 +103,16 @@ variable "MESSAGING_BUS_CONNECTION_STRING" {
   type = string
 }
 
+variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
+  type = number
+  default = 100
+}
+
+variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
+  type = string
+  default = "0 */10 * * * *"
+}
+
 variable "MESSAGING_BUS_DONOR_TOPIC" {
   type = string
   default = "updated-searchable-donors"
