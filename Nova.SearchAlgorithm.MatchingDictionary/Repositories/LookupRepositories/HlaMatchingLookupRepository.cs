@@ -9,7 +9,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
     public interface IHlaMatchingLookupRepository : IHlaLookupRepository
     {
-        IEnumerable<string> GetAllPGroups();
+        IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion);
     }
 
     public class HlaMatchingLookupRepository : HlaLookupRepositoryBase, IHlaMatchingLookupRepository
@@ -25,13 +25,14 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         {
         }
 
-        public IEnumerable<string> GetAllPGroups()
+        public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
         {
-            if (MemoryCache.TryGetValue(CacheKey, out Dictionary<string, HlaLookupTableEntity> matchingDictionary))
+            var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
+            if (MemoryCache.TryGetValue(versionedCacheKey, out Dictionary<string, HlaLookupTableEntity> matchingDictionary))
             {
                 return matchingDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult()?.MatchingPGroups);
             }
-            throw new MemoryCacheException($"{CacheKey} table not cached!");
+            throw new MemoryCacheException($"{versionedCacheKey} table not cached!");
         }            
     }
 }

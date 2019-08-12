@@ -19,7 +19,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         where TTableEntity : TableEntity, new()
         where TStorable : IStorableInCloudTable<TTableEntity>
     {
-        Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion);
         Task LoadDataIntoMemory(string hlaDatabaseVersion);
     }
 
@@ -50,15 +49,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             this.cacheKey = cacheKey;
         }
 
-        public async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
-        {
-            var tablePrefix = VersionedTableReferencePrefix(hlaDatabaseVersion);
-            var newDataTable = await CreateNewDataTable(tablePrefix);
-            await InsertIntoDataTable(tableContents, partitions, newDataTable);
-            await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
-            cloudTable = null;
-        }
-
         /// <summary>
         /// If you plan to use this repository with multiple async operations, this method should be called first
         /// </summary>
@@ -77,23 +67,39 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
                 }
             }
 
-            MemoryCache.Set(cacheKey, dataToLoad);
+            MemoryCache.Set(VersionedCacheKey(hlaDatabaseVersion), dataToLoad);
+        }
+
+        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
+        {
+            var tablePrefix = VersionedTableReferencePrefix(hlaDatabaseVersion);
+            var newDataTable = await CreateNewDataTable(tablePrefix);
+            await InsertIntoDataTable(tableContents, partitions, newDataTable);
+            await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
+            cloudTable = null;
         }
 
         protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey, string hlaDatabaseVersion)
         {
-            if (MemoryCache.TryGetValue(cacheKey, out Dictionary<string, TTableEntity> tableEntities))
+            var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
+            
+            if (MemoryCache.TryGetValue(versionedCacheKey, out Dictionary<string, TTableEntity> tableEntities))
             {
                 return GetDataFromCache(partition, rowKey, tableEntities);
             }
 
             await LoadDataIntoMemory(hlaDatabaseVersion);
-            if (MemoryCache.TryGetValue(cacheKey, out tableEntities))
+            if (MemoryCache.TryGetValue(versionedCacheKey, out tableEntities))
             {
                 return GetDataFromCache(partition, rowKey, tableEntities);
             }
 
-            throw new MemoryCacheException($"Failed to load data into the {cacheKey} cache");
+            throw new MemoryCacheException($"Failed to load data into the {versionedCacheKey} cache");
+        }
+
+        protected string VersionedCacheKey(string hlaDatabaseVersion)
+        {
+            return $"{cacheKey}:{hlaDatabaseVersion}";
         }
 
         private string VersionedTableReferencePrefix(string hlaDatabaseVersion)
