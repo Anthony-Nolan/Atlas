@@ -81,9 +81,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await ProcessDonorHla(wmdaDatabaseVersion);
                 await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                logger.SendTrace($"DATA REFRESH: Refresh failed. Scaling down database.", LogLevel.Info);
+                logger.SendTrace($"DATA REFRESH: Refresh failed. Exception: {ex.Message}", LogLevel.Info);
                 await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
                 throw;
             }
