@@ -129,6 +129,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             {
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = tableName;
+                sqlBulk.BulkCopyTimeout = 3600;
                 await sqlBulk.WriteToServerAsync(dataTable);
             }
         }
