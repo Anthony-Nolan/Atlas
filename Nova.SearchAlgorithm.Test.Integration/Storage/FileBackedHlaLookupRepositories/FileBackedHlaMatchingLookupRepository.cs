@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepos
             return resultCollections.HlaMatchingLookupResults;
         }
 
-        public IEnumerable<string> GetAllPGroups()
+        public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
         {
             return HlaLookupResults.SelectMany(hla => hla.MatchingPGroups);
         }
