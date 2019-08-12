@@ -1,5 +1,5 @@
 using Microsoft.Azure.WebJobs;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Services;
+using Nova.SearchAlgorithm.Services.DonorManagement;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions

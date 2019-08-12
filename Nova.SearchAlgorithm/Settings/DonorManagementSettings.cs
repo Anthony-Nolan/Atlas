@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.Functions.DonorManagement.Settings
+﻿namespace Nova.SearchAlgorithm.Settings
 {
     public class DonorManagementSettings
     {

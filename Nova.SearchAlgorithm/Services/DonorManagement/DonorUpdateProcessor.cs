@@ -1,15 +1,14 @@
 ﻿using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Models;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus;
 using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Services;
+using Nova.Utils.ServiceBus.BatchReceiving;
+using Nova.Utils.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services
+namespace Nova.SearchAlgorithm.Services.DonorManagement
 {
     public interface IDonorUpdateProcessor
     {
@@ -18,12 +17,12 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Services
 
     public class DonorUpdateProcessor : IDonorUpdateProcessor
     {
-        private readonly IMessageProcessorService<SearchableDonorUpdateModel> messageProcessorService;
+        private readonly IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
         private readonly IDonorManagementService donorManagementService;
         private readonly int batchSize;
 
         public DonorUpdateProcessor(
-            IMessageProcessorService<SearchableDonorUpdateModel> messageProcessorService,
+            IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService,
             IDonorManagementService donorManagementService,
             int batchSize)
         {

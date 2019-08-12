@@ -1,10 +1,10 @@
-﻿using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Services.Donors;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Services.Donors;
 
-namespace Nova.SearchAlgorithm.Services
+namespace Nova.SearchAlgorithm.Services.DonorManagement
 {
     /// <summary>
     /// Manages the addition or removal of individual donors from the search algorithm database.

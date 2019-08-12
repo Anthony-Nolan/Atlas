@@ -1,29 +1,28 @@
 using Nova.DonorService.Client.Models.DonorUpdate;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Models;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Services;
-using Nova.SearchAlgorithm.Functions.DonorManagement.Services.ServiceBus;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.DonorManagement;
+using Nova.Utils.ServiceBus.BatchReceiving;
+using Nova.Utils.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Functions.DonorManagement.Test.Services
+namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 {
     [TestFixture]
     public class DonorUpdateProcessorTests
     {
         private const int BatchSize = 100;
 
-        private IMessageProcessorService<SearchableDonorUpdateModel> messageProcessorService;
+        private IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
         private IDonorManagementService donorManagementService;
         private IDonorUpdateProcessor donorUpdateProcessor;
 
         [SetUp]
         public void Setup()
         {
-            messageProcessorService = Substitute.For<IMessageProcessorService<SearchableDonorUpdateModel>>();
+            messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdateModel>>();
             donorManagementService = Substitute.For<IDonorManagementService>();
             donorUpdateProcessor = new DonorUpdateProcessor(messageProcessorService, donorManagementService, BatchSize);
         }

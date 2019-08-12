@@ -1,15 +1,15 @@
-﻿using Nova.SearchAlgorithm.Client.Models;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Services;
+using Nova.SearchAlgorithm.Services.DonorManagement;
 using Nova.SearchAlgorithm.Services.Donors;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Nova.SearchAlgorithm.Test.Services
+namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 {
     [TestFixture]
     public class DonorManagementServiceTests
