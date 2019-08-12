@@ -135,7 +135,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
-                var pGroups = hlaMatchingLookupRepository.GetAllPGroups();
+                var pGroups = hlaMatchingLookupRepository.GetAllPGroups(hlaDatabaseVersion);
                 pGroupRepository.InsertPGroups(pGroups);
 
                 logger.SendTrace("HLA PROCESSOR: preparing database", LogLevel.Info);
