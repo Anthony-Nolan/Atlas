@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     public class HlaProcessor : IHlaProcessor
     {
         private const int BatchSize = 1000;
-        
+
         private readonly ILogger logger;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
@@ -80,20 +80,20 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private async Task PerformHlaUpdate(string hlaDatabaseVersion)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-                var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
-                var donorsProcessed = 0;
-                while (batchedQuery.HasMoreResults)
-                {
-                    var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
-                    
-                    // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
-                    // This ensures we do not end up with duplicate p-groups in the matching hla tables
-                    // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
-                    var shouldRemovePGroups = donorsProcessed < DataRefreshRepository.NumberOfBatchesOverlapOnRestart * BatchSize;
-                    
-                    await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
-                    donorsProcessed += BatchSize;
-                    logger.SendTrace($"Hla Processing {(double) donorsProcessed/totalDonorCount:0.00%} complete", LogLevel.Info);
+            var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
+            var donorsProcessed = 0;
+            while (batchedQuery.HasMoreResults)
+            {
+                var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
+
+                // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
+                // This ensures we do not end up with duplicate p-groups in the matching hla tables
+                // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
+                var shouldRemovePGroups = donorsProcessed < DataRefreshRepository.NumberOfBatchesOverlapOnRestart * BatchSize;
+
+                await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
+                donorsProcessed += BatchSize;
+                logger.SendTrace($"Hla Processing {(double) donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
             }
         }
 
