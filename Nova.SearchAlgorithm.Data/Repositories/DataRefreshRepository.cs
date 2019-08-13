@@ -51,7 +51,7 @@ SELECT COUNT(*) FROM DONORS
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryFirstAsync<int>(sql, 600);
+                return await conn.QueryFirstAsync<int>(sql, commandTimeout: 600);
             }
         }
 

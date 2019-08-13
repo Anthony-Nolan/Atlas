@@ -18,7 +18,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {
-        public DonorUpdateRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository, connectionStringProvider)
+        public DonorUpdateRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository,
+            connectionStringProvider)
         {
         }
 
@@ -65,7 +66,7 @@ DQB1_2 = '{existingDonor.DQB1_2}',
 DPB1_1 = '{existingDonor.DPB1_1}',
 DPB1_2 = '{existingDonor.DPB1_2}'
 WHERE DonorId = {existingDonor.DonorId}
-", 600);
+", commandTimeout: 600);
                 }
             }
 
@@ -88,13 +89,18 @@ WHERE DonorId = {existingDonor.DonorId}
                 conn.Close();
             }
         }
-        
+
         private static async Task DeleteMatchingGroupsForExistingDonors(string donorIds, IDbConnection connection, IDbTransaction transaction)
         {
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => DeleteMatchingGroupsForExistingDonorsAtLocus(l, donorIds, connection, transaction)));
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l =>
+                DeleteMatchingGroupsForExistingDonorsAtLocus(l, donorIds, connection, transaction)));
         }
 
-        private static async Task DeleteMatchingGroupsForExistingDonorsAtLocus(Locus locus, string donorIds, IDbConnection connection, IDbTransaction transaction)
+        private static async Task DeleteMatchingGroupsForExistingDonorsAtLocus(
+            Locus locus,
+            string donorIds,
+            IDbConnection connection,
+            IDbTransaction transaction)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId IN ({donorIds})";
