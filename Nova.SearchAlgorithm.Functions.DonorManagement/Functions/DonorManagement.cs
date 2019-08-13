@@ -1,6 +1,7 @@
 using Microsoft.Azure.WebJobs;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.DonorManagement;
+using Nova.Utils.ApplicationInsights;
 using System;
 using System.Threading.Tasks;
 
@@ -9,10 +10,12 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
     public class DonorManagement
     {
         private readonly IDonorUpdateProcessor donorUpdateProcessor;
-        
-        public DonorManagement(IDonorUpdateProcessor donorUpdateProcessor)
+        private readonly ILogger logger;
+
+        public DonorManagement(IDonorUpdateProcessor donorUpdateProcessor, ILogger logger)
         {
             this.donorUpdateProcessor = donorUpdateProcessor;
+            this.logger = logger;
         }
 
         [FunctionName("ManageDonorByAvailability")]
@@ -24,7 +27,8 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
             }
             catch (Exception ex)
             {
-                throw new ManageDonorFunctionException(ex);
+                logger.SendTrace($"Error when running the donor management function: " + ex.Message, LogLevel.Error);
+                throw new DonorManagementException(ex);
             }
         }
     }
