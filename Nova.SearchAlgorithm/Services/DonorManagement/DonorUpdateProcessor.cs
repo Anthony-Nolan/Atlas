@@ -55,7 +55,10 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
             logger.SendTrace($"{TraceMessagePrefix}: {updates.Count} messages retrieved for processing.", LogLevel.Info);
 
-            await donorManagementService.ManageDonorBatchByAvailability(updates);
+            if (updates.Any())
+            {
+                await donorManagementService.ManageDonorBatchByAvailability(updates);
+            }
         }
 
         /// <summary>
