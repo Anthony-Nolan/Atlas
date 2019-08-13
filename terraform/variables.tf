@@ -115,7 +115,7 @@ variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
 
 variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type = string
-  default = "0 */10 * * * *"
+  default = "0 5/10 * * * *"
 }
 
 variable "MESSAGING_BUS_DONOR_TOPIC" {
