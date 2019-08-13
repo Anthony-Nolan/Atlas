@@ -1,5 +1,7 @@
 using Microsoft.Azure.WebJobs;
+using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.DonorManagement;
+using System;
 using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
@@ -16,7 +18,14 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
         [FunctionName("ManageDonorByAvailability")]
         public async Task Run([TimerTrigger("%MessagingServiceBus.DonorManagement.CronSchedule%")] TimerInfo myTimer)
         {
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            try
+            {
+                await donorUpdateProcessor.ProcessDonorUpdates();
+            }
+            catch (Exception ex)
+            {
+                throw new ManageDonorFunctionException(ex);
+            }
         }
     }
 }
