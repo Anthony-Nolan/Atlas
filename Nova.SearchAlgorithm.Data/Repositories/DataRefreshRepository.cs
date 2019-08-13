@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 var donors = conn.Query<Donor>($@"
 SELECT * FROM Donors d
 WHERE DonorId > {donorToContinueFrom}
-", 3600);
+", commandTimeout: 3600);
                 return new SqlDonorBatchQueryAsync(donors, batchSize);
             }
         }
