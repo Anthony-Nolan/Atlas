@@ -65,7 +65,7 @@ DQB1_2 = '{existingDonor.DQB1_2}',
 DPB1_1 = '{existingDonor.DPB1_1}',
 DPB1_2 = '{existingDonor.DPB1_2}'
 WHERE DonorId = {existingDonor.DonorId}
-");
+", 600);
                 }
             }
 
@@ -82,7 +82,7 @@ WHERE DonorId = {existingDonor.DonorId}
                 var donorIdsAsString = string.Join(",", donorIds);
 
                 await DeleteMatchingGroupsForExistingDonors(donorIdsAsString, conn, transaction);
-                await conn.ExecuteAsync($"DELETE Donors WHERE DonorId IN ({donorIdsAsString})", null, transaction);
+                await conn.ExecuteAsync($"DELETE Donors WHERE DonorId IN ({donorIdsAsString})", null, transaction, commandTimeout: 600);
 
                 transaction.Commit();
                 conn.Close();
@@ -122,7 +122,7 @@ WHERE DonorId = {existingDonor.DonorId}
 DELETE FROM {matchingTableName}
 WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
 ";
-                await conn.ExecuteAsync(deleteSql, null, transaction);
+                await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
                 await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
 
                 transaction.Commit();

@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 var donors = conn.Query<Donor>($@"
 SELECT * FROM Donors d
 WHERE DonorId > {donorToContinueFrom}
-");
+", 3600);
                 return new SqlDonorBatchQueryAsync(donors, batchSize);
             }
         }
@@ -51,7 +51,7 @@ SELECT COUNT(*) FROM DONORS
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryFirstAsync<int>(sql);
+                return await conn.QueryFirstAsync<int>(sql, 600);
             }
         }
 

@@ -40,7 +40,7 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
 ";
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(indexRemovalSql);
+                await conn.ExecuteAsync(indexRemovalSql, commandTimeout: 600);
             }
         }
 
@@ -107,7 +107,7 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(dropAllDonorInfoSql);
+                await conn.ExecuteAsync(dropAllDonorInfoSql, commandTimeout: 300);
             }
         }
 
@@ -140,7 +140,7 @@ WHERE DonorId IN ({string.Join(",", donorIds)});
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(removalSql);
+                await conn.ExecuteAsync(removalSql, commandTimeout: 600);
             }
         }
     }

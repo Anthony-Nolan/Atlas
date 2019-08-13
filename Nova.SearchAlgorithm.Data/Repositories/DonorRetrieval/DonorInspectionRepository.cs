@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
         {
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var donor = await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE DonorId = {donorId}");
+                var donor = await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE DonorId = {donorId}", commandTimeout: 300);
                 return donor?.ToDonorResult();
             }
         }
