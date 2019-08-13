@@ -23,7 +23,11 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
         {
             try
             {
+                logger.SendTrace($"Commenced running of the donor management function.", LogLevel.Info);
+
                 await donorUpdateProcessor.ProcessDonorUpdates();
+
+                logger.SendTrace($"Completed running of the donor management function.", LogLevel.Info);
             }
             catch (Exception ex)
             {
