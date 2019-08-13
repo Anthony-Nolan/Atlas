@@ -39,6 +39,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 var transaction = conn.BeginTransaction();
                 using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                 {
+                    sqlBulk.BulkCopyTimeout = 600;
                     sqlBulk.BatchSize = 10000;
                     sqlBulk.DestinationTableName = "PGroupNames";
                     sqlBulk.WriteToServer(dt);
@@ -74,7 +75,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                newId = conn.Query<int>(sql, new {PGroupName = pGroupName}).Single();
+                newId = conn.Query<int>(sql, new {PGroupName = pGroupName}, commandTimeout: 300).Single();
             }
 
             CachePGroupDictionary();
@@ -96,7 +97,7 @@ WHERE p.Name IN ('{string.Join("', '", pGroupNames)}')
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryAsync<int>(sql);
+                return await conn.QueryAsync<int>(sql, commandTimeout: 300);
             }
         }
 
@@ -104,7 +105,7 @@ WHERE p.Name IN ('{string.Join("', '", pGroupNames)}')
         {
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var innerPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames");
+                var innerPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames", commandTimeout: 300);
                 pGroupDictionary = innerPGroups.Distinct(new DistinctPGroupNameComparer()).ToDictionary(p => p.Name);
             }
         }

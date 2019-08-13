@@ -12,8 +12,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 {
     public class DataRefreshRepository : Repository, IDataRefreshRepository
     {
-        public static int NumberOfBatchesOverlapOnRestart = 2;
-    
+        public const int NumberOfBatchesOverlapOnRestart = 2;
+
         public DataRefreshRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
         }
@@ -38,7 +38,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 var donors = conn.Query<Donor>($@"
 SELECT * FROM Donors d
 WHERE DonorId > {donorToContinueFrom}
-");
+", commandTimeout: 3600);
                 return new SqlDonorBatchQueryAsync(donors, batchSize);
             }
         }
@@ -48,26 +48,29 @@ WHERE DonorId > {donorToContinueFrom}
             const string sql = @"
 SELECT COUNT(*) FROM DONORS
 ";
-            
+
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryFirstAsync<int>(sql);
+                return await conn.QueryFirstAsync<int>(sql, commandTimeout: 600);
             }
         }
 
         private async Task<int> GetHighestDonorIdForWhichHlaHasBeenProcessed()
         {
+            // While this query is expected to be quite fast, throttling of azure databases can slow down all requests when in heavy use
+            const int timeout = 600;
+
             using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var maxDonorIdAtDrb1 = await connection.QuerySingleOrDefaultAsync<int?>(@"
 SELECT MAX(DonorId) FROM MatchingHlaAtDrb1
-", 0) ?? 0;
+", 0, commandTimeout: timeout) ?? 0;
                 var maxDonorIdAtB = await connection.QuerySingleOrDefaultAsync<int?>(@"
 SELECT MAX(DonorId) FROM MatchingHlaAtB
-", 0) ?? 0;
+", 0, commandTimeout: timeout) ?? 0;
                 var maxDonorIdAtA = await connection.QuerySingleOrDefaultAsync<int?>(@"
 SELECT MAX(DonorId) FROM MatchingHlaAtA
-", 0) ?? 0;
+", 0, commandTimeout: timeout) ?? 0;
 
                 return Math.Min(maxDonorIdAtA, Math.Min(maxDonorIdAtB, maxDonorIdAtDrb1));
             }
