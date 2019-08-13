@@ -7,6 +7,7 @@ using Nova.Utils.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DonorManagement
 {
@@ -17,31 +18,43 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
     public class DonorUpdateProcessor : IDonorUpdateProcessor
     {
+        private const string TraceMessagePrefix = nameof(ProcessDonorUpdates);
+
         private readonly IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
         private readonly IDonorManagementService donorManagementService;
         private readonly int batchSize;
+        private readonly ILogger logger;
 
         public DonorUpdateProcessor(
             IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService,
             IDonorManagementService donorManagementService,
+            ILogger logger,
             int batchSize)
         {
             this.messageProcessorService = messageProcessorService;
             this.donorManagementService = donorManagementService;
+            this.logger = logger;
             this.batchSize = batchSize;
         }
 
         public async Task ProcessDonorUpdates()
         {
+            logger.SendTrace($"{TraceMessagePrefix}: Commenced processing of message batch.", LogLevel.Info);
+
             await messageProcessorService.ProcessMessageBatch(batchSize, async batch =>
             {
                 await ProcessMessages(batch);
             });
+
+            logger.SendTrace($"{TraceMessagePrefix}: Completed processing of message batch.", LogLevel.Info);
         }
 
         private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
         {
-            var updates = messageBatch.Select(MapDonorAvailabilityUpdate);
+            var updates = messageBatch.Select(MapDonorAvailabilityUpdate).ToList();
+
+            logger.SendTrace($"{TraceMessagePrefix}: {updates.Count} messages retrieved for processing.", LogLevel.Info);
+
             await donorManagementService.ManageDonorBatchByAvailability(updates);
         }
 

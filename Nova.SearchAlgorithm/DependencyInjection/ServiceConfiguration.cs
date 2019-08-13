@@ -305,7 +305,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdateModel>>();
                 var managementService = sp.GetService<IDonorManagementService>();
-                return new DonorUpdateProcessor(messageReceiverService, managementService, int.Parse(settings.BatchSize));
+                var logger = sp.GetService<ILogger>();
+                return new DonorUpdateProcessor(messageReceiverService, managementService, logger, int.Parse(settings.BatchSize));
             });
         }
     }

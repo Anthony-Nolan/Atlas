@@ -1,5 +1,6 @@
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.Services.DonorManagement;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using Nova.Utils.ServiceBus.Models;
 using NSubstitute;
@@ -24,7 +25,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         {
             messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdateModel>>();
             donorManagementService = Substitute.For<IDonorManagementService>();
-            donorUpdateProcessor = new DonorUpdateProcessor(messageProcessorService, donorManagementService, BatchSize);
+            var logger = Substitute.For<ILogger>();
+            donorUpdateProcessor = new DonorUpdateProcessor(messageProcessorService, donorManagementService, logger, BatchSize);
         }
 
         [Test]

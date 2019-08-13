@@ -6,6 +6,7 @@ using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.DonorManagement;
 using Nova.SearchAlgorithm.Services.Donors;
+using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -22,7 +23,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         {
 
             donorService = Substitute.For<IDonorService>();
-            donorManagementService = new DonorManagementService(donorService);
+            var logger = Substitute.For<ILogger>();
+            donorManagementService = new DonorManagementService(donorService, logger);
         }
 
         [Test]
