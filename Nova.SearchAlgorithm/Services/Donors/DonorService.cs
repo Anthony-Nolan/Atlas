@@ -86,9 +86,10 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
         public async Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors)
         {
+            inputDonors = inputDonors.ToList();
             var existingDonors = (await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId)));
-            var updateDonors = inputDonors.Where(id => existingDonors.Any(ed => ed.DonorId == id.DonorId));
-            var newDonors = inputDonors.Where(id => existingDonors.All(ed => ed.DonorId != id.DonorId));
+            var updateDonors = inputDonors.Where(id => existingDonors.Any(ed => ed.DonorId == id.DonorId)).ToList();
+            var newDonors = inputDonors.Where(id => existingDonors.All(ed => ed.DonorId != id.DonorId)).ToList();
 
             if (newDonors.Any())
             {

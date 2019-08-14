@@ -8,6 +8,7 @@ using Nova.Utils.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.MatchingDictionary.Constants;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
@@ -35,7 +36,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName)
         {
-            if (memoryCache.TryGetValue($"Antigens_{locus}", out Dictionary<string, string> antigenDictionary)
+            if (memoryCache.TryGetValue($"{CacheKeys.AntigenCacheKey(locus)}", out Dictionary<string, string> antigenDictionary)
                 && antigenDictionary.TryGetValue("*" + lookupName, out var alleleString))
             {
                 return alleleSplitter.GetAlleleNamesFromAlleleString(alleleString);
