@@ -37,6 +37,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
+        private readonly INotificationSender notificationSender;
 
         private readonly IDonorImportRepository donorImportRepository;
 
@@ -54,7 +55,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
-            ILogger logger)
+            ILogger logger,
+            INotificationSender notificationSender)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
@@ -64,6 +66,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
             this.logger = logger;
+            this.notificationSender = notificationSender;
             settingsOptions = dataRefreshSettingsOptions;
         }
 
@@ -84,7 +87,21 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             catch (Exception ex)
             {
                 logger.SendTrace($"DATA REFRESH: Refresh failed. Exception: {ex}", LogLevel.Info);
+                await FailureTearDown();
+                throw;
+            }
+        }
+
+        private async Task FailureTearDown()
+        {
+            try
+            {
                 await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
+            }
+            catch (Exception e)
+            {
+                logger.SendTrace($"DATA REFRESH: Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
+                await notificationSender.SendTeardownFailureAlert();
                 throw;
             }
         }

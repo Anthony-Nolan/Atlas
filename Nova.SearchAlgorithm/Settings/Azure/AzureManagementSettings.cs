@@ -19,5 +19,6 @@ namespace Nova.SearchAlgorithm.Settings
     public class AzureDatabaseManagementSettings : AzureManagementSettings
     {
         public string ServerName { get; set; }
+        public string PollingRetryIntervalMilliseconds { get; set; }
     }
 }

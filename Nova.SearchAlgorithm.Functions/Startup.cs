@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder);
-            builder.Services.RegisterClients();
+            builder.Services.RegisterNovaClients();
             builder.Services.RegisterDataServices();
             builder.Services.RegisterAllMatchingDictionaryTypes();
             builder.Services.RegisterSearchAlgorithmTypes();

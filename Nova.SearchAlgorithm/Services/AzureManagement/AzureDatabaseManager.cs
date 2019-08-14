@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
+using Polly;
 
 namespace Nova.SearchAlgorithm.Services.AzureManagement
 {
@@ -26,6 +27,7 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
         private readonly IThreadSleeper threadSleeper;
         private readonly ILogger logger;
         private readonly bool isLocal;
+        private readonly long pollingRetryIntervalMilliseconds;
 
         public AzureDatabaseManager(
             IAzureDatabaseManagementClient databaseManagementClient,
@@ -37,6 +39,7 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
             this.threadSleeper = threadSleeper;
             this.logger = logger;
             isLocal = settings.Value.ServerName == LocalServerName;
+            pollingRetryIntervalMilliseconds = long.Parse(settings.Value.PollingRetryIntervalMilliseconds);
         }
 
         public async Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize)
@@ -47,7 +50,7 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
                 // If running locally, we don't want to make changes to Azure infrastructure
                 return;
             }
-            
+
             logger.SendTrace($"Initialising scaling of database: {databaseName} to size: {databaseSize}", LogLevel.Info);
             var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize);
 
@@ -67,14 +70,29 @@ namespace Nova.SearchAlgorithm.Services.AzureManagement
                 throw new AzureManagementException(
                     $"Database scaling operation of {databaseName} to size {databaseSize} failed. Check Azure for details");
             }
-            
+
             logger.SendTrace($"Finished scaling {databaseName} to size: {databaseSize}", LogLevel.Info);
         }
 
         private async Task<DatabaseOperation> GetDatabaseOperation(string databaseName, DateTime operationStartTime)
         {
-            var operations = await databaseManagementClient.GetDatabaseOperations(databaseName);
-            return operations.Single(o => o.StartTime == operationStartTime);
+            const int retryCount = 5;
+            var policy = Policy.Handle<Exception>().WaitAndRetryAsync(
+                retryCount: retryCount,
+                sleepDurationProvider: attempt => TimeSpan.FromMilliseconds(pollingRetryIntervalMilliseconds),
+                onRetry: (e, t) =>
+                {
+                    logger.SendTrace(
+                        $"Failed to fetch ongoing database operations with exception {e}. Retrying up to {retryCount} times.",
+                        LogLevel.Error
+                    );
+                });
+
+            return await policy.ExecuteAsync(async () =>
+            {
+                var operations = await databaseManagementClient.GetDatabaseOperations(databaseName);
+                return operations.Single(o => o.StartTime == operationStartTime);
+            });
         }
     }
 }

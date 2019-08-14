@@ -13,6 +13,7 @@ using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -31,6 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         private IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
+        private INotificationSender notificationSender;
 
         private IDataRefreshService dataRefreshService;
         private ILogger logger;
@@ -48,6 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             logger = Substitute.For<ILogger>();
+            notificationSender = Substitute.For<INotificationSender>();
 
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
@@ -61,7 +64,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 recreateMatchingDictionaryService,
                 donorImporter,
                 hlaProcessor,
-                logger
+                logger,
+                notificationSender
             );
         }
         
@@ -254,6 +258,29 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             catch (Exception)
             {
                 await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            }
+        }
+
+        [Test]
+        public async Task RefreshData_WhenTeardownFails_SendsAlert()
+        {
+            const AzureDatabaseSize databaseSize = AzureDatabaseSize.S0;
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, databaseSize.ToString())
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
+            hlaProcessor.UpdateDonorHla(Arg.Any<string>()).Throws(new Exception());
+            azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), databaseSize).Throws(new Exception());
+
+            try
+            {
+                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            }
+            catch (Exception)
+            {
+                await notificationSender.Received().SendTeardownFailureAlert();
             }
         }
 

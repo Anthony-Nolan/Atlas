@@ -24,7 +24,7 @@ namespace Nova.SearchAlgorithm.Api
             services.RegisterSearchAlgorithmTypes();
             services.RegisterAllMatchingDictionaryTypes();
             services.RegisterDataServices();
-            services.RegisterClients();
+            services.RegisterNovaClients();
 
             services.AddMvc(options => { options.EnableEndpointRouting = false; });
         }
