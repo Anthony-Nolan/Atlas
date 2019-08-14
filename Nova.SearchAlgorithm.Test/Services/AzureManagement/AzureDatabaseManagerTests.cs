@@ -44,7 +44,7 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
             settingsOptions.Value.Returns(new AzureDatabaseManagementSettings
             {
                 ServerName = "server-name",
-                PollingRetryIntervalMilliseconds = 0.ToString()
+                PollingRetryIntervalMilliseconds = "0"
             });
 
             azureDatabaseManager = new AzureDatabaseManager(
@@ -152,7 +152,7 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
         }
 
         [Test]
-        public void UpdateDatabaseSize_WhenPollingForOperationsContinuallyFails_DoesNotRetryForever()
+        public void UpdateDatabaseSize_WhenPollingForOperationsContinuallyFails_ThrowsException()
         {
             const string databaseName = "db";
 
