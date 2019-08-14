@@ -2,12 +2,12 @@
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Models;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using Nova.Utils.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.DonorManagement
 {
@@ -39,14 +39,10 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
         public async Task ProcessDonorUpdates()
         {
-            logger.SendTrace($"{TraceMessagePrefix}: Commenced processing of message batch.", LogLevel.Info);
-
             await messageProcessorService.ProcessMessageBatch(batchSize, async batch =>
             {
                 await ProcessMessages(batch);
             });
-
-            logger.SendTrace($"{TraceMessagePrefix}: Completed processing of message batch.", LogLevel.Info);
         }
 
         private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
