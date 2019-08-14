@@ -27,22 +27,18 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
         [FunctionName("ManageDonorByAvailability")]
         public async Task Run([TimerTrigger("%MessagingServiceBus.DonorManagement.CronSchedule%")] TimerInfo myTimer)
         {
-
             try
             {
                 await donorUpdateProcessor.ProcessDonorUpdates();
             }
+            catch (MessageBatchException<SearchableDonorUpdateModel> ex)
+            {
+                SendMessageBatchExceptionTrace(ex);
+                throw new DonorManagementException(ex);
+            }
             catch (Exception ex)
             {
-                if (ex is MessageBatchException<SearchableDonorUpdateModel> messageBatchException)
-                {
-                    SendMessageBatchExceptionTrace(messageBatchException);
-                }
-                else
-                {
-                    SendExceptionTrace(ex);
-                }
-
+                SendExceptionTrace(ex);
                 throw new DonorManagementException(ex);
             }
         }
