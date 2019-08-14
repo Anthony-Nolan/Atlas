@@ -10,6 +10,7 @@ using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
@@ -40,7 +41,11 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
                     State = AzureDatabaseOperationState.Succeeded, StartTime = defaultOperationTime
                 }
             });
-            settingsOptions.Value.Returns(new AzureDatabaseManagementSettings{ ServerName = "server-name"});
+            settingsOptions.Value.Returns(new AzureDatabaseManagementSettings
+            {
+                ServerName = "server-name",
+                PollingRetryIntervalMilliseconds = 0.ToString()
+            });
 
             azureDatabaseManager = new AzureDatabaseManager(
                 azureManagementClient,
@@ -122,6 +127,40 @@ namespace Nova.SearchAlgorithm.Test.Services.AzureManagement
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
 
             threadSleeper.Received(2).Sleep(Arg.Any<int>());
+        }
+
+        [Test]
+        public async Task UpdateDatabaseSize_WhenPollingForOperationsFailsOnce_RetriesOperationPolling()
+        {
+            const string databaseName = "db";
+
+            var operationTime = DateTime.UtcNow;
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
+                x => throw new Exception(),
+                x => new List<DatabaseOperation>
+                {
+                    new DatabaseOperation
+                    {
+                        State = AzureDatabaseOperationState.Succeeded, StartTime = operationTime
+                    }
+                });
+
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
+
+            await azureManagementClient.Received(2).GetDatabaseOperations(Arg.Any<string>());
+        }
+
+        [Test]
+        public void UpdateDatabaseSize_WhenPollingForOperationsContinuallyFails_DoesNotRetryForever()
+        {
+            const string databaseName = "db";
+
+            var operationTime = DateTime.UtcNow;
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Throws(new Exception());
+
+            Assert.ThrowsAsync<Exception>(() => azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3));
         }
 
         [Test]

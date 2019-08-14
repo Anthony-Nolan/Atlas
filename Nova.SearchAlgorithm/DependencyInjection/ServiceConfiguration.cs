@@ -234,7 +234,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IDpb1TceGroupLookupService, Dpb1TceGroupLookupService>();
         }
 
-        public static void RegisterClients(this IServiceCollection services)
+        public static void RegisterNovaClients(this IServiceCollection services)
         {
             RegisterHlaServiceClient(services);
             services.AddScoped(GetDonorServiceClient);

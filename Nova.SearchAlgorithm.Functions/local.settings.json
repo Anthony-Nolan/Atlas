@@ -8,6 +8,7 @@
     "AzureManagement.AppService.ResourceGroupName": "DEV-NOVA-RESOURCE-GROUP",
     "AzureManagement.AppService.SubscriptionId": "6114522f-eea5-44ab-94ab-af37ffffc4d3",
     "AzureManagement.Database.ServerName": "local",
+    "AzureManagement.Database.PollingRetryIntervalMilliseconds": "1000",
     "AzureManagement.Database.ResourceGroupName": "DEV-NOVA-RESOURCE_GROUP",
     "AzureManagement.Database.SubscriptionId": "6114522f-eea5-44ab-94ab-af37ffffc4d3",
     "AzureStorage.ConnectionString": "UseDevelopmentStorage=true",

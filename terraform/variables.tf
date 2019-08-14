@@ -75,6 +75,11 @@ variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
   type = string
 }
 
+variable "DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS" {
+  type = string
+  default = "1000"
+}
+
 variable "DATABASE_RESOURCE_GROUP" {
   type = string
 }
