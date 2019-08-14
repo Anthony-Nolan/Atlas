@@ -25,7 +25,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
         public async Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor)
         {
-            await InsertBatchOfDonorsWithExpandedHla(new[] {donor});
+            await InsertBatchOfDonorsWithExpandedHla(new[] { donor });
         }
 
         public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
@@ -43,30 +43,31 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var existingDonors = await conn.QueryAsync<Donor>($@"
-SELECT * FROM Donors 
-WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
-");
+                    SELECT * FROM Donors 
+                    WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
+                    ", commandTimeout: 300);
+
                 foreach (var existingDonor in existingDonors.ToList())
                 {
                     existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
                     await conn.ExecuteAsync($@"
-UPDATE Donors 
-SET DonorType = {((int) existingDonor.DonorType).ToString()},
-RegistryCode = {((int) existingDonor.RegistryCode).ToString()},
-A_1 = '{existingDonor.A_1}',
-A_2 = '{existingDonor.A_2}',
-B_1 = '{existingDonor.B_1}',
-B_2 = '{existingDonor.B_2}',
-C_1 = '{existingDonor.C_1}',
-C_2 = '{existingDonor.C_2}',
-DRB1_1 = '{existingDonor.DRB1_1}',
-DRB1_2 = '{existingDonor.DRB1_2}',
-DQB1_1 = '{existingDonor.DQB1_1}',
-DQB1_2 = '{existingDonor.DQB1_2}',
-DPB1_1 = '{existingDonor.DPB1_1}',
-DPB1_2 = '{existingDonor.DPB1_2}'
-WHERE DonorId = {existingDonor.DonorId}
-", commandTimeout: 600);
+                        UPDATE Donors 
+                        SET DonorType = {((int)existingDonor.DonorType).ToString()},
+                        RegistryCode = {((int)existingDonor.RegistryCode).ToString()},
+                        A_1 = '{existingDonor.A_1}',
+                        A_2 = '{existingDonor.A_2}',
+                        B_1 = '{existingDonor.B_1}',
+                        B_2 = '{existingDonor.B_2}',
+                        C_1 = '{existingDonor.C_1}',
+                        C_2 = '{existingDonor.C_2}',
+                        DRB1_1 = '{existingDonor.DRB1_1}',
+                        DRB1_2 = '{existingDonor.DRB1_2}',
+                        DQB1_1 = '{existingDonor.DQB1_1}',
+                        DQB1_2 = '{existingDonor.DQB1_2}',
+                        DPB1_1 = '{existingDonor.DPB1_1}',
+                        DPB1_2 = '{existingDonor.DPB1_2}'
+                        WHERE DonorId = {existingDonor.DonorId}
+                        ", commandTimeout: 600);
                 }
             }
 
@@ -104,7 +105,7 @@ WHERE DonorId = {existingDonor.DonorId}
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId IN ({donorIds})";
-            await connection.ExecuteAsync(deleteSql, null, transaction);
+            await connection.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
@@ -125,9 +126,9 @@ WHERE DonorId = {existingDonor.DonorId}
                 var transaction = conn.BeginTransaction();
 
                 var deleteSql = $@"
-DELETE FROM {matchingTableName}
-WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
-";
+                    DELETE FROM {matchingTableName}
+                    WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
+                    ";
                 await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
                 await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
 
@@ -155,7 +156,7 @@ WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
 
                     foreach (var pGroup in h.PGroups)
                     {
-                        dt.Rows.Add(0, donor.DonorId, (int) p, pGroupRepository.FindOrCreatePGroup(pGroup));
+                        dt.Rows.Add(0, donor.DonorId, (int)p, pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
             }

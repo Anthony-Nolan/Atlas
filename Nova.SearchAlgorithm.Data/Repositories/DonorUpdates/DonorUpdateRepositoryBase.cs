@@ -68,6 +68,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
             using (var sqlBulk = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString()))
             {
+                sqlBulk.BulkCopyTimeout = 3600;
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = "Donors";
                 await sqlBulk.WriteToServerAsync(dt);
