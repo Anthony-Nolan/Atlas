@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
             catch (Exception ex)
             {
-                logger.SendTrace($"DATA REFRESH: Refresh failed. Exception: {ex.Message}", LogLevel.Info);
+                logger.SendTrace($"DATA REFRESH: Refresh failed. Exception: {ex}", LogLevel.Info);
                 await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
                 throw;
             }
