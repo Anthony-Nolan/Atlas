@@ -52,10 +52,10 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
                 .Select(d => d.DonorInfo)
                 .ToList();
 
-            logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.", LogLevel.Info);
-
             if (availableDonors.Any())
             {
+                logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.", LogLevel.Info);
+
                 await donorService.CreateOrUpdateDonorBatch(availableDonors);
             }
         }
@@ -67,10 +67,10 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
                 .Select(d => d.DonorId)
                 .ToList();
 
-            logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be removed.", LogLevel.Info);
-
             if (unavailableDonorIds.Any())
             {
+                logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be removed.", LogLevel.Info);
+
                 await donorService.DeleteDonorBatch(unavailableDonorIds);
             }
         }
