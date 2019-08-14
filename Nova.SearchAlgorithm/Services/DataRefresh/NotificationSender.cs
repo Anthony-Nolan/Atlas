@@ -8,6 +8,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         Task SendInitialisationNotification();
         Task SendSuccessNotification();
         Task SendFailureAlert();
+        Task SendTeardownFailureAlert();
     }
     
     public class NotificationSender: INotificationSender
@@ -47,6 +48,17 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             const string summary = "Data refresh failed";
             const string description = "The search algorithm data refresh has failed." +
                                        "Appropriate teardown should have been run by the job itself." +
+                                       "Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
+            var alert = new Alert(summary, description, Priority.High, Originator);
+
+            await notificationsClient.SendAlert(alert);
+        }
+
+        public async Task SendTeardownFailureAlert()
+        {
+            const string summary = "Data refresh teardown failed";
+            const string description = "The search algorithm data refresh teardown has failed." +
+                                       "The (expensive) database has likely not been scaled down - this should be manually triggered as a matter of urgency." +
                                        "Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
             var alert = new Alert(summary, description, Priority.High, Originator);
 
