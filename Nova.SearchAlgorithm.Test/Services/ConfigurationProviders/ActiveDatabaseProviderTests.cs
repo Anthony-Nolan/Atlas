@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Data.Services;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Settings;
@@ -28,8 +29,9 @@ namespace Nova.SearchAlgorithm.Test.Services.ConfigurationProviders
         {
             historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
             cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
-
-            activeDatabaseProvider = new ActiveDatabaseProvider(historyRepository, cache);
+            var cacheProvider = new TransientCacheProvider(cache);
+            
+            activeDatabaseProvider = new ActiveDatabaseProvider(historyRepository, cacheProvider);
         }
 
         [Test]

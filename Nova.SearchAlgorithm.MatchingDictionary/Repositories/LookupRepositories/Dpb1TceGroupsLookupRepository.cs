@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Nova.SearchAlgorithm.Common.Repositories;
+﻿using LazyCache;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
@@ -16,8 +15,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public Dpb1TceGroupsLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IMemoryCache memoryCache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, memoryCache, CacheKey)
+            IAppCache cache)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cache, CacheKey)
         {
         }
     }

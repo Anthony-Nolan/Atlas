@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using LazyCache;
+using Microsoft.Extensions.Caching.Memory;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
@@ -20,15 +20,16 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public HlaMatchingLookupRepository(
             ICloudTableFactory factory, 
             ITableReferenceRepository tableReferenceRepository,
-            IMemoryCache memoryCache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, memoryCache, CacheKey)
+            IAppCache cache)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cache, CacheKey)
         {
         }
 
         public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
         {
             var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
-            if (MemoryCache.TryGetValue(versionedCacheKey, out Dictionary<string, HlaLookupTableEntity> matchingDictionary))
+            var matchingDictionary = cache.Get<Dictionary<string, HlaLookupTableEntity>>(versionedCacheKey);
+            if (matchingDictionary != null)
             {
                 return matchingDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult()?.MatchingPGroups);
             }

@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
                 HlaServiceClient,
                 HlaCategorisationService,
                 AlleleStringSplitterService,
-                MemoryCache,
+                Cache,
                 Logger);
         }
 

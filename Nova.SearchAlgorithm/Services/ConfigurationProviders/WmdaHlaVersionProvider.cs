@@ -3,6 +3,7 @@ using System.Net;
 using LazyCache;
 using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.Settings;
 
 namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
@@ -31,12 +32,12 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         public WmdaHlaVersionProvider(
             IOptions<WmdaSettings> wmdaSettings,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            IAppCache cache)
+            ITransientCacheProvider cacheProvider)
         {
             wmdaBaseUrl = wmdaSettings.Value.WmdaFileUri;
             webClient = new WebClient();
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            this.cache = cache;
+            cache = cacheProvider.Cache;
         }
 
         public string GetActiveHlaDatabaseVersion()

@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Threading.Tasks;
+using LazyCache;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
 {
@@ -22,8 +22,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories
         public AlleleNamesLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IMemoryCache memoryCache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, memoryCache, CacheKeyAlleleNames)
+            IAppCache appCache)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, appCache, CacheKeyAlleleNames)
         {
         }
 

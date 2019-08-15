@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
+using LazyCache;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -22,11 +22,11 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
     {
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly ILogger logger;
-        private readonly IMemoryCache memoryCache;
+        private readonly IAppCache cache;
 
-        public AntigenCachingService(IMemoryCache memoryCache, ILogger logger, IHlaServiceClient hlaServiceClient)
+        public AntigenCachingService(IAppCache cache, ILogger logger, IHlaServiceClient hlaServiceClient)
         {
-            this.memoryCache = memoryCache;
+            this.cache = cache;
             this.logger = logger;
             this.hlaServiceClient = hlaServiceClient;
         }
@@ -53,8 +53,10 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
                     {"UpdateTime", lociStopwatch.ElapsedMilliseconds.ToString()}
                 });
 
-                memoryCache.Set($"{CacheKeys.AntigenCacheKey(locus)}",
-                    antigens.Where(a => a.NmdpString != null).ToDictionary(a => a.NmdpString, a => a.HlaName));
+                cache.Add(
+                    $"{CacheKeys.AntigenCacheKey(locus)}",
+                    antigens.Where(a => a.NmdpString != null).ToDictionary(a => a.NmdpString, a => a.HlaName)
+                );
             });
 
             logger.SendTrace("Generated antigen cache", LogLevel.Info, new Dictionary<string, string>

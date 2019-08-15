@@ -11,6 +11,7 @@ using Nova.Utils.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LazyCache;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -33,7 +34,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IMemoryCache memoryCache,
+            IAppCache cache,
             ILogger logger
         ) : base(
             hlaScoringLookupRepository,
@@ -41,7 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             hlaServiceClient,
             hlaCategorisationService,
             alleleSplitter,
-            memoryCache,
+            cache,
             logger
         )
         {

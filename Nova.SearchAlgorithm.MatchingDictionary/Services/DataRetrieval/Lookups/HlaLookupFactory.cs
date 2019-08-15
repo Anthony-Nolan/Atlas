@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System;
+using LazyCache;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.Utils.ApplicationInsights;
-using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaServiceClient hlaServiceClient,
             IAlleleStringSplitterService alleleSplitter,
-            IMemoryCache memoryCache,
+            IAppCache cache,
             ILogger logger)
         {
             switch (category)
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
                     return new NmdpCodeLookup(
                         hlaLookupRepository,
                         alleleNamesLookupService,
-                        memoryCache,
+                        cache,
                         hlaServiceClient,
                         alleleSplitter,
                         logger);                    

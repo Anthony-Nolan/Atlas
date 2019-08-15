@@ -2,6 +2,7 @@ using System;
 using LazyCache;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
+using Nova.SearchAlgorithm.Helpers;
 
 namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase
 {
@@ -16,10 +17,10 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatab
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAppCache cache;
 
-        public ActiveDatabaseProvider(IDataRefreshHistoryRepository dataRefreshHistoryRepository, IAppCache cache)
+        public ActiveDatabaseProvider(IDataRefreshHistoryRepository dataRefreshHistoryRepository, ITransientCacheProvider cacheProvider)
         {
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            this.cache = cache;
+            cache = cacheProvider.Cache;
         }
 
         public TransientDatabase GetActiveDatabase()

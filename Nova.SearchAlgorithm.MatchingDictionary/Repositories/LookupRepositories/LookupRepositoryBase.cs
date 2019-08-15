@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.WindowsAzure.Storage.Table;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
@@ -27,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         where TTableEntity : TableEntity, new()
         where TStorable : IStorableInCloudTable<TTableEntity>
     {
-        protected readonly IMemoryCache MemoryCache;
+        protected readonly IAppCache cache;
 
         private readonly ICloudTableFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
@@ -39,13 +40,13 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string functionalTableReferencePrefix,
-            IMemoryCache memoryCache,
+            IAppCache cache,
             string cacheKey)
         {
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
             this.functionalTableReferencePrefix = functionalTableReferencePrefix;
-            MemoryCache = memoryCache;
+            this.cache = cache;
             this.cacheKey = cacheKey;
         }
 
@@ -54,20 +55,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         /// </summary>
         public async Task LoadDataIntoMemory(string hlaDatabaseVersion)
         {
-            var currentDataTable = await GetCurrentDataTable(hlaDatabaseVersion);
-            var tableResults = new CloudTableBatchQueryAsync<TTableEntity>(currentDataTable);
-            var dataToLoad = new Dictionary<string, TTableEntity>();
-
-            while (tableResults.HasMoreResults)
-            {
-                var results = await tableResults.RequestNextAsync();
-                foreach (var result in results)
-                {
-                    dataToLoad.Add(result.PartitionKey + result.RowKey, result);
-                }
-            }
-
-            MemoryCache.Set(VersionedCacheKey(hlaDatabaseVersion), dataToLoad);
+            var data = await FetchTableData(hlaDatabaseVersion);
+            cache.Add(VersionedCacheKey(hlaDatabaseVersion), data);
         }
 
         protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
@@ -82,24 +71,38 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Repositories.LookupRepositorie
         protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey, string hlaDatabaseVersion)
         {
             var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
+
+            var tableData = await cache.GetOrAddAsync(versionedCacheKey, () => FetchTableData(hlaDatabaseVersion));
+
+            if (tableData == null)
+            {
+                throw new MemoryCacheException($"Data: {partition}, {rowKey}: was not found in the {versionedCacheKey} cache");
+            }
             
-            if (MemoryCache.TryGetValue(versionedCacheKey, out Dictionary<string, TTableEntity> tableEntities))
-            {
-                return GetDataFromCache(partition, rowKey, tableEntities);
-            }
-
-            await LoadDataIntoMemory(hlaDatabaseVersion);
-            if (MemoryCache.TryGetValue(versionedCacheKey, out tableEntities))
-            {
-                return GetDataFromCache(partition, rowKey, tableEntities);
-            }
-
-            throw new MemoryCacheException($"Failed to load data into the {versionedCacheKey} cache");
+            return GetDataFromCache(partition, rowKey, tableData);
         }
 
         protected string VersionedCacheKey(string hlaDatabaseVersion)
         {
             return $"{cacheKey}:{hlaDatabaseVersion}";
+        }
+
+        private async Task<Dictionary<string, TTableEntity>> FetchTableData(string hlaDatabaseVersion)
+        {
+            var currentDataTable = await GetCurrentDataTable(hlaDatabaseVersion);
+            var tableResults = new CloudTableBatchQueryAsync<TTableEntity>(currentDataTable);
+            var dataToLoad = new Dictionary<string, TTableEntity>();
+
+            while (tableResults.HasMoreResults)
+            {
+                var results = await tableResults.RequestNextAsync();
+                foreach (var result in results)
+                {
+                    dataToLoad.Add(result.PartitionKey + result.RowKey, result);
+                }
+            }
+
+            return dataToLoad;
         }
 
         private string VersionedTableReferencePrefix(string hlaDatabaseVersion)

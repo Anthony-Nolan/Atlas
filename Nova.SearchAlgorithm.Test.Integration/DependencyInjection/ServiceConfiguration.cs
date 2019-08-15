@@ -51,9 +51,6 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
 
             services.AddScoped(sp => Substitute.For<IDonorServiceClient>());
 
-            // Integration Test Types
-            services.AddScoped<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
-
             return services.BuildServiceProvider();
         }
 

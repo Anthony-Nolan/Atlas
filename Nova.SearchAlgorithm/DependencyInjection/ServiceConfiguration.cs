@@ -45,6 +45,7 @@ using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using System;
+using Nova.SearchAlgorithm.Helpers;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -85,8 +86,17 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddSingleton<ILogger>(sp =>
                 new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
-            services.AddTransient<IAppCache, CachingService>(sp =>
+
+            // The default IAppCache registration should be a singleton, to avoid re-caching large collections e.g. Matching Dictionary and Alleles each request
+            // Persistent has been picked as the default for ease of injection into the MatchingDictionary, which will not be able to access any wrappers defined in the core project
+            services.AddSingleton<IAppCache, CachingService>(sp =>
                 new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+            );
+
+            // A wrapper for IAppCache to allow classes to depend explicitly on a transient-only cache.
+            // This should be used for non-heavyweight cached items, e.g. hla database version.
+            services.AddTransient<ITransientCacheProvider, TransientCacheProvider>(sp =>
+                new TransientCacheProvider(new CachingService( new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))))
             );
 
             services.AddScoped<ActiveTransientSqlConnectionStringProvider>();

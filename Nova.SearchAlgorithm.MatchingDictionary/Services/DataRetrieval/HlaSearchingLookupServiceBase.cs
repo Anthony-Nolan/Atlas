@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using LazyCache;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
@@ -7,8 +9,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups;
 using Nova.Utils.ApplicationInsights;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly IAlleleStringSplitterService alleleSplitter;
-        private readonly IMemoryCache memoryCache;
+        private readonly IAppCache cache;
         private readonly ILogger logger;
 
         protected HlaSearchingLookupServiceBase(
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IMemoryCache memoryCache,
+            IAppCache cache,
             ILogger logger
         )
         {
@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             this.hlaServiceClient = hlaServiceClient;
             HlaCategorisationService = hlaCategorisationService;
             this.alleleSplitter = alleleSplitter;
-            this.memoryCache = memoryCache;
+            this.cache = cache;
             this.logger = logger;
         }
 
@@ -90,7 +90,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     alleleNamesLookupService,
                     hlaServiceClient,
                     alleleSplitter,
-                    memoryCache,
+                    cache,
                     logger);
         }
 

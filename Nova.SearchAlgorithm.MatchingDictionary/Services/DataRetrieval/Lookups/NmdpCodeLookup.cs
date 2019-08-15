@@ -8,6 +8,7 @@ using Nova.Utils.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LazyCache;
 using Nova.SearchAlgorithm.MatchingDictionary.Constants;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
@@ -15,29 +16,30 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
     internal class NmdpCodeLookup : AlleleNamesLookupBase
     {
         private readonly IHlaServiceClient hlaServiceClient;
-        private readonly IMemoryCache memoryCache;
+        private readonly IAppCache cache;
         private readonly IAlleleStringSplitterService alleleSplitter;
         private readonly ILogger logger;
 
         public NmdpCodeLookup(
             IHlaLookupRepository hlaLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
-            IMemoryCache memoryCache,
+            IAppCache cache,
             IHlaServiceClient hlaServiceClient,
             IAlleleStringSplitterService alleleSplitter,
             ILogger logger)
             : base(hlaLookupRepository, alleleNamesLookupService)
         {
             this.hlaServiceClient = hlaServiceClient;
-            this.memoryCache = memoryCache;
+            this.cache = cache;
             this.alleleSplitter = alleleSplitter;
             this.logger = logger;
         }
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName)
         {
-            if (memoryCache.TryGetValue($"{CacheKeys.AntigenCacheKey(locus)}", out Dictionary<string, string> antigenDictionary)
-                && antigenDictionary.TryGetValue("*" + lookupName, out var alleleString))
+            var antigenDictionary = await cache.GetAsync<Dictionary<string, string>>(CacheKeys.AntigenCacheKey(locus));
+            
+            if (antigenDictionary != null && antigenDictionary.TryGetValue("*" + lookupName, out var alleleString))
             {
                 return alleleSplitter.GetAlleleNamesFromAlleleString(alleleString);
             }

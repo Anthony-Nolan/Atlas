@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Collections.Generic;
+using System.Linq;
+using LazyCache;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
@@ -6,8 +8,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.Utils.ApplicationInsights;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IMemoryCache memoryCache,
+            IAppCache cache,
             ILogger logger
         ) : base(
             hlaMatchingLookupRepository,
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             hlaServiceClient,
             hlaCategorisationService,
             alleleSplitter,
-            memoryCache,
+            cache,
             logger
             )
         {
