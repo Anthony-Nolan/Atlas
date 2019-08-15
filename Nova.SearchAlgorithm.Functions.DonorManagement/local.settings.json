@@ -10,7 +10,7 @@
     "Client.HlaService.BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
     "MessagingServiceBus.ConnectionString": "override-this",
     "MessagingServiceBus.DonorManagement.BatchSize": 10,
-    "MessagingServiceBus.DonorManagement.CronSchedule": "0 */5 * * * *",
+    "MessagingServiceBus.DonorManagement.CronSchedule": "0 */1 * * * *",
     "MessagingServiceBus.DonorManagement.Topic": "updated-searchable-donors",
     "MessagingServiceBus.DonorManagement.Subscription": "local"
   },
