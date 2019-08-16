@@ -1,4 +1,8 @@
 variable "SERVICE_PLAN_SKU" {
+  type    = object({
+    tier = string,
+    size = string
+  })
   default = {
     tier = "Standard"
     size = "S1"
@@ -10,7 +14,7 @@ variable "APIKEY" {
 }
 
 variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
-  type = string
+  type    = string
   default = "Info"
 }
 
@@ -23,7 +27,7 @@ variable "AZURE_CLIENT_SECRET" {
 }
 
 variable "AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER" {
-  type = string
+  type    = string
   default = "search-algorithm-results"
 }
 
@@ -44,22 +48,22 @@ variable "CONNECTION_STRING_STORAGE" {
 }
 
 variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
-  type = string
+  type    = string
   default = "S4"
 }
 
 variable "DATA_REFRESH_DB_SIZE_DORMANT" {
-  type = string
+  type    = string
   default = "S0"
 }
 
 variable "DATA_REFRESH_DB_SIZE_REFRESH" {
-  type = string
+  type    = string
   default = "S0"
 }
 
 variable "DATA_REFRESH_CRONTAB" {
-  type = string
+  type    = string
   default = "0 0 0 * * Monday"
 }
 
@@ -76,7 +80,7 @@ variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
 }
 
 variable "DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS" {
-  type = string
+  type    = string
   default = "1000"
 }
 
@@ -109,37 +113,37 @@ variable "MESSAGING_BUS_CONNECTION_STRING" {
 }
 
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
-  type = number
+  type    = number
   default = 100
 }
 
 variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
-  type = string
+  type    = string
   default = "0 */10 * * * *"
 }
 
 variable "MESSAGING_BUS_DONOR_TOPIC" {
-  type = string
+  type    = string
   default = "updated-searchable-donors"
 }
 
 variable "MESSAGING_BUS_DONOR_SUBSCRIPTION" {
-  type = string
+  type    = string
   default = "searchalgorithm"
 }
 
 variable "MESSAGING_BUS_SEARCH_REQUESTS_QUEUE" {
-  type = string
+  type    = string
   default = "search-algorithm-search-requests"
 }
 
 variable "MESSAGING_BUS_SEARCH_RESULTS_TOPIC" {
-  type = string
+  type    = string
   default = "search-algorithm-results-notifications"
 }
 
 variable "NOTIFICATIONS_BUS_ALERTS_TOPIC" {
-  type = string
+  type    = string
   default = "support-alerts"
 }
 
@@ -148,11 +152,11 @@ variable "NOTIFICATIONS_BUS_CONNECTION_STRING" {
 }
 
 variable "NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC" {
-  type = string
+  type    = string
   default = "support-notifications"
 }
 
 variable "WMDA_FILE_URL" {
-  type = string
+  type    = string
   default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
 }
