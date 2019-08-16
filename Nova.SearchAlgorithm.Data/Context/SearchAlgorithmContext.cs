@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Data
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
             }
 
-            modelBuilder.Entity<DonorManagementInfo>()
+            modelBuilder.Entity<DonorManagementLog>()
                 .HasIndex(d => d.DonorId)
                 .IsUnique();
 
