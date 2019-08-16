@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using LazyCache;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -33,7 +33,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaServiceClient hlaServiceClient;
         private readonly IAlleleStringSplitterService alleleSplitter;
-        private readonly IAppCache cache;
+        private readonly IAntigenCache cache;
         private readonly ILogger logger;
 
         protected HlaSearchingLookupServiceBase(
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IAppCache cache,
+            IAntigenCache cache,
             ILogger logger
         )
         {

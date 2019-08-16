@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LazyCache;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -31,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         protected IHlaServiceClient HlaServiceClient;
         protected IHlaCategorisationService HlaCategorisationService;
         protected IAlleleStringSplitterService AlleleStringSplitterService;
-        protected IAppCache Cache;
+        protected IAntigenCache Cache;
         protected ILogger Logger;
         protected TService LookupService;
 
@@ -46,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             AlleleNamesLookupService = Substitute.For<IAlleleNamesLookupService>();
             HlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             AlleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
-            Cache = Substitute.For<IAppCache>();
+            Cache = Substitute.For<IAntigenCache>();
             Logger = Substitute.For<ILogger>();
 
             var fakeEntityToPreventInvalidHlaExceptionBeingRaised = BuildTableEntityForSingleAllele("alleleName");
