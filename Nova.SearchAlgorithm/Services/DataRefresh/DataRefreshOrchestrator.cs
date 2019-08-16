@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseManager azureDatabaseManager;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
-        private readonly INotificationSender notificationSender;
+        private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         public DataRefreshOrchestrator(
             ILogger logger,
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IAzureFunctionManager azureFunctionManager,
             IAzureDatabaseManager azureDatabaseManager,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
-            INotificationSender notificationSender)
+            IDataRefreshNotificationSender dataRefreshNotificationSender)
         {
             this.logger = logger;
             this.settingsOptions = settingsOptions;
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.azureFunctionManager = azureFunctionManager;
             this.azureDatabaseManager = azureDatabaseManager;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
-            this.notificationSender = notificationSender;
+            this.dataRefreshNotificationSender = dataRefreshNotificationSender;
         }
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh, bool isContinuedRefresh)
@@ -81,7 +81,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task RunDataRefresh(bool isContinuedRefresh)
         {
-            await notificationSender.SendInitialisationNotification();
+            await dataRefreshNotificationSender.SendInitialisationNotification();
             var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             var dataRefreshRecord = new DataRefreshRecord
@@ -99,12 +99,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await dataRefreshService.RefreshData(wmdaDatabaseVersion, isContinuedRefresh);
                 await MarkDataHistoryRecordAsComplete(recordId, true);
                 await ScaleDownPreviouslyActiveDatabase();
-                await notificationSender.SendSuccessNotification();
+                await dataRefreshNotificationSender.SendSuccessNotification();
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
-                await notificationSender.SendFailureAlert();
+                await dataRefreshNotificationSender.SendFailureAlert();
                 await MarkDataHistoryRecordAsComplete(recordId, false);
             }
             finally

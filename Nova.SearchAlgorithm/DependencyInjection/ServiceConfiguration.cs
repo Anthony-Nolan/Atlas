@@ -17,6 +17,7 @@ using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -45,7 +46,6 @@ using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using System;
-using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshService, DataRefreshService>();
-            services.AddScoped<INotificationSender, NotificationSender>();
+            services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services
@@ -312,6 +312,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterDonorManagementServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
+            services.AddScoped<IDonorManagementNotificationSender, DonorManagementNotificationSender>();
 
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
                 new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)

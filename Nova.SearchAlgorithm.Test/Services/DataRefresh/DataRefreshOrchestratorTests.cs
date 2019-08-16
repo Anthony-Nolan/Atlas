@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
         private IAzureFunctionManager azureFunctionManager;
         private IAzureDatabaseManager azureDatabaseManager;
-        private INotificationSender notificationSender;
+        private IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
 
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
-            notificationSender = Substitute.For<INotificationSender>();
+            dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 azureFunctionManager,
                 azureDatabaseManager,
                 new AzureDatabaseNameProvider(settingsOptions),
-                notificationSender
+                dataRefreshNotificationSender
             );
         }
 
@@ -319,7 +319,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await notificationSender.Received().SendInitialisationNotification();
+            await dataRefreshNotificationSender.Received().SendInitialisationNotification();
         }
         
         [Test]
@@ -327,7 +327,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await notificationSender.Received().SendSuccessNotification();
+            await dataRefreshNotificationSender.Received().SendSuccessNotification();
         }
         
         [Test]
@@ -337,7 +337,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await notificationSender.Received().SendFailureAlert();
+            await dataRefreshNotificationSender.Received().SendFailureAlert();
         }
     }
 }

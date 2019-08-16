@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Data
 {
@@ -19,7 +20,11 @@ namespace Nova.SearchAlgorithm.Data
             {
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
             }
-            
+
+            modelBuilder.Entity<DonorManagementInfo>()
+                .HasIndex(d => d.DonorId)
+                .IsUnique();
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -29,5 +34,6 @@ namespace Nova.SearchAlgorithm.Data
         public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+        public DbSet<DonorManagementLog> DonorManagementLogs { get; set; }
     }
 }

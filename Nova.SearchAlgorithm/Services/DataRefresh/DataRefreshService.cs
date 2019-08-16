@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
-        private readonly INotificationSender notificationSender;
+        private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         private readonly IDonorImportRepository donorImportRepository;
 
@@ -56,7 +56,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
             ILogger logger,
-            INotificationSender notificationSender)
+            IDataRefreshNotificationSender dataRefreshNotificationSender)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
             this.logger = logger;
-            this.notificationSender = notificationSender;
+            this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             settingsOptions = dataRefreshSettingsOptions;
         }
 
@@ -101,7 +101,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             catch (Exception e)
             {
                 logger.SendTrace($"DATA REFRESH: Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
-                await notificationSender.SendTeardownFailureAlert();
+                await dataRefreshNotificationSender.SendTeardownFailureAlert();
                 throw;
             }
         }

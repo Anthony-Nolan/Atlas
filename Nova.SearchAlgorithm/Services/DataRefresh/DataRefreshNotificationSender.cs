@@ -3,7 +3,7 @@ using Nova.Utils.Notifications;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
-    public interface INotificationSender
+    public interface IDataRefreshNotificationSender
     {
         Task SendInitialisationNotification();
         Task SendSuccessNotification();
@@ -11,14 +11,10 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         Task SendTeardownFailureAlert();
     }
     
-    public class NotificationSender: INotificationSender
+    public class DataRefreshNotificationSender: NotificationSender, IDataRefreshNotificationSender
     {
-        private readonly INotificationsClient notificationsClient;
-        private const string Originator = "Nova.SearchAlgorithm";
-
-        public NotificationSender(INotificationsClient notificationsClient)
+        public DataRefreshNotificationSender(INotificationsClient notificationsClient) : base(notificationsClient)
         {
-            this.notificationsClient = notificationsClient;
         }
         
         public async Task SendInitialisationNotification()
@@ -29,18 +25,16 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                                        "If no success or failure notification has been received within 24 hours of this one - check whether the job is still running." +
                                        "If it is not, follow the instructions in the Readme of the search algorithm project." +
                                        "Most urgently; scaling back the database the job was running on, as it is an expensive tier and should not be used when the job is not in progress";
-            var notification = new Notification(summary, description, Originator);
 
-            await notificationsClient.SendNotification(notification);
+            await SendNotification(summary, description);
         }
 
         public async Task SendSuccessNotification()
         {
             const string summary = "Data refresh successful";
             const string description = "The search algorithm data refresh was successful. Metrics will have been logged in application insights.";
-            var notification = new Notification(summary, description, Originator);
 
-            await notificationsClient.SendNotification(notification);
+            await SendNotification(summary, description);
         }
 
         public async Task SendFailureAlert()
@@ -49,9 +43,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             const string description = "The search algorithm data refresh has failed." +
                                        "Appropriate teardown should have been run by the job itself." +
                                        "Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
-            var alert = new Alert(summary, description, Priority.High, Originator);
 
-            await notificationsClient.SendAlert(alert);
+            await SendAlert(summary, description, Priority.High);
         }
 
         public async Task SendTeardownFailureAlert()
@@ -60,9 +53,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             const string description = "The search algorithm data refresh teardown has failed." +
                                        "The (expensive) database has likely not been scaled down - this should be manually triggered as a matter of urgency." +
                                        "Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
-            var alert = new Alert(summary, description, Priority.High, Originator);
 
-            await notificationsClient.SendAlert(alert);
+            await SendAlert(summary, description, Priority.High);
         }
     }
 }

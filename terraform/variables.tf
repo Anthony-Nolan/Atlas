@@ -113,13 +113,13 @@ variable "MESSAGING_BUS_CONNECTION_STRING" {
 }
 
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
-  type    = number
-  default = 100
+  type = number
+  default = 350
 }
 
 variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
-  type    = string
-  default = "0 */10 * * * *"
+  type = string
+  default = "0 */1 * * * *"
 }
 
 variable "MESSAGING_BUS_DONOR_TOPIC" {

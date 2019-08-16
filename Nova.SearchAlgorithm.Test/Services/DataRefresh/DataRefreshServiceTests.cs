@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         private IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
-        private INotificationSender notificationSender;
+        private IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         private IDataRefreshService dataRefreshService;
         private ILogger logger;
@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             logger = Substitute.For<ILogger>();
-            notificationSender = Substitute.For<INotificationSender>();
+            dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
@@ -65,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 donorImporter,
                 hlaProcessor,
                 logger,
-                notificationSender
+                dataRefreshNotificationSender
             );
         }
         
@@ -280,7 +280,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             }
             catch (Exception)
             {
-                await notificationSender.Received().SendTeardownFailureAlert();
+                await dataRefreshNotificationSender.Received().SendTeardownFailureAlert();
             }
         }
 
