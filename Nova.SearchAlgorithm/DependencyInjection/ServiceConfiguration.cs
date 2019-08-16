@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshService, DataRefreshService>();
-            services.AddScoped<INotificationSender, NotificationSender>();
+            services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services
@@ -312,6 +312,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterDonorManagementServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
+            services.AddScoped<IDonorManagementNotificationSender, DonorManagementNotificationSender>();
 
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
                 new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)

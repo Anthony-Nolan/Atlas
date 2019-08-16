@@ -1,4 +1,4 @@
-﻿namespace Nova.SearchAlgorithm.Common.Models
+﻿namespace Nova.SearchAlgorithm.Data.Models
 {
     public class DonorManagementInfo
     {

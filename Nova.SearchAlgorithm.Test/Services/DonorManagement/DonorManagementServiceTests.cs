@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Models;
@@ -14,6 +10,9 @@ using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 {
@@ -24,6 +23,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         private IDonorService donorService;
         private IDonorManagementService donorManagementService;
         private IMapper mapper;
+        private IDonorManagementNotificationSender notificationSender;
 
         [SetUp]
         public void SetUp()
@@ -39,8 +39,9 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
             donorService = Substitute.For<IDonorService>();
             var logger = Substitute.For<ILogger>();
             mapper = Substitute.For<IMapper>();
+            notificationSender = Substitute.For<IDonorManagementNotificationSender>();
 
-            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger, mapper);
+            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger, mapper, notificationSender);
         }
 
         [Test]
@@ -538,6 +539,53 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
             await logRepository
                 .Received(0)
                 .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
+        }
+
+        [Test]
+        public async Task ManageDonorBatchByAvailability_UpdateWasApplied_DoesNotSendNotification()
+        {
+            const int donorId = 789;
+            const int sequenceNumber = 123456789;
+
+            // no logs are returned by logRepository, so this update should be applied.
+            await donorManagementService.ManageDonorBatchByAvailability(new[] {new DonorAvailabilityUpdate
+            {
+                DonorId = donorId,
+                UpdateSequenceNumber = sequenceNumber
+            }});
+
+            await notificationSender
+                .Received(0)
+                .SendDonorUpdatesNotAppliedNotification(Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
+        }
+
+        [Test]
+        public async Task ManageDonorBatchByAvailability_UpdateWasNotApplied_SendsNotification()
+        {
+            const int donorId = 789;
+            const int sequenceNumberOfLastUpdate = 123456789;
+
+            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[]
+            {
+                new DonorManagementLog
+                {
+                    DonorId = donorId,
+                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
+                }
+            });
+
+            // Update is older than last applied update and so should not be applied.
+            await donorManagementService.ManageDonorBatchByAvailability(new[] {new DonorAvailabilityUpdate
+            {
+                DonorId = donorId,
+                UpdateSequenceNumber = sequenceNumberOfLastUpdate - 1
+            }});
+
+            await notificationSender
+                .Received(1)
+                .SendDonorUpdatesNotAppliedNotification(Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x =>
+                    x.Single().DonorId == donorId &&
+                    x.Single().UpdateSequenceNumber == sequenceNumberOfLastUpdate - 1));
         }
     }
 }

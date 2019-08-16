@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -27,17 +27,20 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         private readonly IDonorService donorService;
         private readonly ILogger logger;
         private readonly IMapper mapper;
+        private readonly IDonorManagementNotificationSender notificationSender;
 
         public DonorManagementService(
             IActiveRepositoryFactory repositoryFactory,
             IDonorService donorService,
             ILogger logger,
-            IMapper mapper)
+            IMapper mapper,
+            IDonorManagementNotificationSender notificationSender)
         {
             logRepository = repositoryFactory.GetDonorManagementLogRepository();
             this.donorService = donorService;
             this.logger = logger;
             this.mapper = mapper;
+            this.notificationSender = notificationSender;
         }
 
         public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
@@ -52,6 +55,8 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
             logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.", LogLevel.Info);
 
+            // Note, the management log must be written to last to prevent the undesirable
+            // scenario of the donor update failing after the log has been successfully updated.
             await AddOrUpdateDonors(updatesList);
             await RemoveDonors(updatesList);
             await CreateOrUpdateManagementLogBatch(updatesList);
@@ -81,15 +86,32 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             var existingLogs = await logRepository.GetDonorManagementLogBatch(allUpdates.Select(u => u.DonorId));
 
             // GroupJoin is equivalent to a LEFT OUTER JOIN
-            var newerUpdatesOnly = allUpdates
+            var updateStatuses = allUpdates
                 .GroupJoin(existingLogs,
                     update => update.DonorId,
                     log => log.DonorId,
                     (update, logs) => new { Update = update, Log = logs.SingleOrDefault() })
-                .Where(a => a.Update.UpdateSequenceNumber > (a.Log?.SequenceNumberOfLastUpdate ?? 0))
-                .Select(a => a.Update);
+                .Select(a => new
+                {
+                    a.Update,
+                    IsNewer = a.Update.UpdateSequenceNumber > (a.Log?.SequenceNumberOfLastUpdate ?? 0)
+                })
+                .ToList();
 
-            return newerUpdatesOnly;
+            await SendNotificationForNonApplicableUpdates(
+                updateStatuses.Where(u => !u.IsNewer).Select(u => u.Update));
+
+            return updateStatuses.Where(u => u.IsNewer).Select(u => u.Update);
+        }
+
+        private async Task SendNotificationForNonApplicableUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var updatesList = updates.ToList();
+
+            if (updatesList.Any())
+            {
+                await notificationSender.SendDonorUpdatesNotAppliedNotification(updatesList);
+            }
         }
 
         private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)

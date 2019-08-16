@@ -22,13 +22,6 @@ namespace Nova.SearchAlgorithm.Data.Migrations
                 {
                     table.PrimaryKey("PK_DonorManagementLogs", x => x.Id);
                 });
-
-            migrationBuilder.CreateIndex(
-                "UX_DonorId",
-                "DonorManagementLogs",
-                "DonorId",
-                unique: true
-            );
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

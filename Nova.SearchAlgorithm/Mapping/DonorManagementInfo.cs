@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Models;
 
 namespace Nova.SearchAlgorithm.Mapping
