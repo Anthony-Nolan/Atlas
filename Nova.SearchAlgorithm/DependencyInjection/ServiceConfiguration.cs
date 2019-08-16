@@ -17,6 +17,7 @@ using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -45,7 +46,6 @@ using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using System;
-using Nova.SearchAlgorithm.Helpers;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection

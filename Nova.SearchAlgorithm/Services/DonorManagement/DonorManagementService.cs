@@ -1,4 +1,8 @@
-﻿using Nova.SearchAlgorithm.Models;
+﻿using AutoMapper;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Repositories;
+using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
@@ -19,30 +23,73 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
     {
         private const string TraceMessagePrefix = nameof(ManageDonorBatchByAvailability);
 
+        private readonly IDonorManagementLogRepository logRepository;
         private readonly IDonorService donorService;
         private readonly ILogger logger;
+        private readonly IMapper mapper;
 
-        public DonorManagementService(IDonorService donorService, ILogger logger)
+        public DonorManagementService(
+            IActiveRepositoryFactory repositoryFactory,
+            IDonorService donorService,
+            ILogger logger,
+            IMapper mapper)
         {
+            logRepository = repositoryFactory.GetDonorManagementLogRepository();
             this.donorService = donorService;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
         {
-            var updates = GetLatestUpdatePerDonorInBatch(donorAvailabilityUpdates).ToList();
-
-            logger.SendTrace($"{TraceMessagePrefix}: {updates.Count} donor updates to be applied.", LogLevel.Info);
-
-            await AddOrUpdateDonors(updates);
-            await RemoveDonors(updates);
+            var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates);
+            await ApplyDonorUpdates(filteredUpdates);
         }
 
-        private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdatePerDonorInBatch(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task ApplyDonorUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var updatesList = updates.ToList();
+
+            logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.", LogLevel.Info);
+
+            await AddOrUpdateDonors(updatesList);
+            await RemoveDonors(updatesList);
+            await CreateOrUpdateManagementLogBatch(updatesList);
+        }
+
+        private async Task<IEnumerable<DonorAvailabilityUpdate>> FilterUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var latestUpdateInBatchPerDonorId = GetLatestUpdateInBatchPerDonorId(updates);
+
+            return await GetNewerUpdatesOnly(latestUpdateInBatchPerDonorId);
+        }
+
+        private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdateInBatchPerDonorId(IEnumerable<DonorAvailabilityUpdate> updates)
         {
             return updates
                 .GroupBy(u => u.DonorId)
                 .Select(grp => grp.OrderByDescending(u => u.UpdateSequenceNumber).First());
+        }
+
+        /// <returns>Only returns those updates that are newer than the last update recorded in the
+        /// donor management log, or those where the donor has no record of a previous update.</returns>
+        private async Task<IEnumerable<DonorAvailabilityUpdate>> GetNewerUpdatesOnly(
+            IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var allUpdates = updates.ToList();
+
+            var existingLogs = await logRepository.GetDonorManagementLogBatch(allUpdates.Select(u => u.DonorId));
+
+            // GroupJoin is equivalent to a LEFT OUTER JOIN
+            var newerUpdatesOnly = allUpdates
+                .GroupJoin(existingLogs,
+                    update => update.DonorId,
+                    log => log.DonorId,
+                    (update, logs) => new { Update = update, Log = logs.SingleOrDefault() })
+                .Where(a => a.Update.UpdateSequenceNumber > (a.Log?.SequenceNumberOfLastUpdate ?? 0))
+                .Select(a => a.Update);
+
+            return newerUpdatesOnly;
         }
 
         private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)
@@ -73,6 +120,17 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
                 await donorService.DeleteDonorBatch(unavailableDonorIds);
             }
+        }
+
+        private async Task CreateOrUpdateManagementLogBatch(IEnumerable<DonorAvailabilityUpdate> appliedUpdates)
+        {
+            if (!appliedUpdates.Any())
+            {
+                return;
+            }
+
+            var infos = mapper.Map<IEnumerable<DonorManagementInfo>>(appliedUpdates);
+            await logRepository.CreateOrUpdateDonorManagementLogBatch(infos);
         }
     }
 }

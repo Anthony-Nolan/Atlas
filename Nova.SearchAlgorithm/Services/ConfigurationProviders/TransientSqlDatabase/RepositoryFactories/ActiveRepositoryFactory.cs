@@ -1,4 +1,5 @@
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
@@ -7,6 +8,7 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatab
     public interface IActiveRepositoryFactory : ITransientRepositoryFactory
     {
         IDonorSearchRepository GetDonorSearchRepository();
+        IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
     public class ActiveRepositoryFactory : TransientRepositoryFactoryBase, IActiveRepositoryFactory
@@ -20,6 +22,11 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatab
         public IDonorSearchRepository GetDonorSearchRepository()
         {
             return new DonorSearchRepository(ConnectionStringProvider);
+        }
+
+        public IDonorManagementLogRepository GetDonorManagementLogRepository()
+        {
+            return new DonorManagementLogRepository(ConnectionStringProvider);
         }
     }
 }
