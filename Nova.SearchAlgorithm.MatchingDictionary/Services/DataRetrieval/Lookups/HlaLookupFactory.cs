@@ -1,8 +1,8 @@
 ﻿using System;
-using LazyCache;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.Utils.ApplicationInsights;
 
@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaServiceClient hlaServiceClient,
             IAlleleStringSplitterService alleleSplitter,
-            IAppCache cache,
+            IAntigenCache cache,
             ILogger logger)
         {
             switch (category)

@@ -46,6 +46,7 @@ using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using System;
 using Nova.SearchAlgorithm.Helpers;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -91,12 +92,15 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             // Persistent has been picked as the default for ease of injection into the MatchingDictionary, which will not be able to access any wrappers defined in the core project
             services.AddSingleton<IAppCache, CachingService>(sp =>
                 new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+                {
+                    DefaultCachePolicy = new CacheDefaults {DefaultCacheDurationSeconds = 86400}
+                }
             );
 
             // A wrapper for IAppCache to allow classes to depend explicitly on a transient-only cache.
             // This should be used for non-heavyweight cached items, e.g. hla database version.
             services.AddTransient<ITransientCacheProvider, TransientCacheProvider>(sp =>
-                new TransientCacheProvider(new CachingService( new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))))
+                new TransientCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))))
             );
 
             services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
@@ -184,7 +188,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
-        
+
         public static void RegisterAllMatchingDictionaryTypes(this IServiceCollection services)
         {
             RegisterMatchingDictionaryLookupStorageTypes(services);
@@ -236,6 +240,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         private static void RegisterMatchingDictionaryLookupServices(this IServiceCollection services)
         {
+            services.AddScoped<IAntigenCache, AntigenCachingService>();
             services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
             services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
             services.AddScoped<ILocusHlaMatchingLookupService, LocusHlaMatchingLookupService>();
@@ -253,7 +258,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterHlaServiceClient(this IServiceCollection services)
         {
             services.AddScoped(GetHlaServiceClient);
-            
         }
 
         private static IHlaServiceClient GetHlaServiceClient(IServiceProvider sp)
@@ -283,7 +287,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             {
                 return new HlaServiceClient(clientSettings, logger);
             }
-
         }
 
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
