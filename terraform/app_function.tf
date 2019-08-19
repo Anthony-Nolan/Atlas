@@ -52,6 +52,9 @@ locals {
     "MessagingServiceBus.DonorManagement.CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
     "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
     "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
+    "NotificationsServiceBus.AlertsTopic"              = var.NOTIFICATIONS_BUS_ALERTS_TOPIC
+    "NotificationsServiceBus.ConnectionString"         = var.NOTIFICATIONS_BUS_CONNECTION_STRING
+    "NotificationsServiceBus.NotificationsTopic"       = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC	
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
   }
 }

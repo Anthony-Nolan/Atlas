@@ -27,6 +27,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement
             builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
             builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
             builder.RegisterSettings<DonorManagementSettings>("MessagingServiceBus.DonorManagement");
+            builder.RegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }
 }
