@@ -97,8 +97,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             {
                 await AzureFunctionsSetUp();
                 await dataRefreshService.RefreshData(wmdaDatabaseVersion, isContinuedRefresh);
+                var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(recordId, true);
-                await ScaleDownPreviouslyActiveDatabase();
+                await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
                 await dataRefreshNotificationSender.SendSuccessNotification();
             }
             catch (Exception e)
@@ -129,9 +130,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
-        private async Task ScaleDownPreviouslyActiveDatabase()
+        private async Task ScaleDownDatabaseToDormantLevel(string databaseName)
         {
-            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
             var dormantSize = settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize();
             logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}", LogLevel.Info);
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);

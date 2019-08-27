@@ -12,7 +12,6 @@ using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -277,6 +276,27 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+
+            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+
+            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+        }
+        
+        [Test]
+        public async Task RefreshData_ScalesDownDatabaseThatWasActiveWhenTheJobStarted()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DatabaseAName, "db-a")
+                .With(s => s.DormantDatabaseSize, "S0")
+                .Build();
+            settingsOptions.Value.Returns(settings);
+            activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+            
+            // Marking refresh record as complete will switch over which database is considered "active". Emulating this with mocks here.
+            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.UpdateSuccessFlag(0, true)).Do(x =>
+            {
+                activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+            });
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
