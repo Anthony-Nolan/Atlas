@@ -166,7 +166,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_ForMultipleSpecifiedRegistries_MatchesDonorsAtAllSpecifiedRegistries()
+        public async Task GetMatches_ForMultipleSpecifiedRegistries_MatchesDonorsAtAllSpecifiedRegistries()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithRegistries(new List<RegistryCode> { RegistryCode.AN, RegistryCode.NMDP })
@@ -177,7 +177,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_DoesNotMatchDonorsAtUnspecifiedRegistries()
+        public async Task GetMatches_DoesNotMatchDonorsAtUnspecifiedRegistries()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithRegistries(new List<RegistryCode> { DefaultRegistryCode })
@@ -188,7 +188,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_ForAdultDonors_DoesNotMatchCordDonors()
+        public async Task GetMatches_ForAdultDonors_DoesNotMatchCordDonors()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Adult)
@@ -199,7 +199,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_ForCordDonors_DoesNotMatchAdultDonors()
+        public async Task GetMatches_ForCordDonors_DoesNotMatchAdultDonors()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
@@ -209,7 +209,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_ForCordDonors_MatchesCordDonors()
+        public async Task GetMatches_ForCordDonors_MatchesCordDonors()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
@@ -220,7 +220,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_ForAdultDonors_DoesNotMatchDonorsWithFewerMismatchesThanSpecified()
+        public async Task GetMatches_ForAdultDonors_DoesNotMatchDonorsWithFewerMismatchesThanSpecified()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Adult)
@@ -231,7 +231,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_ForCordDonors_MatchesDonorsWithFewerMismatchesThanSpecified()
+        public async Task GetMatches_ForCordDonors_MatchesDonorsWithFewerMismatchesThanSpecified()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
@@ -242,7 +242,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_DoesNotReturnMatchingDonorThatIsUnavailableForSearch()
+        public async Task GetMatches_DoesNotReturnMatchingDonorThatIsUnavailableForSearch()
         {
             var searchCriteria = GetDefaultCriteriaBuilder().Build();
 
