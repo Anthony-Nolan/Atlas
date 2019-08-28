@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
@@ -11,9 +7,11 @@ using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
-using Nova.Utils.Http.Exceptions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.Donors
 {
@@ -38,20 +36,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             repositoryFactory.GetDonorInspectionRepository().Returns(inspectionRepository);
             repositoryFactory.GetDonorUpdateRepository().Returns(updateRepository);
-            
+
             donorService = new SearchAlgorithm.Services.Donors.DonorService(expandHlaPhenotypeService, repositoryFactory, mapper);
         }
 
         [Test]
-        public void CreateDonor_WhenDonorExists_ThrowsException()
-        {
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
-
-            Assert.ThrowsAsync<NovaHttpException>(() => donorService.CreateDonor(new InputDonor()));
-        }
-
-        [Test]
-        public async Task CreateDonor_WhenDonorDoesNotExist_CreatesDonor()
+        public async Task CreateOrUpdateDonorBatch_WhenDonorDoesNotExist_CreatesDonor()
         {
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorResult>(),
                 new List<DonorResult> { new DonorResult() });
@@ -60,20 +50,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             {
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            await donorService.CreateDonor(inputDonor);
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
             await updateRepository.Received()
                 .InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
 
         [Test]
-        public void UpdateDonor_WhenDonorDoesNotExist_ThrowsException()
-        {
-            Assert.ThrowsAsync<NovaNotFoundException>(() => donorService.UpdateDonor(new InputDonor()));
-        }
-
-        [Test]
-        public async Task UpdateDonor_WhenDonorExists_UpdatesDonor()
+        public async Task CreateOrUpdateDonorBatch_WhenDonorExists_UpdatesDonor()
         {
             var inputDonor = new InputDonor
             {
@@ -81,7 +65,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             };
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
-            await donorService.UpdateDonor(inputDonor);
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
             await updateRepository.Received()
                 .UpdateBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
@@ -94,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
-            await donorService.SetDonorBatchAsUnavailableForSearch(new []{donorId});
+            await donorService.SetDonorBatchAsUnavailableForSearch(new[] { donorId });
 
             await updateRepository.Received().SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }

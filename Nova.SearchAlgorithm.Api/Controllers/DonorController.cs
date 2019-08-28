@@ -16,20 +16,6 @@ namespace Nova.SearchAlgorithm.Api.Controllers
             this.donorService = donorService;
         }
 
-        [HttpPost]
-        [Route("")]
-        public async Task<InputDonor> CreateDonor([FromBody] InputDonor donor)
-        {
-            return await donorService.CreateDonor(donor);
-        }
-
-        [HttpPost]
-        [Route("batch")]
-        public async Task<IEnumerable<InputDonor>> CreateDonorBatch([FromBody] InputDonorBatch donorBatch)
-        {
-            return await donorService.CreateDonorBatch(donorBatch.Donors);
-        }
-
         [HttpPut]
         [Route("batch")]
         public async Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
