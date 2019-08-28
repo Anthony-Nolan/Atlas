@@ -10,6 +10,7 @@ namespace Nova.SearchAlgorithm.Common.Models
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
+        public bool IsAvailableForSearch { get; set; }
 
         public PhenotypeInfo<string> HlaNames { get; set; }
 

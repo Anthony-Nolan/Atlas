@@ -27,8 +27,8 @@ namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
         Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
         
         /// <summary>
-        /// Deletes a batch of donors along with their matching P groups.
+        /// Sets a batch of donors as unavailable for search.
         /// </summary>
-        Task DeleteDonorBatch(IEnumerable<int> donorIds);
+        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds);
     }
 }

@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsAvailableForSearch_DoesNotDeleteDonor()
+        public async Task ManageDonorBatchByAvailability_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 456;
 
@@ -94,11 +94,11 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .DeleteDonorBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsNotAvailableForSearch_DeletesDonor()
+        public async Task ManageDonorBatchByAvailability_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
 
@@ -112,7 +112,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .DeleteDonorBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotDeleteDonor()
+        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 456;
 
@@ -195,11 +195,11 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .DeleteDonorBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DeletesDonor()
+        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
 
@@ -219,7 +219,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .DeleteDonorBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
 
         [Test]
@@ -247,7 +247,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_UpdatesContainAvailableAndUnavailableDonors_AddsUpdatesOrDeletesCorrectDonors()
+        public async Task ManageDonorBatchByAvailability_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
         {
             const int availableDonorId = 123;
             const int unavailableDonorId = 456;
@@ -276,7 +276,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .DeleteDonorBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId));
 
             await donorService
                 .Received(1)
@@ -400,7 +400,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsNewerThanLastUpdate_AndDonorIsNotAvailable_DeletesDonor()
+        public async Task ManageDonorBatchByAvailability_UpdateIsNewerThanLastUpdate_AndDonorIsNotAvailable_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
             const long sequenceNumberOfLastUpdate = 123456789;
@@ -424,11 +424,11 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .DeleteDonorBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsCoevalToLastUpdate_AndDonorIsNotAvailable_DoesNotDeleteDonor()
+        public async Task ManageDonorBatchByAvailability_UpdateIsCoevalToLastUpdate_AndDonorIsNotAvailable_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 789;
             const long sequenceNumberOfLastUpdate = 123456789;
@@ -452,11 +452,11 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .DeleteDonorBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsOlderThanLastUpdate_AndDonorIsNotAvailable_DoesNotDeleteDonor()
+        public async Task ManageDonorBatchByAvailability_UpdateIsOlderThanLastUpdate_AndDonorIsNotAvailable_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 789;
             const long sequenceNumberOfLastUpdate = 123456789;
@@ -480,7 +480,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .DeleteDonorBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]

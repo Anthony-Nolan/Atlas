@@ -1,5 +1,6 @@
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Nova.SearchAlgorithm.Data.Entity
 {
@@ -9,6 +10,9 @@ namespace Nova.SearchAlgorithm.Data.Entity
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
+
+        [Required]
+        public bool IsAvailableForSearch { get; set; }
 
         public string A_1 { get; set; }
         public string A_2 { get; set; }
@@ -30,6 +34,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
                 DonorId = DonorId,
                 DonorType = DonorType,
                 RegistryCode = RegistryCode,
+                IsAvailableForSearch = IsAvailableForSearch,
                 HlaNames = new PhenotypeInfo<string>
                 {
                     A = {Position1 = A_1, Position2 = A_2},

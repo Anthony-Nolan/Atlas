@@ -23,6 +23,23 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         {
         }
 
+        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
+        {
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+
+                var donorIdsAsString = string.Join(",", donorIds);
+                await conn.ExecuteAsync(
+                    $"UPDATE Donors SET IsAvailableForSearch = 0 WHERE DonorId IN ({donorIdsAsString})",
+                    null, transaction, commandTimeout: 600);
+
+                transaction.Commit();
+                conn.Close();
+            }
+        }
+
         public async Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor)
         {
             await InsertBatchOfDonorsWithExpandedHla(new[] { donor });
@@ -54,6 +71,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
                         UPDATE Donors 
                         SET DonorType = {((int)existingDonor.DonorType).ToString()},
                         RegistryCode = {((int)existingDonor.RegistryCode).ToString()},
+                        IsAvailableForSearch = 1,
                         A_1 = '{existingDonor.A_1}',
                         A_2 = '{existingDonor.A_2}',
                         B_1 = '{existingDonor.B_1}',
@@ -72,40 +90,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
 
             await ReplaceMatchingGroupsForExistingDonorBatch(donors);
-        }
-
-        public async Task DeleteDonorBatch(IEnumerable<int> donorIds)
-        {
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                conn.Open();
-                var transaction = conn.BeginTransaction();
-
-                var donorIdsAsString = string.Join(",", donorIds);
-
-                await DeleteMatchingGroupsForExistingDonors(donorIdsAsString, conn, transaction);
-                await conn.ExecuteAsync($"DELETE Donors WHERE DonorId IN ({donorIdsAsString})", null, transaction, commandTimeout: 600);
-
-                transaction.Commit();
-                conn.Close();
-            }
-        }
-
-        private static async Task DeleteMatchingGroupsForExistingDonors(string donorIds, IDbConnection connection, IDbTransaction transaction)
-        {
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l =>
-                DeleteMatchingGroupsForExistingDonorsAtLocus(l, donorIds, connection, transaction)));
-        }
-
-        private static async Task DeleteMatchingGroupsForExistingDonorsAtLocus(
-            Locus locus,
-            string donorIds,
-            IDbConnection connection,
-            IDbTransaction transaction)
-        {
-            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var deleteSql = $@"DELETE FROM {matchingTableName} WHERE DonorId IN ({donorIds})";
-            await connection.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
