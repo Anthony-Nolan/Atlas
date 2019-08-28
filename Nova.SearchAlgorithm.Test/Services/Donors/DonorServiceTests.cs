@@ -88,15 +88,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task DeleteDonorBatch_DeletesDonor()
+        public async Task SetDonorAsUnavailableForSearchBatch_SetsDonorAsUnavailableForSearch()
         {
             const int donorId = 123;
 
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
-            await donorService.DeleteDonorBatch(new []{donorId});
+            await donorService.SetDonorAsUnavailableForSearchBatch(new []{donorId});
 
-            await updateRepository.Received().DeleteDonorBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+            await updateRepository.Received().SetDonorAsUnavailableForSearchBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
     }
 }

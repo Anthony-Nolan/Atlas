@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             // Note, the management log must be written to last to prevent the undesirable
             // scenario of the donor update failing after the log has been successfully updated.
             await AddOrUpdateDonors(updatesList);
-            await RemoveDonors(updatesList);
+            await SetDonorsAsUnavailableForSearch(updatesList);
             await CreateOrUpdateManagementLogBatch(updatesList);
         }
 
@@ -129,7 +129,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             }
         }
 
-        private async Task RemoveDonors(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task SetDonorsAsUnavailableForSearch(IEnumerable<DonorAvailabilityUpdate> updates)
         {
             var unavailableDonorIds = updates
                 .Where(update => !update.IsAvailableForSearch)
@@ -138,9 +138,9 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
             if (unavailableDonorIds.Any())
             {
-                logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be removed.", LogLevel.Info);
+                logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be marked as unavailable for search.", LogLevel.Info);
 
-                await donorService.DeleteDonorBatch(unavailableDonorIds);
+                await donorService.SetDonorAsUnavailableForSearchBatch(unavailableDonorIds);
             }
         }
 

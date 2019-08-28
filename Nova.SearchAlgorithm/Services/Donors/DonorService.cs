@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
     {
         Task<InputDonor> CreateDonor(InputDonor inputDonor);
         Task<InputDonor> UpdateDonor(InputDonor inputDonor);
-        Task DeleteDonorBatch(IEnumerable<int> donorIds);
+        Task SetDonorAsUnavailableForSearchBatch(IEnumerable<int> donorIds);
         Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors);
         Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonor);
         Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors);
@@ -56,9 +56,9 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return (await UpdateDonorBatch(new[] { inputDonor })).Single();
         }
 
-        public async Task DeleteDonorBatch(IEnumerable<int> donorIds)
+        public async Task SetDonorAsUnavailableForSearchBatch(IEnumerable<int> donorIds)
         {
-            await donorUpdateRepository.DeleteDonorBatch(donorIds);
+            await donorUpdateRepository.SetDonorAsUnavailableForSearchBatch(donorIds);
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
@@ -115,6 +115,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     $"One or more donors do not exist. Donor ID(s):  {string.Join(",", newDonors.Select(d => d.DonorId))}");
             }
 
+            // TODO - NOVA-4151 Only update donors where HLA has actually changed
             var donorsWithHla = await Task.WhenAll(inputDonors.Select(async d =>
                 {
                     var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
