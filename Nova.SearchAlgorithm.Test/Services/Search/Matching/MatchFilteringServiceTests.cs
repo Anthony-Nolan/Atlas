@@ -20,6 +20,38 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         }
 
         [Test]
+        public void IsAvailableForSearch_MatchIsAvailableForSearch_ReturnsTrue()
+        {
+            var match = new MatchResult
+            {
+                Donor = new DonorResult
+                {
+                    IsAvailableForSearch = true
+                }
+            };
+
+            var result = matchFilteringService.IsAvailableForSearch(match);
+
+            result.Should().BeTrue();
+        }
+
+        [Test]
+        public void IsAvailableForSearch_MatchIsUnavailableForSearch_ReturnsFalse()
+        {
+            var match = new MatchResult
+            {
+                Donor = new DonorResult
+                {
+                    IsAvailableForSearch = false
+                }
+            };
+
+            var result = matchFilteringService.IsAvailableForSearch(match);
+
+            result.Should().BeFalse();
+        }
+
+        [Test]
         public void FulfilsPerLocusMatchCriteria_WithFewerMismatchesThanSpecified_ReturnsTrue()
         {
             var match = new MatchResult();
