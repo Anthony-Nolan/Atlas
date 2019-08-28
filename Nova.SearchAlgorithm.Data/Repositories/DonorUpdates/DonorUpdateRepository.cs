@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         {
         }
 
-        public async Task SetDonorAsUnavailableForSearchBatch(IEnumerable<int> donorIds)
+        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
         {
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {

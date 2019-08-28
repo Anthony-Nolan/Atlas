@@ -94,7 +94,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
 
         [Test]
@@ -195,7 +195,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]
@@ -219,7 +219,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
 
         [Test]
@@ -276,7 +276,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId));
 
             await donorService
                 .Received(1)
@@ -424,7 +424,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
 
         [Test]
@@ -452,7 +452,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]
@@ -480,7 +480,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .SetDonorAsUnavailableForSearchBatch(Arg.Any<IEnumerable<int>>());
+                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
         }
 
         [Test]

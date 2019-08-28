@@ -140,7 +140,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be marked as unavailable for search.", LogLevel.Info);
 
-                await donorService.SetDonorAsUnavailableForSearchBatch(unavailableDonorIds);
+                await donorService.SetDonorBatchAsUnavailableForSearch(unavailableDonorIds);
             }
         }
 

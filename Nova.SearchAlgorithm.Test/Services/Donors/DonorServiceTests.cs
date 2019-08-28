@@ -94,9 +94,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
 
-            await donorService.SetDonorAsUnavailableForSearchBatch(new []{donorId});
+            await donorService.SetDonorBatchAsUnavailableForSearch(new []{donorId});
 
-            await updateRepository.Received().SetDonorAsUnavailableForSearchBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+            await updateRepository.Received().SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
     }
 }

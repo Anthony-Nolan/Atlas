@@ -29,6 +29,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
         /// <summary>
         /// Sets a batch of donors as unavailable for search.
         /// </summary>
-        Task SetDonorAsUnavailableForSearchBatch(IEnumerable<int> donorIds);
+        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds);
     }
 }

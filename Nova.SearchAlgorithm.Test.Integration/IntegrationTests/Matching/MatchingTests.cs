@@ -155,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             Task.Run(() =>
             {
                 donorUpdateRepository.InsertDonorWithExpandedHla(unavailableMatchingCordDonor);
-                donorUpdateRepository.SetDonorAsUnavailableForSearchBatch(new[] { unavailableMatchingCordDonor.DonorId });
+                donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(new[] { unavailableMatchingCordDonor.DonorId });
             }).Wait();
         }
 

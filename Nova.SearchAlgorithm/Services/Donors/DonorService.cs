@@ -21,7 +21,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
     {
         Task<InputDonor> CreateDonor(InputDonor inputDonor);
         Task<InputDonor> UpdateDonor(InputDonor inputDonor);
-        Task SetDonorAsUnavailableForSearchBatch(IEnumerable<int> donorIds);
+        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds);
         Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors);
         Task<IEnumerable<InputDonor>> UpdateDonorBatch(IEnumerable<InputDonor> inputDonor);
         Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors);
@@ -56,9 +56,9 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return (await UpdateDonorBatch(new[] { inputDonor })).Single();
         }
 
-        public async Task SetDonorAsUnavailableForSearchBatch(IEnumerable<int> donorIds)
+        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
         {
-            await donorUpdateRepository.SetDonorAsUnavailableForSearchBatch(donorIds);
+            await donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(donorIds);
         }
 
         public async Task<IEnumerable<InputDonor>> CreateDonorBatch(IEnumerable<InputDonor> inputDonors)
