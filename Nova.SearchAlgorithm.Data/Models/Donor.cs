@@ -34,6 +34,7 @@ namespace Nova.SearchAlgorithm.Data.Entity
                 DonorId = DonorId,
                 DonorType = DonorType,
                 RegistryCode = RegistryCode,
+                IsAvailableForSearch = IsAvailableForSearch,
                 HlaNames = new PhenotypeInfo<string>
                 {
                     A = {Position1 = A_1, Position2 = A_2},

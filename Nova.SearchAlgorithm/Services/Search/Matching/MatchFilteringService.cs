@@ -8,6 +8,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 {
     public interface IMatchFilteringService
     {
+        bool IsAvailableForSearch(MatchResult match);
         bool FulfilsPerLocusMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria, Locus locus);
         bool FulfilsTotalMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
         bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
@@ -18,6 +19,11 @@ namespace Nova.SearchAlgorithm.Services.Matching
     public class MatchFilteringService: IMatchFilteringService
     {
         private const int MaximumMatchCountPerLocus = 2;
+
+        public bool IsAvailableForSearch(MatchResult match)
+        {
+            return match.Donor.IsAvailableForSearch;
+        }
 
         public bool FulfilsPerLocusMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria, Locus locus)
         {

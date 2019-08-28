@@ -1,14 +1,12 @@
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {
@@ -112,6 +110,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
             var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
 
             var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
+                .Where(m => matchFilteringService.IsAvailableForSearch(m))
                 .Where(m => matchFilteringService.FulfilsRegistryCriteria(m, criteria))
                 .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m, criteria))
                 .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m, criteria))
