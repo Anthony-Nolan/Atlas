@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -44,8 +45,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var inputDonor = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
-            var donors = await donorInspectionRepository.GetPGroupsForDonors(new[] { inputDonor.DonorId });
-            donors.First().PGroupNames.A.Position1.Should().NotBeNullOrEmpty();
+            var pGroupCount = await GetPGroupCount(inputDonor.DonorId, Locus.A, TypePosition.One);
+            pGroupCount.Should().NotBe(0);
         }
 
         [Test]
@@ -99,15 +100,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             var inputDonor = new InputDonorBuilder(donorId).WithHlaAtLocus(locus, position, "*01:01").Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
-            var initialPGroupsCount = (await donorInspectionRepository.GetPGroupsForDonors(new[] { donorId }))
-                .First().PGroupNames.DataAtPosition(locus, position).Count();
+            var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             // XX code will always have more p-groups than a single allele
             var updatedDonor = new InputDonorBuilder(donorId).WithHlaAtLocus(locus, position, "*01:XX").Build();
 
             await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
-            var updatedPGroupsCount = (await donorInspectionRepository.GetPGroupsForDonors(new[] { donorId }))
-                .First().PGroupNames.DataAtPosition(locus, position).Count();
+            var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             updatedPGroupsCount.Should().BeGreaterThan(initialPGroupsCount);
         }
@@ -133,9 +132,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var inputDonor2 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor1, inputDonor2 });
 
-            var donors = (await donorInspectionRepository.GetPGroupsForDonors(new[] { inputDonor1.DonorId, inputDonor2.DonorId })).ToList();
-            donors.First().PGroupNames.A.Position1.Should().NotBeNullOrEmpty();
-            donors.Last().PGroupNames.A.Position1.Should().NotBeNullOrEmpty();
+            var pGroupCounts = (await GetPGroupCounts(new[] { inputDonor1.DonorId, inputDonor2.DonorId }, Locus.A, TypePosition.One)).ToList();
+            pGroupCounts.First().Should().NotBe(0);
+            pGroupCounts.Last().Should().NotBe(0);
         }
 
         [Test]
@@ -170,16 +169,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var inputDonor1 = new InputDonorBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:01").Build();
             var inputDonor2 = new InputDonorBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:01:01").Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor1, inputDonor2 });
-            var initialPGroupsCounts = (await donorInspectionRepository.GetPGroupsForDonors(new[] { donorId1, donorId2 }))
-                .Select(p => p.PGroupNames.DataAtPosition(locus, position).Count()).ToList();
+            var initialPGroupsCounts = (await GetPGroupCounts(new[] { donorId1, donorId2 }, locus, position)).ToList();
 
             // XX code will always have more p-groups than a single allele
             var updatedDonor1 = new InputDonorBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:XX").Build();
             var updatedDonor2 = new InputDonorBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:XX").Build();
 
             await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2 });
-            var updatedPGroupsCounts = (await donorInspectionRepository.GetPGroupsForDonors(new[] { donorId1, donorId2 }))
-                .Select(p => p.PGroupNames.DataAtPosition(locus, position).Count()).ToList();
+            var updatedPGroupsCounts = (await GetPGroupCounts(new[] { donorId1, donorId2 }, locus, position)).ToList();
 
             updatedPGroupsCounts.First().Should().BeGreaterThan(initialPGroupsCounts.First());
             updatedPGroupsCounts.Last().Should().BeGreaterThan(initialPGroupsCounts.Last());
@@ -259,6 +256,52 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var donors = (await donorInspectionRepository.GetDonors(inputDonorIds)).ToList();
             donors.First().IsAvailableForSearch.Should().BeTrue();
             donors.Last().IsAvailableForSearch.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_SetsDonorAsAvailableForSearchAndUpdatesDonorDetailsAndReprocessesHla()
+        {
+            var donorId = DonorIdGenerator.NextId();
+            const DonorType oldDonorType = DonorType.Adult;
+            const DonorType newDonorType = DonorType.Cord;
+
+            // XX code will always have more p-groups than a single allele
+            const string oldHla = "*01:01";
+            const string newHla = "*01:XX";
+            const Locus locus = Locus.A;
+            const TypePosition position = TypePosition.One;
+
+            var inputDonor = new InputDonorBuilder(donorId)
+                .WithDonorType(oldDonorType)
+                .WithHlaAtLocus(locus, position, oldHla)
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+            var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
+
+            var updatedDonor = new InputDonorBuilder(donorId)
+                .WithDonorType(newDonorType)
+                .WithHlaAtLocus(locus, position, newHla)
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(donorId);
+            var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
+
+            donor.IsAvailableForSearch.Should().BeTrue();
+            donor.DonorType.Should().Be(newDonorType);
+            updatedPGroupsCount.Should().BeGreaterThan(initialPGroupsCount);
+        }
+
+        private async Task<int> GetPGroupCount(int donorId, Locus locus, TypePosition position)
+        {
+            var counts = await GetPGroupCounts(new[] { donorId }, locus, position);
+            return counts.Single();
+        }
+
+        private async Task<IEnumerable<int>> GetPGroupCounts(IEnumerable<int> donorIds, Locus locus, TypePosition position)
+        {
+            var pGroupsForDonor = await donorInspectionRepository.GetPGroupsForDonors(donorIds);
+            return pGroupsForDonor.Select(p => p.PGroupNames.DataAtPosition(locus, position).Count());
         }
     }
 }
