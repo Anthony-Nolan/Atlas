@@ -93,7 +93,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         private async Task UpdateDonorHlaBatch(IEnumerable<InputDonor> inputDonors)
         {
             var donorsWithHla = await GetDonorsWithExpandedHla(inputDonors);
-            await donorUpdateRepository.UpdateBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+            await donorUpdateRepository.UpdateDonorBatch(donorsWithHla.AsEnumerable());
         }
 
         private async Task<InputDonorWithExpandedHla[]> GetDonorsWithExpandedHla(IEnumerable<InputDonor> inputDonors)

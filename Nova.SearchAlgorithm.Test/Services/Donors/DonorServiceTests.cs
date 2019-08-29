@@ -68,7 +68,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
             await updateRepository.Received()
-                .UpdateBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+                .UpdateDonorBatch(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
 
         [Test]

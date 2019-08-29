@@ -19,12 +19,11 @@ namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
         /// Will create the hla matches.
         /// </summary>
         Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
-        
+
         /// <summary>
-        /// Insert a batch of donors into the database.
-        /// Will create the hla matches.
+        /// Updates info and/or HLA for a batch of donors.
         /// </summary>
-        Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors);
+        Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> donorsToUpdate);
         
         /// <summary>
         /// Sets a batch of donors as unavailable for search.

@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Dapper;
+﻿using Dapper;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Entity;
+using Nova.SearchAlgorithm.Data.Extensions;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Services;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -28,14 +29,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
-                var transaction = conn.BeginTransaction();
-
-                var donorIdsAsString = string.Join(",", donorIds);
-                await conn.ExecuteAsync(
-                    $"UPDATE Donors SET IsAvailableForSearch = 0 WHERE DonorId IN ({donorIdsAsString})",
-                    null, transaction, commandTimeout: 600);
-
-                transaction.Commit();
+                await SetAvailabilityOfDonorBatch(donorIds, false, conn);
                 conn.Close();
             }
         }
@@ -54,47 +48,116 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
         // Performance may not be sufficient to efficiently import large quantities of donors.
         // Consider re-writing this if we prove to need to process large donor batches
-        public async Task UpdateBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
+        public async Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> donorsToUpdate)
         {
-            donors = donors.ToList();
+            donorsToUpdate = donorsToUpdate.ToList();
+
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var existingDonors = await conn.QueryAsync<Donor>($@"
+                conn.Open();
+
+                var donorQuery = await conn.QueryAsync<Donor>($@"
                     SELECT * FROM Donors 
-                    WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
+                    WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
                     ", commandTimeout: 300);
+                var existingDonors = donorQuery.ToList();
 
-                foreach (var existingDonor in existingDonors.ToList())
+                await SetAvailabilityOfDonorBatch(existingDonors.Select(d => d.DonorId), true, conn);
+
+                var donorsWhereHlaHasChanged = new List<InputDonorWithExpandedHla>();
+
+                foreach (var existingDonor in existingDonors)
                 {
-                    existingDonor.CopyDataFrom(donors.Single(d => d.DonorId == existingDonor.DonorId));
-                    await conn.ExecuteAsync($@"
-                        UPDATE Donors 
-                        SET DonorType = {((int)existingDonor.DonorType).ToString()},
-                        RegistryCode = {((int)existingDonor.RegistryCode).ToString()},
-                        IsAvailableForSearch = 1,
-                        A_1 = '{existingDonor.A_1}',
-                        A_2 = '{existingDonor.A_2}',
-                        B_1 = '{existingDonor.B_1}',
-                        B_2 = '{existingDonor.B_2}',
-                        C_1 = '{existingDonor.C_1}',
-                        C_2 = '{existingDonor.C_2}',
-                        DRB1_1 = '{existingDonor.DRB1_1}',
-                        DRB1_2 = '{existingDonor.DRB1_2}',
-                        DQB1_1 = '{existingDonor.DQB1_1}',
-                        DQB1_2 = '{existingDonor.DQB1_2}',
-                        DPB1_1 = '{existingDonor.DPB1_1}',
-                        DPB1_2 = '{existingDonor.DPB1_2}'
-                        WHERE DonorId = {existingDonor.DonorId}
-                        ", commandTimeout: 600);
-                }
-            }
+                    var existingDonorResult = existingDonor.ToDonorResult();
+                    var donorToUpdate = donorsToUpdate.First(d => d.DonorId == existingDonorResult.DonorId);
 
-            await ReplaceMatchingGroupsForExistingDonorBatch(donors);
+                    if (DonorInfoHasChanged(existingDonor, donorToUpdate))
+                    {
+                        await UpdateDonorInfo(donorToUpdate, conn);
+                    }
+
+                    if (DonorHlaHasChanged(existingDonorResult, donorToUpdate))
+                    {
+                        donorsWhereHlaHasChanged.Add(donorToUpdate);
+                        await UpdateDonorHla(donorToUpdate, conn);
+                    }
+                }
+
+                await ReplaceMatchingGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
+
+                conn.Close();
+            }
+        }
+
+        private static bool DonorInfoHasChanged(Donor existingDonor, InputDonorWithExpandedHla inputDonor)
+        {
+            return existingDonor.RegistryCode != inputDonor.RegistryCode ||
+                   existingDonor.DonorType != inputDonor.DonorType;
+        }
+
+        private static bool DonorHlaHasChanged(DonorResult existingDonorResult, InputDonorWithExpandedHla inputDonor)
+        {
+            return !existingDonorResult.HlaNames.Equals(inputDonor.ToInputDonor().HlaNames);
+        }
+
+        private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
+        {
+            var availabilityAsString = isAvailableForSearch ? "1" : "0";
+
+            var transaction = conn.BeginTransaction();
+
+            var donorIdsAsString = string.Join(",", donorIds);
+            await conn.ExecuteAsync(
+                $"UPDATE Donors SET IsAvailableForSearch = {availabilityAsString} WHERE DonorId IN ({donorIdsAsString})",
+                null, transaction, commandTimeout: 600);
+
+            transaction.Commit();
+        }
+
+        private static async Task UpdateDonorInfo(InputDonorWithExpandedHla donor, IDbConnection connection)
+        {
+            await connection.ExecuteAsync($@"
+                        UPDATE Donors 
+                        SET 
+                            DonorType = {(int)donor.DonorType},
+                            RegistryCode = {(int)donor.RegistryCode}
+                        WHERE DonorId = {donor.DonorId}
+                        ", commandTimeout: 600);
+        }
+
+        private static async Task UpdateDonorHla(InputDonorWithExpandedHla inputDonorWithExpandedHla, IDbConnection connection)
+        {
+            var donor = inputDonorWithExpandedHla.ToDonor();
+
+            await connection.ExecuteAsync($@"
+                        UPDATE Donors
+                        SET
+                            A_1 = '{donor.A_1}',
+                            A_2 = '{donor.A_2}',
+                            B_1 = '{donor.B_1}',
+                            B_2 = '{donor.B_2}',
+                            C_1 = '{donor.C_1}',
+                            C_2 = '{donor.C_2}',
+                            DRB1_1 = '{donor.DRB1_1}',
+                            DRB1_2 = '{donor.DRB1_2}',
+                            DQB1_1 = '{donor.DQB1_1}',
+                            DQB1_2 = '{donor.DQB1_2}',
+                            DPB1_1 = '{donor.DPB1_1}',
+                            DPB1_2 = '{donor.DPB1_2}'
+                        WHERE DonorId = {donor.DonorId}
+                        ", commandTimeout: 600);
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            var donors = inputDonors.ToList();
+
+            if (!donors.Any())
+            {
+                return;
+            }
+
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(donors, l)));
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
