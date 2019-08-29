@@ -216,5 +216,49 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             donor4.Should().NotBeNull();
         }
 
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorsDoNotExist_CreatesDonorBatchAsAvailableForSearch()
+        {
+            var inputDonor1 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            var inputDonor2 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor1, inputDonor2 });
+
+            var donors = (await donorInspectionRepository.GetDonors(new[] { inputDonor1.DonorId, inputDonor2.DonorId })).ToList();
+            donors.First().IsAvailableForSearch.Should().BeTrue();
+            donors.Last().IsAvailableForSearch.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task SetDonorBatchAsUnavailableForSearch_SetsDonorBatchAsUnavailableForSearch()
+        {
+            var inputDonor1 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            var inputDonor2 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            var inputDonorIds = new[] { inputDonor1.DonorId, inputDonor2.DonorId };
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor1, inputDonor2 });
+
+            await donorService.SetDonorBatchAsUnavailableForSearch(inputDonorIds);
+
+            var donors = (await donorInspectionRepository.GetDonors(inputDonorIds)).ToList();
+            donors.First().IsAvailableForSearch.Should().BeFalse();
+            donors.Last().IsAvailableForSearch.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorsExist_SetsDonorBatchAsAvailableForSearch()
+        {
+            // Arrange: first create donors, then set as unavailable
+            var inputDonor1 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            var inputDonor2 = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            var inputDonors = new[] { inputDonor1, inputDonor2 };
+            var inputDonorIds = new[] { inputDonor1.DonorId, inputDonor2.DonorId };
+            await donorService.CreateOrUpdateDonorBatch(inputDonors);
+            await donorService.SetDonorBatchAsUnavailableForSearch(inputDonorIds);
+
+            await donorService.CreateOrUpdateDonorBatch(inputDonors);
+
+            var donors = (await donorInspectionRepository.GetDonors(inputDonorIds)).ToList();
+            donors.First().IsAvailableForSearch.Should().BeTrue();
+            donors.Last().IsAvailableForSearch.Should().BeTrue();
+        }
     }
 }

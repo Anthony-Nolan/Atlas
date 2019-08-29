@@ -51,11 +51,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             {
                 conn.Open();
 
-                var donorQuery = await conn.QueryAsync<Donor>($@"
+                var existingDonors = (await conn.QueryAsync<Donor>($@"
                     SELECT * FROM Donors 
                     WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
-                    ", commandTimeout: 300);
-                var existingDonors = donorQuery.ToList();
+                    ", commandTimeout: 300)
+                    ).ToList();
 
                 await SetAvailabilityOfDonorBatch(existingDonors.Select(d => d.DonorId), true, conn);
 
@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
                 foreach (var existingDonor in existingDonors)
                 {
                     var existingDonorResult = existingDonor.ToDonorResult();
-                    var donorToUpdate = donorsToUpdate.First(d => d.DonorId == existingDonorResult.DonorId);
+                    var donorToUpdate = donorsToUpdate.Single(d => d.DonorId == existingDonorResult.DonorId);
 
                     if (DonorInfoHasChanged(existingDonor, donorToUpdate))
                     {
@@ -109,6 +109,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             transaction.Commit();
         }
 
+        /// <summary>
+        /// Updates donor fields not related to availability or HLA.
+        /// </summary>
         private static async Task UpdateDonorInfo(InputDonorWithExpandedHla donor, IDbConnection connection)
         {
             await connection.ExecuteAsync($@"

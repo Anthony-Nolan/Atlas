@@ -1,9 +1,7 @@
-using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
@@ -22,7 +20,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         private IDonorUpdateRepository updateRepository;
         private IDonorInspectionRepository inspectionRepository;
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
-        private IMapper mapper;
         private IActiveRepositoryFactory repositoryFactory;
 
         [SetUp]
@@ -32,12 +29,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             repositoryFactory = Substitute.For<IActiveRepositoryFactory>();
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
-            mapper = AutomapperConfig.CreateMapper();
 
             repositoryFactory.GetDonorInspectionRepository().Returns(inspectionRepository);
             repositoryFactory.GetDonorUpdateRepository().Returns(updateRepository);
 
-            donorService = new SearchAlgorithm.Services.Donors.DonorService(expandHlaPhenotypeService, repositoryFactory, mapper);
+            donorService = new SearchAlgorithm.Services.Donors.DonorService(expandHlaPhenotypeService, repositoryFactory);
         }
 
         [Test]

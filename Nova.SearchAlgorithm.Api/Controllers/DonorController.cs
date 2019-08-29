@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Services.Donors;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Api.Controllers
 {
@@ -18,9 +17,9 @@ namespace Nova.SearchAlgorithm.Api.Controllers
 
         [HttpPut]
         [Route("batch")]
-        public async Task<IEnumerable<InputDonor>> CreateOrUpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        public async Task CreateOrUpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
         {
-            return await donorService.CreateOrUpdateDonorBatch(donorBatch.Donors);
+            await donorService.CreateOrUpdateDonorBatch(donorBatch.Donors);
         }
     }
 }
