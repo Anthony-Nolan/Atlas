@@ -83,7 +83,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAlleles;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertDonorWithExpandedHla(donor);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -95,7 +95,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodes;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertDonorWithExpandedHla(donor);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -107,7 +107,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAlleles;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { donor.ToInputDonor() });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -119,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodes;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { donor.ToInputDonor() });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 

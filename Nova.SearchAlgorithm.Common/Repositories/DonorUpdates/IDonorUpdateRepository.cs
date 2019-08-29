@@ -10,11 +10,6 @@ namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
     public interface IDonorUpdateRepository
     {
         /// <summary>
-        /// Inserts a donor and generates the matching p-groups.
-        /// </summary>
-        Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor);
-
-        /// <summary>
         /// Insert a batch of donors into the database.
         /// Will create the hla matches.
         /// </summary>

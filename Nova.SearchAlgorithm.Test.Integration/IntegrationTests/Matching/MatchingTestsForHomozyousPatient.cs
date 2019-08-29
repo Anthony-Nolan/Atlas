@@ -171,10 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepo = repositoryFactory.GetDonorUpdateRepository();
-            foreach (var donor in BuildInputDonors())
-            {
-                Task.Run(() => donorRepo.InsertDonorWithExpandedHla(donor)).Wait();
-            }
+            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(BuildInputDonors())).Wait();
         }
 
         private IEnumerable<InputDonorWithExpandedHla> BuildInputDonors()

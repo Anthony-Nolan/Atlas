@@ -161,7 +161,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
-            
+
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
@@ -179,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var testDonor = BuildTestDonor(testDonorPhenotype);
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }).Wait();
             return testDonor.DonorId;
         }
 

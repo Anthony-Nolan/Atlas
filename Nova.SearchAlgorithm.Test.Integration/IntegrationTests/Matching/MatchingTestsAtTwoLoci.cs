@@ -143,10 +143,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 cordDonorWithFullMatchAtLocus1AndHalfMatchAtLocus2,
                 cordDonorWithFullMatchAtLocus1AndNoMatchAtLocus2
             };
-            foreach (var donor in allDonors)
-            {
-                Task.Run(() => donorRepo.InsertDonorWithExpandedHla(donor)).Wait();
-            }
+
+            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
         }
         
         [OneTimeTearDown]

@@ -34,11 +34,6 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        public async Task InsertDonorWithExpandedHla(InputDonorWithExpandedHla donor)
-        {
-            await InsertBatchOfDonorsWithExpandedHla(new[] { donor });
-        }
-
         public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
