@@ -70,7 +70,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
             var result = await server.CreateRequest("/donor/batch")
                 .AddHeader(ApiKeyHeader, ApiKey)
                 .And(request => request.Content = SerialiseToJson(batch))
-                .PostAsync();
+                .SendAsync("PUT");
 
             if (!result.IsSuccessStatusCode)
             {
