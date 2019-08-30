@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         {
             searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
-    
+
         [Test]
         public async Task Search_SixOutOfSix_WhenPatientAndDonorHaveSameSingleNullAllele_ThenMatchingNullGradeAndDefiniteConfidenceAssigned()
         {
@@ -164,7 +164,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
 
         private static int SetUpTestDonor(PhenotypeInfo<string> donorPhenotype)
         {
-            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            var expandHlaPhenotypeService =
+                DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
             var matchingHlaPhenotype = expandHlaPhenotypeService
                 .GetPhenotypeOfExpandedHla(donorPhenotype)
                 .Result;
@@ -173,9 +174,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+            var repositoryFactory =
+                DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }).Wait();
 
             return testDonor.DonorId;
         }

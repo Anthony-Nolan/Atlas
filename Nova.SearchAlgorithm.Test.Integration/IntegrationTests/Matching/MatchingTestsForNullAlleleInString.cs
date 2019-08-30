@@ -67,7 +67,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             BuildPatientPhenotypes();
         }
-        
+
         [OneTimeTearDown]
         public void TearDown()
         {
@@ -473,7 +473,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithMatchingHla(donorPhenotype)
                 .Build();
 
-            await donorUpdateRepository.InsertDonorWithExpandedHla(donor);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
             return donor.DonorId;
         }

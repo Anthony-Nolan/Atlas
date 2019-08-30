@@ -277,7 +277,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
 
         [Test]
         public async Task Search_NullAlleleAsTwoFieldNameWithSuffix_VsItself_NullMatchGradeAndDefiniteConfidenceAssigned()
-        {            
+        {
             var result = await SixOutOfSixSearch(nullAlleleAsTwoFieldNameWithSuffix, nullAlleleAsTwoFieldNameWithSuffix);
 
             matchGradesForMatchingNullAlleles.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
@@ -567,7 +567,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         }
 
         #endregion
-//
+        //
         #region Allele String, With Expressing Allele From Same G Group
 
         [Test]
@@ -688,7 +688,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         }
 
         #endregion
-//
+        //
         #region Allele String, With Expressing Allele From Different G Group
 
         [Test]
@@ -811,7 +811,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
         }
 
         #endregion
-  
+
         #region XX Code
 
         [Test]
@@ -940,18 +940,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                 .WithMatchingHla(matchingHlaPhenotype)
                 .Build();
 
-            await donorRepository.InsertDonorWithExpandedHla(testDonor);
+            await donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor });
 
             return testDonor.DonorId;
         }
-        
+
         private async Task<SearchResult> SixOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientAllele.Phenotype).SixOutOfSix().Build();
             var searchResults = await searchService.Search(searchRequest);
             return searchResults.Single(d => d.DonorId == donorAllele.DonorId);
         }
-        
+
         private async Task<SearchResult> FiveOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientAllele.Phenotype)
@@ -961,7 +961,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
             var searchResults = await searchService.Search(searchRequest);
             return searchResults.Single(d => d.DonorId == donorAllele.DonorId);
         }
-        
+
         #endregion
 
         private class AlleleTestData
@@ -989,7 +989,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search.NullAlle
                     .WithMatchingHla(matchingHlaPhenotype)
                     .Build();
             }
-            
+
             private static PhenotypeInfo<string> BuildPhenotype(string hlaForPositionUnderTest)
             {
                 var defaultPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;

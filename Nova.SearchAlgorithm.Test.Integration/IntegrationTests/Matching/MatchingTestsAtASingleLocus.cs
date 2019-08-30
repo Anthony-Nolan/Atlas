@@ -132,10 +132,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 donorWithFullCrossHeterozygousMatchAtLocus
             };
 
-            foreach (var donor in allDonors)
-            {
-                Task.Run(() => updateRepo.InsertDonorWithExpandedHla(donor)).Wait();
-            }
+            Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
         }
         
         [OneTimeTearDown]

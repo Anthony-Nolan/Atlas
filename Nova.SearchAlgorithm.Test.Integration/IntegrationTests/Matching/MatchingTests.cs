@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -142,10 +140,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 adultDonorWithFullMatch
             };
 
-            foreach (var donor in allDonors)
-            {
-                Task.Run(() => donorUpdateRepository.InsertDonorWithExpandedHla(donor)).Wait();
-            }
+            Task.Run(() => donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
         }
 
         private void AddTestDonorUnavailableForSearch(IDonorUpdateRepository donorUpdateRepository)
@@ -154,7 +149,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             Task.Run(() =>
             {
-                donorUpdateRepository.InsertDonorWithExpandedHla(unavailableMatchingCordDonor);
+                donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { unavailableMatchingCordDonor });
                 donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(new[] { unavailableMatchingCordDonor.DonorId });
             }).Wait();
         }

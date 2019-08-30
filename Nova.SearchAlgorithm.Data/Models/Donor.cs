@@ -46,24 +46,5 @@ namespace Nova.SearchAlgorithm.Data.Entity
                 }
             };
         }
-
-        public void CopyDataFrom(InputDonorWithExpandedHla donor)
-        {
-            DonorId = donor.DonorId;
-            DonorType = donor.DonorType;
-            RegistryCode = donor.RegistryCode;
-            A_1 = donor.MatchingHla.A.Position1.OriginalName;
-            A_2 = donor.MatchingHla.A.Position2.OriginalName;
-            B_1 = donor.MatchingHla.B.Position1.OriginalName;
-            B_2 = donor.MatchingHla.B.Position2.OriginalName;
-            C_1 = donor.MatchingHla.C.Position1?.OriginalName;
-            C_2 = donor.MatchingHla.C.Position2?.OriginalName;
-            DRB1_1 = donor.MatchingHla.Drb1.Position1.OriginalName;
-            DRB1_2 = donor.MatchingHla.Drb1.Position2.OriginalName;
-            DQB1_1 = donor.MatchingHla.Dqb1.Position1?.OriginalName;
-            DQB1_2 = donor.MatchingHla.Dqb1.Position2?.OriginalName;
-            DPB1_1 = donor.MatchingHla.Dpb1.Position1?.OriginalName;
-            DPB1_2 = donor.MatchingHla.Dpb1.Position2?.OriginalName;
-        }
     }
 }

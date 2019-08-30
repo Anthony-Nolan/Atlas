@@ -45,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             testDonor = BuildTestDonor();
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertDonorWithExpandedHla(testDonor).Wait();
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }).Wait();
         }
 
         [SetUp]
@@ -133,7 +133,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
-            
+
             // Should be 6/6
             result.OverallMatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
