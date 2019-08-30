@@ -36,7 +36,19 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await messageProcessorService.Received(1).ProcessMessageBatch(
                 BatchSize,
-                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>>,Task>>());
+                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>>, Task>>(),
+                Arg.Any<int>());
+        }
+
+        [Test]
+        public async Task ProcessDonorUpdates_ProcessesMessageBatch_WithPrefetchCountGreaterThanBatchSize()
+        {
+            await donorUpdateProcessor.ProcessDonorUpdates();
+
+            await messageProcessorService.Received(1).ProcessMessageBatch(
+                Arg.Any<int>(),
+                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>>, Task>>(),
+                Arg.Is<int>(b => b > BatchSize));
         }
     }
 }

@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             await messageProcessorService.ProcessMessageBatch(batchSize, async batch =>
             {
                 await ProcessMessages(batch);
-            });
+            }, prefetchCount: batchSize * 2);
         }
 
         private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
