@@ -23,13 +23,10 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         private IDonorService donorService;
         private IDonorManagementService donorManagementService;
         private IMapper mapper;
-        private IDonorManagementNotificationSender notificationSender;
 
         [SetUp]
         public void SetUp()
         {
-            // All unit tests where logRepository's return object is not overridden will by default
-            // test the scenario of "when donor has no log entries".
             logRepository = Substitute.For<IDonorManagementLogRepository>();
             logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[] { });
 
@@ -39,9 +36,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
             donorService = Substitute.For<IDonorService>();
             var logger = Substitute.For<ILogger>();
             mapper = Substitute.For<IMapper>();
-            notificationSender = Substitute.For<IDonorManagementNotificationSender>();
 
-            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger, mapper, notificationSender);
+            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger, mapper);
         }
 
         [Test]
@@ -287,204 +283,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_GetsDonorManagementLog()
-        {
-            const int donorId = 789;
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = 1
-                }});
-
-            await logRepository
-                .Received(1)
-                .GetDonorManagementLogBatch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsNewerThanLastUpdate_AndDonorIsAvailable_AddsOrUpdatesDonor()
-        {
-            const int donorId = 789;
-            const long sequenceNumberOfLastUpdate = 123456789;
-            const RegistryCode registryCode = RegistryCode.AN;
-            const DonorType donorType = DonorType.Adult;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorManagementLog>
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = sequenceNumberOfLastUpdate + 1,
-                    DonorInfo = new InputDonor
-                    {
-                        DonorId = donorId,
-                        RegistryCode = registryCode,
-                        DonorType = donorType
-                    },
-                    IsAvailableForSearch = true
-                }});
-
-            await donorService
-                .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x =>
-                    x.Single().DonorId == donorId &&
-                    x.Single().RegistryCode == registryCode &&
-                    x.Single().DonorType == donorType));
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsCoevalToLastUpdate_AndDonorIsAvailable_DoesNotAddOrUpdateDonor()
-        {
-            const int donorId = 789;
-            const long sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorManagementLog>
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = sequenceNumberOfLastUpdate,
-                    IsAvailableForSearch = true
-                }});
-
-            await donorService
-                .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<InputDonor>>());
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsOlderThanLastUpdate_AndDonorIsAvailable_DoesNotAddOrUpdateDonor()
-        {
-            const int donorId = 789;
-            const long sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorManagementLog>
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = sequenceNumberOfLastUpdate - 1,
-                    IsAvailableForSearch = true
-                }
-            });
-
-            await donorService
-                .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<InputDonor>>());
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsNewerThanLastUpdate_AndDonorIsNotAvailable_SetsDonorAsUnavailable()
-        {
-            const int donorId = 789;
-            const long sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorManagementLog>
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = sequenceNumberOfLastUpdate + 1,
-                    IsAvailableForSearch = false
-                }});
-
-            await donorService
-                .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsCoevalToLastUpdate_AndDonorIsNotAvailable_DoesNotSetDonorAsUnavailable()
-        {
-            const int donorId = 789;
-            const long sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorManagementLog>
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = sequenceNumberOfLastUpdate,
-                    IsAvailableForSearch = false
-                }});
-
-            await donorService
-                .Received(0)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateIsOlderThanLastUpdate_AndDonorIsNotAvailable_DoesNotSetDonorAsUnavailable()
-        {
-            const int donorId = 789;
-            const long sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorManagementLog>
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
-                new DonorAvailabilityUpdate
-                {
-                    DonorId = donorId,
-                    UpdateSequenceNumber = sequenceNumberOfLastUpdate - 1,
-                    IsAvailableForSearch = false
-                }});
-
-            await donorService
-                .Received(0)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateWasApplied_CreatesOrUpdatesDonorManagementLog()
+        public async Task ManageDonorBatchByAvailability_CreatesOrUpdatesDonorManagementLog()
         {
             const int donorId = 789;
             const int sequenceNumber = 123456789;
@@ -500,7 +299,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            // no logs are returned by logRepository, so this update should be applied.
             await donorManagementService.ManageDonorBatchByAvailability(new[] {new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -512,80 +310,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 .CreateOrUpdateDonorManagementLogBatch(Arg.Is<IEnumerable<DonorManagementInfo>>(x =>
                     x.Single().DonorId == donorId &&
                     x.Single().UpdateSequenceNumber == sequenceNumber));
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateWasNotApplied_DoesNotCreateOrUpdateDonorManagementLog()
-        {
-            const int donorId = 789;
-            const int sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[]
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            // Update is older than last applied update and so should not be applied.
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                UpdateSequenceNumber = sequenceNumberOfLastUpdate - 1
-            }});
-
-            await logRepository
-                .Received(0)
-                .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateWasApplied_DoesNotSendNotification()
-        {
-            const int donorId = 789;
-            const int sequenceNumber = 123456789;
-
-            // no logs are returned by logRepository, so this update should be applied.
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                UpdateSequenceNumber = sequenceNumber
-            }});
-
-            await notificationSender
-                .Received(0)
-                .SendDonorUpdatesNotAppliedNotification(Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
-        }
-
-        [Test]
-        public async Task ManageDonorBatchByAvailability_UpdateWasNotApplied_SendsNotification()
-        {
-            const int donorId = 789;
-            const int sequenceNumberOfLastUpdate = 123456789;
-
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[]
-            {
-                new DonorManagementLog
-                {
-                    DonorId = donorId,
-                    SequenceNumberOfLastUpdate = sequenceNumberOfLastUpdate
-                }
-            });
-
-            // Update is older than last applied update and so should not be applied.
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                UpdateSequenceNumber = sequenceNumberOfLastUpdate - 1
-            }});
-
-            await notificationSender
-                .Received(1)
-                .SendDonorUpdatesNotAppliedNotification(Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x =>
-                    x.Single().DonorId == donorId &&
-                    x.Single().UpdateSequenceNumber == sequenceNumberOfLastUpdate - 1));
         }
     }
 }
