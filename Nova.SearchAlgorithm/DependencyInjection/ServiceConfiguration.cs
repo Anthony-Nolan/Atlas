@@ -312,7 +312,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterDonorManagementServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
-            services.AddScoped<IDonorManagementNotificationSender, DonorManagementNotificationSender>();
 
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
                 new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)

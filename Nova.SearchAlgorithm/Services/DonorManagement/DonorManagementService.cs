@@ -27,26 +27,30 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         private readonly IDonorService donorService;
         private readonly ILogger logger;
         private readonly IMapper mapper;
-        private readonly IDonorManagementNotificationSender notificationSender;
 
         public DonorManagementService(
             IActiveRepositoryFactory repositoryFactory,
             IDonorService donorService,
             ILogger logger,
-            IMapper mapper,
-            IDonorManagementNotificationSender notificationSender)
+            IMapper mapper)
         {
             logRepository = repositoryFactory.GetDonorManagementLogRepository();
             this.donorService = donorService;
             this.logger = logger;
             this.mapper = mapper;
-            this.notificationSender = notificationSender;
         }
 
         public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
         {
-            var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates);
-            await ApplyDonorUpdates(filteredUpdates);
+            var latestUpdates = GetLatestUpdateInBatchPerDonorId(donorAvailabilityUpdates);
+            await ApplyDonorUpdates(latestUpdates);
+        }
+
+        private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdateInBatchPerDonorId(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            return updates
+                .GroupBy(u => u.DonorId)
+                .Select(grp => grp.OrderByDescending(u => u.UpdateSequenceNumber).First());
         }
 
         private async Task ApplyDonorUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
@@ -60,58 +64,6 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             await AddOrUpdateDonors(updatesList);
             await SetDonorsAsUnavailableForSearch(updatesList);
             await CreateOrUpdateManagementLogBatch(updatesList);
-        }
-
-        private async Task<IEnumerable<DonorAvailabilityUpdate>> FilterUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
-        {
-            var latestUpdateInBatchPerDonorId = GetLatestUpdateInBatchPerDonorId(updates);
-
-            return await GetNewerUpdatesOnly(latestUpdateInBatchPerDonorId);
-        }
-
-        private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdateInBatchPerDonorId(IEnumerable<DonorAvailabilityUpdate> updates)
-        {
-            return updates
-                .GroupBy(u => u.DonorId)
-                .Select(grp => grp.OrderByDescending(u => u.UpdateSequenceNumber).First());
-        }
-
-        /// <returns>Only returns those updates that are newer than the last update recorded in the
-        /// donor management log, or those where the donor has no record of a previous update.</returns>
-        private async Task<IEnumerable<DonorAvailabilityUpdate>> GetNewerUpdatesOnly(
-            IEnumerable<DonorAvailabilityUpdate> updates)
-        {
-            var allUpdates = updates.ToList();
-
-            var existingLogs = await logRepository.GetDonorManagementLogBatch(allUpdates.Select(u => u.DonorId));
-
-            // GroupJoin is equivalent to a LEFT OUTER JOIN
-            var updateStatuses = allUpdates
-                .GroupJoin(existingLogs,
-                    update => update.DonorId,
-                    log => log.DonorId,
-                    (update, logs) => new { Update = update, Log = logs.SingleOrDefault() })
-                .Select(a => new
-                {
-                    a.Update,
-                    IsNewer = a.Update.UpdateSequenceNumber > (a.Log?.SequenceNumberOfLastUpdate ?? 0)
-                })
-                .ToList();
-
-            await SendNotificationForNonApplicableUpdates(
-                updateStatuses.Where(u => !u.IsNewer).Select(u => u.Update));
-
-            return updateStatuses.Where(u => u.IsNewer).Select(u => u.Update);
-        }
-
-        private async Task SendNotificationForNonApplicableUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
-        {
-            var updatesList = updates.ToList();
-
-            if (updatesList.Any())
-            {
-                await notificationSender.SendDonorUpdatesNotAppliedNotification(updatesList);
-            }
         }
 
         private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)
