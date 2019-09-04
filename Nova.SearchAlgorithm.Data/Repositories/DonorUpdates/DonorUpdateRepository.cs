@@ -117,8 +117,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync($@"
                         UPDATE Donors 
                         SET 
-                            DonorType = {(int)donor.DonorType},
-                            RegistryCode = {(int)donor.RegistryCode}
+                            DonorType = {(int) donor.DonorType},
+                            RegistryCode = {(int) donor.RegistryCode}
                         WHERE DonorId = {donor.DonorId}
                         ", commandTimeout: 600);
         }
@@ -127,23 +127,24 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         {
             var donor = inputDonorWithExpandedHla.ToDonor();
 
-            await connection.ExecuteAsync($@"
+            const string sql = @"
                         UPDATE Donors
                         SET
-                            A_1 = '{donor.A_1}',
-                            A_2 = '{donor.A_2}',
-                            B_1 = '{donor.B_1}',
-                            B_2 = '{donor.B_2}',
-                            C_1 = '{donor.C_1}',
-                            C_2 = '{donor.C_2}',
-                            DRB1_1 = '{donor.DRB1_1}',
-                            DRB1_2 = '{donor.DRB1_2}',
-                            DQB1_1 = '{donor.DQB1_1}',
-                            DQB1_2 = '{donor.DQB1_2}',
-                            DPB1_1 = '{donor.DPB1_1}',
-                            DPB1_2 = '{donor.DPB1_2}'
-                        WHERE DonorId = {donor.DonorId}
-                        ", commandTimeout: 600);
+                            A_1 = @A_1,
+                            A_2 = @A_2,
+                            B_1 = @B_1,
+                            B_2 = @B_2,
+                            C_1 = @C_1,
+                            C_2 = @C_2,
+                            DRB1_1 = @DRB1_1,
+                            DRB1_2 = @DRB1_2,
+                            DQB1_1 = @DQB1_1,
+                            DQB1_2 = @DQB1_2,
+                            DPB1_1 = @DPB1_1,
+                            DPB1_2 = @DPB1_2
+                        WHERE DonorId = @DonorId
+                        ";
+            await connection.ExecuteAsync(sql, donor, commandTimeout: 600);
         }
 
         private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
@@ -201,7 +202,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
                     foreach (var pGroup in h.PGroups)
                     {
-                        dt.Rows.Add(0, donor.DonorId, (int)p, pGroupRepository.FindOrCreatePGroup(pGroup));
+                        dt.Rows.Add(0, donor.DonorId, (int) p, pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
             }
