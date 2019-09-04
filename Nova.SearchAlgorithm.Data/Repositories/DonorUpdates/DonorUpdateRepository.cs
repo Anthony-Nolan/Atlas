@@ -127,7 +127,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         {
             var donor = inputDonorWithExpandedHla.ToDonor();
 
-            var sql = $@"
+            const string sql = @"
                         UPDATE Donors
                         SET
                             A_1 = @A_1,
