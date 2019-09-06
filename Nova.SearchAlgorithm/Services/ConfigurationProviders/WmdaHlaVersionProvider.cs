@@ -49,14 +49,14 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
         {
             return cache.GetOrAdd("latestWmdaVersion", () =>
             {
-                // The currently recommended way of finding out the last-but-one version is from the header of the "Allelelist_history.txt" file, 
+                // The currently recommended way of finding out the last version is from the header of the "Allelelist_history.txt" file, 
                 // which contains all historic versions of the database
                 var versionReport = webClient.DownloadString($"{wmdaBaseUrl}Latest/Allelelist_history.txt");
                 var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("HLA_ID"));
                 
                 // The first item in the header line is the name, "HLA_ID". Then the versions are listed in reverse chronological order.
-                // So the second item is the latest version, and the third is the latest stable version
-                return versionLine.Split(",")[2];
+                // So the second item is the latest version
+                return versionLine.Split(",")[1];
             });
         }
     }
