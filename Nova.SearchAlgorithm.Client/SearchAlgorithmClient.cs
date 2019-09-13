@@ -2,8 +2,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Client;
+using Nova.Utils.ServiceClient;
 
 namespace Nova.SearchAlgorithm.Client
 {
@@ -15,20 +14,20 @@ namespace Nova.SearchAlgorithm.Client
 
     public class SearchAlgorithmClient : FunctionsClientBase, ISearchAlgorithmClient
     {
-        public SearchAlgorithmClient(ClientSettings settings, ILogger logger) : base(settings, logger)
+        public SearchAlgorithmClient(INovaFunctionsHttpClient novaHttpClient) : base(novaHttpClient)
         {
         }
 
         public async Task<ScoringResult> Score(ScoringRequest scoringRequest)
         {
-            var request = GetRequest(HttpMethod.Post, "api/Score", body: scoringRequest);
-            return await MakeRequestAsync<ScoringResult>(request);
+            var request = HttpClient.GetRequest(HttpMethod.Post, "api/Score", body: scoringRequest);
+            return await HttpClient.MakeRequestAsync<ScoringResult>(request);
         }
 
         public async Task<SearchInitiationResponse> InitiateSearch(SearchRequest searchRequest)
         {
-            var request = GetRequest(HttpMethod.Post, "api/InitiateSearch", body: searchRequest);
-            return await MakeRequestAsync<SearchInitiationResponse>(request);
+            var request = HttpClient.GetRequest(HttpMethod.Post, "api/InitiateSearch", body: searchRequest);
+            return await HttpClient.MakeRequestAsync<SearchInitiationResponse>(request);
         }
     }
 }

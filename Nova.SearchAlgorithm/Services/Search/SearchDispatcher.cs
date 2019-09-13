@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Models;
