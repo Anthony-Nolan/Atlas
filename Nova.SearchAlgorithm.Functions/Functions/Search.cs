@@ -1,15 +1,14 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Models;
-using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.Search;
 
 namespace Nova.SearchAlgorithm.Functions.Functions
@@ -24,11 +23,18 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         }
 
         [FunctionName("InitiateSearch")]
-        public async Task<SearchInitiationResponse> InitiateSearch([HttpTrigger] HttpRequest request)
+        public async Task<IActionResult> InitiateSearch([HttpTrigger] HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            var id = await searchDispatcher.DispatchSearch(searchRequest);
-            return new SearchInitiationResponse {SearchIdentifier = id};
+            try
+            {
+                var id = await searchDispatcher.DispatchSearch(searchRequest);
+                return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+            }
+            catch (ValidationException e)
+            {
+                return new BadRequestObjectResult(e.Errors);
+            }
         }
 
         [FunctionName("RunSearch")]
