@@ -110,7 +110,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             {
                 var failedAnthonyNolanDonors = failedDonors.Where(d => d.RegistryCode == RegistryCode.AN).Select(d => d.DonorId).ToList();
                 var failedAlignedRegistryDonors = failedDonors.Where(d => d.RegistryCode != RegistryCode.AN).Select(d => d.DonorId).ToList();
-                logger.SendEvent(new EventModel("Hla Processing: Some donors could not be processed")
+                const string alertSummary = "Hla Processing: One or more donors could not be processed";
+                logger.SendEvent(new EventModel(alertSummary)
                 {
                     Level = LogLevel.Error,
                     Properties =
@@ -120,8 +121,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                     }
                 });
                 await notificationsClient.SendAlert(new Alert(
-                    "HLA processing failed for one or more donors.",
-                    $"{failedAnthonyNolanDonors.Count} Anthony Nolan donors failed. {failedAlignedRegistryDonors.Count} Aligned Registry donors failed. See application insights for further information",
+                    alertSummary,
+                    $"{failedAnthonyNolanDonors.Count} Anthony Nolan donors failed. {failedAlignedRegistryDonors.Count} Aligned Registry donors failed. " +
+                    "See application insights for further information - an event with the same name as this model should have been raised, as well as individual events for each donor.",
                     Priority.Low,
                     "Nova.SearchAlgorithm"
                 ));
