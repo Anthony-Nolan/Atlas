@@ -11,6 +11,7 @@ using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.Utils.Models;
+using Nova.Utils.Notifications;
 using NSubstitute;
 
 namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
@@ -50,6 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockHlaServiceClient);
 
             services.AddScoped(sp => Substitute.For<IDonorServiceClient>());
+            services.AddScoped(sp => Substitute.For<INotificationsClient>());
 
             return services.BuildServiceProvider();
         }
