@@ -123,7 +123,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await notificationsClient.SendAlert(new Alert(
                     alertSummary,
                     $"{failedAnthonyNolanDonors.Count} Anthony Nolan donors failed. {failedAlignedRegistryDonors.Count} Aligned Registry donors failed. " +
-                    "See application insights for further information - an event with the same name as this model should have been raised, as well as individual events for each donor.",
+                    "See application insights for further information - an event with the same name as this alert's summary' should have been raised, as well as individual events for each donor.",
                     Priority.Low,
                     "Nova.SearchAlgorithm"
                 ));
