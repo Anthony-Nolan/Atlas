@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
@@ -7,8 +10,8 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
     {
         void SetupTestData();
     }
-    
-    public class TestDataService: ITestDataService
+
+    public class TestDataService : ITestDataService
     {
         private readonly IMetaDonorRepository metaDonorRepository;
         private readonly ITestDataRepository testDataRepository;
@@ -18,7 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
             this.metaDonorRepository = metaDonorRepository;
             this.testDataRepository = testDataRepository;
         }
-        
+
         public void SetupTestData()
         {
             testDataRepository.SetupPersistentDatabase();
