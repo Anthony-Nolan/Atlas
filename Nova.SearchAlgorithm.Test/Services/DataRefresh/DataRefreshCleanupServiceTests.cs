@@ -122,7 +122,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await dataRefreshHistoryRepository.Received().UpdateFinishTime(record1Id, Arg.Any<DateTime>());
             await dataRefreshHistoryRepository.Received().UpdateFinishTime(record2Id, Arg.Any<DateTime>());
         }
-        
+
         [Test]
         public async Task RunDataRefreshCleanup_MarksAllInProgressRecordsAsFailed()
         {
@@ -138,6 +138,26 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(record1Id, false);
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(record2Id, false);
+        }
+
+        [Test]
+        public async Task SendCleanupRecommendation_WhenJobsInProgress_SendsAlert()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+
+            await dataRefreshCleanupService.SendCleanupRecommendation();
+
+            await notificationsClient.Received().SendAlert(Arg.Any<Alert>());
+        }
+
+        [Test]
+        public async Task SendCleanupRecommendation_WhenNoJobsInProgress_DoesNotSendAlert()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
+
+            await dataRefreshCleanupService.SendCleanupRecommendation();
+
+            await notificationsClient.DidNotReceive().SendAlert(Arg.Any<Alert>());
         }
     }
 }

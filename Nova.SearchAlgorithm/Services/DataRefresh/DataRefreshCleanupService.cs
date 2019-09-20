@@ -19,10 +19,21 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// This should only ever be run manually, in the case of the server dying mid-data refresh, and being unable to run the teardown as part of that.
         /// </summary>
         Task RunDataRefreshCleanup();
+
+        /// <summary>
+        /// Will decide whether we think clean up needs to be run, and if so send a notification for the support team.
+        /// This is only accurate if the following are true:
+        /// - This class is called from the same service as runs the data refresh
+        /// - That service is a single instance, always-on application
+        /// - This is only called on startup of the service
+        /// </summary>
+        Task SendCleanupRecommendation();
     }
 
     public class DataRefreshCleanupService : IDataRefreshCleanupService
     {
+        private const string NotificationOriginator = "Nova.SearchAlgorithm";
+
         private readonly ILogger logger;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
@@ -57,14 +68,15 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             if (IsCleanupNecessary())
             {
-                const string notificationSummary = "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.";
+                const string notificationSummary =
+                    "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.";
                 logger.SendTrace(notificationSummary, LogLevel.Info);
                 await notificationsClient.SendNotification(new Notification(
                     notificationSummary,
                     "A manual teardown was requested, and the search algorithm has detected ongoing data-refresh jobs - this should have been called if the app restarted unexpectedly during a data refresh. " +
                     "Appropriate teardown is being run. The data refresh will need to be re-started once the reason for the server restart has been diagnosed and handled. " +
                     "Possible causes could include: (a) the service plan running out of memory (b) an azure outage (c) a deployment of the algorithm service.",
-                    "Nova.SearchAlgorithm")
+                    NotificationOriginator)
                 );
                 await ScaleDatabase();
                 await EnableDonorManagementFunction();
@@ -72,7 +84,29 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
             else
             {
-                logger.SendTrace("Data Refresh cleanup triggered, but no in progress jobs detected. Are you sure cleanup is necessary?", LogLevel.Info);
+                logger.SendTrace(
+                    "Data Refresh cleanup triggered, but no in progress jobs detected. Are you sure cleanup is necessary?",
+                    LogLevel.Info
+                );
+            }
+        }
+
+        public async Task SendCleanupRecommendation()
+        {
+            if (IsCleanupNecessary())
+            {
+                await notificationsClient.SendAlert(new Alert(
+                    "Data Refresh: Manual cleanup recommended.",
+                    "The algorithm has detected an in-progress data refresh job on startup. This generally implies that a data refresh job " +
+                    "was terminated without the appropriate teardown being run - this should only happen if the service was re-started unexpectedly. " +
+                    "Possible causes could include: (a) the service plan running out of memory (b) an azure outage (c) a deployment of the algorithm service. " +
+                    "We should confirm that this was the case, and if so, run appropriate clean-up. See the README of the Nova.SearchAlgorithm project for more information. " +
+                    "The function `RunDataRefreshCleanup` should encapsulate the majority of the necessary clean-up. " +
+                    "CAVEAT: Due to restrictions of triggers in Azure functions, this function will run once a year not at start-up. " +
+                    "Check the crontab of the `CheckIfCleanupNecessary` function to ensure it isn't this known false positive.'",
+                    Priority.High,
+                    NotificationOriginator
+                ));
             }
         }
 
