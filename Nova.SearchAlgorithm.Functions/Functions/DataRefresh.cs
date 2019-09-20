@@ -9,10 +9,12 @@ namespace Nova.SearchAlgorithm.Functions.Functions
     public class DataRefresh
     {
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
+        private readonly IDataRefreshCleanupService dataRefreshCleanupService;
 
-        public DataRefresh(IDataRefreshOrchestrator dataRefreshOrchestrator)
+        public DataRefresh(IDataRefreshOrchestrator dataRefreshOrchestrator, IDataRefreshCleanupService dataRefreshCleanupService)
         {
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
+            this.dataRefreshCleanupService = dataRefreshCleanupService;
         }
 
         /// <summary>
@@ -50,6 +52,18 @@ namespace Nova.SearchAlgorithm.Functions.Functions
         public async Task RunDataRefresh([TimerTrigger("%DataRefresh.CronTab%")] TimerInfo timerInfo)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
+        }
+
+        /// <summary>
+        /// Manually triggers cleanup after the data refresh.
+        /// This clean up covers scaling down the database that was scaled up for the refresh, and re-enabling donor update functions.
+        /// Clean up should have been run if the job completed, whether successfully or not.
+        /// The only time this should be triggered is if the server running the data refresh was restarted while the job was in progress, causing it to skip tear-down.
+        /// </summary>
+        [FunctionName("RunDataRefreshCleanup")]
+        public async Task RunDataRefreshCleanup([HttpTrigger] HttpRequest httpRequest)
+        {
+            await dataRefreshCleanupService.RunDataRefreshCleanup();
         }
     }
 }
