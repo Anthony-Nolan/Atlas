@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     {
         /// <summary>
         /// Runs appropriate clean up after a data refresh job - i.e. scaling down the dormant database, and re-enabling donor update functions.
-        /// This should only ever be run manually, in the case of the server dying mid-data refresh, and being unable to run the teardown as part of that.
+        /// This should only ever be run manually, and only if the server dies in the middle of data-refresh, as the normal teardown will not have run.
         /// </summary>
         Task RunDataRefreshCleanup();
 
