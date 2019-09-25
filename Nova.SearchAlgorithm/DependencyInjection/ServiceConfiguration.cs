@@ -117,6 +117,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshService, DataRefreshService>();
             services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
+            services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
             services.AddScoped<IAntigenCachingService, AntigenCachingService>();
 
             // Matching Services

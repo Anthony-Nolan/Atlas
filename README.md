@@ -154,7 +154,9 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 - The job will only be re-run in full when WMDA data is updated (every 3 months). 
     - New/changed donors should have these relations (re-)calculated as they change (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
-## Data Refresh - In the case of the refresh job server dying
+## Support 
+
+### Data Refresh - In the case of the refresh job server dying
 
 The data refresh function is set up such that if it *fails* for any reason, the algorithm/infrastructure will be left in a reasonable state.
 If, however, the server were to stop mid-job, some cleanup would be necessary. If this happens locally, you can likely ignore the infrastructure part of this checklist. (We do not expect this to ever occur in a deployed environment)
@@ -162,11 +164,12 @@ If, however, the server were to stop mid-job, some cleanup would be necessary. I
 - Azure Infrastructure
   - **URGENT** - if the database was scaled up to the refresh level, it will need to be manually scaled back down. This should be done as soon as possible, as the refresh size is likely to have very high operating costs
   - The Donor Import functions may need to be turned back on
+  - This is encapsulated within the "RunDataRefreshCleanup" function - which can be triggered rather than manually changing infrastructure if preferred
 - Search Algorithm Database
   - The transient database should be mostly safe to ignore - live searches will not move to the database that failed the refresh, and beginning a new refresh will wipe the data to begin again
   - Indexes may need manually adding to the hla tables, if the job crashed between dropping indexes and recreating, it may fail on future runs until they are re-added
   - The latest entry in the `DataRefreshHistory` table will not be marked as complete, and no future refresh jobs will run. It should be manually marked as failed, and an end date added.
-
+    - If the `RunDataRefreshCleanup` function was used for infrastructure cleanup, this will have been covered by that function
 
 ## Search
 
