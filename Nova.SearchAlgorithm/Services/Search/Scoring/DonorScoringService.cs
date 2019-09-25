@@ -55,7 +55,6 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             var patientScoringLookupResult = await GetHlaScoringResults(patientHla);
 
             var matchAndScoreResults = await Task.WhenAll(matchResults
-                .AsParallel()
                 .Select(async matchResult =>
                 {
                     var lookupResult = await GetHlaScoringResults(matchResult.Donor.HlaNames);
