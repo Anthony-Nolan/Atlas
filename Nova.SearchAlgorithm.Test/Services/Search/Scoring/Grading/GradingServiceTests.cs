@@ -14,6 +14,7 @@ using System;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
@@ -28,9 +29,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
-            var matchGradeCache = new MatchGradeCache(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))));
-            
-            gradingService = new GradingService(permissiveMismatchCalculator, matchGradeCache);
+            var scoringCache = new ScoringCache(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
+                Substitute.For<IWmdaHlaVersionProvider>());
+
+            gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);
 
             defaultSerologyResult =
                 new HlaScoringLookupResultBuilder()
@@ -110,7 +112,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
 
@@ -169,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
 
@@ -200,7 +202,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true) })
+                    .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
@@ -226,7 +228,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Associated, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
 
@@ -274,7 +276,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
 
@@ -333,7 +335,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
 
@@ -364,7 +366,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true) })
+                    .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
@@ -390,7 +392,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Associated, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
 
@@ -442,7 +444,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Protein, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Protein, expectedMatchOrientations);
 
@@ -460,28 +462,28 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { directMatchingSerology })
+                    .WithMatchingSerologies(new[] {directMatchingSerology})
                     .Build())
                 .Build();
 
             var patientResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { directMatchingSerology })
+                    .WithMatchingSerologies(new[] {directMatchingSerology})
                     .Build())
                 .Build();
 
             var donorResult1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { new SerologyEntry("mismatched-serology", SerologySubtype.NotSplit, true) })
+                    .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-serology", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
             var donorResult2 = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { directMatchingSerology })
+                    .WithMatchingSerologies(new[] {directMatchingSerology})
                     .Build())
                 .Build();
 
@@ -489,7 +491,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
 
@@ -538,7 +540,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
 
@@ -565,7 +567,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
 
@@ -590,7 +592,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
 
@@ -607,7 +609,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
 
@@ -649,7 +651,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -678,7 +680,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
+                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
@@ -686,7 +688,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -717,8 +719,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { sharedGGroup })
-                    .WithMatchingPGroups(new[] { sharedPGroup })
+                    .WithMatchingGGroups(new[] {sharedGGroup})
+                    .WithMatchingPGroups(new[] {sharedPGroup})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -727,7 +729,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -764,7 +766,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -788,7 +790,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
+                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
@@ -801,7 +803,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -825,14 +827,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
+                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
+                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
@@ -840,7 +842,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -860,12 +862,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] { new SingleAlleleScoringInfoBuilder()
-                        .WithAlleleName("999:999")
-                        .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
-                        .WithMatchingGGroup(sharedGGroup)
-                        .WithMatchingPGroup(sharedPGroup)
-                        .Build()})
+                    .WithAlleleScoringInfos(new[]
+                    {
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithAlleleName("999:999")
+                            .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                            .WithMatchingGGroup(sharedGGroup)
+                            .WithMatchingPGroup(sharedPGroup)
+                            .Build()
+                    })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -873,8 +878,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { sharedGGroup })
-                    .WithMatchingPGroups(new[] { sharedPGroup })
+                    .WithMatchingGGroups(new[] {sharedGGroup})
+                    .WithMatchingPGroups(new[] {sharedPGroup})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -883,7 +888,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -901,12 +906,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[]{ new SingleAlleleScoringInfoBuilder()
-                        .WithAlleleName("999:999")
-                        .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
-                        .WithMatchingGGroup("patient-g-group")
-                        .WithMatchingPGroup("patient-p-group")
-                        .Build() })
+                    .WithAlleleScoringInfos(new[]
+                    {
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithAlleleName("999:999")
+                            .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                            .WithMatchingGGroup("patient-g-group")
+                            .WithMatchingPGroup("patient-p-group")
+                            .Build()
+                    })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -922,7 +930,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -942,8 +950,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { sharedGGroup })
-                    .WithMatchingPGroups(new[] { sharedPGroup })
+                    .WithMatchingGGroups(new[] {sharedGGroup})
+                    .WithMatchingPGroups(new[] {sharedPGroup})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -963,7 +971,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -983,8 +991,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { sharedGGroup })
-                    .WithMatchingPGroups(new[] { sharedPGroup })
+                    .WithMatchingGGroups(new[] {sharedGGroup})
+                    .WithMatchingPGroups(new[] {sharedPGroup})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -992,12 +1000,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] { new SingleAlleleScoringInfoBuilder()
-                        .WithAlleleName("999:999")
-                        .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
-                        .WithMatchingGGroup(sharedGGroup)
-                        .WithMatchingPGroup(sharedPGroup)
-                        .Build()})
+                    .WithAlleleScoringInfos(new[]
+                    {
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithAlleleName("999:999")
+                            .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                            .WithMatchingGGroup(sharedGGroup)
+                            .WithMatchingPGroup(sharedPGroup)
+                            .Build()
+                    })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1006,7 +1017,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1026,8 +1037,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { sharedGGroup })
-                    .WithMatchingPGroups(new[] { sharedPGroup })
+                    .WithMatchingGGroups(new[] {sharedGGroup})
+                    .WithMatchingPGroups(new[] {sharedPGroup})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1035,8 +1046,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { sharedGGroup })
-                    .WithMatchingPGroups(new[] { sharedPGroup })
+                    .WithMatchingGGroups(new[] {sharedGGroup})
+                    .WithMatchingPGroups(new[] {sharedPGroup})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1045,7 +1056,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1063,8 +1074,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var patientResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { "patient-g-group" })
-                    .WithMatchingPGroups(new[] { "patient-p-group" })
+                    .WithMatchingGGroups(new[] {"patient-g-group"})
+                    .WithMatchingPGroups(new[] {"patient-p-group"})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1080,7 +1091,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1117,7 +1128,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1142,12 +1153,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[]{ new SingleAlleleScoringInfoBuilder()
-                        .WithAlleleName("999:999")
-                        .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
-                        .WithMatchingGGroup("patient-g-group")
-                        .WithMatchingPGroup("patient-p-group")
-                        .Build() })
+                    .WithAlleleScoringInfos(new[]
+                    {
+                        new SingleAlleleScoringInfoBuilder()
+                            .WithAlleleName("999:999")
+                            .WithAlleleTypingStatus(new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna))
+                            .WithMatchingGGroup("patient-g-group")
+                            .WithMatchingPGroup("patient-p-group")
+                            .Build()
+                    })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1156,7 +1170,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1181,8 +1195,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorResult = new HlaScoringLookupResultBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { "patient-g-group" })
-                    .WithMatchingPGroups(new[] { "patient-p-group" })
+                    .WithMatchingGGroups(new[] {"patient-g-group"})
+                    .WithMatchingPGroups(new[] {"patient-p-group"})
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1191,7 +1205,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1224,7 +1238,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] { MatchOrientation.Direct });
+            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
             actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
         }
@@ -1245,22 +1259,22 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             var consolidatedMolecularAtB = new HlaScoringLookupResultBuilder()
                 .AtLocus(Locus.B)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] { "shared-g-group" })
+                    .WithMatchingGGroups(new[] {"shared-g-group"})
                     .Build())
                 .Build();
 
             var serologyAtDrb1 = new HlaScoringLookupResultBuilder()
                 .AtLocus(Locus.Drb1)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] { new SerologyEntry("shared-not-split", SerologySubtype.NotSplit, true) })
+                    .WithMatchingSerologies(new[] {new SerologyEntry("shared-not-split", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             patientLookupResults.SetAtLocus(Locus.A, singleAlleleAtA);
             patientLookupResults.SetAtLocus(Locus.B, consolidatedMolecularAtB);
-            patientLookupResults.SetAtLocus(Locus.Drb1, serologyAtDrb1);        
-            
+            patientLookupResults.SetAtLocus(Locus.Drb1, serologyAtDrb1);
+
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
             donorLookupResults.SetAtLocus(Locus.A, singleAlleleAtA);
             donorLookupResults.SetAtLocus(Locus.B, consolidatedMolecularAtB);
@@ -1268,7 +1282,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
             var expectedGradingResultAtA = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
             var expectedGradingResultAtB = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
             var expectedGradingResultAtDrb1 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
@@ -1282,7 +1296,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
             // both grades should be Split, in both orientations
             actualGradingResults.Drb1.Position1.ShouldBeEquivalentTo(expectedGradingResultAtDrb1);
             actualGradingResults.Drb1.Position2.ShouldBeEquivalentTo(expectedGradingResultAtDrb1);
-
         }
 
         private static PhenotypeInfo<IHlaScoringLookupResult> BuildLookupResultsAtMatchedLocus(

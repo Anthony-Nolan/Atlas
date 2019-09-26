@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
 
     public class GradingService : IGradingService
     {
-        private readonly IMatchGradeCache matchGradeCache;
+        private readonly IScoringCache scoringCache;
 
         private class LocusMatchGrades
         {
@@ -49,10 +49,10 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
         private const MatchGrade DefaultMatchGradeForUntypedLocus = MatchGrade.PGroup;
         private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
-        public GradingService(IPermissiveMismatchCalculator permissiveMismatchCalculator, IMatchGradeCache matchGradeCache)
+        public GradingService(IPermissiveMismatchCalculator permissiveMismatchCalculator, IScoringCache scoringCache)
         {
             this.permissiveMismatchCalculator = permissiveMismatchCalculator;
-            this.matchGradeCache = matchGradeCache;
+            this.scoringCache = scoringCache;
         }
 
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
@@ -128,7 +128,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
                 return DefaultMatchGradeForUntypedLocus;
             }
 
-            return matchGradeCache.GetOrAddMatchGrade(patientLookupResult.Locus, patientLookupResult.LookupName, donorLookupResult.LookupName,
+            return scoringCache.GetOrAddMatchGrade(patientLookupResult.Locus, patientLookupResult.LookupName, donorLookupResult.LookupName,
                 c =>
                 {
                     var calculator = GradingCalculatorFactory.GetGradingCalculator(
