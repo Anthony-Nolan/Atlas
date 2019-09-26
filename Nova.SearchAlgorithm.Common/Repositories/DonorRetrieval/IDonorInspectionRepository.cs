@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval
     public interface IDonorInspectionRepository
     {
         Task<DonorResult> GetDonor(int donorId);
-        Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds);
+        Task<Dictionary<int, DonorResult>> GetDonors(IEnumerable<int> donorIds);
         Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
     }
 }

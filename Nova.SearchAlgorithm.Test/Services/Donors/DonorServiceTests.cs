@@ -39,14 +39,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         [Test]
         public async Task CreateOrUpdateDonorBatch_WhenDonorDoesNotExist_CreatesDonor()
         {
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<DonorResult>(),
-                new List<DonorResult> { new DonorResult() });
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult>(),
+                new Dictionary<int, DonorResult> {{0, new DonorResult()}});
 
             var inputDonor = new InputDonor
             {
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] {inputDonor});
 
             await updateRepository.Received()
                 .InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
@@ -59,9 +59,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             {
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> {{0, new DonorResult()}});
 
-            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] {inputDonor});
 
             await updateRepository.Received()
                 .UpdateDonorBatch(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
@@ -72,9 +72,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             const int donorId = 123;
 
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new[] { new DonorResult() });
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> {{0, new DonorResult()}});
 
-            await donorService.SetDonorBatchAsUnavailableForSearch(new[] { donorId });
+            await donorService.SetDonorBatchAsUnavailableForSearch(new[] {donorId});
 
             await updateRepository.Received().SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }

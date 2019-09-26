@@ -221,8 +221,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor1, inputDonor2 });
 
             var donors = (await donorInspectionRepository.GetDonors(new[] { inputDonor1.DonorId, inputDonor2.DonorId })).ToList();
-            donors.First().IsAvailableForSearch.Should().BeTrue();
-            donors.Last().IsAvailableForSearch.Should().BeTrue();
+            donors.First().Value.IsAvailableForSearch.Should().BeTrue();
+            donors.Last().Value.IsAvailableForSearch.Should().BeTrue();
         }
 
         [Test]
@@ -236,8 +236,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.SetDonorBatchAsUnavailableForSearch(inputDonorIds);
 
             var donors = (await donorInspectionRepository.GetDonors(inputDonorIds)).ToList();
-            donors.First().IsAvailableForSearch.Should().BeFalse();
-            donors.Last().IsAvailableForSearch.Should().BeFalse();
+            donors.First().Value.IsAvailableForSearch.Should().BeFalse();
+            donors.Last().Value.IsAvailableForSearch.Should().BeFalse();
         }
 
         [Test]
@@ -254,8 +254,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateOrUpdateDonorBatch(inputDonors);
 
             var donors = (await donorInspectionRepository.GetDonors(inputDonorIds)).ToList();
-            donors.First().IsAvailableForSearch.Should().BeTrue();
-            donors.Last().IsAvailableForSearch.Should().BeTrue();
+            donors.First().Value.IsAvailableForSearch.Should().BeTrue();
+            donors.Last().Value.IsAvailableForSearch.Should().BeTrue();
         }
 
         [Test]

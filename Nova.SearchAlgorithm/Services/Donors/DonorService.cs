@@ -62,7 +62,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<InputDonor> inputDonors)
         {
             var existingDonors = await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId));
-            return existingDonors.Select(d => d.DonorId);
+            return existingDonors.Keys;
         }
 
         private async Task CreateDonorBatch(IEnumerable<InputDonor> newDonors)

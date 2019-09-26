@@ -1,3 +1,4 @@
+using System;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.ApplicationInsights;
@@ -18,6 +19,7 @@ using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Helpers;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Data;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
@@ -40,15 +42,14 @@ using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Services.Search;
+using Nova.SearchAlgorithm.Services.Search.Matching;
+using Nova.SearchAlgorithm.Services.Search.Scoring;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
-using System;
-using Nova.SearchAlgorithm.MatchingDictionary.Caching;
-using Nova.SearchAlgorithm.Services.Search.Scoring;
-using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
