@@ -177,7 +177,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 return new NotificationsClient(settings.ConnectionString, settings.NotificationsTopic, settings.AlertsTopic);
             });
 
-            services.AddSingleton<IScoringCache, ScoringCache>();
+            services.AddScoped<IScoringCache, ScoringCache>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
