@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             {
                 return new SerologyGradingCalculator();
             }
-            // If compaing a single null allele to a non-single allele,
+            // If comparing a single null allele to a non-single allele,
             // as we are ignoring null alleles within allele strings, we can consider this a null vs. expressing comparison
             if (IsSingleNullAllele(patientInfo) ^ IsSingleNullAllele(donorInfo))
             {

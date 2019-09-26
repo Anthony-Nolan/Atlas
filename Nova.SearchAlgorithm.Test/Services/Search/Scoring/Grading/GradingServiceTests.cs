@@ -11,6 +11,10 @@ using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using LazyCache;
+using LazyCache.Providers;
+using Microsoft.Extensions.Caching.Memory;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
@@ -24,7 +28,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
-            gradingService = new GradingService(permissiveMismatchCalculator);
+            var matchGradeCache = new MatchGradeCache(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))));
+            
+            gradingService = new GradingService(permissiveMismatchCalculator, matchGradeCache);
 
             defaultSerologyResult =
                 new HlaScoringLookupResultBuilder()
