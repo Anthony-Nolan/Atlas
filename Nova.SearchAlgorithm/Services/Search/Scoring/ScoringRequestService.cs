@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Extensions;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Services.Search.Scoring;
 
 namespace Nova.SearchAlgorithm.Services.Scoring
 {

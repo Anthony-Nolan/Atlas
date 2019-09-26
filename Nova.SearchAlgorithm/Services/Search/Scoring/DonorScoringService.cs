@@ -1,20 +1,20 @@
-﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Config;
-using Nova.SearchAlgorithm.Config;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.Scoring
+namespace Nova.SearchAlgorithm.Services.Search.Scoring
 {
     public interface IDonorScoringService
     {
@@ -37,8 +37,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider
-        )
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.gradingService = gradingService;
@@ -54,15 +53,16 @@ namespace Nova.SearchAlgorithm.Services.Scoring
         {
             var patientScoringLookupResult = await GetHlaScoringResults(patientHla);
 
-            var matchAndScoreResults = await Task.WhenAll(matchResults
-                .Select(async matchResult =>
-                {
-                    var lookupResult = await GetHlaScoringResults(matchResult.Donor.HlaNames);
-                    var scoreResult = ScoreDonorAndPatient(lookupResult, patientScoringLookupResult);
-                    return CombineMatchAndScoreResults(matchResult, scoreResult);
-                })
-                .ToList()
-            );
+            var matchAndScoreResults = new List<MatchAndScoreResult>();
+
+            foreach (var matchResult in matchResults)
+            {
+                var lookupResult = await GetHlaScoringResults(matchResult.Donor.HlaNames);
+
+                var scoreResult = ScoreDonorAndPatient(lookupResult, patientScoringLookupResult);
+
+                matchAndScoreResults.Add(CombineMatchAndScoreResults(matchResult, scoreResult));
+            }
 
             return rankingService.RankSearchResults(matchAndScoreResults);
         }
@@ -146,7 +146,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring
 
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
-            return hla != null 
+            return hla != null
                 ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion())
                 : null;
         }

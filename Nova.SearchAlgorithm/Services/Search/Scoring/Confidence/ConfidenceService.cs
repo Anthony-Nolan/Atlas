@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using System;
 using System.Linq;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 {
@@ -18,10 +19,12 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
     public class ConfidenceService : IConfidenceService
     {
         private readonly IConfidenceCalculator confidenceCalculator;
+        private readonly IScoringCache scoringCache;
 
-        public ConfidenceService(IConfidenceCalculator confidenceCalculator)
+        public ConfidenceService(IConfidenceCalculator confidenceCalculator, IScoringCache scoringCache)
         {
             this.confidenceCalculator = confidenceCalculator;
+            this.scoringCache = scoringCache;
         }
 
         public PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
@@ -78,7 +81,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
             IHlaScoringLookupResult patientLookupResult,
             PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
         {
-            return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, position));
+            return GetConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, position));
         }
 
         private MatchConfidence CalculateConfidenceForCrossMatch(
@@ -90,12 +93,21 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
             switch (position)
             {
                 case TypePosition.One:
-                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePosition.Two));
+                    return GetConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePosition.Two));
                 case TypePosition.Two:
-                    return confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePosition.One));
+                    return GetConfidence(patientLookupResult, donorLookupResults.DataAtPosition(locus, TypePosition.One));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
+        }
+
+        private MatchConfidence GetConfidence(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResults)
+        {
+            return scoringCache.GetOrAddMatchConfidence(
+                patientLookupResult?.Locus,
+                patientLookupResult?.LookupName,
+                donorLookupResults?.LookupName,
+                c => confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults));
         }
     }
 }

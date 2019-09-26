@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +13,21 @@ namespace Nova.SearchAlgorithm.Api
         private readonly IConfiguration configuration;
 
         // Configuration has been set up by the framework via WebHost.CreateDefaultBuilder
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            this.configuration = configuration;
+            // TODO: Find a better setup that works for both validation tests and local user-secrets
+            if (!env.ContentRootPath.Contains("Test"))
+            {
+                var builder = new ConfigurationBuilder();
+                builder.AddConfiguration(configuration);
+                builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                builder.AddUserSecrets(Assembly.GetExecutingAssembly());
+                this.configuration = builder.Build();
+            }
+            else
+            {
+                this.configuration = configuration;
+            }
         }
         
         // This method gets called by the runtime. Use this method to add services to the container.

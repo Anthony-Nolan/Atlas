@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
+using Nova.SearchAlgorithm.Services.Search.Scoring;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring
 {

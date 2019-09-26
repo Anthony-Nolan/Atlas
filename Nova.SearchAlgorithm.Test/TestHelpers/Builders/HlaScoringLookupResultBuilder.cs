@@ -1,4 +1,5 @@
-﻿using Nova.SearchAlgorithm.Common.Models;
+﻿using System;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
@@ -13,7 +14,8 @@ namespace Nova.SearchAlgorithm.Test.Builders
         {
             result = new HlaScoringLookupResult(
                 Locus.A,
-                "lookup-name",
+                // Scoring information is cached per-lookup name - so these should be unique by default to avoid cache key collision
+                Guid.NewGuid().ToString(),
                 LookupNameCategory.OriginalAllele,
                 new SingleAlleleScoringInfoBuilder().Build()
             );

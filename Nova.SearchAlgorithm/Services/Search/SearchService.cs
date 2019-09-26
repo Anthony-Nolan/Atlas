@@ -12,6 +12,7 @@ using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Scoring;
+using Nova.SearchAlgorithm.Services.Search.Scoring;
 using Nova.Utils.ApplicationInsights;
 using SearchResult = Nova.SearchAlgorithm.Client.Models.SearchResults.SearchResult;
 

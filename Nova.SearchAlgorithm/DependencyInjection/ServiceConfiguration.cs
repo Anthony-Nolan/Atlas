@@ -47,6 +47,8 @@ using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using System;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
+using Nova.SearchAlgorithm.Services.Search.Scoring;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -174,6 +176,8 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
                 return new NotificationsClient(settings.ConnectionString, settings.NotificationsTopic, settings.AlertsTopic);
             });
+
+            services.AddSingleton<IScoringCache, ScoringCache>();
         }
 
         public static void RegisterDataServices(this IServiceCollection services)
