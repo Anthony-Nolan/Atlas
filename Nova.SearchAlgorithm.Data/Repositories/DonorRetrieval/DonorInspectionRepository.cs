@@ -74,12 +74,12 @@ ON m.DonorId = DonorIds.Id
             return results;
         }
 
-        public async Task<IEnumerable<DonorResult>> GetDonors(IEnumerable<int> donorIds)
+        public async Task<Dictionary<int, DonorResult>> GetDonors(IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
             if (!donorIds.Any())
             {
-                return new List<DonorResult>();
+                return new Dictionary<int, DonorResult>();
             }
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
@@ -94,7 +94,7 @@ AS DonorIds
 ON DonorId = DonorIds.Id
 ";
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
-                return donors.Select(d => d.ToDonorResult());
+                return donors.Select(d => d.ToDonorResult()).ToDictionary(d => d.DonorId, d => d);
             }
         }
     }

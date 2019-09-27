@@ -1,14 +1,15 @@
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Nova.SearchAlgorithm.Services.Matching;
+using Nova.Utils.ApplicationInsights;
 
-namespace Nova.SearchAlgorithm.Services.Matching
+namespace Nova.SearchAlgorithm.Services.Search.Matching
 {
     public interface IDonorMatchingService
     {
@@ -25,6 +26,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public DonorMatchingService(
             IDatabaseDonorMatchingService databaseDonorMatchingService,
+            // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
@@ -41,22 +43,22 @@ namespace Nova.SearchAlgorithm.Services.Matching
         {
             var lociToMatchFirst = matchCriteriaAnalyser.LociToMatchFirst(criteria).ToList();
             var lociToMatchSecond = criteria.LociWithCriteriaSpecified().Except(lociToMatchFirst).ToList();
-            
+
             var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst);
             var matchesAtAllLoci = await PerformMatchingPhaseTwo(criteria, lociToMatchSecond, initialMatches);
-            return await PerformMatchingPhaseThree(criteria, matchesAtAllLoci);
+            return (await PerformMatchingPhaseThree(criteria, matchesAtAllLoci)).Values;
         }
 
         /// <summary>
-        /// The first phase of matching must perform a full scan of the MatchingHla tables for the specified loci
-        /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase
+        /// The first phase of matching must perform a full scan of the MatchingHla tables for the specified loci.
+        /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
-        private async Task<IEnumerable<MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, IList<Locus> loci)
+        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var matches = (await databaseDonorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, loci);
 
             logger.SendTrace("Matching timing: Phase 1 complete", LogLevel.Info, new Dictionary<string, string>
             {
@@ -69,21 +71,19 @@ namespace Nova.SearchAlgorithm.Services.Matching
         }
 
         /// <summary>
-        /// The second phase of matching needs only consider the donors matched by phase 1, and filter out mismatches at the remaining loci
+        /// The second phase of matching needs only consider the donors matched by phase 1, and filter out mismatches at the remaining loci.
         /// </summary>
-        private async Task<IEnumerable<MatchResult>> PerformMatchingPhaseTwo(
+        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseTwo(
             AlleleLevelMatchCriteria criteria,
-            IList<Locus> loci,
-            IEnumerable<MatchResult> initialMatches
+            ICollection<Locus> loci,
+            IDictionary<int, MatchResult> initialMatches
         )
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
-            var matchesAtAllLoci =
-                (await databaseDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches))
-                .ToList();
-            
+
+            var matchesAtAllLoci = await databaseDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
+
             logger.SendTrace("Matching timing: Phase 2 complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
@@ -97,44 +97,44 @@ namespace Nova.SearchAlgorithm.Services.Matching
         /// The third phase of matching does not need to query the p-group matching tables.
         /// It will assess the matches from all individual loci against the remaining search criteria
         /// </summary>
-        private async Task<IEnumerable<MatchResult>> PerformMatchingPhaseThree(
+        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseThree(
             AlleleLevelMatchCriteria criteria,
-            IEnumerable<MatchResult> matches
+            IDictionary<int, MatchResult> matches
         )
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
-            var filteredMatchesByMatchCriteria = matches.Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
+
+            var filteredMatchesByMatchCriteria = matches
+                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
+                .ToDictionary(m => m.Key, m => m.Value);
 
             var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
 
             var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
-                .Where(m => matchFilteringService.IsAvailableForSearch(m))
-                .Where(m => matchFilteringService.FulfilsRegistryCriteria(m, criteria))
-                .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m, criteria))
-                .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m, criteria))
+                .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
+                .Where(m => matchFilteringService.FulfilsRegistryCriteria(m.Value, criteria))
+                .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
+                .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
                 .ToList();
 
             // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
-            filteredMatchesByDonorInformation.ForEach(m => m.MarkMatchingDataFullyPopulated());
-            
+            filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
+
             logger.SendTrace("Matching timing: Phase 3 complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"Donors", filteredMatchesByDonorInformation.Count.ToString()},
             });
-            return filteredMatchesByDonorInformation;
+            return filteredMatchesByDonorInformation.ToDictionary(m => m.Key, m => m.Value);
         }
 
-        private async Task<IEnumerable<MatchResult>> PopulateDonorData(IEnumerable<MatchResult> filteredMatchesByMatchCriteria)
+        private async Task<IDictionary<int, MatchResult>> PopulateDonorData(Dictionary<int, MatchResult> filteredMatchesByMatchCriteria)
         {
-            filteredMatchesByMatchCriteria = filteredMatchesByMatchCriteria.ToList();
-            var donorIds = filteredMatchesByMatchCriteria.Select(m => m.DonorId);
-            var donors = (await donorInspectionRepository.GetDonors(donorIds)).ToList();
-            foreach (var match in filteredMatchesByMatchCriteria)
+            var donors = await donorInspectionRepository.GetDonors(filteredMatchesByMatchCriteria.Keys);
+            foreach (var (donorId, matchResult) in filteredMatchesByMatchCriteria)
             {
-                match.Donor = donors.Single(d => d.DonorId == match.DonorId);
+                matchResult.Donor = donors[donorId];
             }
 
             return filteredMatchesByMatchCriteria;
