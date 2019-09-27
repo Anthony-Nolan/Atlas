@@ -131,7 +131,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
 
         private async Task<IDictionary<int, MatchResult>> PopulateDonorData(Dictionary<int, MatchResult> filteredMatchesByMatchCriteria)
         {
-            var donors = (await donorInspectionRepository.GetDonors(filteredMatchesByMatchCriteria.Keys));
+            var donors = await donorInspectionRepository.GetDonors(filteredMatchesByMatchCriteria.Keys);
             foreach (var (donorId, matchResult) in filteredMatchesByMatchCriteria)
             {
                 matchResult.Donor = donors[donorId];
