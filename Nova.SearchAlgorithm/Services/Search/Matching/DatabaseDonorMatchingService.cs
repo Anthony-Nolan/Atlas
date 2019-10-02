@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Client.Models;
@@ -12,6 +13,7 @@ using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Search.Matching
 {
@@ -39,18 +41,21 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
+        private readonly ILogger logger;
         private readonly IPGroupRepository pGroupRepository;
 
         public DatabaseDonorMatchingService(
             IActiveRepositoryFactory repositoryFactory,
             IMatchFilteringService matchFilteringService,
-            IDatabaseFilteringAnalyser databaseFilteringAnalyser
+            IDatabaseFilteringAnalyser databaseFilteringAnalyser,
+            ILogger logger
         )
         {
             donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.matchFilteringService = matchFilteringService;
             this.databaseFilteringAnalyser = databaseFilteringAnalyser;
+            this.logger = logger;
         }
 
         public async Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
@@ -64,9 +69,16 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
                 throw new NotImplementedException();
             }
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var results = await Task.WhenAll(loci.Select(l =>
                 FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l)))
             );
+
+            logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms",
+                LogLevel.Info);
+            stopwatch.Restart();
 
             var matches = results
                 .SelectMany(r => r)
@@ -80,17 +92,21 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
                     };
                     foreach (var locus in loci)
                     {
-                        var matchesAtLocus = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
-                        var locusMatchDetails = matchesAtLocus.Value != null
-                            ? matchesAtLocus.Value.Match
+                        var (key, donorAndMatchForLocus) = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
+                        var locusMatchDetails = donorAndMatchForLocus != null
+                            ? donorAndMatchForLocus.Match
                             : new LocusMatchDetails {MatchCount = 0};
                         result.SetMatchDetailsForLocus(locus, locusMatchDetails);
                     }
 
                     return result;
                 })
+                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)))
                 .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
-                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)));
+                .ToList();
+
+            logger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            stopwatch.Restart();
 
             return matches.ToDictionary(m => m.DonorId, m => m);
         }
