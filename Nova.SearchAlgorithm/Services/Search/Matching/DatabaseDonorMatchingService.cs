@@ -83,6 +83,8 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
             var matches = results
                 .SelectMany(r => r)
                 .GroupBy(m => m.Key)
+                // If no mismatches are allowed - donors must be matched at all provided loci. This check performed upfront to improve performance of such searches 
+                .Where(g => criteria.DonorMismatchCount != 0 || g.Count() == loci.Count)
                 .Select(matchesForDonor =>
                 {
                     var donorId = matchesForDonor.Key;
