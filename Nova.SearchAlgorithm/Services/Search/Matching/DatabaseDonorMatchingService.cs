@@ -165,6 +165,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
                 Registries = registriesToSearch,
                 PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
                 PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+                MismatchCount = criteria.MismatchCount,
             };
 
             var filteringOptions = new MatchingFilteringOptions
@@ -194,6 +195,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
                 Registries = registriesToSearch,
                 PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
                 PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+                MismatchCount = criteria.MismatchCount,
             };
 
             var matches = (await donorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))
