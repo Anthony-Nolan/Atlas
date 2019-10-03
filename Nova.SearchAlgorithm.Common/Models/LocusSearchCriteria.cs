@@ -9,5 +9,6 @@ namespace Nova.SearchAlgorithm.Common.Models
         public IEnumerable<RegistryCode> Registries { get; set; }
         public IEnumerable<int> PGroupIdsToMatchInPositionOne { get; set; }
         public IEnumerable<int> PGroupIdsToMatchInPositionTwo { get; set; }
+        public int MismatchCount { get; set; }
     }
 }
