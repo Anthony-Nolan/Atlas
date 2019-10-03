@@ -11,6 +11,7 @@ using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.Utils.ApplicationInsights;
+using Polly;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
@@ -92,7 +93,19 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private async Task<SearchableDonorInformationPage> FetchDonorPage(int nextId)
         {
             logger.SendTrace($"Requesting donor page size {DonorPageSize} from ID {nextId} onwards", LogLevel.Trace);
-            return await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId);
+
+            const int retryCount = 5;
+            var policy = Policy.Handle<Exception>().WaitAndRetryAsync(
+                retryCount: retryCount,
+                sleepDurationProvider: attempt => TimeSpan.FromMilliseconds(1000),
+                onRetry: (e, t) =>
+                {
+                    logger.SendTrace(
+                        $"Failed to fetch donors from Oracle with exception {e}. Retrying up to {retryCount} times.",
+                        LogLevel.Error
+                    );
+                });
+            return await policy.ExecuteAsync(async () => await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId));
         }
     }
 }
