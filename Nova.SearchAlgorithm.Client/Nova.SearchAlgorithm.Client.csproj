@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <VersionPrefix>8.0.0</VersionPrefix>
+        <VersionPrefix>8.0.1</VersionPrefix>
         <RootNamespace>Nova.SearchAlgorithm.Client</RootNamespace>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
