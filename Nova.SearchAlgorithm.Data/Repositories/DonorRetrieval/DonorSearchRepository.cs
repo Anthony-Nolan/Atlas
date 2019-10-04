@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
@@ -13,13 +14,17 @@ using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Repositories.Donors;
+using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {
     public class DonorSearchRepository : Repository, IDonorSearchRepository
     {
-        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        private readonly ILogger logger;
+
+        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, ILogger logger) : base(connectionStringProvider)
         {
+            this.logger = logger;
         }
 
         /// <summary>
@@ -39,7 +44,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
                 // This method does not return untyped donors, so cannot be used for any loci that are not guaranteed to be typed.  
                 throw new ArgumentOutOfRangeException();
             }
-            
+
             var results = await Task.WhenAll(
                 GetAllDonorsForPGroupsAtLocus(
                     locus,
@@ -57,6 +62,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
                 )
             );
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             var position1Matches = results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus));
             var position2Matches = results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus));
 
@@ -70,6 +78,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
                 );
             }
 
+            logger.SendTrace($"Match Timing: Donor repo. Manipulated data for locus: {locus} in {stopwatch.ElapsedMilliseconds}ms", LogLevel.Info);
             return groupedResults.SelectMany(g => g);
         }
 
@@ -165,6 +174,9 @@ GROUP BY InnerDonorId, TypePosition";
             MatchingFilteringOptions filteringOptions
         )
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             pGroups = pGroups.ToList();
 
             var filterQuery = "";
@@ -184,7 +196,6 @@ ON m.DonorId = d.DonorId
 ";
             }
 
-
             var sql = $@"
 SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 
@@ -201,7 +212,9 @@ GROUP BY m.DonorId, TypePosition";
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
+                var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
+                logger.SendTrace($"Match Timing: Donor repo. Fetched donors at locus: {locus} in {stopwatch.ElapsedMilliseconds}ms", LogLevel.Info);
+                return matches;
             }
         }
 
