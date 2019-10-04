@@ -174,10 +174,19 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
                 ShouldFilterOnRegistry = databaseFilteringAnalyser.ShouldFilterOnRegistriesInDatabase(repoCriteria),
             };
 
-            var matches = (await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions))
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
+            var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
+            logger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            stopwatch.Restart();
+            
+            var matches = matchesAtLocus
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 
+            logger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            
             return matches;
         }
 
@@ -208,12 +217,13 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
         private static DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
         {
             var donorId = group.Key;
+            var potentialHlaMatchRelations = group.ToList();
             return new DonorAndMatchForLocus
             {
                 DonorId = donorId,
                 Match = new LocusMatchDetails
                 {
-                    MatchCount = DirectMatch(group.ToList()) || CrossMatch(group.ToList()) ? 2 : 1
+                    MatchCount = DirectMatch(potentialHlaMatchRelations) || CrossMatch(potentialHlaMatchRelations) ? 2 : 1
                 },
                 Locus = locus
             };
