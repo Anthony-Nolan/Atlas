@@ -8,6 +8,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Search;
 
@@ -33,7 +34,7 @@ namespace Nova.SearchAlgorithm.Functions.Functions
             }
             catch (ValidationException e)
             {
-                return new BadRequestObjectResult(e.Errors);
+                return new BadRequestObjectResult(e.ToValidationErrorsModel());
             }
         }
 
