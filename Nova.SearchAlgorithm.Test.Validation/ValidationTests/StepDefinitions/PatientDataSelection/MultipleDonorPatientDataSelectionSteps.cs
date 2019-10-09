@@ -76,6 +76,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.P
                 new DatabaseDonorSpecification
                 {
                     ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.A && l != Locus.B),
+                },
+                // 1 mismatch at DQB1
+                new DatabaseDonorSpecification
+                {
+                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.Dqb1),
+                },
+                // No mismatches
+                new DatabaseDonorSpecification
+                {
+                    ShouldMatchGenotype = new PhenotypeInfo<bool>(true),
                 }
             };
 

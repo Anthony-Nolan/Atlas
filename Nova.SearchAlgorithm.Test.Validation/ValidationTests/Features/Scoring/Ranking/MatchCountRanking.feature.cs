@@ -71,10 +71,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 7/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs78()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 10/8 vs 8/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_108Vs88()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 7/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 10/8 vs 8/8", null, ((string[])(null)));
 #line 5
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -85,18 +85,18 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 8
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
-    testRunner.Then("an 8/8 result should be returned above a 7/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("a match at DQB1 should be returned above a mismatch at DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 6/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs68()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 7/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs78()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 6/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 7/8", null, ((string[])(null)));
 #line 12
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -109,16 +109,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 16
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 17
-    testRunner.Then("an 8/8 result should be returned above a 6/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("an 8/8 result should be returned above a 7/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 5/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs58()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 6/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs68()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 5/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 6/8", null, ((string[])(null)));
 #line 19
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -131,16 +131,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 23
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 24
-    testRunner.Then("an 8/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("an 8/8 result should be returned above a 6/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 4/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs48()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 5/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs58()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 4/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 5/8", null, ((string[])(null)));
 #line 26
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -153,16 +153,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 30
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 31
-    testRunner.Then("an 8/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("an 8/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 7/8 vs 6/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_78Vs68()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 8/8 vs 4/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_88Vs48()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 6/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 4/8", null, ((string[])(null)));
 #line 33
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -175,16 +175,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 37
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 38
-    testRunner.Then("a 7/8 result should be returned above a 6/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("an 8/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 7/8 vs 5/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_78Vs58()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 7/8 vs 6/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_78Vs68()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 5/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 6/8", null, ((string[])(null)));
 #line 40
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -197,16 +197,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 44
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 45
-    testRunner.Then("a 7/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("a 7/8 result should be returned above a 6/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 7/8 vs 4/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_78Vs48()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 7/8 vs 5/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_78Vs58()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 4/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 5/8", null, ((string[])(null)));
 #line 47
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -219,16 +219,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 51
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 52
-    testRunner.Then("a 7/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("a 7/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 6/8 vs 5/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_68Vs58()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 7/8 vs 4/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_78Vs48()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 5/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 4/8", null, ((string[])(null)));
 #line 54
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -241,16 +241,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 58
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 59
-    testRunner.Then("a 6/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("a 7/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 6/8 vs 4/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_68Vs48()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 6/8 vs 5/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_68Vs58()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 4/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 5/8", null, ((string[])(null)));
 #line 61
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -263,16 +263,16 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 65
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 66
-    testRunner.Then("a 6/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("a 6/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 5/8 vs 4/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_58Vs48()
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 6/8 vs 4/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_68Vs48()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 5/8 vs 4/8", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 4/8", null, ((string[])(null)));
 #line 68
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -285,6 +285,28 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring.
 #line 72
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 73
+    testRunner.Then("a 6/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 5/8 vs 4/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_58Vs48()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 5/8 vs 4/8", null, ((string[])(null)));
+#line 75
+  this.ScenarioInitialize(scenarioInfo);
+            this.ScenarioStart();
+#line 76
+    testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 77
+    testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 78
+    testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 79
+    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 80
     testRunner.Then("a 5/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

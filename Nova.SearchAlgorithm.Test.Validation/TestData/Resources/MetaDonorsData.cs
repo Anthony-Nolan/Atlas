@@ -258,7 +258,6 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new DatabaseDonorSelectionCriteriaBuilder().Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, TypePosition.One).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
@@ -268,6 +267,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
                         .WithNonGenotypeAlleleAtLocus(Locus.B)
+                        .Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithNonGenotypeAlleleAtLocus(Locus.Dqb1)
+                        .Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder()
+                        .WithNonGenotypeAlleleAtPosition(Locus.Dqb1, TypePosition.One)
+                        .Build(),
+                    // Exact match must be last, to ensure ranking tests do not give a false positive.
+                    new DatabaseDonorSelectionCriteriaBuilder()
                         .Build(),
                 }
             },

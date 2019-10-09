@@ -18,7 +18,8 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 
         public MatchAndScoreResultBuilder WithMatchCountAtLocus(Locus locus, int matchCount)
         {
-            matchResultBuilder = matchResultBuilder.WithMatchCountAtLocus(locus, matchCount);    
+            matchResultBuilder = matchResultBuilder.WithMatchCountAtLocus(locus, matchCount);
+            scoreResultBuilder = scoreResultBuilder.WithMatchCountAtLocus(locus, matchCount);
             return this;
         }
         

@@ -232,6 +232,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return results.Find(r => r.TotalMatchCount == 5 && NumberOfLociSearched(r) == 4);
                 case "a 4/8 result":
                     return results.Find(r => r.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
+                case "a match at DQB1":
+                    return results.Find(r => r.SearchResultAtLocusDqb1.MatchCount == 2);
+                case "a mismatch at DQB1":
+                    return results.Find(r => r.SearchResultAtLocusDqb1.MatchCount < 2);
                 case "a full gDNA match":
                     return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.GDna));
                 case "a full cDNA match":
