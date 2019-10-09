@@ -147,7 +147,26 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
-        
+
+        /// <summary>
+        /// As match count is a product of the confidences, this method implicitly sets the
+        /// match count by setting an appropriate number of confidences to "Mismatch". 
+        /// </summary>
+        public ScoreResultBuilder WithMatchCountAtLocus(Locus locus, int matchCount)
+        {
+            switch (matchCount)
+            {
+                case 2:
+                    return this.WithMatchConfidenceAtLocus(locus, MatchConfidence.Definite);
+                case 1:
+                    return this.WithMatchConfidenceAtLocusPosition(locus, TypePosition.One, MatchConfidence.Mismatch);
+                case 0:
+                    return this.WithMatchConfidenceAtLocus(locus, MatchConfidence.Mismatch);
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
         public ScoreResult Build()
         {
             return scoreResult;
