@@ -178,20 +178,6 @@ namespace Nova.SearchAlgorithm.Common.Models
             };
         }
 
-        // Aggregates each locus alongside its two values
-        public IEnumerable<R> FlatMap<R>(Func<Locus, T, T, R> mapping)
-        {
-            return new List<R>
-            {
-                mapping(Locus.A, A.Position1, A.Position2),
-                mapping(Locus.B, B.Position1, B.Position2),
-                mapping(Locus.C, C.Position1, C.Position2),
-                mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
-                mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
-                mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2),
-            };
-        }
-
         public void EachPosition(Action<Locus, TypePosition, T> action)
         {
             action(Locus.A, TypePosition.One, A.Position1);
@@ -462,6 +448,86 @@ namespace Nova.SearchAlgorithm.Common.Models
         {
             SetAtPosition(locus, TypePosition.One, value);
             SetAtPosition(locus, TypePosition.Two, value);
+        }
+
+        public new IEnumerable<T> ToEnumerable()
+        {
+            return new List<T>
+            {
+                A.Position1,
+                A.Position2,
+                B.Position1,
+                B.Position2,
+                C.Position1,
+                C.Position2,
+                Dpb1.Position1,
+                Dpb1.Position2,
+                Dqb1.Position1,
+                Dqb1.Position2,
+                Drb1.Position1,
+                Drb1.Position2,
+            };
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = EqualityComparer<T>.Default.GetHashCode(A.Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(A.Position2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B.Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B.Position2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C.Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C.Position2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dpb1.Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dpb1.Position2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dqb1.Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dqb1.Position2);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Drb1.Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Drb1.Position2);
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
+        {
+            return !Equals(left, right);
+        }
+        
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((PhenotypeInfo<T>) obj);
+        }
+        
+        private bool Equals(Utils.PhenotypeInfo.PhenotypeInfo<T> other)
+        {
+            return EqualityComparer<T>.Default.Equals(A.Position1, other.A.Position1) &&
+                   EqualityComparer<T>.Default.Equals(A.Position2, other.A.Position2) &&
+                   EqualityComparer<T>.Default.Equals(B.Position1, other.B.Position1) &&
+                   EqualityComparer<T>.Default.Equals(B.Position2, other.B.Position2) &&
+                   EqualityComparer<T>.Default.Equals(C.Position1, other.C.Position1) &&
+                   EqualityComparer<T>.Default.Equals(C.Position2, other.C.Position2) &&
+                   EqualityComparer<T>.Default.Equals(Dpb1.Position1, other.Dpb1.Position1) &&
+                   EqualityComparer<T>.Default.Equals(Dpb1.Position2, other.Dpb1.Position2) &&
+                   EqualityComparer<T>.Default.Equals(Dqb1.Position1, other.Dqb1.Position1) &&
+                   EqualityComparer<T>.Default.Equals(Dqb1.Position2, other.Dqb1.Position2) &&
+                   EqualityComparer<T>.Default.Equals(Drb1.Position1, other.Drb1.Position1) &&
+                   EqualityComparer<T>.Default.Equals(Drb1.Position2, other.Drb1.Position2);
         }
 
         private class PositionInfo<R>
