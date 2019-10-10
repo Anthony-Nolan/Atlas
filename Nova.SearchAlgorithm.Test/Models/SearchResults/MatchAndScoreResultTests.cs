@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Test.Models.SearchResults
         [Test]
         public void PotentialMatchCount_OnlyCountsMatchesOfPotentialMatches()
         {
-            const int matchCountAtPotentialLoci = 5;
+            const int matchCountAtPotentialLoci = 2;
             var matchAndScoreResult = new MatchAndScoreResultBuilder()
                 .WithMatchCountAtLocus(Locus.A, 1)
                 .WithMatchCountAtLocus(Locus.B, 1)
@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Models.SearchResults
         public void PotentialMatchCount_WhenSomeLociAreNotMatched_DoesNotCountUnmatchedLoci()
         {
             
-            const int matchCountAtPotentialLoci = 5;
+            const int matchCountAtPotentialLoci = 2;
             var matchAndScoreResult = new MatchAndScoreResultBuilder()
                 .WithMatchCountAtLocus(Locus.A, matchCountAtPotentialLoci)
                 .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
