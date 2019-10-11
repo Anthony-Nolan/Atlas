@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Test.Builders;
@@ -9,6 +10,7 @@ using Nova.SearchAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
 {
@@ -70,6 +72,43 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName)
                     .WithAlleleTypingStatus(donorAlleleStatus).Build())
+                .Build();
+
+            var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
+
+            grade.Should().Be(MatchGrade.GDna);
+        }
+
+        /// <summary>
+        /// This is a regression test to cover a bug that arose from single alleles
+        /// being compared on all their properties to determine their equality.
+        /// The problem is that the Matching Serologies property is not always populated,
+        /// and so the incorrect match grade was being assigned,
+        /// despite the patient and donor having the same allele.
+        /// It is sufficient to compare alleles on their name property to determine
+        /// if they are the same.
+        /// </summary>
+        [Test]
+        public void CalculateGrade_BothTypingsAreExpressingAlleles_OnlyConsidersAlleleNameWhenDecidingMatchGrade()
+        {
+            const string sharedAlleleName = "999:999";
+
+            var patientAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(patientAlleleStatus)
+                    .WithMatchingSerologies(new List<SerologyEntry>())
+                    .Build())
+                .Build();
+
+            var donorAlleleStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
+                    .WithAlleleName(sharedAlleleName)
+                    .WithAlleleTypingStatus(donorAlleleStatus)
+                    .WithMatchingSerologies(new List<SerologyEntry> { new SerologyEntry("serology", SerologySubtype.Associated, true) })
+                    .Build())
                 .Build();
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);

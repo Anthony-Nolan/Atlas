@@ -41,7 +41,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Grading
             AlleleGradingInfo patientInfo,
             AlleleGradingInfo donorInfo)
         {
-            return patientInfo.ScoringInfo.Equals(donorInfo.ScoringInfo);
+            return patientInfo.Allele.Name == donorInfo.Allele.Name;
         }
 
         protected static bool IsFullGDnaSequence(AlleleTypingStatus typingStatus)
