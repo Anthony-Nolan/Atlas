@@ -8,6 +8,10 @@ using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {
@@ -26,13 +30,19 @@ namespace Nova.SearchAlgorithm.Services.Donors
         private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
+        private readonly ILogger logger;
+        private readonly INotificationsClient notificationsClient;
 
         public DonorService(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IActiveRepositoryFactory repositoryFactory)
+            IActiveRepositoryFactory repositoryFactory,
+            ILogger logger,
+            INotificationsClient notificationsClient)
         {
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
+            this.logger = logger;
+            this.notificationsClient = notificationsClient;
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
             donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
         }
@@ -87,17 +97,36 @@ namespace Nova.SearchAlgorithm.Services.Donors
             }
         }
 
-        private async Task<InputDonorWithExpandedHla[]> GetDonorsWithExpandedHla(IEnumerable<InputDonor> inputDonors)
+        private async Task<IEnumerable<InputDonorWithExpandedHla>> GetDonorsWithExpandedHla(IEnumerable<InputDonor> inputDonors)
         {
-            return await Task.WhenAll(inputDonors.Select(async d =>
+            var expandedDonors = await Task.WhenAll(inputDonors.Select(async d =>
                 {
-                    var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
-                    return CombineDonorAndExpandedHla(d, hla);
+                    try
+                    {
+                        var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
+                        return CombineDonorAndExpandedHla(d, hla);
+                    }
+                    catch (MatchingDictionaryException e)
+                    {
+                        var errorMessage = $"Could not process HLA for donor: {d.DonorId}. Exception: {e}. The donor will not be updated.";
+                        logger.SendTrace(
+                            errorMessage,
+                            LogLevel.Error
+                        );
+                        await notificationsClient.SendNotification(new Notification(
+                            "Could not update donor in search algorithm",
+                            $"Processing failed for donor {d.DonorId}. See Application Insights for full logs.",
+                            NotificationConstants.OriginatorName
+                        ));
+                        return null;
+                    }
                 }
             ));
+            return expandedDonors.Where(d => d != null);
         }
 
-        private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(InputDonor inputDonor,
+        private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(
+            InputDonor inputDonor,
             PhenotypeInfo<ExpandedHla> matchingHla)
         {
             return new InputDonorWithExpandedHla
