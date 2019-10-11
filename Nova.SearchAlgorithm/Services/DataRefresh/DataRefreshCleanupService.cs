@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services.AzureManagement;
@@ -32,8 +33,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
     public class DataRefreshCleanupService : IDataRefreshCleanupService
     {
-        private const string NotificationOriginator = "Nova.SearchAlgorithm";
-
         private const string CleanupInitiatedNotificationDescription =
             @"A manual teardown was requested, and the search algorithm has detected ongoing data-refresh jobs.
               Appropriate teardown is being run. The data refresh will need to be re-started once the reason for the server restart has been diagnosed and handled.";
@@ -87,7 +86,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await notificationsClient.SendNotification(new Notification(
                     notificationSummary,
                     CleanupInitiatedNotificationDescription,
-                    NotificationOriginator)
+                    NotificationConstants.OriginatorName)
                 );
                 await ScaleDatabase();
                 await EnableDonorManagementFunction();
@@ -110,7 +109,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                     "Data Refresh: Manual cleanup recommended.",
                     CleanupRecommendationAlertDescription,
                     Priority.High,
-                    NotificationOriginator
+                    NotificationConstants.OriginatorName
                 ));
             }
         }
