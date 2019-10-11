@@ -89,7 +89,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Grading
         /// if they are the same.
         /// </summary>
         [Test]
-        public void CalculateGrade_BothTypingsAreExpressingAlleles_OnlyConsidersAlleleNameWhenDecidingMatchGrade()
+        public void CalculateGrade_BothTypingsAreExpressingAlleles_IgnoresMatchingSerologiesWhenDecidingMatchGrade()
         {
             const string sharedAlleleName = "999:999";
 
