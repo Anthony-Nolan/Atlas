@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
             if (alleleNameLookupResult == null)
             {
-                throw new InvalidHlaException(locus, lookupName);
+                throw new InvalidHlaException(new HlaInfo(locus, lookupName));
             }
 
             return alleleNameLookupResult.CurrentAlleleNames;

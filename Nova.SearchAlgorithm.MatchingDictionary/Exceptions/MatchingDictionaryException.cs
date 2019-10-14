@@ -4,18 +4,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Exceptions
 {
     public class MatchingDictionaryException : Exception
     {
+        public HlaInfo HlaInfo { get; }
+
         public MatchingDictionaryException()
         {
         }
 
-        public MatchingDictionaryException(string message)
+        public MatchingDictionaryException(HlaInfo hlaInfo, string message)
             : base(message)
         {
+            HlaInfo = hlaInfo;
         }
 
-        public MatchingDictionaryException(string message, Exception inner)
+        public MatchingDictionaryException(HlaInfo hlaInfo, string message, Exception inner)
             : base(message, inner)
         {
+            HlaInfo = hlaInfo;
         }
     }
 }
