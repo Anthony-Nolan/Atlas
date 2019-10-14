@@ -103,6 +103,24 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             return this;
         }
         
+        public ScoreResultBuilder WithMatchGradeAtLocusPosition(Locus locus, TypePosition position, MatchGrade matchGrade)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            switch (position)
+            {
+                case TypePosition.One:
+                    locusScoreDetails.ScoreDetailsAtPosition1.MatchGrade = matchGrade;
+                    break;
+                case TypePosition.Two:
+                    locusScoreDetails.ScoreDetailsAtPosition2.MatchGrade = matchGrade;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
+            }
+            scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
+            return this;
+        }
+        
         public ScoreResultBuilder WithMatchGradeScoreAtLocus(Locus locus, int matchGradeScore)
         {
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
@@ -112,6 +130,17 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             return this;
         }
 
+        public ScoreResultBuilder WithMatchConfidenceAtAllLoci(MatchConfidence matchConfidence)
+        {
+            return this
+                .WithMatchConfidenceAtLocus(Locus.A, matchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.B, matchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.C, matchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, matchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dqb1, matchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Drb1, matchConfidence);
+        }
+        
         public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
         {
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);

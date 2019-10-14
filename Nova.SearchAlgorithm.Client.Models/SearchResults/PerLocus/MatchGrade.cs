@@ -6,9 +6,7 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
     [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchGrade
     {
-        /// <summary>
         /// Mismatch grades
-        /// </summary>
         Mismatch,
         PermissiveMismatch,
 

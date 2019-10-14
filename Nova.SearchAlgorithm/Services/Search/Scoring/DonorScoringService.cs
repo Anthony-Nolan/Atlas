@@ -12,6 +12,7 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Categorisation;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Search.Scoring
@@ -123,6 +124,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
                 scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
             }
 
+            scoreResult.MatchCategory = MatchCategoriser.CategoriseMatch(scoreResult);
             return scoreResult;
         }
 

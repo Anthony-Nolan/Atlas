@@ -319,5 +319,20 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
 
             results.Should().BeEquivalentTo(expectedSortedResults);
         }
+
+        [Test]
+        public async Task Score_AssignsMatchCategory()
+        {
+            var patientHla = new PhenotypeInfo<string>();
+            var result1 = new MatchResultBuilder().Build();
+            var result2 = new MatchResultBuilder().Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
+
+            foreach (var result in results.Select(r => r.ScoreResult))
+            {
+                result.MatchCategory.Should().NotBeNull();
+            }
+        }
     }
 }
