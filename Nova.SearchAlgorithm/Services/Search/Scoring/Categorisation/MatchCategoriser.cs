@@ -11,10 +11,10 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring.Categorisation
         {
             var overallMatchConfidence = scoreResult.OverallMatchConfidence;
 
-            if (overallMatchConfidence == MatchConfidence.Mismatch)
+            // The only way to have an overall confidence of mismatch with no per-position mismatch is for all mismatches to be permissive.
+            if (overallMatchConfidence == MatchConfidence.Mismatch && scoreResult.AllGrades.All(g => g != MatchGrade.Mismatch))
             {
-                // The only way to have an overall confidence of mismatch with no per-position mismatch is for all mismatches to be permissive.
-                return scoreResult.AllGrades.Any(g => g == MatchGrade.Mismatch) ? MatchCategory.Mismatch : MatchCategory.PermissiveMismatch;
+                return MatchCategory.PermissiveMismatch;
             }
 
             return MapConfidenceToCategory(overallMatchConfidence);
