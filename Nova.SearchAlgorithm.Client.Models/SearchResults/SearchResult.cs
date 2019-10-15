@@ -1,4 +1,6 @@
-﻿namespace Nova.SearchAlgorithm.Client.Models.SearchResults
+﻿using System;
+
+namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 {
     public class SearchResult
     {
@@ -53,9 +55,16 @@
         public int ConfidenceScore { get; set; }
 
         /// <summary>
-        /// The overall confidence for the match
+        /// The overall confidence for the match.
+        /// Calculated as the worst across all per-position match confidences.
         /// </summary>
+        [Obsolete("Use MatchCategory instead.")]
         public MatchConfidence OverallMatchConfidence { get; set; }
+        
+        /// <summary>
+        /// The overall quality of the match. An aggregate of the per-locus grades and confidences. 
+        /// </summary>
+        public MatchCategory MatchCategory { get; set; }
         
         /// <summary>
         /// The details of the match at locus A.

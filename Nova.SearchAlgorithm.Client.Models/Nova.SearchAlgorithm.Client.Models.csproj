@@ -2,12 +2,11 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <VersionPrefix>8.2.0</VersionPrefix>
+        <VersionPrefix>8.2.1</VersionPrefix>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
       <PackageReference Include="Nova.Utils" Version="12.0.19" />
     </ItemGroup>
 
