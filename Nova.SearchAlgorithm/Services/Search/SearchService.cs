@@ -140,6 +140,7 @@ namespace Nova.SearchAlgorithm.Services.Search
                 DonorType = result.MatchResult.Donor.DonorType,
                 Registry = result.MatchResult.Donor.RegistryCode,
                 OverallMatchConfidence = result.ScoreResult.OverallMatchConfidence,
+                MatchCategory = result.ScoreResult.MatchCategory ?? throw new Exception("Expected match category in scoring info."),
                 ConfidenceScore = result.ScoreResult.ConfidenceScore,
                 GradeScore = result.ScoreResult.GradeScore,
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
