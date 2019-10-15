@@ -2,7 +2,7 @@
 using System.Linq;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
-namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
+namespace Nova.SearchAlgorithm.Services.Search.Scoring.Ranking
 {
     public interface IRankingService
     {
@@ -17,9 +17,9 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Ranking
         public IEnumerable<MatchAndScoreResult> RankSearchResults(IEnumerable<MatchAndScoreResult> results)
         {
             return results
-                .OrderByDescending(r => r.ScoreResult.MatchCount)
-                .ThenByDescending(r => r.ScoreResult.GradeScore)
-                .ThenByDescending(r => r.ScoreResult.ConfidenceScore);
+                .OrderByDescending(r => r.ScoreResult.AggregateScoreDetails.MatchCount)
+                .ThenByDescending(r => r.ScoreResult.AggregateScoreDetails.GradeScore)
+                .ThenByDescending(r => r.ScoreResult.AggregateScoreDetails.ConfidenceScore);
         }
     }
 }

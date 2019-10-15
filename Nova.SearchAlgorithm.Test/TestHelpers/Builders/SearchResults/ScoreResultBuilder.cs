@@ -13,6 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
         {
             scoreResult = new ScoreResult
             {
+                AggregateScoreDetails = new AggregateScoreDetails(),
                 ScoreDetailsAtLocusA = new LocusScoreDetails
                 {
                     ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
@@ -194,6 +195,12 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                 default:
                     throw new ArgumentException();
             }
+        }
+
+        public ScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
+        {
+            scoreResult.AggregateScoreDetails = aggregateScoreDetails;
+            return this;
         }
 
         public ScoreResult Build()

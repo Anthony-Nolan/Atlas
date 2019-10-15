@@ -1,25 +1,25 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
-using Nova.SearchAlgorithm.Services.Scoring;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
+using Nova.SearchAlgorithm.Services.Search.Scoring;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Services;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders;
-using Nova.SearchAlgorithm.Services.Search.Scoring;
 
-namespace Nova.SearchAlgorithm.Test.Services.Scoring
+namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring
 {
     [TestFixture]
     public class DonorScoringServiceTests
@@ -29,6 +29,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         private IConfidenceService confidenceService;
         private IRankingService rankingService;
         private IMatchScoreCalculator matchScoreCalculator;
+        private IScoreResultAggregator scoreResultAggregator;
 
         private DonorScoringService donorScoringService;
 
@@ -50,6 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
             confidenceService = Substitute.For<IConfidenceService>();
             rankingService = Substitute.For<IRankingService>();
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
+            scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
             var wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
@@ -63,7 +65,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
                 confidenceService,
                 rankingService,
                 matchScoreCalculator,
-                wmdaHlaVersionProvider
+                wmdaHlaVersionProvider,
+                scoreResultAggregator
             );
         }
 
@@ -321,17 +324,18 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         }
 
         [Test]
-        public async Task Score_AssignsMatchCategory()
+        public async Task Score_AssignsAggregateScoringData()
         {
             var patientHla = new PhenotypeInfo<string>();
             var result1 = new MatchResultBuilder().Build();
             var result2 = new MatchResultBuilder().Build();
+            scoreResultAggregator.AggregateScoreDetails(Arg.Any<ScoreResult>()).Returns(new AggregateScoreDetails());
 
             var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
 
             foreach (var result in results.Select(r => r.ScoreResult))
             {
-                result.MatchCategory.Should().NotBeNull();
+                result.AggregateScoreDetails.Should().NotBeNull();
             }
         }
     }

@@ -44,7 +44,9 @@ using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Services.Search.Matching;
 using Nova.SearchAlgorithm.Services.Search.Scoring;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Grading;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.SearchAlgorithm.Services.Utility;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
@@ -141,6 +143,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IMatchScoreCalculator, MatchScoreCalculator>();
             services.AddScoped<IScoringRequestService, ScoringRequestService>();
             services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
+            services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
 
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();

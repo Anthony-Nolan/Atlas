@@ -46,6 +46,12 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
             scoreResultBuilder = scoreResultBuilder.WithMatchConfidenceScoreAtLocus(locus, matchConfidenceScore);    
             return this;
         }
+
+        public MatchAndScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
+        {
+            scoreResultBuilder = scoreResultBuilder.WithAggregateScoringData(aggregateScoreDetails);
+            return this;
+        }
         
         public MatchAndScoreResult Build()
         {

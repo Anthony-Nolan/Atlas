@@ -12,7 +12,8 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
-using Nova.SearchAlgorithm.Services.Search.Scoring.Categorisation;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Search.Scoring
@@ -31,6 +32,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
         private readonly IRankingService rankingService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IScoreResultAggregator scoreResultAggregator;
 
         public DonorScoringService(
             IHlaScoringLookupService hlaScoringLookupService,
@@ -38,7 +40,8 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider, 
+            IScoreResultAggregator scoreResultAggregator)
         {
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.gradingService = gradingService;
@@ -46,6 +49,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
             this.rankingService = rankingService;
             this.matchScoreCalculator = matchScoreCalculator;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.scoreResultAggregator = scoreResultAggregator;
         }
 
         public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(
@@ -124,7 +128,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
                 scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
             }
 
-            scoreResult.MatchCategory = MatchCategoriser.CategoriseMatch(scoreResult);
+            scoreResult.AggregateScoreDetails = scoreResultAggregator.AggregateScoreDetails(scoreResult);
             return scoreResult;
         }
 
