@@ -2,7 +2,7 @@
 {
     public class LocusNameException : MatchingDictionaryException
     {
-        public LocusNameException(string locusName) : base($"{locusName} is not a supported locus.")
+        public LocusNameException(string locusName) : base(new HlaInfo(locusName), $"{locusName} is not a supported locus.")
         {
         }
     }

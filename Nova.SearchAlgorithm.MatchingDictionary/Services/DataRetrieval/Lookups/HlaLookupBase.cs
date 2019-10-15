@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             string hlaDatabaseVersion)
         {
             var lookupResult = await GetLookupResultFromRepository(locus, lookupName, typingMethod, hlaDatabaseVersion);
-            return lookupResult ?? throw new InvalidHlaException(locus, lookupName);
+            return lookupResult ?? throw new InvalidHlaException(new HlaInfo(locus, lookupName));
         }
 
         protected async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntity(

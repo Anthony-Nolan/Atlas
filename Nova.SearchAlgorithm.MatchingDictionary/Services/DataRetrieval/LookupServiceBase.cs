@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
             catch (Exception ex)
             {
                 var msg = $"Failed to lookup '{lookupName}' at locus {locus}.";
-                throw new MatchingDictionaryException(msg, ex);
+                throw new MatchingDictionaryException(new HlaInfo(locus, lookupName), msg, ex);
             }
         }
 
