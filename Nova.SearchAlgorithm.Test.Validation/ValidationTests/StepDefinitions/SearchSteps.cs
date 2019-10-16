@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
@@ -10,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Config;
+using Nova.Utils.Models;
 using TechTalk.SpecFlow;
+using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {
@@ -36,14 +37,14 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
         public void GivenTheSearchIsRunForAnthonyNolansRegistryOnly()
         {
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
-            scenarioContext.Set(searchRequest.ForRegistries(new []{ RegistryCode.AN }));
+            scenarioContext.Set(searchRequest.ForRegistries(new[] {RegistryCode.AN}));
         }
 
         [Given(@"the search is run for aligned registries")]
         public void GivenTheSearchIsRunForAlignedRegistries()
         {
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
-            scenarioContext.Set(searchRequest.ForRegistries(new []
+            scenarioContext.Set(searchRequest.ForRegistries(new[]
             {
                 RegistryCode.AN,
                 RegistryCode.NHSBT,
@@ -59,6 +60,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var registry = (RegistryCode) Enum.Parse(typeof(RegistryCode), registryString, true);
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.ForAdditionalRegistry(registry));
+        }
+
+        [Given(@"locus (.*) is excluded from aggregate scoring")]
+        public void GivenLocusIsExcludedFromAggregateScoring(string locusString)
+        {
+            // Note that Locus used in client is from Utils, which is different from the algorithm specific Locus
+            var locus = (LocusType) Enum.Parse(typeof(LocusType), locusString, true);
+            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
+            scenarioContext.Set(searchRequest.WithLociExcludedFromScoringAggregates(new List<LocusType> {locus}));
         }
 
         [When(@"I run a 6/6 search")]
@@ -78,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
         }
-        
+
         [When(@"I run a 8/8 search")]
         [When(@"I run an 8/8 search")]
         public async Task WhenIRunAnEightOutOfEightSearch()
@@ -98,7 +108,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
         }
-               
+
         [When(@"I run a 4/8 search")]
         public async Task WhenIRunAFourOutOfEightSearch()
         {
@@ -124,7 +134,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             var selector = scenarioContext.Get<IMultiplePatientDataFactory>();
 
             var patientResults = new List<PatientApiResult>();
-            
+
             foreach (var patientDataFactory in selector.PatientDataFactories)
             {
                 var searchHla = patientDataFactory.GetPatientHla();
@@ -190,7 +200,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
         }
-        
+
         [When(@"I run a 8/10 search")]
         [When(@"I run an 8/10 search")]
         public async Task WhenIRunAnEightOutOfTenSearch()
@@ -216,17 +226,17 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             apiResult.IsSuccess.Should().BeTrue();
             apiResult.Results.SearchResults.Count().Should().BeGreaterThan(0);
         }
-        
+
         [Then(@"the results should contain the specified donor")]
         public void ThenTheResultShouldContainTheSpecifiedDonor()
         {
             var expectedDonorProvider = scenarioContext.Get<IExpectedDonorProvider>();
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
-            
+
             apiResult.Results.SearchResults.Should().Contain(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
-        } 
-        
+        }
+
         [Then(@"the results should contain all specified donors")]
         public void ThenTheResultShouldContainAllSpecifiedDonors()
         {
@@ -236,20 +246,20 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 
             foreach (var donorId in expectedDonorProvider.GetExpectedMatchingDonorIds())
             {
-                apiResult.Results.SearchResults.Should().Contain(r => r.DonorId == donorId);                
+                apiResult.Results.SearchResults.Should().Contain(r => r.DonorId == donorId);
             }
-        } 
-        
+        }
+
         [Then(@"the results should not contain the specified donor")]
         public void ThenTheResultShouldNotContainTheSpecifiedDonor()
         {
             var expectedDonorProvider = scenarioContext.Get<IExpectedDonorProvider>();
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
-            
+
             apiResult.Results.SearchResults.Should().NotContain(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
-        
+
         [Then(@"each set of results should contain the specified donor")]
         public void ThenEachSetOfResultsShouldContainTheSpecifiedDonor()
         {
@@ -263,7 +273,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                 searchResultsForPatient.Should().Contain(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
             }
         }
-        
+
         [Then(@"The result should contain no donors")]
         public void ThenTheResultShouldContainNoDonors()
         {
