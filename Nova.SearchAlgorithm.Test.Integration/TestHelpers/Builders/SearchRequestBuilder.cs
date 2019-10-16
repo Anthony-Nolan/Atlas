@@ -272,6 +272,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
         }
 
+        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<LocusType> loci)
+        {
+            searchRequest.LociToExcludeFromAggregateScore = loci;
+            return this;
+        }
+
         public SearchRequest Build()
         {
             return searchRequest;
