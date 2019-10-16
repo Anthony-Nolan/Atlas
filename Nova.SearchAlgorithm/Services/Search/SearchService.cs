@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Search.Matching;
@@ -68,7 +69,12 @@ namespace Nova.SearchAlgorithm.Services.Search
             });
             stopwatch.Restart();
 
-            var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla);
+            var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore
+                .Select(l => l.ToAlgorithmLocus())
+                .Where(l => l != null)
+                .Select(l => l.Value)
+                .ToList();
+            var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
 
             logger.SendTrace("Search timing: Scoring complete", LogLevel.Info, new Dictionary<string, string>
             {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Nova.Utils.Models;
 
 namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
 {
@@ -20,6 +21,13 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchRequests
         /// the hla data should still be provided if possible for use in scoring results
         /// </summary>
         public SearchHlaData SearchHlaData { get; set; }
+        
+        /// <summary>
+        /// By default the algorithm will use scoring information available at all loci to aggregate into some overall values to use for ranking.
+        /// e.g. MatchCategory, GradeScore, ConfidenceScore
+        /// Any loci specified here can be excluded from these aggregates.
+        /// </summary>
+        public IEnumerable<LocusType> LociToExcludeFromAggregateScore { get; set; }
         
         /// <summary>
         /// List of donor registries to search.

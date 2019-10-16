@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
@@ -14,8 +15,10 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation
 
     public class ScoreResultAggregator : IScoreResultAggregator
     {
-        public AggregateScoreDetails AggregateScoreDetails(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude = null)
+        public AggregateScoreDetails AggregateScoreDetails(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
         {
+            lociToExclude = lociToExclude ?? new List<Locus>();
+            
             return new AggregateScoreDetails
             {
                 ConfidenceScore = AggregateConfidenceScore(scoreResult, lociToExclude),
@@ -27,14 +30,14 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation
             };
         }
 
-        private static int AggregateConfidenceScore(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
+        private static int AggregateConfidenceScore(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
         {
-            return scoreResult.LocusScoreDetails.Sum(s => s.MatchConfidenceScore);
+            return NonExcludedLocusScoreDetails(scoreResult, lociToExclude).Sum(s => s.MatchConfidenceScore);
         }
 
-        private static int AggregateGradeScore(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
+        private static int AggregateGradeScore(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
         {
-            return scoreResult.LocusScoreDetails.Sum(s => s.MatchGradeScore);
+            return NonExcludedLocusScoreDetails(scoreResult, lociToExclude).Sum(s => s.MatchGradeScore);
         }
 
         private MatchCategory CategoriseMatch(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
@@ -56,21 +59,27 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation
             }
         }
 
-        private static int CountMatches(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
+        private static int CountMatches(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
         {
-            return scoreResult.LocusScoreDetails.Sum(s => s.MatchCount());
+            return NonExcludedLocusScoreDetails(scoreResult, lociToExclude).Sum(s => s.MatchCount());
         }
 
-        private static MatchConfidence AggregateMatchConfidence(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
+        private static MatchConfidence AggregateMatchConfidence(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
         {
-            return scoreResult.LocusScoreDetails
+            return NonExcludedLocusScoreDetails(scoreResult, lociToExclude)
                 .SelectMany(d => new List<MatchConfidence> {d.ScoreDetailsAtPosition1.MatchConfidence, d.ScoreDetailsAtPosition2.MatchConfidence})
                 .Min();
         }
 
-        private static int CountPotentialMatches(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
+        private static int CountPotentialMatches(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
         {
-            return scoreResult.LocusScoreDetails.Where(s => s.IsPotentialMatch).Sum(s => s.MatchCount());
+            return NonExcludedLocusScoreDetails(scoreResult, lociToExclude).Where(s => s.IsPotentialMatch).Sum(s => s.MatchCount());
+        }
+
+        private static IEnumerable<LocusScoreDetails> NonExcludedLocusScoreDetails(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
+        {
+            var includedLoci = LocusSettings.AllLoci.Except(lociToExclude);
+            return includedLoci.Select(scoreResult.ScoreDetailsForLocus);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
@@ -12,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
     public class ScoreResultAggregatorTests
     {
         private IScoreResultAggregator resultAggregator;
-        
+
         [SetUp]
         public void SetUp()
         {
@@ -34,6 +35,40 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
             var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails);
 
             aggregate.MatchCount.Should().Be(12);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_MatchCount_ExcludingDpb1_DoesNotIncludeDpb1InAggregate()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithMatchCountAtLocus(Locus.B, 2)
+                .WithMatchCountAtLocus(Locus.C, 2)
+                .WithMatchCountAtLocus(Locus.Dpb1, 2)
+                .WithMatchCountAtLocus(Locus.Dqb1, 2)
+                .WithMatchCountAtLocus(Locus.Drb1, 2)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails, new List<Locus> {Locus.Dpb1});
+
+            aggregate.MatchCount.Should().Be(10);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_ExcludingMultipleLoci_DoesNotIncludeAnyExcludedLocus()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithMatchCountAtLocus(Locus.B, 2)
+                .WithMatchCountAtLocus(Locus.C, 2)
+                .WithMatchCountAtLocus(Locus.Dpb1, 2)
+                .WithMatchCountAtLocus(Locus.Dqb1, 2)
+                .WithMatchCountAtLocus(Locus.Drb1, 2)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails, new List<Locus> {Locus.Dpb1, Locus.Dqb1, Locus.C});
+
+            aggregate.MatchCount.Should().Be(6);
         }
 
         [Test]
@@ -77,6 +112,23 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         }
 
         [Test]
+        public void AggregateScoreDetails_GradeScore_ExcludingDpb1_DoesNotIncludeDpb1InAggregate()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithMatchGradeScoreAtLocus(Locus.A, 10)
+                .WithMatchGradeScoreAtLocus(Locus.B, 10)
+                .WithMatchGradeScoreAtLocus(Locus.C, 10)
+                .WithMatchGradeScoreAtLocus(Locus.Dpb1, 10)
+                .WithMatchGradeScoreAtLocus(Locus.Dqb1, 10)
+                .WithMatchGradeScoreAtLocus(Locus.Drb1, 10)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails, new List<Locus> {Locus.Dpb1});
+
+            aggregate.GradeScore.Should().Be(50);
+        }
+
+        [Test]
         public void AggregateScoreDetails_ConfidenceScore_SumsConfidenceScoreAtAllLoci()
         {
             var scoreDetails = new ScoreResultBuilder()
@@ -91,6 +143,23 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
             var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails);
 
             aggregate.ConfidenceScore.Should().Be(60);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_ConfidenceScore_ExcludingDpb1_DoesNotIncludeDpb1InAggregate()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithMatchConfidenceScoreAtLocus(Locus.A, 10)
+                .WithMatchConfidenceScoreAtLocus(Locus.B, 10)
+                .WithMatchConfidenceScoreAtLocus(Locus.C, 10)
+                .WithMatchConfidenceScoreAtLocus(Locus.Dpb1, 10)
+                .WithMatchConfidenceScoreAtLocus(Locus.Dqb1, 10)
+                .WithMatchConfidenceScoreAtLocus(Locus.Drb1, 10)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails, new List<Locus> {Locus.Dpb1});
+
+            aggregate.ConfidenceScore.Should().Be(50);
         }
 
         [Test]
@@ -110,7 +179,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             aggregate.OverallMatchConfidence.Should().Be(matchConfidence);
         }
-        
+
         [Test]
         public void AggregateScoreDetails_OverallMatchConfidence_WhenMatchConfidencesDifferPerLocus_ReturnsLowestMatchConfidence()
         {
@@ -124,12 +193,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, higherMatchConfidence)
                 .Build();
-            
+
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult);
 
             aggregate.OverallMatchConfidence.Should().Be(lowerMatchConfidence);
-        }     
-        
+        }
+
         [Test]
         public void AggregateScoreDetails_OverallMatchConfidence_WhenMatchConfidencesDifferPerPosition_ReturnsLowestMatchConfidence()
         {
@@ -149,7 +218,51 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             aggregate.OverallMatchConfidence.Should().Be(lowerMatchConfidence);
         }
-        
+
+        [Test]
+        public void AggregateScoreDetails_OverallMatchConfidence_ExcludingDpb1_ReturnsLowestMatchConfidenceOfOtherLoci()
+        {
+            const MatchConfidence higherMatchConfidence = MatchConfidence.Exact;
+            const MatchConfidence midMatchConfidence = MatchConfidence.Potential;
+            const MatchConfidence lowerMatchConfidence = MatchConfidence.Mismatch;
+            var scoreResult = new ScoreResultBuilder()
+                .WithMatchConfidenceAtLocus(Locus.A, higherMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, TypePosition.One, higherMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, TypePosition.Two, midMatchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.C, higherMatchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, lowerMatchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
+                .WithMatchConfidenceAtLocus(Locus.Drb1, higherMatchConfidence)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreResult, new List<Locus> {Locus.Dpb1});
+
+            aggregate.OverallMatchConfidence.Should().Be(midMatchConfidence);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_PotentialMatchCount_ExcludingDpb1_DoesNotIncludeDpb1InAggregate()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.B, 2)
+                .WithMatchConfidenceAtLocus(Locus.B, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.C, 2)
+                .WithMatchConfidenceAtLocus(Locus.C, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.Dpb1, 2)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.Dqb1, 2)
+                .WithMatchConfidenceAtLocus(Locus.Dqb1, MatchConfidence.Exact)
+                .WithMatchCountAtLocus(Locus.Drb1, 2)
+                .WithMatchConfidenceAtLocus(Locus.Drb1, MatchConfidence.Mismatch)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails, new List<Locus> {Locus.Dpb1});
+
+            aggregate.PotentialMatchCount.Should().Be(6);
+        }
+
         [Test]
         public void AggregateScoreDetails_MatchCategory_WhenAllLociConfidencesDefinite_ReturnsDefinite()
         {
@@ -189,6 +302,19 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
             var scoreResult = new ScoreResultBuilder().WithMatchConfidenceAtAllLoci(MatchConfidence.Potential).Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult);
+
+            aggregate.MatchCategory.Should().Be(MatchCategory.Potential);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_MatchCategory_ExcludingDpb1_WhenOnlyDpb1IsMismatch_DoesNotReturnMismatch()
+        {
+            var scoreResult = new ScoreResultBuilder()
+                .WithMatchConfidenceAtAllLoci(MatchConfidence.Potential)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Mismatch)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreResult, new List<Locus> {Locus.Dpb1});
 
             aggregate.MatchCategory.Should().Be(MatchCategory.Potential);
         }
