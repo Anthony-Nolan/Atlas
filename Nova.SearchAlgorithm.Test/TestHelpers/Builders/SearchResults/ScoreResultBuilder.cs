@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
-namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
+namespace Nova.SearchAlgorithm.Test.TestHelpers.Builders.SearchResults
 {
     public class ScoreResultBuilder
     {
@@ -140,6 +140,17 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                 .WithMatchConfidenceAtLocus(Locus.Dpb1, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, matchConfidence);
+        }
+
+        public ScoreResultBuilder WithMatchGradeAtAllLoci(MatchGrade matchGrade)
+        {
+            return this
+                .WithMatchGradeAtLocus(Locus.A, matchGrade)
+                .WithMatchGradeAtLocus(Locus.B, matchGrade)
+                .WithMatchGradeAtLocus(Locus.C, matchGrade)
+                .WithMatchGradeAtLocus(Locus.Dpb1, matchGrade)
+                .WithMatchGradeAtLocus(Locus.Dqb1, matchGrade)
+                .WithMatchGradeAtLocus(Locus.Drb1, matchGrade);
         }
         
         public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)

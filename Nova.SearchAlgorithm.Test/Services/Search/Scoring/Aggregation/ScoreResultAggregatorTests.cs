@@ -3,8 +3,7 @@ using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
-using Nova.SearchAlgorithm.Test.Builders.SearchResults;
-using NSubstitute;
+using Nova.SearchAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
@@ -311,6 +310,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Potential)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
                 .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Mismatch)
                 .Build();
 
@@ -324,6 +324,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
                 .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Potential)
                 .Build();
 
@@ -360,13 +361,29 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
                 .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, TypePosition.One, MatchConfidence.Mismatch)
                 .WithMatchGradeAtLocusPosition(Locus.Dpb1, TypePosition.One, MatchGrade.PermissiveMismatch)
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult);
 
-            aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
+            aggregate.MatchCategory.Should().Be(MatchCategory.PermissiveMismatch);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_MatchCategory_WithOnePermissiveMismatchAtDpb1_AndDpb1Excluded_DoesNotReturnPermissiveMismatch()
+        {
+            var scoreResult = new ScoreResultBuilder()
+                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, TypePosition.One, MatchConfidence.Mismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, TypePosition.One, MatchGrade.PermissiveMismatch)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreResult, new List<Locus> {Locus.Dpb1});
+
+            aggregate.MatchCategory.Should().Be(MatchCategory.Definite);
         }
 
         [Test]
@@ -374,13 +391,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
                 .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Mismatch)
                 .WithMatchGradeAtLocus(Locus.Dpb1, MatchGrade.PermissiveMismatch)
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult);
 
-            aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
+            aggregate.MatchCategory.Should().Be(MatchCategory.PermissiveMismatch);
         }
 
         [Test]
@@ -388,6 +406,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
                 .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, TypePosition.One, MatchConfidence.Mismatch)
                 .WithMatchGradeAtLocusPosition(Locus.Dpb1, TypePosition.One, MatchGrade.PermissiveMismatch)
                 .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, TypePosition.Two, MatchConfidence.Mismatch)
