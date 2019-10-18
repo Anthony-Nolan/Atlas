@@ -44,6 +44,7 @@
         <Content Include="ValidationTests\Features\Scoring\MatchConfidences.feature" />
         <Content Include="ValidationTests\Features\Scoring\MatchGrades.feature" />
         <Content Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature" />
+        <Content Include="ValidationTests\Features\Scoring\TypedLociCount.feature" />
         <Content Include="ValidationTests\Features\ValidationREADME.md" />
     </ItemGroup>
 

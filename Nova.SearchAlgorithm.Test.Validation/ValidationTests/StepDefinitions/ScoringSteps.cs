@@ -115,6 +115,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
+        [Then(@"the typed loci count should be (.*)")]
+        public void ThenTheMatchConfidenceShouldBe(int typedLociCount)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            donorResult.TypedLociCount.Should().Be(typedLociCount);
+        }
+
         private SearchResult GetSearchResultForSingleDonor()
         {
             var expectedDonorProvider = scenarioContext.Get<IExpectedDonorProvider>();

@@ -274,45 +274,6 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public async Task Score_ForUntypedDonorLoci_ReturnsIsDonorTypedAsFalse()
-        {
-            const Locus locus = Locus.A;
-            scoringLookupService.GetHlaLookupResult(locus, Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
-
-            var matchResult1 = new MatchResultBuilder().Build();
-
-            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
-
-            results.Single().ScoreResult.ScoreDetailsForLocus(locus).IsLocusTyped.Should().BeFalse();
-        }
-
-        [Test]
-        public async Task Score_ForTypedDonorLoci_ReturnsIsDonorTypedAsTrue()
-        {
-            const Locus locus = Locus.A;
-
-            var matchResult1 = new MatchResultBuilder().Build();
-
-            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
-
-            results.Single().ScoreResult.ScoreDetailsForLocus(locus).IsLocusTyped.Should().BeTrue();
-        }
-
-        [Test]
-        public async Task Score_ForTypedDonorLoci_ReturnsTypedLociCountEqualToNumberOfTypedLoci()
-        {
-            const Locus locus = Locus.A;
-            scoringLookupService.GetHlaLookupResult(locus, Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
-
-            var matchResult1 = new MatchResultBuilder().Build();
-
-            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
-
-            // Results for 6 loci, one of which is untyped
-            results.Single().ScoreResult.AggregateScoreDetails.TypedLociCount.Should().Be(5);
-        }
-
-        [Test]
         public async Task Score_RanksResults()
         {
             var expectedSortedResults = new List<MatchAndScoreResult> {new MatchAndScoreResultBuilder().Build()};
