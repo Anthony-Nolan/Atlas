@@ -28,6 +28,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation
                 MatchCount = CountMatches(locusScoreDetails),
                 OverallMatchConfidence = AggregateMatchConfidence(locusScoreDetails),
                 PotentialMatchCount = CountPotentialMatches(locusScoreDetails),
+                TypedLociCount = CountTypedLoci(locusScoreDetails)
             };
         }
 
@@ -81,6 +82,11 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation
         private static int CountPotentialMatches(IEnumerable<LocusScoreDetails> locusScoreResults)
         {
             return locusScoreResults.Where(s => s.IsPotentialMatch).Sum(s => s.MatchCount());
+        }
+
+        private static int CountTypedLoci(IEnumerable<LocusScoreDetails> locusScoreDetails)
+        {
+            return locusScoreDetails.Count(m => m.IsLocusTyped);
         }
 
         private static IEnumerable<LocusScoreDetails> NonExcludedLocusScoreDetails(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)

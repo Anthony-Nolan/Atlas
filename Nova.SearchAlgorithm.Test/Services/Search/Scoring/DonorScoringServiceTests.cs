@@ -309,7 +309,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring
             var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1}, new PhenotypeInfo<string>());
 
             // Results for 6 loci, one of which is untyped
-            results.Single().ScoreResult.TypedLociCount.Should().Be(5);
+            results.Single().ScoreResult.AggregateScoreDetails.TypedLociCount.Should().Be(5);
         }
 
         [Test]

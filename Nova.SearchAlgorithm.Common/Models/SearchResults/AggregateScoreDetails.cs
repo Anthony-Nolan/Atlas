@@ -11,6 +11,7 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         public int PotentialMatchCount { get; set; }
         public int GradeScore { get; set; }
         public int ConfidenceScore { get; set; }
+        public int TypedLociCount { get; set; }
         public MatchConfidence OverallMatchConfidence { get; set; }
         public MatchCategory MatchCategory { get; set; }
     }

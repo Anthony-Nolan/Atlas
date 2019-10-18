@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Common.Models.SearchResults
 {
     public class ScoreResult
     {
-        public int TypedLociCount => LocusScoreDetails.Count(m => m.IsLocusTyped);
-        public IEnumerable<MatchGrade> AllGrades => LocusScoreDetails.SelectMany(locusScoreDetails => new List<MatchGrade>
-        {
-            locusScoreDetails.ScoreDetailsAtPosition1.MatchGrade,
-            locusScoreDetails.ScoreDetailsAtPosition2.MatchGrade
-        });
-        
         public LocusScoreDetails ScoreDetailsAtLocusA { get; set; }
         public LocusScoreDetails ScoreDetailsAtLocusB { get; set; }
         public LocusScoreDetails ScoreDetailsAtLocusC { get; set; }
@@ -25,17 +16,7 @@ namespace Nova.SearchAlgorithm.Common.Models.SearchResults
         /// Contains aggregate scoring data across all loci. Should only be populated once scoring is complete at all loci.
         /// </summary>
         public AggregateScoreDetails AggregateScoreDetails { get; set; }
-        
-        public IEnumerable<LocusScoreDetails> LocusScoreDetails => new List<LocusScoreDetails>
-        {
-            ScoreDetailsAtLocusA,
-            ScoreDetailsAtLocusB,
-            ScoreDetailsAtLocusC,
-            ScoreDetailsAtLocusDpb1,
-            ScoreDetailsAtLocusDqb1,
-            ScoreDetailsAtLocusDrb1
-        };
-        
+
         public LocusScoreDetails ScoreDetailsForLocus(Locus locus)
         {
             switch (locus)

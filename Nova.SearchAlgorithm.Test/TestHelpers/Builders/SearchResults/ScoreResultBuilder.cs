@@ -208,6 +208,13 @@ namespace Nova.SearchAlgorithm.Test.TestHelpers.Builders.SearchResults
             }
         }
 
+        public ScoreResultBuilder WithTypingAtLocus(Locus locus, bool isTyped = true)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.IsLocusTyped = isTyped;
+            return this;
+        }
+        
         public ScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
         {
             scoreResult.AggregateScoreDetails = aggregateScoreDetails;

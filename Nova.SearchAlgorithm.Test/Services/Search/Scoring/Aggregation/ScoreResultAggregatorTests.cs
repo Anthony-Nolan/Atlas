@@ -162,6 +162,40 @@ namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring.Aggregation
         }
 
         [Test]
+        public void AggregateScoreDetails_TypedLociCount_CountsTypedLociAtAllLoci()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithTypingAtLocus(Locus.A)
+                .WithTypingAtLocus(Locus.B)
+                .WithTypingAtLocus(Locus.C)
+                .WithTypingAtLocus(Locus.Dpb1)
+                .WithTypingAtLocus(Locus.Dqb1)
+                .WithTypingAtLocus(Locus.Drb1)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails);
+
+            aggregate.TypedLociCount.Should().Be(6);
+        }
+
+        [Test]
+        public void AggregateScoreDetails_TypedLociCount_ExcludingDpb1_WhenDpb1Typed_DoesNotIncludeDpb1()
+        {
+            var scoreDetails = new ScoreResultBuilder()
+                .WithTypingAtLocus(Locus.A)
+                .WithTypingAtLocus(Locus.B)
+                .WithTypingAtLocus(Locus.C)
+                .WithTypingAtLocus(Locus.Dpb1)
+                .WithTypingAtLocus(Locus.Dqb1)
+                .WithTypingAtLocus(Locus.Drb1)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(scoreDetails, new List<Locus> {Locus.Dpb1});
+
+            aggregate.TypedLociCount.Should().Be(5);
+        }
+
+        [Test]
         public void AggregateScoreDetails_OverallMatchConfidence_WhenAllMatchConfidencesEqual_ReturnsMatchConfidence()
         {
             const MatchConfidence matchConfidence = MatchConfidence.Exact;

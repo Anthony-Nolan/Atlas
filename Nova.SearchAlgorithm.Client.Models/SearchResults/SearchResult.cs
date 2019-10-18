@@ -41,6 +41,7 @@ namespace Nova.SearchAlgorithm.Client.Models.SearchResults
 
         /// <summary>
         /// The number of loci which are typed for this donor.
+        /// Loci excluded from scoring aggregation will not be included, regardless of whether they are typed.
         /// </summary>
         public int TypedLociCount { get; set; }
 
