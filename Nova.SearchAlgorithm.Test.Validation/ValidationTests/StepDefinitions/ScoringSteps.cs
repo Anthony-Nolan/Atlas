@@ -56,6 +56,15 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             }
         }
 
+        [Then("the match category should be (.*)")]
+        public void ThenTheMatchCategoryShouldBe(string category)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            var expectedMatchCategory = ParseExpectedMatchCategory(category);
+
+            donorResult.MatchCategory.Should().Be(expectedMatchCategory);
+        }
+
         [Then("(.*) should be returned above (.*)")]
         public void ThenXShouldBeReturnedAboveY(string higherResultType, string lowerResultType)
         {
@@ -104,6 +113,13 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        [Then(@"the typed loci count should be (.*)")]
+        public void ThenTheMatchConfidenceShouldBe(int typedLociCount)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            donorResult.TypedLociCount.Should().Be(typedLociCount);
         }
 
         private SearchResult GetSearchResultForSingleDonor()
@@ -156,6 +172,27 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
                     return MatchConfidence.Potential;
                 case "Mismatch":
                     return MatchConfidence.Mismatch;
+                default:
+                    scenarioContext.Pending();
+                    return null;
+            }
+        }
+
+        private MatchCategory? ParseExpectedMatchCategory(string category)
+        {
+            switch (category)
+            {
+                case "Definite":
+                    return MatchCategory.Definite;
+                case "Exact":
+                    return MatchCategory.Exact;
+                case "Potential":
+                    return MatchCategory.Potential;
+                case "Mismatch":
+                    return MatchCategory.Mismatch;
+                case "PermissiveMismatch":
+                case "Permissive Mismatch":
+                    return MatchCategory.PermissiveMismatch;
                 default:
                     scenarioContext.Pending();
                     return null;

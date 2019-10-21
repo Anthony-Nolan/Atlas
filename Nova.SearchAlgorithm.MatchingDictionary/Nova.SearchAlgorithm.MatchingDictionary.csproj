@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <Folder Include="Caching\" />
-      <Folder Include="Constants\" />
     </ItemGroup>
 
 </Project>

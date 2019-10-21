@@ -4,6 +4,8 @@ using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.Utils.Models;
+using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -28,7 +30,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                     LocusSearchHlaA = new LocusSearchHla(),
                     LocusSearchHlaB = new LocusSearchHla(),
                     LocusSearchHlaDrb1 = new LocusSearchHla(),
-                }
+                },
+                LociToExcludeFromAggregateScore = new List<LocusType>()
             };
         }
 
@@ -267,6 +270,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHla.Dqb1.Position2)
                 .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHla.Drb1.Position1)
                 .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
+        }
+
+        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<LocusType> loci)
+        {
+            searchRequest.LociToExcludeFromAggregateScore = loci;
+            return this;
         }
 
         public SearchRequest Build()

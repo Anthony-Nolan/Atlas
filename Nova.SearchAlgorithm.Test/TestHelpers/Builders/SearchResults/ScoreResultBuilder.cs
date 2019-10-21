@@ -3,7 +3,7 @@ using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
-namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
+namespace Nova.SearchAlgorithm.Test.TestHelpers.Builders.SearchResults
 {
     public class ScoreResultBuilder
     {
@@ -13,6 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
         {
             scoreResult = new ScoreResult
             {
+                AggregateScoreDetails = new AggregateScoreDetails(),
                 ScoreDetailsAtLocusA = new LocusScoreDetails
                 {
                     ScoreDetailsAtPosition1 = new LocusPositionScoreDetails
@@ -140,6 +141,17 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, matchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Drb1, matchConfidence);
         }
+
+        public ScoreResultBuilder WithMatchGradeAtAllLoci(MatchGrade matchGrade)
+        {
+            return this
+                .WithMatchGradeAtLocus(Locus.A, matchGrade)
+                .WithMatchGradeAtLocus(Locus.B, matchGrade)
+                .WithMatchGradeAtLocus(Locus.C, matchGrade)
+                .WithMatchGradeAtLocus(Locus.Dpb1, matchGrade)
+                .WithMatchGradeAtLocus(Locus.Dqb1, matchGrade)
+                .WithMatchGradeAtLocus(Locus.Drb1, matchGrade);
+        }
         
         public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
         {
@@ -194,6 +206,19 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
                 default:
                     throw new ArgumentException();
             }
+        }
+
+        public ScoreResultBuilder WithTypingAtLocus(Locus locus, bool isTyped = true)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.IsLocusTyped = isTyped;
+            return this;
+        }
+        
+        public ScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
+        {
+            scoreResult.AggregateScoreDetails = aggregateScoreDetails;
+            return this;
         }
 
         public ScoreResult Build()

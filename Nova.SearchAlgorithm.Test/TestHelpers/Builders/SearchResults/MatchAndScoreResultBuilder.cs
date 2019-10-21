@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Test.TestHelpers.Builders.SearchResults;
 
 namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 {
@@ -44,6 +45,12 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
         public MatchAndScoreResultBuilder WithMatchConfidenceScoreAtLocus(Locus locus, int matchConfidenceScore)
         {
             scoreResultBuilder = scoreResultBuilder.WithMatchConfidenceScoreAtLocus(locus, matchConfidenceScore);    
+            return this;
+        }
+
+        public MatchAndScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
+        {
+            scoreResultBuilder = scoreResultBuilder.WithAggregateScoringData(aggregateScoreDetails);
             return this;
         }
         

@@ -1,16 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using FluentAssertions;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.Scoring;
+using LochNessBuilder;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Services.Scoring;
-using Nova.SearchAlgorithm.Services.Scoring.Ranking;
-using Nova.SearchAlgorithm.Test.Builders;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Services.Scoring
+namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring
 {
     [TestFixture]
     public class RankingServiceTests
@@ -27,15 +23,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchCount()
         {
             var resultWithFewerMatches = new MatchAndScoreResultBuilder()
-                .WithMatchCountAtLocus(Locus.A, 1)
-                .WithMatchCountAtLocus(Locus.B, 1)
-                .WithMatchCountAtLocus(Locus.B, 1)
+                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.MatchCount, 1).Build())
                 .Build();
 
             var resultWithMoreMatches = new MatchAndScoreResultBuilder()
-                .WithMatchCountAtLocus(Locus.A, 2)
-                .WithMatchCountAtLocus(Locus.B, 2)
-                .WithMatchCountAtLocus(Locus.Drb1, 2)
+                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.MatchCount, 5).Build())
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -57,11 +49,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchGrade()
         {
             var resultWithBetterOverallGrade = new MatchAndScoreResultBuilder()
-                .WithMatchGradeScoreAtLocus(Locus.A, 3)
+                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.GradeScore, 100).Build())
                 .Build();
 
             var resultWithWorseOverallGrade = new MatchAndScoreResultBuilder()
-                .WithMatchGradeScoreAtLocus(Locus.A, 1)
+                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.GradeScore, 1).Build())
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -83,13 +75,21 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchCountBeforeMatchGrade()
         {
             var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResultBuilder()
-                .WithMatchCountAtLocus(Locus.A, 1)
-                .WithMatchGradeScoreAtLocus(Locus.A, 3)
+                .WithAggregateScoringData(
+                    Builder<AggregateScoreDetails>.New
+                    .With(x => x.GradeScore, 100)
+                    .With(x => x.MatchCount, 1)
+                    .Build()
+                )
                 .Build();
 
             var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResultBuilder()
-                .WithMatchCountAtLocus(Locus.A, 2)
-                .WithMatchGradeScoreAtLocus(Locus.A, 1)
+                .WithAggregateScoringData(
+                    Builder<AggregateScoreDetails>.New
+                        .With(x => x.GradeScore, 1)
+                        .With(x => x.MatchCount, 6)
+                        .Build()
+                )
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -111,11 +111,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchConfidence()
         {
             var resultWithBetterOverallConfidence = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceScoreAtLocus(Locus.A, 4)
+                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.ConfidenceScore, 100).Build())
                 .Build();
 
             var resultWithWorseOverallConfidence = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceScoreAtLocus(Locus.A, 2)
+                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.ConfidenceScore, 1).Build())
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -137,13 +137,21 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchGradeBeforeConfidence()
         {
             var resultWithWorseConfidenceButBetterGrade = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceScoreAtLocus(Locus.A, 1)
-                .WithMatchGradeScoreAtLocus(Locus.A, 4)
+                .WithAggregateScoringData(
+                    Builder<AggregateScoreDetails>.New
+                        .With(x => x.GradeScore, 100)
+                        .With(x => x.ConfidenceScore, 1)
+                        .Build()
+                )
                 .Build();
 
             var resultWithBetterConfidenceButWorseGrade = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceScoreAtLocus(Locus.A, 5)
-                .WithMatchGradeScoreAtLocus(Locus.A, 1)
+                .WithAggregateScoringData(
+                    Builder<AggregateScoreDetails>.New
+                        .With(x => x.GradeScore, 1)
+                        .With(x => x.ConfidenceScore, 100)
+                        .Build()
+                )
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -165,13 +173,21 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring
         public void RankSearchResults_OrdersResultsByMatchCountBeforeConfidence()
         {
             var resultWithWorseConfidenceButBetterMatchCount = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceScoreAtLocus(Locus.A, 1)
-                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithAggregateScoringData(
+                    Builder<AggregateScoreDetails>.New
+                        .With(x => x.ConfidenceScore, 5)
+                        .With(x => x.MatchCount, 6)
+                        .Build()
+                )
                 .Build();
 
             var resultWithBetterConfidenceButWorseMatchCount = new MatchAndScoreResultBuilder()
-                .WithMatchConfidenceScoreAtLocus(Locus.A, 5)
-                .WithMatchCountAtLocus(Locus.A, 1)
+                .WithAggregateScoringData(
+                    Builder<AggregateScoreDetails>.New
+                        .With(x => x.ConfidenceScore, 500)
+                        .With(x => x.MatchCount, 1)
+                        .Build()
+                )
                 .Build();
 
             var unorderedSearchResults = new List<MatchAndScoreResult>

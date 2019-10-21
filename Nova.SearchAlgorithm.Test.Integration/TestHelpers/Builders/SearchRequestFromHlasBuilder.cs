@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.Utils.Models;
+using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -97,6 +100,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
             searchRequestBuilder = searchRequestBuilder
                 .WithLocusMatchHla(locus, TypePosition.One, nonMatchingHlas.DataAtLocus(locus).Item1);
+            return this;
+        }
+
+        public SearchRequestFromHlasBuilder WithDpb1ExcludedFromScoringAggregation()
+        {
+            searchRequestBuilder.WithLociExcludedFromScoringAggregates(new List<LocusType> {LocusType.Dpb1});
             return this;
         }
 

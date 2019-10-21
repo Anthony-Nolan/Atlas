@@ -296,6 +296,24 @@ namespace Nova.SearchAlgorithm.Test.Validation.TestData.Resources
                         .Build(),
                 }
             },
+            
+            // Donors without typing at optional Loci
+            new MetaDonor
+            {
+                DonorType = DonorType.Adult,
+                Registry = RegistryCode.AN,
+                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
+                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                {
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dpb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dqb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dpb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dpb1).UntypedAtLocus(Locus.Dqb1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).UntypedAtLocus(Locus.Dpb1).UntypedAtLocus(Locus.Dqb1).Build(),
+                }
+            },
         };
 
         /// <summary>

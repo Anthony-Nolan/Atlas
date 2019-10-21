@@ -12,15 +12,23 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
 using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
-using Nova.SearchAlgorithm.Services.Search.Scoring.Categorisation;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
+using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.Utils.ApplicationInsights;
 
 namespace Nova.SearchAlgorithm.Services.Search.Scoring
 {
     public interface IDonorScoringService
     {
-        Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(IEnumerable<MatchResult> matchResults, PhenotypeInfo<string> patientHla);
-        Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(PhenotypeInfo<string> donorHla, PhenotypeInfo<string> patientHla);
+        Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(
+            IEnumerable<MatchResult> matchResults,
+            PhenotypeInfo<string> patientHla,
+            IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring = null);
+
+        Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(
+            PhenotypeInfo<string> donorHla,
+            PhenotypeInfo<string> patientHla,
+            IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring = null);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -31,6 +39,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
         private readonly IRankingService rankingService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IScoreResultAggregator scoreResultAggregator;
 
         public DonorScoringService(
             IHlaScoringLookupService hlaScoringLookupService,
@@ -38,7 +47,8 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            IScoreResultAggregator scoreResultAggregator)
         {
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.gradingService = gradingService;
@@ -46,11 +56,13 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
             this.rankingService = rankingService;
             this.matchScoreCalculator = matchScoreCalculator;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.scoreResultAggregator = scoreResultAggregator;
         }
 
         public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstHla(
             IEnumerable<MatchResult> matchResults,
-            PhenotypeInfo<string> patientHla)
+            PhenotypeInfo<string> patientHla,
+            IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring = null)
         {
             var patientScoringLookupResult = await GetHlaScoringResults(patientHla);
 
@@ -60,7 +72,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
             {
                 var lookupResult = await GetHlaScoringResults(matchResult.Donor.HlaNames);
 
-                var scoreResult = ScoreDonorAndPatient(lookupResult, patientScoringLookupResult);
+                var scoreResult = ScoreDonorAndPatient(lookupResult, patientScoringLookupResult, lociToExcludeFromAggregateScoring);
 
                 matchAndScoreResults.Add(CombineMatchAndScoreResults(matchResult, scoreResult));
             }
@@ -68,11 +80,14 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
             return rankingService.RankSearchResults(matchAndScoreResults);
         }
 
-        public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(PhenotypeInfo<string> donorHla, PhenotypeInfo<string> patientHla)
+        public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(
+            PhenotypeInfo<string> donorHla,
+            PhenotypeInfo<string> patientHla,
+            IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring)
         {
             var patientLookupResult = await GetHlaScoringResults(patientHla);
             var donorLookupResult = await GetHlaScoringResults(donorHla);
-            return ScoreDonorAndPatient(donorLookupResult, patientLookupResult);
+            return ScoreDonorAndPatient(donorLookupResult, patientLookupResult, lociToExcludeFromAggregateScoring);
         }
 
         private static MatchAndScoreResult CombineMatchAndScoreResults(MatchResult matchResult, ScoreResult scoreResult)
@@ -86,23 +101,23 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
 
         private ScoreResult ScoreDonorAndPatient(
             PhenotypeInfo<IHlaScoringLookupResult> donorScoringLookupResult,
-            PhenotypeInfo<IHlaScoringLookupResult> patientScoringLookupResult
-        )
+            PhenotypeInfo<IHlaScoringLookupResult> patientScoringLookupResult,
+            IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring)
         {
             var grades = gradingService.CalculateGrades(patientScoringLookupResult, donorScoringLookupResult);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringLookupResult, donorScoringLookupResult, grades);
 
             var locusTypingInformation = donorScoringLookupResult.Map((l, p, result) => result != null);
 
-            var scoreResult = BuildScoreResult(grades, confidences, locusTypingInformation);
+            var scoreResult = BuildScoreResult(grades, confidences, locusTypingInformation, lociToExcludeFromAggregateScoring);
             return scoreResult;
         }
 
         private ScoreResult BuildScoreResult(
             PhenotypeInfo<MatchGradeResult> grades,
             PhenotypeInfo<MatchConfidence> confidences,
-            PhenotypeInfo<bool> locusTypingInformation
-        )
+            PhenotypeInfo<bool> locusTypingInformation,
+            IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring)
         {
             var scoreResult = new ScoreResult();
             var scoredLoci = LocusSettings.AllLoci;
@@ -124,7 +139,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
                 scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
             }
 
-            scoreResult.MatchCategory = MatchCategoriser.CategoriseMatch(scoreResult);
+            scoreResult.AggregateScoreDetails = scoreResultAggregator.AggregateScoreDetails(scoreResult, lociToExcludeFromAggregateScoring);
             return scoreResult;
         }
 

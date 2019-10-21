@@ -8,6 +8,7 @@ using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Helpers;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Search.Matching;
@@ -68,7 +69,12 @@ namespace Nova.SearchAlgorithm.Services.Search
             });
             stopwatch.Restart();
 
-            var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla);
+            var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore
+                .Select(l => l.ToAlgorithmLocus())
+                .Where(l => l != null)
+                .Select(l => l.Value)
+                .ToList();
+            var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
 
             logger.SendTrace("Search timing: Scoring complete", LogLevel.Info, new Dictionary<string, string>
             {
@@ -139,13 +145,13 @@ namespace Nova.SearchAlgorithm.Services.Search
                 DonorId = result.MatchResult.Donor.DonorId,
                 DonorType = result.MatchResult.Donor.DonorType,
                 Registry = result.MatchResult.Donor.RegistryCode,
-                OverallMatchConfidence = result.ScoreResult.OverallMatchConfidence,
-                MatchCategory = result.ScoreResult.MatchCategory ?? throw new Exception("Expected match category in scoring info."),
-                ConfidenceScore = result.ScoreResult.ConfidenceScore,
-                GradeScore = result.ScoreResult.GradeScore,
+                OverallMatchConfidence = result.ScoreResult.AggregateScoreDetails.OverallMatchConfidence,
+                MatchCategory = result.ScoreResult.AggregateScoreDetails.MatchCategory,
+                ConfidenceScore = result.ScoreResult.AggregateScoreDetails.ConfidenceScore,
+                GradeScore = result.ScoreResult.AggregateScoreDetails.GradeScore,
+                TypedLociCount = result.ScoreResult.AggregateScoreDetails.TypedLociCount,
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
                 PotentialMatchCount = result.PotentialMatchCount,
-                TypedLociCount = result.ScoreResult.TypedLociCount,
                 SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),
                 SearchResultAtLocusB = MapSearchResultToApiLocusSearchResult(result, Locus.B),
                 SearchResultAtLocusC = MapSearchResultToApiLocusSearchResult(result, Locus.C),

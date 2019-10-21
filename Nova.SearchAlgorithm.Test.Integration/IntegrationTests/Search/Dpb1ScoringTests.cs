@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -164,6 +165,35 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        [Test]
+        public async Task Search_SixOutOfSix_WhenDpb1IsExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_TotalScoreIsNotMismatch()
+        {
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
+                .SixOutOfSix()
+                .WithDpb1ExcludedFromScoringAggregation()
+                .Build();
+
+            var searchResults = await searchService.Search(searchRequest);
+            var result = searchResults.SingleOrDefault(d => d.DonorId == testDonorId);
+
+            result.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
+        }
+        
+        [Test]
+        public async Task Search_SixOutOfSix_WhenDpb1IsNotExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_TotalScoreIsMismatch()
+        {
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
+                .SixOutOfSix()
+                .Build();
+
+            var searchResults = await searchService.Search(searchRequest);
+            var result = searchResults.SingleOrDefault(d => d.DonorId == testDonorId);
+
+            result.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
 
         private static PhenotypeInfo<string> GetDefaultPhenotype()
