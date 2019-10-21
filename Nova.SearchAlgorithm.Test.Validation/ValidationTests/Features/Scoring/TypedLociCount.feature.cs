@@ -71,10 +71,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Fully Typed Donor")]
-        public virtual void FullyTypedDonor()
+        [NUnit.Framework.DescriptionAttribute("Fully Typed Donor with no loci excluded from aggregate scoring")]
+        public virtual void FullyTypedDonorWithNoLociExcludedFromAggregateScoring()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fully Typed Donor", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fully Typed Donor with no loci excluded from aggregate scoring", null, ((string[])(null)));
 #line 5
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
@@ -91,10 +91,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("DPB1 Typed But Excluded")]
-        public virtual void DPB1TypedButExcluded()
+        [NUnit.Framework.DescriptionAttribute("Fully Typed Donor with DPB1 excluded from aggregate scoring")]
+        public virtual void FullyTypedDonorWithDPB1ExcludedFromAggregateScoring()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("DPB1 Typed But Excluded", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fully Typed Donor with DPB1 excluded from aggregate scoring", null, ((string[])(null)));
 #line 11
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
