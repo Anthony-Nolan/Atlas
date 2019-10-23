@@ -110,7 +110,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     }
                     catch (MatchingDictionaryException e)
                     {
-                        logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, d.DonorId.ToString()));
+                        logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, $"{d.DonorId}"));
                         failedDonorIds.Add(d.DonorId);
                         return null;
                     }
