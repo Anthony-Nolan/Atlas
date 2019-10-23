@@ -101,33 +101,39 @@ namespace Nova.SearchAlgorithm.Services.Donors
         {
             var failedDonorIds = new List<int>();
 
-            var expandedDonors = await Task.WhenAll(inputDonors.Select(async d =>
-                {
-                    try
-                    {
-                        var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(new PhenotypeInfo<string>(d.HlaNames));
-                        return CombineDonorAndExpandedHla(d, hla);
-                    }
-                    catch (MatchingDictionaryException e)
-                    {
-                        logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, $"{d.DonorId}"));
-                        failedDonorIds.Add(d.DonorId);
-                        return null;
-                    }
-                }
-            ));
-
-            if (failedDonorIds.Any())
+            try
             {
-                await notificationsClient.SendAlert(new Alert(
-                    "Could not update donor(s) in search algorithm",
-                    $"Processing failed for donors: {string.Join(",", failedDonorIds)}. An event has been logged for each donor in Application Insights.",
-                    Priority.Medium,
-                    NotificationConstants.OriginatorName
+                var expandedDonors = await Task.WhenAll(inputDonors.Select(async d =>
+                    {
+                        try
+                        {
+                            var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(
+                                new PhenotypeInfo<string>(d.HlaNames));
+                            return CombineDonorAndExpandedHla(d, hla);
+                        }
+                        catch (MatchingDictionaryException e)
+                        {
+                            logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, $"{d.DonorId}"));
+                            failedDonorIds.Add(d.DonorId);
+                            return null;
+                        }
+                    }
                 ));
-            }
 
-            return expandedDonors.Where(d => d != null);
+                return expandedDonors.Where(d => d != null);
+            }
+            finally
+            {
+                if (failedDonorIds.Any())
+                {
+                    await notificationsClient.SendAlert(new Alert(
+                        "Could not update donor(s) in search algorithm",
+                        $"Processing failed for donors: {string.Join(",", failedDonorIds)}. An event has been logged for each donor in Application Insights.",
+                        Priority.Medium,
+                        NotificationConstants.OriginatorName
+                    ));
+                }
+            }
         }
 
         private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(
