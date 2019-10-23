@@ -37,6 +37,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
         {
             donors = donors.ToList();
+
+            if (!donors.Any())
+            {
+                return;
+            }
+
             await InsertBatchOfDonors(donors.Select(d => d.ToInputDonor()));
             await AddMatchingPGroupsForExistingDonorBatch(donors);
         }
@@ -46,6 +52,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         public async Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> donorsToUpdate)
         {
             donorsToUpdate = donorsToUpdate.ToList();
+
+            if (!donorsToUpdate.Any())
+            {
+                return;
+            }
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
