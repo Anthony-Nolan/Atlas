@@ -4,11 +4,11 @@ using Nova.Utils.ApplicationInsights.EventModels;
 
 namespace Nova.SearchAlgorithm.ApplicationInsights
 {
-    public class HlaRefreshMatchingDictionaryLookupFailureEventModel : EventModel
+    public class MatchingDictionaryLookupFailureEventModel : EventModel
     {
-        private const string MessageName = "Error processing donor in hla refresh job - could not lookup hla in matching dictionary";
+        private const string MessageName = "Error processing donor - could not lookup HLA in matching dictionary";
         
-        public HlaRefreshMatchingDictionaryLookupFailureEventModel(
+        public MatchingDictionaryLookupFailureEventModel(
             MatchingDictionaryException exception, 
             string donorId) : base(MessageName)
         {
