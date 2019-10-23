@@ -120,7 +120,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
             if (failedDonorIds.Any())
             {
                 await notificationsClient.SendAlert(new Alert(
-                    "Could not update donor in search algorithm",
+                    "Could not update donor(s) in search algorithm",
                     $"Processing failed for donors: {string.Join(",", failedDonorIds)}. An event has been logged for each donor in Application Insights.",
                     Priority.Medium,
                     NotificationConstants.OriginatorName
