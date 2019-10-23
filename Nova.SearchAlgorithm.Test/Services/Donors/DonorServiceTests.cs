@@ -1,19 +1,20 @@
+using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
-using NSubstitute.ExceptionExtensions;
 
 namespace Nova.SearchAlgorithm.Test.Services.Donors
 {
@@ -53,13 +54,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public async Task CreateOrUpdateDonorBatch_WhenDonorDoesNotExist_CreatesDonor()
         {
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult>(),
-                new Dictionary<int, DonorResult> {{0, new DonorResult()}});
+                new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
 
             var inputDonor = new InputDonor
             {
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            await donorService.CreateOrUpdateDonorBatch(new[] {inputDonor});
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
             await updateRepository.Received().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
@@ -71,9 +72,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             {
                 HlaNames = new PhenotypeInfo<string>("hla")
             };
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> {{0, new DonorResult()}});
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
 
-            await donorService.CreateOrUpdateDonorBatch(new[] {inputDonor});
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
             await updateRepository.Received().UpdateDonorBatch(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
         }
@@ -81,41 +82,55 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         [Test]
         public void CreateOrUpdateDonorBatch_WhenDonorHlaCannotBeProcessed_DoesNotThrowException()
         {
-            var inputDonor = new InputDonor {HlaNames = new PhenotypeInfo<string>("hla")};
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> {{0, new DonorResult()}});
-            expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(null).ThrowsForAnyArgs(new MatchingDictionaryException());
+            var inputDonor = new InputDonor { HlaNames = new PhenotypeInfo<string>("hla") };
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
+            expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(null).ThrowsForAnyArgs(
+                new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "message"));
 
             Assert.DoesNotThrowAsync(async () =>
-                await donorService.CreateOrUpdateDonorBatch(new[] {inputDonor})
+                await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor })
             );
         }
 
         [Test]
-        public async Task CreateOrUpdateDonorBatch_WhenDonorHlaCannotBeProcessed_SendsNotification()
+        public async Task CreateOrUpdateDonorBatch_WhenDonorHlaCannotBeProcessed_LogsEvent()
         {
-            var inputDonor = new InputDonor {HlaNames = new PhenotypeInfo<string>("hla"), DonorId = 1};
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> {{0, new DonorResult()}});
-            expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(null).ThrowsForAnyArgs(new MatchingDictionaryException());
+            var inputDonor = new InputDonor { HlaNames = new PhenotypeInfo<string>("hla") };
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
+            expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(null).ThrowsForAnyArgs(
+                new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "message"));
 
-            await donorService.CreateOrUpdateDonorBatch(new[] {inputDonor});
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
 
-            await notificationsClient.Received().SendNotification(Arg.Is<Notification>(n => n.Description.Contains(inputDonor.DonorId.ToString())));
+            logger.Received().SendEvent(Arg.Any<MatchingDictionaryLookupFailureEventModel>());
         }
 
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_WhenDonorHlaCannotBeProcessed_SendsAlert()
+        {
+            var inputDonor = new InputDonor { HlaNames = new PhenotypeInfo<string>("hla"), DonorId = 1 };
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
+            expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(null).ThrowsForAnyArgs(
+                new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "message"));
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            await notificationsClient.Received().SendAlert(Arg.Is<Alert>(n => n.Description.Contains(inputDonor.DonorId.ToString())));
+        }
 
         [Test]
         public async Task CreateOrUpdateDonorBatch_WhenOneDonorsHlaCannotBeProcessed_UpdatesOtherDonors()
         {
-            var donor1 = new InputDonor {HlaNames = new PhenotypeInfo<string>("hla"), DonorId = 1};
-            var donor2 = new InputDonor {HlaNames = new PhenotypeInfo<string>("hla"), DonorId = 2};
+            var donor1 = new InputDonor { HlaNames = new PhenotypeInfo<string>("hla"), DonorId = 1 };
+            var donor2 = new InputDonor { HlaNames = new PhenotypeInfo<string>("hla"), DonorId = 2 };
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult>());
             expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(null)
                 .ReturnsForAnyArgs(
                     x => new PhenotypeInfo<ExpandedHla>(),
-                    x => throw new MatchingDictionaryException()
+                    x => throw new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "message")
                 );
 
-            await donorService.CreateOrUpdateDonorBatch(new[] {donor1, donor2});
+            await donorService.CreateOrUpdateDonorBatch(new[] { donor1, donor2 });
 
             await updateRepository.Received().InsertBatchOfDonorsWithExpandedHla(Arg.Is<IEnumerable<InputDonorWithExpandedHla>>(d => d.Count() == 1));
         }
@@ -125,9 +140,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             const int donorId = 123;
 
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> {{0, new DonorResult()}});
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
 
-            await donorService.SetDonorBatchAsUnavailableForSearch(new[] {donorId});
+            await donorService.SetDonorBatchAsUnavailableForSearch(new[] { donorId });
 
             await updateRepository.Received().SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }

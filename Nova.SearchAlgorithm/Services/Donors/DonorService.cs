@@ -1,17 +1,17 @@
-using AutoMapper;
+using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Config;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {
@@ -99,6 +99,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
         private async Task<IEnumerable<InputDonorWithExpandedHla>> GetDonorsWithExpandedHla(IEnumerable<InputDonor> inputDonors)
         {
+            var failedDonorIds = new List<int>();
+
             var expandedDonors = await Task.WhenAll(inputDonors.Select(async d =>
                 {
                     try
@@ -108,20 +110,23 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     }
                     catch (MatchingDictionaryException e)
                     {
-                        var errorMessage = $"Could not process HLA for donor: {d.DonorId}. Exception: {e}. The donor will not be updated.";
-                        logger.SendTrace(
-                            errorMessage,
-                            LogLevel.Error
-                        );
-                        await notificationsClient.SendNotification(new Notification(
-                            "Could not update donor in search algorithm",
-                            $"Processing failed for donor {d.DonorId}. See Application Insights for full logs.",
-                            NotificationConstants.OriginatorName
-                        ));
+                        logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, d.DonorId.ToString()));
+                        failedDonorIds.Add(d.DonorId);
                         return null;
                     }
                 }
             ));
+
+            if (failedDonorIds.Any())
+            {
+                await notificationsClient.SendAlert(new Alert(
+                    "Could not update donor in search algorithm",
+                    $"Processing failed for donors: {string.Join(",", failedDonorIds)}. An event has been logged for each donor in Application Insights.",
+                    Priority.Medium,
+                    NotificationConstants.OriginatorName
+                ));
+            }
+
             return expandedDonors.Where(d => d != null);
         }
 

@@ -6,10 +6,6 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Exceptions
     {
         public HlaInfo HlaInfo { get; }
 
-        public MatchingDictionaryException()
-        {
-        }
-
         public MatchingDictionaryException(HlaInfo hlaInfo, string message)
             : base(message)
         {

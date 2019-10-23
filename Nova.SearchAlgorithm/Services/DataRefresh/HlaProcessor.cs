@@ -219,7 +219,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
             catch (MatchingDictionaryException e)
             {
-                logger.SendEvent(new HlaRefreshMatchingDictionaryLookupFailureEventModel(e, donor.DonorId.ToString()));
+                logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, donor.DonorId.ToString()));
                 return new InputDonorWithExpandedHla
                 {
                     DonorId = donor.DonorId,
