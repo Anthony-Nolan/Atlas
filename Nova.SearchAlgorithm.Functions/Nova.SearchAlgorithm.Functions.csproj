@@ -16,7 +16,7 @@
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.28" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
         <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
-        <PackageReference Include="Nova.Utils.ServiceClient" Version="12.0.19" />
+        <PackageReference Include="Nova.Utils.ServiceClient" Version="12.4.3" />
     </ItemGroup>
     <ItemGroup>
         <None Update="host.json">
