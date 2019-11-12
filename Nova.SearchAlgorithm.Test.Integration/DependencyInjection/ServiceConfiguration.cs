@@ -1,18 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.HLAService.Client;
 using Nova.SearchAlgorithm.Clients.Http;
+using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.DependencyInjection;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Nova.Utils.Models;
 using Nova.Utils.Notifications;
 using NSubstitute;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
 {
@@ -49,6 +51,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             services.AddScoped(sp => mockHlaServiceClient);
+
+            var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
+            mockSearchServiceBusClient
+                .PublishToSearchQueue(Arg.Any<IdentifiedSearchRequest>())
+                .Returns(Task.CompletedTask);
+            services.AddScoped(sp => mockSearchServiceBusClient);
 
             services.AddScoped(sp => Substitute.For<IDonorServiceClient>());
             services.AddScoped(sp => Substitute.For<INotificationsClient>());

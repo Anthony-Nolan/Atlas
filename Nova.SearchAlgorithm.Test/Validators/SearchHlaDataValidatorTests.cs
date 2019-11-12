@@ -17,33 +17,39 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         }
         
         [Test]
-        public void Validator_WhenMissingLocusMismatchCriteriaA_ShouldHaveValidationError()
+        public void Validator_WhenMissingLocusSearchHlaA_ShouldHaveValidationError()
         {
             validator.ShouldHaveValidationErrorFor(x => x.LocusSearchHlaA, (LocusSearchHla) null);
         }
 
         [Test]
-        public void Validator_WhenMissingLocusMismatchCriteriaB_ShouldHaveValidationError()
+        public void Validator_WhenMissingLocusSearchHlaB_ShouldHaveValidationError()
         {
             validator.ShouldHaveValidationErrorFor(x => x.LocusSearchHlaB, (LocusSearchHla) null);
         }
 
         [Test]
-        public void Validator_WhenMissingLocusMismatchCriteriaDrb1_ShouldHaveValidationError()
+        public void Validator_WhenMissingLocusSearchHlaDrb1_ShouldHaveValidationError()
         {
             validator.ShouldHaveValidationErrorFor(x => x.LocusSearchHlaDrb1, (LocusSearchHla) null);
         }
-        
+
         [Test]
-        public void Validator_WhenMissingLocusMismatchCriteriaDqb1_ShouldNotHaveValidationError()
-        {
-            validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaDqb1, (LocusSearchHla) null);
-        }
-        
-        [Test]
-        public void Validator_WhenMissingLocusMismatchCriteriaC_ShouldNotHaveValidationError()
+        public void Validator_WhenMissingLocusSearchHlaC_ShouldNotHaveValidationError()
         {
             validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaC, (LocusSearchHla) null);
+        }
+
+        [Test]
+        public void Validator_WhenMissingLocusSearchHlaDqb1_ShouldNotHaveValidationError()
+        {
+            validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaDqb1, (LocusSearchHla)null);
+        }
+
+        [Test]
+        public void Validator_WhenMissingLocusSearchHlaDpb1_ShouldNotHaveValidationError()
+        {
+            validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaDpb1, (LocusSearchHla)null);
         }
     }
 }

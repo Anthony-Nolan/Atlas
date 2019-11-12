@@ -7,8 +7,8 @@ namespace Nova.SearchAlgorithm.Validators
     {
         public LocusSearchHlaValidator()
         {
-            RuleFor(x => x.SearchHla1).NotEmpty().NotNull();
-            RuleFor(x => x.SearchHla2).NotEmpty().NotNull();
+            RuleFor(x => x.SearchHla1).NotEmpty();
+            RuleFor(x => x.SearchHla2).NotEmpty();
         }
     }
 }

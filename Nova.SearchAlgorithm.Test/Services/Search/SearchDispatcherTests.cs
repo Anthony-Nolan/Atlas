@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
 using FluentValidation;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Clients;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
+using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Search;
@@ -17,6 +13,8 @@ using Nova.Utils.Http.Exceptions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.Search
 {
@@ -45,7 +43,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         [Test]
         public async Task DispatchSearch_DispatchesSearchWithId()
         {
-            await searchDispatcher.DispatchSearch(new SearchRequestBuilder().Build());
+            await searchDispatcher.DispatchSearch(
+                new SearchRequestBuilder().WithSearchHla(new PhenotypeInfo<string>("hla-type")).Build());
 
             await searchServiceBusClient.Received().PublishToSearchQueue(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
         }
