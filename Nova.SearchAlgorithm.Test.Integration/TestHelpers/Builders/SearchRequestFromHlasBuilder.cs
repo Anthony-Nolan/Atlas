@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.Utils.Models;
@@ -21,6 +22,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas = null)
         {
             searchRequestBuilder = new SearchRequestBuilder()
+                .WithSearchType(DonorType.Adult)
+                .ForRegistries(new List<RegistryCode> { RegistryCode.AN })
+                .WithLociExcludedFromScoringAggregates(new List<LocusType>())
                 .WithLocusSearchHla(Locus.A, TypePosition.One, searchHlas.A.Position1)
                 .WithLocusSearchHla(Locus.A, TypePosition.Two, searchHlas.A.Position2)
                 .WithLocusSearchHla(Locus.B, TypePosition.One, searchHlas.B.Position1)
@@ -105,7 +109,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder WithDpb1ExcludedFromScoringAggregation()
         {
-            searchRequestBuilder.WithLociExcludedFromScoringAggregates(new List<LocusType> {LocusType.Dpb1});
+            searchRequestBuilder.WithLociExcludedFromScoringAggregates(new List<LocusType> { LocusType.Dpb1 });
             return this;
         }
 
