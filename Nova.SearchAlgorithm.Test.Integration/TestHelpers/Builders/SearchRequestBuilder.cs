@@ -112,15 +112,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
 
-        public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePosition position, string hlaString)
+        public SearchRequestBuilder WithLocusSearchHla(Locus locus, TypePosition position, string hlaString)
         {
-            // API level validation will fail if individual hla are null, but not if the locus is omitted altogether. 
-            // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should bve added
-            if (hlaString == null)
-            {
-                return this;
-            }
-            
             switch (locus)
             {
                 case Locus.A:
@@ -238,6 +231,35 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestBuilder WithEmptyLocusSearchHlaAt(Locus locus)
+        {
+            switch (locus)
+            {
+                case Locus.A:
+                    searchRequest.SearchHlaData.LocusSearchHlaA = null;
+                    break;
+                case Locus.B:
+                    searchRequest.SearchHlaData.LocusSearchHlaB = null;
+                    break;
+                case Locus.C:
+                    searchRequest.SearchHlaData.LocusSearchHlaC = null;
+                    break;
+                case Locus.Dpb1:
+                    searchRequest.SearchHlaData.LocusSearchHlaDpb1 = null;
+                    break;
+                case Locus.Dqb1:
+                    searchRequest.SearchHlaData.LocusSearchHlaDqb1 = null;
+                    break;
+                case Locus.Drb1:
+                    searchRequest.SearchHlaData.LocusSearchHlaDrb1 = null;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+            }
+
+            return this;
+        }
+
         public SearchRequestBuilder WithSearchType(DonorType donorType)
         {
             searchRequest.SearchType = donorType;
@@ -258,18 +280,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
         {
-            return WithLocusMatchHla(Locus.A, TypePosition.One, searchHla.A.Position1)
-                .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHla.A.Position2)
-                .WithLocusMatchHla(Locus.B, TypePosition.One, searchHla.B.Position1)
-                .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHla.B.Position2)
-                .WithLocusMatchHla(Locus.C, TypePosition.One, searchHla.C.Position1)
-                .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHla.C.Position2)
-                .WithLocusMatchHla(Locus.Dpb1, TypePosition.One, searchHla.Dpb1.Position1)
-                .WithLocusMatchHla(Locus.Dpb1, TypePosition.Two, searchHla.Dpb1.Position2)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHla.Dqb1.Position1)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHla.Dqb1.Position2)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHla.Drb1.Position1)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
+            return WithLocusSearchHla(Locus.A, TypePosition.One, searchHla.A.Position1)
+                .WithLocusSearchHla(Locus.A, TypePosition.Two, searchHla.A.Position2)
+                .WithLocusSearchHla(Locus.B, TypePosition.One, searchHla.B.Position1)
+                .WithLocusSearchHla(Locus.B, TypePosition.Two, searchHla.B.Position2)
+                .WithLocusSearchHla(Locus.C, TypePosition.One, searchHla.C.Position1)
+                .WithLocusSearchHla(Locus.C, TypePosition.Two, searchHla.C.Position2)
+                .WithLocusSearchHla(Locus.Dpb1, TypePosition.One, searchHla.Dpb1.Position1)
+                .WithLocusSearchHla(Locus.Dpb1, TypePosition.Two, searchHla.Dpb1.Position2)
+                .WithLocusSearchHla(Locus.Dqb1, TypePosition.One, searchHla.Dqb1.Position1)
+                .WithLocusSearchHla(Locus.Dqb1, TypePosition.Two, searchHla.Dqb1.Position2)
+                .WithLocusSearchHla(Locus.Drb1, TypePosition.One, searchHla.Drb1.Position1)
+                .WithLocusSearchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
         }
 
         public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<LocusType> loci)
