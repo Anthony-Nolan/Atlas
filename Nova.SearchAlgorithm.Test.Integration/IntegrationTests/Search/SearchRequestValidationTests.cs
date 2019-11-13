@@ -162,9 +162,18 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public void DispatchSearch_RegistriesToSearchIsEmpty_ThrowsValidationError()
+        public void DispatchSearch_RegistriesToSearchIsNull_ThrowsValidationError()
         {
             searchRequest.RegistriesToSearch = null;
+
+            Assert.ThrowsAsync<ValidationException>(
+                async () => await searchDispatcher.DispatchSearch(searchRequest));
+        }
+
+        [Test]
+        public void DispatchSearch_RegistriesToSearchIsEmpty_ThrowsValidationError()
+        {
+            searchRequest.RegistriesToSearch = new List<RegistryCode>();
 
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));

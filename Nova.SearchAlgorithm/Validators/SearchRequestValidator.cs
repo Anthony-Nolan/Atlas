@@ -9,11 +9,11 @@ namespace Nova.SearchAlgorithm.Validators
     {
         public SearchRequestValidator()
         {
-            RuleFor(x => x.SearchType).NotEmpty().IsInEnum();
-            RuleFor(x => x.MatchCriteria).NotEmpty().SetValidator(new MismatchCriteriaValidator());
-            RuleFor(x => x.SearchHlaData).NotEmpty().SetValidator(new SearchHlaDataValidator());
-            RuleFor(x => x.SearchHlaData.LocusSearchHlaC).NotEmpty().When(x => x.MatchCriteria?.LocusMismatchC != null);
-            RuleFor(x => x.SearchHlaData.LocusSearchHlaDqb1).NotEmpty().When(x => x.MatchCriteria?.LocusMismatchDqb1 != null);
+            RuleFor(x => x.SearchType).NotNull().IsInEnum();
+            RuleFor(x => x.MatchCriteria).NotNull().SetValidator(new MismatchCriteriaValidator());
+            RuleFor(x => x.SearchHlaData).NotNull().SetValidator(new SearchHlaDataValidator());
+            RuleFor(x => x.SearchHlaData.LocusSearchHlaC).NotNull().When(x => x.MatchCriteria?.LocusMismatchC != null);
+            RuleFor(x => x.SearchHlaData.LocusSearchHlaDqb1).NotNull().When(x => x.MatchCriteria?.LocusMismatchDqb1 != null);
             RuleFor(x => x.RegistriesToSearch).NotEmpty();
             RuleForEach(x => x.RegistriesToSearch).IsInEnum();
             RuleFor(x => x.LociToExcludeFromAggregateScore)

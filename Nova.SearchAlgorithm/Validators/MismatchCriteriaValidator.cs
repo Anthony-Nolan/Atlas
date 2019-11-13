@@ -7,9 +7,9 @@ namespace Nova.SearchAlgorithm.Validators
     {
         public MismatchCriteriaValidator()
         {
-            RuleFor(x => x.LocusMismatchA).NotEmpty().SetValidator(new LocusMismatchCriteriaValidator());
-            RuleFor(x => x.LocusMismatchB).NotEmpty().SetValidator(new LocusMismatchCriteriaValidator());
-            RuleFor(x => x.LocusMismatchDrb1).NotEmpty().SetValidator(new LocusMismatchCriteriaValidator());
+            RuleFor(x => x.LocusMismatchA).NotNull().SetValidator(new LocusMismatchCriteriaValidator());
+            RuleFor(x => x.LocusMismatchB).NotNull().SetValidator(new LocusMismatchCriteriaValidator());
+            RuleFor(x => x.LocusMismatchDrb1).NotNull().SetValidator(new LocusMismatchCriteriaValidator());
             RuleFor(x => x.LocusMismatchC).SetValidator(new LocusMismatchCriteriaValidator());
             RuleFor(x => x.LocusMismatchDqb1).SetValidator(new LocusMismatchCriteriaValidator());
             RuleFor(x => x.DonorMismatchCount).NotNull().GreaterThanOrEqualTo(0).LessThanOrEqualTo(4);
