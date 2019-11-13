@@ -75,7 +75,6 @@
         <ProjectReference Include="..\Nova.SearchAlgorithm.Client\Nova.SearchAlgorithm.Client.csproj" />
         <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj" />
         <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj" />
-        <ProjectReference Include="..\Nova.SearchAlgorithm.Test.Integration\Nova.SearchAlgorithm.Test.Integration.csproj" />
         <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj" />
     </ItemGroup>
 

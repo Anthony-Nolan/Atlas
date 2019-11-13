@@ -7,7 +7,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.Utils.Models;
 using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
-namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
+namespace Nova.SearchAlgorithm.Test.Validation.TestHelpers
 {
     public class SearchRequestBuilder
     {
@@ -15,7 +15,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestBuilder()
         {
-            searchRequest = new SearchRequest();
+            searchRequest = new SearchRequest()
+            {
+                SearchType = DonorType.Adult,
+                RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
+                MatchCriteria = new MismatchCriteria
+                {
+                    LocusMismatchA = new LocusMismatchCriteria(),
+                    LocusMismatchB = new LocusMismatchCriteria(),
+                    LocusMismatchDrb1 = new LocusMismatchCriteria()
+                },
+                SearchHlaData = new SearchHlaData
+                {
+                    LocusSearchHlaA = new LocusSearchHla(),
+                    LocusSearchHlaB = new LocusSearchHla(),
+                    LocusSearchHlaDrb1 = new LocusSearchHla(),
+                },
+                LociToExcludeFromAggregateScore = new List<LocusType>()
+            };
         }
 
         public SearchRequestBuilder WithTotalMismatchCount(int mismatchCount)
