@@ -44,7 +44,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         public async Task DispatchSearch_DispatchesSearchWithId()
         {
             await searchDispatcher.DispatchSearch(
-                new SearchRequestBuilder().WithSearchHla(new PhenotypeInfo<string>("hla-type")).Build());
+                new SearchRequestBuilder()
+                    .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
+                    .WithTotalMismatchCount(0)
+                    .Build());
 
             await searchServiceBusClient.Received().PublishToSearchQueue(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
         }
