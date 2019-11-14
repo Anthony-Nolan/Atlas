@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nova.SearchAlgorithm.Data;
 
 namespace Nova.SearchAlgorithm.Data.Migrations
 {
     [DbContext(typeof(SearchAlgorithmContext))]
-    partial class SearchAlgorithmContextModelSnapshot : ModelSnapshot
+    [Migration("20191114150020_AddFilteredIndexOnDonorsWithoutLocusDqb1")]
+    partial class AddFilteredIndexOnDonorsWithoutLocusDqb1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
