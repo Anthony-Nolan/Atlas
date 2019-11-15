@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nova.SearchAlgorithm.Data;
 
 namespace Nova.SearchAlgorithm.Data.Migrations
 {
     [DbContext(typeof(SearchAlgorithmContext))]
-    partial class SearchAlgorithmContextModelSnapshot : ModelSnapshot
+    [Migration("20191114145946_AddFilteredIndexOnDonorsWithoutLocusC")]
+    partial class AddFilteredIndexOnDonorsWithoutLocusC
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,11 +67,6 @@ namespace Nova.SearchAlgorithm.Data.Migrations
                         .HasName("FI_DonorIdsWithoutLocusC")
                         .HasFilter("[C_1] IS NULL AND [C_2] IS NULL")
                         .HasAnnotation("SqlServer:Include", new[] { "C_1", "C_2" });
-
-                    b.HasIndex("DonorId")
-                        .HasName("FI_DonorIdsWithoutLocusDQB1")
-                        .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL")
-                        .HasAnnotation("SqlServer:Include", new[] { "DQB1_1", "DQB1_2" });
 
                     b.ToTable("Donors");
                 });

@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Models;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Data
 {
@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Data
         public SearchAlgorithmContext(DbContextOptions<SearchAlgorithmContext> options) : base(options)
         {
         }
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
@@ -28,6 +28,24 @@ namespace Nova.SearchAlgorithm.Data
             modelBuilder.Entity<DonorManagementLog>()
                 .HasIndex(d => d.DonorId)
                 .IsUnique();
+
+            // Note: The Model Builder seems to have a bug
+            // where it will drop the Locus C filtered index
+            // when generating the DQB1 filtered index.
+            // Ensure that the migrations are created correctly
+            // when making changes to the following index definitions,
+            // or if adding new filtered indexes to the same table.
+            modelBuilder.Entity<Donor>()
+                .ForSqlServerHasIndex(d => d.DonorId)
+                .ForSqlServerInclude(d => new { d.C_1, d.C_2 })
+                .HasFilter("[C_1] IS NULL AND [C_2] IS NULL")
+                .HasName("FI_DonorIdsWithoutLocusC");
+
+            modelBuilder.Entity<Donor>()
+                .ForSqlServerHasIndex(d => d.DonorId)
+                .ForSqlServerInclude(d => new { d.DQB1_1, d.DQB1_2 })
+                .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL")
+                .HasName("FI_DonorIdsWithoutLocusDQB1");
 
             base.OnModelCreating(modelBuilder);
         }

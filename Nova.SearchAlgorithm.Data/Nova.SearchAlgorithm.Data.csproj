@@ -14,6 +14,10 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.6" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.3" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
