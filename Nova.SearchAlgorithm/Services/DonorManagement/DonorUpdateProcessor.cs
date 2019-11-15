@@ -47,6 +47,9 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
         private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
         {
+            // TODO: NOVA-4030 - Map messages within a foreach loop with try/catch for DonorImportException; log failures
+            // So that individual messages within a batch that fail mapping e.g., by having an invalid donor ID,
+            // don't cause the entire message batch to be abandoned.
             var updates = messageBatch.Select(MapDonorAvailabilityUpdate).ToList();
 
             logger.SendTrace($"{TraceMessagePrefix}: {updates.Count} messages retrieved for processing.", LogLevel.Info);
