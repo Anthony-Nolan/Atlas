@@ -1,8 +1,3 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using FluentValidation;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
@@ -10,8 +5,13 @@ using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
-using Nova.SearchAlgorithm.Validators;
+using Nova.SearchAlgorithm.Validators.SearchRequest;
 using Nova.Utils.ApplicationInsights;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.Search
 {

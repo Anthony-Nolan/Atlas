@@ -1,11 +1,10 @@
-using FluentValidation;
-using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.SearchAlgorithm.Helpers;
 using System.Linq;
+using FluentValidation;
+using Nova.SearchAlgorithm.Helpers;
 
-namespace Nova.SearchAlgorithm.Validators
+namespace Nova.SearchAlgorithm.Validators.SearchRequest
 {
-    public class SearchRequestValidator : AbstractValidator<SearchRequest>
+    public class SearchRequestValidator : AbstractValidator<Client.Models.SearchRequests.SearchRequest>
     {
         public SearchRequestValidator()
         {

@@ -3,13 +3,13 @@ using FluentAssertions;
 using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.SearchAlgorithm.Validators;
+using Nova.SearchAlgorithm.Validators.SearchRequest;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Client.Validators
+namespace Nova.SearchAlgorithm.Test.Validators.SearchRequest
 {
     [TestFixture]
-    public class SearchRequestsValidatorTests
+    public class SearchRequestValidatorTests
     {
         private SearchRequestValidator validator;
 
@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         [Test]
         public void Validator_WhenAnyRegistryInvalid_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new SearchRequest
+            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria(),
@@ -46,7 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         [Test]
         public void Validator_WhenSearchTypeMissing_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new SearchRequest
+            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
                 MatchCriteria = new MismatchCriteria(),
                 RegistriesToSearch = new[] {RegistryCode.AN}
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         [Test]
         public void Validator_WithMatchCriteriaForLocusCAndNoHlaDataAtC_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new SearchRequest
+            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
                 RegistriesToSearch = new[] {RegistryCode.AN},
                 SearchType = DonorType.Adult,
@@ -87,7 +87,7 @@ namespace Nova.SearchAlgorithm.Test.Client.Validators
         [Test]
         public void Validator_WithMatchCriteriaForLocusDqb1AndNoHlaDataAtDqb1_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new SearchRequest
+            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
                 RegistriesToSearch = new[] {RegistryCode.AN},
                 SearchType = DonorType.Adult,

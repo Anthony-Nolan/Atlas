@@ -1,7 +1,7 @@
 using FluentValidation;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 
-namespace Nova.SearchAlgorithm.Validators
+namespace Nova.SearchAlgorithm.Validators.SearchRequest
 {
     public class SearchHlaDataValidator : AbstractValidator<SearchHlaData>
     {
