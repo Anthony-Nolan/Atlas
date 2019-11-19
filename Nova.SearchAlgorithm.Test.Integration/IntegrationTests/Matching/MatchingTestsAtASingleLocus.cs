@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
@@ -9,6 +7,8 @@ using Nova.SearchAlgorithm.Services.Search.Matching;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -28,11 +28,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         private InputDonorWithExpandedHla donorWithFullCrossHeterozygousMatchAtLocus;
 
         private const DonorType DefaultDonorType = DonorType.Cord;
-        
-        private readonly List<string> matchingPGroups = new List<string> {"dummy-matching-p-group"};
+
+        private const string MatchingPGroup = "dummy-matching-p-group";
         private readonly Locus locus;
-        private readonly List<string> patientPGroupsAtPositionOne = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionOne};
-        private readonly List<string> patientPGroupsAtPositionTwo = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionTwo};
+        private readonly List<string> patientPGroupsAtPositionOne = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionOne };
+        private readonly List<string> patientPGroupsAtPositionTwo = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionTwo };
 
         private const string PatientPGroupAtBothPositions = "patient-p-group-at-both-positions";
         private const string PatientPGroupAtPositionOne = "patient-p-group-at-position-one";
@@ -49,21 +49,25 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
         }
 
-        /// <summary>
-        /// Set up test data. This test suite is only testing variations on Locus A - the other required loci should be assumed to always match
-        /// </summary>
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var updateRepo = repositoryFactory.GetDonorUpdateRepository();
 
-            var defaultRequiredHla = new ExpandedHla {PGroups = matchingPGroups};
+            var defaultRequiredHla = new ExpandedHlaBuilder()
+                .WithPGroups(MatchingPGroup)
+                .Build();
+
             donorWithFullHomozygousMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne).Build(),
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup").Build()
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
+                        .Build()
                 )
                 .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
@@ -72,8 +76,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             donorWithFullExactHeterozygousMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup").Build(),
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup").Build()
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup")
+                        .Build()
                 )
                 .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
@@ -82,8 +90,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             donorWithFullCrossHeterozygousMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionTwo).Build(),
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionOne).Build()
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtPositionTwo)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtPositionOne)
+                        .Build()
                 )
                 .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
@@ -92,8 +104,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup").Build(),
-                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build()
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build()
                 )
                 .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
@@ -102,8 +118,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder().WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo).Build(),
-                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build()
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build()
                 )
                 .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
@@ -112,8 +132,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             donorWithNoMatchAtLocus = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithMatchingHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build(),
-                    new ExpandedHlaBuilder().WithPGroups("non-matching-pgroup", "non-matching-pgroup-2").Build()
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build()
                 )
                 .WithDefaultRequiredHla(defaultRequiredHla)
                 .WithDonorType(DefaultDonorType)
@@ -131,7 +155,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
         }
-        
+
         [OneTimeTearDown]
         public void TearDown()
         {
@@ -292,8 +316,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDefaultLocusMatchCriteria(new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = matchingPGroups,
-                    PGroupsToMatchInPositionTwo = matchingPGroups
+                    PGroupsToMatchInPositionOne = new[] { MatchingPGroup },
+                    PGroupsToMatchInPositionTwo = new[] { MatchingPGroup }
                 })
                 .WithSearchType(DefaultDonorType)
                 .WithDonorMismatchCount(0);

@@ -67,16 +67,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorWithFullHeterozygousMatchAtLocusA = GetDefaultInputDonorBuilder()
                 .WithMatchingHlaAtLocus(
                     Locus.A,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_BothPositions, "non-matching-pgroup" } },
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_PositionTwo, "non-matching-pgroup" } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_BothPositions, "non-matching-pgroup")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_PositionTwo, "non-matching-pgroup")
+                        .Build()
                 )
                 .Build();
 
             cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = GetDefaultInputDonorBuilder()
                 .WithMatchingHlaAtLocus(
                     Locus.A,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_BothPositions, "non-matching-pgroup" } },
-                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_BothPositions, "non-matching-pgroup")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build()
                 )
                 .Build();
 
@@ -84,34 +92,54 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = GetDefaultInputDonorBuilder()
                 .WithMatchingHlaAtLocus(
                     Locus.A,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo } },
-                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build()
                 )
                 .Build();
 
             cordDonorWithNoMatchAtLocusAAndExactMatchAtB = GetDefaultInputDonorBuilder()
                 .WithMatchingHlaAtLocus(
                     Locus.A,
-                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } },
-                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup-3", "non-matching-pgroup-4" } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup-3", "non-matching-pgroup-4")
+                        .Build()
                 )
                 .WithMatchingHlaAtLocus(
                     Locus.B,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusB_PositionOne } },
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusB_PositionTwo } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusB_PositionOne)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusB_PositionTwo)
+                        .Build()
                 )
                 .Build();
 
             cordDonorWithNoMatchAtLocusAAndHalfMatchAtB = GetDefaultInputDonorBuilder()
                 .WithMatchingHlaAtLocus(
                     Locus.A,
-                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup", "non-matching-pgroup-2" } },
-                    new ExpandedHla { PGroups = new List<string> { "non-matching-pgroup-3", "non-matching-pgroup-4" } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups("non-matching-pgroup-3", "non-matching-pgroup-4")
+                        .Build()
                 )
                 .WithMatchingHlaAtLocus(
                     Locus.B,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusB_PositionOne } },
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_PositionOne } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusB_PositionOne)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_PositionOne)
+                        .Build()
                 )
                 .Build();
 
@@ -253,18 +281,30 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .WithMatchingHlaAtLocus(
                     Locus.A,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_PositionOne } },
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusA_PositionTwo } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_PositionOne)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusA_PositionTwo)
+                        .Build()
                 )
                 .WithMatchingHlaAtLocus(
                     Locus.B,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusB_PositionOne } },
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusB_PositionTwo } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusB_PositionOne)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusB_PositionTwo)
+                        .Build()
                 )
                 .WithMatchingHlaAtLocus(
                     Locus.Drb1,
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusDRB1_PositionOne } },
-                    new ExpandedHla { PGroups = new List<string> { PatientPGroup_LocusDRB1_PositionTwo } }
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusDRB1_PositionOne)
+                        .Build(),
+                    new ExpandedHlaBuilder()
+                        .WithPGroups(PatientPGroup_LocusDRB1_PositionTwo)
+                        .Build()
                 );
         }
 
@@ -278,20 +318,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new List<string> { PatientPGroup_LocusA_BothPositions, PatientPGroup_LocusA_PositionOne },
-                    PGroupsToMatchInPositionTwo = new List<string> { PatientPGroup_LocusA_BothPositions, PatientPGroup_LocusA_PositionTwo }
+                    PGroupsToMatchInPositionOne = new[] { PatientPGroup_LocusA_BothPositions, PatientPGroup_LocusA_PositionOne },
+                    PGroupsToMatchInPositionTwo = new[] { PatientPGroup_LocusA_BothPositions, PatientPGroup_LocusA_PositionTwo }
                 })
                 .WithLocusMatchCriteria(Locus.B, new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new List<string> { PatientPGroup_LocusB_PositionOne },
-                    PGroupsToMatchInPositionTwo = new List<string> { PatientPGroup_LocusB_PositionTwo }
+                    PGroupsToMatchInPositionOne = new[] { PatientPGroup_LocusB_PositionOne },
+                    PGroupsToMatchInPositionTwo = new[] { PatientPGroup_LocusB_PositionTwo }
                 })
                 .WithLocusMatchCriteria(Locus.Drb1, new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new List<string> { PatientPGroup_LocusDRB1_PositionOne },
-                    PGroupsToMatchInPositionTwo = new List<string> { PatientPGroup_LocusDRB1_PositionTwo }
+                    PGroupsToMatchInPositionOne = new[] { PatientPGroup_LocusDRB1_PositionOne },
+                    PGroupsToMatchInPositionTwo = new[] { PatientPGroup_LocusDRB1_PositionTwo }
                 })
                 .WithDonorMismatchCount(0);
         }
