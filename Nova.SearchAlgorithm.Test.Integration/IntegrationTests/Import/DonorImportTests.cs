@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Client.Models;
@@ -63,7 +64,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task DonorImport_AddsNewDonorsToDatabase()
         {
-            var donorInfo = GetDonorInformationWithDefaultValues();
+            var donorInfo = SearchableDonorInformationBuilder().Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
             {
@@ -86,8 +87,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [TestCase("cord", DonorType.Cord)]
         public async Task DonorImport_ParsesDonorTypeCorrectly(string rawDonorType, DonorType expectedDonorType)
         {
-            var donorInfo = GetDonorInformationWithDefaultValues();
-            donorInfo.DonorType = rawDonorType;
+            var donorInfo = SearchableDonorInformationBuilder()
+                .With(x => x.DonorType, rawDonorType)
+                .Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
             {
@@ -108,8 +110,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public void DonorImport_WhenDonorHasUnrecognisedDonorType_ThrowsException()
         {
             const string unexpectedDonorType = "fossil";
-            var donorInfo = GetDonorInformationWithDefaultValues();
-            donorInfo.DonorType = unexpectedDonorType;
+            var donorInfo = SearchableDonorInformationBuilder()
+                .With(x => x.DonorType, unexpectedDonorType)
+                .Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
             {
@@ -131,8 +134,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [TestCase("NMDP", RegistryCode.NMDP)]
         public async Task DonorImport_ParsesRegistryCorrectly(string rawRegistry, RegistryCode expectedRegistry)
         {
-            var donorInfo = GetDonorInformationWithDefaultValues();
-            donorInfo.RegistryCode = rawRegistry;
+            var donorInfo = SearchableDonorInformationBuilder()
+                .With(x => x.RegistryCode, rawRegistry)
+                .Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
             {
@@ -153,8 +157,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         public void DonorImport_WhenDonorHasUnrecognisedRegistryCode_ThrowsException()
         {
             const string unexpectedRegistryCode = "MARS";
-            var donorInfo = GetDonorInformationWithDefaultValues();
-            donorInfo.RegistryCode = unexpectedRegistryCode;
+            var donorInfo = SearchableDonorInformationBuilder()
+                .With(x => x.RegistryCode, unexpectedRegistryCode)
+                .Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
             {
@@ -168,24 +173,22 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.ImportDonors());
         }
 
-        private static SearchableDonorInformation GetDonorInformationWithDefaultValues()
+        private static Builder<SearchableDonorInformation> SearchableDonorInformationBuilder()
         {
             const string defaultHlaName = "hla-name";
             const string defaultDonorType = "A";
             const string defaultRegistryCode = "DKMS";
 
-            return new SearchableDonorInformation
-            {
-                DonorId = DonorIdGenerator.NextId(),
-                DonorType = defaultDonorType,
-                RegistryCode = defaultRegistryCode,
-                A_1 = defaultHlaName,
-                A_2 = defaultHlaName,
-                B_1 = defaultHlaName,
-                B_2 = defaultHlaName,
-                DRB1_1 = defaultHlaName,
-                DRB1_2 = defaultHlaName
-            };
+            return Builder<SearchableDonorInformation>.New
+                .With(x => x.DonorId, DonorIdGenerator.NextId())
+                .With(x => x.DonorType, defaultDonorType)
+                .With(x => x.RegistryCode, defaultRegistryCode)
+                .With(x => x.A_1, defaultHlaName)
+                .With(x => x.A_2, defaultHlaName)
+                .With(x => x.B_1, defaultHlaName)
+                .With(x => x.B_2, defaultHlaName)
+                .With(x => x.DRB1_1, defaultHlaName)
+                .With(x => x.DRB1_2, defaultHlaName);
         }
 
         private static InputDonor DonorWithId(int id)
