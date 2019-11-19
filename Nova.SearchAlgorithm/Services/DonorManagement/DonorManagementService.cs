@@ -69,7 +69,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)
         {
             var availableDonors = updates
-                .Where(update => update.IsAvailableForSearch)
+                .Where(update => update.IsAvailableForSearch && update.DonorInfo != null)
                 .Select(d => d.DonorInfo)
                 .ToList();
 

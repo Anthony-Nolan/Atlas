@@ -1,14 +1,8 @@
-using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Config;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Nova.SearchAlgorithm.Services.MatchingDictionary;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,22 +23,19 @@ namespace Nova.SearchAlgorithm.Services.Donors
     {
         private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
-        private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
-        private readonly ILogger logger;
-        private readonly INotificationsClient notificationsClient;
+        private readonly IDonorValidator donorValidator;
+        private readonly IDonorHlaExpander donorHlaExpander;
 
         public DonorService(
-            IExpandHlaPhenotypeService expandHlaPhenotypeService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory repositoryFactory,
-            ILogger logger,
-            INotificationsClient notificationsClient)
+            IDonorValidator donorValidator,
+            IDonorHlaExpander donorHlaExpander)
         {
-            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
-            this.logger = logger;
-            this.notificationsClient = notificationsClient;
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
             donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
+            this.donorValidator = donorValidator;
+            this.donorHlaExpander = donorHlaExpander;
         }
 
         public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
@@ -59,94 +50,45 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
         public async Task CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors)
         {
-            inputDonors = inputDonors.ToList();
+            var validDonors = (await donorValidator.ValidateDonorsAsync(inputDonors)).ToList();
 
-            var existingDonorIds = (await GetExistingDonorIds(inputDonors)).ToList();
-            var newDonors = inputDonors.Where(id => !existingDonorIds.Contains(id.DonorId));
-            var updateDonors = inputDonors.Where(id => existingDonorIds.Contains(id.DonorId));
+            if (validDonors.Any())
+            {
+                var donorsWithHla = (await donorHlaExpander.ExpandDonorHlaBatchAsync(validDonors)).ToList();
 
-            await CreateDonorBatch(newDonors);
-            await UpdateDonorBatch(updateDonors);
+                var existingDonorIds = (await GetExistingDonorIds(donorsWithHla)).ToList();
+                var newDonors = donorsWithHla.Where(id => !existingDonorIds.Contains(id.DonorId));
+                var updateDonors = donorsWithHla.Where(id => existingDonorIds.Contains(id.DonorId));
+
+                await CreateDonorBatch(newDonors);
+                await UpdateDonorBatch(updateDonors);
+            }
         }
 
-        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<InputDonor> inputDonors)
+        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<InputDonorWithExpandedHla> inputDonors)
         {
             var existingDonors = await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId));
             return existingDonors.Keys;
         }
 
-        private async Task CreateDonorBatch(IEnumerable<InputDonor> newDonors)
+        private async Task CreateDonorBatch(IEnumerable<InputDonorWithExpandedHla> newDonors)
         {
             newDonors = newDonors.ToList();
 
             if (newDonors.Any())
             {
-                var donorsWithHla = await GetDonorsWithExpandedHla(newDonors);
-                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(donorsWithHla.AsEnumerable());
+                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(newDonors.AsEnumerable());
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<InputDonor> updateDonors)
+        private async Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> updateDonors)
         {
             updateDonors = updateDonors.ToList();
 
             if (updateDonors.Any())
             {
-                var donorsWithHla = await GetDonorsWithExpandedHla(updateDonors);
-                await donorUpdateRepository.UpdateDonorBatch(donorsWithHla.AsEnumerable());
+                await donorUpdateRepository.UpdateDonorBatch(updateDonors.AsEnumerable());
             }
-        }
-
-        private async Task<IEnumerable<InputDonorWithExpandedHla>> GetDonorsWithExpandedHla(IEnumerable<InputDonor> inputDonors)
-        {
-            var failedDonorIds = new List<int>();
-
-            try
-            {
-                var expandedDonors = await Task.WhenAll(inputDonors.Select(async d =>
-                    {
-                        try
-                        {
-                            var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(
-                                new PhenotypeInfo<string>(d.HlaNames));
-                            return CombineDonorAndExpandedHla(d, hla);
-                        }
-                        catch (MatchingDictionaryException e)
-                        {
-                            logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, $"{d.DonorId}"));
-                            failedDonorIds.Add(d.DonorId);
-                            return null;
-                        }
-                    }
-                ));
-
-                return expandedDonors.Where(d => d != null);
-            }
-            finally
-            {
-                if (failedDonorIds.Any())
-                {
-                    await notificationsClient.SendAlert(new Alert(
-                        "Could not update donor(s) in search algorithm",
-                        $"Processing failed for donors: {string.Join(",", failedDonorIds)}. An event has been logged for each donor in Application Insights.",
-                        Priority.Medium,
-                        NotificationConstants.OriginatorName
-                    ));
-                }
-            }
-        }
-
-        private static InputDonorWithExpandedHla CombineDonorAndExpandedHla(
-            InputDonor inputDonor,
-            PhenotypeInfo<ExpandedHla> matchingHla)
-        {
-            return new InputDonorWithExpandedHla
-            {
-                DonorId = inputDonor.DonorId,
-                DonorType = inputDonor.DonorType,
-                RegistryCode = inputDonor.RegistryCode,
-                MatchingHla = matchingHla,
-            };
         }
     }
 }
