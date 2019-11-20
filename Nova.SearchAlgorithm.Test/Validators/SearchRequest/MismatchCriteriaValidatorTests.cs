@@ -1,10 +1,9 @@
 ﻿using FluentValidation.TestHelper;
-using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.SearchAlgorithm.Validators;
+using Nova.SearchAlgorithm.Validators.SearchRequest;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Client.Validators
+namespace Nova.SearchAlgorithm.Test.Validators.SearchRequest
 {
     [TestFixture]
     public class MismatchCriteriaValidatorTests

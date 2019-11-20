@@ -50,6 +50,69 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         }
 
         [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndHasNoHla_DoesNotCreateDonorInDatabase()
+        {
+            var inputDonor = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
+            inputDonor.HlaNames = null;
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(inputDonor.DonorId);
+            donor.Should().BeNull();
+        }
+
+        [TestCase(Locus.A, null)]
+        [TestCase(Locus.A, "")]
+        [TestCase(Locus.B, null)]
+        [TestCase(Locus.B, "")]
+        [TestCase(Locus.Drb1, null)]
+        [TestCase(Locus.Drb1, "")]
+        public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndMissingRequiredLocus_DoesNotCreateDonorInDatabase(Locus locus, string hlaName)
+        {
+            var inputDonor = new InputDonorBuilder(DonorIdGenerator.NextId())
+                .WithHlaAtLocus(locus, TypePosition.One, hlaName)
+                .WithHlaAtLocus(locus, TypePosition.Two, hlaName)
+                .Build();
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(inputDonor.DonorId);
+            donor.Should().BeNull();
+        }
+
+        [TestCase(Locus.C, null)]
+        [TestCase(Locus.C, "")]
+        [TestCase(Locus.Dpb1, null)]
+        [TestCase(Locus.Dpb1, "")]
+        [TestCase(Locus.Dqb1, null)]
+        [TestCase(Locus.Dqb1, "")]
+        public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndMissingOptionalLocus_CreatesDonorInDatabase(Locus locus, string hlaName)
+        {
+            var inputDonor = new InputDonorBuilder(DonorIdGenerator.NextId())
+                .WithHlaAtLocus(locus, TypePosition.One, hlaName)
+                .WithHlaAtLocus(locus, TypePosition.Two, hlaName)
+                .Build();
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(inputDonor.DonorId);
+            donor.Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndInvalidHlaName_DoesNotCreateDonorInDatabase()
+        {
+            var inputDonor = new InputDonorBuilder(DonorIdGenerator.NextId())
+                .WithHlaAtLocus(Locus.A, TypePosition.One, "invalid-hla-name")
+                .Build();
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(inputDonor.DonorId);
+            donor.Should().BeNull();
+        }
+
+        [Test]
         public async Task CreateOrUpdateDonorBatch_WhenCalledMultipleTimesForADonor_DoesNotCreateMultipleDonorsWithTheSameId()
         {
             var inputDonor = new InputDonorBuilder(DonorIdGenerator.NextId()).Build();
@@ -109,6 +172,184 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             updatedPGroupsCount.Should().BeGreaterThan(initialPGroupsCount);
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_UpdateHasNoHla_DoesNotUpdateDonorDetails()
+        {
+            const DonorType oldDonorType = DonorType.Adult;
+            const DonorType newDonorType = DonorType.Cord;
+
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).WithDonorType(oldDonorType).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId).WithDonorType(newDonorType).Build();
+            updatedDonor.HlaNames = null;
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(donorId);
+            donor.DonorType.Should().Be(oldDonorType);
+            donor.DonorType.Should().NotBe(newDonorType);
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_UpdateHasNoHla_DoesNotDeleteHla()
+        {
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId).Build();
+            updatedDonor.HlaNames = null;
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            var updatedPGroupsCount = await GetPGroupCount(donorId, Locus.A, TypePosition.One);
+
+            updatedPGroupsCount.Should().NotBe(0);
+        }
+
+        [TestCase(Locus.A, null)]
+        [TestCase(Locus.A, "")]
+        [TestCase(Locus.B, null)]
+        [TestCase(Locus.B, "")]
+        [TestCase(Locus.Drb1, null)]
+        [TestCase(Locus.Drb1, "")]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_AndMissingRequiredLocus_DoesNotUpdateDonorDetails(Locus locus, string hlaName)
+        {
+            const DonorType oldDonorType = DonorType.Adult;
+            const DonorType newDonorType = DonorType.Cord;
+
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).WithDonorType(oldDonorType).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId).WithDonorType(newDonorType)
+                .WithHlaAtLocus(locus, TypePosition.One, hlaName)
+                .WithHlaAtLocus(locus, TypePosition.Two, hlaName)
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(donorId);
+            donor.DonorType.Should().Be(oldDonorType);
+            donor.DonorType.Should().NotBe(newDonorType);
+        }
+
+        [TestCase(Locus.A, null)]
+        [TestCase(Locus.A, "")]
+        [TestCase(Locus.B, null)]
+        [TestCase(Locus.B, "")]
+        [TestCase(Locus.Drb1, null)]
+        [TestCase(Locus.Drb1, "")]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_AndMissingRequiredLocus_DoesNotDeleteHlaAtMissingLocus(Locus locus, string hlaName)
+        {
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId)
+                .WithHlaAtLocus(locus, TypePosition.One, hlaName)
+                .WithHlaAtLocus(locus, TypePosition.Two, hlaName)
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            var updatedPGroupsCount1 = await GetPGroupCount(donorId, locus, TypePosition.One);
+            var updatedPGroupsCount2 = await GetPGroupCount(donorId, locus, TypePosition.Two);
+
+            updatedPGroupsCount1.Should().NotBe(0);
+            updatedPGroupsCount2.Should().NotBe(0);
+        }
+
+        [TestCase(Locus.C, null)]
+        [TestCase(Locus.C, "")]
+        [TestCase(Locus.Dpb1, null)]
+        [TestCase(Locus.Dpb1, "")]
+        [TestCase(Locus.Dqb1, null)]
+        [TestCase(Locus.Dqb1, "")]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_AndMissingOptionalLocus_UpdatesDonorDetails(Locus locus, string hlaName)
+        {
+            const DonorType oldDonorType = DonorType.Adult;
+            const DonorType newDonorType = DonorType.Cord;
+
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).WithDonorType(oldDonorType).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId).WithDonorType(newDonorType)
+                .WithHlaAtLocus(locus, TypePosition.One, hlaName)
+                .WithHlaAtLocus(locus, TypePosition.Two, hlaName)
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(donorId);
+            donor.DonorType.Should().NotBe(oldDonorType);
+            donor.DonorType.Should().Be(newDonorType);
+        }
+
+        [TestCase(Locus.C, null)]
+        [TestCase(Locus.C, "")]
+        [TestCase(Locus.Dpb1, null)]
+        [TestCase(Locus.Dpb1, "")]
+        [TestCase(Locus.Dqb1, null)]
+        [TestCase(Locus.Dqb1, "")]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_AndMissingOptionalLocus_DeletesHlaAtMissingLocus(Locus locus, string hlaName)
+        {
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId)
+                .WithHlaAtLocus(locus, TypePosition.One, hlaName)
+                .WithHlaAtLocus(locus, TypePosition.Two, hlaName)
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            var updatedPGroupsCount1 = await GetPGroupCount(donorId, locus, TypePosition.One);
+            var updatedPGroupsCount2 = await GetPGroupCount(donorId, locus, TypePosition.Two);
+
+            updatedPGroupsCount1.Should().Be(0);
+            updatedPGroupsCount2.Should().Be(0);
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_AndInvalidHlaName_DoesNotUpdateDonorDetails()
+        {
+            const DonorType oldDonorType = DonorType.Adult;
+            const DonorType newDonorType = DonorType.Cord;
+
+            var donorId = DonorIdGenerator.NextId();
+            var inputDonor = new InputDonorBuilder(donorId).WithDonorType(oldDonorType).Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+
+            var updatedDonor = new InputDonorBuilder(donorId).WithDonorType(newDonorType)
+                .WithHlaAtLocus(Locus.A, TypePosition.One, "invalid-hla-name")
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+
+            var donor = await donorInspectionRepository.GetDonor(donorId);
+            donor.DonorType.Should().Be(oldDonorType);
+            donor.DonorType.Should().NotBe(newDonorType);
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DonorExists_AndInvalidHlaName_DoesNotReprocessHla()
+        {
+            var donorId = DonorIdGenerator.NextId();
+            const Locus locus = Locus.A;
+            const TypePosition position = TypePosition.One;
+
+            var inputDonor = new InputDonorBuilder(donorId)
+                .WithHlaAtLocus(locus, position, "*01:01")
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { inputDonor });
+            var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
+
+            var updatedDonor = new InputDonorBuilder(donorId)
+                .WithHlaAtLocus(locus, position, "invalid-hla-name")
+                .Build();
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
+
+            updatedPGroupsCount.Should().Be(initialPGroupsCount);
         }
 
         [Test]
@@ -295,13 +536,14 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         private async Task<int> GetPGroupCount(int donorId, Locus locus, TypePosition position)
         {
             var counts = await GetPGroupCounts(new[] { donorId }, locus, position);
-            return counts.Single();
+            return counts.SingleOrDefault();
         }
 
         private async Task<IEnumerable<int>> GetPGroupCounts(IEnumerable<int> donorIds, Locus locus, TypePosition position)
         {
             var pGroupsForDonor = await donorInspectionRepository.GetPGroupsForDonors(donorIds);
-            return pGroupsForDonor.Select(p => p.PGroupNames.DataAtPosition(locus, position).Count());
+            var pGroupNames = pGroupsForDonor.Select(p => p.PGroupNames.DataAtPosition(locus, position));
+            return pGroupNames.Where(p => p != null).Select(p => p.Count());
         }
     }
 }

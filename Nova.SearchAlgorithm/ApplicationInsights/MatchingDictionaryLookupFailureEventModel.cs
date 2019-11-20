@@ -1,20 +1,15 @@
 ﻿using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ApplicationInsights.EventModels;
 
 namespace Nova.SearchAlgorithm.ApplicationInsights
 {
-    public class MatchingDictionaryLookupFailureEventModel : EventModel
+    public class MatchingDictionaryLookupFailureEventModel : DonorProcessingFailureEventModel
     {
         private const string MessageName = "Error processing donor - could not lookup HLA in matching dictionary";
-        
+
         public MatchingDictionaryLookupFailureEventModel(
             MatchingDictionaryException exception, 
-            string donorId) : base(MessageName)
+            string donorId) : base(MessageName, exception, donorId)
         {
-            Level = LogLevel.Error;
-            Properties.Add("Exception", exception.ToString());
-            Properties.Add("DonorId", donorId);
             Properties.Add("Locus", exception.HlaInfo.Locus);
             Properties.Add("HlaName", exception.HlaInfo.HlaName);
         }
