@@ -12,6 +12,10 @@ namespace Nova.SearchAlgorithm.Services.Donors
 {
     public interface IInputDonorBatchProcessor<T, out TException>
     {
+        /// <param name="inputDonors">Batch of input donors to be processed.</param>
+        /// <param name="processDonorFuncAsync">Function to be run on each input donor, that generates a return object of type T.</param>
+        /// <param name="getEventModelFunc">Function to generate the processing failure model in the event that an exception of type TException is raised during processing."</param>
+        /// <returns>Results from processing of the donor batch.</returns>
         Task<IEnumerable<T>> ProcessBatchAsync(
             IEnumerable<InputDonor> inputDonors,
             Func<InputDonor, Task<T>> processDonorFuncAsync,
