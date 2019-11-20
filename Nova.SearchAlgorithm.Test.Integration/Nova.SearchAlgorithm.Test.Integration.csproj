@@ -15,6 +15,7 @@
     <ItemGroup>
       <PackageReference Include="EntityFramework" Version="6.2.0" />
       <PackageReference Include="FluentAssertions" Version="4.19.3" />
+      <PackageReference Include="LochNessBuilder" Version="1.0.1" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
       <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />

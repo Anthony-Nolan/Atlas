@@ -281,7 +281,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             public InputDonorWithExpandedHla Build()
             {
                 return inputDonorWithExpandedHlaBuilder
-                    .WithDefaultRequiredHla(new ExpandedHla {PGroups = matchingPGroups})
+                    .WithDefaultRequiredHla(new ExpandedHla
+                    {
+                        OriginalName = "hla-name",
+                        PGroups = matchingPGroups
+                    })
                     .Build();
             }
         }
