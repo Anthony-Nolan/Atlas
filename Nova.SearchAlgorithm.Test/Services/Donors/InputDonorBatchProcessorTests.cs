@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using FluentValidation;
 using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -196,6 +197,39 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             // The result will depend on the return type defined in the concrete class
             result.Should().OnlyContain(d => d.DonorId == successfulDonor);
+        }
+
+        [Test]
+        public void ProcessBatchAsync_AnticipatedFailure_DoesNotThrowException()
+        {
+            // Exception type as defined in the concrete class.
+            var exception = new ValidationException("error");
+
+            Assert.DoesNotThrowAsync(async () =>
+                {
+                    await donorBatchProcessor.ProcessBatchAsync(
+                        new List<InputDonor> {new InputDonor()},
+                        d => throw exception,
+                        (e, d) => new DonorValidationFailureEventModel(e, "id")
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void ProcessBatchAsync_UnanticipatedFailure_ThrowsException()
+        {
+            var exception = new Exception("error");
+
+            Assert.ThrowsAsync<Exception>(async () =>
+                {
+                    await donorBatchProcessor.ProcessBatchAsync(
+                        new List<InputDonor> { new InputDonor() },
+                        d => throw exception,
+                        (e, d) => new DonorValidationFailureEventModel(e, "id")
+                    );
+                }
+            );
         }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.Notifications;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System.Collections.Generic;
@@ -30,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ExpandDonorHlaBatchAsync_ValidDonor_ReturnsDonor()
+        public async Task ValidateDonorsAsync_ValidDonor_ReturnsDonor()
         {
             const int donorId = 123;
 
@@ -47,7 +44,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public void ExpandDonorHlaBatchAsync_InvalidDonor_DoesNotThrowException()
+        public void ValidateDonorsAsync_InvalidDonor_DoesNotThrowException()
         {
             Assert.DoesNotThrowAsync(async () =>
             {

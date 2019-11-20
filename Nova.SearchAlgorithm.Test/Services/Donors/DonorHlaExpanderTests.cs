@@ -9,6 +9,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ILogger = Nova.Utils.ApplicationInsights.ILogger;
@@ -68,7 +69,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public void ExpandDonorHlaBatchAsync_ExpansionFailed_DoesNotThrowException()
+        public void ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_DoesNotThrowException()
         {
             expandHlaPhenotypeService
                 .GetPhenotypeOfExpandedHla(Arg.Any<Common.Models.PhenotypeInfo<string>>())
@@ -84,6 +85,26 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     }
                 });
             });
+        }
+
+        [Test]
+        public void ExpandDonorHlaBatchAsync_UnanticipatedExpansionFailure_ThrowsException()
+        {
+            expandHlaPhenotypeService
+                .GetPhenotypeOfExpandedHla(Arg.Any<Common.Models.PhenotypeInfo<string>>())
+                .Throws(new Exception("error"));
+
+            Assert.ThrowsAsync<Exception>(async () =>
+                {
+                    await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<InputDonor>
+                    {
+                        new InputDonor
+                        {
+                            HlaNames = new Utils.PhenotypeInfo.PhenotypeInfo<string>("hla")
+                        }
+                    });
+                }
+            );
         }
     }
 }
