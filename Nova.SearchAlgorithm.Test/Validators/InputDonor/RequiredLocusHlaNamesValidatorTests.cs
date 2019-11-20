@@ -7,15 +7,15 @@ using NUnit.Framework;
 namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
 {
     [TestFixture]
-    public class LocusHlaNamesValidatorTests
+    public class RequiredLocusHlaNamesValidatorTests
     {
         private const LocusType TestLocus = LocusType.A;
-        private LocusHlaNamesValidator validator;
+        private RequiredLocusHlaNamesValidator validator;
 
         [SetUp]
         public void SetUp()
         {
-            validator = new LocusHlaNamesValidator();
+            validator = new RequiredLocusHlaNamesValidator();
         }
 
         [Test]
@@ -23,11 +23,11 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         {
             var locusHlaNames = new LocusInfo<string>(TestLocus);
             var result = validator.Validate(locusHlaNames);
-            result.IsValid.Should().BeTrue();
+            result.IsValid.Should().BeFalse();
         }
 
         [Test]
-        public void Validator_WhenEmptyHlaStringsAreProvided_ShouldNotHaveValidationError()
+        public void Validator_WhenEmptyHlaStringsAreProvided_ShouldHaveValidationError()
         {
             var locusHlaNames = new LocusInfo<string>(TestLocus)
             {
@@ -35,7 +35,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
                 Position2 = ""
             };
             var result = validator.Validate(locusHlaNames);
-            result.IsValid.Should().BeTrue();
+            result.IsValid.Should().BeFalse();
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         }
 
         [Test]
-        public void Validator_WhenBothHlaStringsNull_ShouldNotHaveValidationError()
+        public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
         {
             var locusHlaNames = new LocusInfo<string>(TestLocus)
             {
@@ -105,7 +105,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
                 Position2 = null
             };
             var result = validator.Validate(locusHlaNames);
-            result.IsValid.Should().BeTrue();
+            result.IsValid.Should().BeFalse();
         }
     }
 }

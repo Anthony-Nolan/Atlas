@@ -4,9 +4,9 @@ using Nova.Utils.PhenotypeInfo;
 
 namespace Nova.SearchAlgorithm.Validators.InputDonor
 {
-    public class LocusHlaNamesValidator : AbstractValidator<LocusInfo<string>>
+    public class OptionalLocusHlaNamesValidator : AbstractValidator<LocusInfo<string>>
     {
-        public LocusHlaNamesValidator()
+        public OptionalLocusHlaNamesValidator()
         {
             RuleFor(x => x.Locus).IsInEnum();
             RuleFor(x => x.Position1).NotEmpty().When(x => !x.Position2.IsNullOrEmpty());

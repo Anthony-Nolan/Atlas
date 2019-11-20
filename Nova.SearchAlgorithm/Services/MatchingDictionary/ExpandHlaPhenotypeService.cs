@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
 
         private async Task<Tuple<ExpandedHla, ExpandedHla>> GetExpandedHla(Locus locus, string hla1, string hla2, string hlaDatabaseVersion)
         {
-            if (hla1 == null || hla2 == null)
+            if (string.IsNullOrEmpty(hla1) || string.IsNullOrEmpty(hla2))
             {
                 return new Tuple<ExpandedHla, ExpandedHla>(null, null);
             }
