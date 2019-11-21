@@ -204,7 +204,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task UpdateDonorBatch_WithUntypedRequiredLoci_ThrowsException()
+        public async Task UpdateDonorBatch_WithUntypedRequiredLocus_ThrowsException()
         {
             // arbitrary hla at all loci, as the value of the hla does not matter for this test case
             var expandedHla = new ExpandedHla { OriginalName = "01:02", PGroups = new List<string> { "01:01P", "01:02" } };
