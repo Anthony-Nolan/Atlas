@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Client.Models.Donors;
@@ -10,6 +11,7 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 
@@ -84,7 +86,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor});
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -92,11 +94,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task InsertBatchOfDonorsWithExpandedHla_ForNewDonor_ForDonorWithUntypedLoci_InsertsUntypedLociAsNull()
+        public void InsertBatchOfDonorsWithExpandedHla_ForNewDonor_ForDonorWithUntypedRequiredLocus_ThrowsException()
+        {
+            var donor = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId()).Build();
+
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }));
+        }
+
+        [Test]
+        public async Task InsertBatchOfDonorsWithExpandedHla_ForNewDonor_ForDonorWithUntypedOptionalLocus_InsertsUntypedLocusAsNull()
         {
             var donor = donorWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor});
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -108,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor});
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -120,7 +131,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { donor.ToInputDonor() });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -132,7 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { donor.ToInputDonor() });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -140,12 +151,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task InsertBatchOfDonors_ForDonorWithUntypedLoci_InsertsUntypedLociAsNull()
+        public void InsertBatchOfDonors_ForDonorWithUntypedRequiredLocus_ThrowsException()
+        {
+            var donor = new InputDonorBuilder(DonorIdGenerator.NextId())
+                .WithHlaAtLocus(Locus.A, TypePosition.One, null)
+                .WithHlaAtLocus(Locus.A, TypePosition.Two, null)
+                .Build();
+
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { donor }));
+        }
+
+        [Test]
+        public async Task InsertBatchOfDonors_ForDonorWithUntypedOptionalLocus_InsertsUntypedLocusAsNull()
         {
             var donor = donorWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
             donor.MatchingHla.C.Position1 = null;
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {donor.ToInputDonor()});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { donor.ToInputDonor() });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -158,8 +181,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             var donorId = DonorIdGenerator.NextId();
             var donor = donorWithAllelesAtThreeLoci;
             donor.DonorId = donorId;
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {new InputDonorBuilder(donorId).Build()});
-            await donorUpdateRepository.UpdateDonorBatch(new List<InputDonorWithExpandedHla> {donor});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { new InputDonorBuilder(donorId).Build() });
+            await donorUpdateRepository.UpdateDonorBatch(new List<InputDonorWithExpandedHla> { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -172,8 +195,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             var donorId = DonorIdGenerator.NextId();
             var donor = donorWithXxCodesAtThreeLoci;
             donor.DonorId = donorId;
-            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> {new InputDonorBuilder(donorId).Build()});
-            await donorUpdateRepository.UpdateDonorBatch(new List<InputDonorWithExpandedHla> {donor});
+            await donorImportRepository.InsertBatchOfDonors(new List<InputDonor> { new InputDonorBuilder(donorId).Build() });
+            await donorUpdateRepository.UpdateDonorBatch(new List<InputDonorWithExpandedHla> { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -181,31 +204,37 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task UpdateDonorBatch_WithUntypedLoci_InsertsUntypedLociAsNull()
+        public async Task UpdateDonorBatch_WithUntypedRequiredLocus_ThrowsException()
         {
             // arbitrary hla at all loci, as the value of the hla does not matter for this test case
-            var expandedHla = new ExpandedHla {OriginalName = "01:02", PGroups = new List<string> {"01:01P", "01:02"}};
-            var donor = new InputDonorWithExpandedHla
-            {
-                RegistryCode = RegistryCode.DKMS,
-                DonorType = DonorType.Cord,
-                MatchingHla = new PhenotypeInfo<ExpandedHla>
-                {
-                    A = {Position1 = expandedHla, Position2 = expandedHla},
-                    Drb1 = {Position1 = expandedHla, Position2 = expandedHla},
-                    B = {Position1 = expandedHla, Position2 = expandedHla},
-                    Dqb1 = {Position1 = expandedHla, Position2 = expandedHla},
-                    C = {Position1 = null, Position2 = null}
-                },
-                DonorId = DonorIdGenerator.NextId()
-            };
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor});
+            var expandedHla = new ExpandedHla { OriginalName = "01:02", PGroups = new List<string> { "01:01P", "01:02" } };
+            var donor = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+                .WithMatchingHla(new PhenotypeInfo<ExpandedHla>(expandedHla))
+                .Build();
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+
+            donor.MatchingHla.A.Position1 = null;
+
+            Assert.ThrowsAsync<SqlException>(async () =>
+                await donorUpdateRepository.UpdateDonorBatch(new[] { donor }));
+        }
+
+        [Test]
+        public async Task UpdateDonorBatch_WithUntypedOptionalLocus_UpdatesUntypedLocusAsNull()
+        {
+            // arbitrary hla at all loci, as the value of the hla does not matter for this test case
+            var expandedHla = new ExpandedHla { OriginalName = "01:02", PGroups = new List<string> { "01:01P", "01:02" } };
+            var donor = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+                .WithMatchingHla(new PhenotypeInfo<ExpandedHla>(expandedHla))
+                .Build();
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+
             donor.MatchingHla.Dqb1.Position1 = null;
-            await donorUpdateRepository.UpdateDonorBatch(new[] {donor});
+            await donorUpdateRepository.UpdateDonorBatch(new[] { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
-            result.HlaNames.C.Position1.Should().BeNull();
+            result.HlaNames.Dqb1.Position1.Should().BeNull();
         }
 
         private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(InputDonorWithExpandedHla expectedDonor, DonorResult actualDonor)
