@@ -1,20 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Dapper;
+﻿using Dapper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
+using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Services;
 using Nova.SearchAlgorithm.Repositories.Donors;
 using Nova.Utils.ApplicationInsights;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -95,41 +97,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
                 GetDonorsForPGroupsAtLocusFromDonorSelection(locus, criteria.PGroupIdsToMatchInPositionTwo, donorIds)
             );
 
-            var untypedDonorIds = await GetUntypedDonorsAtLocus(locus, donorIds);
-            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] {TypePosition.One, TypePosition.Two}.Select(position =>
-                new PotentialHlaMatchRelation
-                {
-                    DonorId = id,
-                    Locus = locus,
-                    SearchTypePosition = position,
-                    MatchingTypePosition = position
-                }));
+            var untypedDonorResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
 
             return matchingPGroupResults[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus))
                 .Concat(matchingPGroupResults[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus)))
                 .Concat(untypedDonorResults);
-        }
-
-        private async Task<IEnumerable<int>> GetUntypedDonorsAtLocus(Locus locus, IEnumerable<int> donorIds)
-        {
-            donorIds = donorIds.ToList();
-
-            var sql = $@"
-SELECT DonorId FROM Donors 
-INNER JOIN (
-    SELECT {donorIds.FirstOrDefault()} AS Id
-    {(donorIds.Count() > 1 ? "UNION ALL SELECT" : "")}  {string.Join(" UNION ALL SELECT ", donorIds.Skip(1))}
-)
-AS DonorIds 
-ON DonorId = DonorIds.Id 
-WHERE {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL
-AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
-";
-
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                return await conn.QueryAsync<int>(sql, commandTimeout: 300);
-            }
         }
 
         private async Task<IEnumerable<DonorMatch>> GetDonorsForPGroupsAtLocusFromDonorSelection(
@@ -218,9 +190,65 @@ GROUP BY m.DonorId, TypePosition";
             }
         }
 
-        private static string DonorHlaColumnAtLocus(Locus locus, TypePosition positions)
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IEnumerable<int> donorIds)
         {
-            var positionString = positions == TypePosition.One ? "1" : "2";
+            if (TypingIsRequiredAtLocus(locus))
+            {
+                return new List<PotentialHlaMatchRelation>();
+            }
+
+            var untypedDonorIds = await GetIdsOfDonorsUntypedAtLocus(locus, donorIds);
+            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] { TypePosition.One, TypePosition.Two }.Select(
+                position =>
+                    new PotentialHlaMatchRelation
+                    {
+                        DonorId = id,
+                        Locus = locus,
+                        SearchTypePosition = position,
+                        MatchingTypePosition = position
+                    }));
+            return untypedDonorResults;
+        }
+
+        private static bool TypingIsRequiredAtLocus(Locus locus)
+        {
+            return TypingIsRequiredInDatabaseAtLocusPosition(locus, TypePosition.One) &&
+                   TypingIsRequiredInDatabaseAtLocusPosition(locus, TypePosition.Two);
+        }
+
+        private static bool TypingIsRequiredInDatabaseAtLocusPosition(Locus locus, TypePosition position)
+        {
+            var locusColumnName = DonorHlaColumnAtLocus(locus, position);
+            var locusProperty = typeof(Donor).GetProperty(locusColumnName);
+
+            return Attribute.IsDefined(locusProperty, typeof(RequiredAttribute));
+        }
+
+        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, IEnumerable<int> donorIds)
+        {
+            donorIds = donorIds.ToList();
+
+            var sql = $@"
+                SELECT DonorId FROM Donors 
+                INNER JOIN (
+                    SELECT {donorIds.FirstOrDefault()} AS Id
+                    {(donorIds.Count() > 1 ? "UNION ALL SELECT" : "")}  {string.Join(" UNION ALL SELECT ", donorIds.Skip(1))}
+                )
+                AS DonorIds 
+                ON DonorId = DonorIds.Id 
+                WHERE {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL 
+                AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
+                ";
+
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                return await conn.QueryAsync<int>(sql, commandTimeout: 300);
+            }
+        }
+
+        private static string DonorHlaColumnAtLocus(Locus locus, TypePosition position)
+        {
+            var positionString = position == TypePosition.One ? "1" : "2";
             return $"{locus.ToString().ToUpper()}_{positionString}";
         }
     }
