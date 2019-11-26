@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         {
             await notificationsClient.SendAlert(new Alert(
                 alertSummary,
-                $"Processing failed for donors: {string.Join(",", failedDonorIds)}. An event has been logged for each donor in Application Insights.",
+                $"Processing failed for donors: {string.Join(",", failedDonorIds.Distinct())}. An event has been logged for each donor in Application Insights.",
                 loggerPriority,
                 NotificationConstants.OriginatorName
             ));
