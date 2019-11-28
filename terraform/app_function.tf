@@ -37,6 +37,7 @@ locals {
     "NotificationsServiceBus.NotificationsTopic"                = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC
     "Wmda.WmdaFileUri"                                          = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE                
   }
 
   donor_func_app_settings = {
@@ -56,6 +57,7 @@ locals {
     "NotificationsServiceBus.ConnectionString"         = var.NOTIFICATIONS_BUS_CONNECTION_STRING
     "NotificationsServiceBus.NotificationsTopic"       = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC	
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
+	"WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
   }
 }
 

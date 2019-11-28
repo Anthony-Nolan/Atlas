@@ -160,3 +160,8 @@ variable "WMDA_FILE_URL" {
   type    = string
   default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
 }
+
+variable "WEBSITE_RUN_FROM_PACKAGE" {
+  type    = string
+  default = "1"
+}
