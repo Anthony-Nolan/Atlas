@@ -4,7 +4,7 @@
       "serviceBus": {
         "messageHandlerOptions": {
           "maxConcurrentCalls": 1,
-          "maxAutoRenewDuration": "00:30:00"
+          "maxAutoRenewDuration": "02:00:00"
         }
       }
     }
