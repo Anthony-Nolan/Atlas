@@ -1,6 +1,5 @@
-﻿using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Entity;
+﻿using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.Entities;
 
 namespace Nova.SearchAlgorithm.Data.Extensions
 {

@@ -1,7 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models.AzureManagement;
@@ -10,6 +8,8 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
+using System;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Nova.SearchAlgorithm.Data.Entity;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.Entities;
+using Nova.SearchAlgorithm.Data.Models.Entities.MatchingHla;
 using System.Linq;
 
-namespace Nova.SearchAlgorithm.Data
+namespace Nova.SearchAlgorithm.Data.Context
 {
     // We should only use entity framework for maintaining the database schema, and for test data
     // In all other cases we should use Dapper within repositories, else we won't be able to switch between databases at runtime

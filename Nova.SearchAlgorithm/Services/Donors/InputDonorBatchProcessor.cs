@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.ApplicationInsights;
+using Nova.SearchAlgorithm.Config;
+using Nova.SearchAlgorithm.Data.Models;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Config;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {

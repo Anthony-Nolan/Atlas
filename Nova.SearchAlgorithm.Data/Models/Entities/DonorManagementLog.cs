@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Nova.SearchAlgorithm.Data.Models
+namespace Nova.SearchAlgorithm.Data.Models.Entities
 {
     public class DonorManagementLog
     {

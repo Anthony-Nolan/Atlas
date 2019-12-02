@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Nova.SearchAlgorithm.Data.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Models;
 
-namespace Nova.SearchAlgorithm.Common.Repositories.DonorUpdates
+namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 {
     /// <summary>
     /// Responsible for ongoing inserts / updates of donor information

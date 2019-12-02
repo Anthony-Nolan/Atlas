@@ -1,8 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using System.ComponentModel.DataAnnotations;
 
-namespace Nova.SearchAlgorithm.Data.Entity
+namespace Nova.SearchAlgorithm.Data.Models.Entities
 {
     public class Donor
     {

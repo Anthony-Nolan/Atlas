@@ -1,9 +1,9 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Data.Context;
 using Nova.SearchAlgorithm.Data.Persistent;
+using System;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers
 {

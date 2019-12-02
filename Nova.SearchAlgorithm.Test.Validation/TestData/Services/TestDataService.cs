@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 using System.Linq;
-using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Data.Entity;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Repositories;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Services
 {

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Helpers;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Validators.InputDonor;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;

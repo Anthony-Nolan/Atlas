@@ -1,19 +1,18 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Nova.SearchAlgorithm.Api;
+using Nova.SearchAlgorithm.Client.Models.SearchRequests;
+using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using Newtonsoft.Json;
-using Nova.SearchAlgorithm.Api;
-using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Client.Models.SearchRequests;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 
 namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
 {

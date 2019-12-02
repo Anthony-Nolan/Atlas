@@ -1,13 +1,13 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Client.Models.Donors;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.Notifications;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ILogger = Nova.Utils.ApplicationInsights.ILogger;
