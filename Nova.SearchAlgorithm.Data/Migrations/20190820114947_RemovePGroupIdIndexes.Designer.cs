@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nova.SearchAlgorithm.Data;
+using Nova.SearchAlgorithm.Data.Context;
 
 namespace Nova.SearchAlgorithm.Data.Migrations
 {

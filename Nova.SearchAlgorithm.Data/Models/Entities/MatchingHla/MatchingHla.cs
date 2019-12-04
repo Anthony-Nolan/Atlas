@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Exceptions;
-using Nova.SearchAlgorithm.Data.Models;
 
-namespace Nova.SearchAlgorithm.Data.Entity
+namespace Nova.SearchAlgorithm.Data.Models.Entities.MatchingHla
 {
     public abstract class MatchingHla
     {

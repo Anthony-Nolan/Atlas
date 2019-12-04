@@ -1,22 +1,20 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
+using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Models.AzureManagement;
 using Nova.SearchAlgorithm.Services.AzureManagement;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.SearchAlgorithm.Test.Builders.DataRefresh;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 {

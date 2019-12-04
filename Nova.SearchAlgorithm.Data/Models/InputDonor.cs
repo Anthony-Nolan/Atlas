@@ -1,6 +1,7 @@
-﻿using Nova.Utils.PhenotypeInfo;
+﻿using Nova.SearchAlgorithm.Client.Models;
+using Nova.Utils.PhenotypeInfo;
 
-namespace Nova.SearchAlgorithm.Client.Models.Donors
+namespace Nova.SearchAlgorithm.Data.Models
 {
     /// <summary>
     /// Contains all the information to create / update a donor within the search algorithm's database

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.SearchAlgorithm.Client.Models.Donors
+namespace Nova.SearchAlgorithm.Data.Models
 {
     public class InputDonorBatch
     {

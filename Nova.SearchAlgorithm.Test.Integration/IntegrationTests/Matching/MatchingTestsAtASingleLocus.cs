@@ -9,6 +9,7 @@ using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 {

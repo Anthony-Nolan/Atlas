@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Nova.SearchAlgorithm.Data;
-using Nova.SearchAlgorithm.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using Nova.SearchAlgorithm.Data.Context;
+using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Persistent;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Test.Validation.TestData.Repositories
 {

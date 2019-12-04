@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Dapper;
+using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Services;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
-using Nova.SearchAlgorithm.Client.Models.Donors;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Data.Services;
 
 // ReSharper disable InconsistentNaming
 

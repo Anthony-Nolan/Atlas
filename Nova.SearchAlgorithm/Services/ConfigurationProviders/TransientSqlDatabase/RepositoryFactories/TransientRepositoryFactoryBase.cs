@@ -1,11 +1,9 @@
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Data.Services;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
 namespace Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
 {

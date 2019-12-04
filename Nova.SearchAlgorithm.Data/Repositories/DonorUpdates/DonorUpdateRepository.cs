@@ -2,16 +2,16 @@
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Common.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Data.Entity;
 using Nova.SearchAlgorithm.Data.Extensions;
 using Nova.SearchAlgorithm.Data.Helpers;
+using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Services;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Data.Models;
 
 // ReSharper disable InconsistentNaming
 

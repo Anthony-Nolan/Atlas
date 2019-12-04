@@ -3,11 +3,11 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models.Donors;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Helpers;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Services;
 
 // ReSharper disable InconsistentNaming

@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search.Matching;
