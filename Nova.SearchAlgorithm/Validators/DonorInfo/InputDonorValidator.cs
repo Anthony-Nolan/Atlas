@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Nova.SearchAlgorithm.Validators.InputDonor
+namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
     public class InputDonorValidator : AbstractValidator<Data.Models.InputDonor>
     {

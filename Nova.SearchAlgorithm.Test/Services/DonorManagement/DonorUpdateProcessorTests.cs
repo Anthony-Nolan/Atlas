@@ -19,14 +19,18 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         private IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
         private IDonorManagementService donorManagementService;
         private IDonorUpdateProcessor donorUpdateProcessor;
+        private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
 
         [SetUp]
         public void Setup()
         {
             messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdateModel>>();
             donorManagementService = Substitute.For<IDonorManagementService>();
+            searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
             var logger = Substitute.For<ILogger>();
-            donorUpdateProcessor = new DonorUpdateProcessor(messageProcessorService, donorManagementService, logger, BatchSize);
+
+            donorUpdateProcessor = new DonorUpdateProcessor(
+                messageProcessorService, donorManagementService, searchableDonorUpdateConverter, logger, BatchSize);
         }
 
         [Test]

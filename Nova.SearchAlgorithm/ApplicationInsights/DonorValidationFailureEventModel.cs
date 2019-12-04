@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
-using System;
-using System.Linq;
+using Nova.SearchAlgorithm.Helpers;
 
 namespace Nova.SearchAlgorithm.ApplicationInsights
 {
@@ -12,10 +11,7 @@ namespace Nova.SearchAlgorithm.ApplicationInsights
             ValidationException exception, 
             string donorId) : base(MessageName, exception, donorId)
         {
-            Properties.Add(
-                "ValidationErrors", 
-                string.Join(Environment.NewLine, exception.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}"))
-                );
+            Properties.Add("ValidationErrors", exception.ToErrorMessagesString());
         }
     }
 }

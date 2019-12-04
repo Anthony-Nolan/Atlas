@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Data.Models;
-using Nova.SearchAlgorithm.Validators.InputDonor;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         Task<IEnumerable<InputDonor>> ValidateDonorsAsync(IEnumerable<InputDonor> inputDonors);
     }
 
-    public class DonorValidator : InputDonorBatchProcessor<InputDonor, ValidationException>, IDonorValidator
+    public class DonorValidator : DonorBatchProcessor<InputDonor, InputDonor, ValidationException>, IDonorValidator
     {
         private const Priority LoggerPriority = Priority.Medium;
         private const string AlertSummary = "Donor Validation Failure(s) in Search Algorithm";
@@ -31,7 +31,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return await ProcessBatchAsync(
                 inputDonors,
                 async d => await ValidateDonor(d),
-                (exception, donor) => new DonorValidationFailureEventModel(exception, $"{donor.DonorId}"));
+                (exception, donor) => new DonorValidationFailureEventModel(exception, $"{donor.DonorId}"),
+                d => d.DonorId.ToString());
         }
 
         private static async Task<InputDonor> ValidateDonor(InputDonor donor)

@@ -15,12 +15,15 @@ using ILogger = Nova.Utils.ApplicationInsights.ILogger;
 namespace Nova.SearchAlgorithm.Test.Services.Donors
 {
     [TestFixture]
-    public class InputDonorBatchProcessorTests
+    public class DonorBatchProcessorTests
     {
+        private const string PlaceholderDonorId = "id";
+        private readonly Func<InputDonor, string> getDonorIdFunc = donor => donor.DonorId.ToString();
+
         /// <summary>
         /// Arbitrary implementation selected to test base functionality.
         /// </summary>
-        private IInputDonorBatchProcessor<InputDonor, ValidationException> donorBatchProcessor;
+        private IDonorBatchProcessor<InputDonor, InputDonor, ValidationException> donorBatchProcessor;
 
         private ILogger logger;
         private INotificationsClient notificationsClient;
@@ -39,7 +42,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<InputDonor>(),
                 Task.FromResult,
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                d => PlaceholderDonorId
                 );
 
             result.Should().BeEmpty();
@@ -51,7 +55,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<InputDonor> { new InputDonor() },
                 d => throw new ValidationException("failed"),
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                d => PlaceholderDonorId
             );
 
             result.Should().BeEmpty();
@@ -67,7 +72,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     new InputDonor()
                 },
                 d => throw new ValidationException("failed"),
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                d => PlaceholderDonorId
             );
 
             logger.Received(2).SendEvent(Arg.Any<DonorValidationFailureEventModel>());
@@ -86,7 +92,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     new InputDonor { DonorId = donorId2 }
                 },
                 d => throw new ValidationException("failed"),
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                getDonorIdFunc
             );
 
             await notificationsClient.Received(1).SendAlert(Arg.Is<Alert>(x =>
@@ -100,7 +107,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             await donorBatchProcessor.ProcessBatchAsync(
                 new List<InputDonor> { new InputDonor() },
                 Task.FromResult,
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                d => PlaceholderDonorId
             );
 
             logger.DidNotReceive().SendEvent(Arg.Any<DonorValidationFailureEventModel>());
@@ -112,7 +120,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             await donorBatchProcessor.ProcessBatchAsync(
                 new List<InputDonor> { new InputDonor() },
                 Task.FromResult,
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                d => PlaceholderDonorId
             );
 
             await notificationsClient.DidNotReceive().SendAlert(Arg.Any<Alert>());
@@ -126,7 +135,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<InputDonor> { new InputDonor { DonorId = donorId } },
                 Task.FromResult,
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                getDonorIdFunc
             );
 
             // The result will depend on the return type defined in the concrete class
@@ -148,7 +158,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 d => d.DonorId == successfulDonor
                     ? Task.FromResult(d)
                     : throw new ValidationException("failed"),
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                d => PlaceholderDonorId
             );
 
             logger.Received(1).SendEvent(Arg.Any<DonorValidationFailureEventModel>());
@@ -169,7 +180,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 d => d.DonorId == successfulDonor
                     ? Task.FromResult(d)
                     : throw new ValidationException("failed"),
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                getDonorIdFunc
             );
 
             await notificationsClient.Received(1).SendAlert(Arg.Is<Alert>(x =>
@@ -192,7 +204,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 d => d.DonorId == successfulDonor
                     ? Task.FromResult(d)
                     : throw new ValidationException("failed"),
-                (e, d) => new DonorValidationFailureEventModel(e, "id")
+                (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                getDonorIdFunc
             );
 
             // The result will depend on the return type defined in the concrete class
@@ -210,7 +223,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     await donorBatchProcessor.ProcessBatchAsync(
                         new List<InputDonor> {new InputDonor()},
                         d => throw exception,
-                        (e, d) => new DonorValidationFailureEventModel(e, "id")
+                        (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                        d => PlaceholderDonorId
                     );
                 }
             );
@@ -226,7 +240,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     await donorBatchProcessor.ProcessBatchAsync(
                         new List<InputDonor> { new InputDonor() },
                         d => throw exception,
-                        (e, d) => new DonorValidationFailureEventModel(e, "id")
+                        (e, d) => new DonorValidationFailureEventModel(e, PlaceholderDonorId),
+                        d => PlaceholderDonorId
                     );
                 }
             );

@@ -1,5 +1,6 @@
 ﻿using LochNessBuilder;
 using Nova.DonorService.Client.Models.SearchableDonors;
+using Nova.SearchAlgorithm.Client.Models;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -7,8 +8,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
     public static class SearchableDonorInformationBuilder
     {
         private const string DefaultHlaName = "hla-name";
-        private const string DefaultDonorType = "A";
-        private const string DefaultRegistryCode = "DKMS";
+        private static readonly string DefaultDonorType = $"{DonorType.Adult}";
+        private static readonly string DefaultRegistryCode = $"{RegistryCode.DKMS}";
 
         public static Builder<SearchableDonorInformation> New =>
             Builder<SearchableDonorInformation>.New

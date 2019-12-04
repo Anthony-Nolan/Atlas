@@ -323,16 +323,23 @@ namespace Nova.SearchAlgorithm.DependencyInjection
         public static void RegisterDonorManagementServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
+            services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
                 new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
             );
 
-            services.AddScoped<IMessageProcessor<SearchableDonorUpdateModel>, MessageProcessor<SearchableDonorUpdateModel>>(sp =>
+            services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdateModel>, ServiceBusMessageReceiver<SearchableDonorUpdateModel>>(sp =>
             {
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                return new MessageProcessor<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
+                return new ServiceBusMessageReceiver<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
+            });
+
+            services.AddScoped<IMessageProcessor<SearchableDonorUpdateModel>, MessageProcessor<SearchableDonorUpdateModel>>(sp =>
+            {
+                var messageReceiver = sp.GetService<IServiceBusMessageReceiver<SearchableDonorUpdateModel>>();
+                return new MessageProcessor<SearchableDonorUpdateModel>(messageReceiver);
             });
 
             services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
@@ -340,8 +347,9 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdateModel>>();
                 var managementService = sp.GetService<IDonorManagementService>();
+                var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var logger = sp.GetService<ILogger>();
-                return new DonorUpdateProcessor(messageReceiverService, managementService, logger, int.Parse(settings.BatchSize));
+                return new DonorUpdateProcessor(messageReceiverService, managementService, updateConverter, logger, int.Parse(settings.BatchSize));
             });
         }
     }

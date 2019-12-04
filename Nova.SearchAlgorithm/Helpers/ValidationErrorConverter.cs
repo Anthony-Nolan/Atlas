@@ -1,7 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using FluentValidation;
 using Nova.Utils.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Helpers
 {
@@ -17,6 +18,12 @@ namespace Nova.SearchAlgorithm.Helpers
                     Errors = new List<string> {e.ErrorMessage}
                 }).ToList()
             };
+        }
+
+        public static string ToErrorMessagesString(this ValidationException validationException)
+        {
+            var errorMessages = validationException.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}");
+            return string.Join(Environment.NewLine, errorMessages);
         }
     }
 }

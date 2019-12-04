@@ -1,7 +1,4 @@
 ﻿using Nova.DonorService.Client.Models.DonorUpdate;
-using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.Extensions;
-using Nova.SearchAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using Nova.Utils.ServiceBus.Models;
@@ -22,17 +19,20 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
         private readonly IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
         private readonly IDonorManagementService donorManagementService;
+        private readonly ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private readonly int batchSize;
         private readonly ILogger logger;
 
         public DonorUpdateProcessor(
             IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService,
             IDonorManagementService donorManagementService,
+            ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
             ILogger logger,
             int batchSize)
         {
             this.messageProcessorService = messageProcessorService;
             this.donorManagementService = donorManagementService;
+            this.searchableDonorUpdateConverter = searchableDonorUpdateConverter;
             this.logger = logger;
             this.batchSize = batchSize;
         }
@@ -47,10 +47,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
         private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
         {
-            // TODO: NOVA-4030 - Map messages within a foreach loop with try/catch for DonorImportException; log failures
-            // So that individual messages within a batch that fail mapping e.g., by having an invalid donor ID,
-            // don't cause the entire message batch to be abandoned.
-            var updates = messageBatch.Select(MapDonorAvailabilityUpdate).ToList();
+            var updates = (await searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(messageBatch)).ToList();
 
             logger.SendTrace($"{TraceMessagePrefix}: {updates.Count} messages retrieved for processing.", LogLevel.Info);
 
@@ -58,26 +55,6 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             {
                 await donorManagementService.ManageDonorBatchByAvailability(updates);
             }
-        }
-
-        /// <summary>
-        /// Map directly rather than using AutoMapper to improve performance
-        /// </summary>
-        private static DonorAvailabilityUpdate MapDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdateModel> update)
-        {
-            if (int.TryParse(update.DeserializedBody.DonorId, out var donorId))
-            {
-                var donorAvailabilityUpdate = new DonorAvailabilityUpdate
-                {
-                    UpdateSequenceNumber = update.SequenceNumber,
-                    DonorId = donorId,
-                    DonorInfo = update.DeserializedBody.SearchableDonorInformation?.ToInputDonor(),
-                    IsAvailableForSearch = update.DeserializedBody.IsAvailableForSearch
-                };
-                return donorAvailabilityUpdate;
-            };
-
-            throw new DonorImportException($"Could not parse donor id: {update.DeserializedBody.DonorId} to an int"); ;
         }
     }
 }
