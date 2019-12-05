@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Nova.SearchAlgorithm.Common.Models.SearchResults
+namespace Nova.SearchAlgorithm.Data.Models.SearchResults
 {
     public class MatchAndScoreResult
     {

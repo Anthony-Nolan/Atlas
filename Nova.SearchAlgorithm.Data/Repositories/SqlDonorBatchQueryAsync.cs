@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Exceptions;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Entities;
 
 namespace Nova.SearchAlgorithm.Data.Repositories

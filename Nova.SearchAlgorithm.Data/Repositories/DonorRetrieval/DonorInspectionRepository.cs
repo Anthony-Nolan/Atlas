@@ -2,7 +2,6 @@
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Data.Models.Entities;

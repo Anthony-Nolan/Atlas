@@ -1,8 +1,8 @@
-using System;
-using System.Linq;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
+using System;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Matching
 {

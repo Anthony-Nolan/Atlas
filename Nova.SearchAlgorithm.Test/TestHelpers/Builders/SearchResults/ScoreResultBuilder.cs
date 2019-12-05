@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Test.TestHelpers.Builders.SearchResults
 {

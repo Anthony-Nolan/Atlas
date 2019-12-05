@@ -1,13 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Repositories.Donors;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Search.Matching;
@@ -15,6 +10,10 @@ using Nova.SearchAlgorithm.Test.Builders;
 using Nova.Utils.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 
 // ReSharper disable InconsistentNaming
 

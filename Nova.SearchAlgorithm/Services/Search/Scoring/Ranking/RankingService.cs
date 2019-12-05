@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Nova.SearchAlgorithm.Data.Models.SearchResults;
+using System.Collections.Generic;
 using System.Linq;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Services.Search.Scoring.Ranking
 {

@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
