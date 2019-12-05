@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Nova.SearchAlgorithm.Common.Models.Matching;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Models.Matching;
-using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {

@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.Data.Models;
+﻿using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

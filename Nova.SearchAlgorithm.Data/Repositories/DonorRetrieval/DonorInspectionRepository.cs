@@ -4,6 +4,7 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Services;
 using System.Collections.Generic;

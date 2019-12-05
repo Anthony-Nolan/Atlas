@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Services.Donors;
 using System.Threading.Tasks;
 

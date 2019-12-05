@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Models.SearchResults;
 using Nova.SearchAlgorithm.Services.Matching;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Nova.SearchAlgorithm.Test.Services.Matching
 {

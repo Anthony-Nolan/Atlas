@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
+using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -12,7 +14,6 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Data.Models.Entities;
 
 namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 {

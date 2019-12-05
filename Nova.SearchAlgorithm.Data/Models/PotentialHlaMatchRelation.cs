@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 
 namespace Nova.SearchAlgorithm.Data.Models
 {

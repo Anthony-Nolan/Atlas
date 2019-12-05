@@ -3,6 +3,8 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
+using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.SearchAlgorithm.Services.Search.Matching;
@@ -13,7 +15,6 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 
 // ReSharper disable InconsistentNaming
 

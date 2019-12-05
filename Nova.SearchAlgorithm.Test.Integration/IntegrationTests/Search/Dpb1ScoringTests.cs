@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.SearchAlgorithm.Services.Search;
@@ -11,7 +12,6 @@ using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Data.Models;
 
 // ReSharper disable InconsistentNaming
 

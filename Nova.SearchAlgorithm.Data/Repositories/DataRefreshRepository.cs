@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Services;
 using System;

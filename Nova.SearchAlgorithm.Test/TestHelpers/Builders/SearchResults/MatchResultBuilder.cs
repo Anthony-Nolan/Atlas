@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Models.SearchResults;
 
 namespace Nova.SearchAlgorithm.Test.Builders.SearchResults

@@ -1,4 +1,4 @@
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;

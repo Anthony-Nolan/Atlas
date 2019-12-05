@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
