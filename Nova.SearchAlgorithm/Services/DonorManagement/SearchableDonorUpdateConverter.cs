@@ -5,7 +5,7 @@ using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
-using Nova.SearchAlgorithm.Validators.DonorUpdates;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.Models;
@@ -39,9 +39,9 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         {
             return await ProcessBatchAsync(
                 updates,
-                async u => await GetDonorAvailabilityUpdate(u),
+                async update => await GetDonorAvailabilityUpdate(update),
                 (exception, update) => new DonorUpdateFailureEventModel(exception, $"{update.DeserializedBody?.DonorId}"), 
-                d => d.DeserializedBody?.DonorId);
+                update => update.DeserializedBody?.DonorId);
         }
 
         private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdateModel> update)

@@ -2,7 +2,7 @@ using FluentValidation;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.Utils.ServiceBus.Models;
 
-namespace Nova.SearchAlgorithm.Validators.DonorUpdates
+namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
     public class DonorUpdateMessageValidator : AbstractValidator<ServiceBusMessage<SearchableDonorUpdateModel>>
     {

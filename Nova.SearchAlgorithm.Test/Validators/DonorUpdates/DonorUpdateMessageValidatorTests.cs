@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.DonorService.Client.Models.DonorUpdate;
-using Nova.SearchAlgorithm.Validators.DonorUpdates;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ServiceBus.Models;
 using NUnit.Framework;
 

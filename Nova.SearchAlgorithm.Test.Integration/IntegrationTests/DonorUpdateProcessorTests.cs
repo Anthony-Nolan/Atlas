@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
     /// <summary>
     /// Tests the processing and validation of donor update messages.
     /// Fixture does not go so far as to check that updates reach the database,
-    /// as that is covered by other integration tests, e.g., Donor service tests.
+    /// as that is covered by other integration tests, e.g., donor service tests.
     /// Only a few invalid scenarios are included here to ensure validation is taking place;
     /// validator logic is extensively covered by unit tests.
     /// </summary>
@@ -117,15 +117,74 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDonorUpdates());
         }
 
-        /// <summary>
-        /// Missing required donor HLA should not be caught at this stage of update processing.
-        /// </summary>
         [TestCase(null)]
         [TestCase("")]
-        public async Task ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_ManagesDonorUpdate(string missingHla)
+        public async Task ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_DoesNotManageDonorUpdate(string missingHla)
         {
             var donorInfo = SearchableDonorInformationBuilder.New
                 .With(x => x.A_1, missingHla)
+                .With(x => x.A_2, missingHla)
+                .With(x => x.B_1, missingHla)
+                .With(x => x.B_2, missingHla)
+                .With(x => x.DRB1_1, missingHla)
+                .With(x => x.DRB1_1, missingHla)
+                .Build();
+
+            var update = SearchableDonorUpdateBuilder.New
+                .With(x => x.SearchableDonorInformation, donorInfo)
+                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+
+            var message = SearchableDonorUpdateMessageBuilder.New
+                .With(x => x.DeserializedBody, update)
+                .Build();
+            messageReceiver
+                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+
+            await donorUpdateProcessor.ProcessDonorUpdates();
+
+            await donorManagementService.DidNotReceive().ManageDonorBatchByAvailability(
+                Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        public void ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_DoesNotThrowValidationException(string missingHla)
+        {
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.A_1, missingHla)
+                .With(x => x.A_2, missingHla)
+                .With(x => x.B_1, missingHla)
+                .With(x => x.B_2, missingHla)
+                .With(x => x.DRB1_1, missingHla)
+                .With(x => x.DRB1_1, missingHla)
+                .Build();
+
+            var update = SearchableDonorUpdateBuilder.New
+                .With(x => x.SearchableDonorInformation, donorInfo)
+                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+
+            var message = SearchableDonorUpdateMessageBuilder.New
+                .With(x => x.DeserializedBody, update)
+                .Build();
+            messageReceiver
+                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+
+            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDonorUpdates());
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        public async Task ProcessDonorUpdates_SingleUpdateIsMissingOptionalHla_ManagesDonorUpdate(string missingHla)
+        {
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.C_1, missingHla)
+                .With(x => x.C_2, missingHla)
+                .With(x => x.DPB1_1, missingHla)
+                .With(x => x.DPB1_1, missingHla)
+                .With(x => x.DQB1_1, missingHla)
+                .With(x => x.DQB1_1, missingHla)
                 .Build();
 
             var update = SearchableDonorUpdateBuilder.New

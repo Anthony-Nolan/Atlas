@@ -1,6 +1,6 @@
 ﻿using FluentValidation.TestHelper;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Validators.DonorUpdates;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates

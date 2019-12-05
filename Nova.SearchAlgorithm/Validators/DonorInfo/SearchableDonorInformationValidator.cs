@@ -1,8 +1,9 @@
 using FluentValidation;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Client.Models;
+using Nova.SearchAlgorithm.Extensions;
 
-namespace Nova.SearchAlgorithm.Validators.DonorUpdates
+namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
     public class SearchableDonorInformationValidator : AbstractValidator<SearchableDonorInformation>
     {
@@ -11,8 +12,7 @@ namespace Nova.SearchAlgorithm.Validators.DonorUpdates
             RuleFor(x => x.DonorId).NotNull();
             RuleFor(x => x.DonorType).NotNull().IsEnumName(typeof(DonorType));
             RuleFor(x => x.RegistryCode).NotNull().IsEnumName(typeof(RegistryCode));
-
-            // Donor's HLA info will be validated elsewhere
+            RuleFor(x => x.HlaAsPhenotype()).SetValidator(new PhenotypeHlaNamesValidator());
         }
     }
 }

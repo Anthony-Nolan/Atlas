@@ -115,7 +115,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, Services.Donors.DonorService>();
-            services.AddScoped<IDonorValidator, DonorValidator>();
             services.AddScoped<IDonorHlaExpander, DonorHlaExpander>();
 
             services.AddScoped<ISearchService, SearchService>();

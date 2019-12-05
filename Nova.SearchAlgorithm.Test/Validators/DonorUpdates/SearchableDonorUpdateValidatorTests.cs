@@ -3,7 +3,7 @@ using FluentValidation.TestHelper;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Validators.DonorUpdates;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
@@ -73,6 +73,8 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenTopLevelDonorIdDiffersToNestedDonorId_ShouldHaveValidationError()
         {
+            const string hlaName = "hla-name";
+
             var update = new SearchableDonorUpdateModel
             {
                 DonorId = $"{ValidDonorId + 1}",
@@ -80,7 +82,13 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
                 {
                     DonorId = ValidDonorId,
                     DonorType = $"{DonorType.Adult}",
-                    RegistryCode = $"{RegistryCode.AN}"
+                    RegistryCode = $"{RegistryCode.AN}",
+                    A_1 = hlaName,
+                    A_2 = hlaName,
+                    B_1 = hlaName,
+                    B_2 = hlaName,
+                    DRB1_1 = hlaName,
+                    DRB1_2 = hlaName
                 }
             };
 
@@ -92,6 +100,8 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenTopLevelDonorIdEqualsNestedDonorId_ShouldNotHaveValidationError()
         {
+            const string hlaName = "hla-name";
+
             var update = new SearchableDonorUpdateModel
             {
                 DonorId = ValidDonorIdAsString,
@@ -99,7 +109,13 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
                 {
                     DonorId = ValidDonorId,
                     DonorType = $"{DonorType.Adult}",
-                    RegistryCode = $"{RegistryCode.AN}"
+                    RegistryCode = $"{RegistryCode.AN}",
+                    A_1 = hlaName,
+                    A_2 = hlaName,
+                    B_1 = hlaName,
+                    B_2 = hlaName,
+                    DRB1_1 = hlaName,
+                    DRB1_2 = hlaName
                 }
             };
 
