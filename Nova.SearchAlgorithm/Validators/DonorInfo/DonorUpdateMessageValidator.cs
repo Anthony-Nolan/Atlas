@@ -9,6 +9,8 @@ namespace Nova.SearchAlgorithm.Validators.DonorInfo
         public DonorUpdateMessageValidator()
         {
             RuleFor(x => x.SequenceNumber).NotNull();
+            RuleFor(x => x.LockToken).NotEmpty();
+            RuleFor(x => x.LockedUntilUtc).NotNull();
             RuleFor(x => x.DeserializedBody).NotNull().SetValidator(new SearchableDonorUpdateValidator());
         }
     }

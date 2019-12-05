@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
             {
                 new ServiceBusMessage<SearchableDonorUpdateModel>
                 {
-                    SequenceNumber = 123,
+                    LockToken = "token",
                     DeserializedBody = new SearchableDonorUpdateModel
                     {
                         DonorId = donorId.ToString(),

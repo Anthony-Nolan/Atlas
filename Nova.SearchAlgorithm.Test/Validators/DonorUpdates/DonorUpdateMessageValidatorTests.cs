@@ -1,7 +1,6 @@
-﻿using FluentAssertions;
+﻿using FluentValidation.TestHelper;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.Validators.DonorInfo;
-using Nova.Utils.ServiceBus.Models;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
@@ -17,17 +16,17 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
             validator = new DonorUpdateMessageValidator();
         }
 
+        [TestCase("")]
+        [TestCase(null)]
+        public void Validator_WhenLockTokenIsMissing_ShouldHaveValidationError(string missingString)
+        {
+            validator.ShouldHaveValidationErrorFor(x => x.LockToken, missingString);
+        }
+
         [Test]
         public void Validator_WhenDeserializedBodyIsNull_ShouldHaveValidationError()
         {
-            var message = new ServiceBusMessage<SearchableDonorUpdateModel>
-            {
-                DeserializedBody = null
-            };
-
-            var result = validator.Validate(message);
-
-            result.IsValid.Should().BeFalse();
+            validator.ShouldHaveValidationErrorFor(x => x.DeserializedBody, (SearchableDonorUpdateModel)null);
         }
     }
 }
