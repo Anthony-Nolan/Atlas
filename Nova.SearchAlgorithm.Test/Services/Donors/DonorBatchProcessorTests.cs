@@ -23,25 +23,25 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
     {
         #region Function delegates to pass into service under test
 
-        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, string> GetDefaultDonorIdFunc =
-            donor => "id";
+        private static string GetDefaultDonorIdFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+            => "id";
 
-        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, string> GetDonorIdFromDonorInfoFunc =
-            donor => donor.DeserializedBody?.DonorId;
+        private static string GetDonorIdFromDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+            => donor.DeserializedBody?.DonorId;
 
-        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, Task<DonorAvailabilityUpdate>> DefaultProcessDonorFunc =
-                d => Task.FromResult(new DonorAvailabilityUpdate
-                {
-                    DonorId = d.DeserializedBody == null
+        private static Task<DonorAvailabilityUpdate> DefaultProcessDonorFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+            => Task.FromResult(new DonorAvailabilityUpdate
+            {
+                DonorId = donor.DeserializedBody == null
                         ? default
-                        : int.Parse(GetDonorIdFromDonorInfoFunc(d))
-                });
+                        : int.Parse(GetDonorIdFromDonorInfoFunc(donor))
+            });
 
-        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, Task<DonorAvailabilityUpdate>> ThrowAnticipatedExceptionFunc =
-            d => throw new DonorUpdateValidationException(d, new ValidationException("failed"));
+        private static Task<DonorAvailabilityUpdate> ThrowAnticipatedExceptionFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+            => throw new DonorUpdateValidationException(donor, new ValidationException("failed"));
 
-        private static readonly Func<DonorUpdateValidationException, ServiceBusMessage<SearchableDonorUpdateModel>, DonorUpdateFailureEventModel> GetDefaultEventModelFunc =
-            (e, d) => new DonorUpdateFailureEventModel(e, "id");
+        private static DonorUpdateFailureEventModel GetDefaultEventModelFunc(DonorUpdateValidationException ex, ServiceBusMessage<SearchableDonorUpdateModel> donor)
+            => new DonorUpdateFailureEventModel(ex, "id");
 
         #endregion
 
