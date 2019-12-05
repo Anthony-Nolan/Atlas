@@ -1,15 +1,13 @@
 ﻿using FluentAssertions;
-using Nova.SearchAlgorithm.Validators.InputDonor;
-using Nova.Utils.Models;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.PhenotypeInfo;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
+namespace Nova.SearchAlgorithm.Test.Validators.DonorInfo
 {
     [TestFixture]
     public class RequiredLocusHlaNamesValidatorTests
     {
-        private const LocusType TestLocus = LocusType.A;
         private RequiredLocusHlaNamesValidator validator;
 
         [SetUp]
@@ -21,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenNoHlaStringsAreProvided_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus);
+            var locusHlaNames = new LocusInfo<string>();
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeFalse();
         }
@@ -29,7 +27,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenEmptyHlaStringsAreProvided_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position1 = "",
                 Position2 = ""
@@ -41,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenOnlyFirstHlaStringProvided_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position1 = "hla-string"
             };
@@ -52,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenOnlySecondHlaStringProvided_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position2 = "hla-string"
             };
@@ -63,7 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenBothHlaStringsProvided_ShouldNotHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position1 = "hla-string-1",
                 Position2 = "hla-string-2"
@@ -75,7 +73,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenFirstHlaStringNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position1 = null,
                 Position2 = "not-null"
@@ -87,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenSecondHlaStringNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position1 = "not-null",
                 Position2 = null
@@ -99,7 +97,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
         [Test]
         public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(TestLocus)
+            var locusHlaNames = new LocusInfo<string>
             {
                 Position1 = null,
                 Position2 = null

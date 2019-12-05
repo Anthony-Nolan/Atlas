@@ -23,18 +23,15 @@ namespace Nova.SearchAlgorithm.Services.Donors
     {
         private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
-        private readonly IDonorValidator donorValidator;
         private readonly IDonorHlaExpander donorHlaExpander;
 
         public DonorService(
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory repositoryFactory,
-            IDonorValidator donorValidator,
             IDonorHlaExpander donorHlaExpander)
         {
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
             donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
-            this.donorValidator = donorValidator;
             this.donorHlaExpander = donorHlaExpander;
         }
 
@@ -50,12 +47,17 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
         public async Task CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors)
         {
-            var validDonors = (await donorValidator.ValidateDonorsAsync(inputDonors)).ToList();
+            inputDonors = inputDonors.ToList();
 
-            if (validDonors.Any())
+            if(!inputDonors.Any())
             {
-                var donorsWithHla = (await donorHlaExpander.ExpandDonorHlaBatchAsync(validDonors)).ToList();
+                return;
+            }
 
+            var donorsWithHla = (await donorHlaExpander.ExpandDonorHlaBatchAsync(inputDonors)).ToList();
+
+            if (donorsWithHla.Any())
+            {
                 var existingDonorIds = (await GetExistingDonorIds(donorsWithHla)).ToList();
                 var newDonors = donorsWithHla.Where(id => !existingDonorIds.Contains(id.DonorId));
                 var updateDonors = donorsWithHla.Where(id => existingDonorIds.Contains(id.DonorId));

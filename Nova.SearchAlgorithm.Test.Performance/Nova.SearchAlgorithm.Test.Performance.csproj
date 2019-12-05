@@ -19,7 +19,7 @@
 
     <ItemGroup>
       <PackageReference Include="CsvHelper" Version="12.1.2" />
-      <PackageReference Include="Nova.Utils.ServiceClient" Version="12.4.3" />
+      <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
     </ItemGroup>
 
 </Project>

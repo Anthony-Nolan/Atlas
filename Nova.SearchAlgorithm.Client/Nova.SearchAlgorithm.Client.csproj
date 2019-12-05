@@ -11,8 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Nova.Utils" Version="12.4.3" />
-      <PackageReference Include="Nova.Utils.ServiceClient" Version="12.4.3" />
+      <PackageReference Include="Nova.Utils" Version="14.3.0" />
+      <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
     </ItemGroup>
 
     <ItemGroup>

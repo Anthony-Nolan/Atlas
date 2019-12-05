@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Extensions
             };
         }
 
-        private static PhenotypeInfo<string> HlaAsPhenotype(this SearchableDonorInformation donor)
+        public static PhenotypeInfo<string> HlaAsPhenotype(this SearchableDonorInformation donor)
         {
             return new PhenotypeInfo<string>
             {

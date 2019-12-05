@@ -36,6 +36,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.DependencyInjection
             services.RegisterSearchAlgorithmTypes();
             services.RegisterAllMatchingDictionaryTypes();
             services.RegisterDataServices();
+            services.RegisterDonorManagementServices();
             
             services.AddScoped(sp =>
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])

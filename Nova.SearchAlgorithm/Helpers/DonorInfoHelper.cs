@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Helpers
             {
                 return code;
             }
-            throw new DonorImportException($"Could not understand registry code {input}");
+            throw new DonorInfoException($"Could not understand registry code {input}");
         }
 
         public static DonorType DonorTypeFromString(string input)
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Helpers
                 case "c":
                     return DonorType.Cord;
                 default:
-                    throw new DonorImportException($"Could not understand donor type {input}");
+                    throw new DonorInfoException($"Could not understand donor type {input}");
             }
         }
     }

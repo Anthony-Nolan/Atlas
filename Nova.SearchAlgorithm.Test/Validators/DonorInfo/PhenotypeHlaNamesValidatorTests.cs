@@ -1,9 +1,9 @@
 ﻿using FluentValidation.TestHelper;
-using Nova.SearchAlgorithm.Validators.InputDonor;
+using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.PhenotypeInfo;
 using NUnit.Framework;
 
-namespace Nova.SearchAlgorithm.Test.Validators.InputDonor
+namespace Nova.SearchAlgorithm.Test.Validators.DonorInfo
 {
     [TestFixture]
     public class PhenotypeHlaNamesValidatorTests

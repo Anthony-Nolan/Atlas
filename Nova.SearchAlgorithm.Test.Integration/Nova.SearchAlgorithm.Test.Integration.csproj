@@ -16,11 +16,12 @@
       <PackageReference Include="EntityFramework" Version="6.2.0" />
       <PackageReference Include="FluentAssertions" Version="4.19.3" />
       <PackageReference Include="LochNessBuilder" Version="1.0.1" />
+      <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
       <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
-      <PackageReference Include="Nova.Utils" Version="12.4.3" />
-      <PackageReference Include="Nova.Utils.ServiceClient" Version="12.4.3" />
+      <PackageReference Include="Nova.Utils" Version="14.3.0" />
+      <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
       <PackageReference Include="NSubstitute" Version="2.0.3" />
       <PackageReference Include="NUnit" Version="3.12.0" />
       <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
@@ -34,6 +35,12 @@
       <ProjectReference Include="..\Nova.SearchAlgorithm.Data\Nova.SearchAlgorithm.Data.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm.MatchingDictionary\Nova.SearchAlgorithm.MatchingDictionary.csproj" />
       <ProjectReference Include="..\Nova.SearchAlgorithm\Nova.SearchAlgorithm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Nova.Utils.ServiceBus">
+        <HintPath>..\..\Anthony-Nolan\Nova.Utils\Nova.Utils.ServiceBus\bin\Debug\netstandard2.0\Nova.Utils.ServiceBus.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
     <ItemGroup>

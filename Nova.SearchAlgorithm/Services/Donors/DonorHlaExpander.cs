@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         Task<IEnumerable<InputDonorWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<InputDonor> inputDonors);
     }
 
-    public class DonorHlaExpander : InputDonorBatchProcessor<InputDonorWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
+    public class DonorHlaExpander : DonorBatchProcessor<InputDonor, InputDonorWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
     {
         private const Priority LoggerPriority = Priority.Medium;
         private const string AlertSummary = "HLA Expansion Failure(s) in Search Algorithm";
@@ -36,7 +36,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return await ProcessBatchAsync(
                 inputDonors,
                 async d => await CombineDonorAndExpandedHla(d),
-                (exception, donor) => new MatchingDictionaryLookupFailureEventModel(exception, $"{donor.DonorId}"));
+                (exception, donor) => new MatchingDictionaryLookupFailureEventModel(exception, $"{donor.DonorId}"),
+                d => d.DonorId.ToString());
         }
 
         private async Task<InputDonorWithExpandedHla> CombineDonorAndExpandedHla(InputDonor inputDonor)

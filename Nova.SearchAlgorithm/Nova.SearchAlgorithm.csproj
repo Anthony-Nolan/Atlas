@@ -20,9 +20,9 @@
       <PackageReference Include="NeoSmart.AsyncLock" Version="0.3.0.2" />
       <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
       <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
-      <PackageReference Include="Nova.Utils.Notifications" Version="12.4.3" />
-      <PackageReference Include="Nova.Utils.ServiceBus" Version="12.4.3" />
-      <PackageReference Include="Nova.Utils.Storage" Version="12.4.3" />
+      <PackageReference Include="Nova.Utils.Notifications" Version="14.3.0" />
+      <PackageReference Include="Nova.Utils.ServiceBus" Version="14.3.0" />
+      <PackageReference Include="Nova.Utils.Storage" Version="14.3.0" />
       <PackageReference Include="Polly" Version="7.1.0" />
     </ItemGroup>
 

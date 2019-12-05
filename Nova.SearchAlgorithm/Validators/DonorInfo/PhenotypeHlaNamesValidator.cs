@@ -1,7 +1,7 @@
 using FluentValidation;
 using Nova.Utils.PhenotypeInfo;
 
-namespace Nova.SearchAlgorithm.Validators.InputDonor
+namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
     public class PhenotypeHlaNamesValidator : AbstractValidator<PhenotypeInfo<string>>
     {
