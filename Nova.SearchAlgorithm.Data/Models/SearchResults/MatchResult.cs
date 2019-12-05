@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Data.Models.SearchResults
 {
     public class MatchResult
     {
-        private DonorResult donor;
+        private InputDonor donor;
 
         #region Partial donor information used in matching
         
@@ -23,7 +23,7 @@ namespace Nova.SearchAlgorithm.Data.Models.SearchResults
 
         #endregion
         
-        public DonorResult Donor
+        public InputDonor Donor
         {
             get
             {

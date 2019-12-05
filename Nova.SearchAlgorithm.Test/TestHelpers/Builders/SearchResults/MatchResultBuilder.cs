@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
         {
             matchResult = new MatchResult
             {
-                Donor = new DonorResult
+                Donor = new DonorInfoWithExpandedHla
                 {
                     HlaNames = new PhenotypeInfo<string>
                     {

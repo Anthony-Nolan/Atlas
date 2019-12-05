@@ -66,13 +66,13 @@ namespace Nova.SearchAlgorithm.Services.Donors
             }
         }
 
-        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> inputDonors)
         {
             var existingDonors = await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId));
             return existingDonors.Keys;
         }
 
-        private async Task CreateDonorBatch(IEnumerable<InputDonorWithExpandedHla> newDonors)
+        private async Task CreateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> newDonors)
         {
             newDonors = newDonors.ToList();
 
@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> updateDonors)
+        private async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> updateDonors)
         {
             updateDonors = updateDonors.ToList();
 

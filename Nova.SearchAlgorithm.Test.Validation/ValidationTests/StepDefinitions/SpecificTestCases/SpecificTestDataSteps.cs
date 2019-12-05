@@ -11,7 +11,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
     public static class SpecificTestDataSteps
     {
         public static async Task GivenDonorAndPatientHla(
-            Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla,
+            PhenotypeInfo<string> donorHla,
             PhenotypeInfo<string> patientHla,
             ScenarioContext scenarioContext)
         {
@@ -19,7 +19,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
             GivenPatientHla(patientHla, scenarioContext);
         }
         
-        public static async Task GivenDonorHla(Utils.PhenotypeInfo.PhenotypeInfo<string> donorHla, ScenarioContext scenarioContext)
+        public static async Task GivenDonorHla(PhenotypeInfo<string> donorHla, ScenarioContext scenarioContext)
         {
             var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
             var inputDonor = new InputDonor

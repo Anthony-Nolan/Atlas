@@ -37,7 +37,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         /// Adds pre-processed matching p-groups for a batch of donors
         /// Used when adding donors
         /// </summary>
-        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors);
+        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors);
 
         Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds);
     }

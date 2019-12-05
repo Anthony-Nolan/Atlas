@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 
         public InputDonorBuilder WithHlaAtLocus(Locus locus, TypePosition position, string hla)
         {
-            ((PhenotypeInfo<string>) donor.HlaNames).SetAtPosition(locus, position, hla);
+            donor.HlaNames.SetAtPosition(locus, position, hla);
             return this;
         }
 

@@ -12,10 +12,10 @@ namespace Nova.SearchAlgorithm.Services.Donors
 {
     public interface IDonorHlaExpander
     {
-        Task<IEnumerable<InputDonorWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<InputDonor> inputDonors);
+        Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<InputDonor> inputDonors);
     }
 
-    public class DonorHlaExpander : DonorBatchProcessor<InputDonor, InputDonorWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
+    public class DonorHlaExpander : DonorBatchProcessor<InputDonor, DonorInfoWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
     {
         private const Priority LoggerPriority = Priority.Medium;
         private const string AlertSummary = "HLA Expansion Failure(s) in Search Algorithm";
@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
         }
 
-        public async Task<IEnumerable<InputDonorWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<InputDonor> inputDonors)
+        public async Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<InputDonor> inputDonors)
         {
             return await ProcessBatchAsync(
                 inputDonors,
@@ -40,17 +40,18 @@ namespace Nova.SearchAlgorithm.Services.Donors
                 d => d.DonorId.ToString());
         }
 
-        private async Task<InputDonorWithExpandedHla> CombineDonorAndExpandedHla(InputDonor inputDonor)
+        private async Task<DonorInfoWithExpandedHla> CombineDonorAndExpandedHla(InputDonor inputDonor)
         {
-            var hla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(
+            var expandedHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(
                 new PhenotypeInfo<string>(inputDonor.HlaNames));
 
-            return new InputDonorWithExpandedHla
+            return new DonorInfoWithExpandedHla
             {
                 DonorId = inputDonor.DonorId,
                 DonorType = inputDonor.DonorType,
                 RegistryCode = inputDonor.RegistryCode,
-                MatchingHla = hla,
+                HlaNames = inputDonor.HlaNames,
+                MatchingHla = expandedHla,
             };
         }
     }

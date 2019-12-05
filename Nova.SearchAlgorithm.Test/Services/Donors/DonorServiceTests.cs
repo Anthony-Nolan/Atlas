@@ -31,8 +31,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             repositoryFactory.GetDonorInspectionRepository().Returns(inspectionRepository);
             repositoryFactory.GetDonorUpdateRepository().Returns(updateRepository);
 
-            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorResult>(),
-                new Dictionary<int, DonorResult> { { 0, new DonorResult() } });
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, InputDonor>(),
+                new Dictionary<int, InputDonor> { { 0, new InputDonor() } });
 
             donorService = new SearchAlgorithm.Services.Donors.DonorService(
                 repositoryFactory,
@@ -63,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             await donorService.CreateOrUpdateDonorBatch(new InputDonor[] { });
 
-            await updateRepository.DidNotReceive().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+            await updateRepository.DidNotReceive().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<DonorInfoWithExpandedHla>>());
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             await donorService.CreateOrUpdateDonorBatch(new InputDonor[] { });
 
-            await updateRepository.DidNotReceive().UpdateDonorBatch(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+            await updateRepository.DidNotReceive().UpdateDonorBatch(Arg.Any<IEnumerable<DonorInfoWithExpandedHla>>());
         }
 
         [Test]
@@ -91,11 +91,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<InputDonor>>())
-                .Returns(new[] { new InputDonorWithExpandedHla { DonorId = donorId } });
+                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new InputDonor() });
 
-            await updateRepository.Received().InsertBatchOfDonorsWithExpandedHla(Arg.Is<IEnumerable<InputDonorWithExpandedHla>>(x => x.Single().DonorId == donorId));
+            await updateRepository.Received().InsertBatchOfDonorsWithExpandedHla(Arg.Is<IEnumerable<DonorInfoWithExpandedHla>>(x => x.Single().DonorId == donorId));
         }
 
         [Test]
@@ -105,11 +105,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<InputDonor>>())
-                .Returns(new[] { new InputDonorWithExpandedHla { DonorId = donorId } });
+                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new InputDonor() });
 
-            await updateRepository.DidNotReceive().UpdateDonorBatch(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+            await updateRepository.DidNotReceive().UpdateDonorBatch(Arg.Any<IEnumerable<DonorInfoWithExpandedHla>>());
         }
 
         [Test]
@@ -119,15 +119,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<InputDonor>>())
-                .Returns(new[] { new InputDonorWithExpandedHla { DonorId = donorId } });
+                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
 
             inspectionRepository
                 .GetDonors(Arg.Any<IEnumerable<int>>())
-                .Returns(new Dictionary<int, DonorResult> { { donorId, new DonorResult() } });
+                .Returns(new Dictionary<int, InputDonor> { { donorId, new InputDonor() } });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new InputDonor() });
 
-            await updateRepository.Received().UpdateDonorBatch(Arg.Is<IEnumerable<InputDonorWithExpandedHla>>(x => x.Single().DonorId == donorId));
+            await updateRepository.Received().UpdateDonorBatch(Arg.Is<IEnumerable<DonorInfoWithExpandedHla>>(x => x.Single().DonorId == donorId));
         }
 
         [Test]
@@ -137,15 +137,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<InputDonor>>())
-                .Returns(new[] { new InputDonorWithExpandedHla { DonorId = donorId } });
+                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
 
             inspectionRepository
                 .GetDonors(Arg.Any<IEnumerable<int>>())
-                .Returns(new Dictionary<int, DonorResult> { { donorId, new DonorResult() } });
+                .Returns(new Dictionary<int, InputDonor> { { donorId, new InputDonor() } });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new InputDonor() });
 
-            await updateRepository.DidNotReceive().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<InputDonorWithExpandedHla>>());
+            await updateRepository.DidNotReceive().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<DonorInfoWithExpandedHla>>());
         }
     }
 }

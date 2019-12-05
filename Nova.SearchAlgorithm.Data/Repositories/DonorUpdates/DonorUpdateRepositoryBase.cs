@@ -75,12 +75,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        protected async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        protected async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> inputDonors)
         {
             await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
         }
 
-        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private DataTable CreateDonorDataTableForLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private DataTable CreateDonorDataTableForLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var dt = new DataTable();
             dt.Columns.Add("Id");

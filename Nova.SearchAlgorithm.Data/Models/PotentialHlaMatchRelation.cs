@@ -12,9 +12,7 @@ namespace Nova.SearchAlgorithm.Data.Models
         public TypePosition SearchTypePosition { get; set; }
         public TypePosition MatchingTypePosition { get; set; }
         public string Name { get; set; }
-
         public int DonorId { get; set; }
-
-        public DonorResult Donor { get; set; }
+        public DonorInfoWithExpandedHla Donor { get; set; }
     }
 }

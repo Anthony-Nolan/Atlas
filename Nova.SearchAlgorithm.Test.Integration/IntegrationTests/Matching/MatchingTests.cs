@@ -19,20 +19,20 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     public class MatchingTests
     {
         private IDonorMatchingService matchingService;
-        private InputDonorWithExpandedHla cordDonorWithFullHomozygousMatchAtLocusA;
-        private InputDonorWithExpandedHla cordDonorWithFullHeterozygousMatchAtLocusA;
-        private InputDonorWithExpandedHla cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA;
-        private InputDonorWithExpandedHla cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
-        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocusAAndExactMatchAtB;
-        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocusAAndHalfMatchAtB;
+        private DonorInfoWithExpandedHla cordDonorWithFullHomozygousMatchAtLocusA;
+        private DonorInfoWithExpandedHla cordDonorWithFullHeterozygousMatchAtLocusA;
+        private DonorInfoWithExpandedHla cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA;
+        private DonorInfoWithExpandedHla cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
+        private DonorInfoWithExpandedHla cordDonorWithNoMatchAtLocusAAndExactMatchAtB;
+        private DonorInfoWithExpandedHla cordDonorWithNoMatchAtLocusAAndHalfMatchAtB;
 
         // Registries chosen to be different from `DefaultRegistryCode`
-        private InputDonorWithExpandedHla cordDonorWithFullMatchAtAnthonyNolanRegistry;
-        private InputDonorWithExpandedHla cordDonorWithFullMatchAtNmdpRegistry;
+        private DonorInfoWithExpandedHla cordDonorWithFullMatchAtAnthonyNolanRegistry;
+        private DonorInfoWithExpandedHla cordDonorWithFullMatchAtNmdpRegistry;
 
-        private InputDonorWithExpandedHla adultDonorWithFullMatch;
+        private DonorInfoWithExpandedHla adultDonorWithFullMatch;
 
-        private InputDonorWithExpandedHla unavailableMatchingCordDonor;
+        private DonorInfoWithExpandedHla unavailableMatchingCordDonor;
 
         private const string PatientPGroup_LocusA_BothPositions = "01:01P";
         private const string PatientPGroup_LocusA_PositionOne = "01:02";
@@ -66,7 +66,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorWithFullHomozygousMatchAtLocusA = GetDefaultInputDonorBuilder().Build();
 
             cordDonorWithFullHeterozygousMatchAtLocusA = GetDefaultInputDonorBuilder()
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.A,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_BothPositions, "non-matching-pgroup")
@@ -78,7 +78,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .Build();
 
             cordDonorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = GetDefaultInputDonorBuilder()
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.A,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_BothPositions, "non-matching-pgroup")
@@ -91,7 +91,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
 
             cordDonorWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = GetDefaultInputDonorBuilder()
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.A,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo)
@@ -103,7 +103,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .Build();
 
             cordDonorWithNoMatchAtLocusAAndExactMatchAtB = GetDefaultInputDonorBuilder()
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.A,
                     new ExpandedHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
@@ -112,7 +112,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         .WithPGroups("non-matching-pgroup-3", "non-matching-pgroup-4")
                         .Build()
                 )
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.B,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionOne)
@@ -124,7 +124,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .Build();
 
             cordDonorWithNoMatchAtLocusAAndHalfMatchAtB = GetDefaultInputDonorBuilder()
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.A,
                     new ExpandedHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
@@ -133,7 +133,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         .WithPGroups("non-matching-pgroup-3", "non-matching-pgroup-4")
                         .Build()
                 )
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.B,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionOne)
@@ -156,7 +156,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DonorType.Adult)
                 .Build();
 
-            var allDonors = new List<InputDonorWithExpandedHla>
+            var allDonors = new List<DonorInfoWithExpandedHla>
             {
                 cordDonorWithFullHomozygousMatchAtLocusA,
                 cordDonorWithFullHeterozygousMatchAtLocusA,
@@ -275,12 +275,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
-        private InputDonorWithExpandedHlaBuilder GetDefaultInputDonorBuilder()
+        private static DonorInfoWithExpandedHlaBuilder GetDefaultInputDonorBuilder()
         {
-            return new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            return new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithRegistryCode(DefaultRegistryCode)
                 .WithDonorType(DefaultDonorType)
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.A,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionOne)
@@ -289,7 +289,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         .WithPGroups(PatientPGroup_LocusA_PositionTwo)
                         .Build()
                 )
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.B,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionOne)
@@ -298,7 +298,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                         .WithPGroups(PatientPGroup_LocusB_PositionTwo)
                         .Build()
                 )
-                .WithMatchingHlaAtLocus(
+                .WithHlaAtLocus(
                     Locus.Drb1,
                     new ExpandedHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusDRB1_PositionOne)

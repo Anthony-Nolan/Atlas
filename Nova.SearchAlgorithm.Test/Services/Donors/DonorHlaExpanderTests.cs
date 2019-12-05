@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             {
                 new InputDonor
                 {
-                    HlaNames = new Utils.PhenotypeInfo.PhenotypeInfo<string>("hla")
+                    HlaNames = new PhenotypeInfo<string>("hla")
                 }
             });
 
@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 new InputDonor
                 {
                     DonorId = donorId,
-                    HlaNames = new Utils.PhenotypeInfo.PhenotypeInfo<string>("hla")
+                    HlaNames = new PhenotypeInfo<string>("hla")
                 }
             });
 
@@ -81,7 +81,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 {
                     new InputDonor
                     {
-                        HlaNames = new Utils.PhenotypeInfo.PhenotypeInfo<string>("hla")
+                        HlaNames = new PhenotypeInfo<string>("hla")
                     }
                 });
             });
@@ -100,7 +100,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     {
                         new InputDonor
                         {
-                            HlaNames = new Utils.PhenotypeInfo.PhenotypeInfo<string>("hla")
+                            HlaNames = new PhenotypeInfo<string>("hla")
                         }
                     });
                 }

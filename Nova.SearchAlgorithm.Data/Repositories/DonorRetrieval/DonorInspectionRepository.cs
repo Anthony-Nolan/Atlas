@@ -20,12 +20,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
         {
         }
 
-        public async Task<DonorResult> GetDonor(int donorId)
+        public async Task<InputDonor> GetDonor(int donorId)
         {
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var donor = await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE DonorId = {donorId}", commandTimeout: 300);
-                return donor?.ToDonorResult();
+                return donor?.ToInputDonor();
             }
         }
 
@@ -74,12 +74,12 @@ ON m.DonorId = DonorIds.Id
             return results;
         }
 
-        public async Task<Dictionary<int, DonorResult>> GetDonors(IEnumerable<int> donorIds)
+        public async Task<Dictionary<int, InputDonor>> GetDonors(IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
             if (!donorIds.Any())
             {
-                return new Dictionary<int, DonorResult>();
+                return new Dictionary<int, InputDonor>();
             }
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
@@ -94,7 +94,7 @@ AS DonorIds
 ON DonorId = DonorIds.Id
 ";
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
-                return donors.Select(d => d.ToDonorResult()).ToDictionary(d => d.DonorId, d => d);
+                return donors.Select(d => d.ToInputDonor()).ToDictionary(d => d.DonorId, d => d);
             }
         }
     }

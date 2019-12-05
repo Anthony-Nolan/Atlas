@@ -40,9 +40,9 @@ namespace Nova.SearchAlgorithm.Data.Models.Entities
         [Required]
         public string DRB1_2 { get; set; }
 
-        public DonorResult ToDonorResult()
+        public InputDonor ToInputDonor()
         {
-            return new DonorResult
+            return new InputDonor
             {
                 DonorId = DonorId,
                 DonorType = DonorType,
@@ -50,12 +50,12 @@ namespace Nova.SearchAlgorithm.Data.Models.Entities
                 IsAvailableForSearch = IsAvailableForSearch,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A = {Position1 = A_1, Position2 = A_2},
-                    B = {Position1 = B_1, Position2 = B_2},
-                    C = {Position1 = C_1, Position2 = C_2},
-                    Dpb1 = {Position1 = DPB1_1, Position2 = DPB1_2},
-                    Dqb1 = {Position1 = DQB1_1, Position2 = DQB1_2},
-                    Drb1 = {Position1 = DRB1_1, Position2 = DRB1_2},
+                    A = { Position1 = A_1, Position2 = A_2 },
+                    B = { Position1 = B_1, Position2 = B_2 },
+                    C = { Position1 = C_1, Position2 = C_2 },
+                    Dpb1 = { Position1 = DPB1_1, Position2 = DPB1_2 },
+                    Dqb1 = { Position1 = DQB1_1, Position2 = DQB1_2 },
+                    Drb1 = { Position1 = DRB1_1, Position2 = DRB1_2 },
                 }
             };
         }

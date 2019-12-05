@@ -30,7 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private ISearchService searchService;
         private ITestHlaSet defaultHlaSet;
         private ITestHlaSet mismatchHlaSet;
-        private InputDonorWithExpandedHla testDonor;
+        private DonorInfoWithExpandedHla testDonor;
 
         [OneTimeSetUp]
         public void ImportTestDonor()
@@ -266,7 +266,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
 
         #endregion
 
-        private InputDonorWithExpandedHla BuildTestDonor()
+        private DonorInfoWithExpandedHla BuildTestDonor()
         {
             var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
 
@@ -274,8 +274,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .GetPhenotypeOfExpandedHla(defaultHlaSet.SixLocus_SingleExpressingAlleles)
                 .Result;
 
-            return new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
-                .WithMatchingHla(matchingHlaPhenotype)
+            return new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+                .WithHla(matchingHlaPhenotype)
                 .Build();
         }
     }

@@ -90,11 +90,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             pGroups.Should().NotBeEmpty();
         }
 
-        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, InputDonor donorExpected)
+        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(InputDonor donorActual, InputDonor donorExpected)
         {
             donorActual.DonorId.Should().Be(donorExpected.DonorId);
             donorActual.DonorType.Should().Be(donorExpected.DonorType);
             donorActual.RegistryCode.Should().Be(donorExpected.RegistryCode);
+            donorActual.IsAvailableForSearch.Should().Be(donorExpected.IsAvailableForSearch);
             donorActual.HlaNames.ShouldBeEquivalentTo(donorExpected.HlaNames);
         }
 

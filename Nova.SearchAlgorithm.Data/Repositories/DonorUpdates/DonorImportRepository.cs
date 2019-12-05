@@ -114,7 +114,7 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
             await base.InsertBatchOfDonors(donors);
         }
 
-        public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors)
+        public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors)
         {
             await base.AddMatchingPGroupsForExistingDonorBatch(donors);
         }

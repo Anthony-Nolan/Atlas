@@ -7,7 +7,7 @@ namespace Nova.SearchAlgorithm.Mapping
     {
         public InputDonorProfile()
         {
-            CreateMap<DonorResult, InputDonor>();
+            CreateMap<DonorInfoWithExpandedHla, InputDonor>();
         }
     }
 }

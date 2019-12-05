@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
             var donorsProcessed = 0;
 
-            var failedDonors = new List<InputDonorWithExpandedHla>();
+            var failedDonors = new List<DonorInfoWithExpandedHla>();
 
             while (batchedQuery.HasMoreResults)
             {
@@ -137,8 +137,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// <param name="hlaDatabaseVersion">The version of the HLA database to use to fetch expanded HLA information</param>
         /// <param name="shouldRemovePGroups">If set, existing p-groups will be removed before adding new ones.</param>
         /// <returns>A collection of any donors that did ot import successfully</returns>
-        private async Task<IEnumerable<InputDonorWithExpandedHla>> UpdateDonorBatch(
-            IEnumerable<DonorResult> donorBatch,
+        private async Task<IEnumerable<DonorInfoWithExpandedHla>> UpdateDonorBatch(
+            IEnumerable<InputDonor> donorBatch,
             string hlaDatabaseVersion,
             bool shouldRemovePGroups)
         {
@@ -203,27 +203,29 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         /// Fetches expanded HLA information for a donor, via the matching dictionary.
         /// If any HLA can not be looked up (e.g. they are invalid, or valid only in a different version of the HLA naming database), will return null HLA information. 
         /// </summary>
-        private async Task<InputDonorWithExpandedHla> FetchDonorHlaData(DonorResult donor, string hlaDatabaseVersion)
+        private async Task<DonorInfoWithExpandedHla> FetchDonorHlaData(InputDonor donor, string hlaDatabaseVersion)
         {
             try
             {
                 var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donor.HlaNames, hlaDatabaseVersion);
 
-                return new InputDonorWithExpandedHla
+                return new DonorInfoWithExpandedHla
                 {
                     DonorId = donor.DonorId,
                     DonorType = donor.DonorType,
                     RegistryCode = donor.RegistryCode,
+                    HlaNames = donor.HlaNames,
                     MatchingHla = matchingHla,
                 };
             }
             catch (MatchingDictionaryException e)
             {
                 logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, donor.DonorId.ToString()));
-                return new InputDonorWithExpandedHla
+                return new DonorInfoWithExpandedHla
                 {
                     DonorId = donor.DonorId,
                     DonorType = donor.DonorType,
+                    HlaNames = donor.HlaNames,
                     RegistryCode = donor.RegistryCode,
                     MatchingHla = null,
                 };
