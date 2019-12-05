@@ -23,20 +23,25 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
     {
         #region Function delegates to pass into service under test
 
-        private readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, Task<DonorAvailabilityUpdate>> defaultProcessDonorFunc =
-                d => Task.FromResult(new DonorAvailabilityUpdate());
-
-        private readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, Task<DonorAvailabilityUpdate>> throwAnticipatedExceptionFunc =
-            d => throw new DonorUpdateValidationException(d, new ValidationException("failed"));
-
-        private readonly Func<DonorUpdateValidationException, ServiceBusMessage<SearchableDonorUpdateModel>, DonorUpdateFailureEventModel> getDefaultEventModelFunc =
-            (e, d) => new DonorUpdateFailureEventModel(e, "id");
-
-        private readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, string> getDefaultDonorIdFunc =
+        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, string> GetDefaultDonorIdFunc =
             donor => "id";
 
-        private readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, string> getDonorIdFromDonorInfoFunc =
-            donor => donor.DeserializedBody.DonorId;
+        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, string> GetDonorIdFromDonorInfoFunc =
+            donor => donor.DeserializedBody?.DonorId;
+
+        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, Task<DonorAvailabilityUpdate>> DefaultProcessDonorFunc =
+                d => Task.FromResult(new DonorAvailabilityUpdate
+                {
+                    DonorId = d.DeserializedBody == null
+                        ? default
+                        : int.Parse(GetDonorIdFromDonorInfoFunc(d))
+                });
+
+        private static readonly Func<ServiceBusMessage<SearchableDonorUpdateModel>, Task<DonorAvailabilityUpdate>> ThrowAnticipatedExceptionFunc =
+            d => throw new DonorUpdateValidationException(d, new ValidationException("failed"));
+
+        private static readonly Func<DonorUpdateValidationException, ServiceBusMessage<SearchableDonorUpdateModel>, DonorUpdateFailureEventModel> GetDefaultEventModelFunc =
+            (e, d) => new DonorUpdateFailureEventModel(e, "id");
 
         #endregion
 
@@ -62,9 +67,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
-                defaultProcessDonorFunc,
-                getDefaultEventModelFunc,
-                getDefaultDonorIdFunc
+                DefaultProcessDonorFunc,
+                GetDefaultEventModelFunc,
+                GetDefaultDonorIdFunc
             );
 
             result.Should().BeEmpty();
@@ -75,9 +80,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                throwAnticipatedExceptionFunc,
-                getDefaultEventModelFunc,
-                getDefaultDonorIdFunc
+                ThrowAnticipatedExceptionFunc,
+                GetDefaultEventModelFunc,
+                GetDefaultDonorIdFunc
             );
 
             result.Should().BeEmpty();
@@ -92,9 +97,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     new ServiceBusMessage<SearchableDonorUpdateModel>(),
                     new ServiceBusMessage<SearchableDonorUpdateModel>()
                 },
-                throwAnticipatedExceptionFunc,
-                getDefaultEventModelFunc,
-                getDefaultDonorIdFunc
+                ThrowAnticipatedExceptionFunc,
+                GetDefaultEventModelFunc,
+                GetDefaultDonorIdFunc
             );
 
             logger.Received(2).SendEvent(Arg.Any<DonorUpdateFailureEventModel>());
@@ -118,9 +123,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                         DeserializedBody = new SearchableDonorUpdateModel{ DonorId = donorId2 }
                     }
                 },
-                throwAnticipatedExceptionFunc,
-                getDefaultEventModelFunc,
-                getDonorIdFromDonorInfoFunc
+                ThrowAnticipatedExceptionFunc,
+                GetDefaultEventModelFunc,
+                GetDonorIdFromDonorInfoFunc
             );
 
             await notificationsClient.Received(1).SendAlert(Arg.Is<Alert>(x =>
@@ -133,9 +138,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                defaultProcessDonorFunc,
-                getDefaultEventModelFunc,
-                getDefaultDonorIdFunc
+                DefaultProcessDonorFunc,
+                GetDefaultEventModelFunc,
+                GetDefaultDonorIdFunc
             );
 
             logger.DidNotReceive().SendEvent(Arg.Any<DonorUpdateFailureEventModel>());
@@ -146,9 +151,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                defaultProcessDonorFunc,
-                getDefaultEventModelFunc,
-                getDefaultDonorIdFunc
+                DefaultProcessDonorFunc,
+                GetDefaultEventModelFunc,
+                GetDefaultDonorIdFunc
             );
 
             await notificationsClient.DidNotReceive().SendAlert(Arg.Any<Alert>());
@@ -167,9 +172,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                         DeserializedBody = new SearchableDonorUpdateModel { DonorId = donorId.ToString() }
                     }
                 },
-                d => Task.FromResult(new DonorAvailabilityUpdate { DonorId = donorId }),
-                getDefaultEventModelFunc,
-                getDonorIdFromDonorInfoFunc
+                DefaultProcessDonorFunc,
+                GetDefaultEventModelFunc,
+                GetDonorIdFromDonorInfoFunc
             );
 
             // The result will depend on the processDonorInfoFunc and the return type defined in the concrete class
@@ -195,10 +200,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     }
                 },
                 async d => d.DeserializedBody.DonorId == successfulDonor
-                    ? await defaultProcessDonorFunc(d)
-                    : await throwAnticipatedExceptionFunc(d),
-                getDefaultEventModelFunc,
-                getDefaultDonorIdFunc
+                    ? await DefaultProcessDonorFunc(d)
+                    : await ThrowAnticipatedExceptionFunc(d),
+                GetDefaultEventModelFunc,
+                GetDefaultDonorIdFunc
             );
 
             logger.Received(1).SendEvent(Arg.Any<DonorUpdateFailureEventModel>());
@@ -223,10 +228,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     }
                 },
                 async d => d.DeserializedBody.DonorId == successfulDonor
-                    ? await defaultProcessDonorFunc(d)
-                    : await throwAnticipatedExceptionFunc(d),
-                getDefaultEventModelFunc,
-                getDonorIdFromDonorInfoFunc
+                    ? await DefaultProcessDonorFunc(d)
+                    : await ThrowAnticipatedExceptionFunc(d),
+                GetDefaultEventModelFunc,
+                GetDonorIdFromDonorInfoFunc
             );
 
             await notificationsClient.Received(1).SendAlert(Arg.Is<Alert>(x =>
@@ -252,10 +257,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     }
                 },
                 async d => d.DeserializedBody.DonorId == successfulDonor.ToString()
-                    ? await Task.FromResult(new DonorAvailabilityUpdate { DonorId = successfulDonor })
-                    : await throwAnticipatedExceptionFunc(d),
-                getDefaultEventModelFunc,
-                getDonorIdFromDonorInfoFunc
+                    ? await DefaultProcessDonorFunc(d)
+                    : await ThrowAnticipatedExceptionFunc(d),
+                GetDefaultEventModelFunc,
+                GetDonorIdFromDonorInfoFunc
             );
 
             // The result will depend on the return type defined in the concrete class
@@ -269,9 +274,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 {
                     await donorBatchProcessor.ProcessBatchAsync(
                         new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                        throwAnticipatedExceptionFunc,
-                        getDefaultEventModelFunc,
-                        getDefaultDonorIdFunc
+                        ThrowAnticipatedExceptionFunc,
+                        GetDefaultEventModelFunc,
+                        GetDefaultDonorIdFunc
                     );
                 }
             );
@@ -285,8 +290,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     await donorBatchProcessor.ProcessBatchAsync(
                         new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
                         d => throw new Exception("error"),
-                        getDefaultEventModelFunc,
-                        getDefaultDonorIdFunc
+                        GetDefaultEventModelFunc,
+                        GetDefaultDonorIdFunc
                     );
                 }
             );
