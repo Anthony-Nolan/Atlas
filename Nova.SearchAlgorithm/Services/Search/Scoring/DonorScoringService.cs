@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models.SearchResults;
+﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
@@ -14,7 +12,8 @@ using Nova.SearchAlgorithm.Services.Scoring.Grading;
 using Nova.SearchAlgorithm.Services.Scoring.Ranking;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
-using Nova.Utils.ApplicationInsights;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.Search.Scoring
 {

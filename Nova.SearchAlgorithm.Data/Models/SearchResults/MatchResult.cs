@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Nova.SearchAlgorithm.Common.Config;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Nova.SearchAlgorithm.Common.Config;
 
-namespace Nova.SearchAlgorithm.Common.Models.SearchResults
+namespace Nova.SearchAlgorithm.Data.Models.SearchResults
 {
     public class MatchResult
     {

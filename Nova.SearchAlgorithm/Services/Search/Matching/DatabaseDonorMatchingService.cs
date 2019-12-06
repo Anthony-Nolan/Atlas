@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Client.Models;
+﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Repositories.Donors;
+using Nova.SearchAlgorithm.Data.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.Matching;
 using Nova.Utils.ApplicationInsights;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 
 namespace Nova.SearchAlgorithm.Services.Search.Matching
 {

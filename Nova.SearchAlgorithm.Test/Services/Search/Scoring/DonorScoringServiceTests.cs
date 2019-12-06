@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Scoring;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Scoring.Confidence;
@@ -16,8 +14,10 @@ using Nova.SearchAlgorithm.Services.Search.Scoring.Aggregation;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NSubstitute;
-using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.Search.Scoring
 {

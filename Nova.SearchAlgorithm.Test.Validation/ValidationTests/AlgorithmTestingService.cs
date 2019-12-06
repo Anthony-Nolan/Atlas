@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Api;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Models;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.Data.Models;
+﻿using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Models.Entities;
 
 namespace Nova.SearchAlgorithm.Data.Extensions

@@ -1,6 +1,6 @@
 ﻿using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Clients.Http;
-using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;

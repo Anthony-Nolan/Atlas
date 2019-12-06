@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Services;
 using System.Collections.Generic;
 using System.Data.SqlClient;

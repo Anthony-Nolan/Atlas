@@ -1,13 +1,13 @@
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Nova.SearchAlgorithm.Services.Matching;
+using Nova.Utils.ApplicationInsights;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval;
-using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Nova.SearchAlgorithm.Services.Matching;
-using Nova.Utils.ApplicationInsights;
+using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 
 namespace Nova.SearchAlgorithm.Services.Search.Matching
 {

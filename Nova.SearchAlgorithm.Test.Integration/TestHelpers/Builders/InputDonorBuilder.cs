@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {

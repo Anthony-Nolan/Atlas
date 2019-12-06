@@ -1,7 +1,7 @@
 ﻿using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Client.Models;
-using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.Data.Models;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {

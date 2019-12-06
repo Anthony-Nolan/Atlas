@@ -1,15 +1,25 @@
-﻿using System;
+﻿using Dapper;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
+using Nova.SearchAlgorithm.Data.Models.Entities;
+using Nova.SearchAlgorithm.Data.Services;
+using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
-using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Common.Repositories;
-using Nova.SearchAlgorithm.Data.Models.Entities;
-using Nova.SearchAlgorithm.Data.Services;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
+    /// <summary>
+    /// Provides methods indicating which donors have already been imported / processed 
+    /// </summary>
+    public interface IDataRefreshRepository
+    {
+        Task<int> HighestDonorId();
+        Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate(int batchSize);
+        Task<int> GetDonorCount();
+    }
+
     public class DataRefreshRepository : Repository, IDataRefreshRepository
     {
         public const int NumberOfBatchesOverlapOnRestart = 2;

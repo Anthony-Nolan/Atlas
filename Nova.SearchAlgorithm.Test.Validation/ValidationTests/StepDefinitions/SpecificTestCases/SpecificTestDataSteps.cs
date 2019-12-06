@@ -1,6 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services;
 using Nova.SearchAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using System.Threading.Tasks;

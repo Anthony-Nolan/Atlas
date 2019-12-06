@@ -1,6 +1,6 @@
 ﻿using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Helpers;
 
 namespace Nova.SearchAlgorithm.Extensions

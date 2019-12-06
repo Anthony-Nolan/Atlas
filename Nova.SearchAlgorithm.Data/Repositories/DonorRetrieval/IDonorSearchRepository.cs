@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.Matching;
-using Nova.SearchAlgorithm.Repositories.Donors;
+using Nova.SearchAlgorithm.Data.Models;
 
-namespace Nova.SearchAlgorithm.Common.Repositories.DonorRetrieval
+namespace Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval
 {
     /// <summary>
     /// Fetches filtered donors, based on a set of matching criteria

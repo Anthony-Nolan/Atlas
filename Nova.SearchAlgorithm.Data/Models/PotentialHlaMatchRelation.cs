@@ -1,6 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 
-namespace Nova.SearchAlgorithm.Repositories.Donors
+namespace Nova.SearchAlgorithm.Data.Models
 {
     /// <summary>
     /// An entity to store the relationship between hla (key) and donor ids (value)

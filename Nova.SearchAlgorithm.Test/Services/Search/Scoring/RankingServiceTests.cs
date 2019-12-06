@@ -2,6 +2,7 @@
 using FluentAssertions;
 using LochNessBuilder;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
+using Nova.SearchAlgorithm.Data.Models.SearchResults;
 using Nova.SearchAlgorithm.Services.Search.Scoring.Ranking;
 using Nova.SearchAlgorithm.Test.Builders.SearchResults;
 using NUnit.Framework;
