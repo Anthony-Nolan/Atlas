@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
                 foreach (var existingDonor in existingDonors)
                 {
-                    var existingDonorResult = existingDonor.ToInputDonor();
+                    var existingDonorResult = existingDonor.ToDonorInfo();
                     var donorToUpdate = donorsToUpdate.Single(d => d.DonorId == existingDonorResult.DonorId);
 
                     if (DonorInfoHasChanged(existingDonor, donorToUpdate))
@@ -95,15 +95,15 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private static bool DonorInfoHasChanged(Donor existingDonor, InputDonor inputDonor)
+        private static bool DonorInfoHasChanged(Donor existingDonor, DonorInfo donorInfo)
         {
-            return existingDonor.RegistryCode != inputDonor.RegistryCode ||
-                   existingDonor.DonorType != inputDonor.DonorType;
+            return existingDonor.RegistryCode != donorInfo.RegistryCode ||
+                   existingDonor.DonorType != donorInfo.DonorType;
         }
 
-        private static bool DonorHlaHasChanged(InputDonor existingDonor, InputDonor incomingDonor)
+        private static bool DonorHlaHasChanged(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
-            return !existingDonor.HlaNames.Equals(incomingDonor.HlaNames);
+            return !existingDonorInfo.HlaNames.Equals(incomingDonorInfo.HlaNames);
         }
 
         private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
@@ -123,18 +123,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         /// <summary>
         /// Updates donor fields not related to availability or HLA.
         /// </summary>
-        private static async Task UpdateDonorInfo(InputDonor donor, IDbConnection connection)
+        private static async Task UpdateDonorInfo(DonorInfo donorInfo, IDbConnection connection)
         {
             await connection.ExecuteAsync($@"
                         UPDATE Donors 
                         SET 
-                            DonorType = {(int) donor.DonorType},
-                            RegistryCode = {(int) donor.RegistryCode}
-                        WHERE DonorId = {donor.DonorId}
+                            DonorType = {(int) donorInfo.DonorType},
+                            RegistryCode = {(int) donorInfo.RegistryCode}
+                        WHERE DonorId = {donorInfo.DonorId}
                         ", commandTimeout: 600);
         }
 
-        private static async Task UpdateDonorHla(InputDonor donorInfo, IDbConnection connection)
+        private static async Task UpdateDonorHla(DonorInfo donorInfo, IDbConnection connection)
         {
             var donor = donorInfo.ToDonor();
 
@@ -158,9 +158,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync(sql, donor, commandTimeout: 600);
         }
 
-        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> inputDonors)
+        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
-            var donors = inputDonors.ToList();
+            var donors = donorInfos.ToList();
 
             if (!donors.Any())
             {

@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
         public static async Task GivenDonorHla(PhenotypeInfo<string> donorHla, ScenarioContext scenarioContext)
         {
             var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
-            var inputDonor = new InputDonor
+            var donorInfo = new DonorInfo
             {
                 DonorId = DonorIdGenerator.NextId(),
                 HlaNames = donorHla,
@@ -32,10 +32,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
 
             await AlgorithmTestingService.AddDonors(new[]
             {
-                inputDonor
+                donorInfo
             });
 
-            staticDataProvider.SetExpectedDonorIds(new[] {inputDonor.DonorId});
+            staticDataProvider.SetExpectedDonorIds(new[] {donorInfo.DonorId});
 
             scenarioContext.Set(staticDataProvider);
             scenarioContext.Set((IExpectedDonorProvider) staticDataProvider);

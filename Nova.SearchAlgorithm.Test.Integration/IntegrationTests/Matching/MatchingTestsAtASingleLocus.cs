@@ -21,12 +21,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     public class MatchingTestsAtASingleLocus
     {
         private IDonorMatchingService matchingService;
-        private DonorInfoWithExpandedHla donorWithFullHomozygousMatchAtLocus;
-        private DonorInfoWithExpandedHla donorWithFullExactHeterozygousMatchAtLocus;
-        private DonorInfoWithExpandedHla donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus;
-        private DonorInfoWithExpandedHla donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus;
-        private DonorInfoWithExpandedHla donorWithNoMatchAtLocus;
-        private DonorInfoWithExpandedHla donorWithFullCrossHeterozygousMatchAtLocus;
+        private DonorInfoWithExpandedHla donorInfoWithFullHomozygousMatchAtLocus;
+        private DonorInfoWithExpandedHla donorInfoWithFullExactHeterozygousMatchAtLocus;
+        private DonorInfoWithExpandedHla donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus;
+        private DonorInfoWithExpandedHla donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus;
+        private DonorInfoWithExpandedHla donorInfoWithNoMatchAtLocus;
+        private DonorInfoWithExpandedHla donorInfoWithFullCrossHeterozygousMatchAtLocus;
 
         private const DonorType DefaultDonorType = DonorType.Cord;
 
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithPGroups(MatchingPGroup)
                 .Build();
 
-            donorWithFullHomozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithFullHomozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHlaBuilder()
@@ -74,7 +74,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHlaBuilder()
@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHlaBuilder()
@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHlaBuilder()
@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHlaBuilder()
@@ -130,7 +130,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorWithNoMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithNoMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
                     new ExpandedHlaBuilder()
@@ -146,12 +146,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
             var allDonors = new List<DonorInfoWithExpandedHla>
             {
-                donorWithFullHomozygousMatchAtLocus,
-                donorWithFullExactHeterozygousMatchAtLocus,
-                donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
-                donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
-                donorWithNoMatchAtLocus,
-                donorWithFullCrossHeterozygousMatchAtLocus
+                donorInfoWithFullHomozygousMatchAtLocus,
+                donorInfoWithFullExactHeterozygousMatchAtLocus,
+                donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
+                donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
+                donorInfoWithNoMatchAtLocus,
+                donorInfoWithFullCrossHeterozygousMatchAtLocus
             };
 
             Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
@@ -167,24 +167,24 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHomozygousMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHeterozygousMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
-            results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
-            results.Should().NotContain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
-            results.Should().NotContain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
+            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -200,9 +200,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -218,7 +218,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
         }
 
         [Test]
@@ -234,7 +234,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }
 
         [Test]
@@ -250,7 +250,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().NotContain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
+            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -266,7 +266,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithNoMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -282,9 +282,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullExactHeterozygousMatchAtLocus.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullCrossHeterozygousMatchAtLocus.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithFullHomozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -300,8 +300,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == donorWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>

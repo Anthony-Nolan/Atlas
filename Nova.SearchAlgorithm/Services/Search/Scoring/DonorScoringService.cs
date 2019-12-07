@@ -69,7 +69,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Scoring
 
             foreach (var matchResult in matchResults)
             {
-                var lookupResult = await GetHlaScoringResults(matchResult.Donor.HlaNames);
+                var lookupResult = await GetHlaScoringResults(matchResult.DonorInfo.HlaNames);
 
                 var scoreResult = ScoreDonorAndPatient(lookupResult, patientScoringLookupResult, lociToExcludeFromAggregateScoring);
 

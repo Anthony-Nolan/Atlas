@@ -3,11 +3,11 @@ using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 
 namespace Nova.SearchAlgorithm.Mapping
 {
-    public class InputDonorProfile : Profile
+    public class DonorInfoProfile : Profile
     {
-        public InputDonorProfile()
+        public DonorInfoProfile()
         {
-            CreateMap<DonorInfoWithExpandedHla, InputDonor>();
+            CreateMap<DonorInfoWithExpandedHla, DonorInfo>();
         }
     }
 }

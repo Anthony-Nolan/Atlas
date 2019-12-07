@@ -109,7 +109,7 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
             }
         }
 
-        public new async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
+        public new async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
         {
             await base.InsertBatchOfDonors(donors);
         }

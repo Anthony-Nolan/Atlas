@@ -53,7 +53,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 {
                     DonorId = donorId,
                     UpdateSequenceNumber = 1,
-                    DonorInfo = new InputDonor
+                    DonorInfo = new DonorInfo
                     {
                         DonorId = donorId,
                         RegistryCode = registryCode,
@@ -64,7 +64,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x =>
+                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == donorId &&
                     x.Single().RegistryCode == registryCode &&
                     x.Single().DonorType == donorType));
@@ -80,7 +80,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 {
                     DonorId = donorId,
                     UpdateSequenceNumber = 1,
-                    DonorInfo = new InputDonor
+                    DonorInfo = new DonorInfo
                     {
                         DonorId = donorId,
                         RegistryCode = RegistryCode.AN,
@@ -127,7 +127,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<InputDonor>>());
+                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<DonorInfo>>());
         }
 
         [Test]
@@ -148,7 +148,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 {
                     UpdateSequenceNumber = 100,
                     DonorId = donorId,
-                    DonorInfo = new InputDonor
+                    DonorInfo = new DonorInfo
                     {
                         DonorId = donorId,
                         RegistryCode = registryCode,
@@ -159,7 +159,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x =>
+                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == donorId &&
                     x.Single().RegistryCode == registryCode &&
                     x.Single().DonorType == donorType));
@@ -181,7 +181,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 {
                     UpdateSequenceNumber = 100,
                     DonorId = donorId,
-                    DonorInfo = new InputDonor
+                    DonorInfo = new DonorInfo
                     {
                         DonorId = donorId,
                         RegistryCode = RegistryCode.AN,
@@ -240,7 +240,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<InputDonor>>());
+                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<DonorInfo>>());
         }
 
         [Test]
@@ -262,7 +262,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 {
                     UpdateSequenceNumber = 2,
                     DonorId = availableDonorId,
-                    DonorInfo = new InputDonor
+                    DonorInfo = new DonorInfo
                     {
                         DonorId = availableDonorId,
                         RegistryCode = registryCode,
@@ -277,7 +277,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await donorService
                 .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<InputDonor>>(x =>
+                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == availableDonorId &&
                     x.Single().RegistryCode == registryCode &&
                     x.Single().DonorType == donorType));

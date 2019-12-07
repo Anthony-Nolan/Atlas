@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Data.Repositories
 {
-    public class SqlDonorBatchQueryAsync : IBatchQueryAsync<InputDonor>
+    public class SqlDonorBatchQueryAsync : IBatchQueryAsync<DonorInfo>
     {
         private readonly IEnumerator<Donor> enumerator;
         private const int DefaultBatchSize = 1000;
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         public bool HasMoreResults { get; private set; }
 
-        public Task<IEnumerable<InputDonor>> RequestNextAsync()
+        public Task<IEnumerable<DonorInfo>> RequestNextAsync()
         {
             if (!HasMoreResults)
             {
@@ -35,12 +35,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
             return Task.Run(() =>
             {
-                var donors = new List<InputDonor>();
+                var donors = new List<DonorInfo>();
                 for (var i = 0; i < batchSize; i++)
                 {
                     if (HasMoreResults)
                     {
-                        donors.Add(enumerator.Current.ToInputDonor());
+                        donors.Add(enumerator.Current.ToDonorInfo());
                         HasMoreResults = enumerator.MoveNext();
                     }
                 }

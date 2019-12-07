@@ -1,6 +1,5 @@
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Models;
-using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using System.ComponentModel.DataAnnotations;
 
 namespace Nova.SearchAlgorithm.Data.Models.Entities
@@ -40,9 +39,9 @@ namespace Nova.SearchAlgorithm.Data.Models.Entities
         [Required]
         public string DRB1_2 { get; set; }
 
-        public InputDonor ToInputDonor()
+        public DonorInfo.DonorInfo ToDonorInfo()
         {
-            return new InputDonor
+            return new DonorInfo.DonorInfo
             {
                 DonorId = DonorId,
                 DonorType = DonorType,

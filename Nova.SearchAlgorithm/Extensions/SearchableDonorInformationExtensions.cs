@@ -7,9 +7,9 @@ namespace Nova.SearchAlgorithm.Extensions
 {
     public static class SearchableDonorInformationExtensions
     {
-        public static InputDonor ToInputDonor(this SearchableDonorInformation donor)
+        public static DonorInfo ToDonorInfo(this SearchableDonorInformation donor)
         {
-            return new InputDonor
+            return new DonorInfo
             {
                 DonorId = donor.DonorId,
                 RegistryCode = DonorInfoHelper.RegistryCodeFromString(donor.RegistryCode),

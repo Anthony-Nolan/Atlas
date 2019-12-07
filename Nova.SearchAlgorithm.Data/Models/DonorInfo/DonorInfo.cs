@@ -6,7 +6,7 @@ namespace Nova.SearchAlgorithm.Data.Models.DonorInfo
     /// <summary>
     /// Minimum information needed to create / update a donor within the search algorithm's database
     /// </summary>
-    public class InputDonor
+    public class DonorInfo
     {
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }

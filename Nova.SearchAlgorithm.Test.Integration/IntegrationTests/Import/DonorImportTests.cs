@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var lowerId = DonorIdGenerator.NextId();
             var higherId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<InputDonor>
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo>
             {
                 DonorWithId(higherId),
                 DonorWithId(lowerId),
@@ -173,9 +173,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.ImportDonors());
         }
 
-        private static InputDonor DonorWithId(int id)
+        private static DonorInfo DonorWithId(int id)
         {
-            return new InputDonor
+            return new DonorInfo
             {
                 RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,

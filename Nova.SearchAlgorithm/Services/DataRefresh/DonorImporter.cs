@@ -71,7 +71,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             while (page.DonorsInfo.Any())
             {
-                await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToInputDonor()));
+                await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToDonorInfo()));
 
                 stopwatch.Stop();
                 logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>

@@ -36,9 +36,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         [Test]
         public async Task ExpandDonorHlaBatchAsync_ExpandsDonorHla()
         {
-            await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<InputDonor>
+            await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
-                new InputDonor
+                new DonorInfo
                 {
                     HlaNames = new PhenotypeInfo<string>("hla")
                 }
@@ -56,9 +56,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 .GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>())
                 .Returns(new PhenotypeInfo<ExpandedHla>(new ExpandedHla()));
 
-            var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<InputDonor>
+            var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
-                new InputDonor
+                new DonorInfo
                 {
                     DonorId = donorId,
                     HlaNames = new PhenotypeInfo<string>("hla")
@@ -77,9 +77,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             Assert.DoesNotThrowAsync(async () =>
             {
-                await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<InputDonor>
+                await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
                 {
-                    new InputDonor
+                    new DonorInfo
                     {
                         HlaNames = new PhenotypeInfo<string>("hla")
                     }
@@ -96,9 +96,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             Assert.ThrowsAsync<Exception>(async () =>
                 {
-                    await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<InputDonor>
+                    await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
                     {
-                        new InputDonor
+                        new DonorInfo
                         {
                             HlaNames = new PhenotypeInfo<string>("hla")
                         }

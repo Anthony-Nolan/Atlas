@@ -59,9 +59,9 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests
             };
         }
 
-        public static async Task AddDonors(IEnumerable<InputDonor> donors)
+        public static async Task AddDonors(IEnumerable<DonorInfo> donors)
         {
-            var batch = new InputDonorBatch
+            var batch = new DonorInfoBatch
             {
                 Donors = donors
             };

@@ -61,7 +61,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             {
                 UpdateSequenceNumber = update.SequenceNumber,
                 DonorId = int.Parse(body.DonorId),
-                DonorInfo = body.SearchableDonorInformation?.ToInputDonor(),
+                DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
                 IsAvailableForSearch = body.IsAvailableForSearch
             };
         }

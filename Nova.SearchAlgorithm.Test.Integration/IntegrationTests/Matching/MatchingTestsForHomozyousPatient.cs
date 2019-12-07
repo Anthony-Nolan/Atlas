@@ -168,10 +168,10 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepo = repositoryFactory.GetDonorUpdateRepository();
-            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(BuildInputDonors())).Wait();
+            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(BuildDonors())).Wait();
         }
 
-        private IEnumerable<DonorInfoWithExpandedHla> BuildInputDonors()
+        private IEnumerable<DonorInfoWithExpandedHla> BuildDonors()
         {
             return
                 BuildTwoOutOfTwoMatchCountDonors().Concat(

@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         /// Insert a batch of donors into the database.
         /// This does _not_ refresh or create the hla matches.
         /// </summary>
-        Task InsertBatchOfDonors(IEnumerable<InputDonor> donors);
+        Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors);
 
         /// <summary>
         /// Adds pre-processed matching p-groups for a batch of donors

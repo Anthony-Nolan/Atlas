@@ -7,6 +7,6 @@ namespace Nova.SearchAlgorithm.Models
         public long UpdateSequenceNumber { get; set; }
         public int DonorId { get; set; }
         public bool IsAvailableForSearch { get; set; }
-        public InputDonor DonorInfo { get; set; }
+        public DonorInfo DonorInfo { get; set; }
     }
 }

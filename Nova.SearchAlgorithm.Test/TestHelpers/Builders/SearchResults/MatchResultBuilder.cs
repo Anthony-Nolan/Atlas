@@ -13,7 +13,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
         {
             matchResult = new MatchResult
             {
-                Donor = new DonorInfoWithExpandedHla
+                DonorInfo = new DonorInfoWithExpandedHla
                 {
                     HlaNames = new PhenotypeInfo<string>
                     {
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Test.Builders.SearchResults
 
         public MatchResultBuilder WithHlaAtLocus(Locus locus, string hla)
         {
-            matchResult.Donor.HlaNames.SetAtLocus(locus, hla);
+            matchResult.DonorInfo.HlaNames.SetAtLocus(locus, hla);
             return this;
         }
 

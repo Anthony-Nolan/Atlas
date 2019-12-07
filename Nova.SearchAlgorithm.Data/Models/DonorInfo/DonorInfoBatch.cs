@@ -2,8 +2,8 @@
 
 namespace Nova.SearchAlgorithm.Data.Models.DonorInfo
 {
-    public class InputDonorBatch
+    public class DonorInfoBatch
     {
-        public IEnumerable<InputDonor> Donors { get; set; }
+        public IEnumerable<DonorInfo> Donors { get; set; }
     }
 }
