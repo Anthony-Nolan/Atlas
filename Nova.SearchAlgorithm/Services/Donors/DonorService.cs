@@ -15,7 +15,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
     public interface IDonorService
     {
         Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds);
-        Task CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors);
+        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos);
     }
 
     public class DonorService : IDonorService
@@ -44,16 +44,16 @@ namespace Nova.SearchAlgorithm.Services.Donors
             }
         }
 
-        public async Task CreateOrUpdateDonorBatch(IEnumerable<InputDonor> inputDonors)
+        public async Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos)
         {
-            inputDonors = inputDonors.ToList();
+            donorInfos = donorInfos.ToList();
 
-            if(!inputDonors.Any())
+            if(!donorInfos.Any())
             {
                 return;
             }
 
-            var donorsWithHla = (await donorHlaExpander.ExpandDonorHlaBatchAsync(inputDonors)).ToList();
+            var donorsWithHla = (await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos)).ToList();
 
             if (donorsWithHla.Any())
             {
@@ -66,13 +66,13 @@ namespace Nova.SearchAlgorithm.Services.Donors
             }
         }
 
-        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
-            var existingDonors = await donorInspectionRepository.GetDonors(inputDonors.Select(d => d.DonorId));
+            var existingDonors = await donorInspectionRepository.GetDonors(donorInfos.Select(d => d.DonorId));
             return existingDonors.Keys;
         }
 
-        private async Task CreateDonorBatch(IEnumerable<InputDonorWithExpandedHla> newDonors)
+        private async Task CreateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> newDonors)
         {
             newDonors = newDonors.ToList();
 
@@ -82,7 +82,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> updateDonors)
+        private async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> updateDonors)
         {
             updateDonors = updateDonors.ToList();
 

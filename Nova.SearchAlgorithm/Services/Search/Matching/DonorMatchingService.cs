@@ -134,7 +134,7 @@ namespace Nova.SearchAlgorithm.Services.Search.Matching
             var donors = await donorInspectionRepository.GetDonors(filteredMatchesByMatchCriteria.Keys);
             foreach (var (donorId, matchResult) in filteredMatchesByMatchCriteria)
             {
-                matchResult.Donor = donors[donorId];
+                matchResult.DonorInfo = donors[donorId];
             }
 
             return filteredMatchesByMatchCriteria;

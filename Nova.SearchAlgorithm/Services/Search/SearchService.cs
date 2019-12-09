@@ -142,9 +142,9 @@ namespace Nova.SearchAlgorithm.Services.Search
         {
             return new SearchResult
             {
-                DonorId = result.MatchResult.Donor.DonorId,
-                DonorType = result.MatchResult.Donor.DonorType,
-                Registry = result.MatchResult.Donor.RegistryCode,
+                DonorId = result.MatchResult.DonorInfo.DonorId,
+                DonorType = result.MatchResult.DonorInfo.DonorType,
+                Registry = result.MatchResult.DonorInfo.RegistryCode,
                 OverallMatchConfidence = result.ScoreResult.AggregateScoreDetails.OverallMatchConfidence,
                 MatchCategory = result.ScoreResult.AggregateScoreDetails.MatchCategory,
                 ConfidenceScore = result.ScoreResult.AggregateScoreDetails.ConfidenceScore,

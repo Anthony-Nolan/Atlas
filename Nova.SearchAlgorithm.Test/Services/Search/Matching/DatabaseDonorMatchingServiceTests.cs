@@ -28,17 +28,17 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         private const string PGroupB = "14";
         private const string PGroupDrb1 = "pgDRB1";
 
-        private readonly DonorResult donor_ExactMatch_AtLocusA =
-            new DonorResult {DonorId = 1, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+        private readonly DonorInfoWithExpandedHla donor_ExactMatch_AtLocusA =
+            new DonorInfoWithExpandedHla {DonorId = 1, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
-        private readonly DonorResult donor_BothPositionsMatchPatientPositionOne_AtLocusA =
-            new DonorResult {DonorId = 2, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+        private readonly DonorInfoWithExpandedHla donor_BothPositionsMatchPatientPositionOne_AtLocusA =
+            new DonorInfoWithExpandedHla {DonorId = 2, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
-        private readonly DonorResult donor_OnePositionMatchesBothPatientPositions_AtLocusA =
-            new DonorResult {DonorId = 3, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+        private readonly DonorInfoWithExpandedHla donor_OnePositionMatchesBothPatientPositions_AtLocusA =
+            new DonorInfoWithExpandedHla {DonorId = 3, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
-        private readonly DonorResult donor_NoMatch_AtLocusA =
-            new DonorResult {DonorId = 4, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+        private readonly DonorInfoWithExpandedHla donor_NoMatch_AtLocusA =
+            new DonorInfoWithExpandedHla {DonorId = 4, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
 
         private IDatabaseDonorMatchingService donorMatchingService;
 
@@ -119,7 +119,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         }
 
         private static PotentialHlaMatchRelation HlaMatchFor(Locus locus, TypePosition searchPosition, TypePosition matchPosition,
-            DonorResult donor, string hlaMatchName)
+            DonorInfoWithExpandedHla donor, string hlaMatchName)
         {
             return new PotentialHlaMatchRelation
             {

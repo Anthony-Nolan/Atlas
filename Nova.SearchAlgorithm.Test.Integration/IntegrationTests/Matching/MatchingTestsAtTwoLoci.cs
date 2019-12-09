@@ -30,17 +30,17 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
     {
         private IDonorMatchingService matchingService;
 
-        private InputDonorWithExpandedHla cordDonorWithNoMatchAtEitherLocus;
-        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2;
-        private InputDonorWithExpandedHla cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2;
+        private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtEitherLocus;
+        private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2;
+        private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2;
 
-        private InputDonorWithExpandedHla cordDonorWithHalfMatchAtLocus1AndNoMatchAtLocus2;
-        private InputDonorWithExpandedHla cordDonorWithHalfMatchAtBothLoci;
-        private InputDonorWithExpandedHla cordDonorWithHalfMatchAtLocus1AndFullMatchAtLocus2;
+        private DonorInfoWithExpandedHla cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2;
+        private DonorInfoWithExpandedHla cordDonorInfoWithHalfMatchAtBothLoci;
+        private DonorInfoWithExpandedHla cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2;
 
-        private InputDonorWithExpandedHla cordDonorWithFullMatchAtLocus1AndNoMatchAtLocus2;
-        private InputDonorWithExpandedHla cordDonorWithFullMatchAtLocus1AndHalfMatchAtLocus2;
-        private InputDonorWithExpandedHla cordDonorWithFullMatchAtBothLoci;
+        private DonorInfoWithExpandedHla cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2;
+        private DonorInfoWithExpandedHla cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2;
+        private DonorInfoWithExpandedHla cordDonorInfoWithFullMatchAtBothLoci;
 
         private const DonorType DefaultDonorType = DonorType.Cord;
 
@@ -84,62 +84,62 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepo = repositoryFactory.GetDonorUpdateRepository();
 
-            cordDonorWithNoMatchAtEitherLocus = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithNoMatchAtEitherLocus = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(0)
                 .WithMatchesAtLocus2(0)
                 .Build();
             
-            cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2 = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(0)
                 .WithMatchesAtLocus2(1)
                 .Build();
             
-            cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(0)
                 .WithMatchesAtLocus2(2)
                 .Build();
             
-            cordDonorWithHalfMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(1)
                 .WithMatchesAtLocus2(0)
                 .Build();
             
-            cordDonorWithHalfMatchAtBothLoci = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithHalfMatchAtBothLoci = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(1)
                 .WithMatchesAtLocus2(1)
                 .Build();
             
-            cordDonorWithHalfMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(1)
                 .WithMatchesAtLocus2(2)
                 .Build();
             
-            cordDonorWithFullMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(2)
                 .WithMatchesAtLocus2(0)
                 .Build();
             
-            cordDonorWithFullMatchAtLocus1AndHalfMatchAtLocus2= new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2= new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(2)
                 .WithMatchesAtLocus2(1)
                 .Build();
             
-            cordDonorWithFullMatchAtBothLoci = new TwoLociTestsInputDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+            cordDonorInfoWithFullMatchAtBothLoci = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
                 .WithMatchesAtLocus1(2)
                 .WithMatchesAtLocus2(2)
                 .Build();
 
-            var allDonors = new List<InputDonorWithExpandedHla>
+            var allDonors = new List<DonorInfoWithExpandedHla>
             {
-                cordDonorWithNoMatchAtEitherLocus,
-                cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2,
-                cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2,
-                cordDonorWithHalfMatchAtBothLoci,
-                cordDonorWithHalfMatchAtLocus1AndNoMatchAtLocus2,
-                cordDonorWithHalfMatchAtLocus1AndFullMatchAtLocus2, 
-                cordDonorWithFullMatchAtBothLoci, 
-                cordDonorWithFullMatchAtLocus1AndHalfMatchAtLocus2,
-                cordDonorWithFullMatchAtLocus1AndNoMatchAtLocus2
+                cordDonorInfoWithNoMatchAtEitherLocus,
+                cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2,
+                cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2,
+                cordDonorInfoWithHalfMatchAtBothLoci,
+                cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2,
+                cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2, 
+                cordDonorInfoWithFullMatchAtBothLoci, 
+                cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2,
+                cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2
             };
 
             Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
@@ -159,7 +159,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus1, 2)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().NotContain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
+            results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
         }
 
         [Test]
@@ -171,7 +171,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithFullMatchAtBothLoci.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullMatchAtBothLoci.DonorId);
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithHalfMatchAtLocus1AndFullMatchAtLocus2.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2.DonorId);
         }
 
         [Test]
@@ -195,8 +195,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
             var results = (await matchingService.GetMatches(searchCriteria)).ToList();
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocus1AndFullMatchAtLocus2.DonorId);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
         }
         
         [Test]
@@ -208,7 +208,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 2)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.Donor.DonorId == cordDonorWithNoMatchAtEitherLocus.DonorId);
+            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtEitherLocus.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
@@ -237,27 +237,27 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorMismatchCount(0);
         }
 
-        private class TwoLociTestsInputDonorBuilder
+        private class TwoLociTestsDonorBuilder
         {
             private readonly Locus locus1;
             private readonly Locus locus2;
-            private InputDonorWithExpandedHlaBuilder inputDonorWithExpandedHlaBuilder;
+            private DonorInfoWithExpandedHlaBuilder DonorResultBuilder;
 
-            public TwoLociTestsInputDonorBuilder(int donorId, Locus locus1, Locus locus2)
+            public TwoLociTestsDonorBuilder(int donorId, Locus locus1, Locus locus2)
             {
                 this.locus1 = locus1;
                 this.locus2 = locus2;
-                inputDonorWithExpandedHlaBuilder = new InputDonorWithExpandedHlaBuilder(donorId)
+                DonorResultBuilder = new DonorInfoWithExpandedHlaBuilder(donorId)
                     .WithDonorType(DonorType.Cord);
             }
 
-            public TwoLociTestsInputDonorBuilder WithMatchesAtLocus1(int numberOfMatches)
+            public TwoLociTestsDonorBuilder WithMatchesAtLocus1(int numberOfMatches)
             {
                 var pGroupAtPosition1 = numberOfMatches > 0 ? PatientPGroupAtLocusOne_PositionOne : NonMatchingPGroup;
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusOne_PositionTwo : NonMatchingPGroup;
 
-                inputDonorWithExpandedHlaBuilder = inputDonorWithExpandedHlaBuilder
-                    .WithMatchingHlaAtLocus(
+                DonorResultBuilder = DonorResultBuilder
+                    .WithHlaAtLocus(
                         locus1,
                         new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
                         new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
@@ -265,13 +265,13 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 return this;
             }
 
-            public TwoLociTestsInputDonorBuilder WithMatchesAtLocus2(int numberOfMatches)
+            public TwoLociTestsDonorBuilder WithMatchesAtLocus2(int numberOfMatches)
             {
                 var pGroupAtPosition1 = numberOfMatches > 0 ? PatientPGroupAtLocusTwo_PositionOne : NonMatchingPGroup;
                 var pGroupAtPosition2 = numberOfMatches > 1 ? PatientPGroupAtLocusTwo_PositionTwo : NonMatchingPGroup;
 
-                inputDonorWithExpandedHlaBuilder = inputDonorWithExpandedHlaBuilder
-                    .WithMatchingHlaAtLocus(
+                DonorResultBuilder = DonorResultBuilder
+                    .WithHlaAtLocus(
                         locus2,
                         new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
                         new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
@@ -279,9 +279,9 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
                 return this;
             }
 
-            public InputDonorWithExpandedHla Build()
+            public DonorInfoWithExpandedHla Build()
             {
-                return inputDonorWithExpandedHlaBuilder
+                return DonorResultBuilder
                     .WithDefaultRequiredHla(new ExpandedHla
                     {
                         OriginalName = "hla-name",

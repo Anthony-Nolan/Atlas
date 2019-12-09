@@ -25,11 +25,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             this.pGroupRepository = pGroupRepository;
         }
         
-        protected async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
+        protected async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
         {
-            var rawInputDonors = donors.ToList();
+            var donorInfos = donors.ToList();
 
-            if (!rawInputDonors.Any())
+            if (!donorInfos.Any())
             {
                 return;
             }
@@ -52,7 +52,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             dt.Columns.Add("DRB1_1");
             dt.Columns.Add("DRB1_2");
 
-            foreach (var donor in rawInputDonors)
+            foreach (var donor in donorInfos)
             {
                 dt.Rows.Add(0,
                     donor.DonorId,
@@ -75,12 +75,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        protected async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        protected async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(inputDonors, l)));
+            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(donorInfos, l)));
         }
 
-        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = CreateDonorDataTableForLocus(donors, locus);
@@ -97,7 +97,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private DataTable CreateDonorDataTableForLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private DataTable CreateDonorDataTableForLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var dt = new DataTable();
             dt.Columns.Add("Id");

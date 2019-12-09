@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         {
             var match = new MatchResult
             {
-                Donor = new DonorResult
+                DonorInfo = new DonorInfo
                 {
                     IsAvailableForSearch = true
                 }
@@ -42,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         {
             var match = new MatchResult
             {
-                Donor = new DonorResult
+                DonorInfo = new DonorInfo
                 {
                     IsAvailableForSearch = false
                 }
@@ -186,7 +186,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsRegistryCriteria_ForMatchAtSpecifiedRegistry_ReturnsTrue()
         {
             const RegistryCode specifiedRegistry = RegistryCode.AN;
-            var match = new MatchResult {Donor = new DonorResult {RegistryCode = specifiedRegistry}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {RegistryCode = specifiedRegistry}};
             var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {specifiedRegistry}};
 
             var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
@@ -198,7 +198,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsRegistryCriteria_ForMatchAtOneOfMultipleSpecifiedRegistries_ReturnsTrue()
         {
             const RegistryCode patientRegistry = RegistryCode.DKMS;
-            var match = new MatchResult {Donor = new DonorResult {RegistryCode = patientRegistry}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {RegistryCode = patientRegistry}};
             var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {patientRegistry, RegistryCode.FRANCE}};
 
             var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
@@ -210,7 +210,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsRegistryCriteria_ForMatchAtUnspecifiedRegistry_ReturnsFalse()
         {
             const RegistryCode patientRegistry = RegistryCode.DKMS;
-            var match = new MatchResult {Donor = new DonorResult {RegistryCode = patientRegistry}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {RegistryCode = patientRegistry}};
             var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {RegistryCode.NMDP, RegistryCode.FRANCE}};
 
             var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
@@ -222,7 +222,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsSearchTypeCriteria_ForMatchOfSpecifiedType_ReturnsTrue()
         {
             const DonorType donorType = DonorType.Cord;
-            var match = new MatchResult {Donor = new DonorResult {DonorType = donorType}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = donorType}};
             var criteria = new AlleleLevelMatchCriteria {SearchType = donorType};
 
             var result = matchFilteringService.FulfilsSearchTypeCriteria(match, criteria);
@@ -235,7 +235,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         {
             const DonorType donorType = DonorType.Cord;
             const DonorType searchType = DonorType.Adult;
-            var match = new MatchResult {Donor = new DonorResult {DonorType = donorType}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = donorType}};
             var criteria = new AlleleLevelMatchCriteria {SearchType = searchType};
 
             var result = matchFilteringService.FulfilsSearchTypeCriteria(match, criteria);
@@ -247,7 +247,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithExactTotalMismatchCount_ReturnsTrue()
         {
             const DonorType searchType = DonorType.Adult;
-            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -264,7 +264,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsFalse()
         {
             const DonorType searchType = DonorType.Adult;
-            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 0});
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -281,7 +281,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithExactTotalMismatchCount_ReturnsTrue()
         {
             const DonorType searchType = DonorType.Cord;
-            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -298,7 +298,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsTrue()
         {
             const DonorType searchType = DonorType.Cord;
-            var match = new MatchResult {Donor = new DonorResult {DonorType = searchType}};
+            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 0});
             var criteria = new AlleleLevelMatchCriteria
             {

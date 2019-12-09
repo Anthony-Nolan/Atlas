@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<InputDonorWithExpandedHla> donors)
+        public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<DonorInfoWithExpandedHla> donors)
         {
             donors = donors.ToList();
 
@@ -43,13 +43,13 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            await InsertBatchOfDonors(donors.Select(d => d.ToInputDonor()));
+            await InsertBatchOfDonors(donors);
             await AddMatchingPGroupsForExistingDonorBatch(donors);
         }
 
         // Performance may not be sufficient to efficiently import large quantities of donors.
         // Consider re-writing this if we prove to need to process large donor batches
-        public async Task UpdateDonorBatch(IEnumerable<InputDonorWithExpandedHla> donorsToUpdate)
+        public async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorsToUpdate)
         {
             donorsToUpdate = donorsToUpdate.ToList();
 
@@ -70,11 +70,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
                 await SetAvailabilityOfDonorBatch(existingDonors.Select(d => d.DonorId), true, conn);
 
-                var donorsWhereHlaHasChanged = new List<InputDonorWithExpandedHla>();
+                var donorsWhereHlaHasChanged = new List<DonorInfoWithExpandedHla>();
 
                 foreach (var existingDonor in existingDonors)
                 {
-                    var existingDonorResult = existingDonor.ToDonorResult();
+                    var existingDonorResult = existingDonor.ToDonorInfo();
                     var donorToUpdate = donorsToUpdate.Single(d => d.DonorId == existingDonorResult.DonorId);
 
                     if (DonorInfoHasChanged(existingDonor, donorToUpdate))
@@ -95,15 +95,15 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private static bool DonorInfoHasChanged(Donor existingDonor, InputDonorWithExpandedHla inputDonor)
+        private static bool DonorInfoHasChanged(Donor existingDonor, DonorInfo donorInfo)
         {
-            return existingDonor.RegistryCode != inputDonor.RegistryCode ||
-                   existingDonor.DonorType != inputDonor.DonorType;
+            return existingDonor.RegistryCode != donorInfo.RegistryCode ||
+                   existingDonor.DonorType != donorInfo.DonorType;
         }
 
-        private static bool DonorHlaHasChanged(DonorResult existingDonorResult, InputDonorWithExpandedHla inputDonor)
+        private static bool DonorHlaHasChanged(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
-            return !existingDonorResult.HlaNames.Equals(inputDonor.ToInputDonor().HlaNames);
+            return !existingDonorInfo.HlaNames.Equals(incomingDonorInfo.HlaNames);
         }
 
         private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
@@ -123,20 +123,20 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
         /// <summary>
         /// Updates donor fields not related to availability or HLA.
         /// </summary>
-        private static async Task UpdateDonorInfo(InputDonorWithExpandedHla donor, IDbConnection connection)
+        private static async Task UpdateDonorInfo(DonorInfo donorInfo, IDbConnection connection)
         {
             await connection.ExecuteAsync($@"
                         UPDATE Donors 
                         SET 
-                            DonorType = {(int) donor.DonorType},
-                            RegistryCode = {(int) donor.RegistryCode}
-                        WHERE DonorId = {donor.DonorId}
+                            DonorType = {(int) donorInfo.DonorType},
+                            RegistryCode = {(int) donorInfo.RegistryCode}
+                        WHERE DonorId = {donorInfo.DonorId}
                         ", commandTimeout: 600);
         }
 
-        private static async Task UpdateDonorHla(InputDonorWithExpandedHla inputDonorWithExpandedHla, IDbConnection connection)
+        private static async Task UpdateDonorHla(DonorInfo donorInfo, IDbConnection connection)
         {
-            var donor = inputDonorWithExpandedHla.ToDonor();
+            var donor = donorInfo.ToDonor();
 
             const string sql = @"
                         UPDATE Donors
@@ -158,9 +158,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync(sql, donor, commandTimeout: 600);
         }
 
-        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> inputDonors)
+        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
-            var donors = inputDonors.ToList();
+            var donors = donorInfos.ToList();
 
             if (!donors.Any())
             {
@@ -170,7 +170,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => ReplaceMatchingGroupsForExistingDonorBatchAtLocus(donors, l)));
         }
 
-        private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             donors = donors.ToList();
 
@@ -194,7 +194,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private DataTable CreateDonorDataTableForLocus(IEnumerable<InputDonorWithExpandedHla> donors, Locus locus)
+        private DataTable CreateDonorDataTableForLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var dt = new DataTable();
             dt.Columns.Add("Id");

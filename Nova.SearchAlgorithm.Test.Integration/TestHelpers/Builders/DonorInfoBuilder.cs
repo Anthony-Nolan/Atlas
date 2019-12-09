@@ -4,13 +4,13 @@ using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
-    public class InputDonorBuilder
+    public class DonorInfoBuilder
     {
-        private readonly InputDonor donor;
+        private readonly DonorInfo donorInfo;
 
-        public InputDonorBuilder(int donorId)
+        public DonorInfoBuilder(int donorId)
         {
-            donor = new InputDonor
+            donorInfo = new DonorInfo
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
@@ -37,27 +37,27 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
             };
         }
 
-        public InputDonorBuilder WithHlaAtLocus(Locus locus, TypePosition position, string hla)
+        public DonorInfoBuilder WithHlaAtLocus(Locus locus, TypePosition position, string hla)
         {
-            ((PhenotypeInfo<string>) donor.HlaNames).SetAtPosition(locus, position, hla);
+            donorInfo.HlaNames.SetAtPosition(locus, position, hla);
             return this;
         }
 
-        public InputDonorBuilder WithRegistryCode(RegistryCode registryCode)
+        public DonorInfoBuilder WithRegistryCode(RegistryCode registryCode)
         {
-            donor.RegistryCode = registryCode;
+            donorInfo.RegistryCode = registryCode;
             return this;
         }
 
-        public InputDonorBuilder WithDonorType(DonorType donorType)
+        public DonorInfoBuilder WithDonorType(DonorType donorType)
         {
-            donor.DonorType = donorType;
+            donorInfo.DonorType = donorType;
             return this;
         }
 
-        public InputDonor Build()
+        public DonorInfo Build()
         {
-            return donor;
+            return donorInfo;
         }
     }
 }

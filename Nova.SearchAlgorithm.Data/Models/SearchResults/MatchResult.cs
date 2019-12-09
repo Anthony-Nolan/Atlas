@@ -1,7 +1,6 @@
 ﻿using Nova.SearchAlgorithm.Common.Config;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Common.Models.SearchResults;
-using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,7 +10,7 @@ namespace Nova.SearchAlgorithm.Data.Models.SearchResults
 {
     public class MatchResult
     {
-        private DonorResult donor;
+        private DonorInfo.DonorInfo donorInfo;
 
         #region Partial donor information used in matching
         
@@ -23,16 +22,16 @@ namespace Nova.SearchAlgorithm.Data.Models.SearchResults
 
         #endregion
         
-        public DonorResult Donor
+        public DonorInfo.DonorInfo DonorInfo
         {
             get
             {
-                if (donor == null)
+                if (donorInfo == null)
                 {
                     throw new Exception("Attempted to access expanded donor information before it was populated");
                 }
 
-                return donor;
+                return donorInfo;
             }
             set
             {
@@ -40,7 +39,7 @@ namespace Nova.SearchAlgorithm.Data.Models.SearchResults
                 {
                     throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
                 }
-                donor = value;
+                donorInfo = value;
             }
         }
 

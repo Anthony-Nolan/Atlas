@@ -467,8 +467,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<ExpandedHla> donorPhenotype)
         {
-            var donor = new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
-                .WithMatchingHla(donorPhenotype)
+            var donor = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+                .WithHla(donorPhenotype)
                 .Build();
 
             await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });

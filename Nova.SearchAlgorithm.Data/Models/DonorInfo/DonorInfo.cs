@@ -1,16 +1,21 @@
 ﻿using Nova.SearchAlgorithm.Client.Models;
-using Nova.Utils.PhenotypeInfo;
+using Nova.SearchAlgorithm.Common.Models;
 
 namespace Nova.SearchAlgorithm.Data.Models.DonorInfo
 {
     /// <summary>
-    /// Contains all the information to create / update a donor within the search algorithm's database
+    /// Minimum information needed to create / update a donor within the search algorithm's database
     /// </summary>
-    public class InputDonor
+    public class DonorInfo
     {
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
         public PhenotypeInfo<string> HlaNames { get; set; }
+
+        /// <summary>
+        /// Defaults to true.
+        /// </summary>
+        public bool IsAvailableForSearch { get; set; } = true;
     }
 }

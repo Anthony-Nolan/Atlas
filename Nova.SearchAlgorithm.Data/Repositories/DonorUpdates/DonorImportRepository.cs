@@ -109,12 +109,12 @@ TRUNCATE TABLE [MatchingHlaAtDqb1]
             }
         }
 
-        public new async Task InsertBatchOfDonors(IEnumerable<InputDonor> donors)
+        public new async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
         {
             await base.InsertBatchOfDonors(donors);
         }
 
-        public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<InputDonorWithExpandedHla> donors)
+        public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors)
         {
             await base.AddMatchingPGroupsForExistingDonorBatch(donors);
         }

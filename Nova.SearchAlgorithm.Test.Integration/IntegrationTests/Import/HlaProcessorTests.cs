@@ -39,68 +39,69 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_DoesNotUpdateStoredDonorInformation()
         {
-            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
+            var donorInfo = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
 
             await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
-            var storedDonor = await inspectionRepo.GetDonor(inputDonor.DonorId);
-            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, inputDonor);
+            var storedDonor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+            AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, donorInfo);
         }
 
         [Test]
         public async Task UpdateDonorHla_ForPatientHlaMatchingMultiplePGroups_InsertsMatchRowForEachPGroup()
         {
-            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
+            var donorInfo = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
 
             await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
-            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
+            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {donorInfo.DonorId});
             pGroups.First().PGroupNames.A.Position1.Count().Should().Be(hlaWithKnownPGroups1.Item2);
         }
 
         [Test]
         public async Task UpdateDonorHla_WhenUpdateHasBeenRunForADonor_DoesNotAddMorePGroups()
         {
-            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
+            var donorInfo = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
 
             await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
             var initialPGroupCountAtA1 =
-                (await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId})).First().PGroupNames.A.Position1.Count();
+                (await inspectionRepo.GetPGroupsForDonors(new[] {donorInfo.DonorId})).First().PGroupNames.A.Position1.Count();
 
             await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
-            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {inputDonor.DonorId});
+            var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {donorInfo.DonorId});
             pGroups.First().PGroupNames.A.Position1.Count().Should().Be(initialPGroupCountAtA1);
         }
 
         [Test]
         public async Task UpdateDonorHla_UpdatesHlaForNewDonorsSinceLastRun()
         {
-            var inputDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
+            var donorInfo = DonorWithId(DonorIdGenerator.NextId());
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
             await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
             var newDonor = DonorWithId(DonorIdGenerator.NextId());
-            await importRepo.InsertBatchOfDonors(new List<InputDonor> {inputDonor});
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
             await processor.UpdateDonorHla(DefaultHlaDatabaseVersion);
 
             var pGroups = await inspectionRepo.GetPGroupsForDonors(new[] {newDonor.DonorId});
             pGroups.Should().NotBeEmpty();
         }
 
-        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorResult donorActual, InputDonor donorExpected)
+        private static void AssertStoredDonorInfoMatchesOriginalDonorInfo(DonorInfo donorInfoActual, DonorInfo donorInfoExpected)
         {
-            donorActual.DonorId.Should().Be(donorExpected.DonorId);
-            donorActual.DonorType.Should().Be(donorExpected.DonorType);
-            donorActual.RegistryCode.Should().Be(donorExpected.RegistryCode);
-            donorActual.HlaNames.ShouldBeEquivalentTo(donorExpected.HlaNames);
+            donorInfoActual.DonorId.Should().Be(donorInfoExpected.DonorId);
+            donorInfoActual.DonorType.Should().Be(donorInfoExpected.DonorType);
+            donorInfoActual.RegistryCode.Should().Be(donorInfoExpected.RegistryCode);
+            donorInfoActual.IsAvailableForSearch.Should().Be(donorInfoExpected.IsAvailableForSearch);
+            donorInfoActual.HlaNames.ShouldBeEquivalentTo(donorInfoExpected.HlaNames);
         }
 
-        private InputDonor DonorWithId(int id)
+        private DonorInfo DonorWithId(int id)
         {
-            return new InputDonor
+            return new DonorInfo
             {
                 RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,

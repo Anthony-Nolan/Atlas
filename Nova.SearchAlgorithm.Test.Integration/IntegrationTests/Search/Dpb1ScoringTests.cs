@@ -209,7 +209,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             return testDonor.DonorId;
         }
 
-        private static InputDonorWithExpandedHla BuildTestDonor(PhenotypeInfo<string> testDonorPhenotype)
+        private static DonorInfoWithExpandedHla BuildTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
             var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
 
@@ -217,8 +217,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
                 .GetPhenotypeOfExpandedHla(testDonorPhenotype)
                 .Result;
 
-            return new InputDonorWithExpandedHlaBuilder(DonorIdGenerator.NextId())
-                .WithMatchingHla(matchingHlaPhenotype)
+            return new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+                .WithHla(matchingHlaPhenotype)
                 .Build();
         }
 

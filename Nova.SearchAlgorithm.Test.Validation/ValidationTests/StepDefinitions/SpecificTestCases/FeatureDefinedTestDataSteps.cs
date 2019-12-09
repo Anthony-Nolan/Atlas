@@ -1,5 +1,5 @@
+using Nova.SearchAlgorithm.Common.Models;
 using System.Threading.Tasks;
-using Nova.Utils.PhenotypeInfo;
 using TechTalk.SpecFlow;
 using TechTalk.SpecFlow.Assist;
 
@@ -47,7 +47,7 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions.S
 
             public PhenotypeInfo<string> ToPhenotypeInfo()
             {
-                return new Common.Models.PhenotypeInfo<string>
+                return new PhenotypeInfo<string>
                 {
                     A = { Position1 = A1, Position2 = A2},
                     B = { Position1 = B1, Position2 = B2},

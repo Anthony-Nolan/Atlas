@@ -16,7 +16,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
     public interface IDataRefreshRepository
     {
         Task<int> HighestDonorId();
-        Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate(int batchSize);
+        Task<IBatchQueryAsync<DonorInfo>> DonorsAddedSinceLastHlaUpdate(int batchSize);
         Task<int> GetDonorCount();
     }
 
@@ -36,7 +36,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             }
         }
 
-        public async Task<IBatchQueryAsync<DonorResult>> DonorsAddedSinceLastHlaUpdate(int batchSize)
+        public async Task<IBatchQueryAsync<DonorInfo>> DonorsAddedSinceLastHlaUpdate(int batchSize)
         {
             var highestDonorId = await GetHighestDonorIdForWhichHlaHasBeenProcessed();
 

@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
     {
         private ISearchService searchService;
 
-        private InputDonorWithExpandedHla donor;
+        private DonorInfoWithExpandedHla donor;
 
         // A selection of valid hla data for the single donor to have
         private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
@@ -77,11 +77,12 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
-            donor = new InputDonorWithExpandedHla
+            donor = new DonorInfoWithExpandedHla
             {
                 RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
+                HlaNames = donorHlas,
                 MatchingHla = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlas).Result
             };
             donorRepository.InsertBatchOfDonorsWithExpandedHla(new []{donor}).Wait();

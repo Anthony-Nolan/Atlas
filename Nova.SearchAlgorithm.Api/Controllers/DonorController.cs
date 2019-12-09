@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Api.Controllers
 
         [HttpPut]
         [Route("batch")]
-        public async Task CreateOrUpdateDonorBatch([FromBody] InputDonorBatch donorBatch)
+        public async Task CreateOrUpdateDonorBatch([FromBody] DonorInfoBatch donorBatch)
         {
             await donorService.CreateOrUpdateDonorBatch(donorBatch.Donors);
         }

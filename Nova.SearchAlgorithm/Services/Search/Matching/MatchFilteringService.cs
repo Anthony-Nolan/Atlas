@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public bool IsAvailableForSearch(MatchResult match)
         {
-            return match.Donor.IsAvailableForSearch;
+            return match.DonorInfo.IsAvailableForSearch;
         }
 
         public bool FulfilsPerLocusMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria, Locus locus)
@@ -39,12 +39,12 @@ namespace Nova.SearchAlgorithm.Services.Matching
 
         public bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            return match.Donor.DonorType == criteria.SearchType;
+            return match.DonorInfo.DonorType == criteria.SearchType;
         }
 
         public bool FulfilsRegistryCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            return criteria.RegistriesToSearch.Contains(match.Donor.RegistryCode);
+            return criteria.RegistriesToSearch.Contains(match.DonorInfo.RegistryCode);
         }
 
         /// <summary>
