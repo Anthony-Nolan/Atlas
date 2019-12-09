@@ -7,7 +7,6 @@ using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
-using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers;
@@ -81,10 +80,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
             donor.Should().NotBeNull();
         }
 
-        [TestCase("a", DonorType.Adult)]
-        [TestCase("adult", DonorType.Adult)]
-        [TestCase("c", DonorType.Cord)]
-        [TestCase("cord", DonorType.Cord)]
+        [TestCase("Adult", DonorType.Adult)]
+        [TestCase("Cord", DonorType.Cord)]
         public async Task DonorImport_ParsesDonorTypeCorrectly(string rawDonorType, DonorType expectedDonorType)
         {
             var donorInfo = SearchableDonorInformationBuilder.New
@@ -107,11 +104,11 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public void DonorImport_WhenDonorHasUnrecognisedDonorType_ThrowsException()
+        public async Task DonorImport_WhenDonorHasInvalidDonorType_DoesNotImportDonor()
         {
-            const string unexpectedDonorType = "fossil";
+            const string donorType = "invalid";
             var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.DonorType, unexpectedDonorType)
+                .With(x => x.DonorType, donorType)
                 .Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
@@ -123,7 +120,30 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.ImportDonors());
+            await donorImporter.ImportDonors();
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+
+            donor.Should().BeNull();
+        }
+
+        [Test]
+        public void DonorImport_WhenDonorHasInvalidDonorType_DoesNotThrowException()
+        {
+            const string donorType = "invalid";
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.DonorType, donorType)
+                .Build();
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            {
+                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
+            },
+                new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation>()
+                });
+
+            Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
         }
 
         [TestCase("DKMS", RegistryCode.DKMS)]
@@ -154,11 +174,34 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public void DonorImport_WhenDonorHasUnrecognisedRegistryCode_ThrowsException()
+        public async Task DonorImport_WhenDonorHasInvalidRegistryCode_DoesNotImportDonor()
         {
-            const string unexpectedRegistryCode = "MARS";
+            const string registryCode = "invalid";
             var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.RegistryCode, unexpectedRegistryCode)
+                .With(x => x.RegistryCode, registryCode)
+                .Build();
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
+                },
+                new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation>()
+                });
+
+            await donorImporter.ImportDonors();
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+
+            donor.Should().BeNull();
+        }
+
+        [Test]
+        public void DonorImport_WhenDonorHasInvalidRegistryCode_DoesNotThrowException()
+        {
+            const string registryCode = "invalid";
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.RegistryCode, registryCode)
                 .Build();
 
             MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
@@ -170,7 +213,88 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
                     DonorsInfo = new List<SearchableDonorInformation>()
                 });
 
-            Assert.ThrowsAsync<DonorImportHttpException>(() => donorImporter.ImportDonors());
+            Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
+        }
+
+        [TestCase("")]
+        [TestCase(null)]
+        public async Task DonorImport_WhenDonorHasMissingRequiredHla_DoesNotImportDonor(string missingHla)
+        {
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.A_1, missingHla)
+                .With(x => x.A_2, missingHla)
+                .With(x => x.B_1, missingHla)
+                .With(x => x.B_2, missingHla)
+                .With(x => x.DRB1_1, missingHla)
+                .With(x => x.DRB1_2, missingHla)
+                .Build();
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
+                },
+                new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation>()
+                });
+
+            await donorImporter.ImportDonors();
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+
+            donor.Should().BeNull();
+        }
+
+        [TestCase("")]
+        [TestCase(null)]
+        public void DonorImport_WhenDonorHasMissingRequiredHla_DoesNotThrowException(string missingHla)
+        {
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.A_1, missingHla)
+                .With(x => x.A_2, missingHla)
+                .With(x => x.B_1, missingHla)
+                .With(x => x.B_2, missingHla)
+                .With(x => x.DRB1_1, missingHla)
+                .With(x => x.DRB1_2, missingHla)
+                .Build();
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
+                },
+                new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation>()
+                });
+
+            Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
+        }
+
+        [TestCase("")]
+        [TestCase(null)]
+        public async Task DonorImport_WhenDonorHasMissingOptionalHla_ImportsDonor(string missingHla)
+        {
+            var donorInfo = SearchableDonorInformationBuilder.New
+                .With(x => x.C_1, missingHla)
+                .With(x => x.C_2, missingHla)
+                .With(x => x.DPB1_1, missingHla)
+                .With(x => x.DPB1_2, missingHla)
+                .With(x => x.DQB1_1, missingHla)
+                .With(x => x.DQB1_2, missingHla)
+                .Build();
+
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
+                },
+                new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation>()
+                });
+
+            await donorImporter.ImportDonors();
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+
+            donor.Should().NotBeNull();
         }
 
         private static DonorInfo DonorWithId(int id)

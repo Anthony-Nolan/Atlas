@@ -40,8 +40,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         private static Task<DonorAvailabilityUpdate> ThrowAnticipatedExceptionFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
             => throw new DonorUpdateValidationException(donor, new ValidationException("failed"));
 
-        private static DonorUpdateFailureEventModel GetDefaultEventModelFunc(DonorUpdateValidationException ex, ServiceBusMessage<SearchableDonorUpdateModel> donor)
-            => new DonorUpdateFailureEventModel(ex, "id");
+        private static DonorInfoValidationFailureEventModel GetDefaultEventModelFunc(DonorUpdateValidationException ex, ServiceBusMessage<SearchableDonorUpdateModel> donor)
+            => new DonorInfoValidationFailureEventModel(ex, "id");
 
         #endregion
 
@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 GetDefaultDonorIdFunc
             );
 
-            logger.Received(2).SendEvent(Arg.Any<DonorUpdateFailureEventModel>());
+            logger.Received(2).SendEvent(Arg.Any<DonorInfoValidationFailureEventModel>());
         }
 
         [Test]
@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 GetDefaultDonorIdFunc
             );
 
-            logger.DidNotReceive().SendEvent(Arg.Any<DonorUpdateFailureEventModel>());
+            logger.DidNotReceive().SendEvent(Arg.Any<DonorInfoValidationFailureEventModel>());
         }
 
         [Test]
@@ -206,7 +206,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 GetDefaultDonorIdFunc
             );
 
-            logger.Received(1).SendEvent(Arg.Any<DonorUpdateFailureEventModel>());
+            logger.Received(1).SendEvent(Arg.Any<DonorInfoValidationFailureEventModel>());
         }
 
         [Test]

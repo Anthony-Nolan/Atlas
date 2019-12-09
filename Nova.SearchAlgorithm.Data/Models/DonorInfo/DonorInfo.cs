@@ -12,10 +12,6 @@ namespace Nova.SearchAlgorithm.Data.Models.DonorInfo
         public DonorType DonorType { get; set; }
         public RegistryCode RegistryCode { get; set; }
         public PhenotypeInfo<string> HlaNames { get; set; }
-
-        /// <summary>
-        /// Defaults to true.
-        /// </summary>
         public bool IsAvailableForSearch { get; set; } = true;
     }
 }

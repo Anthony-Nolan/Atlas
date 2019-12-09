@@ -1,20 +1,16 @@
 ﻿using FluentValidation;
-using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.Utils.ServiceBus.Models;
-using System;
 
 namespace Nova.SearchAlgorithm.Exceptions
 {
-    public class DonorUpdateValidationException : Exception
+    public class DonorUpdateValidationException : DonorInfoValidationException
     {
-        public string DonorUpdate { get; set; }
-        public ValidationException ValidationException { get; set; }
-
-        public DonorUpdateValidationException(ServiceBusMessage<SearchableDonorUpdateModel> info, ValidationException exception)
+        public DonorUpdateValidationException(
+            ServiceBusMessage<SearchableDonorUpdateModel> info,
+            ValidationException exception)
+            : base(info, exception)
         {
-            DonorUpdate = JsonConvert.SerializeObject(info);
-            ValidationException = exception;
         }
     }
 }
