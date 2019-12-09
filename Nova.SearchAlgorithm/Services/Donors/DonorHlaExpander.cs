@@ -12,7 +12,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 {
     public interface IDonorHlaExpander
     {
-        Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos);
+        Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos, string hlaDatabaseVersion = null);
     }
 
     public class DonorHlaExpander : DonorBatchProcessor<DonorInfo, DonorInfoWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
@@ -31,19 +31,19 @@ namespace Nova.SearchAlgorithm.Services.Donors
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
         }
 
-        public async Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos)
+        public async Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos, string hlaDatabaseVersion = null)
         {
             return await ProcessBatchAsync(
                 donorInfos,
-                async d => await CombineDonorAndExpandedHla(d),
+                async d => await CombineDonorAndExpandedHla(d, hlaDatabaseVersion),
                 (exception, donor) => new MatchingDictionaryLookupFailureEventModel(exception, $"{donor.DonorId}"),
                 d => d.DonorId.ToString());
         }
 
-        private async Task<DonorInfoWithExpandedHla> CombineDonorAndExpandedHla(DonorInfo donorInfo)
+        private async Task<DonorInfoWithExpandedHla> CombineDonorAndExpandedHla(DonorInfo donorInfo, string hlaDatabaseVersion)
         {
             var expandedHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(
-                new PhenotypeInfo<string>(donorInfo.HlaNames));
+                new PhenotypeInfo<string>(donorInfo.HlaNames), hlaDatabaseVersion);
 
             return new DonorInfoWithExpandedHla
             {
