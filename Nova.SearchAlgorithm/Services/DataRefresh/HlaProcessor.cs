@@ -1,18 +1,23 @@
 ﻿using Nova.SearchAlgorithm.ApplicationInsights;
+using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Common.Repositories;
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.ApplicationInsights.EventModels;
+using Nova.Utils.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Exceptions;
+using Nova.SearchAlgorithm.Models;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
@@ -31,30 +36,33 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private const int BatchSize = 1000;
 
         private readonly ILogger logger;
-        private readonly IDonorHlaExpander donorHlaExpander;
+        private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
+        private readonly INotificationsClient notificationsClient;
         private readonly IPGroupRepository pGroupRepository;
 
         public HlaProcessor(
             ILogger logger,
-            IDonorHlaExpander donorHlaExpander,
+            IExpandHlaPhenotypeService expandHlaPhenotypeService,
             IAntigenCachingService antigenCachingService,
             IDormantRepositoryFactory repositoryFactory,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
-            IAlleleNamesLookupRepository alleleNamesLookupRepository)
+            IAlleleNamesLookupRepository alleleNamesLookupRepository,
+            INotificationsClient notificationsClient)
         {
             this.logger = logger;
-            this.donorHlaExpander = donorHlaExpander;
+            this.expandHlaPhenotypeService = expandHlaPhenotypeService;
             this.antigenCachingService = antigenCachingService;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
+            this.notificationsClient = notificationsClient;
         }
 
         public async Task UpdateDonorHla(string hlaDatabaseVersion)
@@ -82,6 +90,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
             var donorsProcessed = 0;
 
+            var failedDonors = new List<DonorInfoWithExpandedHla>();
+
             while (batchedQuery.HasMoreResults)
             {
                 var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
@@ -91,20 +101,45 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
                 var shouldRemovePGroups = donorsProcessed < DataRefreshRepository.NumberOfBatchesOverlapOnRestart * BatchSize;
 
-                await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
+                var failedDonorFromBatch = await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
+                failedDonors.AddRange(failedDonorFromBatch);
 
                 donorsProcessed += BatchSize;
-                logger.SendTrace($"Hla Processing {(double) donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
+                logger.SendTrace($"Hla Processing {(double)donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
+            }
+
+            if (failedDonors.Any())
+            {
+                var failedAnthonyNolanDonors = failedDonors.Where(d => d.RegistryCode == RegistryCode.AN).Select(d => d.DonorId).ToList();
+                var failedAlignedRegistryDonors = failedDonors.Where(d => d.RegistryCode != RegistryCode.AN).Select(d => d.DonorId).ToList();
+                const string alertSummary = "Hla Processing: One or more donors could not be processed";
+                logger.SendEvent(new EventModel(alertSummary)
+                {
+                    Level = LogLevel.Error,
+                    Properties =
+                    {
+                        {"AnthonyNolanDonorIds", string.Join(",", failedAnthonyNolanDonors)},
+                        {"AlignedRegistryDonorIds", string.Join(",", failedAlignedRegistryDonors)},
+                    }
+                });
+                await notificationsClient.SendAlert(new Alert(
+                    alertSummary,
+                    $"{failedAnthonyNolanDonors.Count} Anthony Nolan donors failed. {failedAlignedRegistryDonors.Count} Aligned Registry donors failed. " +
+                    "See application insights for further information - an event with the same name as this alert's summary' should have been raised, as well as individual events for each donor.",
+                    Priority.Low,
+                    "Nova.SearchAlgorithm"
+                ));
             }
         }
 
         /// <summary>
-        /// Fetches Expanded HLA information for all donors in a batch, and stores the processed information in the database.
+        /// Fetches Expanded HLA information for all donors in a batch, and stores the processed  information in the database.
         /// </summary>
         /// <param name="donorBatch">The collection of donors to update</param>
         /// <param name="hlaDatabaseVersion">The version of the HLA database to use to fetch expanded HLA information</param>
         /// <param name="shouldRemovePGroups">If set, existing p-groups will be removed before adding new ones.</param>
-        private async Task UpdateDonorBatch(
+        /// <returns>A collection of any donors that did ot import successfully</returns>
+        private async Task<IEnumerable<DonorInfoWithExpandedHla>> UpdateDonorBatch(
             IEnumerable<DonorInfo> donorBatch,
             string hlaDatabaseVersion,
             bool shouldRemovePGroups)
@@ -118,15 +153,18 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
 
-            var donorHlaData = (await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, hlaDatabaseVersion)).ToList();
-            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(donorHlaData);
+            var donorHlaData = await Task.WhenAll(donorBatch.Select(d => FetchDonorHlaData(d, hlaDatabaseVersion)));
+            var donorInfos = donorHlaData.Where(x => x?.MatchingHla != null).ToList();
+            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(donorInfos);
 
             stopwatch.Stop();
             logger.SendTrace("Updated Donors", LogLevel.Verbose, new Dictionary<string, string>
             {
-                {"NumberOfDonors", donorHlaData.Count.ToString()},
+                {"NumberOfDonors", donorInfos.Count.ToString()},
                 {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
             });
+
+            return donorHlaData.Where(x => x.MatchingHla == null);
         }
 
         private async Task PerformUpfrontSetup(string hlaDatabaseVersion)
@@ -161,6 +199,41 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             logger.SendTrace("HLA PROCESSOR: restoring database", LogLevel.Info);
             await donorImportRepository.FullHlaRefreshTearDown();
+        }
+
+        /// <summary>
+        /// Fetches expanded HLA information for a donor, via the matching dictionary.
+        /// If any HLA can not be looked up (e.g. they are invalid, or valid only in a different version of the HLA naming database), will return null HLA information. 
+        /// </summary>
+        private async Task<DonorInfoWithExpandedHla> FetchDonorHlaData(DonorInfo donorInfo, string hlaDatabaseVersion)
+        {
+            try
+            {
+                var matchingHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorInfo.HlaNames, hlaDatabaseVersion);
+
+                return new DonorInfoWithExpandedHla
+                {
+                    DonorId = donorInfo.DonorId,
+                    DonorType = donorInfo.DonorType,
+                    RegistryCode = donorInfo.RegistryCode,
+                    HlaNames = donorInfo.HlaNames,
+                    MatchingHla = matchingHla,
+                };
+            }
+            catch (MatchingDictionaryException e)
+            {
+                logger.SendEvent(new DonorHlaLookupFailureEventModel(
+                    new DonorProcessingException<MatchingDictionaryException>(donorInfo.ToFailedDonorInfo(), e)));
+
+                return new DonorInfoWithExpandedHla
+                {
+                    DonorId = donorInfo.DonorId,
+                    DonorType = donorInfo.DonorType,
+                    HlaNames = donorInfo.HlaNames,
+                    RegistryCode = donorInfo.RegistryCode,
+                    MatchingHla = null,
+                };
+            }
         }
     }
 }

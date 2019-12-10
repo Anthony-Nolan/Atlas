@@ -38,11 +38,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
                 donorInfos,
                 async d => await CombineDonorAndExpandedHla(d, hlaDatabaseVersion),
                 exception => new DonorHlaLookupFailureEventModel(exception),
-                d => new FailedDonorInfo(d)
-                {
-                    DonorId = d.DonorId.ToString(),
-                    RegistryCode = d.RegistryCode.ToString()
-                });
+                d => d.ToFailedDonorInfo()
+            );
         }
 
         private async Task<DonorInfoWithExpandedHla> CombineDonorAndExpandedHla(DonorInfo donorInfo, string hlaDatabaseVersion)
