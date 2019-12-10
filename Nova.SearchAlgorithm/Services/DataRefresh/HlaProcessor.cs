@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Exceptions;
+using Nova.SearchAlgorithm.Models;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
@@ -103,10 +105,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 failedDonors.AddRange(failedDonorFromBatch);
 
                 donorsProcessed += BatchSize;
-                logger.SendTrace($"Hla Processing {(double) donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
+                logger.SendTrace($"Hla Processing {(double)donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
             }
-
-            //TODO - NOVA-5103: Use DonorHlaExpander to handle donors with HLA expansion failures.
 
             if (failedDonors.Any())
             {
@@ -152,8 +152,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             {
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
-
-            //TODO - NOVA-5103: Use DonorHlaExpander to expand Donor HLA
 
             var donorHlaData = await Task.WhenAll(donorBatch.Select(d => FetchDonorHlaData(d, hlaDatabaseVersion)));
             var donorInfos = donorHlaData.Where(x => x?.MatchingHla != null).ToList();
@@ -224,7 +222,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             }
             catch (MatchingDictionaryException e)
             {
-                logger.SendEvent(new MatchingDictionaryLookupFailureEventModel(e, donorInfo.DonorId.ToString()));
+                logger.SendEvent(new DonorHlaLookupFailureEventModel(
+                    new DonorProcessingException<MatchingDictionaryException>(donorInfo.ToFailedDonorInfo(), e)));
+
                 return new DonorInfoWithExpandedHla
                 {
                     DonorId = donorInfo.DonorId,

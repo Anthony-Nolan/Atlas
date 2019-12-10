@@ -48,6 +48,24 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
+        public async Task ExpandDonorHlaBatchAsync_HlaDatabaseVersionProvided_ExpandsDonorHlaWithHlaDatabaseVersion()
+        {
+            const string hlaDatabaseVersion = "version";
+
+            await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
+            {
+                new DonorInfo
+                {
+                    HlaNames = new PhenotypeInfo<string>("hla")
+                }
+            }, hlaDatabaseVersion);
+
+            await expandHlaPhenotypeService.Received().GetPhenotypeOfExpandedHla(
+                Arg.Any<PhenotypeInfo<string>>(),
+                hlaDatabaseVersion);
+        }
+
+        [Test]
         public async Task ExpandDonorHlaBatchAsync_ExpansionSucceeded_ReturnsExpectedDonor()
         {
             const int donorId = 123;
