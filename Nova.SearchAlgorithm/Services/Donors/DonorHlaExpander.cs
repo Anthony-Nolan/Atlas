@@ -2,6 +2,7 @@
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
@@ -36,14 +37,18 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return await ProcessBatchAsync(
                 donorInfos,
                 async d => await CombineDonorAndExpandedHla(d, hlaDatabaseVersion),
-                (exception, donor) => new MatchingDictionaryLookupFailureEventModel(exception, $"{donor.DonorId}"),
-                d => d.DonorId.ToString());
+                exception => new DonorHlaLookupFailureEventModel(exception),
+                d => new FailedDonorInfo(d)
+                {
+                    DonorId = d.DonorId.ToString(),
+                    RegistryCode = d.RegistryCode.ToString()
+                });
         }
 
         private async Task<DonorInfoWithExpandedHla> CombineDonorAndExpandedHla(DonorInfo donorInfo, string hlaDatabaseVersion)
         {
             var expandedHla = await expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(
-                new PhenotypeInfo<string>(donorInfo.HlaNames), hlaDatabaseVersion);
+                    new PhenotypeInfo<string>(donorInfo.HlaNames), hlaDatabaseVersion);
 
             return new DonorInfoWithExpandedHla
             {
@@ -51,7 +56,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                 DonorType = donorInfo.DonorType,
                 RegistryCode = donorInfo.RegistryCode,
                 HlaNames = donorInfo.HlaNames,
-                MatchingHla = expandedHla,
+                MatchingHla = expandedHla
             };
         }
     }

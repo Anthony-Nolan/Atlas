@@ -2,8 +2,8 @@
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
-using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ApplicationInsights;
@@ -18,16 +18,16 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         Task<IEnumerable<DonorInfo>> ConvertDonorInfoAsync(IEnumerable<SearchableDonorInformation> donorInfos);
     }
 
-    public class DonorInfoConverter : 
-        DonorBatchProcessor<SearchableDonorInformation, DonorInfo, SearchableDonorInfoValidationException>,
+    public class DonorInfoConverter :
+        DonorBatchProcessor<SearchableDonorInformation, DonorInfo, ValidationException>,
         IDonorInfoConverter
     {
         private const Priority LoggerPriority = Priority.Medium;
         private const string AlertSummary = "Donor Information Conversion Failure(s) in Search Algorithm";
 
         public DonorInfoConverter(
-            ILogger logger, 
-            INotificationsClient notificationsClient) 
+            ILogger logger,
+            INotificationsClient notificationsClient)
             : base(logger, notificationsClient, LoggerPriority, AlertSummary)
         {
         }
@@ -37,20 +37,17 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             return await ProcessBatchAsync(
                 donorInfos,
                 async info => await ConvertDonorInfo(info),
-                (exception, info) => new DonorInfoValidationFailureEventModel(exception, $"{info?.DonorId}"), 
-                info => info?.DonorId.ToString());
+                exception => new DonorInfoValidationFailureEventModel(exception),
+                info => new FailedDonorInfo(info)
+                {
+                    DonorId = info.DonorId.ToString(),
+                    RegistryCode = info.RegistryCode
+                });
         }
 
         private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation info)
         {
-            try
-            {
-                await new SearchableDonorInformationValidator().ValidateAndThrowAsync(info);
-            }
-            catch (ValidationException ex)
-            {
-                throw new SearchableDonorInfoValidationException(info, ex);
-            }
+            await new SearchableDonorInformationValidator().ValidateAndThrowAsync(info);
 
             return info.ToDonorInfo();
         }

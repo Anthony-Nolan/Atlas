@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
@@ -20,16 +19,16 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates);
     }
 
-    public class SearchableDonorUpdateConverter : 
-        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdateModel>, DonorAvailabilityUpdate, DonorUpdateValidationException>,
+    public class SearchableDonorUpdateConverter :
+        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdateModel>, DonorAvailabilityUpdate, ValidationException>,
         ISearchableDonorUpdateConverter
     {
         private const Priority LoggerPriority = Priority.Medium;
         private const string AlertSummary = "Searchable Donor Update Conversion Failure(s) in Search Algorithm";
 
         public SearchableDonorUpdateConverter(
-            ILogger logger, 
-            INotificationsClient notificationsClient) 
+            ILogger logger,
+            INotificationsClient notificationsClient)
             : base(logger, notificationsClient, LoggerPriority, AlertSummary)
         {
         }
@@ -40,20 +39,17 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             return await ProcessBatchAsync(
                 updates,
                 async update => await GetDonorAvailabilityUpdate(update),
-                (exception, update) => new DonorInfoValidationFailureEventModel(exception, $"{update.DeserializedBody?.DonorId}"), 
-                update => update.DeserializedBody?.DonorId);
+                exception => new DonorInfoValidationFailureEventModel(exception),
+                update => new FailedDonorInfo(update)
+                {
+                    DonorId = update.DeserializedBody?.DonorId,
+                    RegistryCode = update.DeserializedBody?.SearchableDonorInformation?.RegistryCode
+                });
         }
 
         private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdateModel> update)
         {
-            try
-            {
-                await new DonorUpdateMessageValidator().ValidateAndThrowAsync(update);
-            }
-            catch (ValidationException ex)
-            {
-                throw new DonorUpdateValidationException(update, ex);
-            }
+            await new DonorUpdateMessageValidator().ValidateAndThrowAsync(update);
 
             var body = update.DeserializedBody;
 
