@@ -106,6 +106,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 logger.SendTrace($"Hla Processing {(double) donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
             }
 
+            //TODO - NOVA-5103: Use DonorHlaExpander to handle donors with HLA expansion failures.
+
             if (failedDonors.Any())
             {
                 var failedAnthonyNolanDonors = failedDonors.Where(d => d.RegistryCode == RegistryCode.AN).Select(d => d.DonorId).ToList();
@@ -150,6 +152,8 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             {
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
+
+            //TODO - NOVA-5103: Use DonorHlaExpander to expand Donor HLA
 
             var donorHlaData = await Task.WhenAll(donorBatch.Select(d => FetchDonorHlaData(d, hlaDatabaseVersion)));
             var donorInfos = donorHlaData.Where(x => x?.MatchingHla != null).ToList();

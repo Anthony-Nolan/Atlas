@@ -3,7 +3,6 @@ using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
-using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Nova.Utils.ApplicationInsights;
 using Polly;
@@ -34,16 +33,19 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
+        private readonly IDonorInfoConverter donorInfoConverter;
         private readonly ILogger logger;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
             IDonorServiceClient donorServiceClient,
+            IDonorInfoConverter donorInfoConverter,
             ILogger logger)
         {
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorServiceClient = donorServiceClient;
+            this.donorInfoConverter = donorInfoConverter;
             this.logger = logger;
         }
 
@@ -71,18 +73,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             while (page.DonorsInfo.Any())
             {
-                await donorImportRepository.InsertBatchOfDonors(page.DonorsInfo.Select(d => d.ToDonorInfo()));
-
-                stopwatch.Stop();
-                logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
-                {
-                    {"BatchSize", DonorPageSize.ToString()},
-                    {"ImportedDonors", page.DonorsInfo.Count().ToString()},
-                    {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()},
-                });
-                stopwatch.Reset();
-                stopwatch.Start();
-
+                await InsertDonors(page.DonorsInfo, stopwatch);
                 nextId = page.LastId ?? await dataRefreshRepository.HighestDonorId();
                 page = await FetchDonorPage(nextId);
             }
@@ -106,6 +97,22 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                     );
                 });
             return await policy.ExecuteAsync(async () => await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId));
+        }
+
+        private async Task InsertDonors(IEnumerable<SearchableDonorInformation> donors, Stopwatch stopwatch)
+        {
+            var donorInfos = (await donorInfoConverter.ConvertDonorInfoAsync(donors)).ToList();
+            await donorImportRepository.InsertBatchOfDonors(donorInfos);
+
+            stopwatch.Stop();
+            logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"BatchSize", DonorPageSize.ToString()},
+                {"ImportedDonors", donorInfos.Count().ToString()},
+                {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()},
+            });
+            stopwatch.Reset();
+            stopwatch.Start();
         }
     }
 }

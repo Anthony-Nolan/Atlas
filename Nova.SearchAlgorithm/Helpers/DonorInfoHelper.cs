@@ -12,22 +12,18 @@ namespace Nova.SearchAlgorithm.Helpers
             {
                 return code;
             }
+
             throw new DonorInfoException($"Could not understand registry code {input}");
         }
 
         public static DonorType DonorTypeFromString(string input)
         {
-            switch (input.ToLower())
+            if (Enum.TryParse(input, out DonorType code))
             {
-                case "adult":
-                case "a":
-                    return DonorType.Adult;
-                case "cord":
-                case "c":
-                    return DonorType.Cord;
-                default:
-                    throw new DonorInfoException($"Could not understand donor type {input}");
+                return code;
             }
+
+            throw new DonorInfoException($"Could not understand donor type {input}");
         }
     }
 }

@@ -118,6 +118,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IDonorHlaExpander, DonorHlaExpander>();
 
             services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IDonorInfoConverter, DonorInfoConverter>();
             services.AddScoped<IDonorImporter, DonorImporter>();
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();

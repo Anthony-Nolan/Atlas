@@ -40,7 +40,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             return await ProcessBatchAsync(
                 updates,
                 async update => await GetDonorAvailabilityUpdate(update),
-                (exception, update) => new DonorUpdateFailureEventModel(exception, $"{update.DeserializedBody?.DonorId}"), 
+                (exception, update) => new DonorInfoValidationFailureEventModel(exception, $"{update.DeserializedBody?.DonorId}"), 
                 update => update.DeserializedBody?.DonorId);
         }
 
