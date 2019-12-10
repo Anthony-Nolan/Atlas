@@ -36,12 +36,12 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             return await ProcessBatchAsync(
                 donorInfos,
-                async info => await GetDonorInfo(info),
+                async info => await ConvertDonorInfo(info),
                 (exception, info) => new DonorInfoValidationFailureEventModel(exception, $"{info?.DonorId}"), 
                 info => info?.DonorId.ToString());
         }
 
-        private static async Task<DonorInfo> GetDonorInfo(SearchableDonorInformation info)
+        private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation info)
         {
             try
             {
