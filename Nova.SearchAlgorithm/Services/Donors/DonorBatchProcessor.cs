@@ -29,6 +29,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
     public abstract class DonorBatchProcessor<TDonor, TResult, TException> : IDonorBatchProcessor<TDonor, TResult, TException>
         where TException : Exception
     {
+        private const string MissingDonorIdText = "[Donor(s) without ID]";
+
         private readonly ILogger logger;
         private readonly INotificationsClient notificationsClient;
         private readonly Priority loggerPriority;
@@ -71,8 +73,13 @@ namespace Nova.SearchAlgorithm.Services.Donors
                         catch (TException e)
                         {
                             var failedDonorInfo = getFailedDonorInfo(d);
-                            failedDonorIds.Add(failedDonorInfo.DonorId);
+
+                            failedDonorIds.Add(string.IsNullOrEmpty(failedDonorInfo.DonorId) 
+                                ? MissingDonorIdText 
+                                : failedDonorInfo.DonorId);
+
                             logger.SendEvent(getEventModelFunc(new DonorProcessingException<TException>(failedDonorInfo, e)));
+
                             return default;
                         }
                     }
@@ -93,7 +100,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         {
             await notificationsClient.SendAlert(new Alert(
                 alertSummary,
-                $"Processing failed for donors: {string.Join(",", failedDonorIds.Distinct())}. An event has been logged for each donor in Application Insights.",
+                $"Processing failed for donors: {string.Join(", ", failedDonorIds.Distinct())}. An event has been logged for each donor in Application Insights.",
                 loggerPriority,
                 NotificationConstants.OriginatorName
             ));

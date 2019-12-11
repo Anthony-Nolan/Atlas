@@ -134,6 +134,26 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
+        public async Task ProcessBatchAsync_AllDonorsFailProcessing_AndDonorHasNoId_AlertContainsMissingDonorIdText()
+        {
+            await donorBatchProcessor.ProcessBatchAsync(
+                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                {
+                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    {
+                        DeserializedBody = new SearchableDonorUpdateModel()
+                    }
+                },
+                ThrowAnticipatedExceptionFunc,
+                GetEventModelFunc,
+                GetFailedDonorInfoFunc
+            );
+
+            await notificationsClient.Received(1).SendAlert(Arg.Is<Alert>(x =>
+                x.Description.ToLower().Contains("donor(s) without id")));
+        }
+
+        [Test]
         public async Task ProcessBatchAsync_AllDonorsProcessed_DoesNotLogEvent()
         {
             await donorBatchProcessor.ProcessBatchAsync(
