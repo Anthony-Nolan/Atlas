@@ -82,6 +82,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
 
         [TestCase("Adult", DonorType.Adult)]
         [TestCase("Cord", DonorType.Cord)]
+        [TestCase("A", DonorType.Adult)]
+        [TestCase("C", DonorType.Cord)]
         public async Task DonorImport_ParsesDonorTypeCorrectly(string rawDonorType, DonorType expectedDonorType)
         {
             var donorInfo = SearchableDonorInformationBuilder.New
