@@ -2,7 +2,6 @@
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Services.DataRefresh;
-using Nova.Utils.Notifications;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -16,14 +15,12 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
     {
         private IDonorInfoConverter converter;
         private ILogger logger;
-        private INotificationsClient notificationsClient;
 
         [SetUp]
         public void SetUp()
         {
             logger = Substitute.For<ILogger>();
-            notificationsClient = Substitute.For<INotificationsClient>();
-            converter = new DonorInfoConverter(logger, notificationsClient);
+            converter = new DonorInfoConverter(logger);
         }
 
         [Test]
@@ -48,7 +45,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 }
             });
 
-            result.Should().OnlyContain(d => d.DonorId == donorId);
+            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
         }
 
         [Test]
@@ -62,6 +59,22 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                         new SearchableDonorInformation()
                     });
             });
+        }
+
+        [Test]
+        public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
+        {
+            const int donorId = 123;
+
+            var result = await converter.ConvertDonorInfoAsync(new List<SearchableDonorInformation>
+            {
+                new SearchableDonorInformation
+                {
+                    DonorId = donorId
+                }
+            });
+
+            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId.ToString());
         }
     }
 }

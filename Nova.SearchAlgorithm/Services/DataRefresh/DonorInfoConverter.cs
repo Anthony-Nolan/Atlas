@@ -7,7 +7,6 @@ using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,24 +14,18 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
     public interface IDonorInfoConverter
     {
-        Task<IEnumerable<DonorInfo>> ConvertDonorInfoAsync(IEnumerable<SearchableDonorInformation> donorInfos);
+        Task<DonorBatchProcessingResult<DonorInfo>> ConvertDonorInfoAsync(IEnumerable<SearchableDonorInformation> donorInfos);
     }
 
     public class DonorInfoConverter :
         DonorBatchProcessor<SearchableDonorInformation, DonorInfo, ValidationException>,
         IDonorInfoConverter
     {
-        private const Priority LoggerPriority = Priority.Medium;
-        private const string AlertSummary = "Donor Information Conversion Failure(s) in Search Algorithm";
-
-        public DonorInfoConverter(
-            ILogger logger,
-            INotificationsClient notificationsClient)
-            : base(logger, notificationsClient, LoggerPriority, AlertSummary)
+        public DonorInfoConverter(ILogger logger) : base(logger)
         {
         }
 
-        public async Task<IEnumerable<DonorInfo>> ConvertDonorInfoAsync(IEnumerable<SearchableDonorInformation> donorInfos)
+        public async Task<DonorBatchProcessingResult<DonorInfo>> ConvertDonorInfoAsync(IEnumerable<SearchableDonorInformation> donorInfos)
         {
             return await ProcessBatchAsync(
                 donorInfos,

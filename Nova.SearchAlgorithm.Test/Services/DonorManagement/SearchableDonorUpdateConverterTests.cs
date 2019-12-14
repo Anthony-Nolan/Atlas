@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.Services.DonorManagement;
-using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
@@ -17,14 +16,12 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
     {
         private ISearchableDonorUpdateConverter converter;
         private ILogger logger;
-        private INotificationsClient notificationsClient;
 
         [SetUp]
         public void SetUp()
         {
             logger = Substitute.For<ILogger>();
-            notificationsClient = Substitute.For<INotificationsClient>();
-            converter = new SearchableDonorUpdateConverter(logger, notificationsClient);
+            converter = new SearchableDonorUpdateConverter(logger);
         }
 
         [Test]
@@ -45,7 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                 }
             });
 
-            result.Should().OnlyContain(d => d.DonorId == donorId);
+            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
         }
 
         [Test]
@@ -59,6 +56,28 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                         new ServiceBusMessage<SearchableDonorUpdateModel>()
                     });
             });
+        }
+
+        [Test]
+        public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
+        {
+            const string donorId = "donor-id";
+
+            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdateModel>>()
+            {
+                new ServiceBusMessage<SearchableDonorUpdateModel>
+                {
+                    LockToken = "token",
+                    DeserializedBody = new SearchableDonorUpdateModel
+                    {
+                        DonorId = donorId,
+                        IsAvailableForSearch = true,
+                        SearchableDonorInformation = null
+                    }
+                }
+            });
+
+            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
         }
     }
 }

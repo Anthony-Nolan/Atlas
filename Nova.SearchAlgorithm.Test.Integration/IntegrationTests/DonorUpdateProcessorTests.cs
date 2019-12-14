@@ -11,6 +11,7 @@ using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Services.Donors;
 using ILogger = Nova.Utils.ApplicationInsights.ILogger;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
@@ -31,6 +32,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         private IMessageProcessor<SearchableDonorUpdateModel> messageProcessor;
         private IDonorManagementService donorManagementService;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
+        private IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private ILogger logger;
         private int batchSize;
 
@@ -44,6 +46,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
+            failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
             logger = Substitute.For<ILogger>();
 
             batchSize = 10;
@@ -52,6 +55,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 messageProcessor,
                 donorManagementService,
                 searchableDonorUpdateConverter,
+                failedDonorsNotificationSender,
                 logger,
                 batchSize
                 );

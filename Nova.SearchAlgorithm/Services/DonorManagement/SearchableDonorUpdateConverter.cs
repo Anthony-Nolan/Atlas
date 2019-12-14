@@ -6,7 +6,6 @@ using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 {
     public interface ISearchableDonorUpdateConverter
     {
-        Task<IEnumerable<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
+        Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
             IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates);
     }
 
@@ -23,17 +22,11 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdateModel>, DonorAvailabilityUpdate, ValidationException>,
         ISearchableDonorUpdateConverter
     {
-        private const Priority LoggerPriority = Priority.Medium;
-        private const string AlertSummary = "Searchable Donor Update Conversion Failure(s) in Search Algorithm";
-
-        public SearchableDonorUpdateConverter(
-            ILogger logger,
-            INotificationsClient notificationsClient)
-            : base(logger, notificationsClient, LoggerPriority, AlertSummary)
+        public SearchableDonorUpdateConverter(ILogger logger): base(logger)
         {
         }
 
-        public async Task<IEnumerable<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
+        public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
             IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates)
         {
             return await ProcessBatchAsync(

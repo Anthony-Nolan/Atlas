@@ -1,7 +1,9 @@
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Repositories.DonorRetrieval;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Nova.Utils.Notifications;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,18 +22,23 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
     public class DonorService : IDonorService
     {
+        private const string HlaExpansionAlertSummary = "HLA Expansion Failure(s) in Search Algorithm";
+
         private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorHlaExpander donorHlaExpander;
+        private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
         public DonorService(
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory repositoryFactory,
-            IDonorHlaExpander donorHlaExpander)
+            IDonorHlaExpander donorHlaExpander,
+            IFailedDonorsNotificationSender failedDonorsNotificationSender)
         {
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
             donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
             this.donorHlaExpander = donorHlaExpander;
+            this.failedDonorsNotificationSender = failedDonorsNotificationSender;
         }
 
         public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
@@ -48,22 +55,33 @@ namespace Nova.SearchAlgorithm.Services.Donors
         {
             donorInfos = donorInfos.ToList();
 
-            if(!donorInfos.Any())
+            if (!donorInfos.Any())
             {
                 return;
             }
 
-            var donorsWithHla = (await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos)).ToList();
+            var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos);
 
-            if (donorsWithHla.Any())
+            await CreateOrUpdateDonorsWithHla(expansionResult);
+
+            await SendFailedDonorsAlert(expansionResult);
+        }
+
+        private async Task CreateOrUpdateDonorsWithHla(DonorBatchProcessingResult<DonorInfoWithExpandedHla> expansionResult)
+        {
+            var donorsWithHla = expansionResult.ProcessingResults.ToList();
+
+            if (!donorsWithHla.Any())
             {
-                var existingDonorIds = (await GetExistingDonorIds(donorsWithHla)).ToList();
-                var newDonors = donorsWithHla.Where(id => !existingDonorIds.Contains(id.DonorId));
-                var updateDonors = donorsWithHla.Where(id => existingDonorIds.Contains(id.DonorId));
-
-                await CreateDonorBatch(newDonors);
-                await UpdateDonorBatch(updateDonors);
+                return;
             }
+
+            var existingDonorIds = (await GetExistingDonorIds(donorsWithHla)).ToList();
+            var newDonors = donorsWithHla.Where(id => !existingDonorIds.Contains(id.DonorId));
+            var updateDonors = donorsWithHla.Where(id => existingDonorIds.Contains(id.DonorId));
+
+            await CreateDonorBatch(newDonors);
+            await UpdateDonorBatch(updateDonors);
         }
 
         private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
@@ -90,6 +108,21 @@ namespace Nova.SearchAlgorithm.Services.Donors
             {
                 await donorUpdateRepository.UpdateDonorBatch(updateDonors.AsEnumerable());
             }
+        }
+
+        private async Task SendFailedDonorsAlert(DonorBatchProcessingResult<DonorInfoWithExpandedHla> expansionResult)
+        {
+            var failedDonors = expansionResult.FailedDonors.ToList();
+
+            if (!failedDonors.Any())
+            {
+                return;
+            }
+
+            await failedDonorsNotificationSender.SendFailedDonorsAlert(
+                failedDonors,
+                HlaExpansionAlertSummary,
+                Priority.Medium);
         }
     }
 }

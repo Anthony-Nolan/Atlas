@@ -5,7 +5,6 @@ using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,26 +12,26 @@ namespace Nova.SearchAlgorithm.Services.Donors
 {
     public interface IDonorHlaExpander
     {
-        Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos, string hlaDatabaseVersion = null);
+        Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
+            IEnumerable<DonorInfo> donorInfos, 
+            string hlaDatabaseVersion = null);
     }
 
     public class DonorHlaExpander : DonorBatchProcessor<DonorInfo, DonorInfoWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
     {
-        private const Priority LoggerPriority = Priority.Medium;
-        private const string AlertSummary = "HLA Expansion Failure(s) in Search Algorithm";
-
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
 
         public DonorHlaExpander(
             IExpandHlaPhenotypeService expandHlaPhenotypeService,
-            ILogger logger,
-            INotificationsClient notificationsClient)
-            : base(logger, notificationsClient, LoggerPriority, AlertSummary)
+            ILogger logger)
+            : base(logger)
         {
             this.expandHlaPhenotypeService = expandHlaPhenotypeService;
         }
 
-        public async Task<IEnumerable<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos, string hlaDatabaseVersion = null)
+        public async Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
+            IEnumerable<DonorInfo> donorInfos, 
+            string hlaDatabaseVersion = null)
         {
             return await ProcessBatchAsync(
                 donorInfos,

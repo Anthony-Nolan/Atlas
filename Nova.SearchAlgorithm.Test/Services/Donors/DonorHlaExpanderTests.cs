@@ -4,7 +4,6 @@ using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Services.MatchingDictionary;
-using Nova.Utils.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -22,15 +21,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         private IDonorHlaExpander donorHlaExpander;
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private ILogger logger;
-        private INotificationsClient notificationsClient;
 
         [SetUp]
         public void SetUp()
         {
             expandHlaPhenotypeService = Substitute.For<IExpandHlaPhenotypeService>();
             logger = Substitute.For<ILogger>();
-            notificationsClient = Substitute.For<INotificationsClient>();
-            donorHlaExpander = new DonorHlaExpander(expandHlaPhenotypeService, logger, notificationsClient);
+            donorHlaExpander = new DonorHlaExpander(expandHlaPhenotypeService, logger);
         }
 
         [Test]
@@ -83,7 +80,28 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 }
             });
 
-            result.Should().OnlyContain(d => d.DonorId == donorId);
+            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
+        }
+
+        [Test]
+        public async Task ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_ReturnsFailedDonor()
+        {
+            const int donorId = 123;
+
+            expandHlaPhenotypeService
+                .GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>())
+                .Throws(new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "error"));
+
+            var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
+            {
+                new DonorInfo
+                {
+                    DonorId = donorId,
+                    HlaNames = new PhenotypeInfo<string>("hla")
+                }
+            });
+
+            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId.ToString());
         }
 
         [Test]
