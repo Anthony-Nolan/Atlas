@@ -34,7 +34,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
             string failureEventName,
             string hlaDatabaseVersion = null)
         {
-            return await ProcessBatchAsync(
+            return await ProcessBatch(
                 donorInfos,
                 async d => await CombineDonorAndExpandedHla(d, hlaDatabaseVersion),
                 d => d.ToFailedDonorInfo(),
