@@ -49,7 +49,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
             return $"{donorIds}.{Environment.NewLine}"
                    + $"{donorCountByRegistry}.{Environment.NewLine}"
-                   + $"Note: The above donor counts may differ, especially if some donors are missing info.{Environment.NewLine}"
+                   + $"Note: The above donor counts are for guidance only and may not agree, especially if some donors are missing info.{Environment.NewLine}"
                    + "An event has been logged for each failed donor in Application Insights.";
         }
 
