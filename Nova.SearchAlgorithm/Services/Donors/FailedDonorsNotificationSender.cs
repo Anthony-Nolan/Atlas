@@ -17,9 +17,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
     public class FailedDonorsNotificationSender : NotificationSender, IFailedDonorsNotificationSender
     {
-        private const string UnknownDonorIdText = "[Donor(s) without ID]";
         private const string UnknownRegistryCodeText = "[Unknown]";
-        private const int MaxDonorIdCount = 25;
 
         public FailedDonorsNotificationSender(INotificationsClient notificationsClient) : base(notificationsClient)
         {
@@ -44,26 +42,11 @@ namespace Nova.SearchAlgorithm.Services.Donors
         {
             failedDonors = failedDonors.ToList();
 
-            var donorIds = GetDonorIdsString(failedDonors);
             var donorCountByRegistry = GetDonorCountByRegistryString(failedDonors);
 
-            return $"{donorIds}.{Environment.NewLine}"
-                   + $"{donorCountByRegistry}.{Environment.NewLine}"
-                   + $"Note: The above donor counts are for guidance only and may not agree, especially if some donors are missing info.{Environment.NewLine}"
+            return $"{donorCountByRegistry}.{Environment.NewLine}"
+                   + $"Donor counts are for guidance only, and may be affected by missing donor info.{Environment.NewLine}"
                    + "An event has been logged for each failed donor in Application Insights.";
-        }
-
-        private static string GetDonorIdsString(IEnumerable<FailedDonorInfo> failedDonors)
-        {
-            var donorIds = failedDonors
-                .Select(d => GetValueOrDefault(d.DonorId, UnknownDonorIdText))
-                .Distinct()
-                .OrderBy(id => id)
-                .ToList();
-
-            return donorIds.Count <= MaxDonorIdCount
-                ? $"Processing failed for donor(s): {string.Join(", ", donorIds)}"
-                : $"{donorIds.Count} donors failed to be processed";
         }
 
         private static string GetDonorCountByRegistryString(IEnumerable<FailedDonorInfo> failedDonors)
@@ -71,9 +54,10 @@ namespace Nova.SearchAlgorithm.Services.Donors
             var counts = failedDonors
                 .GroupBy(d => new { d.DonorId, d.RegistryCode })
                 .GroupBy(d => GetValueOrDefault(d.Key.RegistryCode, UnknownRegistryCodeText))
+                .OrderBy(grp => grp.Key)
                 .Select(grp => $"{grp.Key} - {grp.Count()}");
 
-            return $"Donor count by registry: {string.Join(", ", counts)}";
+            return $"Failed donor count by registry: {string.Join(", ", counts)}";
         }
 
         private static string GetValueOrDefault(string value, string defaultIfEmpty)
