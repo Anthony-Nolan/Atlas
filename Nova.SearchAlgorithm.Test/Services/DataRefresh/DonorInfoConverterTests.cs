@@ -43,7 +43,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                     DRB1_1 = hlaName,
                     DRB1_2 = hlaName
                 }
-            });
+            },
+                "event-name");
 
             result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
         }
@@ -57,7 +58,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                     new List<SearchableDonorInformation>
                     {
                         new SearchableDonorInformation()
-                    });
+                    },
+                    "event-name");
             });
         }
 
@@ -72,7 +74,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 {
                     DonorId = donorId
                 }
-            });
+            },
+                "event-name");
 
             result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId.ToString());
         }

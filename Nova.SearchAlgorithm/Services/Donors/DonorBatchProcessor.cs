@@ -1,4 +1,4 @@
-﻿using Nova.SearchAlgorithm.ApplicationInsights;
+﻿using Nova.SearchAlgorithm.ApplicationInsights.DonorProcessing;
 using Nova.SearchAlgorithm.Exceptions;
 using Nova.SearchAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
@@ -9,22 +9,21 @@ using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.Donors
 {
-    public interface IDonorBatchProcessor<TDonor, TResult, TException>
-        where TException : Exception
+    public interface IDonorBatchProcessor<TDonor, TResult>
     {
         /// <param name="donorInfo">Batch of donor info of type TDonor to be processed.</param>
         /// <param name="processDonorInfoFuncAsync">Function to be run on each donor info, that generates an object of type TResult.</param>
-        /// <param name="getEventModelFunc">Function to generate the processing failure model in the event that an exception of type TException is raised during processing."</param>
         /// <param name="getFailedDonorInfo">Function to select failed donor info.</param>
+        /// <param name="failureEventName">Name to use when logging the processing failure event.</param>
         /// <returns>Results from processing of the donor batch.</returns>
         Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsync(
             IEnumerable<TDonor> donorInfo,
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
-            Func<DonorProcessingException<TException>, DonorProcessingFailureEventModel> getEventModelFunc,
-            Func<TDonor, FailedDonorInfo> getFailedDonorInfo);
+            Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
+            string failureEventName);
     }
 
-    public abstract class DonorBatchProcessor<TDonor, TResult, TException> : IDonorBatchProcessor<TDonor, TResult, TException>
+    public abstract class DonorBatchProcessor<TDonor, TResult, TException> : IDonorBatchProcessor<TDonor, TResult>
         where TException : Exception
     {
         private readonly ILogger logger;
@@ -37,8 +36,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
         public async Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsync(
             IEnumerable<TDonor> donorInfo,
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
-            Func<DonorProcessingException<TException>, DonorProcessingFailureEventModel> getEventModelFunc,
-            Func<TDonor, FailedDonorInfo> getFailedDonorInfo)
+            Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
+            string failureEventName)
         {
             donorInfo = donorInfo.ToList();
             if (!donorInfo.Any())
@@ -58,7 +57,11 @@ namespace Nova.SearchAlgorithm.Services.Donors
                     {
                         var failedDonorInfo = getFailedDonorInfo(d);
                         failedDonors.Add(failedDonorInfo);
-                        logger.SendEvent(getEventModelFunc(new DonorProcessingException<TException>(failedDonorInfo, e)));
+                        
+                        var eventModel = DonorProcessingFailureEventModelFactory<TException>.GetEventModel(
+                                failureEventName,
+                                new DonorProcessingException<TException>(failedDonorInfo, e));
+                        logger.SendEvent(eventModel);
 
                         return default;
                     }

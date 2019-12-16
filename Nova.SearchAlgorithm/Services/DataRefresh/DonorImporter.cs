@@ -32,7 +32,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     public class DonorImporter : IDonorImporter
     {
         private const int DonorPageSize = 100;
-        private const string AlertSummary = "Failure to import one or more donors into the Search Algorithm";
+        private const string ImportFailureEventName = "Donor Import Failure(s) in the Search Algorithm";
 
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IDonorImportRepository donorImportRepository;
@@ -88,7 +88,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 page = await FetchDonorPage(nextId);
             }
 
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, AlertSummary, Priority.Medium);
+            await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);
 
             logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
@@ -113,7 +113,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
         private async Task<IEnumerable<FailedDonorInfo>> InsertDonors(IEnumerable<SearchableDonorInformation> donors, Stopwatch stopwatch)
         {
-            var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors);
+            var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
             await donorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
 
             stopwatch.Stop();

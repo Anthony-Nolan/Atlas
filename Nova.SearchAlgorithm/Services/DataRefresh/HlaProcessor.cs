@@ -31,6 +31,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     public class HlaProcessor : IHlaProcessor
     {
         private const int BatchSize = 1000;
+        private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Search Algorithm";
 
         private readonly ILogger logger;
         private readonly IDonorHlaExpander donorHlaExpander;
@@ -106,8 +107,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
             if (failedDonors.Any())
             {
-                const string alertSummary = "Imported Donor Hla Processing: One or more donors could not be processed";
-                await failedDonorsNotificationSender.SendFailedDonorsAlert(failedDonors, alertSummary, Priority.Low);
+                await failedDonorsNotificationSender.SendFailedDonorsAlert(failedDonors, HlaFailureEventName, Priority.Low);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
 
-            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, hlaDatabaseVersion);
+            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName, hlaDatabaseVersion);
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults);
 
             stopwatch.Stop();

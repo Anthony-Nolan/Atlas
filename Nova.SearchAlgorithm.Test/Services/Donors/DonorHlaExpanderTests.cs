@@ -39,7 +39,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 {
                     HlaNames = new PhenotypeInfo<string>("hla")
                 }
-            });
+            },
+                "event-name");
 
             await expandHlaPhenotypeService.Received().GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>());
         }
@@ -55,7 +56,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 {
                     HlaNames = new PhenotypeInfo<string>("hla")
                 }
-            }, hlaDatabaseVersion);
+            },
+                "event-name",
+                hlaDatabaseVersion);
 
             await expandHlaPhenotypeService.Received().GetPhenotypeOfExpandedHla(
                 Arg.Any<PhenotypeInfo<string>>(),
@@ -78,7 +81,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     DonorId = donorId,
                     HlaNames = new PhenotypeInfo<string>("hla")
                 }
-            });
+            },
+                "event-name");
 
             result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
         }
@@ -99,7 +103,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     DonorId = donorId,
                     HlaNames = new PhenotypeInfo<string>("hla")
                 }
-            });
+            },
+                "event-name");
 
             result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId.ToString());
         }
@@ -119,7 +124,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                     {
                         HlaNames = new PhenotypeInfo<string>("hla")
                     }
-                });
+                },
+                    "event-name");
             });
         }
 
@@ -138,7 +144,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                         {
                             HlaNames = new PhenotypeInfo<string>("hla")
                         }
-                    });
+                    },
+                        "event-name");
                 }
             );
         }

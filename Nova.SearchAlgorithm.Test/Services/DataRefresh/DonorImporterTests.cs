@@ -50,7 +50,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 .Returns(EmptyPage);
 
             donorInfoConverter = Substitute.For<IDonorInfoConverter>();
-            donorInfoConverter.ConvertDonorInfoAsync(Arg.Any<IEnumerable<SearchableDonorInformation>>())
+            donorInfoConverter.ConvertDonorInfoAsync(Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfo>());
 
             failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors();
 
             await donorInfoConverter.DidNotReceive().ConvertDonorInfoAsync(
-                Arg.Any<IEnumerable<SearchableDonorInformation>>());
+                Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>());
         }
 
         [Test]
@@ -120,7 +120,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors();
 
             await donorInfoConverter.Received(1).ConvertDonorInfoAsync(
-                    Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId == donorId));
+                    Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId == donorId), 
+                    Arg.Any<string>());
         }
 
         [Test]
@@ -145,7 +146,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 .Returns(pageWithDonor, EmptyPage);
 
             donorInfoConverter
-                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo)
+                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo, Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfo>
                 {
                     ProcessingResults = new List<DonorInfo>
@@ -306,7 +307,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             };
 
             donorInfoConverter
-                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo)
+                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo, Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfo>
                 {
                     FailedDonors = new List<FailedDonorInfo>

@@ -22,7 +22,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
     public class DonorService : IDonorService
     {
-        private const string HlaExpansionAlertSummary = "HLA Expansion Failure(s) in Search Algorithm";
+        private const string ExpansionFailureEventName = "HLA Expansion Failure(s) in Search Algorithm";
 
         private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
@@ -60,7 +60,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
                 return;
             }
 
-            var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos);
+            var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
 
             await CreateOrUpdateDonorsWithHla(expansionResult);
 
@@ -121,7 +121,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
 
             await failedDonorsNotificationSender.SendFailedDonorsAlert(
                 failedDonors,
-                HlaExpansionAlertSummary,
+                ExpansionFailureEventName,
                 Priority.Medium);
         }
     }

@@ -1,5 +1,4 @@
-﻿using Nova.SearchAlgorithm.ApplicationInsights;
-using Nova.SearchAlgorithm.Common.Models;
+﻿using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.Models;
@@ -13,7 +12,8 @@ namespace Nova.SearchAlgorithm.Services.Donors
     public interface IDonorHlaExpander
     {
         Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
-            IEnumerable<DonorInfo> donorInfos, 
+            IEnumerable<DonorInfo> donorInfos,
+            string failureEventName,
             string hlaDatabaseVersion = null);
     }
 
@@ -30,14 +30,15 @@ namespace Nova.SearchAlgorithm.Services.Donors
         }
 
         public async Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
-            IEnumerable<DonorInfo> donorInfos, 
+            IEnumerable<DonorInfo> donorInfos,
+            string failureEventName,
             string hlaDatabaseVersion = null)
         {
             return await ProcessBatchAsync(
                 donorInfos,
                 async d => await CombineDonorAndExpandedHla(d, hlaDatabaseVersion),
-                exception => new DonorHlaLookupFailureEventModel(exception),
-                d => d.ToFailedDonorInfo()
+                d => d.ToFailedDonorInfo(),
+                failureEventName
             );
         }
 

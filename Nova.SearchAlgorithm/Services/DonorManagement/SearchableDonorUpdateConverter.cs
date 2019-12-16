@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Nova.DonorService.Client.Models.DonorUpdate;
-using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
@@ -15,29 +14,29 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
     public interface ISearchableDonorUpdateConverter
     {
         Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates);
+            IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates, string failureEventName);
     }
 
     public class SearchableDonorUpdateConverter :
         DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdateModel>, DonorAvailabilityUpdate, ValidationException>,
         ISearchableDonorUpdateConverter
     {
-        public SearchableDonorUpdateConverter(ILogger logger): base(logger)
+        public SearchableDonorUpdateConverter(ILogger logger) : base(logger)
         {
         }
 
         public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates)
+            IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates, string failureEventName)
         {
             return await ProcessBatchAsync(
                 updates,
                 async update => await GetDonorAvailabilityUpdate(update),
-                exception => new DonorInfoValidationFailureEventModel(exception),
                 update => new FailedDonorInfo(update)
                 {
                     DonorId = update.DeserializedBody?.DonorId,
                     RegistryCode = update.DeserializedBody?.SearchableDonorInformation?.RegistryCode
-                });
+                },
+                failureEventName);
         }
 
         private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdateModel> update)
