@@ -54,6 +54,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             donorBatchProcessor = new SearchableDonorUpdateConverter(logger);
         }
 
+
         [Test]
         public async Task ProcessBatchAsync_NoDonors_ReturnsEmptyProcessingResults()
         {
@@ -280,14 +281,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public void ProcessBatchAsync_AnticipatedFailure_DoesNotThrowException()
         {
             Assert.DoesNotThrowAsync(async () =>
-                {
-                    await donorBatchProcessor.ProcessBatchAsync(
-                        new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                        ThrowAnticipatedExceptionFunc,
-                        GetFailedDonorInfoFunc,
-                        DefaultEventName
-                    );
-                }
+            {
+                await donorBatchProcessor.ProcessBatchAsync(
+                    new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
+                    ThrowAnticipatedExceptionFunc,
+                    GetFailedDonorInfoFunc,
+                    DefaultEventName
+                );
+            }
             );
         }
 
@@ -295,14 +296,14 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public void ProcessBatchAsync_UnanticipatedFailure_ThrowsException()
         {
             Assert.ThrowsAsync<Exception>(async () =>
-                {
-                    await donorBatchProcessor.ProcessBatchAsync(
-                        new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                        d => throw new Exception("error"),
-                        GetFailedDonorInfoFunc,
-                        DefaultEventName
-                    );
-                }
+            {
+                await donorBatchProcessor.ProcessBatchAsync(
+                    new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
+                    d => throw new Exception("error"),
+                    GetFailedDonorInfoFunc,
+                    DefaultEventName
+                );
+            }
             );
         }
     }
