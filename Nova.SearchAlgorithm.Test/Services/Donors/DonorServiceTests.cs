@@ -8,6 +8,8 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Models;
+using Nova.Utils.Notifications;
 
 namespace Nova.SearchAlgorithm.Test.Services.Donors
 {
@@ -19,6 +21,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         private IDonorInspectionRepository inspectionRepository;
         private IActiveRepositoryFactory repositoryFactory;
         private IDonorHlaExpander donorHlaExpander;
+        private IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
         [SetUp]
         public void SetUp()
@@ -27,6 +30,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             repositoryFactory = Substitute.For<IActiveRepositoryFactory>();
             donorHlaExpander = Substitute.For<IDonorHlaExpander>();
+            failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
 
             repositoryFactory.GetDonorInspectionRepository().Returns(inspectionRepository);
             repositoryFactory.GetDonorUpdateRepository().Returns(updateRepository);
@@ -34,9 +38,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorInfo>(),
                 new Dictionary<int, DonorInfo> { { 0, new DonorInfo() } });
 
+            donorHlaExpander.ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>());
+
             donorService = new SearchAlgorithm.Services.Donors.DonorService(
                 repositoryFactory,
-                donorHlaExpander
+                donorHlaExpander,
+                failedDonorsNotificationSender
             );
         }
 
@@ -55,7 +63,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         {
             await donorService.CreateOrUpdateDonorBatch(new DonorInfo[] { });
 
-            await donorHlaExpander.DidNotReceive().ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>());
+            await donorHlaExpander.DidNotReceive().ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>());
         }
 
         [Test]
@@ -81,7 +89,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo { DonorId = donorId } });
 
-            await donorHlaExpander.Received().ExpandDonorHlaBatchAsync(Arg.Is<IEnumerable<DonorInfo>>(x => x.Single().DonorId == donorId));
+            await donorHlaExpander.Received().ExpandDonorHlaBatchAsync(
+                Arg.Is<IEnumerable<DonorInfo>>(x => x.Single().DonorId == donorId),
+                Arg.Any<string>());
         }
 
         [Test]
@@ -90,8 +100,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const int donorId = 123;
 
             donorHlaExpander
-                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>())
-                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
+                {
+                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() });
 
@@ -104,8 +117,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const int donorId = 123;
 
             donorHlaExpander
-                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>())
-                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
+                {
+                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() });
 
@@ -118,8 +134,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const int donorId = 123;
 
             donorHlaExpander
-                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>())
-                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
+                {
+                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                });
 
             inspectionRepository
                 .GetDonors(Arg.Any<IEnumerable<int>>())
@@ -131,13 +150,16 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task CreateOrUpdateDonorBatch_WhenValidDonorExists_DoesNotCreateDonor()
+        public async Task CreateOrUpdateDonorBatch_WhenDonorExists_DoesNotCreateDonor()
         {
             const int donorId = 123;
 
             donorHlaExpander
-                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>())
-                .Returns(new[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
+                {
+                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                });
 
             inspectionRepository
                 .GetDonors(Arg.Any<IEnumerable<int>>())
@@ -146,6 +168,44 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() });
 
             await updateRepository.DidNotReceive().InsertBatchOfDonorsWithExpandedHla(Arg.Any<IEnumerable<DonorInfoWithExpandedHla>>());
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_WhenDonorFailsHlaExpansion_SendFailedDonorsAlert()
+        {
+            const string donorId = "donor-id";
+
+            donorHlaExpander
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
+                {
+                    FailedDonors = new[] { new FailedDonorInfo { DonorId = donorId } }
+                });
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() });
+
+            await failedDonorsNotificationSender.Received().SendFailedDonorsAlert(
+                Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == donorId),
+                Arg.Any<string>(),
+                Arg.Any<Priority>());
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_WhenNoDonorsFailHlaExpansion_DoesNotSendFailedDonorsAlert()
+        {
+            donorHlaExpander
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
+                {
+                    FailedDonors = new List<FailedDonorInfo>()
+                });
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() });
+
+            await failedDonorsNotificationSender.DidNotReceive().SendFailedDonorsAlert(
+                Arg.Any<IEnumerable<FailedDonorInfo>>(),
+                Arg.Any<string>(),
+                Arg.Any<Priority>());
         }
     }
 }

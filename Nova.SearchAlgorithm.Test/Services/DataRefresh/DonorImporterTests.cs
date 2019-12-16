@@ -11,6 +11,9 @@ using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nova.SearchAlgorithm.Models;
+using Nova.SearchAlgorithm.Services.Donors;
+using Nova.Utils.Notifications;
 using ILogger = Nova.Utils.ApplicationInsights.ILogger;
 
 namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
@@ -25,6 +28,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         private IDormantRepositoryFactory repositoryFactory;
         private IDonorServiceClient donorServiceClient;
         private IDonorInfoConverter donorInfoConverter;
+        private IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private ILogger logger;
 
         private static readonly SearchableDonorInformationPage EmptyPage = new SearchableDonorInformationPage
@@ -46,9 +50,13 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 .Returns(EmptyPage);
 
             donorInfoConverter = Substitute.For<IDonorInfoConverter>();
+            donorInfoConverter.ConvertDonorInfoAsync(Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfo>());
+
+            failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
             logger = Substitute.For<ILogger>();
 
-            donorImporter = new DonorImporter(repositoryFactory, donorServiceClient, donorInfoConverter, logger);
+            donorImporter = new DonorImporter(repositoryFactory, donorServiceClient, donorInfoConverter, failedDonorsNotificationSender, logger);
         }
 
         [Test]
@@ -77,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors();
 
             await donorInfoConverter.DidNotReceive().ConvertDonorInfoAsync(
-                Arg.Any<IEnumerable<SearchableDonorInformation>>());
+                Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>());
         }
 
         [Test]
@@ -112,7 +120,8 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors();
 
             await donorInfoConverter.Received(1).ConvertDonorInfoAsync(
-                    Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId == donorId));
+                    Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId == donorId), 
+                    Arg.Any<string>());
         }
 
         [Test]
@@ -137,12 +146,15 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 .Returns(pageWithDonor, EmptyPage);
 
             donorInfoConverter
-                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo)
-                .Returns(new List<DonorInfo>
+                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo, Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfo>
                 {
-                    new DonorInfo
+                    ProcessingResults = new List<DonorInfo>
                     {
-                        DonorId = donorId
+                        new DonorInfo
+                        {
+                            DonorId = donorId
+                        }
                     }
                 });
 
@@ -279,6 +291,46 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await donorServiceClient.Received(1)
                 .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), lastId);
+        }
+
+        [Test]
+        public async Task ImportDonors_PageWithFailedDonor_SendsFailedDonorsAlert()
+        {
+            const string failedDonorId = "donor-id";
+
+            var pageWithDonor = new SearchableDonorInformationPage
+            {
+                DonorsInfo = new List<SearchableDonorInformation>
+                {
+                    new SearchableDonorInformation()
+                }
+            };
+
+            donorInfoConverter
+                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo, Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfo>
+                {
+                    FailedDonors = new List<FailedDonorInfo>
+                    {
+                        new FailedDonorInfo
+                        {
+                            DonorId = failedDonorId
+                        }
+                    }
+                });
+
+            // return empty page last to stop pagination loop
+            donorServiceClient
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .Returns(pageWithDonor, EmptyPage);
+
+            await donorImporter.ImportDonors();
+
+            await failedDonorsNotificationSender.Received(1)
+                .SendFailedDonorsAlert(
+                    Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == failedDonorId),
+                    Arg.Any<string>(),
+                    Arg.Any<Priority>());
         }
     }
 }

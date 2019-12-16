@@ -98,7 +98,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddSingleton<IAppCache, CachingService>(sp =>
                 new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
                 {
-                    DefaultCachePolicy = new CacheDefaults {DefaultCacheDurationSeconds = 86400}
+                    DefaultCachePolicy = new CacheDefaults { DefaultCacheDurationSeconds = 86400 }
                 }
             );
 
@@ -118,6 +118,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IDonorHlaExpander, DonorHlaExpander>();
 
             services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IFailedDonorsNotificationSender, FailedDonorsNotificationSender>();
             services.AddScoped<IDonorInfoConverter, DonorInfoConverter>();
             services.AddScoped<IDonorImporter, DonorImporter>();
             services.AddScoped<IHlaProcessor, HlaProcessor>();
@@ -344,12 +345,20 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
             services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
             {
-                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdateModel>>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
+                var notificationSender = sp.GetService<IFailedDonorsNotificationSender>();
                 var logger = sp.GetService<ILogger>();
-                return new DonorUpdateProcessor(messageReceiverService, managementService, updateConverter, logger, int.Parse(settings.BatchSize));
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                
+                return new DonorUpdateProcessor(
+                    messageReceiverService,
+                    managementService,
+                    updateConverter,
+                    notificationSender,
+                    logger,
+                    int.Parse(settings.BatchSize));
             });
         }
     }

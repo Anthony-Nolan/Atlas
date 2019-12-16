@@ -3,8 +3,11 @@ using Nova.SearchAlgorithm.Clients.Http;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Data.Repositories.DonorUpdates;
 using Nova.SearchAlgorithm.Exceptions;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Notifications;
 using Polly;
 using System;
 using System.Collections.Generic;
@@ -29,23 +32,27 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     public class DonorImporter : IDonorImporter
     {
         private const int DonorPageSize = 100;
+        private const string ImportFailureEventName = "Donor Import Failure(s) in the Search Algorithm";
 
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorServiceClient donorServiceClient;
         private readonly IDonorInfoConverter donorInfoConverter;
+        private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly ILogger logger;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
             IDonorServiceClient donorServiceClient,
             IDonorInfoConverter donorInfoConverter,
+            IFailedDonorsNotificationSender failedDonorsNotificationSender,
             ILogger logger)
         {
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorServiceClient = donorServiceClient;
             this.donorInfoConverter = donorInfoConverter;
+            this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.logger = logger;
         }
 
@@ -69,14 +76,19 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            var allFailedDonors = new List<FailedDonorInfo>();
             var page = await FetchDonorPage(nextId);
 
             while (page.DonorsInfo.Any())
             {
-                await InsertDonors(page.DonorsInfo, stopwatch);
+                var failedDonors = await InsertDonors(page.DonorsInfo, stopwatch);
+                allFailedDonors.AddRange(failedDonors);
+
                 nextId = page.LastId ?? await dataRefreshRepository.HighestDonorId();
                 page = await FetchDonorPage(nextId);
             }
+
+            await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);
 
             logger.SendTrace("Donor import is complete", LogLevel.Info);
         }
@@ -99,20 +111,22 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             return await policy.ExecuteAsync(async () => await donorServiceClient.GetDonorsInfoForSearchAlgorithm(DonorPageSize, nextId));
         }
 
-        private async Task InsertDonors(IEnumerable<SearchableDonorInformation> donors, Stopwatch stopwatch)
+        private async Task<IEnumerable<FailedDonorInfo>> InsertDonors(IEnumerable<SearchableDonorInformation> donors, Stopwatch stopwatch)
         {
-            var donorInfos = (await donorInfoConverter.ConvertDonorInfoAsync(donors)).ToList();
-            await donorImportRepository.InsertBatchOfDonors(donorInfos);
+            var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
+            await donorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
 
             stopwatch.Stop();
             logger.SendTrace("Imported donor batch", LogLevel.Info, new Dictionary<string, string>
             {
                 {"BatchSize", DonorPageSize.ToString()},
-                {"ImportedDonors", donorInfos.Count().ToString()},
-                {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()},
+                {"ImportedDonors", donorInfoConversionResult.ProcessingResults.Count().ToString()},
+                {"BatchImportTime", stopwatch.ElapsedMilliseconds.ToString()}
             });
             stopwatch.Reset();
             stopwatch.Start();
+
+            return donorInfoConversionResult.FailedDonors;
         }
     }
 }

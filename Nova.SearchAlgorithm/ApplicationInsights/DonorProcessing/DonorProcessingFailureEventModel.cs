@@ -1,17 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Nova.SearchAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ApplicationInsights.EventModels;
-using System;
 
-namespace Nova.SearchAlgorithm.ApplicationInsights
+namespace Nova.SearchAlgorithm.ApplicationInsights.DonorProcessing
 {
     public abstract class DonorProcessingFailureEventModel : EventModel
     {
         protected DonorProcessingFailureEventModel(
-            string messageName,
-            Exception exception, 
-            FailedDonorInfo failedDonorInfo) : base(messageName)
+            string eventName,
+            Exception exception,
+            FailedDonorInfo failedDonorInfo) : base(eventName)
         {
             Level = LogLevel.Error;
             Properties.Add("Exception", exception.ToString());

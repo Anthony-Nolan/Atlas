@@ -24,17 +24,19 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         }
 
         [TestCase("0")]
-        [TestCase("adult")]
         [TestCase("donor-type")]
-        public void Validator_WhenDonorTypeNotEnumName_ShouldHaveValidationError(string invalidName)
+        public void Validator_WhenDonorTypeIsNotValid_ShouldHaveValidationError(string donorType)
         {
-            validator.ShouldHaveValidationErrorFor(x => x.DonorType, invalidName);
+            validator.ShouldHaveValidationErrorFor(x => x.DonorType, donorType);
         }
 
-        [Test]
-        public void Validator_WhenDonorTypeIsEnumName_ShouldNotHaveValidationError()
+        [TestCase("A")]
+        [TestCase("Adult")]
+        [TestCase("C")]
+        [TestCase("Cord")]
+        public void Validator_WhenDonorTypeIsValid_ShouldNotHaveValidationError(string donorType)
         {
-            validator.ShouldNotHaveValidationErrorFor(x => x.DonorType, $"{DonorType.Adult}");
+            validator.ShouldNotHaveValidationErrorFor(x => x.DonorType, donorType);
         }
 
         [TestCase("")]
