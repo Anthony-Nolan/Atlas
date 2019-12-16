@@ -19,18 +19,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
         /// <param name="getFailedDonorInfo">Function to select failed donor info.</param>
         /// <param name="failureEventName">Name to use when logging the processing failure event.</param>
         /// <returns>Results from processing of the donor batch.</returns>
-        Task<DonorBatchProcessingResult<TResult>> ProcessBatch(
-            IEnumerable<TDonor> donorInfo,
-            Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
-            Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
-            string failureEventName);
-
-        /// <summary>
-        /// Processing of the donor batch is performed in parallel.
-        /// Caution: do not use if the batch size is large and
-        /// there are one or more downstream dependencies on http service clients.
-        /// </summary>
-        Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsParallel(
+        Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsync(
             IEnumerable<TDonor> donorInfo,
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
             Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
@@ -47,7 +36,7 @@ namespace Nova.SearchAlgorithm.Services.Donors
             this.logger = logger;
         }
 
-        public async Task<DonorBatchProcessingResult<TResult>> ProcessBatch(
+        public async Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsync(
             IEnumerable<TDonor> donorInfo,
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
             Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
@@ -81,36 +70,6 @@ namespace Nova.SearchAlgorithm.Services.Donors
             return new DonorBatchProcessingResult<TResult>
             {
                 ProcessingResults = results,
-                FailedDonors = failedDonors
-            };
-        }
-
-        public async Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsParallel(
-            IEnumerable<TDonor> donorInfo,
-            Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
-            Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
-            string failureEventName)
-        {
-            donorInfo = donorInfo.ToList();
-
-            if (!donorInfo.Any())
-            {
-                return new DonorBatchProcessingResult<TResult>();
-            }
-
-            var failedDonors = new List<FailedDonorInfo>();
-
-            var results = await Task.WhenAll(donorInfo.Select(async donor =>
-                await ProcessDonorInfo(
-                    processDonorInfoFuncAsync,
-                    getFailedDonorInfo,
-                    failureEventName,
-                    donor,
-                    failedDonors)));
-
-            return new DonorBatchProcessingResult<TResult>
-            {
-                ProcessingResults = results.Where(d => d != null),
                 FailedDonors = failedDonors
             };
         }

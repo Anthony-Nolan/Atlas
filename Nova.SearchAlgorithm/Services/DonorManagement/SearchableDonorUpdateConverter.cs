@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
             IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates, string failureEventName)
         {
-            return await ProcessBatchAsParallel(
+            return await ProcessBatchAsync(
                 updates,
                 async update => await GetDonorAvailabilityUpdate(update),
                 update => new FailedDonorInfo(update)

@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IEnumerable<SearchableDonorInformation> donorInfos,
             string failureEventName)
         {
-            return await ProcessBatchAsParallel(
+            return await ProcessBatchAsync(
                 donorInfos,
                 async info => await ConvertDonorInfo(info),
                 info => new FailedDonorInfo(info)

@@ -54,12 +54,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             donorBatchProcessor = new SearchableDonorUpdateConverter(logger);
         }
 
-        #region Test Sequential Method
 
         [Test]
-        public async Task ProcessBatch_NoDonors_ReturnsEmptyProcessingResults()
+        public async Task ProcessBatchAsync_NoDonors_ReturnsEmptyProcessingResults()
         {
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
                 ProcessDonorFunc,
                 GetFailedDonorInfoFunc,
@@ -70,9 +69,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_NoDonors_ReturnsEmptyFailedDonors()
+        public async Task ProcessBatchAsync_NoDonors_ReturnsEmptyFailedDonors()
         {
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
                 ProcessDonorFunc,
                 GetFailedDonorInfoFunc,
@@ -83,9 +82,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_AllDonorsFailProcessing_ReturnsEmptyProcessingResults()
+        public async Task ProcessBatchAsync_AllDonorsFailProcessing_ReturnsEmptyProcessingResults()
         {
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
                 ThrowAnticipatedExceptionFunc,
                 GetFailedDonorInfoFunc,
@@ -96,11 +95,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_AllDonorsFailProcessing_ReturnsFailedDonors()
+        public async Task ProcessBatchAsync_AllDonorsFailProcessing_ReturnsFailedDonors()
         {
             const string donorId = "donor-id";
 
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>()
@@ -120,9 +119,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_AllDonorsFailProcessing_LogsOneEventPerFailure()
+        public async Task ProcessBatchAsync_AllDonorsFailProcessing_LogsOneEventPerFailure()
         {
-            await donorBatchProcessor.ProcessBatch(
+            await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>(),
@@ -137,9 +136,9 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_AllDonorsProcessed_DoesNotLogEvent()
+        public async Task ProcessBatchAsync_AllDonorsProcessed_DoesNotLogEvent()
         {
-            await donorBatchProcessor.ProcessBatch(
+            await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
                 ProcessDonorFunc,
                 GetFailedDonorInfoFunc,
@@ -150,11 +149,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_AllDonorsProcessed_ReturnsExpectedProcessingResults()
+        public async Task ProcessBatchAsync_AllDonorsProcessed_ReturnsExpectedProcessingResults()
         {
             const int donorId = 123;
 
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>
@@ -172,11 +171,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_AllDonorsProcessed_ReturnsEmptyFailedDonors()
+        public async Task ProcessBatchAsync_AllDonorsProcessed_ReturnsEmptyFailedDonors()
         {
             const string donorId = "123";
 
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>
@@ -196,12 +195,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_OneDonorProcessedAndOneFailed_LogsOneEvent()
+        public async Task ProcessBatchAsync_OneDonorProcessedAndOneFailed_LogsOneEvent()
         {
             const string successfulDonor = "123";
             const string failedDonor = "456";
 
-            await donorBatchProcessor.ProcessBatch(
+            await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>
@@ -224,11 +223,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_OneDonorProcessedAndOneFailed_ReturnsProcessingResult()
+        public async Task ProcessBatchAsync_OneDonorProcessedAndOneFailed_ReturnsProcessingResult()
         {
             const int successfulDonor = 123;
 
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>
@@ -252,11 +251,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ProcessBatch_OneDonorProcessedAndOneFailed_ReturnsFailedDonor()
+        public async Task ProcessBatchAsync_OneDonorProcessedAndOneFailed_ReturnsFailedDonor()
         {
             const string failedDonor = "123";
 
-            var result = await donorBatchProcessor.ProcessBatch(
+            var result = await donorBatchProcessor.ProcessBatchAsync(
                 new List<ServiceBusMessage<SearchableDonorUpdateModel>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdateModel>
@@ -279,11 +278,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public void ProcessBatch_AnticipatedFailure_DoesNotThrowException()
+        public void ProcessBatchAsync_AnticipatedFailure_DoesNotThrowException()
         {
             Assert.DoesNotThrowAsync(async () =>
             {
-                await donorBatchProcessor.ProcessBatch(
+                await donorBatchProcessor.ProcessBatchAsync(
                     new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
                     ThrowAnticipatedExceptionFunc,
                     GetFailedDonorInfoFunc,
@@ -294,11 +293,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public void ProcessBatch_UnanticipatedFailure_ThrowsException()
+        public void ProcessBatchAsync_UnanticipatedFailure_ThrowsException()
         {
             Assert.ThrowsAsync<Exception>(async () =>
             {
-                await donorBatchProcessor.ProcessBatch(
+                await donorBatchProcessor.ProcessBatchAsync(
                     new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
                     d => throw new Exception("error"),
                     GetFailedDonorInfoFunc,
@@ -307,263 +306,5 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             }
             );
         }
-
-        #endregion
-
-        #region Test AsParallel Method
-
-        [Test]
-        public async Task ProcessBatchAsParallel_NoDonors_ReturnsEmptyProcessingResults()
-        {
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
-                ProcessDonorFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            result.ProcessingResults.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_NoDonors_ReturnsEmptyFailedDonors()
-        {
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
-                ProcessDonorFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            result.FailedDonors.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_AllDonorsFailProcessing_ReturnsEmptyProcessingResults()
-        {
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                ThrowAnticipatedExceptionFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            result.ProcessingResults.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_AllDonorsFailProcessing_ReturnsFailedDonors()
-        {
-            const string donorId = "donor-id";
-
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>()
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel
-                        {
-                            DonorId = donorId
-                        }
-                    }
-                },
-                ThrowAnticipatedExceptionFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_AllDonorsFailProcessing_LogsOneEventPerFailure()
-        {
-            await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>(),
-                    new ServiceBusMessage<SearchableDonorUpdateModel>()
-                },
-                ThrowAnticipatedExceptionFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            logger.Received(2).SendEvent(Arg.Any<DonorInfoValidationFailureEventModel>());
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_AllDonorsProcessed_DoesNotLogEvent()
-        {
-            await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                ProcessDonorFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            logger.DidNotReceive().SendEvent(Arg.Any<DonorInfoValidationFailureEventModel>());
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_AllDonorsProcessed_ReturnsExpectedProcessingResults()
-        {
-            const int donorId = 123;
-
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel { DonorId = donorId.ToString() }
-                    }
-                },
-                ProcessDonorFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            // The result will depend on the processDonorInfoFunc and the return type defined in the concrete class
-            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_AllDonorsProcessed_ReturnsEmptyFailedDonors()
-        {
-            const string donorId = "123";
-
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel
-                        {
-                            DonorId = donorId
-                        }
-                    }
-                },
-                ProcessDonorFunc,
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            result.FailedDonors.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_OneDonorProcessedAndOneFailed_LogsOneEvent()
-        {
-            const string successfulDonor = "123";
-            const string failedDonor = "456";
-
-            await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = successfulDonor }
-                    },
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = failedDonor }
-                    }
-                },
-                async d => d.DeserializedBody.DonorId == successfulDonor
-                    ? await ProcessDonorFunc(d)
-                    : await ThrowAnticipatedExceptionFunc(d),
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            logger.Received(1).SendEvent(Arg.Any<DonorInfoValidationFailureEventModel>());
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_OneDonorProcessedAndOneFailed_ReturnsProcessingResult()
-        {
-            const int successfulDonor = 123;
-
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = successfulDonor.ToString() }
-                    },
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = "456" }
-                    }
-                },
-                async d => d.DeserializedBody.DonorId == successfulDonor.ToString()
-                    ? await ProcessDonorFunc(d)
-                    : await ThrowAnticipatedExceptionFunc(d),
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            // The result will depend on the return type defined in the concrete class
-            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == successfulDonor);
-        }
-
-        [Test]
-        public async Task ProcessBatchAsParallel_OneDonorProcessedAndOneFailed_ReturnsFailedDonor()
-        {
-            const string failedDonor = "123";
-
-            var result = await donorBatchProcessor.ProcessBatchAsParallel(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
-                {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = "456" }
-                    },
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
-                    {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = failedDonor }
-                    }
-                },
-                async d => d.DeserializedBody.DonorId == failedDonor
-                    ? await ThrowAnticipatedExceptionFunc(d)
-                    : await ProcessDonorFunc(d),
-                GetFailedDonorInfoFunc,
-                DefaultEventName
-            );
-
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == failedDonor);
-        }
-
-        [Test]
-        public void ProcessBatchAsParallel_AnticipatedFailure_DoesNotThrowException()
-        {
-            Assert.DoesNotThrowAsync(async () =>
-                {
-                    await donorBatchProcessor.ProcessBatchAsParallel(
-                        new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                        ThrowAnticipatedExceptionFunc,
-                        GetFailedDonorInfoFunc,
-                        DefaultEventName
-                    );
-                }
-            );
-        }
-
-        [Test]
-        public void ProcessBatchAsParallel_UnanticipatedFailure_ThrowsException()
-        {
-            Assert.ThrowsAsync<Exception>(async () =>
-                {
-                    await donorBatchProcessor.ProcessBatchAsParallel(
-                        new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
-                        d => throw new Exception("error"),
-                        GetFailedDonorInfoFunc,
-                        DefaultEventName
-                    );
-                }
-            );
-        }
-
-        #endregion
     }
 }
