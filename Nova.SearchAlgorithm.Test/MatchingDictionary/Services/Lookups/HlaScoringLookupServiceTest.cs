@@ -7,12 +7,11 @@ using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using NSubstitute.ReturnsExtensions;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -26,11 +25,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             LookupService = new HlaScoringLookupService(
                 HlaLookupRepository,
                 AlleleNamesLookupService,
-                HlaServiceClient,
                 HlaCategorisationService,
                 AlleleStringSplitterService,
-                Cache,
-                Logger);
+                Cache);
         }
 
         [Test]
@@ -72,65 +69,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             var expectedResult = BuildMultipleAlleleLookupResult(expectedLookupName, expectedCurrentAlleleNames);
 
             actualResult.Should().Be(expectedResult);
-        }
-
-        [Test]
-        public async Task GetHlaLookupResult_WhenNmdpCode_ScoringInfoForAllAllelesIsReturned()
-        {
-            const string expectedLookupName = "99:NMDPCODE";
-            const string firstAlleleName = "99:01";
-            const string secondAlleleName = "99:50";
-            const string thirdAlleleName = "99:99";
-
-            HlaCategorisationService
-                .GetHlaTypingCategory(expectedLookupName)
-                .Returns(HlaTypingCategory.NmdpCode);
-
-            var alleleNames = new List<string> {firstAlleleName, secondAlleleName, thirdAlleleName};
-            HlaServiceClient
-                .GetAllelesForDefinedNmdpCode(MolecularLocus, expectedLookupName)
-                .Returns(alleleNames);
-
-            var firstEntry = BuildTableEntityForSingleAllele(firstAlleleName);
-            var secondEntry = BuildTableEntityForSingleAllele(secondAlleleName);
-            var thirdEntry = BuildTableEntityForSingleAllele(thirdAlleleName);
-
-            HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
-                .Returns(firstEntry, secondEntry, thirdEntry);
-
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
-            var expectedResult = BuildConsolidatedMolecularLookupResult(expectedLookupName, alleleNames);
-
-            actualResult.Should().Be(expectedResult);
-        }
-
-        [Test]
-        public async Task GetHlaLookupResult_WhenMultipleAllelesIncludingNullExpressingAllele_DoesNotReturnScoringInfoForNullAllele()
-        {
-            const string lookupName = "99:NMDP";
-            const string expressingAlleleName = "99:01";
-            const string nullAlleleName = "99:99N";
-            
-            HlaCategorisationService
-                .GetHlaTypingCategory(lookupName)
-                .Returns(HlaTypingCategory.NmdpCode);
-            
-            var alleleNames = new List<string> {expressingAlleleName, nullAlleleName};
-            HlaServiceClient
-                .GetAllelesForDefinedNmdpCode(MolecularLocus, lookupName)
-                .Returns(alleleNames);
-            
-            var firstEntry = BuildTableEntityForSingleAllele(expressingAlleleName);
-            var secondEntry = BuildTableEntityForSingleAllele(nullAlleleName);
-
-            HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
-                .Returns(firstEntry, secondEntry);
-            
-            var result = await LookupService.GetHlaLookupResult(MatchedLocus, lookupName, "");
-
-            result.HlaScoringInfo.MatchingGGroups.Single().Should().Be($"{expressingAlleleName}G");
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]

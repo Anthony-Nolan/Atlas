@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Nova.HLAService.Client;
+﻿using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Exceptions;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.HLATypings;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
@@ -17,8 +17,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LazyCache;
-using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 
 namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 {
@@ -29,11 +27,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
     {
         protected TRepository HlaLookupRepository;
         protected IAlleleNamesLookupService AlleleNamesLookupService;
-        protected IHlaServiceClient HlaServiceClient;
         protected IHlaCategorisationService HlaCategorisationService;
         protected IAlleleStringSplitterService AlleleStringSplitterService;
-        protected IAntigenCache Cache;
-        protected ILogger Logger;
+        protected INmdpCodeCache Cache;
         protected TService LookupService;
 
         protected MolecularLocusType MolecularLocus = MolecularLocusType.A;
@@ -43,12 +39,10 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
         public void SetUpBeforeEachTest()
         {
             HlaLookupRepository = Substitute.For<TRepository>();
-            HlaServiceClient = Substitute.For<IHlaServiceClient>();
             AlleleNamesLookupService = Substitute.For<IAlleleNamesLookupService>();
             HlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             AlleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
-            Cache = Substitute.For<IAntigenCache>();
-            Logger = Substitute.For<ILogger>();
+            Cache = Substitute.For<INmdpCodeCache>();
 
             var fakeEntityToPreventInvalidHlaExceptionBeingRaised = BuildTableEntityForSingleAllele("alleleName");
 
@@ -76,24 +70,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
 
             Assert.ThrowsAsync<MatchingDictionaryException>(
                 async () => await LookupService.GetHlaLookupResult(MatchedLocus, hlaName, "hla-db-version"));
-        }
-
-        [Test]
-        public async Task GetHlaLookupResult_WhenNmdpCode_LookupTheExpandedAlleleList()
-        {
-            const string hlaName = "99:NMDPCODE";
-            const string firstAllele = "99:01";
-            const string secondAllele = "100:01";
-
-            HlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.NmdpCode);
-            HlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, hlaName).Returns(new List<string> {firstAllele, secondAllele});
-
-            await LookupService.GetHlaLookupResult(MatchedLocus, hlaName, "hla-db-version");
-
-            await HlaLookupRepository.Received(2).GetHlaLookupTableEntityIfExists(
-                MatchedLocus,
-                Arg.Is<string>(x => x.Equals(firstAllele) || x.Equals(secondAllele)),
-                TypingMethod.Molecular, Arg.Any<string>());
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]
@@ -197,43 +173,6 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             await LookupService.GetHlaLookupResult(MatchedLocus, hlaName, "hla-db-version");
 
             await HlaLookupRepository.Received().GetHlaLookupTableEntityIfExists(MatchedLocus, hlaName, TypingMethod.Serology, Arg.Any<string>());
-        }
-
-        [Test]
-        public void GetHlaLookupResult_WhenNmdpCodeIsInvalid_ExceptionIsThrown()
-        {
-            const string hlaName = "99:INVALIDCODE";
-
-            HlaCategorisationService.GetHlaTypingCategory(hlaName)
-                .Returns(HlaTypingCategory.NmdpCode);
-            HlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, hlaName)
-                .Returns<Task<List<string>>>(x => throw new Exception());
-
-            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await LookupService.GetHlaLookupResult(MatchedLocus, hlaName, ""));
-        }
-
-        [Test]
-        public void GetHlaLookupResult_WhenNmdpCodeContainsAlleleNotInRepository_ExceptionIsThrown()
-        {
-            const string hlaName = "99:NMDPCODE";
-            const string alleleInRepo = "99:01";
-            const string alleleNotInRepo = "100:01";
-            var entity = BuildTableEntityForSingleAllele(hlaName);
-
-            HlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(HlaTypingCategory.NmdpCode);
-            HlaServiceClient.GetAllelesForDefinedNmdpCode(MolecularLocus, hlaName).Returns(new List<string> {alleleInRepo, alleleNotInRepo});
-
-            AlleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, alleleInRepo, Arg.Any<string>())
-                .Returns(Task.FromResult((IEnumerable<string>) new[] {alleleInRepo}));
-            AlleleNamesLookupService.GetCurrentAlleleNames(MatchedLocus, alleleNotInRepo, Arg.Any<string>())
-                .Returns(Task.FromResult((IEnumerable<string>) new[] {alleleNotInRepo}));
-
-            HlaLookupRepository.GetHlaLookupTableEntityIfExists(MatchedLocus, alleleInRepo, TypingMethod.Molecular, Arg.Any<string>())
-                .Returns(entity);
-            HlaLookupRepository.GetHlaLookupTableEntityIfExists(MatchedLocus, alleleNotInRepo, TypingMethod.Molecular, Arg.Any<string>())
-                .ReturnsNull();
-
-            Assert.ThrowsAsync<MatchingDictionaryException>(async () => await LookupService.GetHlaLookupResult(MatchedLocus, hlaName, ""));
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]

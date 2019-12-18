@@ -22,41 +22,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             LookupService = new HlaMatchingLookupService(
                 HlaLookupRepository,
                 AlleleNamesLookupService,
-                HlaServiceClient,
                 HlaCategorisationService,
                 AlleleStringSplitterService,
-                Cache,
-                Logger);
-        }
-
-        [Test]
-        public async Task GetHlaLookupResult_WhenNmdpCode_MatchingHlaForAllAllelesIsReturned()
-        {
-            const string expectedLookupName = "99:NMDPCODE";
-            const string firstAlleleName = "99:01";
-            const string secondAlleleName = "99:50";
-            const string thirdAlleleName = "99:99";
-
-            HlaCategorisationService
-                .GetHlaTypingCategory(expectedLookupName)
-                .Returns(HlaTypingCategory.NmdpCode);
-          
-            HlaServiceClient
-                .GetAllelesForDefinedNmdpCode(MolecularLocus, expectedLookupName)
-                .Returns(new List<string> { firstAlleleName, secondAlleleName, thirdAlleleName });
-
-            var firstEntry = BuildTableEntityForSingleAllele(firstAlleleName);
-            var secondEntry = BuildTableEntityForSingleAllele(secondAlleleName);
-            var thirdEntry = BuildTableEntityForSingleAllele(thirdAlleleName);
-
-            HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
-                .Returns(firstEntry, secondEntry, thirdEntry);
-
-            var actualResult = await LookupService.GetHlaLookupResult(MatchedLocus, expectedLookupName, "hla-db-version");
-            var expectedMatchingPGroups = new[] { firstAlleleName, secondAlleleName, thirdAlleleName };
-
-            actualResult.MatchingPGroups.ShouldBeEquivalentTo(expectedMatchingPGroups);
+                Cache);
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes, "Family:Subtype1/Subtype2", "Family:Subtype1", "Family:Subtype2")]

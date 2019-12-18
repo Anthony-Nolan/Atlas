@@ -1,0 +1,162 @@
+﻿using LazyCache;
+using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
+using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.MatchingDictionary.Caching;
+using Nova.Utils.ApplicationInsights;
+using Nova.Utils.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
+
+namespace Nova.SearchAlgorithm.Services.MatchingDictionary
+{
+    public interface IAntigenCachingService
+    {
+        Task GenerateAntigenCache();
+    }
+
+    public class NmdpCodeCachingService : IAntigenCachingService, INmdpCodeCache
+    {
+        private const string CacheKeyPrefix = "NmdpCodeLookup";
+
+        private readonly IAppCache cache;
+        private readonly ILogger logger;
+        private readonly IHlaServiceClient hlaServiceClient;
+        private readonly IAlleleStringSplitterService alleleSplitter;
+
+        public NmdpCodeCachingService(
+            IAppCache cache,
+            ILogger logger,
+            IHlaServiceClient hlaServiceClient,
+            IAlleleStringSplitterService alleleSplitter)
+        {
+            this.cache = cache;
+            this.logger = logger;
+            this.hlaServiceClient = hlaServiceClient;
+            this.alleleSplitter = alleleSplitter;
+        }
+
+        public async Task<IEnumerable<string>> GetOrAddAllelesForNmdpCode(Locus locus, string nmdpCode)
+        {
+            var nmdpCodeLookup = await GetNmdpCodeLookup(locus);
+
+            if (nmdpCodeLookup != null && nmdpCodeLookup.TryGetValue(FormattedNmdpCode(nmdpCode), out var alleles))
+            {
+                return alleles;
+            }
+
+            logger.SendTrace("Failed to lookup nmdp code from cache", LogLevel.Warn, new Dictionary<string, string>
+            {
+                {"LocusName", locus.ToString()},
+                {"LookupName", nmdpCode}
+            });
+
+            return await GetAndAddAllelesForNmdpCode(locus, nmdpCode);
+        }
+
+        public async Task GenerateAntigenCache()
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // Create a dummy PhenotypeInfo to make use of its loci helper method
+            var dummyPhenotypeInfo = new PhenotypeInfo<int>();
+            await dummyPhenotypeInfo.WhenAllLoci(async (locus, hla1, hla2) =>
+            {
+                var nmdpCodeLookup = await FetchNmdpCodeLookup(locus);
+                cache.Add(LocusCacheKey(locus), nmdpCodeLookup);
+            });
+
+            logger.SendTrace("Generated antigen cache", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
+            });
+        }
+
+        private async Task<Dictionary<string, IEnumerable<string>>> GetNmdpCodeLookup(Locus locus)
+        {
+            return await cache.GetOrAddAsync(LocusCacheKey(locus), () => FetchNmdpCodeLookup(locus));
+        }
+
+        private async Task<IEnumerable<string>> GetAndAddAllelesForNmdpCode(Locus locus, string nmdpCode)
+        {
+            Enum.TryParse(locus.ToString(), true, out MolecularLocusType molecularLocusType);
+            var alleles = await hlaServiceClient.GetAllelesForDefinedNmdpCode(molecularLocusType, nmdpCode);
+            await UpdateNmdpCodeLookup(locus, nmdpCode, alleles);
+
+            return alleles;
+        }
+
+        private async Task UpdateNmdpCodeLookup(Locus locus, string nmdpCode, IEnumerable<string> alleles)
+        {
+            var existingCache = await GetNmdpCodeLookup(locus);
+
+            if (existingCache == null || !existingCache.TryAdd(FormattedNmdpCode(nmdpCode), alleles))
+            {
+                logger.SendTrace("Failed to add nmdp code to cache", LogLevel.Warn, new Dictionary<string, string>
+                {
+                    {"LocusName", locus.ToString()},
+                    {"NmdpCode", nmdpCode}
+                });
+            }
+        }
+
+        private static string LocusCacheKey(Locus locus)
+        {
+            return $"{CacheKeyPrefix}_{locus}";
+        }
+
+        private static string FormattedNmdpCode(string nmdpCode)
+        {
+            const string prefix = "*";
+            return nmdpCode.StartsWith(prefix)
+                ? nmdpCode
+                : prefix + nmdpCode;
+        }
+
+        private async Task<Dictionary<string, IEnumerable<string>>> FetchNmdpCodeLookup(Locus locus)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            Enum.TryParse(locus.ToString(), true, out MolecularLocusType locusType);
+            var antigens = await hlaServiceClient.GetAntigens((LocusType)locusType);
+
+            logger.SendTrace("Fetched antigens from HLA service", LogLevel.Info, new Dictionary<string, string>
+            {
+                {"Locus", locus.ToString()},
+                {"AntigenCount", antigens.Count.ToString()},
+                {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
+            });
+
+            return antigens
+                .Where(a => a.NmdpString != null && !a.NmdpString.EndsWith("XX"))
+                .Select(a => new { NmdpCode = a.NmdpString, Alleles = GetAllelesFromHlaName(a.HlaName) })
+                .Where(a => a.Alleles != null)
+                .ToDictionary(a => a.NmdpCode, a => a.Alleles);
+        }
+
+        private IEnumerable<string> GetAllelesFromHlaName(string hlaName)
+        {
+            try
+            {
+                return alleleSplitter.GetAlleleNamesFromAlleleString(hlaName);
+            }
+            catch (Exception e)
+            {
+                logger.SendTrace("Failed to split allele string.", LogLevel.Warn, new Dictionary<string, string>
+                {
+                    {"AlleleString", hlaName},
+                    {"Exception", e.ToString()}
+                });
+
+                return default;
+            }
+        }
+    }
+}

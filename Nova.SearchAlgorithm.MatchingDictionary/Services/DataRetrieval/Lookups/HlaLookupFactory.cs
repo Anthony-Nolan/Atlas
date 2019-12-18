@@ -1,10 +1,8 @@
-﻿using System;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
+﻿using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
-using Nova.Utils.ApplicationInsights;
+using System;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
 {
@@ -14,10 +12,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
             HlaTypingCategory category,
             IHlaLookupRepository hlaLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
-            IHlaServiceClient hlaServiceClient,
             IAlleleStringSplitterService alleleSplitter,
-            IAntigenCache cache,
-            ILogger logger)
+            INmdpCodeCache cache)
         {
             switch (category)
             {
@@ -35,10 +31,7 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups
                     return new NmdpCodeLookup(
                         hlaLookupRepository,
                         alleleNamesLookupService,
-                        cache,
-                        hlaServiceClient,
-                        alleleSplitter,
-                        logger);                    
+                        cache);                    
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                     return new AlleleStringLookup(

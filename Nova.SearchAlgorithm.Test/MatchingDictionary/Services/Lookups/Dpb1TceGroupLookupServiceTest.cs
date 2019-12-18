@@ -32,74 +32,9 @@ namespace Nova.SearchAlgorithm.Test.MatchingDictionary.Services.Lookups
             LookupService = new Dpb1TceGroupLookupService(
                 HlaLookupRepository,
                 AlleleNamesLookupService,
-                HlaServiceClient,
                 HlaCategorisationService,
                 AlleleStringSplitterService,
-                Cache,
-                Logger);
-        }
-
-        [Test]
-        public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToSingleTceGroup_SingleTceGroupReturned()
-        {
-            const string expectedLookupName = "99:NMDPCODE";
-            const string sharedTceGroup = "shared-tce-group";
-            const string firstTestAllele = "first";
-            const string secondTestAllele = "second";
-
-            HlaCategorisationService
-                .GetHlaTypingCategory(expectedLookupName)
-                .Returns(HlaTypingCategory.NmdpCode);
-
-            HlaServiceClient
-                .GetAllelesForDefinedNmdpCode(MolecularLocus, expectedLookupName)
-                .Returns(new List<string>
-                {
-                    firstTestAllele,
-                    secondTestAllele
-                });
-
-            var firstEntry = BuildTableEntityForSingleAllele(firstTestAllele, sharedTceGroup);
-            var secondEntry = BuildTableEntityForSingleAllele(secondTestAllele, sharedTceGroup);
-
-            HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
-                .Returns(firstEntry, secondEntry);
-
-            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "hla-db-version");
-
-            actualResult.Should().Be(sharedTceGroup);
-        }
-
-        [Test]
-        public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToMoreThanOneTceGroup_NoTceGroupAssignmentReturned()
-        {
-            const string expectedLookupName = "99:NMDPCODE";
-            const string firstTestAllele = "first";
-            const string secondTestAllele = "second";
-
-            HlaCategorisationService
-                .GetHlaTypingCategory(expectedLookupName)
-                .Returns(HlaTypingCategory.NmdpCode);
-
-            HlaServiceClient
-                .GetAllelesForDefinedNmdpCode(MolecularLocus, expectedLookupName)
-                .Returns(new List<string>
-                {
-                    firstTestAllele,
-                    secondTestAllele
-                });
-
-            var firstEntry = BuildTableEntityForSingleAllele(firstTestAllele);
-            var secondEntry = BuildTableEntityForSingleAllele(secondTestAllele);
-
-            HlaLookupRepository
-                .GetHlaLookupTableEntityIfExists(MatchedLocus, Arg.Any<string>(), TypingMethod.Molecular, Arg.Any<string>())
-                .Returns(firstEntry, secondEntry);
-
-            var actualResult = await LookupService.GetDpb1TceGroup(expectedLookupName, "hla-db-version");
-
-            actualResult.Should().Be(ExpectedNoTceGroupAssignment);
+                Cache);
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfSubtypes)]

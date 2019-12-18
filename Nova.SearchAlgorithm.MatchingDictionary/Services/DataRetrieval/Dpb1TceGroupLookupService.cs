@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Services;
+﻿using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using Nova.Utils.ApplicationInsights;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -29,19 +27,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         public Dpb1TceGroupLookupService(
             IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
-            IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IAntigenCache cache,
-            ILogger logger
+            INmdpCodeCache cache
         ) : base(
             dpb1TceGroupsLookupRepository,
             alleleNamesLookupService,
-            hlaServiceClient,
             hlaCategorisationService,
             alleleSplitter,
-            cache,
-            logger
+            cache
             )
         {
         }
