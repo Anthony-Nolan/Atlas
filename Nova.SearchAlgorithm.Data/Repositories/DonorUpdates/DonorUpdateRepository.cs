@@ -7,7 +7,6 @@ using Nova.SearchAlgorithm.Data.Helpers;
 using Nova.SearchAlgorithm.Data.Models.DonorInfo;
 using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Services;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -20,6 +19,18 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {
+        private class DonorWithChangedMatchingLoci
+        {
+            public DonorInfoWithExpandedHla DonorInfo { get; }
+            public IEnumerable<Locus> ChangedMatchingLoci { get; }
+
+            public DonorWithChangedMatchingLoci(DonorInfoWithExpandedHla donorInfo, IEnumerable<Locus> changedMatchingLoci)
+            {
+                DonorInfo = donorInfo;
+                ChangedMatchingLoci = changedMatchingLoci;
+            }
+        }
+
         public DonorUpdateRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository,
             connectionStringProvider)
         {
@@ -71,7 +82,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
                 await SetAvailabilityOfDonorBatch(existingDonors.Select(d => d.DonorId), true, conn);
 
-                var donorsWhereHlaHasChanged = new List<Tuple<DonorInfoWithExpandedHla, IEnumerable<Locus>>>();
+                var donorsWhereHlaHasChanged = new List<DonorWithChangedMatchingLoci>();
 
                 foreach (var existingDonor in existingDonors)
                 {
@@ -86,7 +97,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
                     if (DonorHlaHasChanged(existingDonorResult, donorToUpdate))
                     {
                         var changedLoci = GetChangedMatchingOnlyLoci(existingDonorResult, donorToUpdate);
-                        donorsWhereHlaHasChanged.Add(new Tuple<DonorInfoWithExpandedHla, IEnumerable<Locus>>(donorToUpdate, changedLoci));
+                        donorsWhereHlaHasChanged.Add(new DonorWithChangedMatchingLoci(donorToUpdate, changedLoci));
                         await UpdateDonorHla(donorToUpdate, conn);
                     }
                 }
@@ -110,20 +121,8 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
         private static IEnumerable<Locus> GetChangedMatchingOnlyLoci(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
-            var changedLoci = new List<Locus>();
-
-            foreach (var locus in LocusSettings.MatchingOnlyLoci)
-            {
-                var existingLocus = existingDonorInfo.HlaNames.DataAtLocus(locus);
-                var incomingLocus = incomingDonorInfo.HlaNames.DataAtLocus(locus);
-
-                if (!existingLocus.Equals(incomingLocus))
-                {
-                    changedLoci.Add(locus);
-                }
-            }
-
-            return changedLoci;
+            return LocusSettings.MatchingOnlyLoci.Where(locus => 
+                !existingDonorInfo.HlaNames.DataAtLocus(locus).Equals(incomingDonorInfo.HlaNames.DataAtLocus(locus)));
         }
 
         private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
@@ -178,9 +177,9 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync(sql, donor, commandTimeout: 600);
         }
 
-        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<Tuple<DonorInfoWithExpandedHla, IEnumerable<Locus>>> donorInfoWithLociToUpdate)
+        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<DonorWithChangedMatchingLoci> donorsWithChangedMatchingLoci)
         {
-            var donors = donorInfoWithLociToUpdate.ToList();
+            var donors = donorsWithChangedMatchingLoci.ToList();
 
             if (!donors.Any())
             {
@@ -189,7 +188,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories.DonorUpdates
 
             await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(async locus =>
                 {
-                    var donorsToUpdate = donors.Where(d => d.Item2.Contains(locus)).Select(d => d.Item1).ToList();
+                    var donorsToUpdate = donors
+                        .Where(d => d.ChangedMatchingLoci.Contains(locus))
+                        .Select(d => d.DonorInfo)
+                        .ToList();
+
                     if (donorsToUpdate.Any())
                     {
                         await ReplaceMatchingGroupsForExistingDonorBatchAtLocus(donorsToUpdate, locus);
