@@ -212,7 +212,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task UpdateDonorBatch_ForDonorWithAlleles_InsertsDonorInfoCorrectly()
+        public async Task UpdateDonorBatch_ForDonorWithAlleles_UpdatesDonorInfoCorrectly()
         {
             var donorId = DonorIdGenerator.NextId();
             var donor = donorInfoWithAllelesAtThreeLoci;
@@ -226,7 +226,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task UpdateDonorBatch_ForDonorWithXXCodes_InsertsDonorInfoCorrectly()
+        public async Task UpdateDonorBatch_ForDonorWithXXCodes_UpdatesDonorInfoCorrectly()
         {
             var donorId = DonorIdGenerator.NextId();
             var donor = donorInfoWithXxCodesAtThreeLoci;
