@@ -27,22 +27,30 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
         private readonly IAppCache cache;
         private readonly ILogger logger;
         private readonly IHlaServiceClient hlaServiceClient;
+        private readonly IHlaCategorisationService categorisationService;
         private readonly IAlleleStringSplitterService alleleSplitter;
 
         public NmdpCodeCachingService(
             IAppCache cache,
             ILogger logger,
             IHlaServiceClient hlaServiceClient,
+            IHlaCategorisationService categorisationService,
             IAlleleStringSplitterService alleleSplitter)
         {
             this.cache = cache;
             this.logger = logger;
             this.hlaServiceClient = hlaServiceClient;
+            this.categorisationService = categorisationService;
             this.alleleSplitter = alleleSplitter;
         }
 
         public async Task<IEnumerable<string>> GetOrAddAllelesForNmdpCode(Locus locus, string nmdpCode)
         {
+            if (!IsNmdpCode(nmdpCode))
+            {
+                throw new ArgumentException($"{nmdpCode} is not a valid NMDP code (submitted at locus: {locus}).");
+            }
+
             var nmdpCodeLookup = await GetNmdpCodeLookup(locus);
 
             if (nmdpCodeLookup != null && nmdpCodeLookup.TryGetValue(FormattedNmdpCode(nmdpCode), out var alleles))
@@ -135,10 +143,28 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
             });
 
             return antigens
-                .Where(a => a.NmdpString != null && !a.NmdpString.EndsWith("XX"))
+                .Where(a => IsNmdpCode(a.NmdpString))
                 .Select(a => new { NmdpCode = a.NmdpString, Alleles = GetAllelesFromHlaName(a.HlaName) })
                 .Where(a => a.Alleles != null)
                 .ToDictionary(a => a.NmdpCode, a => a.Alleles);
+        }
+
+        private bool IsNmdpCode(string value)
+        {
+            try
+            {
+                return value != null && categorisationService.GetHlaTypingCategory(value) == HlaTypingCategory.NmdpCode;
+            }
+            catch (Exception ex)
+            {
+                logger.SendTrace("Failed to categorise nmdp string value.", LogLevel.Warn, new Dictionary<string, string>
+                {
+                    {"NmdpString", value},
+                    {"Exception", ex.ToString()}
+                });
+
+                return false;
+            }
         }
 
         private IEnumerable<string> GetAllelesFromHlaName(string hlaName)
@@ -147,12 +173,12 @@ namespace Nova.SearchAlgorithm.Services.MatchingDictionary
             {
                 return alleleSplitter.GetAlleleNamesFromAlleleString(hlaName);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 logger.SendTrace("Failed to split allele string.", LogLevel.Warn, new Dictionary<string, string>
                 {
                     {"AlleleString", hlaName},
-                    {"Exception", e.ToString()}
+                    {"Exception", ex.ToString()}
                 });
 
                 return default;

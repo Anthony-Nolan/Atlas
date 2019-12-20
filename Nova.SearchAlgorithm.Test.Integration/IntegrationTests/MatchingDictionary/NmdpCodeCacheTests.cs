@@ -1,6 +1,8 @@
-﻿using LazyCache;
+﻿using FluentAssertions;
+using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.HLAService.Client;
+using Nova.HLAService.Client.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.Utils.Models;
 using NSubstitute;
@@ -8,8 +10,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Nova.HLAService.Client.Models;
 using Locus = Nova.SearchAlgorithm.Common.Models.Locus;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
@@ -18,7 +18,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
     public class NmdpCodeCacheTests
     {
         private const string CacheKeyPrefix = "NmdpCodeLookup_";
-        private const string NmdpCode = "*nmdp-code";
+        private const string NmdpCode = "*99:NMDP";
         private const string FirstAllele = "99:99";
         private const string SecondAllele = "100:100";
         private const string ExistingHlaName = FirstAllele + "/" + SecondAllele;
@@ -62,6 +62,15 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
         }
 
         [Test]
+        public void GetOrAddAllelesForNmdpCode_WhenSubmittedValueIsNotNmdpCode_ThrowsException()
+        {
+            const string hlaName = "not-an-nmdp-code";
+
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, hlaName));
+        }
+
+        [Test]
         public async Task GetOrAddAllelesForNmdpCode_CreatesCacheForLocus()
         {
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
@@ -97,6 +106,48 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
 
             var locusCache = await appCache.GetAsync<Dictionary<string, IEnumerable<string>>>($"{CacheKeyPrefix}{DefaultLocus}");
             locusCache.Should().NotContainKey(xxCode);
+        }
+
+        [Test]
+        public async Task GetOrAddAllelesForNmdpCode_WhenNmdpStringIsInvalidHlaName_DoesNotThrowException()
+        {
+            const string invalidHlaName = "999:999ABC";
+
+            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+                .Returns(new List<Antigen>
+                {
+                    new Antigen
+                    {
+                        Locus = GetLocusType(DefaultLocus),
+                        NmdpString = invalidHlaName
+                    }
+                });
+
+            await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
+
+            Assert.DoesNotThrowAsync(async () => 
+                await appCache.GetAsync<Dictionary<string, IEnumerable<string>>>($"{CacheKeyPrefix}{DefaultLocus}"));
+        }
+
+        [Test]
+        public async Task GetOrAddAllelesForNmdpCode_WhenNmdpStringIsInvalidHlaName_DoesNotCacheInvalidHla()
+        {
+            const string invalidHlaName = "999:999ABC";
+
+            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+                .Returns(new List<Antigen>
+                {
+                    new Antigen
+                    {
+                        Locus = GetLocusType(DefaultLocus),
+                        NmdpString = invalidHlaName
+                    }
+                });
+
+            await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
+
+            var locusCache = await appCache.GetAsync<Dictionary<string, IEnumerable<string>>>($"{CacheKeyPrefix}{DefaultLocus}");
+            locusCache.Should().NotContainKey(invalidHlaName);
         }
 
         [Test]
@@ -144,7 +195,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
         [TestCase("invalid-string")]
         public async Task GetOrAddAllelesForNmdpCode_WhenAlleleStringNotValid_DoesNotCacheNmdpCode(string invalidAlleleString)
         {
-            const string codeWithInvalidAlleleString = "*invalid-string-code";
+            const string codeWithInvalidAlleleString = "*99:INVALID";
 
             hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
                 .Returns(new List<Antigen>
@@ -197,7 +248,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
         [Test]
         public async Task GetOrAddAllelesForNmdpCode_NmdpCodeDoesNotExistInCache_GetsAllelesFromHlaService()
         {
-            const string newNmdpCode = "*new-code";
+            const string newNmdpCode = "*99:NEW";
 
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);
 
@@ -208,7 +259,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
         [Test]
         public async Task GetOrAddAllelesForNmdpCode_NmdpCodeDoesNotExistInCache_ReturnsExpectedAlleles()
         {
-            const string newNmdpCode = "*new-code";
+            const string newNmdpCode = "*99:NEW";
             var expectedAlleles = new List<string> { "allele-1", "allele-2" };
 
             hlaServiceClient
@@ -223,7 +274,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.MatchingDiction
         [Test]
         public async Task GetOrAddAllelesForNmdpCode_NmdpCodeDoesNotExistInCache_UpdatesCacheWithNewCode()
         {
-            const string newNmdpCode = "*new-code";
+            const string newNmdpCode = "*99:NEW";
             var expectedAlleles = new List<string> { "allele-1", "allele-2" };
 
             hlaServiceClient
