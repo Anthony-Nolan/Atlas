@@ -19,8 +19,4 @@
       <ProjectReference Include="..\Nova.SearchAlgorithm.Common\Nova.SearchAlgorithm.Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Caching\" />
-    </ItemGroup>
-
 </Project>

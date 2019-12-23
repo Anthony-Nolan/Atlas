@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
+﻿using Nova.HLAService.Client.Models;
 using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
@@ -10,7 +6,9 @@ using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using Nova.Utils.ApplicationInsights;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -30,19 +28,15 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
         public HlaScoringLookupService(
             IHlaScoringLookupRepository hlaScoringLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
-            IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IAntigenCache cache,
-            ILogger logger
+            INmdpCodeCache cache
         ) : base(
             hlaScoringLookupRepository,
             alleleNamesLookupService,
-            hlaServiceClient,
             hlaCategorisationService,
             alleleSplitter,
-            cache,
-            logger
+            cache
         )
         {
         }

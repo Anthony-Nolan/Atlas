@@ -8,9 +8,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Caching
     /// The matching dictionary package needs to consume a cache populated elsewhere.
     /// The cache should be exposed via this interface to ensure lazy re-population of an expired cache
     /// </summary>
-    public interface IAntigenCache
+    public interface INmdpCodeCache
     {
-        /// <returns>A lookup of NMDP codes to Full HLA Names</returns>
-        Task<Dictionary<string, string>> GetNmdpCodeLookup(Locus locus);
+        Task<IEnumerable<string>> GetOrAddAllelesForNmdpCode(Locus locus, string nmdpCode);
     }
 }

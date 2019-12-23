@@ -126,7 +126,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshService, DataRefreshService>();
             services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
-            services.AddScoped<IAntigenCachingService, AntigenCachingService>();
+            services.AddScoped<IAntigenCachingService, NmdpCodeCachingService>();
 
             // Matching Services
             services.AddScoped<IDonorMatchingService, DonorMatchingService>();
@@ -252,7 +252,7 @@ namespace Nova.SearchAlgorithm.DependencyInjection
 
         private static void RegisterMatchingDictionaryLookupServices(this IServiceCollection services)
         {
-            services.AddScoped<IAntigenCache, AntigenCachingService>();
+            services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
             services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
             services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
             services.AddScoped<ILocusHlaMatchingLookupService, LocusHlaMatchingLookupService>();

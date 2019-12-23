@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Services;
+﻿using Nova.HLAService.Client.Services;
 using Nova.SearchAlgorithm.Common.Models;
 using Nova.SearchAlgorithm.MatchingDictionary.Caching;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories;
 using Nova.SearchAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Nova.SearchAlgorithm.MatchingDictionary.Services.Lookups;
-using Nova.Utils.ApplicationInsights;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 {
@@ -31,28 +29,22 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
 
         private readonly IHlaLookupRepository hlaLookupRepository;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
-        private readonly IHlaServiceClient hlaServiceClient;
         private readonly IAlleleStringSplitterService alleleSplitter;
-        private readonly IAntigenCache cache;
-        private readonly ILogger logger;
+        private readonly INmdpCodeCache cache;
 
         protected HlaSearchingLookupServiceBase(
             IHlaLookupRepository hlaLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
-            IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IAntigenCache cache,
-            ILogger logger
+            INmdpCodeCache cache
         )
         {
             this.hlaLookupRepository = hlaLookupRepository;
             this.alleleNamesLookupService = alleleNamesLookupService;
-            this.hlaServiceClient = hlaServiceClient;
             HlaCategorisationService = hlaCategorisationService;
             this.alleleSplitter = alleleSplitter;
             this.cache = cache;
-            this.logger = logger;
         }
 
         public async Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaDatabaseVersion)
@@ -88,10 +80,8 @@ namespace Nova.SearchAlgorithm.MatchingDictionary.Services
                     hlaTypingCategory,
                     hlaLookupRepository,
                     alleleNamesLookupService,
-                    hlaServiceClient,
                     alleleSplitter,
-                    cache,
-                    logger);
+                    cache);
         }
 
         protected abstract IEnumerable<THlaLookupResult> ConvertTableEntitiesToLookupResults(
