@@ -1,4 +1,5 @@
 using FluentValidation;
+using Nova.SearchAlgorithm.ApplicationInsights.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
@@ -27,19 +28,22 @@ namespace Nova.SearchAlgorithm.Services.Search
         private readonly ISearchService searchService;
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
+        private readonly ISearchRequestContext searchRequestContext;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public SearchDispatcher(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
             IResultsBlobStorageClient resultsBlobStorageClient,
-            ILogger logger, 
+            ILogger logger,
+            ISearchRequestContext searchRequestContext,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
+            this.searchRequestContext = searchRequestContext;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
@@ -47,20 +51,22 @@ namespace Nova.SearchAlgorithm.Services.Search
         public async Task<string> DispatchSearch(SearchRequest searchRequest)
         {
             new SearchRequestValidator().ValidateAndThrow(searchRequest);
-            var searchId = Guid.NewGuid().ToString();
+            var searchRequestId = Guid.NewGuid().ToString();
+
             var identifiedSearchRequest = new IdentifiedSearchRequest
             {
                 SearchRequest = searchRequest,
-                Id = searchId,
+                Id = searchRequestId
             };
-
             await searchServiceBusClient.PublishToSearchQueue(identifiedSearchRequest);
-            return searchId;
+
+            return searchRequestId;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
+            searchRequestContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
 
@@ -70,7 +76,7 @@ namespace Nova.SearchAlgorithm.Services.Search
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
                 stopwatch.Stop();
-                
+
                 await resultsBlobStorageClient.UploadResults(searchRequestId, new SearchResultSet
                 {
                     SearchResults = results,

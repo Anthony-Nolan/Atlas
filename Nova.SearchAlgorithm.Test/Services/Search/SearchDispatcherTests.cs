@@ -1,4 +1,5 @@
 using FluentValidation;
+using Nova.SearchAlgorithm.ApplicationInsights.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchRequests;
 using Nova.SearchAlgorithm.Client.Models.SearchResults;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
@@ -36,8 +37,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
             var logger = Substitute.For<ILogger>();
+            var context = Substitute.For<ISearchRequestContext>();
 
-            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchService, resultsBlobStorageClient, logger, wmdaHlaVersionProvider);
+            searchDispatcher = new SearchDispatcher(
+                searchServiceBusClient,
+                searchService,
+                resultsBlobStorageClient,
+                logger,
+                context,
+                wmdaHlaVersionProvider);
         }
 
         [Test]
@@ -51,12 +59,12 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
 
             await searchServiceBusClient.Received().PublishToSearchQueue(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
         }
-        
+
         [Test]
         public void DispatchSearch_ValidatesSearchRequest()
         {
             var invalidSearchRequest = new SearchRequest();
-            
+
             Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
         }
 
@@ -64,8 +72,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         public async Task RunSearch_RunsSearch()
         {
             var searchRequest = new SearchRequest();
-            
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest {SearchRequest = searchRequest});
+
+            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { SearchRequest = searchRequest });
 
             await searchService.Received().Search(searchRequest);
         }
@@ -74,8 +82,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         public async Task RunSearch_StoresResultsInBlobStorage()
         {
             const string id = "id";
-            
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = id});
+
+            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
 
             await resultsBlobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
         }
@@ -84,8 +92,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         public async Task RunSearch_PublishesSuccessNotification()
         {
             const string id = "id";
-            
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = id});
+
+            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
@@ -97,8 +105,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         {
             const string wmdaVersion = "wmda-version";
             wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
-            
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = "id"});
+
+            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = "id" });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.WmdaHlaDatabaseVersion == wmdaVersion
@@ -110,8 +118,8 @@ namespace Nova.SearchAlgorithm.Test.Services.Search
         {
             const string id = "id";
             searchService.Search(Arg.Any<SearchRequest>()).Throws(new NovaHttpException(HttpStatusCode.InternalServerError, ""));
-            
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest {Id = id});
+
+            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 !r.WasSuccessful && r.SearchRequestId == id

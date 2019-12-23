@@ -1,9 +1,14 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Nova.SearchAlgorithm.ApplicationInsights.SearchRequests;
+using Nova.SearchAlgorithm.Clients.AzureStorage;
+using Nova.SearchAlgorithm.Clients.ServiceBus;
 using Nova.SearchAlgorithm.Common.Models;
+using Nova.SearchAlgorithm.Services.ConfigurationProviders;
 using Nova.SearchAlgorithm.Services.Search;
 using Nova.SearchAlgorithm.Test.Integration.TestData;
 using Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders;
+using Nova.Utils.ApplicationInsights;
 using NUnit.Framework;
 
 namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
@@ -15,9 +20,23 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests.Search
         private PhenotypeInfo<string> searchHla;
 
         [SetUp]
-        public void ResolveSearchService()
+        public void SetUp()
         {
-            searchDispatcher = DependencyInjection.DependencyInjection.Provider.GetService<ISearchDispatcher>();
+            var searchServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchServiceBusClient>();
+            var searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
+            var resultsBlobStorageClient = DependencyInjection.DependencyInjection.Provider.GetService<IResultsBlobStorageClient>();
+            var logger = DependencyInjection.DependencyInjection.Provider.GetService<ILogger>();
+            var searchRequestContext = new SearchRequestContext();
+            var wmdaHlaVersionProvider = DependencyInjection.DependencyInjection.Provider.GetService<IWmdaHlaVersionProvider>();
+
+            searchDispatcher = new SearchDispatcher(
+                searchServiceBusClient,
+                searchService,
+                resultsBlobStorageClient,
+                logger,
+                searchRequestContext,
+                wmdaHlaVersionProvider);
+
             searchHla = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
         }
 
