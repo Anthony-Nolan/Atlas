@@ -1,4 +1,3 @@
-using System;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.ApplicationInsights;
@@ -11,6 +10,7 @@ using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Services;
+using Nova.SearchAlgorithm.ApplicationInsights.SearchRequests;
 using Nova.SearchAlgorithm.Clients.AzureManagement;
 using Nova.SearchAlgorithm.Clients.AzureStorage;
 using Nova.SearchAlgorithm.Clients.Http;
@@ -52,6 +52,7 @@ using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using Nova.Utils.ServiceBus.BatchReceiving;
+using System;
 using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Nova.SearchAlgorithm.DependencyInjection
@@ -89,8 +90,13 @@ namespace Nova.SearchAlgorithm.DependencyInjection
             services.AddSingleton(sp => AutomapperConfig.CreateMapper());
 
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
-            services.AddSingleton<ILogger>(sp =>
-                new Logger(new TelemetryClient(), sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
+
+            services.AddScoped<ISearchRequestContext, SearchRequestContext>();
+            services.AddScoped<ILogger>(sp =>
+                new SearchRequestAwareLogger(
+                    sp.GetService<ISearchRequestContext>(),
+                    new TelemetryClient(), 
+                    sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
 
             // The default IAppCache registration should be a singleton, to avoid re-caching large collections e.g. Matching Dictionary and Alleles each request
