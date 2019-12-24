@@ -33,10 +33,7 @@ namespace Nova.SearchAlgorithm.ApplicationInsights.SearchRequests
 
         public override void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
         {
-            if (props == null)
-            {
-                props = new Dictionary<string, string>();
-            }
+            props = props ?? new Dictionary<string, string>();
 
             var searchRequestId = context.SearchRequestId;
             if (!string.IsNullOrEmpty(searchRequestId))
