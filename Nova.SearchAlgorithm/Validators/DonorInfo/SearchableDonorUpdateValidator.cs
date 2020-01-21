@@ -3,7 +3,7 @@ using Nova.DonorService.Client.Models.DonorUpdate;
 
 namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
-    public class SearchableDonorUpdateValidator : AbstractValidator<SearchableDonorUpdateModel>
+    public class SearchableDonorUpdateValidator : AbstractValidator<SearchableDonorUpdate>
     {
         public SearchableDonorUpdateValidator()
         {

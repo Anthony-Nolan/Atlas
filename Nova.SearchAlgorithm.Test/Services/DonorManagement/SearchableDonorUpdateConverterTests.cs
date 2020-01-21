@@ -29,12 +29,12 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         {
             const int donorId = 123;
 
-            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdateModel>>()
+            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdate>>()
             {
-                new ServiceBusMessage<SearchableDonorUpdateModel>
+                new ServiceBusMessage<SearchableDonorUpdate>
                 {
                     LockToken = "token",
-                    DeserializedBody = new SearchableDonorUpdateModel
+                    DeserializedBody = new SearchableDonorUpdate
                     {
                         DonorId = donorId.ToString(),
                         IsAvailableForSearch = false
@@ -52,9 +52,9 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
             Assert.DoesNotThrowAsync(async () =>
             {
                 await converter.ConvertSearchableDonorUpdatesAsync(
-                    new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                    new List<ServiceBusMessage<SearchableDonorUpdate>>
                     {
-                        new ServiceBusMessage<SearchableDonorUpdateModel>()
+                        new ServiceBusMessage<SearchableDonorUpdate>()
                     },
                     "event-name");
             });
@@ -65,12 +65,12 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         {
             const string donorId = "donor-id";
 
-            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdateModel>>()
+            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdate>>()
             {
-                new ServiceBusMessage<SearchableDonorUpdateModel>
+                new ServiceBusMessage<SearchableDonorUpdate>
                 {
                     LockToken = "token",
-                    DeserializedBody = new SearchableDonorUpdateModel
+                    DeserializedBody = new SearchableDonorUpdate
                     {
                         DonorId = donorId,
                         IsAvailableForSearch = true,

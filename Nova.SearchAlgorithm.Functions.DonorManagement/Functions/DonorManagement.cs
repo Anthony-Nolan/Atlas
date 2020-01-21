@@ -31,7 +31,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
             {
                 await donorUpdateProcessor.ProcessDonorUpdates();
             }
-            catch (MessageBatchException<SearchableDonorUpdateModel> ex)
+            catch (MessageBatchException<SearchableDonorUpdate> ex)
             {
                 SendMessageBatchExceptionTrace(ex);
                 throw new DonorManagementException(ex);
@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Functions.DonorManagement.Functions
             }
         }
 
-        private void SendMessageBatchExceptionTrace(MessageBatchException<SearchableDonorUpdateModel> ex)
+        private void SendMessageBatchExceptionTrace(MessageBatchException<SearchableDonorUpdate> ex)
         {
             logger.SendTrace(
                 ErrorMessagePrefix + ex.Message,

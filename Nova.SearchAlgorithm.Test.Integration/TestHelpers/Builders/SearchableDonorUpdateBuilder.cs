@@ -9,8 +9,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
         private const bool DefaultIsAvailableForSearch = true;
         private static readonly int DonorId = DonorIdGenerator.NextId();
 
-        public static Builder<SearchableDonorUpdateModel> New =>
-            Builder<SearchableDonorUpdateModel>.New
+        public static Builder<SearchableDonorUpdate> New =>
+            Builder<SearchableDonorUpdate>.New
                 .With(x => x.DonorId, DonorId.ToString())
                 .With(x => x.IsAvailableForSearch, DefaultIsAvailableForSearch)
                 .With(x => x.SearchableDonorInformation, 

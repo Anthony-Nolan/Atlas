@@ -15,7 +15,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.28" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-        <PackageReference Include="Nova.DonorService.Client.Models" Version="2.10.2" />
+        <PackageReference Include="Nova.DonorService.Client.Models" Version="4.1.0" />
         <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
     </ItemGroup>
     <ItemGroup>

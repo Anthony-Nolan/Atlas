@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenDeserializedBodyIsNull_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.DeserializedBody, (SearchableDonorUpdateModel)null);
+            validator.ShouldHaveValidationErrorFor(x => x.DeserializedBody, (SearchableDonorUpdate)null);
         }
     }
 }

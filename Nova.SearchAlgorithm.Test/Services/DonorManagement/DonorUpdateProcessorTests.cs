@@ -17,7 +17,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
     {
         private const int BatchSize = 100;
 
-        private IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
+        private IMessageProcessor<SearchableDonorUpdate> messageProcessorService;
         private IDonorManagementService donorManagementService;
         private IDonorUpdateProcessor donorUpdateProcessor;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         [SetUp]
         public void Setup()
         {
-            messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdateModel>>();
+            messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdate>>();
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
             failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
@@ -48,7 +48,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await messageProcessorService.Received(1).ProcessMessageBatch(
                 BatchSize,
-                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>>, Task>>(),
+                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
                 Arg.Any<int>());
         }
 
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
 
             await messageProcessorService.Received(1).ProcessMessageBatch(
                 Arg.Any<int>(),
-                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>>, Task>>(),
+                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
                 Arg.Is<int>(b => b > BatchSize));
         }
     }

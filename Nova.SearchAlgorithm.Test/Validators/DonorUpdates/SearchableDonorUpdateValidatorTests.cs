@@ -43,7 +43,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenDonorAvailableForSearch_AndSearchableDonorInformationIsMissing_ShouldHaveValidationError()
         {
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorIdAsString,
                 IsAvailableForSearch = true,
@@ -58,7 +58,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenDonorUnavailableForSearch_AndSearchableDonorInformationIsMissing_ShouldNotHaveValidationError()
         {
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorIdAsString,
                 IsAvailableForSearch = false,
@@ -75,7 +75,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         {
             const string hlaName = "hla-name";
 
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = $"{ValidDonorId + 1}",
                 SearchableDonorInformation = new SearchableDonorInformation
@@ -102,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         {
             const string hlaName = "hla-name";
 
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorIdAsString,
                 SearchableDonorInformation = new SearchableDonorInformation
