@@ -22,6 +22,8 @@ namespace Nova.SearchAlgorithm.Validators.DonorInfo
             RuleFor(x => x.DonorId)
                 .Equal(x => x.SearchableDonorInformation.DonorId.ToString())
                 .When(x => x.SearchableDonorInformation != null);
+
+            RuleFor(x => x.PublishedDateTime).NotNull();
         }
     }
 }

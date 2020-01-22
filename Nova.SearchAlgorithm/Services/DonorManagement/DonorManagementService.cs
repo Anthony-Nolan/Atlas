@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Nova.SearchAlgorithm.ApplicationInsights;
 using Nova.SearchAlgorithm.Data.Models;
+using Nova.SearchAlgorithm.Data.Models.Entities;
 using Nova.SearchAlgorithm.Data.Repositories;
 using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -21,6 +23,18 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
     public class DonorManagementService : IDonorManagementService
     {
+        private class NonApplicableUpdate
+        {
+            public DonorManagementLog DonorManagementLog { get; }
+            public DonorAvailabilityUpdate DonorAvailabilityUpdate { get; }
+
+            public NonApplicableUpdate(DonorManagementLog log, DonorAvailabilityUpdate update)
+            {
+                DonorManagementLog = log;
+                DonorAvailabilityUpdate = update;
+            }
+        }
+
         private const string TraceMessagePrefix = nameof(ManageDonorBatchByAvailability);
 
         private readonly IDonorManagementLogRepository logRepository;
@@ -42,15 +56,76 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
 
         public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
         {
-            var latestUpdates = GetLatestUpdateInBatchPerDonorId(donorAvailabilityUpdates);
-            await ApplyDonorUpdates(latestUpdates);
+            var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates);
+            await ApplyDonorUpdates(filteredUpdates);
+        }
+
+        private async Task<IEnumerable<DonorAvailabilityUpdate>> FilterUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var latestUpdateInBatchPerDonorId = GetLatestUpdateInBatchPerDonorId(updates);
+            return await GetApplicableUpdates(latestUpdateInBatchPerDonorId);
         }
 
         private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdateInBatchPerDonorId(IEnumerable<DonorAvailabilityUpdate> updates)
         {
             return updates
                 .GroupBy(u => u.DonorId)
-                .Select(grp => grp.OrderByDescending(u => u.UpdateSequenceNumber).First());
+                .Select(grp => grp.OrderByDescending(u => u.UpdateDateTime).First());
+        }
+
+        /// <returns>Only returns those updates that are newer than the last update recorded in the
+        /// donor management log, or those where the donor has no record of a previous update.</returns>
+        private async Task<IEnumerable<DonorAvailabilityUpdate>> GetApplicableUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        {
+            var allUpdates = updates.ToList();
+
+            var existingLogs = await logRepository.GetDonorManagementLogBatch(allUpdates.Select(u => u.DonorId));
+
+            // GroupJoin is equivalent to a LEFT OUTER JOIN
+            var updatesWithLogs = allUpdates
+                .GroupJoin(existingLogs,
+                    update => update.DonorId,
+                    log => log.DonorId,
+                    (update, logs) => new { Update = update, Log = logs.SingleOrDefault() })
+                .Select(a => new
+                {
+                    a.Update,
+                    a.Log,
+                    IsApplicable = a.Log == null || a.Update.UpdateDateTime > a.Log.LastUpdateDateTime
+                })
+                .ToList();
+
+            var nonApplicableUpdates = updatesWithLogs
+                .Where(u => !u.IsApplicable)
+                .Select(u => new NonApplicableUpdate(u.Log, u.Update));
+            LogNonApplicableUpdates(nonApplicableUpdates);
+
+            return updatesWithLogs.Where(u => u.IsApplicable).Select(u => u.Update);
+        }
+
+        private void LogNonApplicableUpdates(IEnumerable<NonApplicableUpdate> nonApplicableUpdates)
+        {
+            nonApplicableUpdates = nonApplicableUpdates.ToList();
+
+            if (!nonApplicableUpdates.Any())
+            {
+                return;
+            }
+
+            foreach (var update in nonApplicableUpdates)
+            {
+                logger.SendEvent(GetDonorUpdateNotAppliedEventModel(update));
+            }
+
+            logger.SendTrace(
+                $"{TraceMessagePrefix}: {nonApplicableUpdates.Count()} donor updates were not applied " +
+                "due to being older than previously applied updates (AI event logged for each update).",
+                LogLevel.Warn);
+        }
+
+        private static DonorUpdateNotAppliedEventModel GetDonorUpdateNotAppliedEventModel(NonApplicableUpdate update)
+        {
+            return new DonorUpdateNotAppliedEventModel(update.DonorManagementLog.LastUpdateDateTime, update.DonorAvailabilityUpdate);
         }
 
         private async Task ApplyDonorUpdates(IEnumerable<DonorAvailabilityUpdate> updates)

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -82,12 +81,11 @@ namespace Nova.SearchAlgorithm.Data.Repositories
                 // This UNION ALL based strategy seems sufficiently performant when bulk updating 100s of rows
                 // If row count increases to the 1000s, it may be better to use a temp table instead
                 var infosSelectStatement = BuildUnionAllSelectStatement(infos);
-                var dateTimeNow = DateTimeOffset.UtcNow.ToString("u", CultureInfo.InvariantCulture);
                 var sql = $@"
                         UPDATE {LogTableName} 
                         SET 
                             {SequenceNumberColumnName} = infos.{SequenceNumberColumnName},
-                            {UpdateDateTimeColumnName} = '{dateTimeNow}'
+                            {UpdateDateTimeColumnName} = infos.{UpdateDateTimeColumnName}
                         FROM {LogTableName} logs
                         JOIN ({infosSelectStatement}) infos
                         ON logs.{DonorIdColumnName} = infos.{DonorIdColumnName}
@@ -99,9 +97,7 @@ namespace Nova.SearchAlgorithm.Data.Repositories
 
         private static string BuildUnionAllSelectStatement(IEnumerable<DonorManagementInfo> donorManagementInfos)
         {
-            var selectStatements = donorManagementInfos
-                .Select(i => $"SELECT {i.DonorId} AS {DonorIdColumnName}, {i.UpdateSequenceNumber} AS {SequenceNumberColumnName}")
-                .ToList();
+            var selectStatements = donorManagementInfos.Select(GetDonorManagementInfoSelectStatement).ToList();
 
             if (!selectStatements.Any())
             {
@@ -119,6 +115,14 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             return builder.ToString();
         }
 
+        private static string GetDonorManagementInfoSelectStatement(DonorManagementInfo info)
+        {
+            return "SELECT " +
+                    $"{info.DonorId} AS {DonorIdColumnName}, " +
+                    $"{info.UpdateSequenceNumber} AS {SequenceNumberColumnName}, " +
+                    $"{info.UpdateDateTime} AS {UpdateDateTimeColumnName}";
+        }
+
         private async Task CreateLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
         {
             var infos = donorManagementInfos.ToList();
@@ -134,14 +138,12 @@ namespace Nova.SearchAlgorithm.Data.Repositories
             dt.Columns.Add(SequenceNumberColumnName);
             dt.Columns.Add(UpdateDateTimeColumnName);
 
-            var dateTimeNow = DateTimeOffset.UtcNow;
-
             foreach (var info in infos)
             {
                 dt.Rows.Add(0,
                     info.DonorId,
                     info.UpdateSequenceNumber,
-                    dateTimeNow
+                    info.UpdateDateTime
                     );
             }
 

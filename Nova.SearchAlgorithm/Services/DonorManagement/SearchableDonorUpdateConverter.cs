@@ -48,6 +48,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             return new DonorAvailabilityUpdate
             {
                 UpdateSequenceNumber = update.SequenceNumber,
+                UpdateDateTime = body.PublishedDateTime.Value,
                 DonorId = int.Parse(body.DonorId),
                 DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
                 IsAvailableForSearch = body.IsAvailableForSearch

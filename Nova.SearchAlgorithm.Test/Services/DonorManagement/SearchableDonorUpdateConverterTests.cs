@@ -5,6 +5,7 @@ using Nova.Utils.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ILogger = Nova.Utils.ApplicationInsights.ILogger;
@@ -37,6 +38,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                     DeserializedBody = new SearchableDonorUpdate
                     {
                         DonorId = donorId.ToString(),
+                        PublishedDateTime = DateTime.UtcNow,
                         IsAvailableForSearch = false
                     }
                 }

@@ -1,5 +1,6 @@
 ﻿using LochNessBuilder;
 using Nova.DonorService.Client.Models.DonorUpdate;
+using System;
 
 namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -14,6 +15,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
                 .With(x => x.DonorId, DonorId.ToString())
                 .With(x => x.IsAvailableForSearch, DefaultIsAvailableForSearch)
                 .With(x => x.SearchableDonorInformation, 
-                    SearchableDonorInformationBuilder.New.With(x => x.DonorId, DonorId));
+                    SearchableDonorInformationBuilder.New.With(x => x.DonorId, DonorId))
+                .With(x => x.PublishedDateTime, DateTimeOffset.UtcNow);
     }
 }
