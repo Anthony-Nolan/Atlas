@@ -4,7 +4,7 @@ using Nova.Utils.ServiceBus.Models;
 
 namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
-    public class DonorUpdateMessageValidator : AbstractValidator<ServiceBusMessage<SearchableDonorUpdateModel>>
+    public class DonorUpdateMessageValidator : AbstractValidator<ServiceBusMessage<SearchableDonorUpdate>>
     {
         public DonorUpdateMessageValidator()
         {

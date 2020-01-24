@@ -10,8 +10,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.TestHelpers.Builders
     {
         private const long DefaultSequenceNumber = 123456;
 
-        public static Builder<ServiceBusMessage<SearchableDonorUpdateModel>> New =>
-            Builder<ServiceBusMessage<SearchableDonorUpdateModel>>.New
+        public static Builder<ServiceBusMessage<SearchableDonorUpdate>> New =>
+            Builder<ServiceBusMessage<SearchableDonorUpdate>>.New
                 .With(x => x.SequenceNumber, DefaultSequenceNumber)
                 .With(x => x.LockToken, Guid.NewGuid().ToString())
                 .With(x => x.LockedUntilUtc, DateTime.UtcNow.AddMinutes(5))

@@ -20,7 +20,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         private const string TraceMessagePrefix = nameof(ProcessDonorUpdates);
         private const string UpdateFailureEventName = "Searchable Donor Update Failure(s) in the Search Algorithm";
 
-        private readonly IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService;
+        private readonly IMessageProcessor<SearchableDonorUpdate> messageProcessorService;
         private readonly IDonorManagementService donorManagementService;
         private readonly ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
@@ -28,7 +28,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         private readonly int batchSize;
 
         public DonorUpdateProcessor(
-            IMessageProcessor<SearchableDonorUpdateModel> messageProcessorService,
+            IMessageProcessor<SearchableDonorUpdate> messageProcessorService,
             IDonorManagementService donorManagementService,
             ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
@@ -51,7 +51,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             }, prefetchCount: batchSize * 2);
         }
 
-        private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> messageBatch)
+        private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> messageBatch)
         {
             var converterResults = await searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(messageBatch, UpdateFailureEventName);
 

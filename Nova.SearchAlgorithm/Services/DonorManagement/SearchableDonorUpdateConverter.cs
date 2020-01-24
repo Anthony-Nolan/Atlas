@@ -14,11 +14,11 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
     public interface ISearchableDonorUpdateConverter
     {
         Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates, string failureEventName);
+            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates, string failureEventName);
     }
 
     public class SearchableDonorUpdateConverter :
-        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdateModel>, DonorAvailabilityUpdate, ValidationException>,
+        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate, ValidationException>,
         ISearchableDonorUpdateConverter
     {
         public SearchableDonorUpdateConverter(ILogger logger) : base(logger)
@@ -26,7 +26,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
         }
 
         public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdateModel>> updates, string failureEventName)
+            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates, string failureEventName)
         {
             return await ProcessBatchAsync(
                 updates,
@@ -39,7 +39,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
                 failureEventName);
         }
 
-        private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdateModel> update)
+        private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdate> update)
         {
             await new DonorUpdateMessageValidator().ValidateAndThrowAsync(update);
 
@@ -48,6 +48,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
             return new DonorAvailabilityUpdate
             {
                 UpdateSequenceNumber = update.SequenceNumber,
+                UpdateDateTime = body.PublishedDateTime.Value,
                 DonorId = int.Parse(body.DonorId),
                 DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
                 IsAvailableForSearch = body.IsAvailableForSearch

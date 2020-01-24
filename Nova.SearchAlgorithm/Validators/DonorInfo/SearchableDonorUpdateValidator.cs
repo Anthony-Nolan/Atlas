@@ -3,7 +3,7 @@ using Nova.DonorService.Client.Models.DonorUpdate;
 
 namespace Nova.SearchAlgorithm.Validators.DonorInfo
 {
-    public class SearchableDonorUpdateValidator : AbstractValidator<SearchableDonorUpdateModel>
+    public class SearchableDonorUpdateValidator : AbstractValidator<SearchableDonorUpdate>
     {
         public SearchableDonorUpdateValidator()
         {
@@ -22,6 +22,8 @@ namespace Nova.SearchAlgorithm.Validators.DonorInfo
             RuleFor(x => x.DonorId)
                 .Equal(x => x.SearchableDonorInformation.DonorId.ToString())
                 .When(x => x.SearchableDonorInformation != null);
+
+            RuleFor(x => x.PublishedDateTime).NotNull();
         }
     }
 }

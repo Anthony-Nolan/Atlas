@@ -28,8 +28,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
     {
         private IDonorUpdateProcessor donorUpdateProcessor;
 
-        private IServiceBusMessageReceiver<SearchableDonorUpdateModel> messageReceiver;
-        private IMessageProcessor<SearchableDonorUpdateModel> messageProcessor;
+        private IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver;
+        private IMessageProcessor<SearchableDonorUpdate> messageProcessor;
         private IDonorManagementService donorManagementService;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
@@ -41,8 +41,8 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
         {
             var provider = DependencyInjection.DependencyInjection.Provider;
 
-            messageReceiver = Substitute.For<IServiceBusMessageReceiver<SearchableDonorUpdateModel>>();
-            messageProcessor = new MessageProcessor<SearchableDonorUpdateModel>(messageReceiver);
+            messageReceiver = Substitute.For<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
+            messageProcessor = new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
             
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
@@ -67,7 +67,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
             var message = SearchableDonorUpdateMessageBuilder.New.Build();
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
             await donorUpdateProcessor.ProcessDonorUpdates();
 
@@ -92,7 +92,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 .Build();
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
             await donorUpdateProcessor.ProcessDonorUpdates();
 
@@ -116,7 +116,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 .Build();
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
             Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDonorUpdates());
         }
@@ -143,7 +143,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 .Build();
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
             await donorUpdateProcessor.ProcessDonorUpdates();
 
@@ -173,7 +173,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 .Build();
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
             Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDonorUpdates());
         }
@@ -200,7 +200,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
                 .Build();
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>> { message });
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
             await donorUpdateProcessor.ProcessDonorUpdates();
 
@@ -244,7 +244,7 @@ namespace Nova.SearchAlgorithm.Test.Integration.IntegrationTests
 
             messageReceiver
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
                     validMessage, invalidMessage
                 });

@@ -5,6 +5,7 @@ using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.SearchAlgorithm.Client.Models;
 using Nova.SearchAlgorithm.Validators.DonorInfo;
 using NUnit.Framework;
+using System;
 
 namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
 {
@@ -43,7 +44,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenDonorAvailableForSearch_AndSearchableDonorInformationIsMissing_ShouldHaveValidationError()
         {
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorIdAsString,
                 IsAvailableForSearch = true,
@@ -58,10 +59,11 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         [Test]
         public void Validator_WhenDonorUnavailableForSearch_AndSearchableDonorInformationIsMissing_ShouldNotHaveValidationError()
         {
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorIdAsString,
                 IsAvailableForSearch = false,
+                PublishedDateTime = DateTime.UtcNow,
                 SearchableDonorInformation = null
             };
 
@@ -75,7 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         {
             const string hlaName = "hla-name";
 
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = $"{ValidDonorId + 1}",
                 SearchableDonorInformation = new SearchableDonorInformation
@@ -102,9 +104,10 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
         {
             const string hlaName = "hla-name";
 
-            var update = new SearchableDonorUpdateModel
+            var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorIdAsString,
+                PublishedDateTime = DateTime.UtcNow,
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
                     DonorId = ValidDonorId,
@@ -122,6 +125,18 @@ namespace Nova.SearchAlgorithm.Test.Validators.DonorUpdates
             var result = validator.Validate(update);
 
             result.IsValid.Should().BeTrue();
+        }
+
+        [Test]
+        public void Validator_WhenPublishedDateTimeUtcIsNull_ShouldHaveValidationError()
+        {
+            validator.ShouldHaveValidationErrorFor(x => x.PublishedDateTime, (DateTime?)null);
+        }
+
+        [Test]
+        public void Validator_WhenPublishedDateTimeUtcIsNotNull_ShouldNotHaveValidationError()
+        {
+            validator.ShouldNotHaveValidationErrorFor(x => x.PublishedDateTime, DateTime.UtcNow);
         }
     }
 }

@@ -336,22 +336,22 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
             );
 
-            services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdateModel>, ServiceBusMessageReceiver<SearchableDonorUpdateModel>>(sp =>
+            services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdate>, ServiceBusMessageReceiver<SearchableDonorUpdate>>(sp =>
             {
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                return new ServiceBusMessageReceiver<SearchableDonorUpdateModel>(factory, settings.Topic, settings.Subscription);
+                return new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
             });
 
-            services.AddScoped<IMessageProcessor<SearchableDonorUpdateModel>, MessageProcessor<SearchableDonorUpdateModel>>(sp =>
+            services.AddScoped<IMessageProcessor<SearchableDonorUpdate>, MessageProcessor<SearchableDonorUpdate>>(sp =>
             {
-                var messageReceiver = sp.GetService<IServiceBusMessageReceiver<SearchableDonorUpdateModel>>();
-                return new MessageProcessor<SearchableDonorUpdateModel>(messageReceiver);
+                var messageReceiver = sp.GetService<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
+                return new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
             });
 
             services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
             {
-                var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdateModel>>();
+                var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdate>>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var notificationSender = sp.GetService<IFailedDonorsNotificationSender>();

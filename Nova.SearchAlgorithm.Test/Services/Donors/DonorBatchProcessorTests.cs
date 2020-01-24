@@ -23,13 +23,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
 
         #region Function delegates to pass into service under test
 
-        private static string GetDonorIdFromDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+        private static string GetDonorIdFromDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
             => donor.DeserializedBody?.DonorId;
 
-        private static FailedDonorInfo GetFailedDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+        private static FailedDonorInfo GetFailedDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
             => new FailedDonorInfo(donor) { DonorId = GetDonorIdFromDonorInfoFunc(donor) };
 
-        private static Task<DonorAvailabilityUpdate> ProcessDonorFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+        private static Task<DonorAvailabilityUpdate> ProcessDonorFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
             => Task.FromResult(new DonorAvailabilityUpdate
             {
                 DonorId = donor.DeserializedBody == null
@@ -37,13 +37,13 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                         : int.Parse(GetDonorIdFromDonorInfoFunc(donor))
             });
 
-        private static Task<DonorAvailabilityUpdate> ThrowAnticipatedExceptionFunc(ServiceBusMessage<SearchableDonorUpdateModel> donor)
+        private static Task<DonorAvailabilityUpdate> ThrowAnticipatedExceptionFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
             => throw new ValidationException("failed");
 
         #endregion
 
         // Arbitrary implementation selected to test base functionality.
-        private IDonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdateModel>, DonorAvailabilityUpdate> donorBatchProcessor;
+        private IDonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate> donorBatchProcessor;
 
         private ILogger logger;
 
@@ -59,7 +59,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public async Task ProcessBatchAsync_NoDonors_ReturnsEmptyProcessingResults()
         {
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
+                new List<ServiceBusMessage<SearchableDonorUpdate>>(),
                 ProcessDonorFunc,
                 GetFailedDonorInfoFunc,
                 DefaultEventName
@@ -72,7 +72,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public async Task ProcessBatchAsync_NoDonors_ReturnsEmptyFailedDonors()
         {
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>(),
+                new List<ServiceBusMessage<SearchableDonorUpdate>>(),
                 ProcessDonorFunc,
                 GetFailedDonorInfoFunc,
                 DefaultEventName
@@ -85,7 +85,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public async Task ProcessBatchAsync_AllDonorsFailProcessing_ReturnsEmptyProcessingResults()
         {
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
+                new List<ServiceBusMessage<SearchableDonorUpdate>> { new ServiceBusMessage<SearchableDonorUpdate>() },
                 ThrowAnticipatedExceptionFunc,
                 GetFailedDonorInfoFunc,
                 DefaultEventName
@@ -100,11 +100,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const string donorId = "donor-id";
 
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>()
+                    new ServiceBusMessage<SearchableDonorUpdate>()
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel
+                        DeserializedBody = new SearchableDonorUpdate
                         {
                             DonorId = donorId
                         }
@@ -122,10 +122,10 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public async Task ProcessBatchAsync_AllDonorsFailProcessing_LogsOneEventPerFailure()
         {
             await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>(),
-                    new ServiceBusMessage<SearchableDonorUpdateModel>()
+                    new ServiceBusMessage<SearchableDonorUpdate>(),
+                    new ServiceBusMessage<SearchableDonorUpdate>()
                 },
                 ThrowAnticipatedExceptionFunc,
                 GetFailedDonorInfoFunc,
@@ -139,7 +139,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         public async Task ProcessBatchAsync_AllDonorsProcessed_DoesNotLogEvent()
         {
             await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
+                new List<ServiceBusMessage<SearchableDonorUpdate>> { new ServiceBusMessage<SearchableDonorUpdate>() },
                 ProcessDonorFunc,
                 GetFailedDonorInfoFunc,
                 DefaultEventName
@@ -154,11 +154,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const int donorId = 123;
 
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel { DonorId = donorId.ToString() }
+                        DeserializedBody = new SearchableDonorUpdate { DonorId = donorId.ToString() }
                     }
                 },
                 ProcessDonorFunc,
@@ -176,11 +176,11 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const string donorId = "123";
 
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel
+                        DeserializedBody = new SearchableDonorUpdate
                         {
                             DonorId = donorId
                         }
@@ -201,15 +201,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const string failedDonor = "456";
 
             await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = successfulDonor }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = successfulDonor }
                     },
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = failedDonor }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = failedDonor }
                     }
                 },
                 async d => d.DeserializedBody.DonorId == successfulDonor
@@ -228,15 +228,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const int successfulDonor = 123;
 
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = successfulDonor.ToString() }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = successfulDonor.ToString() }
                     },
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = "456" }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = "456" }
                     }
                 },
                 async d => d.DeserializedBody.DonorId == successfulDonor.ToString()
@@ -256,15 +256,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             const string failedDonor = "123";
 
             var result = await donorBatchProcessor.ProcessBatchAsync(
-                new List<ServiceBusMessage<SearchableDonorUpdateModel>>
+                new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = "456" }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = "456" }
                     },
-                    new ServiceBusMessage<SearchableDonorUpdateModel>
+                    new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdateModel{ DonorId = failedDonor }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = failedDonor }
                     }
                 },
                 async d => d.DeserializedBody.DonorId == failedDonor
@@ -283,7 +283,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             Assert.DoesNotThrowAsync(async () =>
             {
                 await donorBatchProcessor.ProcessBatchAsync(
-                    new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
+                    new List<ServiceBusMessage<SearchableDonorUpdate>> { new ServiceBusMessage<SearchableDonorUpdate>() },
                     ThrowAnticipatedExceptionFunc,
                     GetFailedDonorInfoFunc,
                     DefaultEventName
@@ -298,7 +298,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
             Assert.ThrowsAsync<Exception>(async () =>
             {
                 await donorBatchProcessor.ProcessBatchAsync(
-                    new List<ServiceBusMessage<SearchableDonorUpdateModel>> { new ServiceBusMessage<SearchableDonorUpdateModel>() },
+                    new List<ServiceBusMessage<SearchableDonorUpdate>> { new ServiceBusMessage<SearchableDonorUpdate>() },
                     d => throw new Exception("error"),
                     GetFailedDonorInfoFunc,
                     DefaultEventName
