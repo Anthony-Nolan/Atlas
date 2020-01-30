@@ -1,5 +1,6 @@
-using System.Threading.Tasks;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
@@ -13,7 +14,9 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
     
     public class DataRefreshNotificationSender: NotificationSender, IDataRefreshNotificationSender
     {
-        public DataRefreshNotificationSender(INotificationsClient notificationsClient) : base(notificationsClient)
+        public DataRefreshNotificationSender(
+            INotificationsClient notificationsClient,
+            ILogger logger) : base(notificationsClient, logger)
         {
         }
         
