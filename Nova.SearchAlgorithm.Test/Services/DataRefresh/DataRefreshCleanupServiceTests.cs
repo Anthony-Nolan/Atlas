@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Nova.SearchAlgorithm.Data.Persistent.Models;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
@@ -10,9 +7,11 @@ using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Services.DataRefresh;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 {
@@ -26,7 +25,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         private IOptions<DataRefreshSettings> dataRefreshOptions;
         private IAzureFunctionManager azureFunctionManager;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private INotificationsClient notificationsClient;
+        private IDataRefreshNotificationSender notificationSender;
 
         private IDataRefreshCleanupService dataRefreshCleanupService;
 
@@ -40,9 +39,9 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
             dataRefreshOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            notificationsClient = Substitute.For<INotificationsClient>();
+            notificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
-            dataRefreshOptions.Value.Returns(new DataRefreshSettings {DormantDatabaseSize = "S0"});
+            dataRefreshOptions.Value.Returns(new DataRefreshSettings { DormantDatabaseSize = "S0" });
 
             dataRefreshCleanupService = new DataRefreshCleanupService(
                 logger,
@@ -52,7 +51,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
                 dataRefreshOptions,
                 azureFunctionManager,
                 dataRefreshHistoryRepository,
-                notificationsClient);
+                notificationSender);
         }
 
         [Test]
@@ -76,12 +75,22 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+        public async Task RunDataRefreshCleanup_WhenNoJobsInProgress_DoesNotSendRequestManualTeardownNotification()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
+
+            await dataRefreshCleanupService.RunDataRefreshCleanup();
+
+            await notificationSender.DidNotReceive().SendRequestManualTeardownNotification();
+        }
+
+        [Test]
         public async Task RunDataRefreshCleanup_ScalesDormantDatabaseToDormantSize()
         {
             const string databaseName = "db-name";
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> { new DataRefreshRecord() });
             azureDatabaseNameProvider.GetDatabaseName(Arg.Any<TransientDatabase>()).Returns(databaseName);
-            dataRefreshOptions.Value.Returns(new DataRefreshSettings {DormantDatabaseSize = "S1"});
+            dataRefreshOptions.Value.Returns(new DataRefreshSettings { DormantDatabaseSize = "S1" });
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
@@ -93,7 +102,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         {
             const string donorFunctionsAppName = "donor-functions-app-name";
             const string donorImportFunctionName = "donor-import";
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> { new DataRefreshRecord() });
             dataRefreshOptions.Value.Returns(new DataRefreshSettings
             {
                 DormantDatabaseSize = "Basic",
@@ -141,13 +150,23 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+        public async Task RunDataRefreshCleanup_SendsRequestManualTeardownNotification()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> { new DataRefreshRecord() });
+
+            await dataRefreshCleanupService.RunDataRefreshCleanup();
+
+            await notificationSender.Received().SendRequestManualTeardownNotification();
+        }
+
+        [Test]
         public async Task SendCleanupRecommendation_WhenJobsInProgress_SendsAlert()
         {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> { new DataRefreshRecord() });
 
             await dataRefreshCleanupService.SendCleanupRecommendation();
 
-            await notificationsClient.Received().SendAlert(Arg.Any<Alert>());
+            await notificationSender.Received().SendRecommendManualCleanupAlert();
         }
 
         [Test]
@@ -157,7 +176,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshCleanupService.SendCleanupRecommendation();
 
-            await notificationsClient.DidNotReceive().SendAlert(Arg.Any<Alert>());
+            await notificationSender.DidNotReceive().SendRecommendManualCleanupAlert();
         }
     }
 }
