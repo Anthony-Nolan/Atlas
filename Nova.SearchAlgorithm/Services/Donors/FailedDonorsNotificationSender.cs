@@ -1,4 +1,5 @@
 ﻿using Nova.SearchAlgorithm.Models;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,9 @@ namespace Nova.SearchAlgorithm.Services.Donors
     {
         private const string UnknownRegistryCodeText = "[Unknown]";
 
-        public FailedDonorsNotificationSender(INotificationsClient notificationsClient) : base(notificationsClient)
+        public FailedDonorsNotificationSender(
+            INotificationsClient notificationsClient,
+            ILogger logger) : base(notificationsClient, logger)
         {
         }
 

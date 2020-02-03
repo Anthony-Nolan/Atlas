@@ -1,15 +1,13 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Nova.SearchAlgorithm.Config;
 using Nova.SearchAlgorithm.Data.Persistent.Repositories;
 using Nova.SearchAlgorithm.Extensions;
 using Nova.SearchAlgorithm.Services.AzureManagement;
 using Nova.SearchAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Nova.SearchAlgorithm.Settings;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nova.SearchAlgorithm.Services.DataRefresh
 {
@@ -33,19 +31,6 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
 
     public class DataRefreshCleanupService : IDataRefreshCleanupService
     {
-        private const string CleanupInitiatedNotificationDescription =
-            @"A manual teardown was requested, and the search algorithm has detected ongoing data-refresh jobs.
-              Appropriate teardown is being run. The data refresh will need to be re-started once the reason for the server restart has been diagnosed and handled.";
-
-        private const string CleanupRecommendationAlertDescription =
-            @"The algorithm has detected an in-progress data refresh job on startup. This generally implies that a data refresh job 
-                    was terminated without the appropriate teardown being run - this should only happen if the service was re-started unexpectedly. 
-                    Possible causes could include: (a) the service plan running out of memory (b) an azure outage (c) a deployment of the algorithm service. 
-                    We should confirm that this was the case, and if so, run appropriate clean-up. See the README of the Nova.SearchAlgorithm project for more information. 
-                    The function `RunDataRefreshCleanup` should encapsulate the majority of the necessary clean-up. 
-                    CAVEAT: Due to restrictions of triggers in Azure functions, this function will run once a year not at start-up. 
-                    Check the crontab of the `CheckIfCleanupNecessary` function to ensure it isn't this known false positive.'";
-
         private readonly ILogger logger;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
@@ -53,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         private readonly IOptions<DataRefreshSettings> dataRefreshSettings;
         private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private readonly INotificationsClient notificationsClient;
+        private readonly IDataRefreshNotificationSender notificationSender;
 
         public DataRefreshCleanupService(
             ILogger logger,
@@ -63,7 +48,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             IOptions<DataRefreshSettings> dataRefreshSettings,
             IAzureFunctionManager azureFunctionManager,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            INotificationsClient notificationsClient
+            IDataRefreshNotificationSender notificationSender
         )
         {
             this.logger = logger;
@@ -73,21 +58,18 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
             this.dataRefreshSettings = dataRefreshSettings;
             this.azureFunctionManager = azureFunctionManager;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            this.notificationsClient = notificationsClient;
+            this.notificationSender = notificationSender;
         }
 
         public async Task RunDataRefreshCleanup()
         {
             if (IsCleanupNecessary())
             {
-                const string notificationSummary =
-                    "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.";
-                logger.SendTrace(notificationSummary, LogLevel.Info);
-                await notificationsClient.SendNotification(new Notification(
-                    notificationSummary,
-                    CleanupInitiatedNotificationDescription,
-                    NotificationConstants.OriginatorName)
-                );
+                logger.SendTrace(
+                    "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.",
+                    LogLevel.Info);
+                await notificationSender.SendRequestManualTeardownNotification();
+
                 await ScaleDatabase();
                 await EnableDonorManagementFunction();
                 await UpdateDataRefreshHistoryRecords();
@@ -105,12 +87,7 @@ namespace Nova.SearchAlgorithm.Services.DataRefresh
         {
             if (IsCleanupNecessary())
             {
-                await notificationsClient.SendAlert(new Alert(
-                    "Data Refresh: Manual cleanup recommended.",
-                    CleanupRecommendationAlertDescription,
-                    Priority.High,
-                    NotificationConstants.OriginatorName
-                ));
+                await notificationSender.SendRecommendManualCleanupAlert();
             }
         }
 

@@ -1,9 +1,13 @@
-﻿using Nova.SearchAlgorithm.Models;
+﻿using Nova.SearchAlgorithm.ApplicationInsights;
+using Nova.SearchAlgorithm.Models;
 using Nova.SearchAlgorithm.Services.Donors;
 using Nova.SearchAlgorithm.Test.TestHelpers.Builders;
+using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Notifications;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,13 +19,15 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
         private INotificationsClient notificationsClient;
+        private ILogger logger;
 
         [SetUp]
         public void SetUp()
         {
             notificationsClient = Substitute.For<INotificationsClient>();
+            logger = Substitute.For<ILogger>();
 
-            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationsClient);
+            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationsClient, logger);
         }
 
         [Test]
@@ -102,6 +108,30 @@ namespace Nova.SearchAlgorithm.Test.Services.Donors
                 Arg.Is<Alert>(x =>
                     x.Description.Contains($"{unknownRegistryText} - {perRegistryCount}") &&
                     x.Description.Contains($"{knownRegistry} - {perRegistryCount}")));
+        }
+
+        [Test]
+        public void SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_DoesNotRethrowException()
+        {
+            notificationsClient.SendAlert(Arg.Any<Alert>()).Throws(new Exception());
+
+            Assert.DoesNotThrowAsync(async() => await failedDonorsNotificationSender.SendFailedDonorsAlert(
+                FailedDonorInfoBuilder.New().Build(1),
+                "summary",
+                Priority.Medium));
+        }
+
+        [Test]
+        public async Task SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_LogsNotificationSenderFailureEvent()
+        {
+            notificationsClient.SendAlert(Arg.Any<Alert>()).Throws(new Exception());
+
+            await failedDonorsNotificationSender.SendFailedDonorsAlert(
+                FailedDonorInfoBuilder.New().Build(1),
+                "summary",
+                Priority.Medium);
+
+            logger.SendEvent(Arg.Any<NotificationSenderFailureEventModel>());
         }
     }
 }
