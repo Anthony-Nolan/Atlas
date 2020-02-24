@@ -15,8 +15,6 @@ namespace Nova.SearchAlgorithm.Services.ConfigurationProviders
 
         /// <summary>
         /// Fetches the last stable hla database version.
-        /// Our definition of "stable" here is that another version has since been published.
-        /// So if 3370 was the latest version, we consider it unstable, and return the previous version - 3360
         /// </summary>
         /// <returns>The latest stable database version, in the format "3370" (i.e. major & minor versions only, no dots)</returns>
         string GetLatestStableHlaDatabaseVersion();
