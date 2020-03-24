@@ -363,6 +363,74 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.Features.Scoring
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Donor typing is a split mismatch to the patient at locus B")]
+        public virtual void DonorTypingIsASplitMismatchToThePatientAtLocusB()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Donor typing is a split mismatch to the patient at locus B", null, ((string[])(null)));
+#line 93
+  this.ScenarioInitialize(scenarioInfo);
+            this.ScenarioStart();
+#line 94
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                        "A_1",
+                        "A_2",
+                        "B_1",
+                        "B_2",
+                        "DRB1_1",
+                        "DRB1_2",
+                        "C_1",
+                        "C_2",
+                        "DQB1_1",
+                        "DQB1_2"});
+            table3.AddRow(new string[] {
+                        "*01:01",
+                        "*01:02",
+                        "52",
+                        "37",
+                        "*15:03",
+                        "*03:01",
+                        "*06:02",
+                        "*16:02",
+                        "*05:02",
+                        "*02:01"});
+#line 95
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table3, "And ");
+#line hidden
+            TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                        "A_1",
+                        "A_2",
+                        "B_1",
+                        "B_2",
+                        "DRB1_1",
+                        "DRB1_2",
+                        "C_1",
+                        "C_2",
+                        "DQB1_1",
+                        "DQB1_2"});
+            table4.AddRow(new string[] {
+                        "*01:01",
+                        "*01:02",
+                        "*51:01",
+                        "*37:01",
+                        "*15:03",
+                        "*03:01",
+                        "*06:02",
+                        "*16:02",
+                        "*05:02",
+                        "*02:01"});
+#line 98
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table4, "And ");
+#line 101
+    testRunner.When("I run a 9/10 search at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 102
+    testRunner.Then("the match confidence should be Mismatch at B at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

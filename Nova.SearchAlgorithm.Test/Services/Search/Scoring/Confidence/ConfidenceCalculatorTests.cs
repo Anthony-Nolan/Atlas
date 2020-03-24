@@ -235,7 +235,7 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
         }
                 
         [Test]
-        public void CalculateConfidence_BothSerology_ReturnsPotential()
+        public void CalculateConfidence_BothSerology_WithDirectMatch_ReturnsPotential()
         {
             var matchingSerologies = new List<SerologyEntry>{new SerologyEntry("serology", SerologySubtype.Associated, true)};
             
@@ -251,16 +251,95 @@ namespace Nova.SearchAlgorithm.Test.Services.Scoring.Confidence
 
             confidence.Should().Be(MatchConfidence.Potential);
         }
-        
+
         [Test]
-        public void CalculateConfidence_BothSerology_ButDoNotMatch_ReturnsMismatch()
+        public void CalculateConfidence_BothSerology_DonorIsIndirectlyMatchedToPatient_ReturnsPotential()
         {
-            var patientSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-patient", SerologySubtype.Associated, true)};
+            const string serologyName = "shared-serology";
+
+            var patientSerologyEntries = new List<SerologyEntry> { new SerologyEntry(serologyName, SerologySubtype.Associated, true) };
             var patientLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
                 .Build();
 
-            var donorSerologyEntries = new List<SerologyEntry>{new SerologyEntry("serology-donor", SerologySubtype.Associated, true)};
+            var donorSerologyEntries = new List<SerologyEntry> { new SerologyEntry(serologyName, SerologySubtype.Associated, false) };
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
+                .Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Potential);
+        }
+
+        [Test]
+        public void CalculateConfidence_BothSerology_PatientIsIndirectlyMatchedToDonor_ReturnsPotential()
+        {
+            const string serologyName = "shared-serology";
+
+            var patientSerologyEntries = new List<SerologyEntry> { new SerologyEntry(serologyName, SerologySubtype.Associated, false) };
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
+                .Build();
+
+            var donorSerologyEntries = new List<SerologyEntry> { new SerologyEntry(serologyName, SerologySubtype.Associated, true) };
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
+                .Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Potential);
+        }
+
+        [Test]
+        public void CalculateConfidence_BothSerology_NoDirectOrIndirectMatch_ReturnsMismatch()
+        {
+            var patientSerologyEntries = new List<SerologyEntry>
+            {
+                new SerologyEntry("serology-patient-1", SerologySubtype.Associated, true),
+                new SerologyEntry("serology-patient-2", SerologySubtype.Associated, false)
+            };
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
+                .Build();
+
+            var donorSerologyEntries = new List<SerologyEntry>
+            {
+                new SerologyEntry("serology-donor-1", SerologySubtype.Associated, true),
+                new SerologyEntry("serology-donor-2", SerologySubtype.Associated, false)
+            };
+            var donorLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
+                .Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Mismatch);
+        }
+
+        /// <summary>
+        /// Regression test for live bug where sibling splits with shared broad were incorrectly assigned Potential instead of Mismatch.
+        /// </summary>
+        [Test]
+        public void CalculateConfidence_BothSerology_NoDirectOrIndirectMatchButHaveSharedIndirectSerology_ReturnsMismatch()
+        {
+            const string sharedSerology = "shared-serology";
+
+            var patientSerologyEntries = new List<SerologyEntry>
+            {
+                new SerologyEntry("patient-serology", SerologySubtype.Split, true),
+                new SerologyEntry(sharedSerology, SerologySubtype.Broad, false)
+            };
+            var patientLookupResult = new HlaScoringLookupResultBuilder()
+                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologyEntries).Build())
+                .Build();
+
+            var donorSerologyEntries = new List<SerologyEntry>
+            {
+                new SerologyEntry("donor-serology", SerologySubtype.Split, true),
+                new SerologyEntry(sharedSerology, SerologySubtype.Broad, false)
+            };
             var donorLookupResult = new HlaScoringLookupResultBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(donorSerologyEntries).Build())
                 .Build();
