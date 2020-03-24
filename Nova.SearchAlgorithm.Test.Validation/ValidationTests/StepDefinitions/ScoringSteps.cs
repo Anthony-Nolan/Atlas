@@ -249,6 +249,10 @@ namespace Nova.SearchAlgorithm.Test.Validation.ValidationTests.StepDefinitions
             {
                 case "both positions":
                     return new TypePosition?[] { TypePosition.One, TypePosition.Two };
+                case "position 1":
+                    return new TypePosition?[] { TypePosition.One };
+                case "position 2":
+                    return new TypePosition?[] { TypePosition.Two };
                 default:
                     scenarioContext.Pending();
                     return null;

@@ -89,3 +89,14 @@
     And the donor has a double mismatch at locus A
     When I run an 8/10 search
     Then the match confidence should be Mismatch at A at both positions
+
+  Scenario: Donor typing is a split mismatch to the patient at locus B
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |C_1    |C_2    |DQB1_1 |DQB1_2 |
+    |*01:01 |*01:02 |52     |37     |*15:03 |*03:01 |*06:02 |*16:02 |*05:02 |*02:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |C_1    |C_2    |DQB1_1 |DQB1_2 |
+    |*01:01 |*01:02 |*51:01 |*37:01 |*15:03 |*03:01 |*06:02 |*16:02 |*05:02 |*02:01 |
+    When I run a 9/10 search at locus B
+    Then the match confidence should be Mismatch at B at position 1

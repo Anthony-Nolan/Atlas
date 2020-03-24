@@ -1,5 +1,7 @@
 ﻿using Nova.SearchAlgorithm.Client.Models.SearchResults;
+using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups;
 using Nova.SearchAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
@@ -9,7 +11,7 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
         MatchConfidence CalculateConfidence(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult);
     }
 
-    public class ConfidenceCalculator: IConfidenceCalculator
+    public class ConfidenceCalculator : IConfidenceCalculator
     {
         public MatchConfidence CalculateConfidence(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
@@ -58,10 +60,29 @@ namespace Nova.SearchAlgorithm.Services.Scoring.Confidence
 
         private static bool IsSerologyMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
         {
-            var patientSerologies = patientLookupResult.HlaScoringInfo.MatchingSerologies.Select(ser => ser.Name);
-            var donorSerologies = donorLookupResult.HlaScoringInfo.MatchingSerologies.Select(ser => ser.Name);
+            var patientSerologies = patientLookupResult.HlaScoringInfo.MatchingSerologies.ToList();
+            var donorSerologies = donorLookupResult.HlaScoringInfo.MatchingSerologies.ToList();
 
-            return patientSerologies.Intersect(donorSerologies).Any();
+            var isDirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, true);
+            var isDonorIndirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, false);
+            var isPatientIndirectMatch = AreSerologiesMatched(patientSerologies, false, donorSerologies, true);
+
+            return isDirectMatch || isDonorIndirectMatch || isPatientIndirectMatch;
+        }
+
+        /// <summary>
+        /// Determines if two sets of serologies are matched by their respective direct or indirect mappings.
+        /// </summary>
+        private static bool AreSerologiesMatched(
+            IEnumerable<SerologyEntry> patientSerologies,
+            bool usePatientDirectMapping,
+            IEnumerable<SerologyEntry> donorSerologies,
+            bool useDonorDirectMapping)
+        {
+            return
+                patientSerologies.Where(s => s.IsDirectMapping == usePatientDirectMapping).Select(s => s.Name)
+                    .Intersect(donorSerologies.Where(s => s.IsDirectMapping == useDonorDirectMapping).Select(s => s.Name))
+                    .Any();
         }
 
         private static bool IsDefiniteMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
