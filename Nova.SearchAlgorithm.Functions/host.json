@@ -1,11 +1,18 @@
 {
   "version": "2.0",
-  "functionTimeout": "2.00:00:00",
   "extensions": {
     "serviceBus": {
       "messageHandlerOptions": {
         "maxConcurrentCalls": 5,
         "maxAutoRenewDuration": "00:55:00"
+      }
+    }
+  },
+  "functionTimeout": "2.00:00:00",
+  "logging": {
+    "applicationInsights": {
+      "snapshotConfiguration": {
+        "IsEnabled": true
       }
     }
   }
