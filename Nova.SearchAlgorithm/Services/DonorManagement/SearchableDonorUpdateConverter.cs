@@ -14,19 +14,21 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
     public interface ISearchableDonorUpdateConverter
     {
         Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates, string failureEventName);
+            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates);
     }
 
     public class SearchableDonorUpdateConverter :
         DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate, ValidationException>,
         ISearchableDonorUpdateConverter
     {
+        private const string UpdateFailureEventName = "Searchable Donor Update Failure(s) in the Search Algorithm";
+
         public SearchableDonorUpdateConverter(ILogger logger) : base(logger)
         {
         }
 
         public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates, string failureEventName)
+            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates)
         {
             return await ProcessBatchAsync(
                 updates,
@@ -36,7 +38,7 @@ namespace Nova.SearchAlgorithm.Services.DonorManagement
                     DonorId = update.DeserializedBody?.DonorId,
                     RegistryCode = update.DeserializedBody?.SearchableDonorInformation?.RegistryCode
                 },
-                failureEventName);
+                UpdateFailureEventName);
         }
 
         private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdate> update)
