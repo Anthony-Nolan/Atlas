@@ -1,6 +1,5 @@
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.SearchAlgorithm.Services.DonorManagement;
-using Nova.SearchAlgorithm.Services.Donors;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ServiceBus.BatchReceiving;
 using Nova.Utils.ServiceBus.Models;
@@ -21,7 +20,6 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
         private IDonorManagementService donorManagementService;
         private IDonorUpdateProcessor donorUpdateProcessor;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
-        private IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
         [SetUp]
         public void Setup()
@@ -29,14 +27,12 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
             messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdate>>();
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
-            failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
             var logger = Substitute.For<ILogger>();
 
             donorUpdateProcessor = new DonorUpdateProcessor(
                 messageProcessorService,
                 donorManagementService,
                 searchableDonorUpdateConverter,
-                failedDonorsNotificationSender,
                 logger,
                 BatchSize);
         }

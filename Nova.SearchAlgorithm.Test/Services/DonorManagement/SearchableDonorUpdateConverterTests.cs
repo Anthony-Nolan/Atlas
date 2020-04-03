@@ -42,8 +42,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                         IsAvailableForSearch = false
                     }
                 }
-            },
-                "event-name");
+            });
 
             result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
         }
@@ -57,8 +56,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                     new List<ServiceBusMessage<SearchableDonorUpdate>>
                     {
                         new ServiceBusMessage<SearchableDonorUpdate>()
-                    },
-                    "event-name");
+                    });
             });
         }
 
@@ -79,8 +77,7 @@ namespace Nova.SearchAlgorithm.Test.Services.DonorManagement
                         SearchableDonorInformation = null
                     }
                 }
-            },
-                "event-name");
+            });
 
             result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
         }

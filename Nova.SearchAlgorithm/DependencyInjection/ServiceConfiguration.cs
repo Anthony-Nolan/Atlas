@@ -354,7 +354,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                 var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdate>>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
-                var notificationSender = sp.GetService<IFailedDonorsNotificationSender>();
                 var logger = sp.GetService<ILogger>();
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
                 
@@ -362,7 +361,6 @@ namespace Nova.SearchAlgorithm.DependencyInjection
                     messageReceiverService,
                     managementService,
                     updateConverter,
-                    notificationSender,
                     logger,
                     int.Parse(settings.BatchSize));
             });
