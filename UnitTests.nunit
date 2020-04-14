@@ -1,9 +1,0 @@
-﻿<NUnitProject>
-  <Settings activeconfig="Release" processModel="Default" domainUsage="Default" />
-  <Config name="Debug">
-    <assembly path="Atlas.MatchingAlgorithm.Test\bin\Debug\Atlas.MatchingAlgorithm.Test.dll" />
-  </Config>
-  <Config name="Release">
-    <assembly path="Atlas.MatchingAlgorithm.Test\bin\Release\Atlas.MatchingAlgorithm.Test.dll" />
-  </Config>
-</NUnitProject>
