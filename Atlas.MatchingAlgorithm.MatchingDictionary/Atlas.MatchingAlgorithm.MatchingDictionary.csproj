@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <RootNamespace>Atlas.MatchingAlgorithm.MatchingDictionary</RootNamespace>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <OutputPath>bin/</OutputPath>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="LazyCache" Version="2.0.1" />
+      <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.7" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
+      <PackageReference Include="Nova.HLAService.Client" Version="4.0.0" />
+      <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
+    </ItemGroup>
+
+</Project>

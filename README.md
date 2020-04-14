@@ -1,4 +1,4 @@
-# Nova.SearchAlgorithm
+# Atlas.MatchingAlgorithm
 Service for AN's HSC Search Algorithm.
 
 ## Projects
@@ -7,43 +7,43 @@ The solution is split across multiple projects:
 
 ### Code Projects
 
-- Nova.SearchAlgorithm
+- Atlas.MatchingAlgorithm
     - This project contains the actual business logic of the search algorithm 
-- Nova.SearchAlgorithm.Api
+- Atlas.MatchingAlgorithm.Api
     - An ASP.NET Core WebApi wrapper exposing functionality from the algorithm project
     - Note that this is *NOT* the entry point to the application in deployed environments. Due to restrictions 
     around long running requests when deployed in Azure, this api will not be exposed. 
     - Instead, the API is used for testing - it can be used locally for ease of development, and the performance and 
     validation test projects rely on the API
-- Nova.SearchAlgorithm.Client
+- Atlas.MatchingAlgorithm.Client
     - Exposes models needed to integrate with the search algorithm service from other services
-- Nova.SearchAlgorithm.Common
+- Atlas.MatchingAlgorithm.Common
     - Shared internal models / interfaces between the logic and data projects. 
-- Nova.SearchAlgorithm.Data
+- Atlas.MatchingAlgorithm.Data
     - Manages the transient database, i.e. pre-processed donor data. Entity Framework is used to manage the schema, but 
     *NOT* for querying the data
-- Nova.SearchAlgorithm.Data.Persistent
+- Atlas.MatchingAlgorithm.Data.Persistent
     - Manages the persistent database, i.e. any data that does not require re-processing regularly. 
     - Uses Entity Framework for schema management and querying
-- Nova.SearchAlgorithm.Functions
+- Atlas.MatchingAlgorithm.Functions
     - Azure Functions App - this is the main entry point for the algorithm, as many of its features are long running and 
     better suited to a functions app than a traditional web api. 
     - Note that this app should always be deployed to an *app service plan* not a consumption plan - as we require the 
     longer timeout of an app service plan, plus we do not want the app to automatically scale
-- Nova.SearchAlgorithm.Functions.DonorManagement
+- Atlas.MatchingAlgorithm.Functions.DonorManagement
     - Azure functions app responsible only for ongoing donor imports / updates
     - Needs to be an independent app so that the three-monthly full data refresh can disable these functions for the duration of the refresh
-- Nova.SearchAlgorithm.MatchingDictionary
+- Atlas.MatchingAlgorithm.MatchingDictionary
     - Responsible for maintaining and accessing the "matching dictionary" - a set of tables in Azure Storage which act 
     as an interface for allele details published by WMDA
 
 ### Test Projects
 
-- Nova.SearchAlgorithm.Test
-- Nova.SearchAlgorithm.Test.Integration
-- Nova.SearchAlgorithm.Test.Validation 
+- Atlas.MatchingAlgorithm.Test
+- Atlas.MatchingAlgorithm.Test.Integration
+- Atlas.MatchingAlgorithm.Test.Validation 
     - These projects are covered in detail in the testing section below. 
-- Nova.SearchAlgorithm.Performance
+- Atlas.MatchingAlgorithm.Performance
     - A rudimentary harness for collating performance data of search times. 
     - Relies on hitting an API, so is only useful locally for now
         - To run on deployed environments we'll need to add auth to the API project and deploy to the relevant 
@@ -97,7 +97,7 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
     
 - SQL
     - The service makes use of Entity Framework (EFCore) Code-First migrations. The models and repositories for data access
-    are found within the `Nova.SearchAlgorithm.Data` and `Nova.SearchAlgorithm.Data.Persistent` projects.
+    are found within the `Atlas.MatchingAlgorithm.Data` and `Atlas.MatchingAlgorithm.Data.Persistent` projects.
     - Before running the app, migrations must be run using `dotnet ef database update -p <projectName>` from a terminal (or `Update-Database` from the nuget package manager)
         - Note that the data project maintains two databases, referred to as "A" and "B". EF core will use the app setting 
         for database "A" by default, defined in `ContextFactory.cs`. To locally test the hot-swapping feature, migrations will need to be
@@ -296,7 +296,7 @@ The solution has three levels of testing: Unit, Integration, Validation
 
 ### Unit Testing
 
-Contained within the `Nova.SearchAlgorithm.Test` project.
+Contained within the `Atlas.MatchingAlgorithm.Test` project.
 
 No external dependencies or storage, testing individual code units. 
 
@@ -310,7 +310,7 @@ Any new alleles required in testing the matching dictionary should be added, and
 
 ### Integration Testing
 
-Contained within the `Nova.SearchAlgorithm.Test.Integration` project.
+Contained within the `Atlas.MatchingAlgorithm.Test.Integration` project.
 
 - Uses a real SQL database, which is populated/cleared in each test run.
 - External dependencies, and Matching Dictionary are stubbed out.
@@ -321,7 +321,7 @@ These tests are especially useful for matching, where some logic is contained wi
 
 ### Validation Testing
 
-Contained within the `Nova.SearchAlgorithm.Test.Validation` project.
+Contained within the `Atlas.MatchingAlgorithm.Test.Validation` project.
 
 These tests are primarily for the benefit of non-developers, intended to confirm that the algorithm conforms to the specification
  to the Search Team's satisfaction.

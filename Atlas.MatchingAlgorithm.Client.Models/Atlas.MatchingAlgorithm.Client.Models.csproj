@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <VersionPrefix>8.5.0</VersionPrefix>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>Atlas.MatchingAlgorithm.Client.Models</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Nova.Utils" Version="14.3.0" />
+    </ItemGroup>
+
+</Project>

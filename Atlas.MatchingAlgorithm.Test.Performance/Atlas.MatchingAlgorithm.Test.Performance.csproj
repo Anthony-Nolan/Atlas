@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <OutputPath>bin\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Atlas.MatchingAlgorithm.Test.Performance</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="README.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test.Integration\Atlas.MatchingAlgorithm.Test.Integration.csproj" />
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CsvHelper" Version="12.1.2" />
+      <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
+    </ItemGroup>
+
+</Project>

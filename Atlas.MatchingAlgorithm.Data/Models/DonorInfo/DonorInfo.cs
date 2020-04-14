@@ -1,0 +1,17 @@
+﻿using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Common.Models;
+
+namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
+{
+    /// <summary>
+    /// Minimum information needed to create / update a donor within the search algorithm's database
+    /// </summary>
+    public class DonorInfo
+    {
+        public int DonorId { get; set; }
+        public DonorType DonorType { get; set; }
+        public RegistryCode RegistryCode { get; set; }
+        public PhenotypeInfo<string> HlaNames { get; set; }
+        public bool IsAvailableForSearch { get; set; } = true;
+    }
+}

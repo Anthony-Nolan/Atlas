@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <VersionPrefix>8.5.0</VersionPrefix>
+        <AzureFunctionsVersion>v2</AzureFunctionsVersion>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <OutputPath>bin/</OutputPath>
+        <UserSecretsId>e4dce24e-9902-48bf-beab-af9960940c4e</UserSecretsId>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Atlas.MatchingAlgorithm.Functions.DonorManagement</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.7" />
+        <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="3.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.28" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+        <PackageReference Include="Nova.Utils.ServiceBus" Version="14.3.0" />
+        <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="host.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="local.settings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Functions\Atlas.MatchingAlgorithm.Functions.csproj" />
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
+    </ItemGroup>
+</Project>

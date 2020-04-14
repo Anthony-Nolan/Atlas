@@ -38,9 +38,9 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
-Nova.SearchAlgorithm.Test.Validation/documentation/**
-Nova.SearchAlgorithm.Test.Validation/StepDefinitionReport.html
-Nova.SearchAlgorithm.Test.Validation/TestResult.*
+Atlas.MatchingAlgorithm.Test.Validation/documentation/**
+Atlas.MatchingAlgorithm.Test.Validation/StepDefinitionReport.html
+Atlas.MatchingAlgorithm.Test.Validation/TestResult.*
 
 # Approval Tests results
 *.received.txt

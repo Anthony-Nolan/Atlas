@@ -1,0 +1,29 @@
+﻿using Atlas.MatchingAlgorithm.Common.Models;
+using System;
+
+namespace Atlas.MatchingAlgorithm.Test.Integration.TestData
+{
+    public class TestHlaPhenotypeSelector
+    {
+        public static PhenotypeInfo<string> GetTestHlaPhenotype(
+            ITestHlaSet testHlaSet, 
+            TestHlaPhenotypeCategory category)
+        {
+            switch (category)
+            {
+                case TestHlaPhenotypeCategory.ThreeLocusSingleExpressingAlleles:
+                    return testHlaSet.ThreeLocus_SingleExpressingAlleles;
+                case TestHlaPhenotypeCategory.SixLocusSingleExpressingAlleles:
+                    return testHlaSet.SixLocus_SingleExpressingAlleles;
+                case TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames:
+                    return testHlaSet.SixLocus_ExpressingAlleles_WithTruncatedNames;
+                case TestHlaPhenotypeCategory.SixLocusXxCodes:
+                    return testHlaSet.SixLocus_XxCodes;
+                case TestHlaPhenotypeCategory.FiveLocusSerologies:
+                    return testHlaSet.FiveLocus_Serologies;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
+}

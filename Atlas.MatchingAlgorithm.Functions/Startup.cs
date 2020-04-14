@@ -1,0 +1,37 @@
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.MatchingAlgorithm.Functions;
+using Atlas.MatchingAlgorithm.Settings;
+
+[assembly: FunctionsStartup(typeof(Startup))]
+
+namespace Atlas.MatchingAlgorithm.Functions
+{
+    public class Startup : FunctionsStartup
+    {
+        public override void Configure(IFunctionsHostBuilder builder)
+        {
+            RegisterSettings(builder);
+            builder.Services.RegisterNovaClients();
+            builder.Services.RegisterDataServices();
+            builder.Services.RegisterAllMatchingDictionaryTypes();
+            builder.Services.RegisterSearchAlgorithmTypes();
+        }
+
+        private static void RegisterSettings(IFunctionsHostBuilder builder)
+        {
+            builder.AddUserSecrets();
+            builder.RegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
+            builder.RegisterSettings<AzureStorageSettings>("AzureStorage");
+            builder.RegisterSettings<DonorServiceSettings>("Client.DonorService");
+            builder.RegisterSettings<HlaServiceSettings>("Client.HlaService");
+            builder.RegisterSettings<WmdaSettings>("Wmda");
+            builder.RegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
+            builder.RegisterSettings<AzureAuthenticationSettings>("AzureManagement.Authentication");
+            builder.RegisterSettings<AzureAppServiceManagementSettings>("AzureManagement.AppService");
+            builder.RegisterSettings<AzureDatabaseManagementSettings>("AzureManagement.Database");
+            builder.RegisterSettings<DataRefreshSettings>("DataRefresh");
+            builder.RegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
+        }
+    }
+}
