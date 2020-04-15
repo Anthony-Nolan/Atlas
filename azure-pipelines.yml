@@ -6,14 +6,42 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+jobs: 
+- job: Integration Tests
+  pool:
+    name: Hosted Ubuntu 1604
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore NuGet Packages'
+    inputs:
+      command: restore
+      vstsFeed: '/47b810d9-ad1c-410b-b5e5-45a100bcf88a'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''SqlA'''
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Nova.SearchAlgorithm.Test.Integration/appsettings.json'
+      keyname: SqlA
+      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-INTEGRATION-TESTS;Persist Security Info=False;User ID=nova_algorithm_integration_tests;Password=3y887rkYAdNrRYtvdLTPzT27wz8BK5TJ;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''SqlB'''
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Nova.SearchAlgorithm.Test.Integration/appsettings.json'
+      keyname: SqlB
+      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-INTEGRATION-TESTS;Persist Security Info=False;User ID=nova_algorithm_integration_tests;Password=3y887rkYAdNrRYtvdLTPzT27wz8BK5TJ;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''PersistentSql'' '
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Nova.SearchAlgorithm.Test.Integration/appsettings.json'
+      keyname: PersistentSql
+      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-INTEGRATION-TESTS;Persist Security Info=False;User ID=nova_algorithm_integration_tests;Password=3y887rkYAdNrRYtvdLTPzT27wz8BK5TJ;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: '$(System.DefaultWorkingDirectory)/Nova.SearchAlgorithm.Test.Integration/Nova.SearchAlgorithm.Test.Integration.csproj'
+      arguments: '--no-restore -v d'
+
