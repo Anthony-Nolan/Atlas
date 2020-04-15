@@ -8,9 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		nuget.config = nuget.config
 		README.md = README.md
+		azure-pipelines.yml = azure-pipelines.yml
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{4A86A10C-666D-41A0-B5CB-9B080736923B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchingAlgorithm", "Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj", "{F338A6D4-4AAD-424E-B93E-A058332EFB0F}"
 EndProject
@@ -136,7 +135,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4A86A10C-666D-41A0-B5CB-9B080736923B} = {E5979876-0294-475D-8970-A384B2DDEB8C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
