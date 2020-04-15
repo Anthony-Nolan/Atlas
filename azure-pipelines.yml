@@ -43,4 +43,95 @@ jobs:
       command: test
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj'
       arguments: '--no-restore -v d'
+- job: Validation_Tests
+  pool:
+    name: Hosted Ubuntu 1604
+  #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+
+  steps:
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'restore'
+      feedsToUse: 'select'
+      vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
+
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''SqlA'''
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      keyname: SqlA
+      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-VALIDATION-TESTING;Persist Security Info=False;User ID=nova_algorithm_validation_tests;Password=24533345-c84e-441a-a1ba-c5d9235b6ef3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''SqlB'''
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      keyname: SqlB
+      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-VALIDATION-TESTING;Persist Security Info=False;User ID=nova_algorithm_validation_tests;Password=24533345-c84e-441a-a1ba-c5d9235b6ef3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''PersistentSql'' '
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      keyname: PersistentSql
+      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-VALIDATION-TESTING;Persist Security Info=False;User ID=nova_algorithm_validation_tests;Password=24533345-c84e-441a-a1ba-c5d9235b6ef3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+    displayName: 'Set HLA service API Key'
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      numberOfLevels: 3
+      keyname1: Client
+      keyname2: HlaService
+      keyname3: ApiKey
+      valueToSet: 'd10996af-42b2-4e90-8d33-06940c20d06d'
+
+  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+    displayName: 'Set Azure Storage ConnectionString'
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      numberOfLevels: 2
+      keyname1: AzureStorage
+      keyname2: ConnectionString
+      valueToSet: 'DefaultEndpointsProtocol=https;AccountName=devnova;AccountKey=0ScCesQxSbzfPRxqoB/Qj9PDfJmfL5Rf1UZonRNN2Vw06HjHEdWwfnDCj/rgNGKXDN/FFi3t9wk9LMwNPr5pjw==;EndpointSuffix=core.windows.net'
+
+  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+    displayName: 'Set Notification Service Bus ConnectionString'
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      numberOfLevels: 2
+      keyname1: NotificationsServiceBus
+      keyname2: ConnectionString
+      valueToSet: 'Endpoint=sb://dev-support-notification.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=i7K67/T0V6Qy7yD2SNTlcu6gfeRRMAgv38bj+Msty0 4='
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
+      arguments: '--no-restore -v d'
+
+  - bash: |
+    #!/bin/bash
+    
+    $(Parameters.packagesDirectory)/pickles.commandline/2.20.1/tools/pickles.exe --feature-directory=Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features --output-directory=$(System.DefaultWorkingDirectory)/test-report --link-results-file=$(Agent.TempDirectory)/*.trx --test-results-format=vstest --documentation-format=dhtml
+    
+    $(Parameters.packagesDirectory)/pickles.commandline/2.20.1/tools/pickles.exe --feature-directory=Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features --output-directory=$(System.DefaultWorkingDirectory)/test-report --link-results-file=$(Agent.TempDirectory)/*.trx --test-results-format=vstest --documentation-format=Word
+    displayName: 'Generate Test Report (Pickles)'
+    condition: succeededOrFailed()
+
+  - task: FtpUpload@2
+    displayName: 'Upload Test Report'
+    inputs:
+      credentialsOption: inputs
+      serverUrl: 'ftp://waws-prod-ln1-005.ftp.azurewebsites.windows.net'
+      username: '$NOVA-SEARCH-ALGORTHIM-VALIDATION-RESULTS'
+      password: oa5KQXWe0AieZLeSW3s10s81vutdswivbftq25pSqEh2g5WgqfQJlgkDtvqs
+      rootDirectory: '$(System.DefaultWorkingDirectory)/test-report'
+      remoteDirectory: /site/wwwroot/develop
+      cleanContents: true
+      preservePaths: true
+    condition: succeededOrFailed()
+
+
 
