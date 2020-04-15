@@ -1,89 +1,121 @@
 trigger:
-- master
-- azure-pipelines-nova
+  - master
+  - azure-pipelines-nova
 
-jobs: 
-- job: Build
-  pool:
-    name: Hosted Ubuntu 1604
-  steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '2.2.x'
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'restore'
-      feedsToUse: 'select'
-      vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
-  - task: DotNetCoreCLI@2
-    inputs:
-        command: 'build'
-        projects: |
+jobs:
+  - job: Build
+    pool:
+      name: Hosted Ubuntu 1604
+    steps:
+      - task: UseDotNet@2
+        inputs:
+          packageType: 'sdk'
+          version: '2.2.x'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'restore'
+          feedsToUse: 'select'
+          vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: |
             Atlas.MatchingAlgorithm.Functions
             Atlas.MatchingAlgorithm.Functions.DonorManagement
             Atlas.MatchingAlgorithm.Test
             Atlas.MatchingAlgorithm.Data
             Atlas.MatchingAlgorithm.Data.Persistent
-        arguments: '--configuration Release --no-restore'
-  - task: DotNetCoreCLI@2
-    inputs:
-        command: 'test'
-        projects: '**/*Test.csproj'
-        arguments: '--no-restore'
-  - task: CopyFiles@2
-    displayName: 'Copy Functions Build'
-    inputs:
-        SourceFolder: 'Atlas.MatchingAlgorithm.Functions'
-        Contents: |
+          arguments: '--configuration Release --no-restore'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'test'
+          projects: '**/*Test.csproj'
+          arguments: '--no-restore'
+      - task: CopyFiles@2
+        displayName: 'Copy Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.MatchingAlgorithm.Functions'
+          Contents: |
             bin/**
             *.config
-        TargetFolder: 'functionsBuild'
-  - task: ArchiveFiles@2
-    displayName: 'Archive Functions Build'
-    inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functionsBuild/bin'
-        includeRootFolder: false
-        archiveFile: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: Functions'
-    inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
-        ArtifactName: functions
-  - task: CopyFiles@2
-    displayName: 'Copy Functions Build'
-    inputs:
-        SourceFolder: 'Atlas.MatchingAlgorithm.Functions.DonorManagement'
-        Contents: |
+          TargetFolder: 'functionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+          ArtifactName: functions
+      - task: CopyFiles@2
+        displayName: 'Copy Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.MatchingAlgorithm.Functions.DonorManagement'
+          Contents: |
             bin/**
             *.config
-        TargetFolder: 'donorFunctionsBuild'
-  - task: ArchiveFiles@2
-    displayName: 'Archive Functions Build'
-    inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/donorFunctionsBuild/bin'
-        includeRootFolder: false
-        archiveFile: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: Functions'
-    inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
-        ArtifactName: functions
-  - task: DotNetCoreCLI@2
-    displayName: 'Generate Persistent Migration'
-    inputs:
-        command: custom
-        custom: ef
-        arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmPersistentMigrationScript.sql --context SearchAlgorithmPersistentContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent/Atlas.MatchingAlgorithm.Data.Persistent.csproj --verbose'
-  - task: DotNetCoreCLI@2
-    displayName: 'Generate Transient Migration'
-    inputs:
-        command: custom
-        custom: ef
-        arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmTransientMigrationScript.sql --context SearchAlgorithmContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data'
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: sql'
-    inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
-        ArtifactName: sql
+          TargetFolder: 'donorFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/donorFunctionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
+      - task: DotNetCoreCLI@2
+        displayName: 'Generate Persistent Migration'
+        inputs:
+          command: custom
+          custom: ef
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmPersistentMigrationScript.sql --context SearchAlgorithmPersistentContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent/Atlas.MatchingAlgorithm.Data.Persistent.csproj --verbose'
+      - task: DotNetCoreCLI@2
+        displayName: 'Generate Transient Migration'
+        inputs:
+          command: custom
+          custom: ef
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmTransientMigrationScript.sql --context SearchAlgorithmContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: sql'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
+          ArtifactName: sql
 
+-job: Terraform
+  pool: Hosted Ubuntu 1604
+  steps:
+    - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+      displayName: 'Use Terraform 0.12.21'
+      inputs:
+        terraformVersion: '0.12.21'
+    - script: 'terraform init -reconfigure'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      displayName: 'terraform init'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+    - script: |
+        echo Validating the syntax
+
+        terraform validate
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      displayName: 'terraform validate'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    - bash: |
+        echo Remove the terraform directory before pushing
+
+        rm -rf .terraform/
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      displayName: 'rm -rf .terraform/'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: terraform-drop'
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform'
+        ArtifactName: 'terraform-drop'
