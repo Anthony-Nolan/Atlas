@@ -86,3 +86,4 @@ jobs:
     inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
         ArtifactName: sql
+
