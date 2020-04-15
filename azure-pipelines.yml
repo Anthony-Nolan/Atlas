@@ -106,27 +106,3 @@ jobs:
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
       arguments: '--no-restore -v d'
 
-  - bash: |
-    #!/bin/bash
-    
-    $(Parameters.packagesDirectory)/pickles.commandline/2.20.1/tools/pickles.exe --feature-directory=Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features --output-directory=$(System.DefaultWorkingDirectory)/test-report --link-results-file=$(Agent.TempDirectory)/*.trx --test-results-format=vstest --documentation-format=dhtml
-    
-    $(Parameters.packagesDirectory)/pickles.commandline/2.20.1/tools/pickles.exe --feature-directory=Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features --output-directory=$(System.DefaultWorkingDirectory)/test-report --link-results-file=$(Agent.TempDirectory)/*.trx --test-results-format=vstest --documentation-format=Word
-    displayName: 'Generate Test Report (Pickles)'
-    condition: succeededOrFailed()
-
-  - task: FtpUpload@2
-    displayName: 'Upload Test Report'
-    inputs:
-      credentialsOption: inputs
-      serverUrl: 'ftp://waws-prod-ln1-005.ftp.azurewebsites.windows.net'
-      username: '$NOVA-SEARCH-ALGORTHIM-VALIDATION-RESULTS'
-      password: oa5KQXWe0AieZLeSW3s10s81vutdswivbftq25pSqEh2g5WgqfQJlgkDtvqs
-      rootDirectory: '$(System.DefaultWorkingDirectory)/test-report'
-      remoteDirectory: /site/wwwroot/develop
-      cleanContents: true
-      preservePaths: true
-    condition: succeededOrFailed()
-
-
-
