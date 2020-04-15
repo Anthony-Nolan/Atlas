@@ -7,7 +7,7 @@ trigger:
 - master
 
 jobs: 
-- job: Integration Tests
+- job: Integration_Tests
   pool:
     name: Hosted Ubuntu 1604
   steps:
