@@ -1,6 +1,7 @@
+name: Atlas Build
 trigger:
-- master
-- azure-pipelines-nova
+  - master
+  - azure-pipelines-nova
 
 jobs: 
 - job: Build
