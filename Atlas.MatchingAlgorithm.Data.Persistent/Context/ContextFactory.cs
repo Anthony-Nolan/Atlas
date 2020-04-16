@@ -24,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new InvalidOperationException("Could not find a default connection string..");
+                throw new InvalidOperationException($"Could not find a default connection string. Note: config basePath was: {basePath}.");
             }
 
             return Create(connectionString);
