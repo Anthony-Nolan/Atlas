@@ -2,6 +2,8 @@ trigger:
   - master
   - azure-pipelines-nova
 
+pr: none
+
 jobs:
   - job: Build
     pool:
