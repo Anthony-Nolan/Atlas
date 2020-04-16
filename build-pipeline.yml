@@ -86,36 +86,35 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
+  -job: Terraform
+    pool: Hosted Ubuntu 1604
+    steps:
+      - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+        displayName: 'Use Terraform 0.12.21'
+        inputs:
+          terraformVersion: '0.12.21'
+      - script: 'terraform init -reconfigure'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        displayName: 'terraform init'
+        env:
+          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+      - script: |
+          echo Validating the syntax
 
--job: Terraform
-  pool: Hosted Ubuntu 1604
-  steps:
-    - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
-      displayName: 'Use Terraform 0.12.21'
-      inputs:
-        terraformVersion: '0.12.21'
-    - script: 'terraform init -reconfigure'
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-      displayName: 'terraform init'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-    - script: |
-        echo Validating the syntax
+          terraform validate
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        displayName: 'terraform validate'
+        env:
+          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+          ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      - bash: |
+          echo Remove the terraform directory before pushing
 
-        terraform validate
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-      displayName: 'terraform validate'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-    - bash: |
-        echo Remove the terraform directory before pushing
-
-        rm -rf .terraform/
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-      displayName: 'rm -rf .terraform/'
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: terraform-drop'
-      inputs:
-        PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform'
-        ArtifactName: 'terraform-drop'
+          rm -rf .terraform/
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        displayName: 'rm -rf .terraform/'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: terraform-drop'
+        inputs:
+          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform'
+          ArtifactName: 'terraform-drop'
