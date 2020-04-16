@@ -86,7 +86,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
-  -job: Terraform
+  - job: Terraform
     pool: Hosted Ubuntu 1604
     steps:
       - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
