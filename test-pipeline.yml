@@ -46,6 +46,11 @@ jobs:
   #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .Net Core sdk 2.2.x'
+    inputs:
+      version: 2.2.x
+
   - task: DotNetCoreCLI@2
     inputs:
       command: 'restore'
