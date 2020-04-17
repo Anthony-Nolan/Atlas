@@ -49,7 +49,69 @@ The solution is split across multiple projects:
         - To run on deployed environments we'll need to add auth to the API project and deploy to the relevant 
         environment    
 
-## Start Up Guide
+## Zero-to-Hero Start Up Guide
+
+Follow these steps to get to a state in which you can run Searches against a database of donors.
+The details of why these steps are necessary and what they are doing, is detailed in the rest of this README below.
+It's highly recommended that you read the sections below the ZtH in parallel with it. Especially if anything doesn't make sense!
+
+- Install IDEs/Tools
+  - *(All easily findable by Googling and appear to be generally happy with standard install settings.)*
+  - Install a compatible IDE: VS2019 or Rider.
+  - Install and Start Azure Storage Emulator.
+  - Install Azure Storage Explorer.
+  - Install SQL Server
+  - Install Postman (or some other means of easily running HTTP requests against the API)
+- Clone the repo with suitable git path settings:
+  - Run `git -c core.longpaths=true clone git@github.com:Anthony-Nolan/Atlas.git`.
+  - Navigate into your newly cloned repo, and run `git config core.longpaths true`.
+- Run Migrations
+  - Run EF Core Migrations for the `Data` and `Data.Persistent` projects. This can be done from general command line, or from the VS Package Manager Console, but in either case **must be run from within those project folders!**.
+  - Instructions for VS PkgMgrCons:
+    - Open the Nuget Package Manager Console (Menus > Tools > Nuget Package Manager > ...)
+    - Set Default Project (in PkgMgrConsole window) to be `Atlas.MatchingAlgorithm.Data`.
+    - Set Startup Project (in Solution Explorer) to be `Atlas.MatchingAlgorithm.Data`.
+    - Run `Update-Database` in the console.
+      - This should take 10-40 seconds to run.
+    - Set Default Project (in PkgMgrConsole window) to be `Atlas.MatchingAlgorithm.Data.Persistent`.
+    - Set Startup Project (in Solution Explorer) to be `Atlas.MatchingAlgorithm.Data.Persistent`.
+    - Run `Update-Database` in the console.
+      - This should take 10-40 seconds to run.
+  - Open your local SQL Server and verify that you now have 2 databases: `AtlasMatchingPersistent` and `AtlasMatchingA`.
+- Compile and Run API
+  - Set Startup Project to `Atlas.MatchingAlgorithm.Api`.
+  - Compile and Run.
+  - Identify the port that it's running on.
+  - GET `http://localhost:<HTTP_port>/api-check` and `https://localhost:<HTTPS_port>/api-check`, to confirm that API is running.
+    - This should take < 1 second to run.
+    - You should received trivial `OK 200` responses.
+- Set up sensible initial data.
+  - Post to `/matching-dictionary/create-latest-version`.
+    - This should take 2-6 minutes to run.
+  - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialDonorTestData.sql"`.
+    - This should take 10-40 seconds to run.
+  - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
+    - This should take < 1 second to run.
+- Run a search (avoiding NMDP lookups).
+  - With the API project running, POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json"` to: `<LOCALHOST>/search`.
+  - You should get a 200 Success response, with 0 results.
+  - The first search should take 20-60 seconds.
+  - Subsequent searches should take < 1 second.
+- Configure an HLA Service api key.
+  - Acquire an api key. (This should be a guid)
+  - Store that key as a local `user secret`, for the `Client.HlaService.ApiKey` config setting, in the API project.
+    - In VS this is achieved by:
+      - Solution Explorer > `Atlas.MatchingAlgorithm.Api` > Context Menu > "Manage User Secrets"
+      - This will open a mostly blank file called `secrets.json`.
+      - Recreate the relevant portion of the nested structure of `appsettings.json` for the above config setting, inserting your api key where appropriate.
+  - *You may wish to acquire and store a Donor Service Key at the same time, but that's not necessary to be able to run a search.*
+- Run a search that uses the HLMA NMDP lookup API.
+  - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\EightResultsSearch.json"` to: `<LOCALHOST>/search`.
+  - You should get a 200 Success response, with 8 results.
+  - The first search should take 40-90 seconds.
+  - Subsequent searches should take < 1 second.
+
+## More detailed Notes
 
 #### Development Environment
 
@@ -62,7 +124,7 @@ Visual Studio 2019 (or Rider), so a compatible IDE will be necessary to load the
 Some of the files in the matching dictionary tests are longer than the 260 character limit in Git for Windows. 
 To get around this on a Windows machine, run the following command (as an administrator): 
 
-`git config --system core.longpaths true`
+`git config core.longpaths true`
 
 #### Local Settings
 
@@ -129,7 +191,7 @@ WMDA provided HLA information changes. The continuous donor import for new/updat
 The "Matching Dictionary" is a set of azure cloud storage tables containing nomenclature information about HLA.
 The pre-processing job fetches up to date information from WMDA, and populates these tables with the information necessary to run a search
 
-- Start the job by POST-ing to the `/matching-dictionary/recreate` endpoint
+- Start the job by POST-ing to the `/matching-dictionary/create-latest-version` endpoint
 - The job is expected to take several minutes to run to completion
 - The job will need re-running whenever 
   - (a) The schema is changed
@@ -342,26 +404,3 @@ The following keys must be set as user secrets in the api project:
 - hlaservice.apikey
 - donorservice.apikey
 
-## Terminology
-
-The following terms are assumed domain knowledge when used in the code:
-
-* HLA
-  - Human Leukocyte Antigen 
-* WMDA
-  - World Marrow Donor Association
-* Homozygous locus
-  - The typings at both positions for a locus are the same
-  - e.g. *A\*01:01,01:01*
-* Heterozygous locus
-  - The typings at both positions for a locus are not the same
-  - e.g. *A\*01:01,02:01*
-* GvH = Graft vs. Host 
-* HvG = Host vs Graft
-  - Refers to the direction of matching if one party has a homozygous locus type
-  - e.g. patient (host) is *A\*01:01,02:01*; donor (graft) is *A\*01:01,01:01* - There is one mismatch im the GvH direction (but none in the HvG)
-  - e.g. patient (host) is *A\*01:01,01:01*; donor (graft) is *A\*01:01,02:01* - There is one mismatch in the HvG direction, (but none in the GvH)
-* p-group
-  - A set of alleles with the same antigen binding domain. See http://hla.alleles.org/alleles/p_groups.html
-* g-group
-  - A set of alleles with identical nucleotide sequences across the exons encoding the peptide binding domains. See http://hla.alleles.org/alleles/g_groups.html
