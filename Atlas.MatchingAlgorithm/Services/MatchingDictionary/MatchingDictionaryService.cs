@@ -11,7 +11,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
     public interface IMatchingDictionaryService
     {
-        Task RecreateMatchingDictionary();
+        Task RecreateMatchingDictionary(string wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
@@ -47,9 +47,10 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
-        public async Task RecreateMatchingDictionary()
+        public async Task RecreateMatchingDictionary(string wmdaHlaVersionToRecreate = null)
         {
-            await manageMatchingService.RecreateAllHlaLookupResults(wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            var activeVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
+            await manageMatchingService.RecreateAllHlaLookupResults(wmdaHlaVersionToRecreate ?? activeVersion);
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
