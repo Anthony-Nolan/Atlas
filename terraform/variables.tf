@@ -1,3 +1,18 @@
+variable location {
+  type    = string
+  default = "uksouth"
+}
+
+variable "FUNCTION_STORAGE_TIER" {
+  type    = string
+  default = "Standard"
+}
+
+variable "FUNCTION_STORAGE_REPLICATION_TYPE" {
+  type    = string
+  default = "LRS"
+}
+
 variable "SERVICE_PLAN_SKU" {
   type    = object({
     tier = string,
@@ -96,11 +111,19 @@ variable "DATABASE_SUBSCRIPTION_ID" {
   type = string
 }
 
-variable "DONORSERVICE_APIKEY" {
+variable "DONOR_SERVICE_APIKEY" {
   type = string
 }
 
-variable "DONORSERVICE_BASEURL" {
+variable "DONOR_SERVICE_BASEURL" {
+  type = string
+}
+
+variable "HLA_SERVICE_APIKEY" {
+  type = string
+}
+
+variable "HLA_SERVICE_BASEURL" {
   type = string
 }
 

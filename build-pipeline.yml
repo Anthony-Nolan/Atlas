@@ -2,6 +2,9 @@ trigger:
   - master
   - azure-pipelines-nova
 
+variables:
+  - group: Terraform
+
 pr: none
 
 jobs:

@@ -1,6 +1,6 @@
-output "search_algorithm_service" {
+output "matching_algorithm" {
   value = {
-    base_url = "https://${azurerm_function_app.search_algorithm_function.default_hostname}"
+    base_url = "https://${azurerm_function_app.atlas_matching_algorithm_function.default_hostname}"
     api_key  = var.APIKEY
   }
 }
