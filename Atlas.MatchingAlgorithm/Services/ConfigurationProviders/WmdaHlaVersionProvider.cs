@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
 using LazyCache;
@@ -40,12 +42,16 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaDatabaseVersion()
         {
-            return cache.GetOrAdd("activeWmdaVersion", () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
+            var key = "activeWmdaVersion";
+            var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
+            ThrowIfNull(version, key);
+            return version;
         }
 
         public string GetLatestStableHlaDatabaseVersion()
         {
-            return cache.GetOrAdd("latestWmdaVersion", () =>
+            var key = "latestWmdaVersion";
+            var version = cache.GetOrAdd("latestWmdaVersion", () =>
             {
                 // The currently recommended way of finding out the last version is from the header of the "Allelelist_history.txt" file, 
                 // which contains all historic versions of the database
@@ -56,6 +62,17 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
                 // So the second item is the latest version
                 return versionLine.Split(",")[1];
             });
+            ThrowIfNull(version, key);
+            return version;
+        }
+
+        private void ThrowIfNull(string wmdaDatabaseVersion, string key)
+        {
+            if (string.IsNullOrWhiteSpace(wmdaDatabaseVersion))
+            {
+                throw new ArgumentNullException(nameof(wmdaDatabaseVersion),
+                    $"Attempted to retrieve the {key}, but found <{wmdaDatabaseVersion}>. This is never an appropriate value, under any circumstances, and would definitely cause myriad problems elsewhere.");
+            }
         }
     }
 }
