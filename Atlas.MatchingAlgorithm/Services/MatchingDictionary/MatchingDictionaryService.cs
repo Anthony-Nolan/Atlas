@@ -11,7 +11,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
     public interface IMatchingDictionaryService
     {
-        Task RecreateMatchingDictionary(string wmdaHlaVersionToRecreate);
+        Task RecreateMatchingDictionary(MatchingDictionaryService.CreationBehaviour wmdaHlaVersionToRecreate = MatchingDictionaryService.CreationBehaviour.Active);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
@@ -21,6 +21,12 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
     
     public class MatchingDictionaryService: IMatchingDictionaryService
     {
+        public enum CreationBehaviour
+        {
+            Latest,
+            Active
+        }
+
         private readonly IRecreateHlaLookupResultsService manageMatchingService;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
@@ -47,10 +53,13 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
-        public async Task RecreateMatchingDictionary(string wmdaHlaVersionToRecreate = null)
+        public async Task RecreateMatchingDictionary(CreationBehaviour wmdaHlaVersionToRecreate = CreationBehaviour.Active)
         {
-            var activeVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
-            await manageMatchingService.RecreateAllHlaLookupResults(wmdaHlaVersionToRecreate ?? activeVersion);
+            var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
+                ? wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion()
+                : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
+
+            await manageMatchingService.RecreateAllHlaLookupResults(version);
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)

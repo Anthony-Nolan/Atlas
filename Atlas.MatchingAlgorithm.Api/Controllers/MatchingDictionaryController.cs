@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
@@ -14,30 +13,25 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
     public class MatchingDictionaryController : ControllerBase
     {
         private readonly IMatchingDictionaryService matchingDictionaryService;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public MatchingDictionaryController(
-            IMatchingDictionaryService matchingDictionaryService,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IMatchingDictionaryService matchingDictionaryService)
         {
             this.matchingDictionaryService = matchingDictionaryService;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         [HttpPost]
         [Route("create-latest-version")]
         public async Task CreateLatestMatchingDictionary()
         {
-            var latestVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
-            await matchingDictionaryService.RecreateMatchingDictionary(latestVersion);
+            await matchingDictionaryService.RecreateMatchingDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
         public async Task RecreateActiveMatchingDictionary()
         {
-            var activeVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
-            await matchingDictionaryService.RecreateMatchingDictionary(activeVersion);
+            await matchingDictionaryService.RecreateMatchingDictionary(MatchingDictionaryService.CreationBehaviour.Active);
         }
 
         [HttpGet]

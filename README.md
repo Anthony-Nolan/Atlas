@@ -84,7 +84,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
   - Identify the port that it's running on.
   - GET `http://localhost:<HTTP_port>/api-check` and `https://localhost:<HTTPS_port>/api-check`, to confirm that API is running.
     - This should take < 1 second to run.
-    - You should received trivial `OK 200` responses.
+    - You should have received a trivial `OK 200` responses.
 - Set up sensible initial data.
   - Post to `/matching-dictionary/create-latest-version`.
     - This should take 2-6 minutes to run.
