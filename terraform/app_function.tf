@@ -12,8 +12,8 @@ locals {
     "AzureManagement.Database.PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS
     "AzureManagement.Database.ResourceGroupName"                = var.DATABASE_RESOURCE_GROUP
     "AzureManagement.Database.SubscriptionId"                   = var.DATABASE_SUBSCRIPTION_ID
-    "AzureStorage.ConnectionString"                             = var.CONNECTION_STRING_STORAGE
-    "AzureStorage.SearchResultsBlobContainer"                   = var.AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER
+    "AzureStorage.ConnectionString"                             = azurerm_storage_account.azure_storage.primary_connection_string
+    "AzureStorage.SearchResultsBlobContainer"                   = azurerm_storage_container.blob_container.name
     "Client.DonorService.ApiKey"                                = var.DONOR_SERVICE_APIKEY
     "Client.DonorService.BaseUrl"                               = var.DONOR_SERVICE_BASEURL
     "Client.HlaService.ApiKey"                                  = var.HLA_SERVICE_APIKEY
@@ -44,7 +44,7 @@ locals {
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
-    "AzureStorage.ConnectionString"                    = var.CONNECTION_STRING_STORAGE
+    "AzureStorage.ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "Client.HlaService.ApiKey"                         = var.HLA_SERVICE_APIKEY
     "Client.HlaService.BaseUrl"                        = var.HLA_SERVICE_BASEURL
     "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
@@ -127,4 +127,3 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
     value = var.CONNECTION_STRING_SQL_PERSISTENT
   }
 }
-

@@ -51,11 +51,6 @@ variable "AZURE_CLIENT_SECRET" {
   type = string
 }
 
-variable "AZURE_STORAGE_SEARCH_RESULTS_BLOB_CONTAINER" {
-  type    = string
-  default = "search-algorithm-results"
-}
-
 variable "CONNECTION_STRING_SQL_A" {
   type = string
 }
@@ -65,10 +60,6 @@ variable "CONNECTION_STRING_SQL_B" {
 }
 
 variable "CONNECTION_STRING_SQL_PERSISTENT" {
-  type = string
-}
-
-variable "CONNECTION_STRING_STORAGE" {
   type = string
 }
 
