@@ -13,7 +13,7 @@ locals {
     "AzureManagement.Database.ResourceGroupName"                = var.DATABASE_RESOURCE_GROUP
     "AzureManagement.Database.SubscriptionId"                   = var.DATABASE_SUBSCRIPTION_ID
     "AzureStorage.ConnectionString"                             = azurerm_storage_account.azure_storage.primary_connection_string
-    "AzureStorage.SearchResultsBlobContainer"                   = azurerm_storage_container.blob_container.name
+    "AzureStorage.SearchResultsBlobContainer"                   = azurerm_storage_container.search_matching_results_blob_container.name
     "Client.DonorService.ApiKey"                                = var.DONOR_SERVICE_APIKEY
     "Client.DonorService.BaseUrl"                               = var.DONOR_SERVICE_BASEURL
     "Client.HlaService.ApiKey"                                  = var.HLA_SERVICE_APIKEY
