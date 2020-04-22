@@ -8,6 +8,7 @@ namespace Atlas.MatchingAlgorithm.Settings
 
     public class DonorServiceSettings : ClientSettings
     {
+        public string OverrideFilePath { get; set; }
     }
 
     public class HlaServiceSettings : ClientSettings

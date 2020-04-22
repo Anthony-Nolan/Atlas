@@ -281,7 +281,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IHlaServiceClient GetHlaServiceClient(IServiceProvider sp)
         {
             var hlaServiceSettings = sp.GetService<IOptions<HlaServiceSettings>>().Value;
-            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
             var clientSettings = new ClientSettings
             {
                 ApiKey = hlaServiceSettings.ApiKey,
@@ -289,11 +288,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 ClientName = "hla_service_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-            var telemetryConfig = new TelemetryConfiguration
-            {
-                InstrumentationKey = insightsSettings.InstrumentationKey
-            };
-            var logger = new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
+            var logger = BuildNovaLogger(sp);
 
             try
             {
@@ -308,9 +303,32 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
+        { 
+            var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
+            var overridePathProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.OverrideFilePath);
+            var apiKeyProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.ApiKey);
+
+            if (overridePathProvided && apiKeyProvided)
+            {
+                throw new InvalidOperationException("Both an ApiKey AND an Override File were provided for the DonorService. Please choose one or the other way to create an " + nameof(IDonorServiceClient));
+            }
+            else if(overridePathProvided)
+            {
+                return GetFileBasedDonorServiceClient(sp);
+            }
+            else if(apiKeyProvided)
+            {
+                return GetLiveDonorServiceClient(sp);
+            }
+            else
+            {
+                throw new InvalidOperationException("Neither an ApiKey, nor an Override File were provided, for the DonorService. Unable to create a functional " + nameof(IDonorServiceClient));
+            }
+        }
+
+        private static IDonorServiceClient GetLiveDonorServiceClient(IServiceProvider sp)
         {
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
             var clientSettings = new ClientSettings
             {
                 ApiKey = donorServiceSettings.ApiKey,
@@ -318,13 +336,29 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 ClientName = "donor_service_algorithm_client",
                 JsonSettings = new JsonSerializerSettings()
             };
+            var logger = BuildNovaLogger(sp);
+
+            return new DonorServiceClient(clientSettings, logger);
+        }
+
+        private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
+        {
+            var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
+            var logger = BuildNovaLogger(sp);
+
+            return new FileBasedDonorServiceClient(donorServiceSettings.OverrideFilePath, logger);
+        }
+
+        private static Logger BuildNovaLogger(IServiceProvider sp)
+        {
+            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
+
             var telemetryConfig = new TelemetryConfiguration
             {
                 InstrumentationKey = insightsSettings.InstrumentationKey
             };
             var logger = new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
-
-            return new DonorServiceClient(clientSettings, logger);
+            return logger;
         }
 
         public static void RegisterDonorManagementServices(this IServiceCollection services)
