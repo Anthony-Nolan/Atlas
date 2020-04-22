@@ -16,7 +16,7 @@ resource "azurerm_storage_account" "azure_storage" {
   tags                     = local.common_tags
 }
 
-resource "azurerm_storage_container" "blob_container" {
+resource "azurerm_storage_container" "search_matching_results_blob_container" {
   name                  = "matching-algorithm-results"
   storage_account_name  = azurerm_storage_account.azure_storage.name
   container_access_type = "private"
