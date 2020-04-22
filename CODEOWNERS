@@ -1,3 +1,1 @@
-*    @Anthony-Nolan/default-codeowners
-*.cs @Anthony-Nolan/default-reviewers-c
-*.js @Anthony-Nolan/default-reviewers-node-js
+*    @Anthony-Nolan/ATLAS-default-reviewers
