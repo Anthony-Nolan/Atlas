@@ -19,5 +19,6 @@ resource "azurerm_storage_account" "azure_storage" {
 resource "azurerm_storage_container" "search_matching_results_blob_container" {
   name                  = "matching-algorithm-results"
   storage_account_name  = azurerm_storage_account.azure_storage.name
+  resource_group_name   = azurerm_resource_group.atlas_resource_group.name
   container_access_type = "private"
 }
