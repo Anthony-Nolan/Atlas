@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
@@ -43,6 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             );
 
             // Matching Dictionary Overrides
+            services.AddScoped<IWmdaHlaVersionProvider, MockWmdaHlaVersionProvider>();
             services.AddScoped<IHlaScoringLookupRepository, FileBackedHlaScoringLookupRepository>();
             services.AddScoped<IHlaMatchingLookupRepository, FileBackedHlaMatchingLookupRepository>();
             services.AddScoped<IAlleleNamesLookupRepository, FileBackedAlleleNamesLookupRepository>();
