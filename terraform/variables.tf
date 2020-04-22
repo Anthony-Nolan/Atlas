@@ -87,8 +87,30 @@ variable "DATA_REFRESH_CRONTAB" {
   default = "0 0 0 * * Monday"
 }
 
+variable "DATA_REFRESH_DATABASE_VERSION" {
+  type = string
+}
+
+variable "DATA_REFRESH_ADMIN_USERNAME" {
+  type = string
+}
+
+variable "DATA_REFRESH_ADMIN_PASSWORD" {
+  type = string
+}
+
 variable "DATA_REFRESH_DATABASE_A_NAME" {
   type = string
+}
+
+variable "DATA_REFRESH_DATABASE_REPLICATION_TYPE" {
+  type = string
+  default = "LRS"
+}
+
+variable "DATA_REFRESH_DATABASE_TIER" {
+  type = string
+  default = "Standard"
 }
 
 variable "DATA_REFRESH_DATABASE_B_NAME" {
