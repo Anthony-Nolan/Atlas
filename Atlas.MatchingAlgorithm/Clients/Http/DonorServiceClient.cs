@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using CsvHelper;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
@@ -21,6 +24,49 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
         /// If null or omitted, the first page of results will be returned.</param>
         /// <returns>A page of donors Info for search algorithm</returns>
         Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null);
+    }
+
+    public class FileBasedDonorServiceClient : IDonorServiceClient
+    {
+        private readonly string filePath;
+        private readonly ILogger logger;
+
+        public FileBasedDonorServiceClient(string filePath, ILogger logger = null)
+        {
+            this.filePath = filePath;
+            this.logger = logger;
+        }
+
+        public async Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
+        {
+            var allDonors = ReadAllDonors();
+            
+            var donorsToReturn =
+                (lastId == null ? allDonors : allDonors.SkipWhile(donor => donor.DonorId != lastId.Value).Skip(1) )
+                .Take(resultsPerPage)
+                .ToList();
+            
+            return new SearchableDonorInformationPage
+            {
+                DonorsInfo = donorsToReturn,
+                ResultsPerPage = allDonors.Count,
+                LastId = donorsToReturn.Last().DonorId
+            };
+        }
+
+        public List<SearchableDonorInformation> ReadAllDonors()
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("Unable to file DonorOverride file.", filePath);
+            }
+
+            using (var reader = new StreamReader(filePath))
+            using (var csv = new CsvReader(reader))
+            {
+                return csv.GetRecords<SearchableDonorInformation>().ToList();
+            }
+        }
     }
 
     public class DonorServiceClient : ClientBase, IDonorServiceClient
