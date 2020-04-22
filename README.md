@@ -86,7 +86,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
     - This should take < 1 second to run.
     - You should have received a trivial `OK 200` responses.
 - Set up sensible initial data.
-  - Post to `matching-dictionary/recreate-active-version`.
+  - Post to `/matching-dictionary/recreate-active-version`.
     - This should take 2-6 minutes to run.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialDonorTestData.sql"`.
     - This should take 10-40 seconds to run.
