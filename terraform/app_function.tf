@@ -61,7 +61,7 @@ locals {
 }
 
 resource "azurerm_function_app" "atlas_matching_algorithm_function" {
-  name                      = "${local.environment}-ATLAS-MACTHING-ALGORITHM-FUNCTION-TEMP"
+  name                      = "${local.environment}-ATLAS-MACTHING-ALGORITHM-FUNCTION"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
   location                  = local.location
   app_service_plan_id       = azurerm_app_service_plan.atlas.id
@@ -95,7 +95,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
 }
 
 resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_function" {
-  name                      = "${local.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION-TEMP"
+  name                      = "${local.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
   location                  = local.location
   app_service_plan_id       = azurerm_app_service_plan.atlas.id
