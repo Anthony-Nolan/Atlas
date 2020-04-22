@@ -67,7 +67,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
   - Navigate into your newly cloned repo, and run `git config core.longpaths true`.
 - Run Migrations
   - Run EF Core Migrations for the `Data` and `Data.Persistent` projects. This can be done from general command line, or from the VS Package Manager Console, but in either case **must be run from within those project folders!**.
-  - Instructions for VS PkgMgrCons:
+  - Instructions for VS PkgMgrCons (note: if you have both EF 6 and EF Core commands installed, you may need to prefix the command with `EntityFrameworkCore\` to ensure the correct version is selected for execution):
     - Open the Nuget Package Manager Console (Menus > Tools > Nuget Package Manager > ...)
     - Set Default Project (in PkgMgrConsole window) to be `Atlas.MatchingAlgorithm.Data`.
     - Set Startup Project (in Solution Explorer) to be `Atlas.MatchingAlgorithm.Data`.
@@ -86,14 +86,14 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
     - This should take < 1 second to run.
     - You should have received a trivial `OK 200` responses.
 - Set up sensible initial data.
-  - Post to `/matching-dictionary/create-latest-version`.
+  - Post to `matching-dictionary/recreate-active-version`.
     - This should take 2-6 minutes to run.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialDonorTestData.sql"`.
     - This should take 10-40 seconds to run.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
     - This should take < 1 second to run.
-- Run a search (avoiding NMDP lookups).
-  - With the API project running, POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json"` to: `<LOCALHOST>/search`.
+- Run a search (avoiding NMDP Code lookups).
+  - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json"` to: `<LOCALHOST>/search`.
   - You should get a 200 Success response, with 0 results.
   - The first search should take 20-60 seconds.
   - Subsequent searches should take < 1 second.
@@ -105,7 +105,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       - This will open a mostly blank file called `secrets.json`.
       - Recreate the relevant portion of the nested structure of `appsettings.json` for the above config setting, inserting your api key where appropriate.
   - *You may wish to acquire and store a Donor Service Key at the same time, but that's not necessary to be able to run a search.*
-- Run a search that uses the HLMA NMDP lookup API.
+- Run a search that uses the NMDP Code lookup API.
   - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\EightResultsSearch.json"` to: `<LOCALHOST>/search`.
   - You should get a 200 Success response, with 8 results.
   - The first search should take 40-90 seconds.
