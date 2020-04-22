@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -12,6 +13,12 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Helpers;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Settings;
+using Microsoft.Extensions.Options;
+using NSubstitute;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
@@ -32,6 +39,21 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             // We want to inspect the dormant database, as this is what the import will have run on
             inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
             processor = DependencyInjection.DependencyInjection.Provider.GetService<IHlaProcessor>();
+        }
+
+        [Test]
+        public void ReadingUnpopulatedHlaDatabaseVersionThrowsError()
+        {
+            //Note going to contact GH, so don't need to care about this.
+            var opt = Substitute.For<IOptions<WmdaSettings>>();
+            opt.Value.Returns(new WmdaSettings { WmdaFileUri = "" });
+
+            var repo = DependencyInjection.DependencyInjection.Provider.GetService<IDataRefreshHistoryRepository>();
+            var cache = DependencyInjection.DependencyInjection.Provider.GetService<ITransientCacheProvider>();
+
+            var versionProvider = new WmdaHlaVersionProvider(opt, repo, cache);
+
+            versionProvider.Invoking(prov => prov.GetActiveHlaDatabaseVersion()).ShouldThrow<ArgumentNullException>();
         }
 
         [Test]
