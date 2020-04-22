@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nova.Utils</name>
+    </assembly>
+    <members>
+        <member name="T:Nova.Utils.Attributes.EntryAssemblyAttribute">
+            <summary>
+            For certain types of apps, such as web apps, <see cref="M:System.Reflection.Assembly.GetEntryAssembly"/>
+            returns null.  With the <see cref="T:Nova.Utils.Attributes.EntryAssemblyAttribute"/>, we can designate
+            an assembly as the entry assembly by creating an instance of this attribute,
+            typically in the AssemblyInfo.cs file.
+            <example>
+            [assembly: EntryAssembly]
+            </example>
+            </summary>
+            See: https://stackoverflow.com/a/40269369
+        </member>
+        <member name="F:Nova.Utils.Attributes.EntryAssemblyAttribute.EntryAssemblyLazy">
+            <summary>
+            Lazily find the entry assembly.
+            </summary>
+        </member>
+        <member name="M:Nova.Utils.Attributes.EntryAssemblyAttribute.GetEntryAssembly">
+            <summary>
+            Gets the entry assembly.
+            </summary>
+            <returns>The entry assembly.</returns>
+        </member>
+        <member name="M:Nova.Utils.Attributes.EntryAssemblyAttribute.GetReducedEntryAssembly">
+            <summary>
+            Gets reduced entry assembly.
+            </summary>
+            <returns>Just the entry assembly name.</returns>
+        </member>
+        <member name="M:Nova.Utils.Attributes.EntryAssemblyAttribute.GetEntryAssemblyLazily">
+            <summary>
+            Invoked lazily to find the entry assembly.  We want to cache this value as it may
+            be expensive to find.
+            </summary>
+            <returns>The entry assembly.</returns>
+        </member>
+        <member name="M:Nova.Utils.Attributes.EntryAssemblyAttribute.FindEntryAssemblyInCurrentAppDomain">
+            <summary>
+            Finds the entry assembly in the current app domain.
+            </summary>
+            <returns>The entry assembly.</returns>
+        </member>
+        <member name="T:Nova.Utils.Common.Disposable">
+            <summary>
+            A thread-safe implementation of the Disposable pattern
+            </summary>
+        </member>
+        <member name="M:Nova.Utils.Common.StringExtensions.ToCamelCase(System.String)">
+            <summary>
+                Returns a string in camelCase.
+                Note: Update this method as necessary to convert from snake_case, kebab-case etc.
+            </summary>
+            <param name="str">Input string</param>
+            <returns>Input string in camelCase</returns>
+        </member>
+        <member name="T:Nova.Utils.Date.IDateTimeProvider">
+            <summary>
+            Interface to abstract away fetching of the current date/time.
+            Using this, we can mock what 'now' means in unit tests.
+            </summary>
+        </member>
+        <member name="T:Nova.Utils.Ordering.Order">
+            <summary>
+            A fluent way of creating comparers. Inspired by the Ordering class from Guava
+            </summary>
+        </member>
+        <member name="T:Nova.Utils.PhenotypeInfo.LociInfo`1">
+            <summary>
+            Data type to hold one instance of T for each of the supported HLA loci.
+            </summary>
+            <typeparam name="T">The type of the information that is required for each locus.</typeparam>
+        </member>
+        <member name="M:Nova.Utils.PhenotypeInfo.LociInfo`1.#ctor">
+            <summary>
+            Creates a new LociInfo with no inner values set.
+            </summary>
+        </member>
+        <member name="M:Nova.Utils.PhenotypeInfo.LociInfo`1.#ctor(`0)">
+            <summary>
+            Creates a new LociInfo with all inner values set to the same starting value.
+            </summary>
+            <param name="initialValue">The initial value all inner locus values should be given.</param>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.A">
+            <summary>
+            Locus A. Used in all search implementations.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.B">
+            <summary>
+            Locus B. Used in all search implementations.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.C">
+            <summary>
+            Locus C. Used in newer search implementations.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Dpa1">
+            <summary>
+            Locus Dpa1. Not used in search.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Dpb1">
+            <summary>
+            Locus Dpb1. Used in newer search implementations.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Dqa1">
+            <summary>
+            Locus Dqa1. Not used in search.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Dqb1">
+            <summary>
+            Locus Dqb1. Used in newer search implementations.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Drb1">
+            <summary>
+            Locus Drb1. Used in most search implementations.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Drb3">
+            <summary>
+            Locus Drb3. Not used in search. Related to Drb4 and Drb5.
+            A phenotype will contain only two alleles across DRB3/4/5, in any combination.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Drb4">
+            <summary>
+            Locus Drb4. Not used in search. Related to Drb3 and Drb5.
+            A phenotype will contain only two alleles across DRB3/4/5, in any combination.
+            </summary>
+        </member>
+        <member name="P:Nova.Utils.PhenotypeInfo.LociInfo`1.Drb5">
+            <summary>
+            Locus Drb5. Not used in search. Related to Drb3 and Drb4
+            A phenotype will contain only two alleles across DRB3/4/5, in any combination.
+            </summary>
+        </member>
+        <member name="T:Nova.Utils.PhenotypeInfo.LocusPosition">
+            <summary>
+            Position of an allele or other information *within* a locus
+            </summary>
+        </member>
+        <member name="T:Nova.Utils.PhenotypeInfo.PhenotypeInfo`1">
+            <summary>
+            Data type to hold one instance of T for each of the supported HLA loci and each type position within.
+            </summary>
+            <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
+        </member>
+        <member name="M:Nova.Utils.PhenotypeInfo.PhenotypeInfo`1.#ctor">
+            <summary>
+            Creates a new PhenotypeInfo with no inner values set.
+            </summary>
+        </member>
+        <member name="M:Nova.Utils.PhenotypeInfo.PhenotypeInfo`1.#ctor(Nova.Utils.PhenotypeInfo.LociInfo{Nova.Utils.PhenotypeInfo.LocusInfo{`0}})">
+            <summary>
+            Creates a new PhenotypeInfo using the provided LociInfo.
+            </summary>
+        </member>
+        <member name="M:Nova.Utils.PhenotypeInfo.PhenotypeInfo`1.#ctor(`0)">
+            <summary>
+            Creates a new PhenotypeInfo with all inner values set to the same starting value.
+            </summary>
+            <param name="initialValue">The initial value all inner locus position values should be given.</param>
+        </member>
+        <member name="M:Nova.Utils.Reflection.MemberExtensions.GetReflectedInfo(System.Reflection.MethodInfo)">
+            <summary>
+            Returns a property info for X if given method is a refence to the special get_X,
+            or the method itself otherwise.
+            </summary>
+            <param name="method">Input method</param>
+            <returns>Property or method info</returns>
+        </member>
+        <member name="M:Nova.Utils.Reflection.TypeExtensions.GetUniqueInterfaces(System.Type)">
+            <summary>
+                Get all interfaces uniquely implemented by type.
+                Includes the type itself if the type is an interface
+            </summary>
+            <param name="type">Given type</param>
+            <returns>list of all implemented interfaces including itself if necessary</returns>
+        </member>
+        <member name="M:Nova.Utils.Tasks.TaskUtils.RunSync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+                Run an async function in a blocking manner. This is borrowed from the way Entity Framework runs sync methods
+            </summary>
+            <param name="func">The function to run.</param>
+        </member>
+    </members>
+</doc>
