@@ -23,6 +23,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.searchDispatcher = searchDispatcher;
         }
 
+        
         [FunctionName("InitiateSearch")]
         public async Task<IActionResult> InitiateSearch([HttpTrigger] HttpRequest request)
         {
