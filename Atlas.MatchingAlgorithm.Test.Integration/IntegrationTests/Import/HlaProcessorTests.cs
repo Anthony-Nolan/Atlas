@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private const string DefaultHlaDatabaseVersion = "3330";
 
         [SetUp]
-        public void ResolveSearchRepo()
+        public void SetUp()
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
             importRepo = repositoryFactory.GetDonorImportRepository();
@@ -42,9 +42,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public void ReadingUnpopulatedHlaDatabaseVersionThrowsError()
+        public void WmdaHlaVersionProvider_ReadingUnpopulatedHlaDatabaseVersion_ThrowsError()
         {
-            //Note going to contact GH, so don't need to care about this.
+            //Not going to contact GitHub in this test, so don't need to care about this.
             var opt = Substitute.For<IOptions<WmdaSettings>>();
             opt.Value.Returns(new WmdaSettings { WmdaFileUri = "" });
 
