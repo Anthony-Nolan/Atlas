@@ -19,6 +19,8 @@ jobs:
       - task: DotNetCoreCLI@2
         inputs:
           command: 'restore'
+          feedsToUse: 'select'
+          vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
       - task: DotNetCoreCLI@2
         inputs:
           command: 'build'
