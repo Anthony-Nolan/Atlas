@@ -8,6 +8,14 @@ resource "azurerm_storage_account" "shared_function_storage" {
   tags                      = local.common_tags
 }
 
+resource "azurerm_storage_account" "DB_storage" {
+  name                     = "${lower(local.environment)}atlasdbstorage"
+  resource_group_name      = azurerm_resource_group.atlas_resource_group.name
+  location                 = var.location
+  account_tier             = var.DATA_REFRESH_DATABASE_REPLICATION_TIER
+  account_replication_type = var.DATA_REFRESH_DATABASE_REPLICATION_TYPE
+  tags                     = local.common_tags
+}
 resource "azurerm_storage_account" "azure_storage" {
   name                      = "${lower(local.environment)}atlasstorage"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
