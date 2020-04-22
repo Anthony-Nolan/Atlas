@@ -13,6 +13,16 @@ variable "FUNCTION_STORAGE_REPLICATION_TYPE" {
   default = "LRS"
 }
 
+variable "AZURE_STORAGE_TIER" {
+  type    = string
+  default = "Standard"
+}
+
+variable "AZURE_STORAGE_REPLICATION_TYPE" {
+  type    = string
+  default = "LRS"
+}
+
 variable "SERVICE_PLAN_SKU" {
   type    = object({
     tier = string,
