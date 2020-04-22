@@ -5,7 +5,7 @@
         <AzureFunctionsVersion>v2</AzureFunctionsVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
-        <UserSecretsId>e4dce24e-9902-48bf-beab-af9960940c4e</UserSecretsId>
+        <UserSecretsId>3c34ff5f-9a99-43e8-b3f6-7c7d75b3809b</UserSecretsId>
         <LangVersion>latest</LangVersion>
         <RootNamespace>Atlas.MatchingAlgorithm.Functions.DonorManagement</RootNamespace>
     </PropertyGroup>
