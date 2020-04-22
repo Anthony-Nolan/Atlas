@@ -67,7 +67,8 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
   - Navigate into your newly cloned repo, and run `git config core.longpaths true`.
 - Run Migrations
   - Run EF Core Migrations for the `Data` and `Data.Persistent` projects. This can be done from general command line, or from the VS Package Manager Console, but in either case **must be run from within those project folders!**.
-  - Instructions for VS PkgMgrCons (note: if you have both EF 6 and EF Core commands installed, you may need to prefix the command with `EntityFrameworkCore\` to ensure the correct version is selected for execution):
+  - Instructions for VS PkgMgrCons
+    - *(note: if you have both EF 6 and EF Core commands installed, you may need to prefix the command with `EntityFrameworkCore\` to ensure the correct version is selected for execution):*
     - Open the Nuget Package Manager Console (Menus > Tools > Nuget Package Manager > ...)
     - Set Default Project (in PkgMgrConsole window) to be `Atlas.MatchingAlgorithm.Data`.
     - Set Startup Project (in Solution Explorer) to be `Atlas.MatchingAlgorithm.Data`.
@@ -86,18 +87,18 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
     - This should take < 1 second to run.
     - You should have received a trivial `OK 200` responses.
 - Set up sensible initial data.
-  - Post to `/matching-dictionary/recreate-active-version`.
-    - This should take 2-6 minutes to run.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialDonorTestData.sql"`.
     - This should take 10-40 seconds to run.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
     - This should take < 1 second to run.
+  - Post to `/matching-dictionary/recreate-active-version`.
+    - This should take 2-6 minutes to run.
 - Run a search (avoiding NMDP Code lookups).
   - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json"` to: `<LOCALHOST>/search`.
   - You should get a 200 Success response, with 0 results.
   - The first search should take 20-60 seconds.
   - Subsequent searches should take < 1 second.
-- Configure an HLA Service api key.
+- Configure an api key for the NMDP Code lookup API (the "HLA Service")
   - Acquire an api key. (This should be a guid)
   - Store that key as a local `user secret`, for the `Client.HlaService.ApiKey` config setting, in the API project.
     - In VS this is achieved by:

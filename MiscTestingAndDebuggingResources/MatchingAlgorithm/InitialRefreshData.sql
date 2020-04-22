@@ -9,7 +9,7 @@ INSERT INTO DataRefreshHistory (
      VALUES (
             GETDATE()-1, GETDATE(),
             'DatabaseA',
-            '3390', -- Note that the Hardcoded test data is v3.3.0; but we don't expect this to cause problems in practice.
+            '3330', -- Note that this matches the Hardcoded test data; not the latest version of the dictionary.
             1)
 GO
 
