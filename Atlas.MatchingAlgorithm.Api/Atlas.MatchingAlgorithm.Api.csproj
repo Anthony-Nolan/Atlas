@@ -15,6 +15,7 @@
         <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
         <PackageReference Include="Nova.Utils.ServiceClient" Version="14.3.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.3.3" />
     </ItemGroup>
 
     <ItemGroup>
