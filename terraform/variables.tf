@@ -87,12 +87,10 @@ variable "DATA_REFRESH_CRONTAB" {
   default = "0 0 0 * * Monday"
 }
 
-variable "DATA_REFRESH_DATABASE_VERSION" {
-  type = string
-}
 
-variable "DATA_REFRESH_ADMIN_USERNAME" {
+variable "ATLAS_DATABASE_SERVER_LOGIN" {
   type = string
+  default = "atlas-admin"
 }
 
 variable "DATA_REFRESH_ADMIN_PASSWORD" {
