@@ -356,6 +356,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var logger = sp.GetService<ILogger>();
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+
                 return new DonorUpdateProcessor(
                     messageReceiverService,
                     managementService,
