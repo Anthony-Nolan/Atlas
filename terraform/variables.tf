@@ -1,6 +1,10 @@
-variable location {
+variable LOCATION {
   type    = string
   default = "uksouth"
+}
+
+variable ENVIRONMENT {
+  type    = string
 }
 
 variable "FUNCTION_STORAGE_TIER" {
