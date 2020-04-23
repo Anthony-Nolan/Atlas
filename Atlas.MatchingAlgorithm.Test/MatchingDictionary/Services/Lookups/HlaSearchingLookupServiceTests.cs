@@ -1,5 +1,5 @@
-﻿using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
+﻿using Atlas.Utils.Hla.Services;
+using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
@@ -9,10 +9,8 @@ using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

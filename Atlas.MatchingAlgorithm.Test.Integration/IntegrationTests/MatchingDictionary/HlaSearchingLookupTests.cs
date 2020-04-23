@@ -1,5 +1,4 @@
-﻿using System;
-using LazyCache;
+﻿using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using Nova.HLAService.Client;
 using Nova.HLAService.Client.Models;
@@ -7,9 +6,6 @@ using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Nova.HLAService.Client.Services;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 

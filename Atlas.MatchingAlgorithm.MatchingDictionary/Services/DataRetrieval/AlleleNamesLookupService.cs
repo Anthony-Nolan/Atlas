@@ -1,6 +1,6 @@
-﻿using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Hla.Services;
+using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;

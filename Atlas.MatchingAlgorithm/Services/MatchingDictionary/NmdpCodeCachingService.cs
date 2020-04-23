@@ -1,8 +1,8 @@
 ﻿using LazyCache;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Hla.Services;
+using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Models;
@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using MolecularLocusType = Nova.HLAService.Client.Models.MolecularLocusType;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {

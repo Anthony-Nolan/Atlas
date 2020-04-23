@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.DonorUpdate;
 using Nova.HLAService.Client;
-using Nova.HLAService.Client.Services;
+using Atlas.Utils.Hla.Services;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -95,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ILogger>(sp =>
                 new SearchRequestAwareLogger(
                     sp.GetService<ISearchRequestContext>(),
-                    new TelemetryClient(), 
+                    new TelemetryClient(),
                     sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
 
@@ -356,7 +356,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var logger = sp.GetService<ILogger>();
                 var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
-                
+
                 return new DonorUpdateProcessor(
                     messageReceiverService,
                     managementService,

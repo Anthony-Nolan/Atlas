@@ -1,5 +1,5 @@
-﻿using Nova.HLAService.Client.Models;
-using Nova.HLAService.Client.Services;
+﻿using Atlas.Utils.Hla.Services;
+using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
