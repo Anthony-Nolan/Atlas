@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Services.AlleleStringSplitters;
+using Atlas.Utils.Hla.Models;
+using Atlas.Utils.Hla.Services.AlleleStringSplitters;
 using Nova.Utils.Http.Exceptions;
 
-namespace Atlas.MatchingAlgorithm.Common.Services
+namespace Atlas.Utils.Hla.Services
 {
     public interface IAlleleStringSplitterService
     {

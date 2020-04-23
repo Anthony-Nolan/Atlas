@@ -1,5 +1,6 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Services;
+using Atlas.Utils.Hla.Services;
+using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;

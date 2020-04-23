@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Common.Models
+﻿namespace Atlas.Utils.Hla.Models
 {
     public enum HlaTypingCategory
     {

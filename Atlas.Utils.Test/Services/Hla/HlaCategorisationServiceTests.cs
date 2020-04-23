@@ -1,9 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Services;
+﻿using Atlas.Utils.Hla.Models;
+using Atlas.Utils.Hla.Services;
 using Nova.Utils.Http.Exceptions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services
+namespace Atlas.Utils.Test.Services.Hla
 {
     [TestFixture]
     public class HlaCategorisationServiceTests

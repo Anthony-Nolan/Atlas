@@ -2,9 +2,9 @@
 using Nova.Utils.Http.Exceptions;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Common.Services;
+using Atlas.Utils.Hla.Services;
 
-namespace Atlas.MatchingAlgorithm.Test.Services
+namespace Atlas.Utils.Test.Services.Hla
 {
     [TestFixture]
     public class AlleleStringSplitterServiceTests

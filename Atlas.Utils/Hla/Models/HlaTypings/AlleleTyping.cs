@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Atlas.MatchingAlgorithm.Common.Models.HlaTypings
+namespace Atlas.Utils.Hla.Models.HlaTypings
 {
     internal class AlleleTyping
     {

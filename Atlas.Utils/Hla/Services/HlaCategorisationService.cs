@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Models.HlaTypings;
+using Atlas.Utils.Hla.Models;
+using Atlas.Utils.Hla.Models.HlaTypings;
 using Nova.Utils.Http.Exceptions;
 
-namespace Atlas.MatchingAlgorithm.Common.Services
+namespace Atlas.Utils.Hla.Services
 {
     public interface IHlaCategorisationService
     {

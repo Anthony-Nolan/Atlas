@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Common.Models.HlaTypings
+﻿namespace Atlas.Utils.Hla.Models.HlaTypings
 {
     public static class MolecularTypingNameConstants
     {

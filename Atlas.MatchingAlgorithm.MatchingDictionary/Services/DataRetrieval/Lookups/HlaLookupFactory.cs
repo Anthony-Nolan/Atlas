@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Common.Services;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.Utils.Hla.Services;
+using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using System;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.Common.Models.HlaTypings;
+using Atlas.Utils.Hla.Models.HlaTypings;
 
-namespace Atlas.MatchingAlgorithm.Common.Services.AlleleStringSplitters
+namespace Atlas.Utils.Hla.Services.AlleleStringSplitters
 {
     internal class AlleleStringOfSubtypesSplitter : AlleleStringSplitterBase
     {

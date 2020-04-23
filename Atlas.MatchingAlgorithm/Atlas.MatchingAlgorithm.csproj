@@ -33,6 +33,7 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.MatchingDictionary\Atlas.MatchingAlgorithm.MatchingDictionary.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj" />
+      <ProjectReference Include="..\Atlas.Utils\Atlas.Utils.csproj" />
     </ItemGroup>
 
 </Project>
