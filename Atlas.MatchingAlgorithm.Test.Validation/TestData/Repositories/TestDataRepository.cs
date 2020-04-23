@@ -5,6 +5,8 @@ using Atlas.MatchingAlgorithm.Data.Persistent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 {
@@ -66,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         private void RemoveTestData()
         {
-            if (DoesDonorTableExist())
+            if (DonorTableExists())
             {
                 context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
                 context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtA]");
@@ -78,8 +80,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
             }
         }
 
-        private bool DoesDonorTableExist()
+        private bool DonorTableExists()
         {
+            if (!TransientDatabaseExists())
+            {
+                return false;
+            }
+            
             var conn = context.Database.GetDbConnection();
             if (conn.State.Equals(ConnectionState.Closed))
             {
@@ -94,6 +101,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
     WHERE T.Name = 'Donors'";
                 return command.ExecuteScalar() != null;
             }
+        }
+
+        private bool TransientDatabaseExists()
+        {
+            return (context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator)?.Exists() ?? false;
         }
     }
 }
