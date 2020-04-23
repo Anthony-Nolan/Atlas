@@ -9,8 +9,8 @@ terraform {
 
 locals {
   repository_name     = "Atlas"
-  environment         = "DEV"
-  location            = var.location
+  environment         = var.ENVIRONMENT
+  location            = var.LOCATION
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
   common_tags         = {
