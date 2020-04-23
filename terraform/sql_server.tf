@@ -1,10 +1,8 @@
-resource "azurem_sql_server" "transient_a" {
-  name = var.DATA_REFRESH_DATABASE_A_NAME
+resource "azurem_sql_server" "atlas_sql_server" {
+  name = "${local.environment}-ATLAS-SQL-SERVER"
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location = local.location
   tags = local.common.tags
-  version = var.DATA_REFRESH_DATABASE_VERSION
-  administrator_login = var.DATA_REFRESH_DATABASE_ADMIN_LOGIN
-  administrator_login_password = var.DATA_REFRESH_DATABASE_ADMIN_PASSWORD
+  version = "12.0"
+  administrator_login = var.ATLAS_DATABASE_SERVER_LOGIN
 }
-
