@@ -21,7 +21,7 @@ namespace Atlas.Utils.Core.Reflection
 
         private static Func<AssemblyName, bool> AssemblyNameMatches(string suffix)
         {
-            var startsWith = suffix != null ? $"Nova.{suffix}" : "Nova";
+            var startsWith = suffix != null ? $"Atlas.{suffix}" : "Atlas";
             return name => name.Name.StartsWith(startsWith);
         }
     }
