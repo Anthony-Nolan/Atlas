@@ -4,7 +4,6 @@ using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
 using Atlas.MatchingAlgorithm.Test.MatchingDictionary.Data;
-using Nova.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary
 {

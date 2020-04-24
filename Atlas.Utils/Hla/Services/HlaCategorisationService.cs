@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Atlas.Utils.Hla.Models;
 using Atlas.Utils.Hla.Models.HlaTypings;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.Utils.Hla.Services
 {
@@ -44,7 +44,7 @@ namespace Atlas.Utils.Hla.Services
                 }
             }
 
-            throw new NovaHttpException(HttpStatusCode.BadRequest,
+            throw new AtlasHttpException(HttpStatusCode.BadRequest,
                     $"Typing category of HLA name: {name} could not be determined.");
         }
     }

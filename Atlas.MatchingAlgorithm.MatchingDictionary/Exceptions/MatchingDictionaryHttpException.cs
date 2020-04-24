@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions
 {
-    public class MatchingDictionaryHttpException : NovaHttpException
+    public class MatchingDictionaryHttpException : AtlasHttpException
     {
         public MatchingDictionaryHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)

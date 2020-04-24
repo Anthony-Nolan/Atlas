@@ -1,8 +1,8 @@
 using FluentValidation;
-using Nova.Utils.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Utils.Core.Http;
 
 namespace Atlas.MatchingAlgorithm.Helpers
 {

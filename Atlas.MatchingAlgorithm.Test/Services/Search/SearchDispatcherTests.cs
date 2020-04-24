@@ -10,7 +10,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task RunSearch_WhenSearchFails_PublishesFailureNotification()
         {
             const string id = "id";
-            searchService.Search(Arg.Any<SearchRequest>()).Throws(new NovaHttpException(HttpStatusCode.InternalServerError, ""));
+            searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, ""));
 
             await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
 
