@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using Atlas.Utils.Hla.Services;
+using FluentAssertions;
 using Nova.Utils.Http.Exceptions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using Atlas.Utils.Hla.Services;
 
-namespace Atlas.Utils.Test.Services.Hla
+namespace Atlas.Utils.Test.Hla.Services
 {
     [TestFixture]
     public class AlleleStringSplitterServiceTests
