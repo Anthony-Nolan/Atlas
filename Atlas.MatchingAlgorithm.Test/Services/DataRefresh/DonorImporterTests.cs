@@ -46,8 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             repositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
 
             donorServiceClient = Substitute.For<IDonorServiceClient>();
-            donorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
-                .Returns(EmptyPage);
+            donorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())                .Returns(EmptyPage);
 
             donorInfoConverter = Substitute.For<IDonorInfoConverter>();
             donorInfoConverter.ConvertDonorInfoAsync(Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>())
@@ -114,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(pageWithDonor, EmptyPage);
 
             await donorImporter.ImportDonors();
@@ -142,7 +141,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(pageWithDonor, EmptyPage);
 
             donorInfoConverter
@@ -180,7 +179,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(pageWithDonor, EmptyPage);
 
             await donorImporter.ImportDonors();
@@ -209,7 +208,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(pageWithDonor, EmptyPage);
 
             // first id returned before pagination loop; second when the page is processed
@@ -251,7 +250,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(
                     firstPageWithDonor,
                     secondPageWithDonorAndLastId,
@@ -284,7 +283,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(pageWithDonor, EmptyPage);
 
             await donorImporter.ImportDonors();
@@ -321,7 +320,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // return empty page last to stop pagination loop
             donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>())
+                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(pageWithDonor, EmptyPage);
 
             await donorImporter.ImportDonors();
