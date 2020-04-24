@@ -16,7 +16,6 @@
     </Target>
 
     <ItemGroup>
-        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\AlignedRegistries.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature" />
@@ -24,10 +23,8 @@
         <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\AlignedRegistries.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\AlignedRegistries.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature" />
         <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature" />

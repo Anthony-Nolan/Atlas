@@ -13,7 +13,7 @@ Test cases are written in feature files - i.e. any file with a type of `.feature
 test runner, and can be ignored.
 
 Each feature file should contain tests pertaining to one feature of the algorithm. 
-They are split primarily by search type, and within each search type by shared areas of functionality e.g. different typing resolutions, aligned registry searches etc.
+They are split primarily by search type, and within each search type by shared areas of functionality e.g. different typing resolutions, etc.
 
 The language used in the feature files is called _Cucumber_. (https://cucumber.io/)
 
@@ -43,8 +43,8 @@ Feature: Name of the feature
 e.g. 
 ```
 As a member of the search team
-I want to be able to run a 10/10 aligned registries search
-So that I can match donors in other registries
+I want to be able to run a 10/10 search
+So that I can match donors
 ```
 
 #### Scenarios
@@ -173,8 +173,6 @@ These defaults include:
 
 - Donor Type = `Adult`
     - Both the expected matching donor, and search type default to `Adult`
-- Donor Registry = `Anthony Nolan`
-    - Expected matching donors will be in the AN registry by default, and the default search will run against this registry only
 - Typing Resolution = `TGS derived data`
     - For both donor and patient HLA values
     - The number of fields of the TGS derived data will be arbitrarily chosen by default

@@ -126,10 +126,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
     testRunner.And("each matching donor is \'TGS derived data at two-field resolution\' typed at each l" +
                     "ocus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
-    testRunner.And("the search is run against the Anthony Nolan registry only", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 22
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 23
+#line 22
     testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -140,16 +138,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         public virtual void _1010SearchForASelectionOfTGSDerivedDataTypedDonors()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of \'TGS derived data\' typed donors", null, ((string[])(null)));
-#line 25
+#line 24
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
-#line 26
+#line 25
     testRunner.Given("a set of 10 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 27
+#line 26
     testRunner.And("each matching donor is \'TGS derived data\' typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 28
+#line 27
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 29
+#line 28
     testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -160,16 +158,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         public virtual void _1010SearchForASelectionOfVariouslyTypedDonors()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search for a selection of variously typed donors", null, ((string[])(null)));
-#line 31
+#line 30
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
-#line 32
+#line 31
     testRunner.Given("a set of 100 patients with matching donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 33
+#line 32
     testRunner.And("each matching donor is arbitrarily typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 34
+#line 33
     testRunner.When("I run a 10/10 search for each patient", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 35
+#line 34
     testRunner.Then("each set of results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

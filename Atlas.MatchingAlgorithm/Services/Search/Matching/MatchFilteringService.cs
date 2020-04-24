@@ -2,7 +2,6 @@ using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using System;
-using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Services.Matching
 {
@@ -12,7 +11,6 @@ namespace Atlas.MatchingAlgorithm.Services.Matching
         bool FulfilsPerLocusMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria, Locus locus);
         bool FulfilsTotalMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
         bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
-        bool FulfilsRegistryCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
         bool FulfilsSearchTypeSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
     }
     
@@ -40,11 +38,6 @@ namespace Atlas.MatchingAlgorithm.Services.Matching
         public bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
             return match.DonorInfo.DonorType == criteria.SearchType;
-        }
-
-        public bool FulfilsRegistryCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
-        {
-            return criteria.RegistriesToSearch.Contains(match.DonorInfo.RegistryCode);
         }
 
         /// <summary>

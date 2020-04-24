@@ -51,7 +51,6 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             {
                 DonorId = donorInfo.DonorId,
                 DonorType = donorInfo.DonorType,
-                RegistryCode = donorInfo.RegistryCode,
                 HlaNames = donorInfo.HlaNames,
                 MatchingHla = expandedHla
             };

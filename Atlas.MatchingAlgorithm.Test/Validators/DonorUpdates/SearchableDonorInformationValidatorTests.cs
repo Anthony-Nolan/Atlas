@@ -1,6 +1,5 @@
-﻿using FluentValidation.TestHelper;
-using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Validators.DonorInfo;
+﻿using Atlas.MatchingAlgorithm.Validators.DonorInfo;
+using FluentValidation.TestHelper;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
@@ -37,27 +36,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
         public void Validator_WhenDonorTypeIsValid_ShouldNotHaveValidationError(string donorType)
         {
             validator.ShouldNotHaveValidationErrorFor(x => x.DonorType, donorType);
-        }
-
-        [TestCase("")]
-        [TestCase(null)]
-        public void Validator_WhenRegistryCodeMissing_ShouldHaveValidationError(string missingString)
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.RegistryCode, missingString);
-        }
-
-        [TestCase("0")]
-        [TestCase("an")]
-        [TestCase("registry-code")]
-        public void Validator_WhenRegistryCodeNotEnumName_ShouldHaveValidationError(string invalidName)
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.RegistryCode, invalidName);
-        }
-
-        [Test]
-        public void Validator_WhenRegistryCodeIsEnumName_ShouldNotHaveValidationError()
-        {
-            validator.ShouldNotHaveValidationErrorFor(x => x.RegistryCode, $"{RegistryCode.AN}");
         }
     }
 }

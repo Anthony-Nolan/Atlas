@@ -70,20 +70,38 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("6/6 Search with untyped patient at C")]
-        public virtual void _66SearchWithUntypedPatientAtC()
+        [NUnit.Framework.DescriptionAttribute("6/6 Search")]
+        public virtual void _66Search()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at C", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search", null, ((string[])(null)));
 #line 5
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
 #line 6
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
- testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 8
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 9
+#line 8
+    testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("6/6 Search with untyped patient at C")]
+        public virtual void _66SearchWithUntypedPatientAtC()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at C", null, ((string[])(null)));
+#line 10
+  this.ScenarioInitialize(scenarioInfo);
+            this.ScenarioStart();
+#line 11
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 12
+ testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 13
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 14
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -94,16 +112,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         public virtual void _66SearchWithUntypedPatientAtDQB1()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at DQB1", null, ((string[])(null)));
-#line 11
+#line 16
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
-#line 12
+#line 17
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 13
+#line 18
     testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 14
+#line 19
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 15
+#line 20
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -114,18 +132,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         public virtual void _66SearchWithUntypedPatientAtCAndDQB1()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("6/6 Search with untyped patient at C and DQB1", null, ((string[])(null)));
-#line 17
+#line 22
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
-#line 18
+#line 23
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 19
+#line 24
  testRunner.And("the patient is untyped at Locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 20
+#line 25
     testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 21
+#line 26
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 22
+#line 27
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

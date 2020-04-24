@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
     /// <summary>
     /// Stores various search criteria from the feature file, and selects appropriate patient data.
     /// The criteria will map to exactly one expected donor from the database
-    /// e.g. A 9/10 adult match with mismatch at A, from AN registry, at NMDP resolution
+    /// e.g. A 9/10 adult match with mismatch at A, at NMDP code resolution
     /// </summary>
     public interface IPatientDataFactory
     {
@@ -33,7 +33,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         // Meta-donor only criteria
         void SetMatchingDonorType(DonorType donorType);
-        void SetMatchingRegistry(RegistryCode registry);
         void SetMatchingDonorHomozygousAtLocus(Locus locus);
 
         /// <summary>
@@ -174,11 +173,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         public void SetMatchingDonorType(DonorType donorType)
         {
             metaDonorSelectionCriteria.MatchingDonorType = donorType;
-        }
-
-        public void SetMatchingRegistry(RegistryCode registry)
-        {
-            metaDonorSelectionCriteria.MatchingRegistry = registry;
         }
 
         public void SetFullMatchingTgsCategory(TgsHlaTypingCategory tgsCategory)

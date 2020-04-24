@@ -13,11 +13,10 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
 {
     /// <summary>
-    /// A 'meta-donor', with a genotype, registry, and donor type.
-    /// The donor's genotype will have the resolution artifically reduced, and hence correspond to multiple database donors 
+    /// A 'meta-donor', with a genotype, and donor type.
+    /// The donor's genotype will have the resolution artificially reduced, and hence correspond to multiple database donors 
     /// </summary>
-    public class MetaDonor
-    {
+    public class MetaDonor {
         private Genotype genotype;
         private List<Donor> databaseDonors;
         private readonly GenotypeGenerator genotypeGenerator;
@@ -41,7 +40,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
             }
         }
 
-        public RegistryCode Registry { get; set; }
         public DonorType DonorType { get; set; }
 
         /// <summary>
@@ -79,7 +77,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
             if (databaseDonors == null)
             {
                 DatabaseDonors = DatabaseDonorSpecifications.Select(databaseDonorCriteria => new DonorBuilder(Genotype)
-                        .AtRegistry(Registry)
                         .OfType(DonorType)
                         .WithTypingCategories(databaseDonorCriteria.MatchingTypingResolutions)
                         .WithShouldMatchGenotype(databaseDonorCriteria.ShouldMatchGenotype)

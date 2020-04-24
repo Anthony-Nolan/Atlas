@@ -7,7 +7,6 @@ namespace Atlas.MatchingAlgorithm.Common.Models
     public class AlleleLevelMatchCriteria
     {
         public DonorType SearchType { get; set; }
-        public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
 
         public int DonorMismatchCount { get; set; }
 

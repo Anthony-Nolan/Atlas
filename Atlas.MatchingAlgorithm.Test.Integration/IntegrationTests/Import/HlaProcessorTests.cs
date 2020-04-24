@@ -123,7 +123,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             donorInfoActual.DonorId.Should().Be(donorInfoExpected.DonorId);
             donorInfoActual.DonorType.Should().Be(donorInfoExpected.DonorType);
-            donorInfoActual.RegistryCode.Should().Be(donorInfoExpected.RegistryCode);
             donorInfoActual.IsAvailableForSearch.Should().Be(donorInfoExpected.IsAvailableForSearch);
             donorInfoActual.HlaNames.ShouldBeEquivalentTo(donorInfoExpected.HlaNames);
         }

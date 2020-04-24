@@ -55,13 +55,5 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             factory.PatientDataFactories = factory.PatientDataFactories.Select(s => (PatientDataFactory) s.SetMatchTypingCategories(typingCategory, locus)).ToList();
             scenarioContext.Set(factory);
         }
-
-        [Given(@"each matching donor is in registry: (.*)")]
-        public void GivenEachMatchingDonorIsInRegistry(string registry)
-        {
-            var factory = scenarioContext.Get<IMultiplePatientDataFactory>();
-            factory.PatientDataFactories = factory.PatientDataFactories.Select(s => (PatientDataFactory) s.SetMatchDonorRegistry(registry)).ToList();
-            scenarioContext.Set(factory);
-        }
     }
 }

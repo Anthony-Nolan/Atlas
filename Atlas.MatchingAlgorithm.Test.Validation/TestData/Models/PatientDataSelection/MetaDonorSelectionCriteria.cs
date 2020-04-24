@@ -8,7 +8,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSel
     public class MetaDonorSelectionCriteria
     {
         public DonorType MatchingDonorType { get; set; } = DonorType.Adult;
-        public RegistryCode MatchingRegistry { get; set; } = RegistryCode.AN;
 
         /// <summary>
         /// Determines how many fields the matching meta-donor's genotype should have at each position

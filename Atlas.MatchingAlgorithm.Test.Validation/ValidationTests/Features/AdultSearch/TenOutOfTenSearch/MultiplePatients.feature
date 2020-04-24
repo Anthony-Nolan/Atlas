@@ -18,7 +18,6 @@ Feature: Ten Out Of Ten Search - Multiple patients
   Scenario: 10/10 Search for a selection of 2-field 'TGS derived data' typed donors
     Given a set of 10 patients with matching donors
     And each matching donor is 'TGS derived data at two-field resolution' typed at each locus
-    And the search is run against the Anthony Nolan registry only
     When I run a 10/10 search for each patient
     Then each set of results should contain the specified donor
 

@@ -148,76 +148,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
         }
 
-        [TestCase("DKMS", RegistryCode.DKMS)]
-        [TestCase("AN", RegistryCode.AN)]
-        [TestCase("WBS", RegistryCode.WBS)]
-        [TestCase("ITALY", RegistryCode.ITALY)]
-        [TestCase("NHSBT", RegistryCode.NHSBT)]
-        [TestCase("NMDP", RegistryCode.NMDP)]
-        public async Task DonorImport_ParsesRegistryCorrectly(string rawRegistry, RegistryCode expectedRegistry)
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.RegistryCode, rawRegistry)
-                .Build();
-
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-            },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
-
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
-
-            donor.RegistryCode.Should().Be(expectedRegistry);
-        }
-
-        [Test]
-        public async Task DonorImport_WhenDonorHasInvalidRegistryCode_DoesNotImportDonor()
-        {
-            const string registryCode = "invalid";
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.RegistryCode, registryCode)
-                .Build();
-
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-                },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
-
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
-
-            donor.Should().BeNull();
-        }
-
-        [Test]
-        public void DonorImport_WhenDonorHasInvalidRegistryCode_DoesNotThrowException()
-        {
-            const string registryCode = "invalid";
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.RegistryCode, registryCode)
-                .Build();
-
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-            },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
-
-            Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
-        }
-
         [TestCase("")]
         [TestCase(null)]
         public async Task DonorImport_WhenDonorHasMissingRequiredHla_DoesNotImportDonor(string missingHla)
@@ -303,7 +233,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             return new DonorInfo
             {
-                RegistryCode = RegistryCode.DKMS,
                 DonorType = DonorType.Cord,
                 DonorId = id,
                 HlaNames = new PhenotypeInfo<string>

@@ -51,8 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         private static bool FulfilsDonorInfoCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
         {
-            return FulfilsDonorTypeCriteria(criteria, metaDonor)
-                   && FulfilsRegistryCriteria(criteria, metaDonor);
+            return FulfilsDonorTypeCriteria(criteria, metaDonor);
         }
 
         private static bool FulfilsDonorHlaCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
@@ -178,11 +177,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
             }).ToEnumerable().All(x => x);
-        }
-
-        private static bool FulfilsRegistryCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)
-        {
-            return criteria.MatchingRegistry == metaDonor.Registry;
         }
 
         private static bool FulfilsDonorTypeCriteria(MetaDonorSelectionCriteria criteria, MetaDonor metaDonor)

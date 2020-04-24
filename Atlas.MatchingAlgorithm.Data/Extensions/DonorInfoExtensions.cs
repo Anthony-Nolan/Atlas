@@ -11,7 +11,6 @@ namespace Atlas.MatchingAlgorithm.Data.Extensions
             {
                 DonorId = donorInfo.DonorId,
                 DonorType = donorInfo.DonorType,
-                RegistryCode = donorInfo.RegistryCode,
                 A_1 = donorInfo.HlaNames.A.Position1,
                 A_2 = donorInfo.HlaNames.A.Position2,
                 B_1 = donorInfo.HlaNames.B.Position1,

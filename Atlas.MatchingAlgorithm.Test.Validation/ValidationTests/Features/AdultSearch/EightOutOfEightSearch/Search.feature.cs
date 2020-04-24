@@ -70,22 +70,42 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("8/8 Search with untyped patient at DQB1")]
-        public virtual void _88SearchWithUntypedPatientAtDQB1()
+        [NUnit.Framework.DescriptionAttribute("8/8 Search")]
+        public virtual void _88Search()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search with untyped patient at DQB1", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search", null, ((string[])(null)));
 #line 5
   this.ScenarioInitialize(scenarioInfo);
             this.ScenarioStart();
 #line 6
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 7
- testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 8
     testRunner.And("the matching donor is a 8/8 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 9
+#line 8
     testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 10
+#line 9
+    testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("8/8 Search with untyped patient at DQB1")]
+        public virtual void _88SearchWithUntypedPatientAtDQB1()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("8/8 Search with untyped patient at DQB1", null, ((string[])(null)));
+#line 11
+  this.ScenarioInitialize(scenarioInfo);
+            this.ScenarioStart();
+#line 12
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 13
+ testRunner.And("the patient is untyped at Locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 14
+    testRunner.And("the matching donor is a 8/8 match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 15
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 16
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

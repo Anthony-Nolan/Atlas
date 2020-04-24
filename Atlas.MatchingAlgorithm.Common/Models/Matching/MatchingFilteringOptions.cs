@@ -6,7 +6,6 @@
     /// </summary>
     public class MatchingFilteringOptions
     {
-        public bool ShouldFilterOnRegistry { get; set; }
         public bool ShouldFilterOnDonorType { get; set; }
     }
 }

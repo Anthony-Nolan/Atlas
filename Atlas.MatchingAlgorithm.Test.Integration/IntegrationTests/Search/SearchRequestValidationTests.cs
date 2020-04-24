@@ -49,7 +49,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithTotalMismatchCount(0)
                 .WithMismatchCountAtLoci(new List<Locus> { Locus.A, Locus.B, Locus.Drb1 }, 0)
                 .WithSearchHla(new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
-                .ForRegistries(new List<RegistryCode> { RegistryCode.AN })
                 .WithLociExcludedFromScoringAggregates(new List<LocusType>())
                 .Build();
         }
@@ -68,8 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             {
                 MatchCriteria = searchRequest.MatchCriteria,
                 SearchHlaData = searchRequest.SearchHlaData,
-                LociToExcludeFromAggregateScore = searchRequest.LociToExcludeFromAggregateScore,
-                RegistriesToSearch = searchRequest.RegistriesToSearch
+                LociToExcludeFromAggregateScore = searchRequest.LociToExcludeFromAggregateScore
             };
 
             Assert.ThrowsAsync<ValidationException>(
@@ -174,24 +172,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int? donorMismatchCount)
         {
             searchRequest.MatchCriteria.DonorMismatchCount = donorMismatchCount;
-
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(searchRequest));
-        }
-
-        [Test]
-        public void DispatchSearch_RegistriesToSearchIsNull_ThrowsValidationError()
-        {
-            searchRequest.RegistriesToSearch = null;
-
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(searchRequest));
-        }
-
-        [Test]
-        public void DispatchSearch_RegistriesToSearchIsEmpty_ThrowsValidationError()
-        {
-            searchRequest.RegistriesToSearch = new List<RegistryCode>();
 
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));

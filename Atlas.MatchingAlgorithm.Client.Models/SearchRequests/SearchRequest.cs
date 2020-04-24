@@ -28,10 +28,5 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
         /// Any loci specified here can be excluded from these aggregates.
         /// </summary>
         public IEnumerable<LocusType> LociToExcludeFromAggregateScore { get; set; }
-        
-        /// <summary>
-        /// List of donor registries to search.
-        /// </summary>
-        public IEnumerable<RegistryCode> RegistriesToSearch { get; set; }
     }
 }

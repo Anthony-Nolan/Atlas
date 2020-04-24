@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             stopwatch.Start();
 
             var results = await Task.WhenAll(loci.Select(l =>
-                FindMatchesAtLocus(criteria.SearchType, criteria.RegistriesToSearch, l, criteria.MatchCriteriaForLocus(l)))
+                FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l)))
             );
 
             logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms",
@@ -124,7 +124,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             {
                 var results = await FindMatchesAtLocusFromDonorSelection(
                     criteria.SearchType,
-                    criteria.RegistriesToSearch,
                     locus,
                     criteria.MatchCriteriaForLocus(locus),
                     phase1MatchResults.Keys
@@ -155,7 +154,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(
             DonorType searchType,
-            IEnumerable<RegistryCode> registriesToSearch,
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria
         )
@@ -163,7 +161,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var repoCriteria = new LocusSearchCriteria
             {
                 SearchType = searchType,
-                Registries = registriesToSearch,
                 PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
                 PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
                 MismatchCount = criteria.MismatchCount,
@@ -172,7 +169,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var filteringOptions = new MatchingFilteringOptions
             {
                 ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
-                ShouldFilterOnRegistry = databaseFilteringAnalyser.ShouldFilterOnRegistriesInDatabase(repoCriteria),
             };
 
             var stopwatch = new Stopwatch();
@@ -193,7 +189,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocusFromDonorSelection(
             DonorType searchType,
-            IEnumerable<RegistryCode> registriesToSearch,
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria,
             IEnumerable<int> donorIds
@@ -202,7 +197,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var repoCriteria = new LocusSearchCriteria
             {
                 SearchType = searchType,
-                Registries = registriesToSearch,
                 PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
                 PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
                 MismatchCount = criteria.MismatchCount,

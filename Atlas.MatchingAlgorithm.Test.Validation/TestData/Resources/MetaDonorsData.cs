@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
     /// Each 'meta-donor' corresponds to a donor with fully TGS typed HLA (i.e. Genotype)
     ///
     /// This underlying genotype will be 'dumbed down' to lower resolutions. Each meta-donor specifies a list of resolutions -
-    /// each entry in this list will correspond to a donor in the database, which will share general donor information (e.g. type, registry),
+    /// each entry in this list will correspond to a donor in the database, which will share general donor information (e.g. type),
     /// with HLA according at the resolutions specified.
     ///
     /// When adding new tests, it is likely that new meta donors and/or resolutions for existing meta-donors will need to be added.
@@ -47,7 +47,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringContainingDifferentGroupsAtAllLoci().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
@@ -66,7 +65,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele)
                     .Build(),
@@ -88,7 +86,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele)
                     .Build(),
@@ -98,7 +95,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele)
                     .Build(),
@@ -108,7 +104,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithAlleleStringOfSubtypesPossibleAtAllLoci().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
@@ -120,7 +115,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.PGroup).Build(),
             },
 
@@ -128,7 +122,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.GGroup).Build(),
             },
 
@@ -136,7 +129,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.CDna).Build(),
             },
 
@@ -144,7 +136,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithMatchLevelPossibleAtAllLoci(MatchLevel.Protein).Build(),
             },
 
@@ -152,7 +143,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithMatchLevelPossibleAtAllLoci(MatchLevel.FirstThreeFieldAllele)
                     .Build(),
@@ -162,7 +152,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithMatchLevelPossibleAtAllLoci(MatchLevel.FirstTwoFieldAllele)
                     .Build(),
@@ -172,7 +161,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().HomozygousAtLocus(Locus.A).Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
@@ -184,39 +172,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
-                Registry = RegistryCode.AN,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-            },
-
-            // Adult at DKMS
-            new MetaDonor
-            {
-                DonorType = DonorType.Adult,
-                Registry = RegistryCode.DKMS,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-            },
-
-            // Cord at DKMS
-            new MetaDonor
-            {
-                DonorType = DonorType.Cord,
-                Registry = RegistryCode.DKMS,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-            },
-
-            // Adult at NHSBT
-            new MetaDonor
-            {
-                DonorType = DonorType.Adult,
-                Registry = RegistryCode.NHSBT,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
-            },
-
-            // Adult at WBS
-            new MetaDonor
-            {
-                DonorType = DonorType.Adult,
-                Registry = RegistryCode.WBS,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
             },
 
@@ -224,7 +179,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtAllLoci().Build(),
             },
             
@@ -232,7 +186,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePosition.One).Build(),
             },
 
@@ -240,7 +193,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder()
                     .WithNonNullExpressionSuffixAtLocus(Locus.A)
                     .WithNonNullExpressionSuffixAtLocus(Locus.B)
@@ -254,7 +206,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Cord,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
@@ -284,7 +235,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithStringOfSingleAndMultiplePGroupsPossibleAtAllLoci().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
@@ -301,7 +251,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
@@ -322,7 +271,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
         private static readonly IEnumerable<MetaDonor> FourFieldDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i => new MetaDonor
         {
             DonorType = DonorType.Adult,
-            Registry = RegistryCode.AN,
             GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.FourFieldAllele).Build(),
         });
 
@@ -332,7 +280,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
         private static readonly IEnumerable<MetaDonor> ThreeFieldDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i => new MetaDonor
         {
             DonorType = DonorType.Adult,
-            Registry = RegistryCode.AN,
             GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.ThreeFieldAllele).Build(),
         });
 
@@ -342,7 +289,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
         private static readonly IEnumerable<MetaDonor> TwoFieldDonorRange = Enumerable.Range(0, SmallDonorRangeCount + 1).Select(i => new MetaDonor
         {
             DonorType = DonorType.Adult,
-            Registry = RegistryCode.AN,
             GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.TwoFieldAllele).Build(),
         });
 
@@ -353,7 +299,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
             });
 
@@ -364,7 +309,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().WithTgsTypingCategoryAtAllLoci(TgsHlaTypingCategory.Arbitrary).Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {

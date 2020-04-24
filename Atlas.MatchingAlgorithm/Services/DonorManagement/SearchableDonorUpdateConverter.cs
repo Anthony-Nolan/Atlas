@@ -35,8 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 async update => await GetDonorAvailabilityUpdate(update),
                 update => new FailedDonorInfo(update)
                 {
-                    DonorId = update.DeserializedBody?.DonorId,
-                    RegistryCode = update.DeserializedBody?.SearchableDonorInformation?.RegistryCode
+                    DonorId = update.DeserializedBody?.DonorId
                 },
                 UpdateFailureEventName);
         }

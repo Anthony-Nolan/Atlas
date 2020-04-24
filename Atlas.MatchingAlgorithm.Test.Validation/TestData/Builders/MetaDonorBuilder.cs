@@ -14,7 +14,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
             metaDonor = new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                Registry = RegistryCode.AN,
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build()
             };
         }
@@ -22,12 +21,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
         public MetaDonorBuilder WithDonorType(DonorType donorType)
         {
             metaDonor.DonorType = donorType;
-            return this;
-        }
-
-        public MetaDonorBuilder AtRegistry(RegistryCode registryCode)
-        {
-            metaDonor.Registry = registryCode;
             return this;
         }
 

@@ -79,7 +79,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
             donor = new DonorInfoWithExpandedHla
             {
-                RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
                 HlaNames = donorHlas,

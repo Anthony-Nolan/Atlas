@@ -17,7 +17,6 @@ namespace Atlas.MatchingAlgorithm.Test.Performance.Models
 
         public SearchType SearchType { get; set; }
         public DonorType DonorType { get; set; }
-        public bool IsAlignedRegistriesSearch { get; set; }
 
         public string HlaA1 { get; set; }
         public string HlaA2 { get; set; }
@@ -37,7 +36,6 @@ namespace Atlas.MatchingAlgorithm.Test.Performance.Models
             PatientId = input.PatientId;
             SearchType = input.SearchType;
             DonorType = input.DonorType;
-            IsAlignedRegistriesSearch = input.IsAlignedRegistriesSearch;
 
             HlaA1 = input.Hla.A.Position1;
             HlaA2 = input.Hla.A.Position2;

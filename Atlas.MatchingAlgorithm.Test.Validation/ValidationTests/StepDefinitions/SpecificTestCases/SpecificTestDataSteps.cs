@@ -26,7 +26,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             {
                 DonorId = DonorIdGenerator.NextId(),
                 HlaNames = donorHla,
-                RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult
             };
 

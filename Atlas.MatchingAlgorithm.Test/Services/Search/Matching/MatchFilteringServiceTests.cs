@@ -183,42 +183,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         }
 
         [Test]
-        public void FulfilsRegistryCriteria_ForMatchAtSpecifiedRegistry_ReturnsTrue()
-        {
-            const RegistryCode specifiedRegistry = RegistryCode.AN;
-            var match = new MatchResult {DonorInfo = new DonorInfo {RegistryCode = specifiedRegistry}};
-            var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {specifiedRegistry}};
-
-            var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
-
-            result.Should().BeTrue();
-        }
-
-        [Test]
-        public void FulfilsRegistryCriteria_ForMatchAtOneOfMultipleSpecifiedRegistries_ReturnsTrue()
-        {
-            const RegistryCode patientRegistry = RegistryCode.DKMS;
-            var match = new MatchResult {DonorInfo = new DonorInfo {RegistryCode = patientRegistry}};
-            var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {patientRegistry, RegistryCode.FRANCE}};
-
-            var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
-
-            result.Should().BeTrue();
-        }
-
-        [Test]
-        public void FulfilsRegistryCriteria_ForMatchAtUnspecifiedRegistry_ReturnsFalse()
-        {
-            const RegistryCode patientRegistry = RegistryCode.DKMS;
-            var match = new MatchResult {DonorInfo = new DonorInfo {RegistryCode = patientRegistry}};
-            var criteria = new AlleleLevelMatchCriteria {RegistriesToSearch = new List<RegistryCode> {RegistryCode.NMDP, RegistryCode.FRANCE}};
-
-            var result = matchFilteringService.FulfilsRegistryCriteria(match, criteria);
-
-            result.Should().BeFalse();
-        }
-
-        [Test]
         public void FulfilsSearchTypeCriteria_ForMatchOfSpecifiedType_ReturnsTrue()
         {
             const DonorType donorType = DonorType.Cord;

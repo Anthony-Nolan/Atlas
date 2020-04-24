@@ -210,15 +210,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             scenarioContext.Set(patientDataFactory);
         }
 
-        [Given(@"the donor is in registry: (.*)")]
-        [Given(@"the matching donor is in registry: (.*)")]
-        public void GivenTheMatchingDonorIsInRegistry(string registry)
-        {
-            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
-            patientDataFactory.SetMatchDonorRegistry(registry);
-            scenarioContext.Set(patientDataFactory);
-        }
-
         [Given(@"the match level is (.*)")]
         public void GivenTheMatchingDonorIsALevelMatch(string matchLevel)
         {
@@ -229,7 +220,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         
         [Given(@"the donor has an allele with (.*) expression suffix at (.*)")]
         [Given(@"the matching donor has an allele with (.*) expression suffix at (.*)")]
-        public void GivenTheMatchingDonorIsInRegistry(string expressionSuffixType, string locus)
+        public void GivenTheMatchingDonorHasAnAlleleWithExpressionSuffix(string expressionSuffixType, string locus)
         {
             var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetExpressionSuffixAt(expressionSuffixType, locus);

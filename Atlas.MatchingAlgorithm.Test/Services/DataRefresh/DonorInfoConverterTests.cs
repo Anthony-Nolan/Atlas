@@ -35,7 +35,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 {
                     DonorId = donorId,
                     DonorType = $"{DonorType.Adult}",
-                    RegistryCode = $"{RegistryCode.AN}",
                     A_1 = hlaName,
                     A_2 = hlaName,
                     B_1 = hlaName,

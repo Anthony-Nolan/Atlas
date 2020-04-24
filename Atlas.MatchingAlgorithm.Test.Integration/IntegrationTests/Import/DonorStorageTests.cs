@@ -25,7 +25,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
         private readonly DonorInfoWithExpandedHla donorInfoWithAllelesAtThreeLoci = new DonorInfoWithExpandedHla
         {
-            RegistryCode = RegistryCode.DKMS,
             DonorType = DonorType.Cord,
             HlaNames = new PhenotypeInfo<string>
             {
@@ -67,7 +66,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
         private readonly DonorInfoWithExpandedHla donorInfoWithXxCodesAtThreeLoci = new DonorInfoWithExpandedHla
         {
-            RegistryCode = RegistryCode.AN,
             DonorType = DonorType.Cord,
             HlaNames = new PhenotypeInfo<string>
             {
@@ -277,7 +275,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             actualDonorInfo.DonorId.Should().Be(expectedDonorInfo.DonorId);
             actualDonorInfo.DonorType.Should().Be(expectedDonorInfo.DonorType);
-            actualDonorInfo.RegistryCode.Should().Be(expectedDonorInfo.RegistryCode);
             actualDonorInfo.IsAvailableForSearch.Should().Be(expectedDonorInfo.IsAvailableForSearch);
             actualDonorInfo.HlaNames.ShouldBeEquivalentTo(expectedDonorInfo.HlaNames);
         }

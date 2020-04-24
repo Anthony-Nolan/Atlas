@@ -98,7 +98,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var criteria = new AlleleLevelMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
-                RegistriesToSearch = searchRequest.RegistriesToSearch,
                 DonorMismatchCount = (int) matchCriteria.DonorMismatchCount,
                 LocusMismatchA = criteriaMappings[0],
                 LocusMismatchB = criteriaMappings[1],
@@ -144,7 +143,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 DonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType,
-                Registry = result.MatchResult.DonorInfo.RegistryCode,
                 OverallMatchConfidence = result.ScoreResult.AggregateScoreDetails.OverallMatchConfidence,
                 MatchCategory = result.ScoreResult.AggregateScoreDetails.MatchCategory,
                 ConfidenceScore = result.ScoreResult.AggregateScoreDetails.ConfidenceScore,

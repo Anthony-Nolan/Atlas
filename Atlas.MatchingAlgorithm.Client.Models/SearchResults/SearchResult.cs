@@ -15,11 +15,6 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         public DonorType DonorType { get; set; }
 
         /// <summary>
-        /// The code of the donor registry which this donor originates from.
-        /// </summary>
-        public RegistryCode Registry { get; set; }
-
-        /// <summary>
         /// The number of loci matched, down to the type.
         /// Out of a maximum of 10.
         /// 

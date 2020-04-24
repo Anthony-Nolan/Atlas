@@ -84,7 +84,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
                 {
                     DonorId = ValidDonorId,
                     DonorType = $"{DonorType.Adult}",
-                    RegistryCode = $"{RegistryCode.AN}",
                     A_1 = hlaName,
                     A_2 = hlaName,
                     B_1 = hlaName,
@@ -112,7 +111,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
                 {
                     DonorId = ValidDonorId,
                     DonorType = $"{DonorType.Adult}",
-                    RegistryCode = $"{RegistryCode.AN}",
                     A_1 = hlaName,
                     A_2 = hlaName,
                     B_1 = hlaName,

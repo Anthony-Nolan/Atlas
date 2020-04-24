@@ -10,7 +10,6 @@ namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
     {
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
-        public RegistryCode RegistryCode { get; set; }
         public PhenotypeInfo<string> HlaNames { get; set; }
         public bool IsAvailableForSearch { get; set; } = true;
     }

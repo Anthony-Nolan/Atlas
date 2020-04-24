@@ -8,9 +8,6 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
     {
         private readonly AlleleLevelMatchCriteria request = new AlleleLevelMatchCriteria()
         {
-            RegistriesToSearch = new List<RegistryCode> {
-                RegistryCode.AN, RegistryCode.DKMS, RegistryCode.FRANCE, RegistryCode.NHSBT, RegistryCode.NMDP, RegistryCode.WBS
-            },
             SearchType = DonorType.Adult
         };
 

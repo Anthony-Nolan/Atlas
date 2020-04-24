@@ -48,7 +48,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         public async Task ManageDonorBatchByAvailability_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
-            const RegistryCode registryCode = RegistryCode.AN;
             const DonorType donorType = DonorType.Adult;
 
             await donorManagementService.ManageDonorBatchByAvailability(new[] {
@@ -58,7 +57,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     DonorInfo = new DonorInfo
                     {
                         DonorId = donorId,
-                        RegistryCode = registryCode,
                         DonorType = donorType
                     },
                     IsAvailableForSearch = true
@@ -68,7 +66,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == donorId &&
-                    x.Single().RegistryCode == registryCode &&
                     x.Single().DonorType == donorType));
         }
 
@@ -84,7 +81,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     DonorInfo = new DonorInfo
                     {
                         DonorId = donorId,
-                        RegistryCode = RegistryCode.AN,
                         DonorType = DonorType.Adult
                     },
                     IsAvailableForSearch = true
@@ -133,7 +129,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
-            const RegistryCode registryCode = RegistryCode.AN;
             const DonorType donorType = DonorType.Adult;
 
             var olderUnavailableUpdate = new DonorAvailabilityUpdate
@@ -149,7 +144,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 DonorInfo = new DonorInfo
                 {
                     DonorId = donorId,
-                    RegistryCode = registryCode,
                     DonorType = donorType
                 },
                 IsAvailableForSearch = true,
@@ -163,7 +157,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == donorId &&
-                    x.Single().RegistryCode == registryCode &&
                     x.Single().DonorType == donorType));
         }
 
@@ -185,7 +178,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 DonorInfo = new DonorInfo
                 {
                     DonorId = donorId,
-                    RegistryCode = RegistryCode.AN,
                     DonorType = DonorType.Adult
                 },
                 IsAvailableForSearch = true,
@@ -211,7 +203,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 DonorInfo = new DonorInfo
                 {
                     DonorId = donorId,
-                    RegistryCode = RegistryCode.AN,
                     DonorType = DonorType.Adult
                 },
                 IsAvailableForSearch = true,
@@ -244,7 +235,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 DonorInfo = new DonorInfo
                 {
                     DonorId = donorId,
-                    RegistryCode = RegistryCode.AN,
                     DonorType = DonorType.Adult
                 },
                 IsAvailableForSearch = true,
@@ -438,7 +428,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         {
             const int availableDonorId = 123;
             const int unavailableDonorId = 456;
-            const RegistryCode registryCode = RegistryCode.AN;
             const DonorType donorType = DonorType.Adult;
 
             await donorManagementService.ManageDonorBatchByAvailability(new[] {
@@ -453,7 +442,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     DonorInfo = new DonorInfo
                     {
                         DonorId = availableDonorId,
-                        RegistryCode = registryCode,
                         DonorType = donorType
                     },
                     IsAvailableForSearch = true
@@ -467,7 +455,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == availableDonorId &&
-                    x.Single().RegistryCode == registryCode &&
                     x.Single().DonorType == donorType));
         }
 
