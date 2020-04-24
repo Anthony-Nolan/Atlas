@@ -95,9 +95,9 @@ jobs:
     pool: Hosted Ubuntu 1604
     steps:
       - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
-        displayName: 'Use Terraform 0.12.21'
+        displayName: 'Use Terraform 0.12.24'
         inputs:
-          terraformVersion: '0.12.21'
+          terraformVersion: '0.12.24'
       - script: 'terraform init -reconfigure'
         workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
         displayName: 'terraform init'
