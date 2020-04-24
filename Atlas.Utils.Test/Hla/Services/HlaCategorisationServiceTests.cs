@@ -3,7 +3,7 @@ using Atlas.Utils.Hla.Services;
 using Nova.Utils.Http.Exceptions;
 using NUnit.Framework;
 
-namespace Atlas.Utils.Test.Services.Hla
+namespace Atlas.Utils.Test.Hla.Services
 {
     [TestFixture]
     public class HlaCategorisationServiceTests
