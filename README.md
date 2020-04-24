@@ -393,3 +393,45 @@ The following keys must be set as user secrets in the api project:
 - apiKey:{example-key}
 - hlaservice.apikey
 - donorservice.apikey
+
+*******
+
+## Deployment
+
+As much as possible of deployment of the ATLAS system has been scripted, via a combination of Terraform (using the Azure Resource Manager provider), and Azure Devops .yml scripts.
+Atlas is supported in an Azure environment, built and deployed using Azure Devops - to change either would require some custom changes to the codebase.
+
+The following are the steps that are required to be taken manually when deploying ATLAS to a new environment.
+
+### Azure Configuration
+
+- An *Azure subscription* must exist into which the Atlas system will be deployed.
+- An *Azure storage account* must be available for Terraform to use as a backend.
+- An *App Registration* should be created within Azure Active Directory, used to by Terraform for authentication.
+
+### Azure Devops Configuration
+
+- A variable group named "terraform" should be created, with the following variables:
+    - *ARM_ACCESS_KEY* 
+        - storage account access key for the storage-driven terraform backend
+    - *ARM_CLIENT_ID*
+    - *ARM_CLIENT_SECRET*
+    - *ARM_TENANT_ID*
+        - Details available from the azure AD app registration 
+- New Devops build pipelines should be created, using the checked in `<pipeline>.yml` files.
+- An Azure service connection should be set up to the target Azure subscription
+- A Devops release should be manually created
+    - The following steps should be defined:
+        - Apply terraform
+        - Run database migrations
+        - Release azure function apps 
+    - Release variables should be set up for each target environment. Expected variables are defined in `variables.tf`. Those without default values are required.
+        - Note that the variable "API_KEY" is slightly unusual: the host keys for azure functions cannot be set by terraform, so this cannot be set before the first release.
+         The only usage is via a terraform export, in case consumers of the matching function choose to access the host key via terraform remote states.
+         
+### Terraform
+    
+- Before terraform can be run for the first time, a new terraform workspace should be manually created. During the release step, this new workspace should be created.
+    - If only one workspace is required (i.e. there is no plan to release Atlas to multiple environments) this step can be skipped, instead using the "default" terraform workspace.
+- All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should
+be made to the terraform scripts in a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.        
