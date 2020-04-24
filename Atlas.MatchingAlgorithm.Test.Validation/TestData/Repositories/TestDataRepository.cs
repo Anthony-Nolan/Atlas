@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -36,6 +37,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
         public void SetupPersistentDatabase()
         {
             persistentContext.Database.Migrate();
+            if (!persistentContext.DataRefreshRecords.Any())
+            {
+                persistentContext.DataRefreshRecords.Add(new DataRefreshRecord
+                {
+                    Database = TransientDatabase.DatabaseA.ToString(),
+                    WasSuccessful = true,
+                    RefreshBeginUtc = DateTime.UtcNow,
+                    RefreshEndUtc = DateTime.UtcNow,
+                    // Hardcoded wmda version, as all test data sources were manually generated using this specific nomenclature version - 3330
+                    WmdaDatabaseVersion = "3330"
+                });
+                persistentContext.SaveChanges();
+            }
         }
 
         public void SetupDatabase()

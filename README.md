@@ -46,6 +46,8 @@ The solution is split across multiple projects:
 
 ## Zero-to-Hero Start Up Guide
 
+### API Setup - Running A Search
+
 Follow these steps to get to a state in which you can run Searches against a database of donors.
 The details of why these steps are necessary and what they are doing, is detailed in the rest of this README below.
 It's highly recommended that you read the sections below the ZtH in parallel with it. Especially if anything doesn't make sense!
@@ -106,6 +108,14 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
   - You should get a 200 Success response, with 8 results.
   - The first search should take 40-90 seconds.
   - Subsequent searches should take < 1 second.
+
+### Validation Tests
+
+- set up user-secrets in the `Atlas.MatchingAlgorithm.Test.Validation` directory. Appropriate values can be found on Azure. :
+    - notifications service bus connection string
+    - hla service client api key
+- ensure that the Azure Storage Emulator is running
+    - Note for mac users: there is no storage emulator on mac, so instead another user-secret should be used to instead use a cloud-based storage account 
 
 ## More detailed Notes
 
