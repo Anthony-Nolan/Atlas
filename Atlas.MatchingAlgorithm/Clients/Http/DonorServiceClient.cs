@@ -58,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
         {
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException("Unable to file DonorOverride file.", filePath);
+                throw new FileNotFoundException("Unable to find DonorOverride file.", filePath);
             }
 
             using (var reader = new StreamReader(filePath))
