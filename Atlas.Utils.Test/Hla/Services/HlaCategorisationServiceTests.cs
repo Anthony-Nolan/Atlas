@@ -42,7 +42,7 @@ namespace Atlas.Utils.Test.Hla.Services
         [TestCase("")]
         public void GetHlaTypingCategory_WhenHlaNameDoesNotFitKnownPattern_ThrowsBadRequestException(string hlaName)
         {
-            Assert.Throws<AtlasHttpException>(() => hlaCategorisationService.GetHlaTypingCategory(hlaName));
+            Assert.Throws<NovaHttpException>(() => hlaCategorisationService.GetHlaTypingCategory(hlaName));
         }
 
         [TestCase("*01:XX")]
