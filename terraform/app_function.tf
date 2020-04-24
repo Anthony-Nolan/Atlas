@@ -20,8 +20,6 @@ locals {
     "Client.HlaService.BaseUrl"                                 = var.HLA_SERVICE_BASEURL
     "DataRefresh.ActiveDatabaseSize"                            = var.DATA_REFRESH_DB_SIZE_ACTIVE
     "DataRefresh.CronTab"                                       = var.DATA_REFRESH_CRONTAB
-    "DataRefresh.DatabaseAName"                                 = var.DATA_REFRESH_DATABASE_A_NAME
-    "DataRefresh.DatabaseBName"                                 = var.DATA_REFRESH_DATABASE_B_NAME
     "DataRefresh.DonorImportFunctionName"                       = var.DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME
     "DataRefresh.DonorFunctionsAppName"                         = azurerm_function_app.atlas_matching_algorithm_donor_management_function.name
     "DataRefresh.DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
@@ -80,17 +78,17 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = var.CONNECTION_STRING_SQL_A
+    value = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-a.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = var.CONNECTION_STRING_SQL_B
+    value = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-b.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = var.CONNECTION_STRING_SQL_PERSISTENT
+    value = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-persistent.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
 }
 
@@ -114,16 +112,16 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = var.CONNECTION_STRING_SQL_A
+    value = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-a.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = var.CONNECTION_STRING_SQL_B
+    value = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-b.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = var.CONNECTION_STRING_SQL_PERSISTENT
+    value = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-persistent.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
 }
