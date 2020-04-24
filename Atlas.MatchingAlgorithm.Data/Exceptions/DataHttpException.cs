@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.Data.Exceptions
 {
     /// <summary>
     /// Exception for issues which occur in the Atlas.MatchingAlgorithm.Data.Framework project.
     /// </summary>
-    public class DataHttpException : NovaHttpException
+    public class DataHttpException : AtlasHttpException
     {
         public DataHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)

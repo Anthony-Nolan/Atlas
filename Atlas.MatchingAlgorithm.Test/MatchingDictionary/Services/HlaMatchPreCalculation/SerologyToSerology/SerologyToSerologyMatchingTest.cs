@@ -6,7 +6,6 @@ using ApprovalTests.Reporters.TestFrameworks;
 using FluentAssertions;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Nova.Utils.Models;
 using NUnit.Framework;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 

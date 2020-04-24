@@ -1,6 +1,6 @@
 ﻿using Atlas.Utils.Hla.Models;
 using Atlas.Utils.Hla.Services;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 using NUnit.Framework;
 
 namespace Atlas.Utils.Test.Hla.Services
@@ -42,7 +42,7 @@ namespace Atlas.Utils.Test.Hla.Services
         [TestCase("")]
         public void GetHlaTypingCategory_WhenHlaNameDoesNotFitKnownPattern_ThrowsBadRequestException(string hlaName)
         {
-            Assert.Throws<NovaHttpException>(() => hlaCategorisationService.GetHlaTypingCategory(hlaName));
+            Assert.Throws<AtlasHttpException>(() => hlaCategorisationService.GetHlaTypingCategory(hlaName));
         }
 
         [TestCase("*01:XX")]

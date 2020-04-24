@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.Exceptions
 {
-    public class DonorImportHttpException : NovaHttpException
+    public class DonorImportHttpException : AtlasHttpException
     {
         public DonorImportHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)
