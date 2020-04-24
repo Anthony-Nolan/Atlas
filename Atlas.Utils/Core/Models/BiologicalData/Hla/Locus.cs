@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Models
+namespace Atlas.Utils.Core.Models
 {
     [Obsolete("Locus is deprecated, please use Antigen instead.")]
     public class Locus

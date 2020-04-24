@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Nova.Utils.Common
+namespace Atlas.Utils.Core.Common
 {
     /// <summary>
     /// A thread-safe implementation of the Disposable pattern

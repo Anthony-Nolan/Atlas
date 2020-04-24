@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Nova.Utils.ApplicationInsights.EventModels;
+using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
-namespace Nova.Utils.ApplicationInsights
+namespace Atlas.Utils.Core.ApplicationInsights
 {
     public class NoOpLogger : ILogger
     {

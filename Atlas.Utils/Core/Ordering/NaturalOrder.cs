@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Ordering
+namespace Atlas.Utils.Core.Ordering
 {
     internal class NaturalOrder<T> : Order<T>
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.Utils.Http
+namespace Atlas.Utils.Core.Http
 {
     public class ValidationErrorsModel
     {

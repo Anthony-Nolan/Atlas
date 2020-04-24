@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using Nova.Utils.Common;
+using Atlas.Utils.Core.Common;
 
-namespace Nova.Utils.Http
+namespace Atlas.Utils.Core.Http
 {
     public static class QueryStringExtensions
     {

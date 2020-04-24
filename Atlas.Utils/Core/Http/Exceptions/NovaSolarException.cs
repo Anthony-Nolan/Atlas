@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Nova.Utils.Http.Exceptions
+namespace Atlas.Utils.Core.Http.Exceptions
 {
     public class NovaSolarException : NovaHttpException
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Nova.Utils.Attributes
+namespace Atlas.Utils.Core.Attributes
 {
     /// <summary>
     /// For certain types of apps, such as web apps, <see cref="Assembly.GetEntryAssembly"/>

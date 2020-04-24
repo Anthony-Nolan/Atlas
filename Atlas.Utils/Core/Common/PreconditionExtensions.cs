@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Common
+namespace Atlas.Utils.Core.Common
 {
     public static class PreconditionExtensions
     {

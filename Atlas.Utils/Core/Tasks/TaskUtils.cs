@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Nova.Utils.Concurrency;
+using Atlas.Utils.Core.Concurrency;
 
-namespace Nova.Utils.Tasks
+namespace Atlas.Utils.Core.Tasks
 {
     public static class TaskUtils
     {

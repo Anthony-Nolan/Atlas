@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.Utils.Pagination
+namespace Atlas.Utils.Core.Pagination
 {
     public static class PaginationExtensions
     {

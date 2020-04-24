@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Nova.Utils.Http
+namespace Atlas.Utils.Core.Http
 {
     public interface IErrorsParser
     {

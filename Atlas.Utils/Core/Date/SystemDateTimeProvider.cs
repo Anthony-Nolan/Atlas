@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Date
+namespace Atlas.Utils.Core.Date
 {
     public class SystemDateTimeProvider : IDateTimeProvider
     {

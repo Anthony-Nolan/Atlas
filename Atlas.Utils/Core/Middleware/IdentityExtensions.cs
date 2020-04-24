@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Net.Http;
 
-namespace Nova.Utils.Middleware
+namespace Atlas.Utils.Core.Middleware
 {
     public static class IdentityExtensions
     {

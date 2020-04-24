@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Net.Http;
 
-namespace Nova.Utils.Middleware.RequestId
+namespace Atlas.Utils.Core.Middleware.RequestId
 {
     public static class RequestIdExtensions
     {

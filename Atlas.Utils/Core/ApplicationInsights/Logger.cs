@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using Nova.Utils.ApplicationInsights.EventModels;
+using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
-namespace Nova.Utils.ApplicationInsights
+namespace Atlas.Utils.Core.ApplicationInsights
 {
     public interface ILogger
     {

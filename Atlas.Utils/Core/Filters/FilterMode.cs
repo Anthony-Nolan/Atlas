@@ -1,4 +1,4 @@
-﻿namespace Nova.Utils.Filters
+﻿namespace Atlas.Utils.Core.Filters
 {
     public enum FilterMode
     {

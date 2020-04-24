@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace Nova.Utils.Common
+namespace Atlas.Utils.Core.Common
 {
     public static class EnumExtensions
     {

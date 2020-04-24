@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Nova.Utils.Common;
+using Atlas.Utils.Core.Common;
 
-namespace Nova.Utils.Ordering
+namespace Atlas.Utils.Core.Ordering
 {
     internal class FuncComparer<TFrom, TTo> : Order<TFrom>
     {

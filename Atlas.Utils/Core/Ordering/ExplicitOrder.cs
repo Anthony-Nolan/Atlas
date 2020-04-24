@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.Utils.Ordering
+namespace Atlas.Utils.Core.Ordering
 {
     internal class ExplicitComparer<T> : Order<T>
     {

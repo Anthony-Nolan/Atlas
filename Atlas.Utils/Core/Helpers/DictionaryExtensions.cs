@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.Utils.Helpers
+namespace Atlas.Utils.Core.Helpers
 {
     public static class DictionaryExtensions
     {

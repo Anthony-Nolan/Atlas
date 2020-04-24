@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Nova.Utils.ApplicationInsights.EventModels
+namespace Atlas.Utils.Core.ApplicationInsights.EventModels
 {
     public class SolarConnectionEventModel : EventModel
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Date
+namespace Atlas.Utils.Core.Date
 {
     /// <summary>
     /// Interface to abstract away fetching of the current date/time.

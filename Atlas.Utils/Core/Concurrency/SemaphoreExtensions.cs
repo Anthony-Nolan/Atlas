@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Nova.Utils.Concurrency
+namespace Atlas.Utils.Core.Concurrency
 {
     public static class SemaphoreExtensions
     {

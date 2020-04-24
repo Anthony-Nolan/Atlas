@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nova.Utils.Auth
+namespace Atlas.Utils.Core.Auth
 {
     public interface IUserProvider
     {

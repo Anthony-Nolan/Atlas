@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Models
+namespace Atlas.Utils.Core.Models
 {
     /// <summary>
     /// Possible statuses representing test results for a subject for a given virus type.
