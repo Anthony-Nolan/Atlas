@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent
 {
+    // qq test change plz delet 
     public class ContextFactory : IDesignTimeDbContextFactory<SearchAlgorithmPersistentContext>
     {
         // This method is called by entity framework to create a context when generating/running migrations
