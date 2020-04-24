@@ -4,7 +4,7 @@ using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.Exceptions
 {
-    public class DonorImportHttpException : AtlasHttpException
+    public class DonorImportHttpException : NovaHttpException
     {
         public DonorImportHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)

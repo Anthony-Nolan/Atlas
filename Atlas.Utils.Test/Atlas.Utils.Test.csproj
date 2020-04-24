@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Atlas.Utils\Atlas.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\" />
+  </ItemGroup>
+
 </Project>

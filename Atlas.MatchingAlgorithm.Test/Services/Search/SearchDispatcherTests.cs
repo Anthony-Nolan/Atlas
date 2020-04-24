@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task RunSearch_WhenSearchFails_PublishesFailureNotification()
         {
             const string id = "id";
-            searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, ""));
+            searchService.Search(Arg.Any<SearchRequest>()).Throws(new NovaHttpException(HttpStatusCode.InternalServerError, ""));
 
             await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
 
