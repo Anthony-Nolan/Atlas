@@ -318,7 +318,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             }
             else if(apiKeyProvided)
             {
-                return GetLiveDonorServiceClient(sp);
+                return GetRemoteDonorServiceClient(sp);
             }
             else
             {
@@ -326,7 +326,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             }
         }
 
-        private static IDonorServiceClient GetLiveDonorServiceClient(IServiceProvider sp)
+        private static IDonorServiceClient GetRemoteDonorServiceClient(IServiceProvider sp)
         {
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
             var clientSettings = new ClientSettings
