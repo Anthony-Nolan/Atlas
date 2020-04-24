@@ -55,18 +55,6 @@ variable "AZURE_CLIENT_SECRET" {
   type = string
 }
 
-variable "CONNECTION_STRING_SQL_A" {
-  type = string
-}
-
-variable "CONNECTION_STRING_SQL_B" {
-  type = string
-}
-
-variable "CONNECTION_STRING_SQL_PERSISTENT" {
-  type = string
-}
-
 variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
   type    = string
   default = "S4"
@@ -87,32 +75,22 @@ variable "DATA_REFRESH_CRONTAB" {
   default = "0 0 0 * * Monday"
 }
 
-
 variable "ATLAS_DATABASE_SERVER_LOGIN" {
   type = string
   default = "atlas-admin"
+}
+
+variable "DATA_REFRESH_ADMIN_USERNAME" {
+  type = string
 }
 
 variable "DATA_REFRESH_ADMIN_PASSWORD" {
   type = string
 }
 
-variable "DATA_REFRESH_DATABASE_A_NAME" {
-  type = string
-}
-
 variable "DATA_REFRESH_DATABASE_REPLICATION_TYPE" {
   type = string
   default = "LRS"
-}
-
-variable "DATA_REFRESH_DATABASE_TIER" {
-  type = string
-  default = "Standard"
-}
-
-variable "DATA_REFRESH_DATABASE_B_NAME" {
-  type = string
 }
 
 variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
