@@ -89,6 +89,14 @@ variable "ATLAS_DATABASE_SERVER_LOGIN" {
   default = "atlas-admin"
 }
 
+variable "DATA_REFRESH_DATABASE_VERSION" {
+  type = string
+}
+
+variable "DATA_REFRESH_ADMIN_USERNAME" {
+  type = string
+}
+
 variable "DATA_REFRESH_ADMIN_PASSWORD" {
   type = string
 }
