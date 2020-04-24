@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CsvHelper;
+using CsvHelper.Configuration;
 using Nova.DonorService.Client.Models.SearchableDonors;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
@@ -23,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
         /// that any client paging through donors won't miss out if donors are inserted or deleted in-between page requests.
         /// If null or omitted, the first page of results will be returned.</param>
         /// <returns>A page of donors Info for search algorithm</returns>
-        Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null);
+        Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int lastId);
     }
 
     public class FileBasedDonorServiceClient : IDonorServiceClient
@@ -37,21 +39,39 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
             this.logger = logger;
         }
 
-        public async Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
+        public Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int lastId)
         {
             var allDonors = ReadAllDonors();
-            
+            logger.SendTrace($"Read {allDonors.Count} donor records from file, rather than contacting remote service.", LogLevel.Trace);
+
+            var lastDonorOnRecord = allDonors.Last().DonorId;
+
+            if (lastId == lastDonorOnRecord)
+            {
+                return Task.FromResult(new SearchableDonorInformationPage
+                {
+                    DonorsInfo = new List<SearchableDonorInformation>(),
+                    ResultsPerPage = resultsPerPage,
+                    LastId = -1,
+                });
+            }
+
             var donorsToReturn =
-                (lastId == null ? allDonors : allDonors.SkipWhile(donor => donor.DonorId != lastId.Value).Skip(1) )
+                (lastId <= 0 ? allDonors : allDonors.SkipWhile(donor => donor.DonorId != lastId).Skip(1) )
                 .Take(resultsPerPage)
                 .ToList();
-            
-            return new SearchableDonorInformationPage
+
+            if (!donorsToReturn.Any())
+            {
+                throw new ArgumentException("A positive LastId was provided, but did not match any any Donor in the list of DonorIds. Unclear how this could occur.", nameof(lastId));
+            }
+
+            return Task.FromResult(new SearchableDonorInformationPage
             {
                 DonorsInfo = donorsToReturn,
-                ResultsPerPage = allDonors.Count,
-                LastId = donorsToReturn.Last().DonorId
-            };
+                ResultsPerPage = donorsToReturn.Count,
+                LastId = donorsToReturn.Last().DonorId,
+            });
         }
 
         public List<SearchableDonorInformation> ReadAllDonors()
@@ -62,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
             }
 
             using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader))
+            using (var csv = new CsvReader(reader, new Configuration{Quote = '\''}))
             {
                 return csv.GetRecords<SearchableDonorInformation>().ToList();
             }
@@ -75,16 +95,13 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
         {
         }
 
-        public async Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int? lastId = null)
+        public async Task<SearchableDonorInformationPage> GetDonorsInfoForSearchAlgorithm(int resultsPerPage, int lastId)
         {
             var parameters = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("resultsPerPage", resultsPerPage.ToString()),
+                new KeyValuePair<string, string>("lastId", lastId.ToString()),
             };
-            if (lastId.HasValue)
-            {
-                parameters.Add(new KeyValuePair<string, string>("lastId", lastId.Value.ToString()));
-            }
 
             var request = GetRequest(HttpMethod.Get, "donors-info-for-search-algorithm", parameters);
             return await MakeRequestAsync<SearchableDonorInformationPage>(request);

@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             MockDonorServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IDonorServiceClient>();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation>()
             });
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donorInfo = SearchableDonorInformationBuilder.New.Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
             },
@@ -90,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DonorType, rawDonorType)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
             },
@@ -113,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DonorType, donorType)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
             },
@@ -136,7 +136,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DonorType, donorType)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
             },
@@ -160,7 +160,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.RegistryCode, rawRegistry)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
             },
@@ -183,7 +183,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.RegistryCode, registryCode)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
                 {
                     DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
                 },
@@ -206,7 +206,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.RegistryCode, registryCode)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
             {
                 DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
             },
@@ -231,7 +231,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DRB1_2, missingHla)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
                 {
                     DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
                 },
@@ -259,7 +259,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DRB1_2, missingHla)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
                 {
                     DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
                 },
@@ -284,7 +284,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DQB1_2, missingHla)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int?>()).Returns(new SearchableDonorInformationPage
+            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
                 {
                     DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
                 },
