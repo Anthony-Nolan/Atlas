@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
-using Nova.Utils.Common;
+using Atlas.Utils.Core.Common;
 
-namespace Nova.Utils.Http.Exceptions
+namespace Atlas.Utils.Core.Http.Exceptions
 {
     public partial class NovaValidationException : NovaHttpException
     {

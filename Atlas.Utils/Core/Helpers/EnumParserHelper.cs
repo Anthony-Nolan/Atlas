@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Nova.Utils.Common;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Common;
+using Atlas.Utils.Core.Http.Exceptions;
 
-namespace Nova.Utils.Helpers
+namespace Atlas.Utils.Core.Helpers
 {
     public class EnumParserHelper<TEnum> where TEnum : struct, IComparable
     {

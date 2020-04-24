@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Nova.Utils.Models
+namespace Atlas.Utils.Core.Models
 {
     /// <summary>
     /// A collection of antigens, two per locus.

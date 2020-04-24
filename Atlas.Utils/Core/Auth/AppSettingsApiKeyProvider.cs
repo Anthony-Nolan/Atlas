@@ -3,7 +3,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nova.Utils.Auth
+namespace Atlas.Utils.Core.Auth
 {
     public class AppSettingsApiKeyProvider : IApiKeyProvider
     {

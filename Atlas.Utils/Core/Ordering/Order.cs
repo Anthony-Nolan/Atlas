@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Nova.Utils.Ordering
+namespace Atlas.Utils.Core.Ordering
 {
     /// <summary>
     /// A fluent way of creating comparers. Inspired by the Ordering class from Guava

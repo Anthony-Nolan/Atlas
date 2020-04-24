@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.Utils.Pagination
+namespace Atlas.Utils.Core.Pagination
 {
     public class PaginatedModel<T>
     {

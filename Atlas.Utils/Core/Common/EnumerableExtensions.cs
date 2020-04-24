@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 
-namespace Nova.Utils.Common
+namespace Atlas.Utils.Core.Common
 {
     public static class EnumerableExtensions
     {

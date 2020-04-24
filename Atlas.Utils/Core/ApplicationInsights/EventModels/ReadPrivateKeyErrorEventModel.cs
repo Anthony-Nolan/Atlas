@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.ApplicationInsights.EventModels
+namespace Atlas.Utils.Core.ApplicationInsights.EventModels
 {
     public class ReadPrivateKeyErrorEventModel : EventModel
     {

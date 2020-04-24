@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Nova.Utils.PhenotypeInfo
+namespace Atlas.Utils.Core.PhenotypeInfo
 {
     public class LocusInfo<T>
     {

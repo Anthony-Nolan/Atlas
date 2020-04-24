@@ -1,4 +1,4 @@
-﻿namespace Nova.Utils.Identity
+﻿namespace Atlas.Utils.Core.Identity
 {
     public interface IIdentityProvider
     {

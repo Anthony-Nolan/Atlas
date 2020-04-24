@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.ApplicationInsights
+namespace Atlas.Utils.Core.ApplicationInsights
 {
     public static class IdGenerator
     {

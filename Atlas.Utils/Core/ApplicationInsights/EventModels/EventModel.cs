@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nova.Utils.ApplicationInsights.EventModels
+namespace Atlas.Utils.Core.ApplicationInsights.EventModels
 {
     public class EventModel
     {

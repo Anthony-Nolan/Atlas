@@ -1,6 +1,6 @@
-﻿using Nova.Utils.ApplicationInsights;
+﻿using Atlas.Utils.Core.ApplicationInsights;
 
-namespace Nova.Utils.Middleware.RequestId
+namespace Atlas.Utils.Core.Middleware.RequestId
 {
     public static class RequestIdSegmentGenerator
     {

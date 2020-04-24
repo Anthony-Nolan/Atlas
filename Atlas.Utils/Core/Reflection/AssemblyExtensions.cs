@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Nova.Utils.Reflection
+namespace Atlas.Utils.Core.Reflection
 {
     public static class AssemblyExtensions
     {
