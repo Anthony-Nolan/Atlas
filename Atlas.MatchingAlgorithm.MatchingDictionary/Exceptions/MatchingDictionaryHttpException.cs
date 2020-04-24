@@ -4,7 +4,7 @@ using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions
 {
-    public class MatchingDictionaryHttpException : AtlasHttpException
+    public class MatchingDictionaryHttpException : NovaHttpException
     {
         public MatchingDictionaryHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)

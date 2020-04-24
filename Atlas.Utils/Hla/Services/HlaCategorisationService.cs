@@ -44,7 +44,7 @@ namespace Atlas.Utils.Hla.Services
                 }
             }
 
-            throw new AtlasHttpException(HttpStatusCode.BadRequest,
+            throw new NovaHttpException(HttpStatusCode.BadRequest,
                     $"Typing category of HLA name: {name} could not be determined.");
         }
     }

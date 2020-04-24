@@ -35,7 +35,7 @@ namespace Atlas.Utils.Hla.Services
                     splitter = new AlleleStringOfSubtypesSplitter();
                     break;
                 default:
-                    throw new AtlasHttpException(
+                    throw new NovaHttpException(
                         HttpStatusCode.BadRequest,
                         $"Hla typing is of category {typingCategory}; please submit an allele string.",
                         new ArgumentException());
@@ -48,7 +48,7 @@ namespace Atlas.Utils.Hla.Services
             }
             catch (Exception ex)
             {
-                throw new AtlasHttpException(
+                throw new NovaHttpException(
                     HttpStatusCode.BadRequest,
                     "Could not split the submitted allele string.",
                     ex);
