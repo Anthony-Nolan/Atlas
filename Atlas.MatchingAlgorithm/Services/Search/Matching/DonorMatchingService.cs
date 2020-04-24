@@ -113,7 +113,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
                 .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
-                .Where(m => matchFilteringService.FulfilsRegistryCriteria(m.Value, criteria))
                 .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
                 .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
                 .ToList();

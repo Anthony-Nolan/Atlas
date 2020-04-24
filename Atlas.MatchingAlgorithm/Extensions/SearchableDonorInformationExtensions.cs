@@ -12,7 +12,6 @@ namespace Atlas.MatchingAlgorithm.Extensions
             return new DonorInfo
             {
                 DonorId = donor.DonorId,
-                RegistryCode = DonorInfoHelper.RegistryCodeFromString(donor.RegistryCode),
                 DonorType = DonorInfoHelper.DonorTypeFromString(donor.DonorType),
                 HlaNames = donor.HlaAsPhenotype()
             };

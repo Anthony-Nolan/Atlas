@@ -44,11 +44,5 @@
             "SearchHla2": "*15:03:01:01"
         }
     },
-    "RegistriesToSearch": [
-        1,
-        2,
-        3,
-        4
-    ],
     "LociToExcludeFromAggregateScore": []
 }

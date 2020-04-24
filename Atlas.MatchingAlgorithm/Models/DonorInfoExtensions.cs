@@ -8,8 +8,7 @@ namespace Atlas.MatchingAlgorithm.Models
         {
             return new FailedDonorInfo(donorInfo)
             {
-                DonorId = donorInfo.DonorId.ToString(),
-                RegistryCode = donorInfo.RegistryCode.ToString()
+                DonorId = donorInfo.DonorId.ToString()
             };
         }
     }

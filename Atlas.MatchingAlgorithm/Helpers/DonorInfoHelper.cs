@@ -1,6 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,16 +9,6 @@ namespace Atlas.MatchingAlgorithm.Helpers
     {
         private static readonly IEnumerable<string> AdultDonorTypeValues = new List<string> { "adult", "a" };
         private static readonly IEnumerable<string> CordDonorTypeValues = new List<string> { "cord", "c" };
-
-        public static RegistryCode RegistryCodeFromString(string input)
-        {
-            if (Enum.TryParse(input, out RegistryCode code))
-            {
-                return code;
-            }
-
-            throw new DonorInfoException($"Could not understand registry code {input}");
-        }
 
         public static DonorType DonorTypeFromString(string input)
         {

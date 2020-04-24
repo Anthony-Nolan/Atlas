@@ -13,7 +13,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         {
             donor = new DonorInfoWithExpandedHla
             {
-                RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = donorId,
                 HlaNames = new PhenotypeInfo<string>(),
@@ -93,12 +92,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public DonorInfoWithExpandedHlaBuilder WithRegistryCode(RegistryCode registryCode)
-        {
-            donor.RegistryCode = registryCode;
-            return this;
-        }
-        
         public DonorInfoWithExpandedHlaBuilder WithDonorType(DonorType donorType)
         {
             donor.DonorType = donorType;

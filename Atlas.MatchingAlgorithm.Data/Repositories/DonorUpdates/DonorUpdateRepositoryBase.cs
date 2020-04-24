@@ -38,7 +38,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             dt.Columns.Add("Id");
             dt.Columns.Add("DonorId");
             dt.Columns.Add("DonorType");
-            dt.Columns.Add("RegistryCode");
             dt.Columns.Add("A_1");
             dt.Columns.Add("A_2");
             dt.Columns.Add("B_1");
@@ -57,7 +56,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 dt.Rows.Add(0,
                     donor.DonorId,
                     (int) donor.DonorType,
-                    (int) donor.RegistryCode,
                     donor.HlaNames.A.Position1, donor.HlaNames.A.Position2,
                     donor.HlaNames.B.Position1, donor.HlaNames.B.Position2,
                     donor.HlaNames.C.Position1, donor.HlaNames.C.Position2,

@@ -194,7 +194,7 @@ The pre-processing job fetches up to date information from WMDA, and populates t
 ### (2) Donor Import
 
 The donors against which we run searches are imported from Anthony Nolan's `Solar` Oracle database, via the `DonorService`.
-We only store as much information as is needed for a search - ID, Registry, Donor Type, and HLA information.
+We only store as much information as is needed for a search - ID, Donor Type, and HLA information.
 
 - Start the job by triggering the `RunDonorImport` function
 - The job is expected to take several hours to run
@@ -236,8 +236,6 @@ A search request requires the following criteria:
 
 - Donor type
   - Adult or Cord - only the specified donor type will be returned
-- Registries to search
-  - Only donors from specified registries will be returned
 - Match Criteria
   - Allows specification of an allowed number of mismatches, both overall and per locus.
   - If a donor exceeds either the total mismatch count, or any per locus count, it will not be returned
@@ -291,7 +289,7 @@ However, extensive research into the best approach has yet to be performed, so t
 
 #### (c) Further filtering
 
-Finally, additional filtering is performed on the donors by e.g. registry, donor type.
+Finally, additional filtering is performed on the donors by e.g. donor type.
 
 This is performed last as fetching all donor information for matches should be avoided as long as possible, as until this point we have only had need of donors p-group information
 

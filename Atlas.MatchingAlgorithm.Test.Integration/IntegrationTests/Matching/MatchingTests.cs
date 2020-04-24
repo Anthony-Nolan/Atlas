@@ -19,16 +19,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     public class MatchingTests
     {
         private IDonorMatchingService matchingService;
+
         private DonorInfoWithExpandedHla cordDonorInfoWithFullHomozygousMatchAtLocusA;
         private DonorInfoWithExpandedHla cordDonorInfoWithFullHeterozygousMatchAtLocusA;
         private DonorInfoWithExpandedHla cordDonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA;
         private DonorInfoWithExpandedHla cordDonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA;
         private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtLocusAAndExactMatchAtB;
         private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtLocusAAndHalfMatchAtB;
-
-        // Registries chosen to be different from `DefaultRegistryCode`
-        private DonorInfoWithExpandedHla cordDonorInfoWithFullMatchAtAnthonyNolanRegistry;
-        private DonorInfoWithExpandedHla cordDonorInfoWithFullMatchAtNmdpRegistry;
 
         private DonorInfoWithExpandedHla adultDonorInfoWithFullMatch;
 
@@ -42,7 +39,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private const string PatientPGroup_LocusDRB1_PositionOne = "01:11P";
         private const string PatientPGroup_LocusDRB1_PositionTwo = "03:41P";
 
-        private const RegistryCode DefaultRegistryCode = RegistryCode.DKMS;
         private const DonorType DefaultDonorType = DonorType.Cord;
 
         [SetUp]
@@ -144,14 +140,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 )
                 .Build();
 
-            cordDonorInfoWithFullMatchAtAnthonyNolanRegistry = GetDefaultDonorBuilder()
-                .WithRegistryCode(RegistryCode.AN)
-                .Build();
-
-            cordDonorInfoWithFullMatchAtNmdpRegistry = GetDefaultDonorBuilder()
-                .WithRegistryCode(RegistryCode.NMDP)
-                .Build();
-
             adultDonorInfoWithFullMatch = GetDefaultDonorBuilder()
                 .WithDonorType(DonorType.Adult)
                 .Build();
@@ -164,8 +152,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 cordDonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA,
                 cordDonorInfoWithNoMatchAtLocusAAndExactMatchAtB,
                 cordDonorInfoWithNoMatchAtLocusAAndHalfMatchAtB,
-                cordDonorInfoWithFullMatchAtAnthonyNolanRegistry,
-                cordDonorInfoWithFullMatchAtNmdpRegistry,
                 adultDonorInfoWithFullMatch
             };
 
@@ -187,28 +173,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         public void TearDown()
         {
             DatabaseManager.ClearDatabases();
-        }
-
-        [Test]
-        public async Task GetMatches_ForMultipleSpecifiedRegistries_MatchesDonorsAtAllSpecifiedRegistries()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithRegistries(new List<RegistryCode> { RegistryCode.AN, RegistryCode.NMDP })
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullMatchAtAnthonyNolanRegistry.DonorId);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullMatchAtNmdpRegistry.DonorId);
-        }
-
-        [Test]
-        public async Task GetMatches_DoesNotMatchDonorsAtUnspecifiedRegistries()
-        {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithRegistries(new List<RegistryCode> { DefaultRegistryCode })
-                .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullMatchAtNmdpRegistry.DonorId);
-            results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullMatchAtAnthonyNolanRegistry.DonorId);
         }
 
         [Test]
@@ -278,7 +242,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private static DonorInfoWithExpandedHlaBuilder GetDefaultDonorBuilder()
         {
             return new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
-                .WithRegistryCode(DefaultRegistryCode)
                 .WithDonorType(DefaultDonorType)
                 .WithHlaAtLocus(
                     Locus.A,
@@ -314,7 +277,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             return new AlleleLevelMatchCriteriaBuilder()
                 .WithSearchType(DefaultDonorType)
-                .WithRegistries(new List<RegistryCode> { DefaultRegistryCode })
                 .WithDonorMismatchCount(0)
                 .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria
                 {

@@ -13,8 +13,6 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
             RuleFor(x => x.SearchHlaData).NotNull().SetValidator(new SearchHlaDataValidator());
             RuleFor(x => x.SearchHlaData.LocusSearchHlaC).NotNull().When(x => x.MatchCriteria?.LocusMismatchC != null);
             RuleFor(x => x.SearchHlaData.LocusSearchHlaDqb1).NotNull().When(x => x.MatchCriteria?.LocusMismatchDqb1 != null);
-            RuleFor(x => x.RegistriesToSearch).NotEmpty();
-            RuleForEach(x => x.RegistriesToSearch).IsInEnum();
             RuleFor(x => x.LociToExcludeFromAggregateScore)
                 .NotNull()
                 .Must(loci => loci?.All(l => l.ToAlgorithmLocus() != null) ?? false)

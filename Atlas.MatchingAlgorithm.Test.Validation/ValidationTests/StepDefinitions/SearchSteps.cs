@@ -33,35 +33,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             scenarioContext.Set(searchRequest.WithSearchType(donorType));
         }
 
-        [Given(@"the search is run against the Anthony Nolan registry only")]
-        public void GivenTheSearchIsRunForAnthonyNolansRegistryOnly()
-        {
-            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
-            scenarioContext.Set(searchRequest.ForRegistries(new[] {RegistryCode.AN}));
-        }
-
-        [Given(@"the search is run for aligned registries")]
-        public void GivenTheSearchIsRunForAlignedRegistries()
-        {
-            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
-            scenarioContext.Set(searchRequest.ForRegistries(new[]
-            {
-                RegistryCode.AN,
-                RegistryCode.NHSBT,
-                RegistryCode.WBS,
-                RegistryCode.DKMS
-            }));
-        }
-
-        [Given(@"the search is run for the registry: (.*)")]
-        public void GivenTheSearchIsRunForRegistry(string registryString)
-        {
-            // If the search team prefer to write the tests with expanded registry names, we will need to manually map to the enum
-            var registry = (RegistryCode) Enum.Parse(typeof(RegistryCode), registryString, true);
-            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
-            scenarioContext.Set(searchRequest.ForAdditionalRegistry(registry));
-        }
-
         [Given(@"locus (.*) is excluded from aggregate scoring")]
         public void GivenLocusIsExcludedFromAggregateScoring(string locusString)
         {

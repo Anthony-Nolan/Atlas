@@ -42,31 +42,5 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
 
             result.Should().BeTrue();
         }
-
-        [Test]
-        public void ShouldFilterOnRegistriesInDatabase_ForAnthonyNolanOnly_ReturnsTrue()
-        {
-            var criteria = new LocusSearchCriteria
-            {
-                Registries = new[] {RegistryCode.AN}
-            };
-
-            var result = databaseFilteringAnalyser.ShouldFilterOnRegistriesInDatabase(criteria);
-
-            result.Should().BeTrue();
-        }
-
-        [Test]
-        public void ShouldFilterOnRegistriesInDatabase_ForAlignedRegistries_ReturnsFalse()
-        {
-            var criteria = new LocusSearchCriteria
-            {
-                Registries = new[] {RegistryCode.AN, RegistryCode.WBS, RegistryCode.NHSBT, RegistryCode.DKMS}
-            };
-
-            var result = databaseFilteringAnalyser.ShouldFilterOnRegistriesInDatabase(criteria);
-
-            result.Should().BeFalse();
-        }
     }
 }

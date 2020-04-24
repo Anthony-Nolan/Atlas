@@ -30,12 +30,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             return this;
         }
 
-        public MetaDonorSelectionCriteriaBuilder WithMatchingRegistry(RegistryCode registry)
-        {
-            criteria.MatchingRegistry = registry;
-            return this;
-        }
-
         public MetaDonorSelectionCriteriaBuilder WithMatchLevelAtAllPositions(MatchLevel matchLevel)
         {
             criteria.MatchLevels = new PhenotypeInfo<MatchLevel>(matchLevel);

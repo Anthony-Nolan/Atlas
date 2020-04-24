@@ -18,8 +18,6 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
     public class FailedDonorsNotificationSender : NotificationSender, IFailedDonorsNotificationSender
     {
-        private const string UnknownRegistryCodeText = "[Unknown]";
-
         public FailedDonorsNotificationSender(
             INotificationsClient notificationsClient,
             ILogger logger) : base(notificationsClient, logger)
@@ -45,25 +43,18 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         {
             failedDonors = failedDonors.ToList();
 
-            var donorCountByRegistry = GetDonorCountByRegistryString(failedDonors);
+            var donorCount = GetDistinctDonorCountText(failedDonors);
 
-            return $"{donorCountByRegistry}.{Environment.NewLine}"
+            return $"{donorCount}.{Environment.NewLine}"
                    + $"Donor counts are for guidance only, and may be affected by missing donor info.{Environment.NewLine}"
                    + "An event has been logged for each failed donor in Application Insights.";
         }
 
-        private static string GetDonorCountByRegistryString(IEnumerable<FailedDonorInfo> failedDonors)
+        private static string GetDistinctDonorCountText(IEnumerable<FailedDonorInfo> failedDonors)
         {
-            var counts = failedDonors
-                .GroupBy(d => new { d.DonorId, d.RegistryCode })
-                .GroupBy(d => GetValueOrDefault(d.Key.RegistryCode, UnknownRegistryCodeText))
-                .OrderBy(grp => grp.Key)
-                .Select(grp => $"{grp.Key} - {grp.Count()}");
+            var count = failedDonors.Select(d => d.DonorId).Distinct().Count();
 
-            return $"Failed donor count by registry: {string.Join(", ", counts)}";
+            return $"Failed donor count: {count}";
         }
-
-        private static string GetValueOrDefault(string value, string defaultIfEmpty)
-            => string.IsNullOrEmpty(value) ? defaultIfEmpty : value;
     }
 }

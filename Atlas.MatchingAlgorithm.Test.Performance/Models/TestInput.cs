@@ -21,7 +21,6 @@ namespace Atlas.MatchingAlgorithm.Test.Performance.Models
     
         public SearchType SearchType { get; set; }
         public DonorType DonorType { get; set; } = DonorType.Adult;
-        public bool IsAlignedRegistriesSearch { get; set; } = true;
 
         public PhenotypeInfo<string> Hla { get; set; }
         

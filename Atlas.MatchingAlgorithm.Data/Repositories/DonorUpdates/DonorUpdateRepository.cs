@@ -110,8 +110,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         private static bool DonorInfoHasChanged(Donor existingDonor, DonorInfo donorInfo)
         {
-            return existingDonor.RegistryCode != donorInfo.RegistryCode ||
-                   existingDonor.DonorType != donorInfo.DonorType;
+            return existingDonor.DonorType != donorInfo.DonorType;
         }
 
         private static bool DonorHlaHasChanged(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
@@ -147,8 +146,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync($@"
                         UPDATE Donors 
                         SET 
-                            DonorType = {(int)donorInfo.DonorType},
-                            RegistryCode = {(int)donorInfo.RegistryCode}
+                            DonorType = {(int)donorInfo.DonorType}
                         WHERE DonorId = {donorInfo.DonorId}
                         ", commandTimeout: 600);
         }

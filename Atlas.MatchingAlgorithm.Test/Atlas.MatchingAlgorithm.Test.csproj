@@ -9,14 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badRegistry.json" />
-      <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-badType.json" />
-      <EmbeddedResource Include="Resources\Controllers\SearchRequests\invalidSearchRequest-empty.json" />
-      <EmbeddedResource Include="Resources\Controllers\SearchRequests\validAdultSearchRequest.json" />
-      <EmbeddedResource Include="Resources\Controllers\SearchRequests\validCordSearchRequest.json" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="MatchingDictionary\Data\wmda-v3330\Allelelist_history.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>

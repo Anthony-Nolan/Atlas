@@ -12,7 +12,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         {
             donorInfo = new DonorInfo
             {
-                RegistryCode = RegistryCode.AN,
                 DonorType = DonorType.Adult,
                 DonorId = donorId,
                 // Default hla chosen to be valid hla
@@ -40,12 +39,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         public DonorInfoBuilder WithHlaAtLocus(Locus locus, TypePosition position, string hla)
         {
             donorInfo.HlaNames.SetAtPosition(locus, position, hla);
-            return this;
-        }
-
-        public DonorInfoBuilder WithRegistryCode(RegistryCode registryCode)
-        {
-            donorInfo.RegistryCode = registryCode;
             return this;
         }
 

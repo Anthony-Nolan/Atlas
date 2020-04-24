@@ -9,7 +9,6 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
         public int Id { get; set; }
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
-        public RegistryCode RegistryCode { get; set; }
 
         [Required]
         public bool IsAvailableForSearch { get; set; }
@@ -45,7 +44,6 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
             {
                 DonorId = DonorId,
                 DonorType = DonorType,
-                RegistryCode = RegistryCode,
                 IsAvailableForSearch = IsAvailableForSearch,
                 HlaNames = new PhenotypeInfo<string>
                 {

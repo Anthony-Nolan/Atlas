@@ -246,18 +246,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public SearchRequestBuilder ForRegistries(IEnumerable<RegistryCode> registryCodes)
-        {
-            searchRequest.RegistriesToSearch = registryCodes;
-            return this;
-        }
-
-        public SearchRequestBuilder ForAdditionalRegistry(RegistryCode registryCode)
-        {
-            searchRequest.RegistriesToSearch = searchRequest.RegistriesToSearch.ToList().Concat(new[] {registryCode}).Distinct();
-            return this;
-        }
-
         public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
         {
             return WithLocusSearchHla(Locus.A, TypePosition.One, searchHla.A.Position1)

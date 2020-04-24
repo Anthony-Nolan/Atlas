@@ -29,12 +29,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
             donor.DonorType = donorType;
             return this;
         }
-        
-        public DonorBuilder AtRegistry(RegistryCode registryCode)
-        {
-            donor.RegistryCode = registryCode;
-            return this;
-        }
 
         public DonorBuilder WithTypingCategories(PhenotypeInfo<HlaTypingResolution> resolutions)
         {

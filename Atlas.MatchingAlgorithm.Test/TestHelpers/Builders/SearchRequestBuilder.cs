@@ -18,7 +18,6 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
             searchRequest = new SearchRequest()
             {
                 SearchType = DonorType.Adult,
-                RegistriesToSearch = new List<RegistryCode> {RegistryCode.AN},
                 MatchCriteria = new MismatchCriteria
                 {
                     LocusMismatchA = new LocusMismatchCriteria(),
@@ -241,18 +240,6 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
         public SearchRequestBuilder WithSearchType(DonorType donorType)
         {
             searchRequest.SearchType = donorType;
-            return this;
-        }
-
-        public SearchRequestBuilder ForRegistries(IEnumerable<RegistryCode> registryCodes)
-        {
-            searchRequest.RegistriesToSearch = registryCodes;
-            return this;
-        }
-
-        public SearchRequestBuilder ForAdditionalRegistry(RegistryCode registryCode)
-        {
-            searchRequest.RegistriesToSearch = searchRequest.RegistriesToSearch.ToList().Concat(new[] {registryCode}).Distinct();
             return this;
         }
 

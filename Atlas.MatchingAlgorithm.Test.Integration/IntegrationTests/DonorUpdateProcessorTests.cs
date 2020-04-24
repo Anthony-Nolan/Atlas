@@ -227,7 +227,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var validMessage = SearchableDonorUpdateMessageBuilder.New.Build();
 
             var invalidDonorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.RegistryCode, "invalid-registry")
+                .With(x => x.DonorType, "invalid-donor-type")
                 .Build();
 
             var invalidUpdate = SearchableDonorUpdateBuilder.New

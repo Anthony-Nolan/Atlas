@@ -76,14 +76,6 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (testInput.IsAlignedRegistriesSearch)
-            {
-                searchRequestBuilder = searchRequestBuilder
-                    .ForAdditionalRegistry(RegistryCode.DKMS)
-                    .ForAdditionalRegistry(RegistryCode.NHSBT)
-                    .ForAdditionalRegistry(RegistryCode.WBS);
-            }
-
             if (testInput.DonorType == DonorType.Cord)
             {
                 searchRequestBuilder = searchRequestBuilder.WithSearchType(DonorType.Cord);

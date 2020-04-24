@@ -50,23 +50,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         }
 
         [Test]
-        public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedRegistry_ThrowsException()
-        {
-            const RegistryCode registry = RegistryCode.AN;
-            const RegistryCode anotherRegistry = RegistryCode.DKMS;
-
-            var metaDonors = new List<MetaDonor>
-            {
-                new MetaDonorBuilder().AtRegistry(anotherRegistry).Build(),
-            };
-            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
-
-            var criteria = new MetaDonorSelectionCriteriaBuilder().WithMatchingRegistry(registry).Build();
-
-            Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
-        }
-
-        [Test]
         public void GetMetaDonor_WhenNoMetaDonorsExistAtSpecifiedTgsResolution_ThrowsException()
         {
             var metaDonors = new List<MetaDonor>
@@ -169,27 +152,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             var criteria = new MetaDonorSelectionCriteriaBuilder().WithDatabaseDonorSpecifications(databaseDonorDetailsSets).Build();
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
-        }
-
-        [Test]
-        public void GetMetaDonor_ReturnsMetaDonorAtMatchingRegistry()
-        {
-            const RegistryCode registryCode = RegistryCode.AN;
-            const RegistryCode anotherRegistryCode = RegistryCode.DKMS;
-
-            var metaDonors = new List<MetaDonor>
-            {
-                new MetaDonorBuilder().AtRegistry(anotherRegistryCode).Build(),
-                new MetaDonorBuilder().AtRegistry(registryCode).Build(),
-            };
-
-            metaDonorRepository.AllMetaDonors().Returns(metaDonors);
-
-            var criteria = new MetaDonorSelectionCriteriaBuilder().WithMatchingRegistry(registryCode).Build();
-
-            var metaDonor = metaDonorSelector.GetMetaDonor(criteria);
-
-            metaDonor.Registry.Should().Be(registryCode);
         }
 
         [Test]

@@ -50,14 +50,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     locus,
                     criteria.PGroupIdsToMatchInPositionOne,
                     criteria.SearchType,
-                    criteria.Registries,
                     filteringOptions
                 ),
                 GetAllDonorsForPGroupsAtLocus(
                     locus,
                     criteria.PGroupIdsToMatchInPositionTwo,
                     criteria.SearchType,
-                    criteria.Registries,
                     filteringOptions
                 )
             );
@@ -140,7 +138,6 @@ GROUP BY InnerDonorId, TypePosition";
             Locus locus,
             IEnumerable<int> pGroups,
             DonorType donorType,
-            IEnumerable<RegistryCode> registryCodes,
             MatchingFilteringOptions filteringOptions
         )
         {
@@ -151,18 +148,14 @@ GROUP BY InnerDonorId, TypePosition";
 
             var filterQuery = "";
 
-            if (filteringOptions.ShouldFilterOnDonorType || filteringOptions.ShouldFilterOnRegistry)
+            if (filteringOptions.ShouldFilterOnDonorType)
             {
                 var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
-                var registryClause = filteringOptions.ShouldFilterOnRegistry
-                    ? $"AND d.RegistryCode IN ({string.Join(",", registryCodes.Select(id => (int) id))})"
-                    : "";
 
                 filterQuery = $@"
 INNER JOIN Donors d
 ON m.DonorId = d.DonorId
 {donorTypeClause}
-{registryClause}
 ";
             }
 

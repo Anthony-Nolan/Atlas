@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Client.Models;
+﻿using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
+using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -13,8 +12,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         {
             criteria = new AlleleLevelMatchCriteria
             {
-                SearchType = DonorType.Adult,
-                RegistriesToSearch = new List<RegistryCode> { RegistryCode.AN },
+                SearchType = DonorType.Adult
             };
         }
         
@@ -92,12 +90,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         public AlleleLevelMatchCriteriaBuilder WithSearchType(DonorType searchType)
         {
             criteria.SearchType = searchType;
-            return this;
-        }
-        
-        public AlleleLevelMatchCriteriaBuilder WithRegistries(IEnumerable<RegistryCode> registries)
-        {
-            criteria.RegistriesToSearch = registries;
             return this;
         }
         

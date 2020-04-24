@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
-using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using System.Collections.Generic;
+using System.Linq;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -122,14 +120,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
             patientDataFactory.SetMatchDonorType(donorType);
-            scenarioContext.Set(patientDataFactory);
-        }
-
-        [Given(@"all matching donors are in registry: (.*)")]
-        public void GivenAllMatchingDonorsAreInRegistry(string registry)
-        {
-            var patientDataFactory = scenarioContext.Get<IPatientDataFactory>();
-            patientDataFactory.SetMatchDonorRegistry(registry);
             scenarioContext.Set(patientDataFactory);
         }
     }

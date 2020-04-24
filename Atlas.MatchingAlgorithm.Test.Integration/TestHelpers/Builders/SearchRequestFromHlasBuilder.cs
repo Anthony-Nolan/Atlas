@@ -23,7 +23,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         {
             searchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchType(DonorType.Adult)
-                .ForRegistries(new List<RegistryCode> { RegistryCode.AN })
                 .WithLociExcludedFromScoringAggregates(new List<LocusType>())
                 .WithLocusSearchHla(Locus.A, TypePosition.One, searchHlas.A.Position1)
                 .WithLocusSearchHla(Locus.A, TypePosition.Two, searchHlas.A.Position2)

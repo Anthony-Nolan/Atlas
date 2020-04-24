@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using FluentAssertions;
-using FluentValidation.TestHelper;
-using Atlas.MatchingAlgorithm.Client.Models;
+﻿using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using FluentAssertions;
+using FluentValidation.TestHelper;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
@@ -26,30 +25,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         }
 
         [Test]
-        public void Validator_WhenMatchRegistriesMissing_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.RegistriesToSearch, (IEnumerable<RegistryCode>) null);
-        }
-
-        [Test]
-        public void Validator_WhenAnyRegistryInvalid_ShouldHaveValidationError()
-        {
-            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
-            {
-                SearchType = DonorType.Adult,
-                MatchCriteria = new MismatchCriteria(),
-                RegistriesToSearch = new[] {RegistryCode.AN, (RegistryCode) 999}
-            });
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Test]
         public void Validator_WhenSearchTypeMissing_ShouldHaveValidationError()
         {
             var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
-                MatchCriteria = new MismatchCriteria(),
-                RegistriesToSearch = new[] {RegistryCode.AN}
+                MatchCriteria = new MismatchCriteria()
             });
             result.IsValid.Should().BeFalse();
         }
@@ -65,7 +45,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         {
             var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
-                RegistriesToSearch = new[] {RegistryCode.AN},
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
@@ -89,7 +68,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         {
             var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
             {
-                RegistriesToSearch = new[] {RegistryCode.AN},
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {

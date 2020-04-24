@@ -164,31 +164,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             return factory;
         }
 
-        public static IPatientDataFactory SetMatchDonorRegistry(this IPatientDataFactory factory, string registry)
-        {
-            switch (registry)
-            {
-                case "Anthony Nolan":
-                    factory.SetMatchingRegistry(RegistryCode.AN);
-                    break;
-                case "DKMS":
-                    factory.SetMatchingRegistry(RegistryCode.DKMS);
-                    break;
-                case "BBMR":
-                case "NHSBT":
-                    factory.SetMatchingRegistry(RegistryCode.NHSBT);
-                    break;
-                case "WBMDR":
-                case "WBS":
-                    factory.SetMatchingRegistry(RegistryCode.WBS);
-                    break;
-                default:
-                    throw new PendingStepException();
-            }
-
-            return factory;
-        }
-
         public static IPatientDataFactory SetAlleleStringShouldContainDifferentGroupsAt(this IPatientDataFactory factory, string locusString)
         {
             switch (locusString)

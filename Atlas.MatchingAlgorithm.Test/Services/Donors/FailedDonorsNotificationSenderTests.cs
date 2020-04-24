@@ -69,45 +69,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
 
         [Test]
-        public async Task SendFailedDonorsAlert_SendsAlertWithDonorCountByRegistryCode()
+        public async Task SendFailedDonorsAlert_SendsAlertWithDonorCount()
         {
-            const string firstRegistry = "first";
-            const string secondRegistry = "second";
             const int totalDonorCount = 50;
-            const int perRegistryCount = totalDonorCount / 2;
 
             await failedDonorsNotificationSender.SendFailedDonorsAlert(
                 FailedDonorInfoBuilder
-                    .New(new[] { firstRegistry, secondRegistry })
+                    .New()
                     .Build(totalDonorCount),
                 "alert",
                 Priority.Medium);
 
             await notificationsClient.Received().SendAlert(
-                Arg.Is<Alert>(x =>
-                    x.Description.Contains($"{firstRegistry} - {perRegistryCount}") &&
-                    x.Description.Contains($"{secondRegistry} - {perRegistryCount}")));
-        }
-
-        [Test]
-        public async Task SendFailedDonorsAlert_DonorsWithoutRegistryCode_SendsAlertWithUnknownRegistryCount()
-        {
-            const string unknownRegistryText = "[Unknown]";
-            const string knownRegistry = "registry";
-            const int totalDonorCount = 50;
-            const int perRegistryCount = totalDonorCount / 2;
-
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder
-                    .New(new[] { string.Empty, knownRegistry })
-                    .Build(totalDonorCount),
-                "alert",
-                Priority.Medium);
-
-            await notificationsClient.Received().SendAlert(
-                Arg.Is<Alert>(x =>
-                    x.Description.Contains($"{unknownRegistryText} - {perRegistryCount}") &&
-                    x.Description.Contains($"{knownRegistry} - {perRegistryCount}")));
+                Arg.Is<Alert>(x => x.Description.Contains(totalDonorCount.ToString())));
         }
 
         [Test]

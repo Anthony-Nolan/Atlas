@@ -1,7 +1,12 @@
 Feature: Ten Out Of Ten Search
   As a member of the search team
   I want to be able to run a 10/10 search
-  
+
+  Scenario: 10/10 Search
+    Given a patient has a match
+    When I run a 10/10 search
+    Then the results should contain the specified donor  
+    
   Scenario: 10/10 Search with a homozygous donor
     Given a patient has a match
     And the matching donor is homozygous at locus A
