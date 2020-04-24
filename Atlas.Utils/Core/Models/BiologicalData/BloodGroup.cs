@@ -1,4 +1,4 @@
-﻿namespace Nova.Utils.Models
+﻿namespace Atlas.Utils.Core.Models
 {
     public enum BloodGroup
     {

@@ -1,4 +1,4 @@
-﻿namespace Nova.Utils.ApplicationInsights
+﻿namespace Atlas.Utils.Core.ApplicationInsights
 {
     public enum LogLevel
     {

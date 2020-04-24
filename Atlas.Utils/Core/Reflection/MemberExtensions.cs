@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nova.Utils.Reflection
+namespace Atlas.Utils.Core.Reflection
 {
     public static class MemberExtensions
     {

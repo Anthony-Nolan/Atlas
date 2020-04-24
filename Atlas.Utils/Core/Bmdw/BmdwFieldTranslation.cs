@@ -1,7 +1,7 @@
 ﻿using System;
-using Nova.Utils.Models;
+using Atlas.Utils.Core.Models;
 
-namespace Nova.Utils.BMDW
+namespace Atlas.Utils.Core.BMDW
 {
     public static class BmdwFieldTranslation
     {

@@ -6,10 +6,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Castle.DynamicProxy;
-using Nova.Utils.Common;
-using Nova.Utils.Reflection;
+using Atlas.Utils.Core.Common;
+using Atlas.Utils.Core.Reflection;
 
-namespace Nova.Utils.Config
+namespace Atlas.Utils.Core.Config
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class OptionalAttribute : Attribute

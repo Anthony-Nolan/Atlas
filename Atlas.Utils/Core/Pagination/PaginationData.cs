@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nova.Utils.Pagination
+namespace Atlas.Utils.Core.Pagination
 {
     public sealed class PaginationData : IEquatable<PaginationData>
     {

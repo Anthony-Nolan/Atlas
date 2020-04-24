@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Nova.Utils.Filters
+namespace Atlas.Utils.Core.Filters
 {
     public class ApiKeyConstants
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.Utils.Common;
+using Atlas.Utils.Core.Common;
 
-namespace Nova.Utils.Reflection
+namespace Atlas.Utils.Core.Reflection
 {
     public static class TypeExtensions
     {

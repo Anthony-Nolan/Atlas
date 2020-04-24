@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using Nova.Utils.Middleware.RequestId;
+using Atlas.Utils.Core.Middleware.RequestId;
 
-namespace Nova.Utils.ApplicationInsights.EventModels
+namespace Atlas.Utils.Core.ApplicationInsights.EventModels
 {
     public class RequestEvent : EventModel
     {

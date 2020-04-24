@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Nova.Utils.Models;
+using Atlas.Utils.Core.Models;
 
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace Nova.Utils.PhenotypeInfo
+namespace Atlas.Utils.Core.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold one instance of T for each of the supported HLA loci and each type position within.

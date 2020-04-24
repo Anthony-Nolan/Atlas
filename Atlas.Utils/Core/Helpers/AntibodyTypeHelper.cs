@@ -1,7 +1,7 @@
 ﻿using System;
-using Nova.Utils.Models;
+using Atlas.Utils.Core.Models;
 
-namespace Nova.Utils.Helpers
+namespace Atlas.Utils.Core.Helpers
 {
     public class AntibodyTypeHelper
     {
