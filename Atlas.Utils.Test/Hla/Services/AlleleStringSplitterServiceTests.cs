@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Utils.Hla.Services;
 using FluentAssertions;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http.Exceptions;
 using NUnit.Framework;
 
 namespace Atlas.Utils.Test.Hla.Services

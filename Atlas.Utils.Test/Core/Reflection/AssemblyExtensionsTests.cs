@@ -21,7 +21,7 @@ namespace Atlas.Utils.Test.Core.Reflection
         {
             var ret = typeof(AssemblyExtensionsTests).Assembly.LoadNovaAssemblies();
 
-            ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Utils.Core.Test", "Atlas.Utils.Core");
+            ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Utils.Test", "Atlas.Utils");
         }
 
         [Test]
@@ -29,7 +29,7 @@ namespace Atlas.Utils.Test.Core.Reflection
         {
             var ret = typeof(AssemblyExtensionsTests).Assembly.LoadNovaAssemblies("Utils.Test");
 
-            ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Utils.Core.Test");
+            ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Utils.Test");
         }
     }
 }
