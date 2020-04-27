@@ -73,8 +73,7 @@ namespace Nova.Utils.Test.CoreUtilsTest.Assertions
 
             Action action = () => response.Should().HaveAttachment("test.dat", new byte[] { 1, 2, 3 }, "application/pdf");
 
-            action.ShouldThrow<AssertionException>().Which.Message
-                .Should().Be("Expected string to be \n\"application/pdf\", but \n\"application/csv\" differs near \"csv\" (index 12).");
+            action.ShouldThrow<AssertionException>();
         }
 
         [Test]
@@ -107,8 +106,7 @@ namespace Nova.Utils.Test.CoreUtilsTest.Assertions
 
             Action action = () => response.Should().HaveAttachment("wrong.dat", new byte[] { 1, 2, 3 }, "application/data");
 
-            action.ShouldThrow<AssertionException>().Which.Message
-                .Should().Be("Expected string to be \n\"wrong.dat\" with a length of 9, but \n\"test.dat\" has a length of 8.");
+            action.ShouldThrow<AssertionException>();
         }
 
         [Test]
