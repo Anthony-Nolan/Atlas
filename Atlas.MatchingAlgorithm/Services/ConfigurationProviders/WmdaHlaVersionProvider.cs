@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaDatabaseVersion()
         {
-            var key = "activeWmdaVersion";
+            const string key = "activeWmdaVersion";
             var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
             ThrowIfNull(version, key);
             return version;
@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public string GetLatestStableHlaDatabaseVersion()
         {
-            var key = "latestWmdaVersion";
+            const string key = "latestWmdaVersion";
             var version = cache.GetOrAdd("latestWmdaVersion", () =>
             {
                 // The currently recommended way of finding out the last version is from the header of the "Allelelist_history.txt" file, 
