@@ -2,7 +2,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Nova.Utils.ServiceClient;
+using Atlas.Utils.ServiceClient;
 
 namespace Atlas.MatchingAlgorithm.Client
 {
