@@ -42,21 +42,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public void WmdaHlaVersionProvider_ReadingUnpopulatedHlaDatabaseVersion_ThrowsError()
-        {
-            //Not going to contact GitHub in this test, so don't need to care about this.
-            var opt = Substitute.For<IOptions<WmdaSettings>>();
-            opt.Value.Returns(new WmdaSettings { WmdaFileUri = "" });
-
-            var repo = DependencyInjection.DependencyInjection.Provider.GetService<IDataRefreshHistoryRepository>();
-            var cache = DependencyInjection.DependencyInjection.Provider.GetService<ITransientCacheProvider>();
-
-            var versionProvider = new WmdaHlaVersionProvider(opt, repo, cache);
-
-            versionProvider.Invoking(prov => prov.GetActiveHlaDatabaseVersion()).ShouldThrow<ArgumentNullException>();
-        }
-
-        [Test]
         public async Task UpdateDonorHla_DoesNotChangeStoredDonorInformation()
         {
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
