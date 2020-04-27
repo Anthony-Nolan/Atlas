@@ -106,18 +106,18 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
     - This should take < 1 second to run.
   - In the Swagger UI, trigger the `/matching-dictionary/recreate-active-version` endpoint.
-    - This should take < 1 minute to run.
+    - This can take several minutes to run.
   - In the Swagger UI, trigger the `/matching-dictionary/trigger-donor-import` endpoint.
     - This should take < 1 minute to run.
   - In the Swagger UI, trigger the `/matching-dictionary/trigger-donor-hla-update` endpoint.
     - This should take 1-2 minutes to run.
 - Run a search (avoiding NMDP Code lookups).
-  - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json"` to: `<LOCALHOST>/search`.
+  - Restart the API project, and use Swagger to POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json` to the  `/search` endpoint.
   - You should get a 200 Success response, with 0 results.
   - The first search should take 20-60 seconds.
   - Subsequent searches should take < 1 second.
 - Run a search that uses the NMDP Code lookup API.
-  - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\EightResultsSearch.json"` to: `<LOCALHOST>/search`.
+  - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\EightResultsSearch.json` to the  `/search` endpoint.
   - You should get a 200 Success response, with 8 results.
   - The first search should take 40-90 seconds.
   - Subsequent searches should take < 1 second.
