@@ -1,10 +1,12 @@
+# Summary
+
 This readme exists to give context to the test resources located in this folder - any more general test and debug resources should go in the top level README.
 
-# Matching Algorithm
+## Matching Algorithm
 
 - InitialDonors.csv
 
-This is a set of some arbitrary (pre-processed) donor data. 
+This is a set of some arbitrary pre-built donor data.
 Running the donor import using the FileOverride setting should populate the transient database locally, and give a small, searchable dataset without the need to run a **full** data refresh.
 Details for the steps necessary for this are in the Zero-To-Hero section of the master README.
 
