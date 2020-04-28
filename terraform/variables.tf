@@ -92,7 +92,7 @@ variable "DONOR_SERVICE_BASEURL" {
   type = string
 }
 
-variable ENVIRONMENT {
+variable "ENVIRONMENT" {
   type = string
 }
 
@@ -118,7 +118,7 @@ variable "HLA_SERVICE_BASEURL" {
   type = string
 }
 
-variable LOCATION {
+variable "LOCATION" {
   type    = string
   default = "uksouth"
 }
