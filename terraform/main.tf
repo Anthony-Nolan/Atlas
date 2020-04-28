@@ -17,9 +17,6 @@ locals {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }
-  data_refresh_a_connection_string = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-a.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
-  data_refresh_b_connection_string = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-b.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
-  data_refresh_persistent_connection_string = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-persistent.name};Persist Security Info=False;User ID=${azurerm_sql_server.atlas_sql_server.administrator_login};Password=${azurerm_sql_server.atlas_sql_server.administrator_login_password};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
 }
 
 provider "azurerm" {

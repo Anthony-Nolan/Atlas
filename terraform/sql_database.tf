@@ -1,3 +1,9 @@
+locals {
+  data_refresh_a_connection_string = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-a.name};Persist Security Info=False;User ID=${var.ATLAS_MATCHING_DATABASE_USERNAME};Password=${var.ATLAS_MATCHING_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+  data_refresh_b_connection_string = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-data-refresh-b.name};Persist Security Info=False;User ID=${var.ATLAS_MATCHING_DATABASE_USERNAME};Password=${var.ATLAS_MATCHING_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+  data_refresh_persistent_connection_string = "Server=tcp:${azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.atlas-persistent.name};Persist Security Info=False;User ID=${var.ATLAS_MATCHING_DATABASE_USERNAME};Password=${var.ATLAS_MATCHING_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+}
+
 resource "azurerm_sql_database" "atlas-data-refresh-a" {
   name = lower("${local.environment}-ATLAS-MATCHING-A")
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
