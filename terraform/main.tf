@@ -13,7 +13,7 @@ locals {
   location            = var.LOCATION
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
-  common_tags         = {
+  common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }

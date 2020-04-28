@@ -1,6 +1,6 @@
 locals {
   func_app_settings = {
-    "ApplicationInsights.InstrumentationKey"                    = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights.InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                            = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights.LogLevel"                              = var.APPLICATION_INSIGHTS_LOG_LEVEL
@@ -36,11 +36,11 @@ locals {
     "NotificationsServiceBus.NotificationsTopic"                = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC
     "Wmda.WmdaFileUri"                                          = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE                
+    "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
   donor_func_app_settings = {
-    "ApplicationInsights.InstrumentationKey"           = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights.InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
@@ -54,9 +54,9 @@ locals {
     "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
     "NotificationsServiceBus.AlertsTopic"              = var.NOTIFICATIONS_BUS_ALERTS_TOPIC
     "NotificationsServiceBus.ConnectionString"         = var.NOTIFICATIONS_BUS_CONNECTION_STRING
-    "NotificationsServiceBus.NotificationsTopic"       = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC	
+    "NotificationsServiceBus.NotificationsTopic"       = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
-	"WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
   }
 }
 

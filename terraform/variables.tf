@@ -17,12 +17,12 @@ variable "ATLAS_DATABASE_SERVER_LOGIN_PASSWORD" {
 }
 
 variable "ATLAS_MATCHING_DATABASE_USERNAME" {
-  type    = "string"
+  type    = string
   default = "atlas-matching"
 }
 
 variable "ATLAS_MATCHING_DATABASE_PASSWORD" {
-  type = "string"
+  type = string
 }
 
 variable "AZURE_CLIENT_ID" {
@@ -172,7 +172,7 @@ variable "NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC" {
 }
 
 variable "SERVICE_PLAN_SKU" {
-  type    = object({
+  type = object({
     tier = string,
     size = string
   })
