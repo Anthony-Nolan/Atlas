@@ -1,5 +1,5 @@
 resource "azurerm_sql_database" "atlas-data-refresh-a" {
-  name = lower("${local.environment}-ATLAS-DATA_REFRESH-DB-A")
+  name = lower("${local.environment}-ATLAS-MATCHING-A")
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location = local.location
   server_name = azurerm_sql_server.atlas_sql_server.name
@@ -7,7 +7,7 @@ resource "azurerm_sql_database" "atlas-data-refresh-a" {
 }
 
 resource "azurerm_sql_database" "atlas-data-refresh-b" {
-  name = lower("${local.environment}-ATLAS-DATA_REFRESH-DB-B")
+  name = lower("${local.environment}-ATLAS-MATCHING-B")
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location = local.location
   server_name = azurerm_sql_server.atlas_sql_server.name
@@ -15,7 +15,7 @@ resource "azurerm_sql_database" "atlas-data-refresh-b" {
 }
 
 resource "azurerm_sql_database" "atlas-persistent" {
-  name = lower("${local.environment}-ATLAS-PERSISTENT-DB")
+  name = lower("${local.environment}-ATLAS-MATCHING-PERSISTENT")
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location = local.location
   server_name = azurerm_sql_server.atlas_sql_server.name
