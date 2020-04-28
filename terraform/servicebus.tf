@@ -1,5 +1,5 @@
 locals {
-  service-bus {
+  service-bus = {
     default-sku                    = "Standard"
     long-expiry                    = "P9999D" // 2.75 years
     audit-subscription-idle-delete = "P8D"
