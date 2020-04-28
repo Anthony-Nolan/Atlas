@@ -4,6 +4,6 @@ resource "azurerm_sql_server" "atlas_sql_server" {
   location = local.location
   tags = local.common_tags
   version = "12.0"
-  administrator_login = var.DATA_REFRESH_ADMIN_USERNAME
-  administrator_login_password = var.DATA_REFRESH_ADMIN_PASSWORD
+  administrator_login = var.ATLAS_DATABASE_SERVER_ADMIN_LOGIN
+  administrator_login_password = var.ATLAS_DATABASE_SERVER_LOGIN_PASSWORD
 }
