@@ -191,3 +191,12 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
 }
+
+variable "ATLAS_MATCHING_DATABASE_USERNAME" {
+  type    = "string"
+  default = "atlas-matching"
+}
+
+variable "ATLAS_MATCHING_DATABASE_PASSWORD" {
+  type    = "string"
+}
