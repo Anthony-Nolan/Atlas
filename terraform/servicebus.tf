@@ -69,7 +69,7 @@ resource "azurerm_servicebus_topic" "updated-searchable-donors" {
 }
 
 resource "azurerm_servicebus_subscription" "donor-update" {
-  name                                 = "donor-update"
+  name                                 = "matching"
   resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
   namespace_name                       = azurerm_servicebus_namespace.general.name
   topic_name                           = azurerm_servicebus_topic.updated-searchable-donors.name
