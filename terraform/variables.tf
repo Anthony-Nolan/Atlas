@@ -75,22 +75,13 @@ variable "DATA_REFRESH_CRONTAB" {
   default = "0 0 0 * * Monday"
 }
 
-variable "ATLAS_DATABASE_SERVER_LOGIN" {
+variable "ATLAS_DATABASE_SERVER_ADMIN_LOGIN" {
   type = string
   default = "atlas-admin"
 }
 
-variable "DATA_REFRESH_ADMIN_USERNAME" {
+variable "ATLAS_DATABASE_SERVER_LOGIN_PASSWORD" {
   type = string
-}
-
-variable "DATA_REFRESH_ADMIN_PASSWORD" {
-  type = string
-}
-
-variable "DATA_REFRESH_DATABASE_REPLICATION_TYPE" {
-  type = string
-  default = "LRS"
 }
 
 variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
