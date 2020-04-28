@@ -56,6 +56,11 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
   - *(All easily findable by Googling and appear to be generally happy with standard install settings.)*
   - Install a compatible IDE: VS2019 or Rider.
   - Install and Start Azure Storage Emulator.
+    - Note for mac users: There is no storage emulator on mac, so instead another user-secret should be used to instead use a cloud-based storage account
+    - Note that, despite it's appearance, the Emulator isn't really a service and doesn't auto-start on login by default. You may wish to configure it to do so:
+      - Open Windows Startup folder: WindowsExplorer > Type `shell:startup` in the file path field.
+      - Locate the Azure start command script: `StartStorageEmulator.cmd` likely found in `C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator`.
+      - Right-click-and-drag the latter into the former, to create a shortcut to StorageStart script in the Startup folder.
   - Install Azure Storage Explorer.
   - Install SQL Server
   - Install Postman (or some other means of easily running HTTP requests against the API)
@@ -124,11 +129,16 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
 
 ### Validation Tests
 
-- set up user-secrets in the `Atlas.MatchingAlgorithm.Test.Validation` directory. Appropriate values can be found on Azure. :
-  - notifications service bus connection string
-  - hla service client api key
-- ensure that the Azure Storage Emulator is running
-  - Note for mac users: there is no storage emulator on mac, so instead another user-secret should be used to instead use a cloud-based storage account
+The above steps should be sufficient to run all the unit tests. e.g. `Atlas.MatchingAlgorithm.Test` and `Atlas.MatchingAlgorithm.IntegrationTest`
+The end-to-end tests, however, contact external dependencies, and require connections to be configured.
+
+- Set up user-secrets for the `Atlas.MatchingAlgorithm.Test.Validation` project.
+  - Re-use the values used to run the API project.
+  - The specific values needed are:
+    - `NotificationsServiceBus.ConnectionString`
+    - `Client.HlaService.ApiKey`
+  - But just copying all secrets from the API project will work fine.
+- Ensure that the Azure Storage Emulator is running
 
 ## More detailed Notes
 
