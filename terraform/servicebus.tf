@@ -12,14 +12,14 @@ locals {
 // Three ServiceBus "Namespaces". All identical except name.
 // "Standard Tier" is required for Topics.
 resource "azurerm_servicebus_namespace" "general" {
-  name                = "${local.environment}-atlas-general"
+  name                = "${lower(local.environment)}-atlas-general"
   location            = azurerm_resource_group.atlas_resource_group.location
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   sku                 = local.service-bus.default-sku
 }
 
 resource "azurerm_servicebus_namespace" "notifications" {
-  name                = "${local.environment}-atlas-notifications"
+  name                = "${lower(local.environment)}-atlas-notifications"
   location            = azurerm_resource_group.atlas_resource_group.location
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   sku                 = local.service-bus.default-sku
