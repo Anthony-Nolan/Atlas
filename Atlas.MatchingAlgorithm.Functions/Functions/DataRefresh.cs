@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// Runs a full data refresh, if necessary
         /// </summary>
         [FunctionName("RunDataRefresh")]
-        public async Task RunDataRefresh([TimerTrigger("%DataRefresh.CronTab%")] TimerInfo timerInfo)
+        public async Task RunDataRefresh([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
