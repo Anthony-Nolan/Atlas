@@ -93,18 +93,6 @@ variable "DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS" {
   default = "1000"
 }
 
-variable "DATABASE_RESOURCE_GROUP" {
-  type = string
-}
-
-variable "DATABASE_SERVER_NAME" {
-  type = string
-}
-
-variable "DATABASE_SUBSCRIPTION_ID" {
-  type = string
-}
-
 variable "DONOR_SERVICE_APIKEY" {
   type = string
 }
@@ -118,10 +106,6 @@ variable "HLA_SERVICE_APIKEY" {
 }
 
 variable "HLA_SERVICE_BASEURL" {
-  type = string
-}
-
-variable "FUNCTION_APP_SUBSCRIPTION_ID" {
   type = string
 }
 
