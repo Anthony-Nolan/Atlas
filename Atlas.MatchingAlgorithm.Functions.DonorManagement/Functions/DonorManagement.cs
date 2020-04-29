@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         }
 
         [FunctionName("ManageDonorByAvailability")]
-        public async Task Run([TimerTrigger("%MessagingServiceBus.DonorManagement.CronSchedule%")] TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement.CronSchedule%")] TimerInfo myTimer)
         {
             try
             {
