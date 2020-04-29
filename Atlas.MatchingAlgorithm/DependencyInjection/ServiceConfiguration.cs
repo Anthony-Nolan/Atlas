@@ -399,5 +399,71 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     int.Parse(settings.BatchSize));
             });
         }
+        
+        public static void RegisterSettingsForDonorManagementFunctionsApp(this IServiceCollection services)
+        {
+            services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
+            services.ManuallyRegisterSettings<AzureStorageSettings>("AzureStorage");
+            services.ManuallyRegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.ManuallyRegisterSettings<HlaServiceSettings>("Client.HlaService");
+            services.ManuallyRegisterSettings<DonorManagementSettings>("MessagingServiceBus.DonorManagement");
+            services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
+        }
+        
+        public static void RegisterSettingsForFunctionsApp(this IServiceCollection services)
+        {
+            services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
+            services.ManuallyRegisterSettings<AzureStorageSettings>("AzureStorage");
+            services.ManuallyRegisterSettings<DonorServiceSettings>("Client:DonorService");
+            services.ManuallyRegisterSettings<HlaServiceSettings>("Client:HlaService");
+            services.ManuallyRegisterSettings<WmdaSettings>("Wmda");
+            services.ManuallyRegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.ManuallyRegisterSettings<AzureAuthenticationSettings>("AzureManagement:Authentication");
+            services.ManuallyRegisterSettings<AzureAppServiceManagementSettings>("AzureManagement:AppService");
+            services.ManuallyRegisterSettings<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.ManuallyRegisterSettings<DataRefreshSettings>("DataRefresh");
+            services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
+        }
+        
+        /// <summary>
+        /// The common search algorithm project relies on the same app settings regardless of whether it is called by the azure function, or the web api.
+        /// Both frameworks use different configuration patterns:
+        /// - ASP.NET Core uses the Options pattern with nested settings in appsettings.json
+        /// - Functions v2 uses a flat collections of string app settings in the "Values" object of local.settings.json
+        ///
+        /// This method explicitly sets up the IOptions classes that would be set up by "services.Configure".
+        /// All further DI can assume these IOptions are present in either scenario.
+        ///
+        /// This method has been moved from the functions app to the shared app to ensure the version of the package that provides IConfiguration
+        /// is the same for both this set up, and any other DI set up involving IConfiguration (e.g. database connection strings) 
+        /// </summary>
+        private static void ManuallyRegisterSettings<TSettings>(this IServiceCollection services, string configPrefix = "") where TSettings : class, new()
+        {
+            services.AddSingleton<IOptions<TSettings>>(sp =>
+            {
+                var config = sp.GetService<IConfiguration>();
+                return new OptionsWrapper<TSettings>(BuildSettings<TSettings>(config, configPrefix));
+            });
+        }
+
+        private static TSettings BuildSettings<TSettings>(IConfiguration config, string configPrefix) where TSettings : class, new()
+        {
+            var settings = new TSettings();
+
+            var properties = typeof(TSettings).GetProperties();
+            foreach (var property in properties)
+            {
+                var value = config.GetSection($"{configPrefix}:{property.Name}")?.Value;
+                property.SetValue(settings, value);
+            }
+
+            return settings;
+        }
+
+        // This method is currently unused, but is expected to be the replacement pattern for setting up IOptions dependencies in functions v3. 
+        private static void RegisterOptions<T>(this IServiceCollection services, string sectionName) where T : class
+        {
+            services.AddOptions<T>().Configure<IConfiguration>((settings, config) => { config.GetSection(sectionName).Bind(settings); });
+        }
     }
 }
