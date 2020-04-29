@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 
         [FunctionName("RunSearch")]
         public async Task RunSearch(
-            [ServiceBusTrigger("%MessagingServiceBus.SearchRequestsQueue%", Connection = "MessagingServiceBus.ConnectionString")]
+            [ServiceBusTrigger("%MessagingServiceBus:SearchRequestsQueue%", Connection = "MessagingServiceBus:ConnectionString")]
             Message message)
         {
             var serialisedData = Encoding.UTF8.GetString(message.Body);
