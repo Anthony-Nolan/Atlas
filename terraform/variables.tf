@@ -125,10 +125,6 @@ variable "FUNCTION_APP_SUBSCRIPTION_ID" {
   type = string
 }
 
-variable "MESSAGING_BUS_CONNECTION_STRING" {
-  type = string
-}
-
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type = number
   default = 350
@@ -137,40 +133,6 @@ variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
 variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type = string
   default = "0 */1 * * * *"
-}
-
-variable "MESSAGING_BUS_DONOR_TOPIC" {
-  type    = string
-  default = "updated-searchable-donors"
-}
-
-variable "MESSAGING_BUS_DONOR_SUBSCRIPTION" {
-  type    = string
-  default = "searchalgorithm"
-}
-
-variable "MESSAGING_BUS_SEARCH_REQUESTS_QUEUE" {
-  type    = string
-  default = "search-algorithm-search-requests"
-}
-
-variable "MESSAGING_BUS_SEARCH_RESULTS_TOPIC" {
-  type    = string
-  default = "search-algorithm-results-notifications"
-}
-
-variable "NOTIFICATIONS_BUS_ALERTS_TOPIC" {
-  type    = string
-  default = "support-alerts"
-}
-
-variable "NOTIFICATIONS_BUS_CONNECTION_STRING" {
-  type = string
-}
-
-variable "NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC" {
-  type    = string
-  default = "support-notifications"
 }
 
 variable "WMDA_FILE_URL" {

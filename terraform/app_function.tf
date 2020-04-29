@@ -26,14 +26,17 @@ locals {
     "DataRefresh.DonorFunctionsAppName"                         = azurerm_function_app.atlas_matching_algorithm_donor_management_function.name
     "DataRefresh.DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh.RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
-    "MessagingServiceBus.ConnectionString"                      = var.MESSAGING_BUS_CONNECTION_STRING
-    "MessagingServiceBus.DonorManagement.Topic"                 = var.MESSAGING_BUS_DONOR_TOPIC
-    "MessagingServiceBus.DonorManagement.Subscription"          = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
-    "MessagingServiceBus.SearchRequestsQueue"                   = var.MESSAGING_BUS_SEARCH_REQUESTS_QUEUE
-    "MessagingServiceBus.SearchResultsTopic"                    = var.MESSAGING_BUS_SEARCH_RESULTS_TOPIC
-    "NotificationsServiceBus.AlertsTopic"                       = var.NOTIFICATIONS_BUS_ALERTS_TOPIC
-    "NotificationsServiceBus.ConnectionString"                  = var.NOTIFICATIONS_BUS_CONNECTION_STRING
-    "NotificationsServiceBus.NotificationsTopic"                = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC
+    // Historically this codebase used 2 distinct ServiceBusses; however we don't think that's necessary in practice.
+    // We retain the ability to separate them again in the future, but in fact have them pointed at the same namespace
+    // (albeit with different permissions)
+    "MessagingServiceBus.ConnectionString"                      = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "MessagingServiceBus.DonorManagement.Topic"                 = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus.DonorManagement.Subscription"          = azurerm_servicebus_subscription.matching.name
+    "MessagingServiceBus.SearchRequestsQueue"                   = azurerm_servicebus_queue.matching-requests.name
+    "MessagingServiceBus.SearchResultsTopic"                    = azurerm_servicebus_topic.matching-results-ready.name
+    "NotificationsServiceBus.ConnectionString"                  = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus.AlertsTopic"                       = azurerm_servicebus_topic.alerts.name
+    "NotificationsServiceBus.NotificationsTopic"                = azurerm_servicebus_topic.notifications.name
     "Wmda.WmdaFileUri"                                          = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE                
@@ -47,14 +50,16 @@ locals {
     "AzureStorage.ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "Client.HlaService.ApiKey"                         = var.HLA_SERVICE_APIKEY
     "Client.HlaService.BaseUrl"                        = var.HLA_SERVICE_BASEURL
-    "MessagingServiceBus.ConnectionString"             = var.MESSAGING_BUS_CONNECTION_STRING
+    "MessagingServiceBus.ConnectionString"             = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
+    "MessagingServiceBus.DonorManagement.Topic"        = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus.DonorManagement.Subscription" = azurerm_servicebus_subscription.matching.name
     "MessagingServiceBus.DonorManagement.BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "MessagingServiceBus.DonorManagement.CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
-    "MessagingServiceBus.DonorManagement.Topic"        = var.MESSAGING_BUS_DONOR_TOPIC
-    "MessagingServiceBus.DonorManagement.Subscription" = var.MESSAGING_BUS_DONOR_SUBSCRIPTION
-    "NotificationsServiceBus.AlertsTopic"              = var.NOTIFICATIONS_BUS_ALERTS_TOPIC
-    "NotificationsServiceBus.ConnectionString"         = var.NOTIFICATIONS_BUS_CONNECTION_STRING
-    "NotificationsServiceBus.NotificationsTopic"       = var.NOTIFICATIONS_BUS_NOTIFICATIONS_TOPIC	
+    "MessagingServiceBus.SearchRequestsQueue"          = azurerm_servicebus_queue.matching-requests.name
+    "MessagingServiceBus.SearchResultsTopic"           = azurerm_servicebus_topic.matching-results-ready.name
+    "NotificationsServiceBus.ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus.AlertsTopic"              = azurerm_servicebus_topic.alerts.name
+    "NotificationsServiceBus.NotificationsTopic"       = azurerm_servicebus_topic.notifications.name
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
 	"WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
   }
