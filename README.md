@@ -98,9 +98,11 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       - Acquire an api key. (This should be a guid)
       - Create a `Client.HlaService.ApiKey` setting with that value.
     - the appropriate ServiceBus connection strings
-      - Acquire the connection strings for the Azure ServiceBus(es) being used for local development, for general messages and for notification messages.
-      - Create a `MessagingServiceBus.ConnectionString` setting with the relevant value.
-      - Create a `NotificationsServiceBus.ConnectionString` setting with the relevant value.
+      - Acquire the connection strings for the Azure ServiceBus being used for local development.
+        - The connection strings can be found under the `Shared Access Policies` of the ServiceBus Namespace
+        - We use the same ServiceBus Namespace for both connections, but with differing access levels.
+      - Create a `MessagingServiceBus.ConnectionString` setting using the `read-write` SAP.
+      - Create a `NotificationsServiceBus.ConnectionString` setting using the `write-only` SAP.
         - *Note these keys aren't part of the `Client` block of the settings object!*
     - the DonorService to read from file.
       - Identify the fully-specified path of the `InitialDonors.csv` file found in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm`.
