@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
-        <VersionPrefix>8.5.0</VersionPrefix>
+        <VersionPrefix>8.5.1</VersionPrefix>
         <AzureFunctionsVersion>v2</AzureFunctionsVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
