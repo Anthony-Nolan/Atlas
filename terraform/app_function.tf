@@ -7,11 +7,11 @@ locals {
     "AzureManagement.Authentication.ClientId"                   = var.AZURE_CLIENT_ID
     "AzureManagement.Authentication.ClientSecret"               = var.AZURE_CLIENT_SECRET
     "AzureManagement.AppService.ResourceGroupName"              = azurerm_app_service_plan.atlas.resource_group_name
-    "AzureManagement.AppService.SubscriptionId"                 = var.FUNCTION_APP_SUBSCRIPTION_ID
-    "AzureManagement.Database.ServerName"                       = var.DATABASE_SERVER_NAME
+    "AzureManagement.AppService.SubscriptionId"                 = local.subscription_id
+    "AzureManagement.Database.ServerName"                       = azurerm_sql_server.atlas_sql_server.name
     "AzureManagement.Database.PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS
-    "AzureManagement.Database.ResourceGroupName"                = var.DATABASE_RESOURCE_GROUP
-    "AzureManagement.Database.SubscriptionId"                   = var.DATABASE_SUBSCRIPTION_ID
+    "AzureManagement.Database.ResourceGroupName"                = azurerm_resource_group.atlas_resource_group.name
+    "AzureManagement.Database.SubscriptionId"                   = local.subscription_id
     "AzureStorage.ConnectionString"                             = azurerm_storage_account.azure_storage.primary_connection_string
     "AzureStorage.SearchResultsBlobContainer"                   = azurerm_storage_container.search_matching_results_blob_container.name
     "Client.DonorService.ApiKey"                                = var.DONOR_SERVICE_APIKEY
