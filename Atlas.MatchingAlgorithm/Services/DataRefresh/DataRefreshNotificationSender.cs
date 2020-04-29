@@ -1,5 +1,5 @@
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh

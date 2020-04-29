@@ -9,7 +9,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
