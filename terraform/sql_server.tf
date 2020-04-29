@@ -9,7 +9,7 @@ resource "azurerm_sql_server" "atlas_sql_server" {
 }
 
 resource "azurerm_sql_firewall_rule" "firewall_rule_allow_azure" {
-  name                = "AlllowAzureServices"
+  name                = "AllowAzureServices"
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   server_name         = azurerm_sql_server.atlas_sql_server.name
   start_ip_address    = "0.0.0.0"
