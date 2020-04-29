@@ -93,6 +93,14 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       - Solution Explorer > `Atlas.MatchingAlgorithm.Api` > Context Menu > "Manage User Secrets"
       - This will open a mostly blank file called `secrets.json`.
       - Recreate the relevant portion of the nested structure of `appsettings.json` for the above config setting, inserting your new local settings where appropriate.
+      - Note that this is a nested JSON object, so where we describe a `Foo.Bar` setting below, you'll need to create:
+
+      ```json
+      Foo: {
+        Bar: "value"
+      }
+      ```
+
   - In that `secrets.json` file configure:
     - the NMDP Code lookup API key.
       - Acquire an api key. (This should be a guid)
@@ -112,11 +120,11 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
 - Set up sensible initial data.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
     - This should take < 1 second to run.
-  - In the Swagger UI, trigger the `/matching-dictionary/recreate-active-version` endpoint.
+  - In the Swagger UI, trigger the `Matching Dictionary > recreate-active-version` endpoint.
     - This can take several minutes to run.
-  - In the Swagger UI, trigger the `/matching-dictionary/trigger-donor-import` endpoint.
+  - In the Swagger UI, trigger the `Data Refresh > trigger-donor-import` endpoint.
     - This should take < 1 minute to run.
-  - In the Swagger UI, trigger the `/matching-dictionary/trigger-donor-hla-update` endpoint.
+  - In the Swagger UI, trigger the `Data Refresh > trigger-donor-hla-update` endpoint.
     - This should take 1-2 minutes to run.
 - Run a search (avoiding NMDP Code lookups).
   - Restart the API project, and use Swagger to POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json` to the  `/search` endpoint.
