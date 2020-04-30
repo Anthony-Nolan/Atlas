@@ -21,7 +21,6 @@
       <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
       <PackageReference Include="NeoSmart.AsyncLock" Version="0.3.0.2" />
-      <PackageReference Include="Nova.DonorService.Client.Models" Version="4.1.1" />
       <PackageReference Include="Nova.Utils.Client" Version="10.0.2" />
       <PackageReference Include="Nova.Utils.Notifications" Version="14.3.0" />
       <PackageReference Include="Nova.Utils.ServiceBus" Version="14.3.0" />
