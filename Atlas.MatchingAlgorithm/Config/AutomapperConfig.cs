@@ -14,7 +14,7 @@ namespace Atlas.MatchingAlgorithm.Config
                 .Select(a => a.GetName().Name)
                 .ToArray();
 
-            var config = new MapperConfiguration(cfg => { cfg.AddProfiles(assemblyNames); });
+            var config = new MapperConfiguration(cfg => { cfg.AddMaps(assemblyNames); });
             return config.CreateMapper();
         }
     }
