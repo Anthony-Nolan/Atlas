@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ApplicationInsights.EventModels;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 using System;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights

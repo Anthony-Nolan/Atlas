@@ -2,7 +2,7 @@
 using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
-namespace Atlas.Utils.Core.Storage.ApplicationInsights
+namespace Atlas.Utils.Storage.ApplicationInsights
 {
     class AzureStorageEventModel : EventModel
     {

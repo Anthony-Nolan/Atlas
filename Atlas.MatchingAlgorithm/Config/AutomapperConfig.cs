@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
 using AutoMapper;
-using Nova.Utils.Reflection;
+using Atlas.Utils.Core.Reflection;
 
 namespace Atlas.MatchingAlgorithm.Config
 {

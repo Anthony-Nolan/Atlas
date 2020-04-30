@@ -1,7 +1,7 @@
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Config;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 using System;
 using System.Threading.Tasks;
 
