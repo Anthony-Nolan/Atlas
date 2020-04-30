@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ServiceBus.Models;
+using Atlas.Utils.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

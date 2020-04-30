@@ -3,7 +3,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ServiceBus.Exceptions;
+using Atlas.Utils.ServiceBus.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

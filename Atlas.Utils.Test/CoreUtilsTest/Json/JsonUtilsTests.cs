@@ -16,7 +16,7 @@ namespace Atlas.Utils.Test.CoreUtilsTest.Json
         [Test]
         public void GivenExistingEmbeddedResource_LoadSchema_ReturnsExpectedSchema()
         {
-            var schema = JsonUtils.LoadSchemaFromResource(Assembly, "Resources/some-schema.json");
+            var schema = JsonUtils.LoadSchemaFromResource(Assembly, "CoreUtilsTest/Resources/some-schema.json");
 
             schema.ShouldBeEquivalentTo(JSchema.Parse("{'type':'string'}"));
         }
@@ -24,7 +24,7 @@ namespace Atlas.Utils.Test.CoreUtilsTest.Json
         [Test]
         public async Task GivenExistingEmbeddedResource_LoadJsonContent_ReturnsExpectedContent()
         {
-            var content = JsonUtils.LoadJsonContent(Assembly, "Resources/some-json.json");
+            var content = JsonUtils.LoadJsonContent(Assembly, "CoreUtilsTest/Resources/some-json.json");
 
             var ret = await content.ReadAsStringAsync();
 
@@ -34,10 +34,10 @@ namespace Atlas.Utils.Test.CoreUtilsTest.Json
         [Test]
         public void GivenNontExistingEmbeddedResource_LoadJsonContent_ThrowsArgException()
         {
-            Action action = () => JsonUtils.LoadJsonContent(Assembly, "Resources/unknown.json");
+            Action action = () => JsonUtils.LoadJsonContent(Assembly, "CoreUtilsTest/Resources/unknown.json");
 
             action.ShouldThrow<ArgumentException>().Which.Message
-                .Should().Be("File Resources/unknown.json not found. Please make sure it's marked as an embedded resource.");
+                .Should().Be("File CoreUtilsTest/Resources/unknown.json not found. Please make sure it's marked as an embedded resource.");
         }
     }
 }

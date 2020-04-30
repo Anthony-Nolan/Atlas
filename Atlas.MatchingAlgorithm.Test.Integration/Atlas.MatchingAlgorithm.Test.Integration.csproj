@@ -34,12 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Nova.Utils.ServiceBus">
-        <HintPath>..\..\Anthony-Nolan\Nova.Utils\Nova.Utils.ServiceBus\bin\Debug\netstandard2.0\Nova.Utils.ServiceBus.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <None Update="appsettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
