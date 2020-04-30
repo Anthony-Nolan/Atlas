@@ -143,7 +143,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 DonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType,
-                OverallMatchConfidence = result.ScoreResult.AggregateScoreDetails.OverallMatchConfidence,
                 MatchCategory = result.ScoreResult.AggregateScoreDetails.MatchCategory,
                 ConfidenceScore = result.ScoreResult.AggregateScoreDetails.ConfidenceScore,
                 GradeScore = result.ScoreResult.AggregateScoreDetails.GradeScore,

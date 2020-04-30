@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         #region Scoring of the different HLA typing categories
 
         [Test]
-        public async Task Search_TenOutOfTen_PatientAndDonorHaveSingleAlleles_ReturnsMolecularGrades_AndAlleleLevelConfidences()
+        public async Task Search_TenOutOfTen_PatientAndDonorHaveSingleAlleles_ReturnsDefiniteOrExactMatchCategory()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
                     defaultHlaSet.SixLocus_SingleExpressingAlleles,
@@ -65,12 +65,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
-            var expectedMatchConfidences = new List<MatchConfidence> { MatchConfidence.Definite, MatchConfidence.Exact };
-            expectedMatchConfidences.Should().Contain(result.OverallMatchConfidence);
+            var expectedMatchCategories = new List<MatchCategory> { MatchCategory.Definite, MatchCategory.Exact };
+            expectedMatchCategories.Should().Contain(result.MatchCategory);
         }
 
         [Test]
-        public async Task Search_TenOutOfTen_PatientHasMultipleAlleles_DonorHasSingleAlleles_ReturnsMolecularGrades_AndAlleleLevelConfidences()
+        public async Task Search_TenOutOfTen_PatientHasMultipleAlleles_DonorHasSingleAlleles_ReturnsDefiniteOrExactMatchCategory()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
                     defaultHlaSet.SixLocus_ExpressingAlleles_WithTruncatedNames,
@@ -81,12 +81,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
-            var expectedMatchConfidences = new List<MatchConfidence> { MatchConfidence.Definite, MatchConfidence.Exact };
-            expectedMatchConfidences.Should().Contain(result.OverallMatchConfidence);
+            var expectedMatchCategories = new List<MatchCategory> { MatchCategory.Definite, MatchCategory.Exact };
+            expectedMatchCategories.Should().Contain(result.MatchCategory);
         }
 
         [Test]
-        public async Task Search_TenOutOfTen_PatientHasAlleleStrings_DonorHasSingleAlleles_ReturnsMolecularGrades_AndPotentialConfidences()
+        public async Task Search_TenOutOfTen_PatientHasAlleleStrings_DonorHasSingleAlleles_ReturnsPotentialMatchCategory()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
                     defaultHlaSet.SixLocus_XxCodes,
@@ -97,11 +97,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
-            result.OverallMatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.MatchCategory.Should().Be(MatchCategory.Potential);
         }
 
         [Test]
-        public async Task Search_TenOutOfTen_PatientHasSerologies_DonorHasSingleAlleles_ReturnsSerologyGrades_AndPotentialConfidences()
+        public async Task Search_TenOutOfTen_PatientHasSerologies_DonorHasSingleAlleles_ReturnsPotentialMatchCategory()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
                     defaultHlaSet.FiveLocus_Serologies,
@@ -112,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
-            result.OverallMatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.MatchCategory.Should().Be(MatchCategory.Potential);
         }
 
         #endregion
@@ -132,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             // Should be 6/6
-            result.OverallMatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
 
             // Should be 2/2 at A
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
@@ -171,7 +171,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
 
             // Should be 5/6
-            result.OverallMatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.MatchCategory.Should().Be(MatchCategory.Mismatch);
 
             // Should be 1/2 at A
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);

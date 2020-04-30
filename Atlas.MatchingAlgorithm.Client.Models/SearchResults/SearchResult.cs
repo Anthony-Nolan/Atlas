@@ -55,14 +55,7 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         /// A numeric value representing the aggregate relative match confidence across all loci, according to the scoring algorithm
         /// </summary>
         public int ConfidenceScore { get; set; }
-
-        /// <summary>
-        /// The overall confidence for the match.
-        /// Calculated as the worst across all per-position match confidences.
-        /// </summary>
-        [Obsolete("Use MatchCategory instead.")]
-        public MatchConfidence OverallMatchConfidence { get; set; }
-        
+     
         /// <summary>
         /// The overall quality of the match. An aggregate of the per-locus grades and confidences. 
         /// </summary>
