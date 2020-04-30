@@ -4,7 +4,7 @@ using System.Linq;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
-using Castle.Core.Internal;
+using Atlas.Utils.Core.Common;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 {

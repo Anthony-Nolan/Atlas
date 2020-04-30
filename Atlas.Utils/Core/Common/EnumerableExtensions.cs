@@ -20,5 +20,10 @@ namespace Atlas.Utils.Core.Common
             });
             return genericMethod.Invoke(null, new object[] { source }) as IEnumerable;
         }
+
+        public static bool IsNullOrEmpty(this IEnumerable source)
+        {
+            return source == null || source.GetEnumerator().MoveNext() == false;
+        }
     }
 }
