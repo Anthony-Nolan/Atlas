@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Nova.Utils.ServiceBus.Models;
+using Atlas.Utils.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System;

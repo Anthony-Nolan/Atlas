@@ -1,7 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ServiceBus.BatchReceiving;
-using Nova.Utils.ServiceBus.Models;
+using Atlas.Utils.ServiceBus.BatchReceiving;
+using Atlas.Utils.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

@@ -2,8 +2,8 @@
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.Utils.ServiceBus.BatchReceiving;
-using Nova.Utils.ServiceBus.Models;
+using Atlas.Utils.ServiceBus.BatchReceiving;
+using Atlas.Utils.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
