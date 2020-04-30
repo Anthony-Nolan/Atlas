@@ -1,5 +1,4 @@
-﻿using Nova.DonorService.Client.Models.SearchableDonors;
-using Atlas.MatchingAlgorithm.Clients.Http;
+﻿using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -7,7 +6,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using NSubstitute;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

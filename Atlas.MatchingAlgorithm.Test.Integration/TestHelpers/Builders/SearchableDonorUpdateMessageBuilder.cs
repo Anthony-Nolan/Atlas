@@ -1,5 +1,5 @@
 ﻿using LochNessBuilder;
-using Nova.DonorService.Client.Models.DonorUpdate;
+using Atlas.MatchingAlgorithm.Models;
 using Nova.Utils.ServiceBus.Models;
 using System;
 

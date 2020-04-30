@@ -1,5 +1,4 @@
-﻿using Nova.DonorService.Client.Models.SearchableDonors;
-using Atlas.MatchingAlgorithm.Clients.Http;
+﻿using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Exceptions;

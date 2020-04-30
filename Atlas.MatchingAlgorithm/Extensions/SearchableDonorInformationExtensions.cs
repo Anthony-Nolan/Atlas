@@ -1,4 +1,4 @@
-﻿using Nova.DonorService.Client.Models.SearchableDonors;
+﻿using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Helpers;

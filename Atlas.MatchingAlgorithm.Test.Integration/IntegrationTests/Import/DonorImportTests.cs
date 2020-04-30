@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.DonorService.Client.Models.SearchableDonors;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.MatchingAlgorithm.Common.Models;
