@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Nova.DonorService.Client.Models.DonorUpdate;
-using Nova.HLAService.Client;
+using Atlas.HLAService.Client;
 using Atlas.Utils.Hla.Services;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
