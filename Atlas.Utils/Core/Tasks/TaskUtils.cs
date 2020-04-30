@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Atlas.Utils.Core.Concurrency;
 
 namespace Atlas.Utils.Core.Tasks
 {
@@ -45,28 +42,6 @@ namespace Atlas.Utils.Core.Tasks
         public static T RunSync<T>(this Task<T> task)
         {
             return RunSync(() => task);
-        }
-
-        /// <summary>
-        /// Applies the operation on every item in the list, and wraps System.Threading.Tasks.Task.WhenAll
-        /// to limit the number of concurrent operations.
-        /// </summary>
-        public static async Task<IEnumerable<TResult>> WhenAll<T, TResult>(
-            IEnumerable<T> list, Func<T, Task<TResult>> operation, int maxConcurrentOperations)
-        {
-            var semaphore = new SemaphoreSlim(maxConcurrentOperations, maxConcurrentOperations);
-            return await Task.WhenAll(list.Select(x => semaphore.WaitAndRunAsync(() => operation(x))));
-        }
-
-        /// <summary>
-        /// Applies the operation on every item in the list, and wraps System.Threading.Tasks.Task.WhenAll
-        /// to limit the number of concurrent operations.
-        /// </summary>
-        public static async Task WhenAll<T>(
-            IEnumerable<T> list, Func<T, Task> operation, int maxConcurrentOperations)
-        {
-            var semaphore = new SemaphoreSlim(maxConcurrentOperations, maxConcurrentOperations);
-            await Task.WhenAll(list.Select(x => semaphore.WaitAndRunAsync(() => operation(x))));
         }
     }
 }

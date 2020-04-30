@@ -1,11 +1,9 @@
-﻿using System;
-using Atlas.Utils.Core.Models;
+﻿using Atlas.Utils.Core.Models;
 
 namespace Atlas.Utils.Core.Helpers
 {
     public class AntibodyTypeHelper
     {
-        [Obsolete("Use GetVirologyStatus")]
         public static CmvAntibodyType GetCmvAntibodyType(dynamic cmvType)
         {
             if (cmvType == null)
@@ -25,26 +23,6 @@ namespace Atlas.Utils.Core.Helpers
                     return CmvAntibodyType.Equivocal;
                 default:
                     return CmvAntibodyType.Unknown;
-            }
-        }
-        
-        public static VirologyStatus GetVirologyStatus(string virologyStatusString)
-        {
-            if (virologyStatusString == null)
-            {
-                return VirologyStatus.Unknown;
-            }
-            
-            switch (virologyStatusString.ToUpperInvariant())
-            {
-                case "POSITIVE":
-                    return VirologyStatus.Positive;
-                case "NEGATIVE":
-                    return VirologyStatus.Negative;
-                case "EQUIVOCAL":
-                    return VirologyStatus.Equivocal;
-                default:
-                    return VirologyStatus.Unknown;
             }
         }
     }
