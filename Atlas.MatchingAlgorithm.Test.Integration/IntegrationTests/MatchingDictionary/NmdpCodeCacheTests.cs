@@ -1,15 +1,14 @@
 ﻿using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
+using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
-using Nova.Utils.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Utils.Core.Models;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
@@ -234,7 +233,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
 
             await hlaServiceClient.DidNotReceive()
-                .GetAllelesForDefinedNmdpCode(Arg.Any<MolecularLocusType>(), NmdpCode);
+                .GetAllelesForDefinedNmdpCode(Arg.Any<LocusType>(), NmdpCode);
         }
 
         [Test]
@@ -253,7 +252,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);
 
             await hlaServiceClient.Received()
-                .GetAllelesForDefinedNmdpCode(MolecularLocusType.A, newNmdpCode);
+                .GetAllelesForDefinedNmdpCode(LocusType.A, newNmdpCode);
         }
 
         [Test]
@@ -263,7 +262,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
             var expectedAlleles = new List<string> { "allele-1", "allele-2" };
 
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Arg.Any<MolecularLocusType>(), newNmdpCode)
+                .GetAllelesForDefinedNmdpCode(Arg.Any<LocusType>(), newNmdpCode)
                 .Returns(expectedAlleles);
 
             var alleles = await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);
@@ -278,7 +277,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
             var expectedAlleles = new List<string> { "allele-1", "allele-2" };
 
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Arg.Any<MolecularLocusType>(), newNmdpCode)
+                .GetAllelesForDefinedNmdpCode(Arg.Any<LocusType>(), newNmdpCode)
                 .Returns(expectedAlleles);
 
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);

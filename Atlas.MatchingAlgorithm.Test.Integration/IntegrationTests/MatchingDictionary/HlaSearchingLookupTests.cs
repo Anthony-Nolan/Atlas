@@ -1,12 +1,12 @@
 ﻿using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
+using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
+using Atlas.Utils.Core.Models;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
     public class HlaSearchingLookupLookupTests
     {
         private const Locus DefaultLocus = Locus.A;
-        private const MolecularLocusType DefaultMolecularLocusType = MolecularLocusType.A;
+        private const LocusType DefaultLocusType = LocusType.A;
         private const string CacheKey = "NmdpCodeLookup_A";
 
         private IHlaMatchingLookupService lookupService;
@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
         public void SetUp()
         {
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultMolecularLocusType, Arg.Any<string>())
+                .GetAllelesForDefinedNmdpCode(DefaultLocusType, Arg.Any<string>())
                 .Returns(new List<string>());
 
             // clear NMDP code allele mappings between tests
@@ -62,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
             // NMDP code value does not matter, but does need to conform to the expected pattern
             const string nmdpCode = "99:CODE";
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultMolecularLocusType, nmdpCode)
+                .GetAllelesForDefinedNmdpCode(DefaultLocusType, nmdpCode)
                 .Returns(new List<string> { missingAllele });
 
             Assert.ThrowsAsync<MatchingDictionaryException>(async () => 

@@ -1,14 +1,13 @@
 ﻿using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.HLAService.Client;
-using Nova.HLAService.Client.Models;
+using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Utils.Core.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
 {
@@ -18,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
     [TestFixture]
     public class Dpb1TceGroupLookupTests
     {
-        private const MolecularLocusType Dpb1MolecularLocusType = MolecularLocusType.Dpb1;
+        private const LocusType Dpb1MolecularLocusType = LocusType.Dpb1;
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
 
         private IDpb1TceGroupLookupService lookupService;
