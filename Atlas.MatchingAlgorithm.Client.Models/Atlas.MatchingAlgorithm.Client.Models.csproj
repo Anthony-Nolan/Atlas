@@ -5,6 +5,7 @@
         <VersionPrefix>8.5.0</VersionPrefix>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RootNamespace>Atlas.MatchingAlgorithm.Client.Models</RootNamespace>
+        <NoWarn>1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

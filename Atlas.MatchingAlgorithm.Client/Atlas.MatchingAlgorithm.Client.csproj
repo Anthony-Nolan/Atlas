@@ -8,6 +8,7 @@
         <OutputPath>bin/</OutputPath>
         <LangVersion>latest</LangVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
