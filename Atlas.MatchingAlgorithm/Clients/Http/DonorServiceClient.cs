@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
-using Nova.DonorService.Client.Models.SearchableDonors;
+using Atlas.MatchingAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.Client;
 using Nova.Utils.Http;

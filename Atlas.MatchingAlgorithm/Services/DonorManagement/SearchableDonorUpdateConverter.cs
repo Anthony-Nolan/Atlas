@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Nova.DonorService.Client.Models.DonorUpdate;
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;

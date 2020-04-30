@@ -1,4 +1,4 @@
-using Nova.DonorService.Client.Models.DonorUpdate;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ServiceBus.BatchReceiving;

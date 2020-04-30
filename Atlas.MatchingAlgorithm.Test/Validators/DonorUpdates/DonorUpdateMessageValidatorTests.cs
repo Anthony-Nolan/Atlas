@@ -1,5 +1,5 @@
 ﻿using FluentValidation.TestHelper;
-using Nova.DonorService.Client.Models.DonorUpdate;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using NUnit.Framework;
 

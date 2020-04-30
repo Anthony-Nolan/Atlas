@@ -1,7 +1,7 @@
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Helpers;
 using FluentValidation;
-using Nova.DonorService.Client.Models.SearchableDonors;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {

@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using FluentValidation;
-using Nova.DonorService.Client.Models.DonorUpdate;
 using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
@@ -8,7 +7,6 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using Nova.Utils.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
