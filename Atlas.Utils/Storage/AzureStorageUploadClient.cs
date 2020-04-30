@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Atlas.Utils.Core.Storage.ApplicationInsights;
 using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Storage.ApplicationInsights;
 
-namespace Atlas.Utils.Core.Storage
+namespace Atlas.Utils.Storage
 {
     public interface IStorageClient
     {

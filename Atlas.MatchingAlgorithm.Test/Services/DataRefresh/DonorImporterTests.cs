@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 using ILogger = Nova.Utils.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh

@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
