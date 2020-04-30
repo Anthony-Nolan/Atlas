@@ -18,15 +18,6 @@ namespace Atlas.Utils.Core.Common
                 .GetCustomAttribute<TAttribute>();
         }
 
-        public static TAttribute GetAttributeOrDefault<TAttribute>(this IComparable enumValue)
-            where TAttribute : Attribute
-        {
-            return enumValue.GetType()
-                .GetMember(enumValue.ToString())
-                .FirstOrDefault()
-                ?.GetCustomAttribute<TAttribute>();
-        }
-
         public static string GetDescription(this IComparable enumValue)
         {
             var descriptionAttribute = enumValue.GetAttribute<DescriptionAttribute>();

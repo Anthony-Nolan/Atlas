@@ -5,7 +5,7 @@ using Newtonsoft.Json.Schema;
 using Atlas.Utils.Test.CoreUtils.Assertions;
 using NUnit.Framework;
 
-namespace Nova.Utils.Test.CoreUtilsTest.Assertions
+namespace Atlas.Utils.Test.CoreUtilsTest.Assertions
 {
     [TestFixture]
     public class JTokenAssertionsTests

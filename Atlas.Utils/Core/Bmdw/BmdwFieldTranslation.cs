@@ -20,7 +20,6 @@ namespace Atlas.Utils.Core.BMDW
             }
         }
 
-        [Obsolete("Use VirologyStatus Override")]
         public static string GetCmvStatusCode(CmvAntibodyType cmvType)
         {
             switch (cmvType)
@@ -31,22 +30,6 @@ namespace Atlas.Utils.Core.BMDW
                     return "N";
                 case CmvAntibodyType.Equivocal:
                     return "Q";
-                default:
-                    throw new ArgumentException("Cmv status must not be 'Unknown'");
-            }
-        }
-
-        public static string GetCmvStatusCode(VirologyStatus virologyStatus)
-        {
-            switch (virologyStatus)
-            {
-                case VirologyStatus.Positive:
-                    return "P";
-                case VirologyStatus.Negative:
-                    return "N";
-                case VirologyStatus.Equivocal:
-                    return "Q";
-                case VirologyStatus.Unknown:
                 default:
                     throw new ArgumentException("Cmv status must not be 'Unknown'");
             }
