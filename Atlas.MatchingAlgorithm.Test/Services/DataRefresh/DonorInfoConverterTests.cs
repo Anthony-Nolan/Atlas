@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Nova.DonorService.Client.Models.SearchableDonors;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using NSubstitute;
