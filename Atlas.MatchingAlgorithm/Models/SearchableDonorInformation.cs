@@ -12,7 +12,6 @@ namespace Atlas.MatchingAlgorithm.Models
     {
         public int DonorId { get; set; }
         public string DonorType { get; set; }
-        public string RegistryCode { get; set; } //QQ-MDM
         public string A_1 { get; set; }
         public string A_2 { get; set; }
         public string B_1 { get; set; }
@@ -31,21 +30,17 @@ namespace Atlas.MatchingAlgorithm.Models
     /// A page of donor info containing only the information required by the search-algorithm.
     /// </summary>
     public class SearchableDonorInformationPage
-    {//QQ-MDM review
+    {
+        //TODO: ATLAS-186 If we use this class at all, then Clean it class up.
+        // "ResultsPerPage" => "RequestedResultsPerPage".
+        // Add "NextId" (nullable), and use that to indicate whether more should be fetched.
+        // ??Drop LastId??
         public int ResultsPerPage { get; set; }
         public int? LastId { get; set; }
         public IEnumerable<SearchableDonorInformation> DonorsInfo { get; set; }
     }
 
-    public class SearchableDonorUpdate : DonorUpdate
-    {
-        public bool IsAvailableForSearch { get; set; }
-        public SearchableDonorInformation SearchableDonorInformation { get; set; }
-        public DateTimeOffset? PublishedDateTime { get; set; }
-    }
-
-    //QQ-MDM inline?
-    public class DonorUpdate
+    public class SearchableDonorUpdate
     {
         /// <summary>
         /// The id of the audit table row that triggered this donor update
@@ -54,5 +49,8 @@ namespace Atlas.MatchingAlgorithm.Models
         public int AuditId { get; set; }
 
         public string DonorId { get; set; }
+        public bool IsAvailableForSearch { get; set; }
+        public SearchableDonorInformation SearchableDonorInformation { get; set; }
+        public DateTimeOffset? PublishedDateTime { get; set; }
     }
 }
