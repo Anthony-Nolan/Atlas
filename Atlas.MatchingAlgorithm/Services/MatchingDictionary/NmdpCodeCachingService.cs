@@ -1,18 +1,17 @@
 ﻿using LazyCache;
-using Nova.HLAService.Client;
+using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
-using MolecularLocusType = Nova.HLAService.Client.Models.MolecularLocusType;
+using LocusType = Atlas.Utils.Core.Models.LocusType;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
@@ -94,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         private async Task<IEnumerable<string>> GetAndAddAllelesForNmdpCode(Locus locus, string nmdpCode)
         {
-            Enum.TryParse(locus.ToString(), true, out MolecularLocusType molecularLocusType);
+            Enum.TryParse(locus.ToString(), true, out LocusType molecularLocusType);
             var alleles = await hlaServiceClient.GetAllelesForDefinedNmdpCode(molecularLocusType, nmdpCode);
             await UpdateNmdpCodeLookup(locus, nmdpCode, alleles);
 
@@ -133,8 +132,8 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Enum.TryParse(locus.ToString(), true, out MolecularLocusType locusType);
-            var antigens = await hlaServiceClient.GetAntigens((LocusType)locusType);
+            Enum.TryParse(locus.ToString(), true, out LocusType locusType);
+            var antigens = await hlaServiceClient.GetAntigens(locusType);
 
             logger.SendTrace("Fetched antigens from HLA service", LogLevel.Info, new Dictionary<string, string>
             {

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nova.HLAService.Client;
+using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Data.Context;
@@ -8,7 +8,6 @@ using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
-using Nova.Utils.Models;
 using Nova.Utils.Notifications;
 using NSubstitute;
 using System;
@@ -16,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.Utils.Core.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
