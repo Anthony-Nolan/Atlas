@@ -1,4 +1,4 @@
-﻿namespace Atlas.Utils.Core.Storage.ClaimCheck
+﻿namespace Atlas.Utils.Storage.ClaimCheck
 {
     public class ClaimCheckNotification
     {

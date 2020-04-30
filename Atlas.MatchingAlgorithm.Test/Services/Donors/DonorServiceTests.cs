@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Models;
-using Nova.Utils.Notifications;
+using Atlas.Utils.Notifications;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 {
