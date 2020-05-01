@@ -7,8 +7,8 @@ namespace Atlas.Utils.ServiceClient
     /// <summary>
     /// Declares functionality necessary of a Nova Http client.
     /// Different implementations of this class may be needed, depending on the dependencies necessary.
-    /// For applications tied to an older version of Newtonsoft.Json (e.g. azure functions v1 at 9.0.1), a legacy client should be used, Nova.Utils.Client.Legacy.
-    /// For all other applications, Nova.Utils.Client should suffice. 
+    /// For applications tied to an older version of Newtonsoft.Json (e.g. azure functions v1 at 9.0.1), a legacy client should be used, Atlas.Utils.Client.Legacy.
+    /// For all other applications, Atlas.Utils.Client should suffice. 
     /// </summary>
     public interface INovaHttpClient
     {
