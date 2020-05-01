@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Newtonsoft.Json;
-using Nova.Utils.ApplicationInsights;
+﻿using Nova.Utils.ApplicationInsights;
 using Nova.Utils.ApplicationInsights.EventModels;
 using Nova.Utils.Http;
 using Nova.Utils.Http.Exceptions;
@@ -34,26 +29,10 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
         private readonly JsonMediaTypeFormatter formatter;
         private readonly HttpClient client;
         private readonly string clientName;
-        private readonly IErrorsParser errorsParser;
+        private readonly HttpErrorParser errorsParser;
         private readonly ILogger logger;
 
-        [Obsolete]
-        protected ClientBase(string baseUrl, string apiKey, string clientName, JsonSerializerSettings jsonSettings)
-        {
-            this.clientName = ServiceNameValidator.Validate(clientName);
-            client = GetClient(baseUrl, apiKey, TimeSpan.FromSeconds(DefaultTimeoutSeconds));
-
-            jsonSettings.MissingMemberHandling = MissingMemberHandling.Error;
-            formatter = new JsonMediaTypeFormatter
-            {
-                SerializerSettings = jsonSettings
-            };
-            errorsParser = new ErrorsParser();
-            logger = new NoOpLogger();
-        }
-
-        protected ClientBase(ClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null,
-            IErrorsParser errorsParser = null)
+        protected ClientBase(HttpClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null, HttpErrorParser errorsParser = null)
         {
             clientName = ServiceNameValidator.Validate(settings.ClientName);
             client = GetClient(
@@ -68,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
             };
             this.logger = logger ?? new NoOpLogger();
 
-            this.errorsParser = errorsParser ?? new ErrorsParser();
+            this.errorsParser = errorsParser ?? new HttpErrorParser();
         }
 
         protected virtual string ApiKeyHeaderKey => ApiKeyConstants.HeaderKey;

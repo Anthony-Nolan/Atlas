@@ -8,8 +8,6 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using Atlas.MatchingAlgorithm.Models;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Client;
-using Nova.Utils.Http;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http
 {
@@ -91,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
 
     public class DonorServiceClient : ClientBase, IDonorServiceClient
     {
-        public DonorServiceClient(ClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null, IErrorsParser errorsParser = null) : base(settings, logger, handler, errorsParser)
+        public DonorServiceClient(HttpClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null, HttpErrorParser errorsParser = null) : base(settings, logger, handler, errorsParser)
         {
         }
 
