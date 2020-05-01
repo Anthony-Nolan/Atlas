@@ -86,17 +86,17 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = local.data_refresh_a_connection_string
+    value = local.matching_transient_database_a_connection_string
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = local.data_refresh_b_connection_string
+    value = local.matching_transient_database_b_connection_string
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.data_refresh_persistent_connection_string
+    value = local.matching_persistent_database_connection_string
   }
 }
 
@@ -120,16 +120,16 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = local.data_refresh_a_connection_string
+    value = local.matching_transient_database_a_connection_string
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = local.data_refresh_b_connection_string
+    value = local.matching_transient_database_b_connection_string
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.data_refresh_persistent_connection_string
+    value = local.matching_persistent_database_connection_string
   }
 }
