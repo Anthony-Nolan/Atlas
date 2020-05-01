@@ -2,6 +2,11 @@ variable "APIKEY" {
   type = string
 }
 
+variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
+  type    = string
+  default = "Info"
+}
+
 variable "ATLAS_DATABASE_SERVER_ADMIN_LOGIN" {
   type    = string
   default = "atlas-admin"
@@ -18,11 +23,6 @@ variable "ATLAS_MATCHING_DATABASE_USERNAME" {
 
 variable "ATLAS_MATCHING_DATABASE_PASSWORD" {
   type = string
-}
-
-variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
-  type    = string
-  default = "Info"
 }
 
 variable "AZURE_CLIENT_ID" {
@@ -43,6 +43,11 @@ variable "AZURE_STORAGE_REPLICATION_TYPE" {
   default = "LRS"
 }
 
+variable "DATA_REFRESH_CRONTAB" {
+  type    = string
+  default = "0 0 0 * * Monday"
+}
+
 variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
   type    = string
   default = "S4"
@@ -60,11 +65,6 @@ variable "DATA_REFRESH_DB_SIZE_REFRESH" {
 
 variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
   type = string
-}
-
-variable "DATA_REFRESH_CRONTAB" {
-  type    = string
-  default = "0 0 0 * * Monday"
 }
 
 variable "DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS" {
