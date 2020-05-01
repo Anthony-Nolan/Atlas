@@ -14,6 +14,11 @@ variable "AZURE_CLIENT_SECRET" {
   description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
+variable "AZURE_SUBSCRIPTION_ID" {
+  type = string
+  description = "ID of the Azure subscription into which the system will be deployed."
+}
+
 variable "DATABASE_SERVER_ADMIN_LOGIN" {
   type    = string
   default = "atlas-admin"
