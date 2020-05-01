@@ -1,9 +1,9 @@
-﻿using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ApplicationInsights.EventModels;
-using Nova.Utils.Http;
-using Nova.Utils.Http.Exceptions;
-using Nova.Utils.Middleware.RequestId;
-using Nova.Utils.Models;
+﻿using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights.EventModels;
+using Atlas.Utils.Core.Http;
+using Atlas.Utils.Core.Http.Exceptions;
+using Atlas.Utils.Core.Middleware.RequestId;
+using Atlas.Utils.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Nova.Utils.Filters;
+using Atlas.Utils.Core.Filters;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http
 {

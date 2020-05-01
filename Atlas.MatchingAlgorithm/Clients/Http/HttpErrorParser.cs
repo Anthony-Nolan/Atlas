@@ -5,8 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Nova.Utils.Http;
-using Nova.Utils.Http.Exceptions;
+using Atlas.Utils.Core.Http;
+using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http
 {
