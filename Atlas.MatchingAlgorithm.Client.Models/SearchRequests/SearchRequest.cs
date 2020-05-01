@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Nova.Utils.Models;
+using Atlas.Utils.Core.Models;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
 {

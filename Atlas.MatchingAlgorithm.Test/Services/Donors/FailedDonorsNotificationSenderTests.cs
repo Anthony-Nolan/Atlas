@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

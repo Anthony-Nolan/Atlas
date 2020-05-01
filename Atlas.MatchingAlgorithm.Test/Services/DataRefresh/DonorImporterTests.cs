@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.Utils.Notifications;
-using ILogger = Nova.Utils.ApplicationInsights.ILogger;
+using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {

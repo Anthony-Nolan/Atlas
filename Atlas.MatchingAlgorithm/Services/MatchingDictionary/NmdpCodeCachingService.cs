@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

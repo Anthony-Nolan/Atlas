@@ -11,7 +11,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Test.Builders.DataRefresh;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;

@@ -1,6 +1,6 @@
 using Atlas.Utils.Core.Common;
 using FluentValidation;
-using Nova.Utils.PhenotypeInfo;
+using Atlas.Utils.Core.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {

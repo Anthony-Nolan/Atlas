@@ -9,7 +9,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Builders;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Core.Http.Exceptions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

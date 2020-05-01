@@ -1,6 +1,6 @@
 ﻿using FluentValidation.TestHelper;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
-using Nova.Utils.PhenotypeInfo;
+using Atlas.Utils.Core.PhenotypeInfo;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo

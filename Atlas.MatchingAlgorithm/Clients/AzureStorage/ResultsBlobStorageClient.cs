@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Storage;
+using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Storage;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
 {

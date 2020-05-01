@@ -50,7 +50,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.ConfigSettings;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.ServiceBus.BatchReceiving;
 using System;
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Castle.Core.Internal;
 using Newtonsoft.Json;
 using Atlas.HLAService.Client.Models;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.Utils.Core.Models;
 using Atlas.Utils.Hla.Models;

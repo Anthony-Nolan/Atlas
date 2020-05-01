@@ -9,7 +9,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Builders;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;

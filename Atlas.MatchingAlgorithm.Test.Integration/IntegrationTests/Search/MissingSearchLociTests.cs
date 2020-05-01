@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search

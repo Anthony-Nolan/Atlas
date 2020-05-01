@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.ConfigSettings;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Polly;
 
 namespace Atlas.MatchingAlgorithm.Services.AzureManagement

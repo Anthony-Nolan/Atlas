@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

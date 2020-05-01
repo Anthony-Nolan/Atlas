@@ -17,7 +17,6 @@
       <PackageReference Include="LochNessBuilder" Version="1.0.1" />
       <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
-      <PackageReference Include="Nova.Utils" Version="14.3.0" />
       <PackageReference Include="NSubstitute" Version="4.2.1" />
       <PackageReference Include="NUnit" Version="3.12.0" />
       <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
@@ -31,6 +30,7 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client\Atlas.MatchingAlgorithm.Client.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj" />
+      <ProjectReference Include="..\Atlas.Utils\Atlas.Utils.csproj" />
     </ItemGroup>
 
     <ItemGroup>

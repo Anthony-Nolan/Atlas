@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models
     /// Data type to hold one instance of T for each of the supported HLA loci and each type position within.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
-    public class PhenotypeInfo<T> : Nova.Utils.PhenotypeInfo.PhenotypeInfo<T>
+    public class PhenotypeInfo<T> : Atlas.Utils.Core.PhenotypeInfo.PhenotypeInfo<T>
     {
         public PhenotypeInfo()
         {
@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models
         {
         }
 
-        public PhenotypeInfo(Nova.Utils.PhenotypeInfo.PhenotypeInfo<T> phenotypeInfo)
+        public PhenotypeInfo(Atlas.Utils.Core.PhenotypeInfo.PhenotypeInfo<T> phenotypeInfo)
         {
             A.Position1 = phenotypeInfo.A.Position1;
             A.Position2 = phenotypeInfo.A.Position2;
@@ -514,7 +514,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models
             return obj.GetType() == GetType() && Equals((PhenotypeInfo<T>) obj);
         }
         
-        private bool Equals(Nova.Utils.PhenotypeInfo.PhenotypeInfo<T> other)
+        private bool Equals(Atlas.Utils.Core.PhenotypeInfo.PhenotypeInfo<T> other)
         {
             return EqualityComparer<T>.Default.Equals(A.Position1, other.A.Position1) &&
                    EqualityComparer<T>.Default.Equals(A.Position2, other.A.Position2) &&
