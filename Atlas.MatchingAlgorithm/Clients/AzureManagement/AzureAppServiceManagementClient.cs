@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.AppSettings;
 using Atlas.MatchingAlgorithm.Exceptions;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 {

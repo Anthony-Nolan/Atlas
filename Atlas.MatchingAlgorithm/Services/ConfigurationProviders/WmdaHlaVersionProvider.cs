@@ -6,7 +6,7 @@ using LazyCache;
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {

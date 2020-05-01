@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
