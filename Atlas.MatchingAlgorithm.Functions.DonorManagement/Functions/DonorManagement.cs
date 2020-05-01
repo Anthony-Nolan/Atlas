@@ -25,7 +25,9 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         }
 
         [FunctionName("ManageDonorByAvailability")]
+#pragma warning disable IDE0060 // Remove unused parameter
         public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement.CronSchedule%")] TimerInfo myTimer)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             try
             {
