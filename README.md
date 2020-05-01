@@ -156,6 +156,7 @@ The end-to-end tests, however, contact external dependencies, and require connec
 - Install terraform https://learn.hashicorp.com/terraform/getting-started/install.html
 - Install the Azure CLI and log in https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest
 - Ensure that you have the correct Azure subscription selected
+    - `az account set --subscription <ID of desired Subscription>`
 - Navigate to the `terraform` folder within the Atlas solution
 - Run `terraform validate` - this will analyse the terraform scripts and let you know if all the syntax is valid.
 
