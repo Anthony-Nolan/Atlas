@@ -53,7 +53,6 @@ using Atlas.MatchingAlgorithm.ConfigSettings;
 using Nova.Utils.ApplicationInsights;
 using Atlas.Utils.ServiceBus.BatchReceiving;
 using System;
-using ClientSettings = Nova.Utils.Client.ClientSettings;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -281,7 +280,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IHlaServiceClient GetHlaServiceClient(IServiceProvider sp)
         {
             var hlaServiceSettings = sp.GetService<IOptions<HlaServiceSettings>>().Value;
-            var clientSettings = new ClientSettings
+            var clientSettings = new HttpClientSettings
             {
                 ApiKey = hlaServiceSettings.ApiKey,
                 BaseUrl = hlaServiceSettings.BaseUrl,
@@ -329,7 +328,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetRemoteDonorServiceClient(IServiceProvider sp)
         {
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var clientSettings = new ClientSettings
+            var clientSettings = new HttpClientSettings
             {
                 ApiKey = donorServiceSettings.ApiKey,
                 BaseUrl = donorServiceSettings.BaseUrl,

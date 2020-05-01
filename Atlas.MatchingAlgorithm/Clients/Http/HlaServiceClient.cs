@@ -6,7 +6,7 @@ using Castle.Core.Internal;
 using Newtonsoft.Json;
 using Atlas.HLAService.Client.Models;
 using Nova.Utils.ApplicationInsights;
-using Nova.Utils.Client;
+using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.Utils.Core.Models;
 using Atlas.Utils.Hla.Models;
 
@@ -26,17 +26,17 @@ namespace Atlas.HLAService.Client
 
     public class HlaServiceClient : ClientBase, IHlaServiceClient
     {
-        public HlaServiceClient(ClientSettings settings, ILogger logger) : base(settings, logger)
+        public HlaServiceClient(HttpClientSettings settings, ILogger logger) : base(settings, logger)
         {
         }
 
         [Obsolete]
         public HlaServiceClient(string baseUrl, string apiKey, JsonSerializerSettings settings)
-            : base(new ClientSettings { ApiKey = apiKey, BaseUrl = baseUrl, ClientName = "hla_client", JsonSettings = settings })
+            : base(new HttpClientSettings { ApiKey = apiKey, BaseUrl = baseUrl, ClientName = "hla_client", JsonSettings = settings })
         {
         }
 
-        public HlaServiceClient(ClientSettings settings) : base(settings)
+        public HlaServiceClient(HttpClientSettings settings) : base(settings)
         {
         }
 
