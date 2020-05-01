@@ -1,7 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Linq;

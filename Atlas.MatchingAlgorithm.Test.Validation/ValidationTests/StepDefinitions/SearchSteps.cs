@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Nova.Utils.Models;
+using Atlas.Utils.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

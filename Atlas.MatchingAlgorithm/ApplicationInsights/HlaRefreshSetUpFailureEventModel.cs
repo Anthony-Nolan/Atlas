@@ -1,6 +1,6 @@
 ﻿using System;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ApplicationInsights.EventModels;
+using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights
 {

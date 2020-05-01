@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Atlas.MatchingAlgorithm.Models;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Core.Http;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http
 {

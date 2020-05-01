@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
-using ServiceStatusModel = Nova.Utils.Models.ServiceStatus;
+using ServiceStatusModel = Atlas.Utils.Core.Models.ServiceStatus;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
