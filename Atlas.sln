@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchingAlgorithm.Com
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchingAlgorithm.Client", "Atlas.MatchingAlgorithm.Client\Atlas.MatchingAlgorithm.Client.csproj", "{54DA45F0-352E-4C23-A254-288A973450F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchingAlgorithm.MatchingDictionary", "Atlas.MatchingAlgorithm.MatchingDictionary\Atlas.MatchingAlgorithm.MatchingDictionary.csproj", "{AD274093-21A1-42A2-A07C-7BE4573F01DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchingAlgorithm.MatchingDictionary", "Atlas.HlaMetadataDictionary\Atlas.MatchingAlgorithm.MatchingDictionary.csproj", "{AD274093-21A1-42A2-A07C-7BE4573F01DC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchingAlgorithm.Test", "Atlas.MatchingAlgorithm.Test\Atlas.MatchingAlgorithm.Test.csproj", "{5EF4D25E-9EB7-4146-8B21-B4F76C2417D3}"
 EndProject
