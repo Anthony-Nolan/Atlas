@@ -16,6 +16,7 @@ locals {
     "AzureStorage:SearchResultsBlobContainer"                   = azurerm_storage_container.search_matching_results_blob_container.name
     "Client:DonorService:ApiKey"                                = var.DONOR_SERVICE_APIKEY
     "Client:DonorService:BaseUrl"                               = var.DONOR_SERVICE_BASEURL
+    "Client:DonorService:OverrideFilePath"                      = var.DONOR_SERVICE_OVERRIDE_FILE_PATH
     "Client:HlaService:ApiKey"                                  = var.HLA_SERVICE_APIKEY
     "Client:HlaService:BaseUrl"                                 = var.HLA_SERVICE_BASEURL
     "DataRefresh:ActiveDatabaseSize"                            = var.DATA_REFRESH_DB_SIZE_ACTIVE

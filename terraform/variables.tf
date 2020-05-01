@@ -80,6 +80,12 @@ variable "DONOR_SERVICE_BASEURL" {
   type = string
 }
 
+variable "DONOR_SERVICE_OVERRIDE_FILE_PATH" {
+  type = string
+  default = ""
+  description = "When set, will read donor details from a file rather than attempting to contact the Nova Donor Service."
+}
+
 variable "ENVIRONMENT" {
   type = string
 }
