@@ -28,6 +28,7 @@ For historical reference, some notes on that process:
     * `Atlas.MatchingAlgorithm.Test.Integration`
 * `Nova.Utils.Client` was depended on:
   * at version 10.0.2, by `Nova.HLAService.Client` (* Actual dependence not confirmed)
+  * Thus transitively depended upon by `Atlas.MatchingAlgorithm`.
 * `Nova.Utils.Storage` was depended on:
   * at version 14.3.0, by `Atlas.MatchingAlgorithm`
 * `Nova.Utils.Notifications` was depended on:
@@ -52,6 +53,7 @@ For historical reference, some notes on that process:
 
 * `Nova.Utils.*` v14.3.0 appears to have been packaged from commit `67c23aafc6dac6ddb151597c7f8eb1373e99bd1c` of <https://github.com/Anthony-Nolan/Nova.Utils>.
 * `Nova.Utils.*` v12.0.12 appears to have been packaged from commit `qq` of <https://github.com/Anthony-Nolan/Nova.Utils>. (Will be determined if we establish that we need it!)
-* `Nova.Utils.*` v10.0.2 appears to have been packaged from commit `qq` of <https://github.com/Anthony-Nolan/Nova.Utils>. (Will be determined if we establish that we need it!)
+* `Nova.Utils.*` v10.0.2 *may* have been packaged from commit `ae7852a49a4b1a79c60cb890b9b93c3f3aa600d5` of <https://github.com/Anthony-Nolan/Nova.Utils>. (Inferred from Utils.Client; reassess if this is needed!)
+* `Nova.Utils.Client` v10.0.2 appears to have been packaged from commit `ae7852a49a4b1a79c60cb890b9b93c3f3aa600d5` of <https://github.com/Anthony-Nolan/Nova.Utils>.
 * `Nova.DonorService.Client.Models` v4.1.1 appears to have been packaged from commit `8033bc642d08de525516abe11ff08012c1e76785` of <https://github.com/Anthony-Nolan/Nova.Donor>.
 * `Nova.HLAService.Client` v4.0.0 appears to have been packaged from commit `5035fd29856f1540270098c831a3649c2f60ed81` of <https://github.com/Anthony-Nolan/Nova.HLA>.
