@@ -3,7 +3,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Nova.Utils.ApplicationInsights;
 using System;
 using System.Linq;

@@ -1,5 +1,5 @@
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders
 {

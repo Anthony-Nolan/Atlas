@@ -9,7 +9,7 @@ using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.AppSettings
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.Database;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 {

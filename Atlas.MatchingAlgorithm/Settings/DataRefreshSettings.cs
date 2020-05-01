@@ -1,6 +1,6 @@
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 
-namespace Atlas.MatchingAlgorithm.Settings
+namespace Atlas.MatchingAlgorithm.ConfigSettings
 {
     public class DataRefreshSettings
     {

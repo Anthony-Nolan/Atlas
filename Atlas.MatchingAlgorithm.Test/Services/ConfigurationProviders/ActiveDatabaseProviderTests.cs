@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
-using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using NSubstitute;
 using NUnit.Framework;
 
