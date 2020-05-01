@@ -6,6 +6,7 @@ using Nova.Utils.ApplicationInsights;
 using Atlas.Utils.ServiceBus.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,10 +25,9 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             this.logger = logger;
         }
 
+        [SuppressMessage(null, "IDE0060", MessageId = "myTimer")/*Is in fact used, by Azure magic*/]
         [FunctionName("ManageDonorByAvailability")]
-#pragma warning disable IDE0060 // Remove unused parameter
         public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement.CronSchedule%")] TimerInfo myTimer)
-#pragma warning restore IDE0060 // Remove unused parameter
         {
             try
             {
