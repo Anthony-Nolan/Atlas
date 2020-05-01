@@ -3,7 +3,7 @@ variable "APIKEY" {
 }
 
 variable "ATLAS_DATABASE_SERVER_ADMIN_LOGIN" {
-  type = string
+  type    = string
   default = "atlas-admin"
 }
 
@@ -17,7 +17,7 @@ variable "ATLAS_MATCHING_DATABASE_USERNAME" {
 }
 
 variable "ATLAS_MATCHING_DATABASE_PASSWORD" {
-  type    = "string"
+  type = "string"
 }
 
 variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
@@ -81,7 +81,7 @@ variable "DONOR_SERVICE_BASEURL" {
 }
 
 variable "ENVIRONMENT" {
-  type    = string
+  type = string
 }
 
 variable "FUNCTION_STORAGE_REPLICATION_TYPE" {
@@ -108,17 +108,17 @@ variable "LOCATION" {
 }
 
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
-  type = number
+  type    = number
   default = 350
 }
 
 variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
-  type = string
+  type    = string
   default = "0 */1 * * * *"
 }
 
 variable "SERVICE_PLAN_SKU" {
-  type    = object({
+  type = object({
     tier = string,
     size = string
   })

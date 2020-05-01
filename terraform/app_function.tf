@@ -1,6 +1,6 @@
 locals {
   func_app_settings = {
-    "ApplicationInsights:InstrumentationKey"                    = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights:InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                            = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights:LogLevel"                              = var.APPLICATION_INSIGHTS_LOG_LEVEL
@@ -29,21 +29,21 @@ locals {
     // Historically this codebase used 2 distinct ServiceBusses; however we don't think that's necessary in practice.
     // We retain the ability to separate them again in the future, but in fact have them pointed at the same namespace
     // (albeit with different permissions)
-    "MessagingServiceBus:ConnectionString"                      = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "MessagingServiceBus:DonorManagement.Topic"                 = azurerm_servicebus_topic.updated-searchable-donors.name
-    "MessagingServiceBus:DonorManagement.Subscription"          = azurerm_servicebus_subscription.matching.name
-    "MessagingServiceBus:SearchRequestsQueue"                   = azurerm_servicebus_queue.matching-requests.name
-    "MessagingServiceBus:SearchResultsTopic"                    = azurerm_servicebus_topic.matching-results-ready.name
-    "NotificationsServiceBus:ConnectionString"                  = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"                       = azurerm_servicebus_topic.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"                = azurerm_servicebus_topic.notifications.name
-    "Wmda:WmdaFileUri"                                          = var.WMDA_FILE_URL
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE                
+    "MessagingServiceBus:ConnectionString"             = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "MessagingServiceBus:DonorManagement.Topic"        = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus:DonorManagement.Subscription" = azurerm_servicebus_subscription.matching.name
+    "MessagingServiceBus:SearchRequestsQueue"          = azurerm_servicebus_queue.matching-requests.name
+    "MessagingServiceBus:SearchResultsTopic"           = azurerm_servicebus_topic.matching-results-ready.name
+    "NotificationsServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"              = azurerm_servicebus_topic.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"       = azurerm_servicebus_topic.notifications.name
+    "Wmda:WmdaFileUri"                                 = var.WMDA_FILE_URL
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
   donor_func_app_settings = {
-    "ApplicationInsights.InstrumentationKey"           = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights.InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
@@ -61,7 +61,7 @@ locals {
     "NotificationsServiceBus.AlertsTopic"              = azurerm_servicebus_topic.alerts.name
     "NotificationsServiceBus.NotificationsTopic"       = azurerm_servicebus_topic.notifications.name
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
-	"WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
   }
 }
 

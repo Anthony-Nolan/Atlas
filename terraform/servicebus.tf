@@ -1,7 +1,7 @@
 locals {
   service-bus = {
     default-sku                    = "Standard" // Required for Topics.
-    long-expiry                    = "P9999D" // 2.75 years
+    long-expiry                    = "P9999D"   // 2.75 years
     audit-subscription-idle-delete = "P8D"
     default-read-lock              = "PT5M"
     default-bus-size               = 5120 // 5GB
