@@ -1,6 +1,6 @@
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.ServiceBus.BatchReceiving;
 using Atlas.Utils.ServiceBus.Models;
 using NSubstitute;

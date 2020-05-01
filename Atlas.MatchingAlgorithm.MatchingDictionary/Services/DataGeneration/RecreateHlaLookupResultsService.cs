@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
 {

@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Models;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Notifications;
 using System;
 using System.Collections.Generic;

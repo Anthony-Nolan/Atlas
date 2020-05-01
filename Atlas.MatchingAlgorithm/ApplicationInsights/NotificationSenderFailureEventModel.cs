@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Nova.Utils.ApplicationInsights;
-using Nova.Utils.ApplicationInsights.EventModels;
+using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights.EventModels;
 using Atlas.Utils.Notifications;
 using System;
 

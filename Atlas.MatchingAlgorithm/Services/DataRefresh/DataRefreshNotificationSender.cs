@@ -1,4 +1,4 @@
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Notifications;
 using System.Threading.Tasks;
 

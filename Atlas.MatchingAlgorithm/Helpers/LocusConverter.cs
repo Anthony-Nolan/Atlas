@@ -1,5 +1,5 @@
 using System;
-using Nova.Utils.Models;
+using Atlas.Utils.Core.Models;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Helpers

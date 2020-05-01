@@ -6,7 +6,7 @@ using Atlas.MatchingAlgorithm.MatchingDictionary.Services.HlaDataConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
 {

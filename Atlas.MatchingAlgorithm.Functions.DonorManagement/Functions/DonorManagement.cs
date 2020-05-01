@@ -2,7 +2,7 @@ using Microsoft.Azure.WebJobs;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Nova.Utils.ApplicationInsights;
+using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.ServiceBus.Exceptions;
 using System;
 using System.Collections.Generic;
