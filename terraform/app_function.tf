@@ -133,3 +133,38 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
     value = local.matching_persistent_database_connection_string
   }
 }
+
+resource "azurerm_function_app" "atlas_match_prediction_function" {
+  name                      = "${local.environment}-ATLAS-MATCH-PREDICTION-FUNCTION"
+  resource_group_name       = azurerm_resource_group.atlas_resource_group.name
+  location                  = local.location
+  app_service_plan_id       = azurerm_app_service_plan.atlas.id
+  https_only                = true
+  version                   = "~3"
+  storage_connection_string = azurerm_storage_account.shared_function_storage.primary_connection_string
+
+  site_config {
+    always_on = true
+  }
+
+  tags = local.common_tags
+
+  app_settings = local.donor_func_app_settings
+
+  connection_string {
+    name  = "SqlA"
+    type  = "SQLAzure"
+    value = local.data_refresh_a_connection_string
+  }
+  connection_string {
+    name  = "SqlB"
+    type  = "SQLAzure"
+    value = local.data_refresh_b_connection_string
+  }
+  connection_string {
+    name  = "PersistentSql"
+    type  = "SQLAzure"
+    value = local.data_refresh_persistent_connection_string
+  }
+}
+
