@@ -4,8 +4,8 @@ resource "azurerm_sql_server" "atlas_sql_server" {
   location                     = local.location
   tags                         = local.common_tags
   version                      = "12.0"
-  administrator_login          = var.ATLAS_DATABASE_SERVER_ADMIN_LOGIN
-  administrator_login_password = var.ATLAS_DATABASE_SERVER_LOGIN_PASSWORD
+  administrator_login          = var.DATABASE_SERVER_ADMIN_LOGIN
+  administrator_login_password = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
 }
 
 resource "azurerm_sql_firewall_rule" "firewall_rule_allow_azure" {

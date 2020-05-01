@@ -9,7 +9,7 @@ locals {
     "AzureManagement:AppService:ResourceGroupName"              = azurerm_app_service_plan.atlas.resource_group_name
     "AzureManagement:AppService:SubscriptionId"                 = local.subscription_id
     "AzureManagement:Database:ServerName"                       = azurerm_sql_server.atlas_sql_server.name
-    "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS
+    "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.MATCHING_DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS
     "AzureManagement:Database:ResourceGroupName"                = azurerm_resource_group.atlas_resource_group.name
     "AzureManagement:Database:SubscriptionId"                   = local.subscription_id
     "AzureStorage:ConnectionString"                             = azurerm_storage_account.azure_storage.primary_connection_string
@@ -19,14 +19,14 @@ locals {
     "Client:DonorService:OverrideFilePath"                      = var.DONOR_SERVICE_OVERRIDE_FILE_PATH
     "Client:HlaService:ApiKey"                                  = var.HLA_SERVICE_APIKEY
     "Client:HlaService:BaseUrl"                                 = var.HLA_SERVICE_BASEURL
-    "DataRefresh:ActiveDatabaseSize"                            = var.DATA_REFRESH_DB_SIZE_ACTIVE
-    "DataRefresh:CronTab"                                       = var.DATA_REFRESH_CRONTAB
+    "DataRefresh:ActiveDatabaseSize"                            = var.MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE
+    "DataRefresh:CronTab"                                       = var.MATCHING_DATA_REFRESH_CRONTAB
     "DataRefresh:DatabaseAName"                                 = azurerm_sql_database.atlas-matching-transient-a.name
     "DataRefresh:DatabaseBName"                                 = azurerm_sql_database.atlas-matching-transient-b.name
-    "DataRefresh:DonorImportFunctionName"                       = var.DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME
+    "DataRefresh:DonorImportFunctionName"                       = var.MATCHING_DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME
     "DataRefresh:DonorFunctionsAppName"                         = azurerm_function_app.atlas_matching_algorithm_donor_management_function.name
-    "DataRefresh:DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
-    "DataRefresh:RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "DataRefresh:DormantDatabaseSize"                           = var.MATCHING_DATA_REFRESH_DB_SIZE_DORMANT
+    "DataRefresh:RefreshDatabaseSize"                           = var.MATCHING_DATA_REFRESH_DB_SIZE_REFRESH
     // Historically this codebase used 2 distinct ServiceBusses; however we don't think that's necessary in practice.
     // We retain the ability to separate them again in the future, but in fact have them pointed at the same namespace
     // (albeit with different permissions)
@@ -54,8 +54,8 @@ locals {
     "MessagingServiceBus:ConnectionString"             = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
     "MessagingServiceBus:DonorManagement:Topic"        = azurerm_servicebus_topic.updated-searchable-donors.name
     "MessagingServiceBus:DonorManagement:Subscription" = azurerm_servicebus_subscription.matching.name
-    "MessagingServiceBus:DonorManagement:BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
-    "MessagingServiceBus:DonorManagement:CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
+    "MessagingServiceBus:DonorManagement:BatchSize"    = var.MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE
+    "MessagingServiceBus:DonorManagement:CronSchedule" = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
     "MessagingServiceBus:SearchRequestsQueue"          = azurerm_servicebus_queue.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"           = azurerm_servicebus_topic.matching-results-ready.name
     "NotificationsServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
