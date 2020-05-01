@@ -96,8 +96,10 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       - Note that this is a nested JSON object, so where we describe a `Foo.Bar` setting below, you'll need to create:
 
       ```json
-      Foo: {
-        Bar: "value"
+      {
+          "Foo": {
+            "Bar": "value"
+          }
       }
       ```
 
@@ -149,6 +151,13 @@ The end-to-end tests, however, contact external dependencies, and require connec
     - `Client.HlaService.ApiKey`
   - But just copying all secrets from the API project will work fine.
 - Ensure that the Azure Storage Emulator is running
+
+### Terraform
+- Install terraform https://learn.hashicorp.com/terraform/getting-started/install.html
+- Install the Azure CLI and log in https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest
+- Ensure that you have the correct Azure subscription selected
+- Navigate to the `terraform` folder within the Atlas solution
+- Run `terraform validate` - this will analyse the terraform scripts and let you know if all the syntax is valid.
 
 ## More detailed Notes
 
