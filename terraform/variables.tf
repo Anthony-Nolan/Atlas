@@ -1,75 +1,26 @@
-variable "APIKEY" {
-  type = string
-}
-
 variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type    = string
   default = "Info"
-}
-
-variable "ATLAS_DATABASE_SERVER_ADMIN_LOGIN" {
-  type    = string
-  default = "atlas-admin"
-}
-
-variable "ATLAS_DATABASE_SERVER_LOGIN_PASSWORD" {
-  type = string
-}
-
-variable "ATLAS_MATCHING_DATABASE_USERNAME" {
-  type    = string
-  default = "atlas-matching"
-}
-
-variable "ATLAS_MATCHING_DATABASE_PASSWORD" {
-  type = string
+  description = "Corresponds to the log levels defined by application insights. Allowed values: Trace, Verbose, Info, Warn, Error, Critical."
 }
 
 variable "AZURE_CLIENT_ID" {
   type = string
+  description = "Client ID used for authenticating to manage Azure resources from code."
 }
 
 variable "AZURE_CLIENT_SECRET" {
   type = string
+  description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
-variable "AZURE_STORAGE_TIER" {
+variable "DATABASE_SERVER_ADMIN_LOGIN" {
   type    = string
-  default = "Standard"
+  default = "atlas-admin"
 }
 
-variable "AZURE_STORAGE_REPLICATION_TYPE" {
-  type    = string
-  default = "LRS"
-}
-
-variable "DATA_REFRESH_CRONTAB" {
-  type    = string
-  default = "0 0 0 * * Monday"
-}
-
-variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
-  type    = string
-  default = "S4"
-}
-
-variable "DATA_REFRESH_DB_SIZE_DORMANT" {
-  type    = string
-  default = "S0"
-}
-
-variable "DATA_REFRESH_DB_SIZE_REFRESH" {
-  type    = string
-  default = "S0"
-}
-
-variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
+variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
-}
-
-variable "DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS" {
-  type    = string
-  default = "1000"
 }
 
 variable "DONOR_SERVICE_APIKEY" {
@@ -80,24 +31,9 @@ variable "DONOR_SERVICE_BASEURL" {
   type = string
 }
 
-variable "DONOR_SERVICE_OVERRIDE_FILE_PATH" {
-  type = string
-  default = ""
-  description = "When set, will read donor details from a file rather than attempting to contact the Nova Donor Service."
-}
-
 variable "ENVIRONMENT" {
   type = string
-}
-
-variable "FUNCTION_STORAGE_REPLICATION_TYPE" {
-  type    = string
-  default = "LRS"
-}
-
-variable "FUNCTION_STORAGE_TIER" {
-  type    = string
-  default = "Standard"
+  description = "Appended to all ATLAS resources, to indicate which environment of the installation they represent. e.g. DEV/UAT/LIVE"
 }
 
 variable "HLA_SERVICE_APIKEY" {
@@ -111,16 +47,76 @@ variable "HLA_SERVICE_BASEURL" {
 variable "LOCATION" {
   type    = string
   default = "uksouth"
+  description = "Location of all Azure resources for this ATLAS installation."
 }
 
-variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
+variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
+  type    = string
+  default = "S4"
+  description = "Azure Database size used for actve matching database. Allowed values according to the Azure DTU model service tiers."
+}
+
+variable "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT" {
+  type    = string
+  default = "S0"
+  description = "Azure Database size used for dormant matching database. Allowed values according to the Azure DTU model service tiers."
+}
+
+variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
+  type    = string
+  default = "P1"
+  description = "Azure Database size used for refreshing matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
+}
+
+variable "DONOR_SERVICE_OVERRIDE_FILE_PATH" {
+  type = string
+  default = ""
+  description = "When set, will read donor details from a file rather than attempting to contact the Nova Donor Service."
+}
+
+variable "MATCHING_DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
+  type = string
+  default = "ManageDonorByAvailability"
+  description = "Name of the donor import function that should be disabled during the full matching data refresh."
+}
+
+variable "MATCHING_DATA_REFRESH_CRONTAB" {
+  type    = string
+  default = "0 0 0 * * Monday"
+  description = "A crontab determining when the matching data refresh will be auto-attempted. It will only run to completion if new HLA nomenclature is detected."
+}
+
+variable "MATCHING_DATABASE_OPERATITON_POLLING_INTERVAL_MILLISECONDS" {
+  type    = string
+  default = "1000"
+  description = "When scaling matching database from code, how long to wait between polling Azure for an updated status."
+}
+
+variable "MATCHING_DATABASE_PASSWORD" {
+  type = string
+}
+
+variable "MATCHING_DATABASE_USERNAME" {
+  type    = string
+  default = "atlas-matching"
+}
+
+variable "MATCHING_FUNCTION_HOST_KEY" {
+  type = string
+  default = ""
+  description = "Optional. Host keys cannot be set from terraform. This should be set up manually, and is only included to be used as an export. If unset, other terraformed apps cannot use the ATLAS remote state to fetch the host key, and must have it provided manually."
+}
+
+variable "MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type    = number
   default = 350
+  description = "Batch sized used for ongoing donor updates to the matching component."
 }
 
-variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
+variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type    = string
   default = "0 */1 * * * *"
+  description = "Crontab used to determine when to poll for new batches of donor updates to the matching component."
 }
 
 variable "SERVICE_PLAN_SKU" {
@@ -137,6 +133,7 @@ variable "SERVICE_PLAN_SKU" {
 variable "WMDA_FILE_URL" {
   type    = string
   default = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
+  description = "A URL hosting HLA nomenclature in the expected format."
 }
 
 variable "WEBSITE_RUN_FROM_PACKAGE" {
