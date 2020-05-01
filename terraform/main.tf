@@ -14,8 +14,8 @@ locals {
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
   // TODO: ATLAS-177: Subscription ID is currently hard coded, which is not an ideal long-term solution 
-  subscription_id     = "6114522f-eea5-44ab-94ab-af37ffffc4d3"
-  common_tags         = {
+  subscription_id = "6114522f-eea5-44ab-94ab-af37ffffc4d3"
+  common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }
