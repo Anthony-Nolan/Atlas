@@ -44,23 +44,23 @@ locals {
   }
 
   donor_func_app_settings = {
-    "ApplicationInsights.InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights:InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
     //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
-    "AzureStorage.ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
-    "Client.HlaService.ApiKey"                         = var.HLA_SERVICE_APIKEY
-    "Client.HlaService.BaseUrl"                        = var.HLA_SERVICE_BASEURL
-    "MessagingServiceBus.ConnectionString"             = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
-    "MessagingServiceBus.DonorManagement.Topic"        = azurerm_servicebus_topic.updated-searchable-donors.name
-    "MessagingServiceBus.DonorManagement.Subscription" = azurerm_servicebus_subscription.matching.name
-    "MessagingServiceBus.DonorManagement.BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
-    "MessagingServiceBus.DonorManagement.CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
-    "MessagingServiceBus.SearchRequestsQueue"          = azurerm_servicebus_queue.matching-requests.name
-    "MessagingServiceBus.SearchResultsTopic"           = azurerm_servicebus_topic.matching-results-ready.name
-    "NotificationsServiceBus.ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "NotificationsServiceBus.AlertsTopic"              = azurerm_servicebus_topic.alerts.name
-    "NotificationsServiceBus.NotificationsTopic"       = azurerm_servicebus_topic.notifications.name
+    "ApplicationInsights:LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
+    "Client:HlaService:ApiKey"                         = var.HLA_SERVICE_APIKEY
+    "Client:HlaService:BaseUrl"                        = var.HLA_SERVICE_BASEURL
+    "MessagingServiceBus:ConnectionString"             = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
+    "MessagingServiceBus:DonorManagement:Topic"        = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus:DonorManagement:Subscription" = azurerm_servicebus_subscription.matching.name
+    "MessagingServiceBus:DonorManagement:BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
+    "MessagingServiceBus:DonorManagement:CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
+    "MessagingServiceBus:SearchRequestsQueue"          = azurerm_servicebus_queue.matching-requests.name
+    "MessagingServiceBus:SearchResultsTopic"           = azurerm_servicebus_topic.matching-results-ready.name
+    "NotificationsServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"              = azurerm_servicebus_topic.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"       = azurerm_servicebus_topic.notifications.name
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
   }
