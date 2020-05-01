@@ -33,6 +33,11 @@ variable "AZURE_CLIENT_SECRET" {
   type = string
 }
 
+variable "AZURE_SUBSCRIPTION_ID" {
+  type = string
+  description = "ID of the Azure subscription into which the system will be deployed."
+}
+
 variable "AZURE_STORAGE_TIER" {
   type    = string
   default = "Standard"
