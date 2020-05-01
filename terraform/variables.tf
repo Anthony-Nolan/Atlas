@@ -1,7 +1,7 @@
 variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type    = string
   default = "Info"
-  description = "Corresponds to the log levels defined by application insights. Allowed values: Trace, Verbose, Info, Warn, Error, Critical."
+  description = "Corresponds to the severity levels defined by application insights. Allowed values: Verbose, Info (maps to Information), Warn (maps to Warning), Error, Critical."
 }
 
 variable "AZURE_CLIENT_ID" {
@@ -33,7 +33,7 @@ variable "DONOR_SERVICE_BASEURL" {
 
 variable "ENVIRONMENT" {
   type = string
-  description = "Appended to all ATLAS resources, to indicate which environment of the installation they represent. e.g. DEV/UAT/LIVE"
+  description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. e.g. DEV/UAT/LIVE"
 }
 
 variable "HLA_SERVICE_APIKEY" {
@@ -47,25 +47,25 @@ variable "HLA_SERVICE_BASEURL" {
 variable "LOCATION" {
   type    = string
   default = "uksouth"
-  description = "Location of all Azure resources for this ATLAS installation."
+  description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type    = string
   default = "S4"
-  description = "Azure Database size used for actve matching database. Allowed values according to the Azure DTU model service tiers."
+  description = "Size of Azure Database used for active matching database. Allowed values according to the Azure DTU model service tiers."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT" {
   type    = string
   default = "S0"
-  description = "Azure Database size used for dormant matching database. Allowed values according to the Azure DTU model service tiers."
+  description = "Size of Azure Database used for dormant matching database. Allowed values according to the Azure DTU model service tiers."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   type    = string
   default = "P1"
-  description = "Azure Database size used for refreshing matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
+  description = "Size to temproarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
 }
 
 variable "DONOR_SERVICE_OVERRIDE_FILE_PATH" {
@@ -110,7 +110,7 @@ variable "MATCHING_FUNCTION_HOST_KEY" {
 variable "MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type    = number
   default = 350
-  description = "Batch sized used for ongoing donor updates to the matching component."
+  description = "Batch size used for ongoing donor updates to the matching component."
 }
 
 variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
