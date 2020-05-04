@@ -5,11 +5,11 @@ namespace Atlas.DonorImport.Data.Migrations
 {
     public class _202004291641_Add_Donor_Import_Db : Migration
     {
-        const string DATABASE_NAME = "Donors";
+        const string TABLE_NAME = "Donors";
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: DATABASE_NAME,
+                name: TABLE_NAME,
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: DATABASE_NAME);
+                name: TABLE_NAME);
         }
     }
 }
