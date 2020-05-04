@@ -14,7 +14,7 @@ locals {
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
   subscription_id     = var.AZURE_SUBSCRIPTION_ID
-  common_tags         = {
+  common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }
