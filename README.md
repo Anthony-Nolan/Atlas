@@ -79,7 +79,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
     - Open the Nuget Package Manager Console (Menus > Tools > Nuget Package Manager > ...)
     - "Run Migrations for `Atlas.MatchingAlgorithm.Data.Persistent`".
     - "Run Migrations for `Atlas.MatchingAlgorithm.Data`".
-    - Open `Atlas.MatchingAlgorithm.Data\appsettings.json`, and modify the `ConnectionStrings.Sql` value to reference `Initial Catlog=AtlasMatchingB`.
+    - Open `Atlas.MatchingAlgorithm.Data\appsettings.json`, and modify the `ConnectionStrings.Sql` value to reference `Initial Catalog=AtlasMatchingB`.
     - "Run Migrations for `Atlas.MatchingAlgorithm.Data`". *(again)*
     - Open your local SQL Server and verify that you now have 3 databases: `AtlasMatchingPersistent`, `AtlasMatchingA` and `AtlasMatchingB`.
 - Compile and Run API
