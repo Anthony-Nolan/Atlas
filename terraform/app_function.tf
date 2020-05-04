@@ -67,7 +67,7 @@ locals {
 }
 
 resource "azurerm_function_app" "atlas_matching_algorithm_function" {
-  name                      = "${local.environment}-ATLAS-MACTHING-ALGORITHM-FUNCTION"
+  name                      = "${local.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTION"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
   location                  = local.location
   app_service_plan_id       = azurerm_app_service_plan.atlas.id
