@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 
         [SuppressMessage(null, "IDE0060", MessageId = "myTimer")/*Is in fact used, by Azure magic*/]
         [FunctionName("ManageDonorByAvailability")]
-        public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement.CronSchedule%")] TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")] TimerInfo myTimer)
         {
             try
             {
