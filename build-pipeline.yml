@@ -15,7 +15,7 @@ jobs:
       - task: UseDotNet@2
         inputs:
           packageType: 'sdk'
-          version: '2.2.x'
+          version: '3.1.x'
       - task: DotNetCoreCLI@2
         inputs:
           command: 'restore'
@@ -29,12 +29,34 @@ jobs:
             Atlas.MatchingAlgorithm.Test
             Atlas.MatchingAlgorithm.Data
             Atlas.MatchingAlgorithm.Data.Persistent
+            Atlas.MatchPrediction.Data
+            Atlas.MatchPrediction.Test
+            Atlas.MatchPrediction.Functions
           arguments: '--configuration Release --no-restore'
       - task: DotNetCoreCLI@2
         inputs:
           command: 'test'
           projects: '**/*Test.csproj'
           arguments: '--no-restore'
+      - task: CopyFiles@2
+        displayName: 'Copy Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.MatchPrediction.Functions'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'matchPredictionFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/matchPredictionFunctionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
       - task: CopyFiles@2
         displayName: 'Copy Functions Build'
         inputs:
