@@ -1,15 +1,3 @@
-locals {
-  match_predict_func_app_settings = {
-    "ApplicationInsights.InstrumentationKey" = azurerm_application_insights.atlas.instrumentation_key
-    //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
-    "APPINSIGHTS_INSTRUMENTATIONKEY"                   = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights.LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
-    "AzureStorage.ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
-  }
-}
-
 resource "azurerm_function_app" "atlas_match_prediction_function" {
   name                      = "${local.environment}-ATLAS-MATCH-PREDICTION-FUNCTION"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
@@ -21,5 +9,13 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
 
   tags = local.common_tags
 
-  app_settings = local.match_predict_func_app_settings
+  app_settings = {
+    "ApplicationInsights.InstrumentationKey"    = azurerm_application_insights.atlas.instrumentation_key
+    //  The azure functions dashboard requires the instrumentation key with this name to integrate with application insights
+    "APPINSIGHTS_INSTRUMENTATIONKEY"            = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights.LogLevel"              = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "AzureStorage.ConnectionString"             = azurerm_storage_account.azure_storage.primary_connection_string
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+  }
 }
