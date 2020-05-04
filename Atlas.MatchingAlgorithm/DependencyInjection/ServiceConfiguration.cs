@@ -404,8 +404,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
             services.ManuallyRegisterSettings<AzureStorageSettings>("AzureStorage");
             services.ManuallyRegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.ManuallyRegisterSettings<HlaServiceSettings>("Client.HlaService");
-            services.ManuallyRegisterSettings<DonorManagementSettings>("MessagingServiceBus.DonorManagement");
+            services.ManuallyRegisterSettings<HlaServiceSettings>("Client:HlaService");
+            services.ManuallyRegisterSettings<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
             services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
         
