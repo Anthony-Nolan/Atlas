@@ -151,12 +151,25 @@ The end-to-end tests, however, contact external dependencies, and require connec
 - Ensure that the Azure Storage Emulator is running
 
 ### Terraform
-- Install terraform https://learn.hashicorp.com/terraform/getting-started/install.html
-- Install the Azure CLI and log in https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest
-- Ensure that you have the correct Azure subscription selected
-    - `az account set --subscription <ID of desired Subscription>`
-- Navigate to the `terraform` folder within the Atlas solution
-- Run `terraform validate` - this will analyse the terraform scripts and let you know if all the syntax is valid.
+
+- Install terraform.
+  - If you have chocolatey installed then `choco install terraform`.
+  - If not: <https://learn.hashicorp.com/terraform/getting-started/install.html>. Video is Linux/Mac, then Windows in the 2nd half.
+- Install the Azure CLI: <https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest>
+  - We are *not* using Azure Cloud Shell, as it requires paid file storage to run.
+- Having installed the CLI, run `az -v` in your console of choice, to verify the installation (it takes several seconds)
+  - Some people find that `az` isn't in their path, and they have to use `az.cmd` for all commands instead of just `az`.
+- Run `az login` to Log into Azure in your console.
+- You may be prompted to choose a specific subscription, if you have access to multiple.
+  - Run `az account set --subscription <ID of desired Subscription>` to set this.
+  - We want the "Anthony Nolan Subscription" (not the "AN NOVA DEV Subscription")
+  - If you don't see the right subscription talk to whoever manages your Azure estate permissions.
+- Still within your console, navigate to the `terraform` folder of your Atlas repository.
+- Run `terraform init` to download the relevant azure-specific plugins, for our terraform configuration.
+- Run `terraform validate`, to analyse the local terraform scripts and let you know if all the syntax is valid.
+- Run `terraform plan`, to access Azure and determine what changes would be needed to make Azure reflect your local scripts.
+  - This is the next step that my fail due to permissions issues.
+  - If you get a 403 error, again speak to your Azure estate manager and ensure you have the permissions granted.
 
 ## More detailed Notes
 
