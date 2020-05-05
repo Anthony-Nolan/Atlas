@@ -305,25 +305,21 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
         { 
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var overridePathProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.OverrideFilePath);
+            var readDonorsFromFile = donorServiceSettings.ReadDonorsFromFile;
             var apiKeyProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.ApiKey);
 
-            if (overridePathProvided && apiKeyProvided)
-            {
-                throw new InvalidOperationException("Both an ApiKey AND an Override File were provided for the DonorService. Please choose one or the other way to create an " + nameof(IDonorServiceClient));
-            }
-            else if(overridePathProvided)
+            if(readDonorsFromFile)
             {
                 return GetFileBasedDonorServiceClient(sp);
             }
-            else if(apiKeyProvided)
+
+            if(apiKeyProvided)
             {
                 return GetRemoteDonorServiceClient(sp);
             }
-            else
-            {
-                throw new InvalidOperationException("Neither an ApiKey, nor an Override File were provided, for the DonorService. Unable to create a functional " + nameof(IDonorServiceClient));
-            }
+
+            throw new InvalidOperationException(
+                $"Unable to create a functional {nameof(IDonorServiceClient)} as {nameof(readDonorsFromFile)} was set to false, but no ApiKey was provided for the DonorService.");
         }
 
         private static IDonorServiceClient GetRemoteDonorServiceClient(IServiceProvider sp)
@@ -343,10 +339,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
-            var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
+
             var logger = BuildNovaLogger(sp);
 
-            return new FileBasedDonorServiceClient(donorServiceSettings.OverrideFilePath, logger);
+            return new FileBasedDonorServiceClient(logger);
         }
 
         private static Logger BuildNovaLogger(IServiceProvider sp)

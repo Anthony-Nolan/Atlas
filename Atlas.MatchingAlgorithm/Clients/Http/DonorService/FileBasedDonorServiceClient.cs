@@ -12,12 +12,11 @@ namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
 {
     public class FileBasedDonorServiceClient : IDonorServiceClient
     {
-        private readonly string filePath;
+        private const string EmbeddedDonorsFile = "Atlas.MatchingAlgorithm.Resources.InitialDonors.csv";
         private readonly ILogger logger;
 
-        public FileBasedDonorServiceClient(string filePath, ILogger logger = null)
+        public FileBasedDonorServiceClient(ILogger logger = null)
         {
-            this.filePath = filePath;
             this.logger = logger;
         }
 
@@ -59,14 +58,12 @@ namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
             });
         }
 
-        private List<SearchableDonorInformation> ReadAllDonors()
+        private static List<SearchableDonorInformation> ReadAllDonors()
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException("Unable to find DonorOverride file.", filePath);
-            }
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
-            using (var reader = new StreamReader(filePath))
+            using (var stream = assembly.GetManifestResourceStream(EmbeddedDonorsFile))
+            using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader, new Configuration {Quote = '\''}))
             {
                 return csv.GetRecords<SearchableDonorInformation>().ToList();
