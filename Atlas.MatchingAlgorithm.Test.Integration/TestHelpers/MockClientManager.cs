@@ -1,5 +1,4 @@
-using Atlas.MatchingAlgorithm.Clients;
-using Atlas.MatchingAlgorithm.Clients.Http;
+using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
 {
