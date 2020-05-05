@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Data.Context
 
             // This is the default connection string to be used when running migrations locally
             // When running, the connection string should be passed manually into the Create method in this class.
-            var connectionString = config.GetConnectionString("PersistentSql");
+            var connectionString = config.GetConnectionString("Sql");
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
