@@ -15,12 +15,14 @@ jobs:
       - task: UseDotNet@2
         inputs:
           packageType: 'sdk'
-          version: '3.1.x'
+          version: '2.2.x'
       - task: DotNetCoreCLI@2
+        displayName: 'Restore'
         inputs:
           command: 'restore'
           feedsToUse: 'select'
       - task: DotNetCoreCLI@2
+        displayName: 'Build Projects'
         inputs:
           command: 'build'
           projects: |
@@ -39,26 +41,7 @@ jobs:
           projects: '**/*Test.csproj'
           arguments: '--no-restore'
       - task: CopyFiles@2
-        displayName: 'Copy Functions Build'
-        inputs:
-          SourceFolder: 'Atlas.MatchPrediction.Functions'
-          Contents: |
-            bin/**
-            *.config
-          TargetFolder: 'matchPredictionFunctionsBuild'
-      - task: ArchiveFiles@2
-        displayName: 'Archive Functions Build'
-        inputs:
-          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/matchPredictionFunctionsBuild/bin'
-          includeRootFolder: false
-          archiveFile: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Functions'
-        inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
-          ArtifactName: functions
-      - task: CopyFiles@2
-        displayName: 'Copy Functions Build'
+        displayName: 'Copy MatchingAlgorithm Functions Build'
         inputs:
           SourceFolder: 'Atlas.MatchingAlgorithm.Functions'
           Contents: |
@@ -66,18 +49,18 @@ jobs:
             *.config
           TargetFolder: 'functionsBuild'
       - task: ArchiveFiles@2
-        displayName: 'Archive Functions Build'
+        displayName: 'Archive MatchingAlgorithm Functions Build'
         inputs:
           rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functionsBuild/bin'
           includeRootFolder: false
           archiveFile: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Functions'
+        displayName: 'Publish Artifact: MatchingAlgorithm Functions'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
           ArtifactName: functions
       - task: CopyFiles@2
-        displayName: 'Copy Functions Build'
+        displayName: 'Copy DonorManagement Functions Build'
         inputs:
           SourceFolder: 'Atlas.MatchingAlgorithm.Functions.DonorManagement'
           Contents: |
@@ -85,30 +68,49 @@ jobs:
             *.config
           TargetFolder: 'donorFunctionsBuild'
       - task: ArchiveFiles@2
-        displayName: 'Archive Functions Build'
+        displayName: 'Archive DonorManagement Functions Build'
         inputs:
           rootFolderOrFile: '$(System.DefaultWorkingDirectory)/donorFunctionsBuild/bin'
           includeRootFolder: false
           archiveFile: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Functions'
+        displayName: 'Publish Artifact: DonorManagement Functions'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
+      - task: CopyFiles@2
+        displayName: 'Copy MatchPrediction Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.MatchPrediction.Functions'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'matchPredictionFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive MatchPrediction Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: MatchPrediction Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+          ArtifactName: functions
       - task: DotNetCoreCLI@2
-        displayName: 'Generate Persistent Migration'
+        displayName: 'Generate MatchingAlgorithm Persistent Migration'
         inputs:
           command: custom
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmPersistentMigrationScript.sql --context SearchAlgorithmPersistentContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent/Atlas.MatchingAlgorithm.Data.Persistent.csproj --verbose'
       - task: DotNetCoreCLI@2
-        displayName: 'Generate Transient Migration'
+        displayName: 'Generate MatchingAlgorithm Transient Migration'
         inputs:
           command: custom
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmTransientMigrationScript.sql --context SearchAlgorithmContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data'
       - task: DotNetCoreCLI@2
-        displayName: 'Generate Transient Migration'
+        displayName: 'Generate MatchPrediction Transient Migration'
         inputs:
           command: custom
           custom: ef
