@@ -36,6 +36,12 @@ variable "DONOR_SERVICE_BASEURL" {
   type = string
 }
 
+variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
+  type        = bool
+  default     = false
+  description = "When set to true, will read donor details from a file rather than attempting to contact the Nova Donor Service."
+}
+
 variable "ENVIRONMENT" {
   type        = string
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. e.g. DEV/UAT/LIVE"
@@ -71,12 +77,6 @@ variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   type        = string
   default     = "P1"
   description = "Size to temproarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
-}
-
-variable "DONOR_SERVICE_OVERRIDE_FILE_PATH" {
-  type        = string
-  default     = ""
-  description = "When set, will read donor details from a file rather than attempting to contact the Nova Donor Service."
 }
 
 variable "MATCHING_DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {

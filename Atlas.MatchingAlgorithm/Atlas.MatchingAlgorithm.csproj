@@ -10,6 +10,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="Resources\InitialDonors.csv" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="AutoMapper" Version="8.1.1" />
       <PackageReference Include="CsvHelper" Version="12.1.2" />
       <PackageReference Include="FluentValidation" Version="8.4.0" />
@@ -32,6 +36,12 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj" />
       <ProjectReference Include="..\Atlas.Utils\Atlas.Utils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\InitialDonors.csv">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

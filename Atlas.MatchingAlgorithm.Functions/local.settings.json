@@ -16,6 +16,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "Client:DonorService:ApiKey": "override-this",
     "Client:DonorService:BaseUrl": "https://dev-nova-app-donor-service.azurewebsites.net/",
+    "Client:DonorService:ReadDonorsFromFile": false,
     "Client:HlaService:ApiKey": "override-this",
     "Client:HlaService:BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
     "DataRefresh:ActiveDatabaseSize": "S3",
