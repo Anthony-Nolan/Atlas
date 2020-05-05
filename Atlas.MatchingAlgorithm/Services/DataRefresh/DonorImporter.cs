@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Clients.Http;
+﻿using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Exceptions;

@@ -1,17 +1,17 @@
-﻿using Atlas.MatchingAlgorithm.Clients.Http;
+﻿using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.Utils.Notifications;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.Utils.Notifications;
 using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
