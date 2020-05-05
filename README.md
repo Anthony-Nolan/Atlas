@@ -115,7 +115,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       - Create a `NotificationsServiceBus.ConnectionString` setting using the `write-only` SAP.
         - *Note these keys aren't part of the `Client` block of the settings object!*
     - the DonorService to read from file.
-      - Create a `Client.DonorService.ReadDonorsFromFile` setting and set value to `true`.
+      - Create a `Client.DonorService.ReadDonorsFromFile` setting and set value to `"true"`.
         - *Note these keys **are** part of the `Client` block of the settings object, and will have to share it with `HlaService` settings!*
 - Set up sensible initial data.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.

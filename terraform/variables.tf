@@ -37,9 +37,9 @@ variable "DONOR_SERVICE_BASEURL" {
 }
 
 variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
-  type        = bool
-  default     = false
-  description = "When set to true, will read donor details from a file rather than attempting to contact the Nova Donor Service."
+  type        = string
+  default     = "false"
+  description = "When set to 'true', will read donor details from a file rather than attempting to contact the Donor Service."
 }
 
 variable "ENVIRONMENT" {

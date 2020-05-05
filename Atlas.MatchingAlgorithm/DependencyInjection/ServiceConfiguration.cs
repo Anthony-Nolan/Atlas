@@ -305,7 +305,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
         { 
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var readDonorsFromFile = donorServiceSettings.ReadDonorsFromFile;
+            var readDonorsFromFile = bool.Parse(donorServiceSettings.ReadDonorsFromFile);
             var apiKeyProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.ApiKey);
 
             if(readDonorsFromFile)
@@ -339,7 +339,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
-
             var logger = BuildNovaLogger(sp);
 
             return new FileBasedDonorServiceClient(logger);
