@@ -9,7 +9,7 @@ Accepted.
 The matching algorithm needs to have the ability to expand Multiple Allele Codes (henceforth referred to as MACs, colloquially known as
 NMDP codes, after the registry by which they are managed)
 
-This information is provided by NMDP, rather than WMDA (as with other HLA metadata, handled in teh matching dictionary)
+This information is provided by NMDP, rather than WMDA (as with other HLA metadata, handled in the matching dictionary)
 
 Anthony Nolan's existing systems already maintain a store of these codes, exposed via the "HLA Service".
 
