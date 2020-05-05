@@ -20,6 +20,10 @@ jobs:
         inputs:
           command: 'restore'
           feedsToUse: 'select'
+      - task: UseDotNet@2
+        inputs:
+          packageType: 'sdk'
+          version: '2.2.x'
       - task: DotNetCoreCLI@2
         inputs:
           command: 'build'
@@ -29,6 +33,27 @@ jobs:
             Atlas.MatchingAlgorithm.Test
             Atlas.MatchingAlgorithm.Data
             Atlas.MatchingAlgorithm.Data.Persistent
+          arguments: '--configuration Release --no-restore'
+      - task: DotNetCoreCLI@2
+        displayName: 'Generate Persistent Migration'
+        inputs:
+          command: custom
+          custom: ef
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmPersistentMigrationScript.sql --context SearchAlgorithmPersistentContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent/Atlas.MatchingAlgorithm.Data.Persistent.csproj --verbose'
+      - task: DotNetCoreCLI@2
+        displayName: 'Generate Transient Migration'
+        inputs:
+          command: custom
+          custom: ef
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmTransientMigrationScript.sql --context SearchAlgorithmContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data'
+      - task: UseDotNet@2
+        inputs:
+          packageType: 'sdk'
+          version: '3.1.x'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: |
             Atlas.MatchPrediction.Data
             Atlas.MatchPrediction.Test
             Atlas.MatchPrediction.Functions
@@ -95,18 +120,6 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
-      - task: DotNetCoreCLI@2
-        displayName: 'Generate Persistent Migration'
-        inputs:
-          command: custom
-          custom: ef
-          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmPersistentMigrationScript.sql --context SearchAlgorithmPersistentContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data.Persistent/Atlas.MatchingAlgorithm.Data.Persistent.csproj --verbose'
-      - task: DotNetCoreCLI@2
-        displayName: 'Generate Transient Migration'
-        inputs:
-          command: custom
-          custom: ef
-          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmTransientMigrationScript.sql --context SearchAlgorithmContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data'
       - task: DotNetCoreCLI@2
         displayName: 'Generate Transient Migration'
         inputs:
