@@ -105,10 +105,10 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
 
   - In that `secrets.json` file configure:
     - the NMDP Code lookup API key.
-      - Acquire an api key. (This should be a guid)
+      - Talk to your Tech Lead, in order to acquire an api key. (This should be a guid)
       - Create a `Client.HlaService.ApiKey` setting with that value.
     - the appropriate ServiceBus connection strings
-      - Acquire the connection strings for the Azure ServiceBus being used for local development.
+      - Acquire the connection strings for the Azure ServiceBus being used for local development, from the Azure Portal.
         - The connection strings can be found under the `Shared Access Policies` of the ServiceBus Namespace
         - We use the same ServiceBus Namespace for both connections, but with differing access levels.
       - Create a `MessagingServiceBus.ConnectionString` setting using the `read-write` SAP.
@@ -162,7 +162,7 @@ The end-to-end tests, however, contact external dependencies, and require connec
 - Run `az login` to Log into Azure in your console.
 - You may be prompted to choose a specific subscription, if you have access to multiple.
   - Run `az account set --subscription <ID of desired Subscription>` to set this.
-  - We want the "Anthony Nolan Subscription" (not the "AN NOVA DEV Subscription")
+    - Talk to your Tech Lead about which subscription you should be using.
   - If you don't see the right subscription talk to whoever manages your Azure estate permissions.
 - Still within your console, navigate to the `terraform` folder of your Atlas repository.
 - Run `terraform init` to download the relevant azure-specific plugins, for our terraform configuration.
