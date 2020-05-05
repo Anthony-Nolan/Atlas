@@ -13,7 +13,7 @@ algorithm can vary.
 
 A three phase matching structure was implemented, with the aim of avoiding full scans of the matching hla tables (processed p-groups
 per donor, per locus) at the loci with more information. (e.g. Locus A has a lot more entries than any of the other partitions, as AN's
-donors tend to have more ambiguous typings at this locus.
+donors tend to have more ambiguous typings at this locus.)
 
 Phase 1 finds all donors that fulfil the matching criteria at a subset of loci, ideally avoiding locus A.
 Phase 2 uses the results of Phase 1 to pre-filter the remaining loci, finding all donors that match criteria at all loci.
