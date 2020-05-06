@@ -305,7 +305,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
         { 
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var readDonorsFromFile = bool.Parse(donorServiceSettings.ReadDonorsFromFile);
+            var readDonorsFromFile = donorServiceSettings.ReadDonorsFromFile ?? false;
             var apiKeyProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.ApiKey);
 
             if(readDonorsFromFile)
