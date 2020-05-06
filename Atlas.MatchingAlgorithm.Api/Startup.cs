@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +42,11 @@ namespace Atlas.MatchingAlgorithm.Api
 
             services.ConfigureSwaggerService();
 
-            services.AddMvc(options => { options.EnableEndpointRouting = false; });
+            services
+                .AddMvc(options => { options.EnableEndpointRouting = false; })
+                // When using the default System.Text.Json, all properties in `LocusPositionScoreDetails` models were ignored when serialising
+                // Until the cause for this has been identified and eliminated, Newtonsoft.Json must be used instead.
+                .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
