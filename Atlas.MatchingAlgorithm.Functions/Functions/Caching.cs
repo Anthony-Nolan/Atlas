@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.Utils.CodeAnalysis;
 
+//QQ The entry point should remain here, but the details should gets pushed into the HlaMetadataDictionary project?
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
     public class Caching
@@ -15,15 +16,15 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IHlaScoringLookupRepository scoringLookupRepository;
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider;
 
         public Caching(
             IAntigenCachingService antigenCachingService,
             IHlaMatchingLookupRepository matchingLookupRepository,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IHlaScoringLookupRepository scoringLookupRepository,
-            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository, 
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider
+            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository,
+            IActiveHlaVersionAccessor wmdaHlaVersionProvider
         )
         {
             this.antigenCachingService = antigenCachingService;
@@ -31,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.alleleNamesLookupRepository = alleleNamesLookupRepository;
             this.scoringLookupRepository = scoringLookupRepository;
             this.dpb1TceGroupsLookupRepository = dpb1TceGroupsLookupRepository;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -49,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
+            var hlaDatabaseVersion = hlaVersionProvider.GetActiveHlaDatabaseVersion();
             await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);

@@ -103,11 +103,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // The default IAppCache registration should be a singleton, to avoid re-caching large collections e.g. Matching Dictionary and Alleles each request
             // Persistent has been picked as the default for ease of injection into the MatchingDictionary, which will not be able to access any wrappers defined in the core project
             services.AddSingleton<IAppCache, CachingService>(sp =>
-                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+            {
+                var oneDay = 60*60*24; //QQ this seems like our 'hot-swap' takes a day to expire?
+                return new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
                 {
-                    DefaultCachePolicy = new CacheDefaults { DefaultCacheDurationSeconds = 86400 }
-                }
-            );
+                    DefaultCachePolicy = new CacheDefaults {DefaultCacheDurationSeconds = oneDay}
+                };
+            });
 
             // A wrapper for IAppCache to allow classes to depend explicitly on a transient-only cache.
             // This should be used for non-heavyweight cached items, e.g. hla database version.
