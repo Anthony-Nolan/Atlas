@@ -171,6 +171,15 @@ The end-to-end tests, however, contact external dependencies, and require connec
   - This is the next step that my fail due to permissions issues.
   - If you get a 403 error, again speak to your Azure estate manager and ensure you have the permissions granted.
 
+### Functions
+  
+Getting functions op run locally with Swagger:
+
+- To run a function set it as your start-up project and run it.
+- (if Swagger has been configured for that FunctionApp) the Swagger web addresses should be shown in the list of Http Functions.
+- Simply copy this address into your browser and you will be able to trigger the functions from there.
+- Triggering the HealthCheck endpoint in Swagger to make sure the function is working correctly.
+
 ## More detailed Notes
 
 ### Long directories
