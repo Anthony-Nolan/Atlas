@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.MultipleAlleleCodeDictionary;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {

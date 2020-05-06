@@ -2,7 +2,7 @@
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.HLAService.Client;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 using NSubstitute;
 using NUnit.Framework;
 using System;

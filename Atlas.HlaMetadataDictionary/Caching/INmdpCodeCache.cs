@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Caching
+namespace Atlas.MultipleAlleleCodeDictionary
 {
     /// <summary>
     /// The matching dictionary package needs to consume a cache populated elsewhere.

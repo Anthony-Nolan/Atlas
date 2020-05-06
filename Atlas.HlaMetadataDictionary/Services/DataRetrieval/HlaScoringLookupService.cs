@@ -1,7 +1,7 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;

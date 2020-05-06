@@ -1,6 +1,6 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using System;
 
