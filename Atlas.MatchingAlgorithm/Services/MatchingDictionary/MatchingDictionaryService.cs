@@ -19,6 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         HlaLookupResultCollections GetAllHlaLookupResults();
     }
     
+    //QQ Migrate to HlaMdDictionary. Rename.
     public class MatchingDictionaryService: IMatchingDictionaryService
     {
         public enum CreationBehaviour
@@ -33,6 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private readonly IActiveHlaVersionAccessor activeHlaVersionProvider;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public MatchingDictionaryService(
@@ -42,6 +44,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
+            IActiveHlaVersionAccessor activeHlaVersionProvider,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.manageMatchingService = manageMatchingService;
@@ -50,13 +53,14 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
+            this.activeHlaVersionProvider = activeHlaVersionProvider;//QQ This will be replaced by the value being passed in directly. How does hot swapping work?
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public async Task RecreateMatchingDictionary(CreationBehaviour wmdaHlaVersionToRecreate = CreationBehaviour.Active)
         {
             var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
-                ? wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion()
+                ? activeHlaVersionProvider.GetActiveHlaDatabaseVersion()
                 : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             await manageMatchingService.RecreateAllHlaLookupResults(version);
@@ -64,27 +68,27 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
 
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()
         {
-            return hlaLookupResultsService.GetAllHlaLookupResults(wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return hlaLookupResultsService.GetAllHlaLookupResults(activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
     }
 }
