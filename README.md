@@ -199,6 +199,11 @@ To enable a shared configuration pattern across both the functions project, and 
 - In the API project(s), we use the standard implementation of the [options pattern within .NET Core DI](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-2.2), in `ServiceConfiguration.cs`
 - In the Functions project, we bypass this configuration setup and instead explicitly register the `IOptions<TSettings>` objects we instantiate - in `Setup.cs`
 
+Running functions locally with Swagger:
+
+- When running the function locally if they have swagger the swagger web adressess should be shown in the list of Http Functions.
+- Simply copy this address into your browser and you will be able to trigger the functions from there.
+
 ### Storage
 
 The service uses two storage methods for different data, SQL and Azure Cloud Tables.
