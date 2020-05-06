@@ -19,7 +19,7 @@ namespace Atlas.Utils.Test.Core.Common
         public void GivenNullParameter_AssertArgNotNull_ThrowsArgNullException()
         {
             Action act = () => ((object)null).AssertArgumentNotNull("someParam");
-            act.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null.\r\nParameter name: someParam");
+            act.ShouldThrow<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'someParam')");
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace Atlas.Utils.Test.Core.Common
         public void GivenInvalidParameter_AssertAr_ThrowsArgException()
         {
             Action act = () => "wrong".AssertArgument(p => p == "right", "Dodgy parameter", "someParam");
-            act.ShouldThrow<ArgumentException>().WithMessage("Dodgy parameter\r\nParameter name: someParam");
+            act.ShouldThrow<ArgumentException>().WithMessage("Dodgy parameter (Parameter 'someParam')");
         }
     }
 }
