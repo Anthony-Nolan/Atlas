@@ -72,7 +72,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   location                  = local.location
   app_service_plan_id       = azurerm_app_service_plan.atlas.id
   https_only                = true
-  version                   = "~2"
+  version                   = "~3"
   storage_connection_string = azurerm_storage_account.shared_function_storage.primary_connection_string
 
   site_config {
@@ -106,7 +106,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
   location                  = local.location
   app_service_plan_id       = azurerm_app_service_plan.atlas.id
   https_only                = true
-  version                   = "~2"
+  version                   = "~3"
   storage_connection_string = azurerm_storage_account.shared_function_storage.primary_connection_string
 
   site_config {
