@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -32,6 +34,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("UpdateHlaCache")]
         public async Task UpdateHlaCache(
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
@@ -40,6 +43,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await antigenCachingService.GenerateAntigenCache();
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("UpdateMatchingDictionaryCache")]
         public async Task UpdateMatchingDictionaryCache(
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
