@@ -54,6 +54,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -448,8 +449,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             var properties = typeof(TSettings).GetProperties();
             foreach (var property in properties)
             {
-                var value = config.GetSection($"{configPrefix}:{property.Name}")?.Value;
-                property.SetValue(settings, value);
+                var stringValue = config.GetSection($"{configPrefix}:{property.Name}")?.Value;
+                var converterForPropertyType = TypeDescriptor.GetConverter(property.PropertyType);
+                var typedValue = converterForPropertyType.ConvertFrom(stringValue);
+                property.SetValue(settings, typedValue);
             }
 
             return settings;
