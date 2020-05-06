@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
     public class HlaLookupResultCollections
     {

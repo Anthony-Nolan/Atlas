@@ -1,11 +1,11 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation;
+﻿using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.DataGeneration.HlaMatchPreCalculation;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     /// <summary>
     /// Creates a complete collection of matched HLA

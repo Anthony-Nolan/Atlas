@@ -1,7 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using System;
 using System.Collections.Generic;
 using System.Linq;

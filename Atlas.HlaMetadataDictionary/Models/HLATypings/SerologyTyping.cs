@@ -1,8 +1,8 @@
 using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
     public class SerologyTyping : HlaTyping, IEquatable<SerologyTyping>
     {

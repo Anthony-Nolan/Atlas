@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;

@@ -1,13 +1,13 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     /// <summary>
     ///  Consolidates HLA info used in matching for all alleles that map to the hla name.

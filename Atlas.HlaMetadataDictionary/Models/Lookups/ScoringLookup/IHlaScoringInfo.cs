@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     public interface IHlaScoringInfo
     {

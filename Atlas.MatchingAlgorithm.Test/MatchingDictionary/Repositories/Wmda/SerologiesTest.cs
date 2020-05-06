@@ -1,10 +1,10 @@
 ﻿using ApprovalTests;
 using ApprovalTests.Reporters;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
 {

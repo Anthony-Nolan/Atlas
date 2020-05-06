@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Atlas.HlaMetadataDictionary.Models.Wmda;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda

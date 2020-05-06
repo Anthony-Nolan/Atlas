@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
     /// <summary>
     /// Container for all parsed information from published WMDA allele data

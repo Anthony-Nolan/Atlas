@@ -1,13 +1,13 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     /// <summary>
     /// Generates a complete collection of DPB1 TCE Group lookup results.

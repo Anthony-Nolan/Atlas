@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     public static class ExpressionSuffixParser
     {

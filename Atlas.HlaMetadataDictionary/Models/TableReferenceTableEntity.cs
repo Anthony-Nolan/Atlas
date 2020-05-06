@@ -1,6 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models
+namespace Atlas.HlaMetadataDictionary.Models
 {
     public class TableReferenceTableEntity : TableEntity
     {

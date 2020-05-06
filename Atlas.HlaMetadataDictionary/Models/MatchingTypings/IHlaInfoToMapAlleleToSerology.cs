@@ -1,7 +1,7 @@
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
     internal interface IHlaInfoToMapAlleleToSerology
     {

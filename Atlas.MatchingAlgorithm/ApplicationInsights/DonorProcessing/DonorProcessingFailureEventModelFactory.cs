@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentValidation;
 using Atlas.MatchingAlgorithm.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
 {

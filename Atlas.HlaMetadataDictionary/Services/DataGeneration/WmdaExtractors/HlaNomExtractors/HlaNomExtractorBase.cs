@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.HlaNomExtractors
+namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.HlaNomExtractors
 {
     internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
     {

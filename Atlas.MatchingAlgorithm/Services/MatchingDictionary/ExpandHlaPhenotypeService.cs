@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary

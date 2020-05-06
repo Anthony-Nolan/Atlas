@@ -1,7 +1,7 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
     /// <summary>
     /// Identifies classes that can serve as a data source

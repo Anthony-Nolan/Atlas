@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Test.MatchingDictionary.Data;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary

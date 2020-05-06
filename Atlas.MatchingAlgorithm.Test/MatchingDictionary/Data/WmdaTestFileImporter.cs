@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Data;
+using Atlas.HlaMetadataDictionary.Data;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Data

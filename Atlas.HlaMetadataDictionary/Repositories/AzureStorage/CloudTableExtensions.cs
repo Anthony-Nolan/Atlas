@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Exceptions;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
     public static class CloudTableExtensions
     {

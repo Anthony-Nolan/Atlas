@@ -1,10 +1,10 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Common.Config;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
     /// <summary>
     /// Manages the partition and row key values to be used with HLA lookup tables.

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;

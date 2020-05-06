@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TypingMethod

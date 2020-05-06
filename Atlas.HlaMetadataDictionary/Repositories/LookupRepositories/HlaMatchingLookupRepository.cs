@@ -2,10 +2,10 @@
 using System.Linq;
 using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories
 {
     public interface IHlaMatchingLookupRepository : IHlaLookupRepository
     {

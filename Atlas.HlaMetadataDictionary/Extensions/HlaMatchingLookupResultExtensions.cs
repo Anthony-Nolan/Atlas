@@ -1,7 +1,7 @@
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
     public static class HlaMatchingLookupResultExtensions
     {

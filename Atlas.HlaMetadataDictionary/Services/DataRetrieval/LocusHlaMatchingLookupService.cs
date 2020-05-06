@@ -1,10 +1,10 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     /// <summary>
     /// Handles matching HLA lookup logic at the locus-level,

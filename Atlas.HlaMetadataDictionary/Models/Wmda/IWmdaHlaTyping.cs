@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
     public interface IWmdaHlaTyping
     {

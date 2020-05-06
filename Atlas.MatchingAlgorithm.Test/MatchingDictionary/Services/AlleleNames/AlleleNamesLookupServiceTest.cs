@@ -1,10 +1,10 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;

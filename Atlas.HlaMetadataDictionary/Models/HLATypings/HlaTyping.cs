@@ -1,9 +1,9 @@
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.HlaTypingInfo;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
     public class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
     {

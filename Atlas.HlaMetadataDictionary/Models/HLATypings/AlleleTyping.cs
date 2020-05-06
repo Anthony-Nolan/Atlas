@@ -1,10 +1,10 @@
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.HlaTypingInfo;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.Services;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
     public class AlleleTyping : HlaTyping
     {

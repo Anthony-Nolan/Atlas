@@ -1,14 +1,14 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.HlaDataConversion;
+﻿using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Utils.Core.ApplicationInsights;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     /// <summary>
     /// Orchestrates the generation of the HLA Lookup Results dataset.

@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;

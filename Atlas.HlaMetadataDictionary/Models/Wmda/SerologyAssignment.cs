@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
     public class SerologyAssignment : IEquatable<SerologyAssignment>
     {

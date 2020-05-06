@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+﻿using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo

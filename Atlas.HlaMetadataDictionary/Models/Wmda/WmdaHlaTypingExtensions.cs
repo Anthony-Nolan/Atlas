@@ -1,8 +1,8 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
     internal static class WmdaHlaTypingExtensions
     {

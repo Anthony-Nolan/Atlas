@@ -4,8 +4,8 @@ using ApprovalTests;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
 using FluentAssertions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 

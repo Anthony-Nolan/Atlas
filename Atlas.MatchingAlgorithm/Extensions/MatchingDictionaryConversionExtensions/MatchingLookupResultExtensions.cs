@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
 namespace Atlas.MatchingAlgorithm.Extensions.MatchingDictionaryConversionExtensions
 {

@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.WindowsAzure.Storage.Table;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Models;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.LookupRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
     /// <summary>
     /// Generic repository that persists data to a CloudTable

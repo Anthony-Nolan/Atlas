@@ -1,9 +1,9 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     public class HlaScoringLookupResult : 
         IHlaScoringLookupResult, 

@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
+namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors
 {
     internal class ConfidentialAlleleExtractor : WmdaDataExtractor<ConfidentialAllele>
     {

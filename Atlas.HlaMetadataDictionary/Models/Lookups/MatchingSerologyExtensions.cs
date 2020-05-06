@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+﻿using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
     internal static class MatchingSerologyExtensions
     {

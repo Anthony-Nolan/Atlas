@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Data
+namespace Atlas.HlaMetadataDictionary.Data
 {
     public class WmdaFileDownloader : IWmdaFileReader
     {

@@ -1,12 +1,12 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     public interface IAlleleNamesLookupService
     {

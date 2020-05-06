@@ -2,15 +2,15 @@
 using Atlas.Utils.Hla.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     /// <summary>
     /// Lookup scoring info for each typing that maps to the submitted HLA name.

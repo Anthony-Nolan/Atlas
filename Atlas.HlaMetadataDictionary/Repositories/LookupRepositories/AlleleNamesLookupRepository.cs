@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using LazyCache;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories
 {
     public interface IAlleleNamesLookupRepository : IHlaLookupRepository
     {

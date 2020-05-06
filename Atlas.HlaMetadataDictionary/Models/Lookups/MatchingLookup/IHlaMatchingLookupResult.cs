@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+﻿using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.MatchingLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {
     /// <summary>
     /// Lookup result with data required to match HLA pairings.

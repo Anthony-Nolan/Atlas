@@ -1,10 +1,10 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services.Lookups
+namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {
     internal class AlleleStringLookup : AlleleNamesLookupBase
     {

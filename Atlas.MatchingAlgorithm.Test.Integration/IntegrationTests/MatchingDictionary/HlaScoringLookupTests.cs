@@ -2,8 +2,8 @@
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.HLAService.Client;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;

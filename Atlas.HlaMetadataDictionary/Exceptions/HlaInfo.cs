@@ -1,6 +1,6 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.Exceptions
 {
     public class HlaInfo
     {

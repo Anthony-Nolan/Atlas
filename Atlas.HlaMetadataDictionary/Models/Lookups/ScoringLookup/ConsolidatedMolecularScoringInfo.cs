@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
     /// Only to be used with molecular types, such as NMDP codes & XX codes,

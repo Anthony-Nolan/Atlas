@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
     public enum SequenceStatus
     {

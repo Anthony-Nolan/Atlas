@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Models;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories
 {
     /// <summary>
     /// Holds the current table reference of various data tables.

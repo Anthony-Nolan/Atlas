@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using LazyCache;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories
 {
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {

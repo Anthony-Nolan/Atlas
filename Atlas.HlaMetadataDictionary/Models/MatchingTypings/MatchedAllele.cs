@@ -1,8 +1,8 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
 using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
     public class MatchedAllele : IMatchedHla, IHlaLookupResultSource<AlleleTyping>
     {

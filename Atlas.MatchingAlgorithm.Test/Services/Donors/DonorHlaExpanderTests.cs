@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using NSubstitute;
