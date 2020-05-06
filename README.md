@@ -29,8 +29,8 @@ The solution is split across multiple projects:
 - Atlas.MatchingAlgorithm.Functions.DonorManagement
   - Azure functions app responsible only for ongoing donor imports / updates
   - Needs to be an independent app so that the three-monthly full data refresh can disable these functions for the duration of the refresh
-- Atlas.MatchingAlgorithm.MatchingDictionary
-  - Responsible for maintaining and accessing the "matching dictionary" - a set of tables in Azure Storage which act as an interface for allele details published by WMDA
+- Atlas.HlaMetadataDictionary
+  - Responsible for maintaining and accessing the dictionary of HLA Metadata - a set of tables in Azure Storage which act as an dedicated 'cache' for allele details published by WMDA
 
 ### Test Projects
 
