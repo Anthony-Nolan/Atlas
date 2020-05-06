@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions
+﻿namespace Atlas.HlaMetadataDictionary.Exceptions
 {
     public class InvalidHlaException : MatchingDictionaryException
     {

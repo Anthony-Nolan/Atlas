@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;

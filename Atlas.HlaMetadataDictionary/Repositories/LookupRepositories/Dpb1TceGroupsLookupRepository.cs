@@ -1,7 +1,7 @@
 ﻿using LazyCache;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories
 {
     public interface IDpb1TceGroupsLookupRepository : IHlaLookupRepository
     {

@@ -1,14 +1,14 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.Lookups;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.Services.Lookups;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     public interface IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult

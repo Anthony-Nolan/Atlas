@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MultipleAlleleCodeDictionary;
 

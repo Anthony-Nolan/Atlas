@@ -1,7 +1,7 @@
 ﻿using System;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
     /// <summary>
     /// Serology that matches to another HLA typing, directly or indirectly.

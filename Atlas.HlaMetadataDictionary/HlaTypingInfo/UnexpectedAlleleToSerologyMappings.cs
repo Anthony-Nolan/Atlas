@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.HlaTypingInfo
+namespace Atlas.HlaMetadataDictionary.HlaTypingInfo
 {
     internal static class UnexpectedAlleleToSerologyMappings
     {

@@ -2,7 +2,7 @@
 using System.Net;
 using Atlas.Utils.Core.Http.Exceptions;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.Exceptions
 {
     public class MatchingDictionaryHttpException : NovaHttpException
     {

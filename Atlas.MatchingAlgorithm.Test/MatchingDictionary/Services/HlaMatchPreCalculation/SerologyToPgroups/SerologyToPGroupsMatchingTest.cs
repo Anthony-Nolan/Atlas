@@ -1,7 +1,7 @@
 ﻿using ApprovalTests;
 using ApprovalTests.Reporters;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Linq;
 using ApprovalTests.Reporters.TestFrameworks;

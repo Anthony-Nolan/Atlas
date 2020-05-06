@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
     public interface IMatchingGGroups
     {

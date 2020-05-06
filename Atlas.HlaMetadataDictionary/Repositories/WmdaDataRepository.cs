@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Data;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.HlaNomExtractors;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.SerologyRelationshipExtractors;
+using Atlas.HlaMetadataDictionary.Data;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors;
+using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors;
+using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.HlaNomExtractors;
+using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.SerologyRelationshipExtractors;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories
 {
     public interface IWmdaDataRepository
     {

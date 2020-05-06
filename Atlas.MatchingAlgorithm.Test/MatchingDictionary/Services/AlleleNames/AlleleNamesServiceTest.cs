@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.AlleleNames;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.AlleleNames;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 {

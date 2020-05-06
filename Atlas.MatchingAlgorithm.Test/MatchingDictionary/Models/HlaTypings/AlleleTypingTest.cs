@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation;

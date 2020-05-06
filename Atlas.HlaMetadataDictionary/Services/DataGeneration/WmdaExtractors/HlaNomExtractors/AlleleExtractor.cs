@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors.HlaNomExtractors
+namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.HlaNomExtractors
 {
     internal class AlleleExtractor : HlaNomExtractorBase
     {

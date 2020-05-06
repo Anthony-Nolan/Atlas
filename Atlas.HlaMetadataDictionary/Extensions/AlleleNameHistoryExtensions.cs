@@ -1,9 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Services.AlleleNames
 {
     internal static class AlleleNameHistoryExtensions
     {

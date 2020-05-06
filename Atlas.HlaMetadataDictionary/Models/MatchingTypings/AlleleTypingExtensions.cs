@@ -1,9 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
     internal static class AlleleTypingExtensions
     {

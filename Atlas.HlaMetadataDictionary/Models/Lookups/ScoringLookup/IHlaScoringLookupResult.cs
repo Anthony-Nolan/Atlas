@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
+﻿namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
     /// Lookup result with data required to score HLA pairings.

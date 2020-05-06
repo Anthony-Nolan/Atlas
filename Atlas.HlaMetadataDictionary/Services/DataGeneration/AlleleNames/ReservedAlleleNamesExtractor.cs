@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Services.DataGeneration.AlleleNames;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Services.AlleleNames
 {
     public interface IReservedAlleleNamesExtractor
     {

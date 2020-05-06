@@ -1,9 +1,9 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Exceptions;
 using System;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services
 {
     public abstract class LookupServiceBase<T>
     {

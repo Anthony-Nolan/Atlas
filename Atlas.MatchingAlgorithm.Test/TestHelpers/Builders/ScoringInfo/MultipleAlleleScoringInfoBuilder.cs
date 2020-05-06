@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo
 {

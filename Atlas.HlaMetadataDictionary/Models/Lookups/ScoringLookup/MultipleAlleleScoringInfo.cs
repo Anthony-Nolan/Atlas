@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
     /// To be used with allele name variants that map to >1 allele,

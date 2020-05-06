@@ -1,10 +1,10 @@
 ﻿using System;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     public class SerologyScoringInfo : 
         IHlaScoringInfo,

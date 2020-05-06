@@ -1,7 +1,7 @@
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
     public static class AlleleNameLookupResultExtensions
     {

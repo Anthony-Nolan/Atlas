@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Services.HlaDataConversion
 {
     internal static class AlleleTypingExtensions
     {

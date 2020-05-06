@@ -1,9 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.MatchingDictionary.Data;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Wmda;
+﻿using Atlas.HlaMetadataDictionary.Data;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.WmdaExtractors
+namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors
 {
     internal abstract class WmdaDataExtractor<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {

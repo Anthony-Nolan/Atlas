@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Data
+namespace Atlas.HlaMetadataDictionary.Data
 {
     public interface IWmdaFileReader
     {

@@ -1,12 +1,12 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.HlaTypingInfo;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.AlleleNameLookup
+namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
 {
     public interface IAlleleNameLookupResult : IHlaLookupResult
     {

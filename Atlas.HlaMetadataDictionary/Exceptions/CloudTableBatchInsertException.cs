@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.Exceptions
 {
     public class CloudTableBatchInsertException : Exception
     {

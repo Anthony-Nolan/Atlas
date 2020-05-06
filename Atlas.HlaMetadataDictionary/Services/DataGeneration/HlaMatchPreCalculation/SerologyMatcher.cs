@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
     /// <summary>
     /// Creates a complete collection of matched serologies

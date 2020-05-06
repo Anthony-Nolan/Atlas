@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 {

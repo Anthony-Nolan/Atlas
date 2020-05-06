@@ -1,10 +1,10 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories;
 using System;
 
-namespace Atlas.MatchingAlgorithm.MatchingDictionary.Services.Lookups
+namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {
     internal static class HlaLookupFactory
     {
