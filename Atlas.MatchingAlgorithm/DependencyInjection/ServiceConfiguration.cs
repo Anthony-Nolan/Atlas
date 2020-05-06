@@ -10,7 +10,7 @@ using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Data;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;

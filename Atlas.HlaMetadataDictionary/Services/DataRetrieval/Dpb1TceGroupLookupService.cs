@@ -1,6 +1,6 @@
 ﻿using Atlas.Utils.Hla.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories.AzureStorage;

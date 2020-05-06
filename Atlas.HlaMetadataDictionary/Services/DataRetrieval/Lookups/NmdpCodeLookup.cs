@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MatchingAlgorithm.MatchingDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;

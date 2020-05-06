@@ -3,7 +3,6 @@ using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Hla.Models;
-using Atlas.MatchingAlgorithm.MatchingDictionary.Caching;
 using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ using System.Threading.Tasks;
 using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
 using LocusType = Atlas.Utils.Core.Models.LocusType;
 
-namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
+namespace Atlas.MultipleAlleleCodeDictionary
 {
     public interface IAntigenCachingService
     {
