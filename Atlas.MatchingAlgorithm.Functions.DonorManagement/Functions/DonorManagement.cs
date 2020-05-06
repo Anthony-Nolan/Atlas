@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {
@@ -25,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             this.logger = logger;
         }
 
-        [SuppressMessage(null, "IDE0060", MessageId = "myTimer")/*Is in fact used, by Azure magic*/]
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("ManageDonorByAvailability")]
         public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")] TimerInfo myTimer)
         {

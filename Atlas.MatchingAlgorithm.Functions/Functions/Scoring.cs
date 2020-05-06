@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -5,6 +6,7 @@ using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Services.Scoring;
+using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -17,6 +19,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.scoringRequestService = scoringRequestService;
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("Score")]
         public async Task<ScoringResult> Score([HttpTrigger] HttpRequest httpRequest)
         {

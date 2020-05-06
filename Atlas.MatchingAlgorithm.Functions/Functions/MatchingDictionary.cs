@@ -1,8 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
-using Atlas.MatchingAlgorithm.Services;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -15,6 +16,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.matchingDictionaryService = matchingDictionaryService;
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("RecreateMatchingDictionary")]
         public async Task Recreate([HttpTrigger] HttpRequest httpRequest)
         {

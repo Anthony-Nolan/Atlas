@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
+using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -23,6 +25,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.searchDispatcher = searchDispatcher;
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("InitiateSearch")]
         public async Task<IActionResult> InitiateSearch([HttpTrigger] HttpRequest request)
         {
@@ -38,6 +41,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             }
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("RunSearch")]
         public async Task RunSearch(
             [ServiceBusTrigger("%MessagingServiceBus:SearchRequestsQueue%", Connection = "MessagingServiceBus:ConnectionString")]
