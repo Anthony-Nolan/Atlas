@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             CaptureCriteria();
             // Ensure that the match levels have actually updated, as the default values will be the same
             capturedMetaDonorCriteria.MatchLevels.A.Position1.Should().Be(matchLevel);
-            capturedMetaDonorCriteria.MatchLevels.ShouldBeEquivalentTo(capturedPatientCriteria.MatchLevels);
+            capturedMetaDonorCriteria.MatchLevels.Should().BeEquivalentTo(capturedPatientCriteria.MatchLevels);
         }
 
         [Test]
@@ -80,14 +80,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         }
 
         [Test]
-        public void SetPatientHomozygousAtLocus_SetsPatientTypingResoultionAsTgs()
+        public void SetPatientHomozygousAtLocus_SetsPatientTypingResolutionAsTgs()
         {
             const Locus locus = Locus.A;
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             CaptureCriteria();
             var expectedResolutions = new Tuple<HlaTypingResolution, HlaTypingResolution>(HlaTypingResolution.Tgs, HlaTypingResolution.Tgs);
-            capturedPatientCriteria.PatientTypingResolutions.DataAtLocus(locus).ShouldBeEquivalentTo(expectedResolutions);
+            capturedPatientCriteria.PatientTypingResolutions.DataAtLocus(locus).Should().BeEquivalentTo(expectedResolutions);
         }
 
         [Test]
