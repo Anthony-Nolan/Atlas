@@ -17,6 +17,12 @@ jobs:
           packageType: 'sdk'
           version: '3.1.x'
       - task: DotNetCoreCLI@2
+        displayName: Install dotnet-ef
+        inputs:
+          command: 'custom'
+          custom: 'tool'
+          arguments: 'install --global dotnet-ef'
+      - task: DotNetCoreCLI@2
         displayName: 'Restore'
         inputs:
           command: 'restore'
