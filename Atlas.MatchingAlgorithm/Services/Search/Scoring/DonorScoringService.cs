@@ -32,12 +32,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
     public class DonorScoringService : IDonorScoringService
     {
-        private readonly IHlaScoringLookupService hlaScoringLookupService;
+        private readonly IHlaScoringLookupService hlaScoringLookupService; //QQ this should be accessed via HlaMdDictService, not direct.
         private readonly IGradingService gradingService;
         private readonly IConfidenceService confidenceService;
         private readonly IRankingService rankingService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider; //QQ Gets folded into the LookupService
         private readonly IScoreResultAggregator scoreResultAggregator;
 
         public DonorScoringService(
@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            IActiveHlaVersionAccessor hlaVersionProvider,
             IScoreResultAggregator scoreResultAggregator)
         {
             this.hlaScoringLookupService = hlaScoringLookupService;
@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             this.confidenceService = confidenceService;
             this.rankingService = rankingService;
             this.matchScoreCalculator = matchScoreCalculator;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionProvider = hlaVersionProvider;
             this.scoreResultAggregator = scoreResultAggregator;
         }
 
@@ -163,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null
-                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion())
+                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, hlaVersionProvider.GetActiveHlaDatabaseVersion())
                 : null;
         }
     }

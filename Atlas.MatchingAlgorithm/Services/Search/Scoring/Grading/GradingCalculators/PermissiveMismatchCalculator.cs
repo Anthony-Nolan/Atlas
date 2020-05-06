@@ -1,7 +1,6 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Services;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
@@ -17,13 +16,15 @@ namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 
     public class PermissiveMismatchCalculator : IPermissiveMismatchCalculator
     {
-        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService; //QQ replace with dep on HlaMdDictServ
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider;
 
-        public PermissiveMismatchCalculator(IDpb1TceGroupLookupService dpb1TceGroupLookupService, IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+        public PermissiveMismatchCalculator(
+            IDpb1TceGroupLookupService dpb1TceGroupLookupService,
+            IActiveHlaVersionAccessor hlaVersionProvider)
         {
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionProvider = hlaVersionProvider;
         }
 
         public bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName)
@@ -44,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 
         private Task<string> GetDpb1TceGroup(string alleleName)
         {
-            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return dpb1TceGroupLookupService.GetDpb1TceGroup(alleleName, hlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
     }
 }
