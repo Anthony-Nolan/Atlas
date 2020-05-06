@@ -5,10 +5,12 @@ using Atlas.MatchingAlgorithm.Extensions.MatchingDictionaryConversionExtensions;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
+//QQ this whole class is moving into HlaMdDict
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
     public interface IExpandHlaPhenotypeService
     {
+        //QQ Remove optional input here.
         Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype, string hlaDatabaseVersion = null);
     }
 
@@ -16,19 +18,21 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
     public class ExpandHlaPhenotypeService : IExpandHlaPhenotypeService
     {
         private readonly ILocusHlaMatchingLookupService locusHlaLookupService;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor activeHlaVersionProvider;
 
-        public ExpandHlaPhenotypeService(ILocusHlaMatchingLookupService locusHlaLookupService, IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+        public ExpandHlaPhenotypeService(
+            ILocusHlaMatchingLookupService locusHlaLookupService,
+            IActiveHlaVersionAccessor activeHlaVersionProvider)
         {
             this.locusHlaLookupService = locusHlaLookupService;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.activeHlaVersionProvider = activeHlaVersionProvider;
         }
 
         public async Task<PhenotypeInfo<ExpandedHla>> GetPhenotypeOfExpandedHla(PhenotypeInfo<string> hlaPhenotype, string hlaDatabaseVersion)
         {
             if (hlaDatabaseVersion == null)
             {
-                hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
+                hlaDatabaseVersion = activeHlaVersionProvider.GetActiveHlaDatabaseVersion();
             }
 
             return await hlaPhenotype.WhenAllLoci((l, h1, h2) => GetExpandedHla(l, h1, h2, hlaDatabaseVersion));

@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics.Contracts;
-using System.Linq;
 using LazyCache;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Helpers;
@@ -28,6 +26,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaDatabaseVersion()
         {
+            //QQ what invalidates this cache? How does hot-swapping actually work?
             const string key = "activeWmdaVersion";
             var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
             ThrowIfNull(version, key);

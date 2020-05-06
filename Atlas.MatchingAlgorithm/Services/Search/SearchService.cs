@@ -25,25 +25,25 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
     public class SearchService : ISearchService
     {
-        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
+        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService; //QQ replace with dep on HlaMdDictServ
         private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
         private readonly ILogger logger;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider; //QQ becomes an value arg passed to HlaMdDictServ.
 
         public SearchService(
             ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService,
             ILogger logger,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider
+            IActiveHlaVersionAccessor hlaVersionProvider
         )
         {
             this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
             this.logger = logger;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionProvider = hlaVersionProvider;
         }
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
@@ -121,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 locus,
                 new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2),
-                wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion()
+                hlaVersionProvider.GetActiveHlaDatabaseVersion()
             );
 
             return new AlleleLevelLocusMatchCriteria
