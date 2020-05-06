@@ -20,18 +20,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
     public class ScoringCache : IScoringCache
     {
         private readonly IAppCache cache;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider; //QQ Not really sure about how this works / what it's doing, w.r.t. our caching.
 
-        public ScoringCache(IAppCache cache, 
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+        public ScoringCache(
+            IAppCache cache,
+            IActiveHlaVersionAccessor hlaVersionProvider)
         {
             this.cache = cache;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionProvider = hlaVersionProvider;
         }
 
         public MatchGrade GetOrAddMatchGrade(Locus locus, string patientHlaName, string donorHlaName, Func<ICacheEntry, MatchGrade> func)
         {
-            var cacheKey = $"MatchGrade:v{wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
+            var cacheKey = $"MatchGrade:v{hlaVersionProvider.GetActiveHlaDatabaseVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
             return cache.GetOrAdd(cacheKey, func);
         }
 
@@ -41,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             string donorHlaName,
             Func<ICacheEntry, MatchConfidence> func)
         {
-            var cacheKey = $"MatchConfidence:v{wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
+            var cacheKey = $"MatchConfidence:v{hlaVersionProvider.GetActiveHlaDatabaseVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
             return cache.GetOrAdd(cacheKey, func);
         }
     }
