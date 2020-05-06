@@ -9,13 +9,16 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
     {
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionAccessor;
 
-        public DataRefreshController(IDonorImporter donorImporter, IHlaProcessor hlaProcessor, IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+        public DataRefreshController(
+            IDonorImporter donorImporter,
+            IHlaProcessor hlaProcessor,
+            IActiveHlaVersionAccessor hlaVersionAccessor)
         {
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionAccessor = hlaVersionAccessor;
         }
 
         [HttpPost]
@@ -29,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         [Route("trigger-donor-hla-update")]
         public async Task TriggerSingleImport()
         {
-            await hlaProcessor.UpdateDonorHla(wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            await hlaProcessor.UpdateDonorHla(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
     }
 }

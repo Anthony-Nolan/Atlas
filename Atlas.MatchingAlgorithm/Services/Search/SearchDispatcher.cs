@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
         private readonly ISearchRequestContext searchRequestContext;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider;
 
         public SearchDispatcher(
             ISearchServiceBusClient searchServiceBusClient,
@@ -37,14 +37,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IResultsBlobStorageClient resultsBlobStorageClient,
             ILogger logger,
             ISearchRequestContext searchRequestContext,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IActiveHlaVersionAccessor hlaVersionProvider)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
             this.searchRequestContext = searchRequestContext;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.hlaVersionProvider = hlaVersionProvider;
         }
 
         /// <returns>A unique identifier for the dispatched search request</returns>
@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            var hlaDatabaseVersion = wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion();
+            var hlaDatabaseVersion = hlaVersionProvider.GetActiveHlaDatabaseVersion();
 
             try
             {
