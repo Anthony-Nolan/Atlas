@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             rankingService = Substitute.For<IRankingService>();
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
             scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
-            var wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            var hlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 confidenceService,
                 rankingService,
                 matchScoreCalculator,
-                wmdaHlaVersionProvider,
+                hlaVersionProvider,
                 scoreResultAggregator
             );
         }
