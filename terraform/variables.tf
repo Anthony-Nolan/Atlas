@@ -28,6 +28,15 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
 }
 
+variable "DONOR_DATABASE_PASSWORD" {
+  type = string
+}
+
+variable "DONOR_DATABASE_USERNAME" {
+  type    = string
+  default = "atlas-donors"
+}
+
 variable "DONOR_SERVICE_APIKEY" {
   type = string
 }
