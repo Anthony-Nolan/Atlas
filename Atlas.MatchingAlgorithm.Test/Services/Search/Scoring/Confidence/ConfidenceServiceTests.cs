@@ -38,8 +38,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Confidence
         public void SetUp()
         {
             var confidenceCalculator = new ConfidenceCalculator();
-            var scoringCache = new ScoringCache(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
-                Substitute.For<IWmdaHlaVersionProvider>());
+            var scoringCache = new ScoringCache(
+                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
+                Substitute.For<IActiveHlaVersionAccessor>());
 
             confidenceService = new ConfidenceService(confidenceCalculator, scoringCache);
             defaultGradingResults = new PhenotypeInfo<MatchGradeResult>(defaultGradingResult);
