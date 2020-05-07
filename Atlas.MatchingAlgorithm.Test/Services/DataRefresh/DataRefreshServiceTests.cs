@@ -281,13 +281,5 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 await dataRefreshNotificationSender.Received().SendTeardownFailureAlert();
             }
         }
-
-        [Test]
-        public async Task RefreshData_WhenContinued_DoesNotRemoveOldData()
-        {
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion, true);
-
-            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
-        }
     }
 }

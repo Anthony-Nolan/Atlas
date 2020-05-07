@@ -18,11 +18,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <param name="shouldForceRefresh">
         /// If true, the refresh will occur regardless of whether a new hla database version has been published
         /// </param>
-        /// <param name="isContinuedRefresh">
-        /// If true, the refresh will not remove existing data, instead only importing / processing new donors.
-        /// This should only be triggered manually if a refresh failed
-        /// </param>
-        Task RefreshDataIfNecessary(bool shouldForceRefresh = false, bool isContinuedRefresh = false);
+        Task RefreshDataIfNecessary(bool shouldForceRefresh = false);
     }
 
     public class DataRefreshOrchestrator : IDataRefreshOrchestrator
@@ -62,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
         }
 
-        public async Task RefreshDataIfNecessary(bool shouldForceRefresh, bool isContinuedRefresh)
+        public async Task RefreshDataIfNecessary(bool shouldForceRefresh)
         {
             if (!shouldForceRefresh && !HasNewWmdaDataBeenPublished())
             {
@@ -76,10 +72,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return;
             }
 
-            await RunDataRefresh(isContinuedRefresh);
+            await RunDataRefresh();
         }
 
-        private async Task RunDataRefresh(bool isContinuedRefresh)
+        private async Task RunDataRefresh()
         {
             await dataRefreshNotificationSender.SendInitialisationNotification();
             var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
@@ -96,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 await AzureFunctionsSetUp();
-                await dataRefreshService.RefreshData(wmdaDatabaseVersion, isContinuedRefresh);
+                await dataRefreshService.RefreshData(wmdaDatabaseVersion);
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(recordId, true);
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);

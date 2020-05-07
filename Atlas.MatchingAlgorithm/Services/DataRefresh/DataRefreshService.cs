@@ -24,11 +24,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// - Scales down target database
         /// </summary>
         /// <param name="wmdaDatabaseVersion">The version of the wmda hla database to use for this refresh</param>
-        /// <param name="isContinuedRefresh">
-        /// If true, continues a data refresh where it left off, without removing all donor information
-        /// This relies on the individual steps of the refresh process bring resilient to interruption
-        /// </param>
-        Task RefreshData(string wmdaDatabaseVersion, bool isContinuedRefresh = false);
+        Task RefreshData(string wmdaDatabaseVersion);
     }
 
     public class DataRefreshService : IDataRefreshService
@@ -70,15 +66,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             settingsOptions = dataRefreshSettingsOptions;
         }
 
-        public async Task RefreshData(string wmdaDatabaseVersion, bool isContinuedRefresh)
+        public async Task RefreshData(string wmdaDatabaseVersion)
         {
             try
             {
                 await RecreateMatchingDictionary(wmdaDatabaseVersion);
-                if (!isContinuedRefresh)
-                {
-                    await RemoveExistingDonorData();
-                }
+                await RemoveExistingDonorData();
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
                 await ImportDonors();
                 await ProcessDonorHla(wmdaDatabaseVersion);
