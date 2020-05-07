@@ -12,8 +12,8 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
   tags = local.common_tags
 
   connection_string {
-    name  = "PersistentSql"
+    name  = "Sql"
     type  = "SQLAzure"
-    value = local.data_refresh_persistent_connection_string
+    value = local.donor_import_connection_string
   }
 }
