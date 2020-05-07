@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Utils.Test", "Atlas.U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test", "Atlas.MatchPrediction.Test\Atlas.MatchPrediction.Test.csproj", "{4DA02515-F9EA-41BB-AB2F-3A5F32E739CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction", "Atlas.MatchPrediction\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj", "{B4ECF8A2-000F-4CEA-83F5-3ECF23D5CEF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction", "Atlas.MatchPrediction\Atlas.MatchPrediction.csproj", "{B4ECF8A2-000F-4CEA-83F5-3ECF23D5CEF1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Data", "Atlas.MatchPrediction.Data\Atlas.MatchPrediction.Data.csproj", "{A44AF465-B57E-4A17-B5C2-85D0170B2BEE}"
 EndProject
