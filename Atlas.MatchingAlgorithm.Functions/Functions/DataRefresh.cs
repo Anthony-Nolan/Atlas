@@ -39,17 +39,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         /// <summary>
-        /// Runs a full data refresh, without clearing out old data - can be used when an in progress job failed near the end of the job,
-        /// To avoid importing / processing donors more than necessary
-        /// </summary>
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("ContinueDataRefreshManual")]
-        public async Task ContinueDataRefreshManual([HttpTrigger] HttpRequest httpRequest)
-        {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary(isContinuedRefresh: true);
-        }
-
-        /// <summary>
         /// Runs a full data refresh, if necessary
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
