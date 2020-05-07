@@ -29,8 +29,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
-            var scoringCache = new ScoringCache(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
-                Substitute.For<IWmdaHlaVersionProvider>());
+            var scoringCache = new ScoringCache(
+                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
+                Substitute.For<IActiveHlaVersionAccessor>());
 
             gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);
 

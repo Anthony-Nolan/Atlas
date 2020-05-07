@@ -23,6 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     {
         private ILogger logger;
         private IOptions<DataRefreshSettings> settingsOptions;
+        private IActiveHlaVersionAccessor activeHlaVersionProvider;
         private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshService dataRefreshService;
@@ -37,9 +38,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [SetUp]
         public void SetUp()
         {
-            logger = Substitute.For<ILogger>();
+
             settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
+            settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
+
+            activeHlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
             wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
+            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("new");
+
+            logger = Substitute.For<ILogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshService = Substitute.For<IDataRefreshService>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
@@ -47,14 +55,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
-            settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
-            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("new");
 
             dataRefreshOrchestrator = new DataRefreshOrchestrator(
                 logger,
                 settingsOptions,
                 wmdaHlaVersionProvider,
+                activeHlaVersionProvider,
                 activeDatabaseProvider,
                 dataRefreshService,
                 dataRefreshHistoryRepository,
@@ -69,7 +75,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenCurrentWmdaVersionMatchesLatest_DoesNotTriggerDataRefresh()
         {
             const string wmdaVersion = "3330";
-            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
             wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(wmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
@@ -81,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenCurrentWmdaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
         {
             const string wmdaVersion = "3330";
-            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
             wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns(wmdaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
@@ -92,7 +98,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_TriggersDataRefresh()
         {
-            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
+            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
             wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("3370");
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
@@ -103,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
         {
-            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
+            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("3330");
             wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("3370");
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
 

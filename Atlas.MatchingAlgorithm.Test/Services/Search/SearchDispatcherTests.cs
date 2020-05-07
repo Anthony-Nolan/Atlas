@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
         private IResultsBlobStorageClient resultsBlobStorageClient;
-        private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private IActiveHlaVersionAccessor hlaVersionProvider;
 
         private SearchDispatcher searchDispatcher;
 
@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             searchService = Substitute.For<ISearchService>();
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
-            wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            hlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
             var logger = Substitute.For<ILogger>();
             var context = Substitute.For<ISearchRequestContext>();
 
@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 resultsBlobStorageClient,
                 logger,
                 context,
-                wmdaHlaVersionProvider);
+                hlaVersionProvider);
         }
 
         [Test]
@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task RunSearch_PublishesWmdaVersionInNotification()
         {
             const string wmdaVersion = "wmda-version";
-            wmdaHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            hlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
 
             await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = "id" });
 
