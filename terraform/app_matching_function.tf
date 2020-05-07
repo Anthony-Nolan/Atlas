@@ -130,6 +130,6 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.matching_persistent_database_connection_string
+    value = local.donor_import_connection_string
   }
 }
