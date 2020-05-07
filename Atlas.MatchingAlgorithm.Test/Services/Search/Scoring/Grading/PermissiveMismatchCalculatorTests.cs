@@ -25,9 +25,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
-            var wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            var hlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
             
-            permissiveMismatchCalculator = new PermissiveMismatchCalculator(dpb1TceGroupLookupService, wmdaHlaVersionProvider);
+            permissiveMismatchCalculator = new PermissiveMismatchCalculator(dpb1TceGroupLookupService, hlaVersionProvider);
         }
 
         #region Tests: Non-DPB1 Locus

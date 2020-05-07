@@ -163,6 +163,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IMatchingDictionaryService, MatchingDictionaryService>();
 
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
+            services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>(); //QQ These need to be in the right places, if they still exist
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {
