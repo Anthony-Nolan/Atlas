@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace Atlas.MatchingAlgorithm.Data.Context
+namespace Atlas.DonorImport.Data.Context
 {
     public class ContextFactory : IDesignTimeDbContextFactory<DonorImportContext>
     {

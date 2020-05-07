@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.Data.Context
+namespace Atlas.DonorImport.Data.Context
 {
     public class DonorImportContext : DbContext
     {
