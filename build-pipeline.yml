@@ -89,13 +89,13 @@ jobs:
       - task: ArchiveFiles@2
         displayName: 'Archive MatchPrediction Functions Build'
         inputs:
-          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functionsBuild/bin'
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/matchPredictionFunctionsBuild/bin'
           includeRootFolder: false
-          archiveFile: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: MatchPrediction Functions'
         inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
       - task: DotNetCoreCLI@2
         displayName: 'Generate MatchingAlgorithm Persistent Migration'
