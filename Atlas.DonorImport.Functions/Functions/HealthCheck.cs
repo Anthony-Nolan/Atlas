@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Atlas.DonorImport.Functions.Functions
+﻿namespace Atlas.DonorImport.Functions.Functions
 {
-    class HealthCheck
+    public class HealthCheck
     {
+        public string GetHealth()
+        {
+            return "Funtions app running.";
+        }
     }
 }
