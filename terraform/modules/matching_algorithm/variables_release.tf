@@ -1,3 +1,5 @@
+// Variables set at release time.
+
 variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type        = string
   default     = "Info"
@@ -14,29 +16,6 @@ variable "AZURE_CLIENT_SECRET" {
   description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
-variable "AZURE_SUBSCRIPTION_ID" {
-  type        = string
-  description = "ID of the Azure subscription into which the system will be deployed."
-}
-
-variable "DATABASE_SERVER_ADMIN_LOGIN" {
-  type    = string
-  default = "atlas-admin"
-}
-
-variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
-  type = string
-}
-
-variable "DONOR_DATABASE_PASSWORD" {
-  type = string
-}
-
-variable "DONOR_DATABASE_USERNAME" {
-  type    = string
-  default = "atlas-donors"
-}
-
 variable "DONOR_SERVICE_APIKEY" {
   type = string
 }
@@ -51,23 +30,12 @@ variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
   description = "When set to 'true', will read donor details from an EmbeddedResource file rather than attempting to contact the Donor Service."
 }
 
-variable "ENVIRONMENT" {
-  type        = string
-  description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. e.g. DEV/UAT/LIVE"
-}
-
 variable "HLA_SERVICE_APIKEY" {
   type = string
 }
 
 variable "HLA_SERVICE_BASEURL" {
   type = string
-}
-
-variable "LOCATION" {
-  type        = string
-  default     = "uksouth"
-  description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
@@ -133,15 +101,9 @@ variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   description = "Crontab used to determine when to poll for new batches of donor updates to the matching component."
 }
 
-variable "SERVICE_PLAN_SKU" {
-  type = object({
-    tier = string,
-    size = string
-  })
-  default = {
-    tier = "Standard"
-    size = "S1"
-  }
+variable "WEBSITE_RUN_FROM_PACKAGE" {
+  type    = string
+  default = "1"
 }
 
 variable "WMDA_FILE_URL" {
@@ -150,7 +112,4 @@ variable "WMDA_FILE_URL" {
   description = "A URL hosting HLA nomenclature in the expected format."
 }
 
-variable "WEBSITE_RUN_FROM_PACKAGE" {
-  type    = string
-  default = "1"
-}
+
