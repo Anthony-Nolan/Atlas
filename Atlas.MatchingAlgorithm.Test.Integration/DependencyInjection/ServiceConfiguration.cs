@@ -44,7 +44,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             );
 
             // Matching Dictionary Overrides
-            services.AddScoped<IWmdaHlaVersionProvider, MockWmdaHlaVersionProvider>();
+            services.AddScoped<IWmdaHlaVersionProvider, MockHlaVersionProvider>();
+            services.AddScoped<IActiveHlaVersionAccessor, MockHlaVersionProvider>();
             services.AddScoped<IHlaScoringLookupRepository, FileBackedHlaScoringLookupRepository>();
             services.AddScoped<IHlaMatchingLookupRepository, FileBackedHlaMatchingLookupRepository>();
             services.AddScoped<IAlleleNamesLookupRepository, FileBackedAlleleNamesLookupRepository>();
