@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
-    //QQ These endpoints should exist and should be moving into Atlas.DiagnosticApi
     public class DataRefreshController : ControllerBase
     {
         private readonly IDonorImporter donorImporter;
