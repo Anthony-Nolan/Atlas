@@ -1,33 +1,28 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.Utils.CodeAnalysis;
 
-//QQ These endpoints should remain here, but the version fetch gets pushed into the HlaMetadataDictionary class?
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {
     public class Caching
     {
         private readonly IAntigenCachingService antigenCachingService;
-        private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
-        private readonly IActiveHlaVersionAccessor hlaVersionProvider;
+        private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
 
         public Caching(
             IAntigenCachingService antigenCachingService,
-            IAlleleNamesLookupRepository alleleNamesLookupRepository,
-            IActiveHlaVersionAccessor hlaVersionProvider
+            IHlaMetadataCacheControl hlaMetadataCacheControl
         )
         {
             this.antigenCachingService = antigenCachingService;
-            this.alleleNamesLookupRepository = alleleNamesLookupRepository;
-            this.hlaVersionProvider = hlaVersionProvider;
+            this.hlaMetadataCacheControl = hlaMetadataCacheControl;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("UpdateHlaCache")]
+        [FunctionName(nameof(UpdateHlaCache))]
         public async Task UpdateHlaCache(
             [TimerTrigger("00 00 03 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
@@ -36,13 +31,12 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("UpdateMatchingDictionaryCache")]
-        public async Task UpdateMatchingDictionaryCache(
+        [FunctionName(nameof(UpdateHlaMetadataDictionaryCache))]
+        public async Task UpdateHlaMetadataDictionaryCache(
             [TimerTrigger("00 00 03 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            var hlaDatabaseVersion = hlaVersionProvider.GetActiveHlaDatabaseVersion();
-            await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+            await hlaMetadataCacheControl.PreWarmAlleleNameCache();
         }
     }
 }
