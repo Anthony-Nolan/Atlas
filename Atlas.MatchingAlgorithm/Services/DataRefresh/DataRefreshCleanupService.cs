@@ -72,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
                 await ScaleDatabase();
                 await EnableDonorManagementFunction();
-                await UpdateDataRefreshHistoryRecords();
+                await UpdateStalledDataRefreshHistoryRecords();
             }
             else
             {
@@ -113,12 +113,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
-        private async Task UpdateDataRefreshHistoryRecords()
+        private async Task UpdateStalledDataRefreshHistoryRecords()
         {
             var dataRefreshRecords = dataRefreshHistoryRepository.GetInProgressJobs().ToList();
             foreach (var job in dataRefreshRecords)
             {
-                await dataRefreshHistoryRepository.UpdateFinishTime(job.Id, DateTime.UtcNow);
+                await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, null, DateTime.UtcNow);
                 await dataRefreshHistoryRepository.UpdateSuccessFlag(job.Id, false);
             }
         }
