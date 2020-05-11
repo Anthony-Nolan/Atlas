@@ -24,14 +24,14 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         [Route("create-latest-version")]
         public async Task CreateLatestMatchingDictionary()
         {
-            await matchingDictionaryService.RecreateMatchingDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
+            await matchingDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
         public async Task RecreateActiveMatchingDictionary()
         {
-            await matchingDictionaryService.RecreateMatchingDictionary(MatchingDictionaryService.CreationBehaviour.Active);
+            await matchingDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Active);
         }
 
         [HttpGet]

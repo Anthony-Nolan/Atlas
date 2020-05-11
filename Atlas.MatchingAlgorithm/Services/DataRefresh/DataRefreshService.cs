@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -23,8 +24,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// - Processes HLA for imported donors
         /// - Scales down target database
         /// </summary>
-        /// <param name="wmdaDatabaseVersion">The version of the wmda hla database to use for this refresh</param>
-        Task RefreshData(string wmdaDatabaseVersion);
+        /// <returns>The version of the Wmda database used</returns>
+        Task<string> RefreshData();
     }
 
     public class DataRefreshService : IDataRefreshService
@@ -33,11 +34,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
+        private readonly IMatchingDictionaryService hlaMetadataService;
         private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         private readonly IDonorImportRepository donorImportRepository;
 
-        private readonly IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
         private readonly ILogger logger;
@@ -48,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IAzureDatabaseManager azureDatabaseManager,
             IDormantRepositoryFactory repositoryFactory,
-            IRecreateHlaLookupResultsService recreateMatchingDictionaryService,
+            IMatchingDictionaryService hlaMetadataService,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
             ILogger logger,
@@ -57,8 +58,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
+            this.hlaMetadataService = hlaMetadataService;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
-            this.recreateMatchingDictionaryService = recreateMatchingDictionaryService;
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
             this.logger = logger;
@@ -66,15 +67,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             settingsOptions = dataRefreshSettingsOptions;
         }
 
-        public async Task RefreshData(string wmdaDatabaseVersion)
+        public async Task<string> RefreshData()
         {
+            string newHlaDatabaseVersion;
             try
             {
-                await RecreateMatchingDictionary(wmdaDatabaseVersion);
+                newHlaDatabaseVersion = await RecreateHlaMetadataDictionary();
                 await RemoveExistingDonorData();
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
                 await ImportDonors();
-                await ProcessDonorHla(wmdaDatabaseVersion);
+                await ProcessDonorHla(newHlaDatabaseVersion);
                 await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
             }
             catch (Exception ex)
@@ -83,6 +85,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await FailureTearDown();
                 throw;
             }
+
+            return newHlaDatabaseVersion;
         }
 
         private async Task FailureTearDown()
@@ -99,10 +103,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task RecreateMatchingDictionary(string wmdaDatabaseVersion)
+        private async Task<string> RecreateHlaMetadataDictionary()
         {
-            logger.SendTrace($"DATA REFRESH: Recreating matching dictionary for hla database version: {wmdaDatabaseVersion}", LogLevel.Info);
-            await recreateMatchingDictionaryService.RecreateAllHlaLookupResults(wmdaDatabaseVersion);
+            logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
+            var wmdaDatabaseVersion = await hlaMetadataService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
+            logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
+            return wmdaDatabaseVersion;
         }
 
         private async Task RemoveExistingDonorData()

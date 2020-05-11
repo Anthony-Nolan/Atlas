@@ -15,6 +15,7 @@ using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
         private IDonorImportRepository donorImportRepository;
-        private IRecreateHlaLookupResultsService recreateMatchingDictionaryService;
+        private IMatchingDictionaryService hlaMetadataDictionaryService;
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
         private IDataRefreshNotificationSender dataRefreshNotificationSender;
@@ -44,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             transientRepositoryFactory = Substitute.For<IDormantRepositoryFactory>();
-            recreateMatchingDictionaryService = Substitute.For<IRecreateHlaLookupResultsService>();
+            hlaMetadataDictionaryService = Substitute.For<IMatchingDictionaryService>();
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             logger = Substitute.For<ILogger>();
@@ -59,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 new AzureDatabaseNameProvider(settingsOptions),
                 azureDatabaseManager,
                 transientRepositoryFactory,
-                recreateMatchingDictionaryService,
+                hlaMetadataDictionaryService,
                 donorImporter,
                 hlaProcessor,
                 logger,
@@ -110,7 +111,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshService.RefreshData(hlaDatabaseVersion);
 
-            await recreateMatchingDictionaryService.Received().RecreateAllHlaLookupResults(hlaDatabaseVersion);
+            await hlaMetadataDictionaryService.Received().RecreateHlaMetadataDictionary(hlaDatabaseVersion);
         }
 
         [Test]
@@ -205,7 +206,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            recreateMatchingDictionaryService.RecreateAllHlaLookupResults(Arg.Any<string>()).Throws(new Exception());
+            hlaMetadataDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest).Throws(new Exception());
 
             try
             {
