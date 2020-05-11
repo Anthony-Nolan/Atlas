@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.Utils.Core.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
@@ -25,8 +26,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         private readonly ILogger logger;
         private readonly IOptions<DataRefreshSettings> settingsOptions;
-        private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
-        private readonly IActiveHlaVersionAccessor activeHlaVersionProvider;
+        private readonly IMatchingDictionaryService hlaMetadataService;
         private readonly IDataRefreshService dataRefreshService;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAzureFunctionManager azureFunctionManager;
@@ -38,8 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         public DataRefreshOrchestrator(
             ILogger logger,
             IOptions<DataRefreshSettings> settingsOptions,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
-            IActiveHlaVersionAccessor activeHlaVersionProvider,
+            IMatchingDictionaryService hlaMetadataService,
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshService dataRefreshService,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
@@ -50,8 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             this.logger = logger;
             this.settingsOptions = settingsOptions;
-            this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
-            this.activeHlaVersionProvider = activeHlaVersionProvider;
+            this.hlaMetadataService = hlaMetadataService;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshService = dataRefreshService;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
@@ -63,33 +61,43 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh)
         {
-            //QQ This check gets pushed down into the HLAMetadataDictionary.
-            if (!shouldForceRefresh && !HasNewWmdaDataBeenPublished())
-            {
-                logger.SendTrace("No new WMDA Hla data has been published. Data refresh not started.", LogLevel.Info);
-                return;
-            }
-
             if (IsRefreshInProgress())
             {
                 logger.SendTrace("Data refresh is already in progress. Data refresh not started.", LogLevel.Info);
                 return;
             }
 
+            var newWmdaVersionAvailable = hlaMetadataService.IsRefreshNecessary();
+            if (!newWmdaVersionAvailable)
+            {
+                if (shouldForceRefresh)
+                {
+                    logger.SendTrace("No new WMDA Hla data has been published, but refresh has been forced. Data refresh will start.", LogLevel.Info);
+                }
+                else
+                {
+                    logger.SendTrace("No new WMDA Hla data has been published. Data refresh not started.", LogLevel.Info);
+                    return;
+                }
+            }
+            else
+            {
+                logger.SendTrace("New WMDA Hla data is available. Data refresh will start.", LogLevel.Info);
+            }
+
             await RunDataRefresh();
+            logger.SendTrace("Data refresh ended.", LogLevel.Info);
         }
 
         private async Task RunDataRefresh()
         {
             await dataRefreshNotificationSender.SendInitialisationNotification();
-            //QQThis should be pushed into the HLAMetadataDictionary.
-            var wmdaDatabaseVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             var dataRefreshRecord = new DataRefreshRecord
             {
                 Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshBeginUtc = DateTime.UtcNow,
-                WmdaDatabaseVersion = wmdaDatabaseVersion,
+                WmdaDatabaseVersion = null,
             };
 
             var recordId = await dataRefreshHistoryRepository.Create(dataRefreshRecord);
@@ -97,17 +105,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 await AzureFunctionsSetUp();
-                await dataRefreshService.RefreshData(wmdaDatabaseVersion);
+                var newWmdaDataVersion = await dataRefreshService.RefreshData();
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-                await MarkDataHistoryRecordAsComplete(recordId, true);
+                await MarkDataHistoryRecordAsComplete(recordId, true, newWmdaDataVersion);
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
                 await dataRefreshNotificationSender.SendSuccessNotification();
+                logger.SendTrace("Data Refresh Succeeded.", LogLevel.Info);
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
                 await dataRefreshNotificationSender.SendFailureAlert();
-                await MarkDataHistoryRecordAsComplete(recordId, false);
+                await MarkDataHistoryRecordAsComplete(recordId, false, null);
             }
             finally
             {
@@ -138,18 +147,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);
         }
 
-        private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess)
+        private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaDataVersion)
         {
-            await dataRefreshHistoryRepository.UpdateFinishTime(recordId, DateTime.UtcNow);
+            await dataRefreshHistoryRepository.UpdateExecutionDetails(recordId, wmdaDataVersion, DateTime.UtcNow);
             await dataRefreshHistoryRepository.UpdateSuccessFlag(recordId, wasSuccess);
-        }
-
-        //QQ This check gets pushed down into the HLAMetadataDictionary.
-        private bool HasNewWmdaDataBeenPublished()
-        {
-            var activeHlaDataVersion = activeHlaVersionProvider.GetActiveHlaDatabaseVersion();
-            var latestHlaDataVersion = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
-            return activeHlaDataVersion != latestHlaDataVersion;
         }
 
         private bool IsRefreshInProgress()
