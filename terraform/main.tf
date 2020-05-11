@@ -86,3 +86,21 @@ module "matching_algorithm" {
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
 }
+
+module "match_prediction" {
+  source = "./modules/match_prediction"
+
+  general = {
+    environment     = local.environment
+    location        = local.location
+    common_tags     = local.common_tags
+  }
+
+  app_service_plan        = azurerm_app_service_plan.atlas
+  shared_function_storage = azurerm_storage_account.shared_function_storage
+  azure_storage           = azurerm_storage_account.azure_storage
+  application_insights    = azurerm_application_insights.atlas
+
+  APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
+}
