@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Extensions;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -34,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
-        private readonly IMatchingDictionaryService hlaMetadataService;
+        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         private readonly IDonorImportRepository donorImportRepository;
@@ -49,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IAzureDatabaseManager azureDatabaseManager,
             IDormantRepositoryFactory repositoryFactory,
-            IMatchingDictionaryService hlaMetadataService,
+            IHlaMetadataDictionary hlaMetadataDictionary,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
             ILogger logger,
@@ -58,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
-            this.hlaMetadataService = hlaMetadataService;
+            this.hlaMetadataDictionary = hlaMetadataDictionary;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
@@ -106,7 +105,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task<string> RecreateHlaMetadataDictionary()
         {
             logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
-            var wmdaDatabaseVersion = await hlaMetadataService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
+            var wmdaDatabaseVersion = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
             logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
             return wmdaDatabaseVersion;
         }
