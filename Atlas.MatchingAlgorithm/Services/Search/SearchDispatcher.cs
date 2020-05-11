@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            var hlaDatabaseVersion = hlaVersionProvider.GetActiveHlaDatabaseVersion(); //QQ Should this be asking at the HlaMdDictServ? Probably not.
+            var hlaDatabaseVersion = hlaVersionProvider.GetActiveHlaDatabaseVersion();
 
             try
             {
