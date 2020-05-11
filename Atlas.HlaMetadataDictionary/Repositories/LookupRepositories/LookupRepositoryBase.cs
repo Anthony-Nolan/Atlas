@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using LazyCache;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.WindowsAzure.Storage.Table;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models;
