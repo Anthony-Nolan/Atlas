@@ -18,6 +18,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 {
@@ -59,13 +60,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(defaultMatchGradeResults);
             confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
 
+            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(scoringLookupService).Build();
+
             donorScoringService = new DonorScoringService(
-                scoringLookupService,
+                hlaMetadataDictionary,
                 gradingService,
                 confidenceService,
                 rankingService,
                 matchScoreCalculator,
-                hlaVersionProvider,
                 scoreResultAggregator
             );
         }

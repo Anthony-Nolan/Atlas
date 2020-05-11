@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MatchingAlgorithm.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -25,9 +25,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
         public void SetUpBeforeEachTest()
         {
             dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
-            var hlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
-            
-            permissiveMismatchCalculator = new PermissiveMismatchCalculator(dpb1TceGroupLookupService, hlaVersionProvider);
+
+            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(dpb1TceGroupLookupService).Build();
+
+            permissiveMismatchCalculator = new PermissiveMismatchCalculator(hlaMetadataDictionary);
         }
 
         #region Tests: Non-DPB1 Locus
