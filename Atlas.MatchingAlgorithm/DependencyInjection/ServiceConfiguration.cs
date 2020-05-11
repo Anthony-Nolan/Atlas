@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Persistent has been picked as the default for ease of injection into the MatchingDictionary, which will not be able to access any wrappers defined in the core project
             services.AddSingleton<IAppCache, CachingService>(sp =>
             {
-                var oneDay = 60*60*24; //QQ this seems like our 'hot-swap' takes a day to expire?
+                var oneDay = 60*60*24;
                 return new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
                 {
                     DefaultCachePolicy = new CacheDefaults {DefaultCacheDurationSeconds = oneDay}
