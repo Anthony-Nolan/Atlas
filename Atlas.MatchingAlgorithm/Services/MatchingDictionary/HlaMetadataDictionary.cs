@@ -37,6 +37,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             Active
         }
 
+        private readonly HlaMetadataConfiguration config;
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
@@ -44,10 +45,10 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
-        private readonly IActiveHlaVersionAccessor activeHlaVersionProvider;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public HlaMetadataDictionary(
+            HlaMetadataConfiguration config,
             IRecreateHlaMetadataService recreateMetadataService,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaMatchingLookupService hlaMatchingLookupService,
@@ -55,9 +56,9 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            IActiveHlaVersionAccessor activeHlaVersionProvider,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
+            this.config = config;
             this.recreateMetadataService = recreateMetadataService;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaMatchingLookupService = hlaMatchingLookupService;
@@ -65,13 +66,12 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
-            this.activeHlaVersionProvider = activeHlaVersionProvider;//QQ This will be replaced by the value being passed in directly. How does hot swapping work?
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
         public bool IsRefreshNecessary()
         {
-            var active= activeHlaVersionProvider.GetActiveHlaDatabaseVersion(); 
+            var active= config.ActiveWmdaVersion; 
             var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return active != latest;
         }
@@ -79,41 +79,41 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate)
         {
             var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
-                ? activeHlaVersionProvider.GetActiveHlaDatabaseVersion()
+                ? config.ActiveWmdaVersion
                 : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
-            await recreateMetadataService.RefreshAllHlaMetadata(version);
+            await recreateMetadataService.RefreshAllHlaMetadata(version);  //QQ actually needs to pass BOTH the whole object AND the target version string. !Separately! (Or maybe just update config? idk. TBC).
             return version;
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, config.ActiveWmdaVersion);  //QQ actually needs to pass the whole object. Etc. below.
         }
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, config.ActiveWmdaVersion);
         }
 
         public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, Tuple<string, string> locusTyping)
         {
-            return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, config.ActiveWmdaVersion);
         }
 
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, config.ActiveWmdaVersion);
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, config.ActiveWmdaVersion);
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()
         {
-            return hlaLookupResultsService.GetAllHlaLookupResults(activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            return hlaLookupResultsService.GetAllHlaLookupResults(config.ActiveWmdaVersion);
         }
     }
 }

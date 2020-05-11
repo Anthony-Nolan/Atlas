@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
@@ -33,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
     //QQ Migrate to HlaMdDictionary.
     public class HlaMetadataCacheControl : IHlaMetadataCacheControl
     {
-        private readonly IActiveHlaVersionAccessor activeHlaVersionProvider;
+        private readonly HlaMetadataConfiguration config;
 
         private readonly IAlleleNamesLookupRepository alleleNamesRepository;
         private readonly IHlaMatchingLookupRepository matchingLookupRepository;
@@ -41,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
 
         public HlaMetadataCacheControl(
-            IActiveHlaVersionAccessor activeHlaVersionProvider,
+            HlaMetadataConfiguration config,
 
             IAlleleNamesLookupRepository alleleNamesRepository,
             IHlaMatchingLookupRepository matchingLookupRepository,
@@ -49,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository
         )
         {
-            this.activeHlaVersionProvider = activeHlaVersionProvider;//QQ This will be replaced by the value being passed in directly. How does hot swapping work?
+            this.config = config;
 
             this.alleleNamesRepository = alleleNamesRepository;
             this.matchingLookupRepository = matchingLookupRepository;
@@ -60,8 +53,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         public async Task PreWarmAllCaches()
         {
             await PreWarmAlleleNameCache();
-
-            var hlaDatabaseVersion = activeHlaVersionProvider.GetActiveHlaDatabaseVersion();
+            var hlaDatabaseVersion = config.ActiveWmdaVersion; //QQ actually needs to pass the whole object
 
             await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
@@ -71,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         public async Task PreWarmAlleleNameCache()
         {
-            await alleleNamesRepository.LoadDataIntoMemory(activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+            await alleleNamesRepository.LoadDataIntoMemory(config.ActiveWmdaVersion); //QQ actually needs to pass the whole object
             //QQ consider other caches that deserve warming.
         }
     }
