@@ -1,4 +1,5 @@
-﻿using Atlas.HlaMetadataDictionary.Services;
+﻿using System;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using NSubstitute;
@@ -14,7 +15,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         IHlaScoringLookupService scoring;
         IHlaLookupResultsService all;
         IDpb1TceGroupLookupService dpb1;
-        IActiveHlaVersionAccessor activeVersion;
         IWmdaHlaVersionProvider wmdaVersion;
 
         public HlaMetadataDictionaryBuilder()
@@ -31,7 +31,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             scoring = Substitute.For<IHlaScoringLookupService>();
             all = Substitute.For<IHlaLookupResultsService>();
             dpb1 = Substitute.For<IDpb1TceGroupLookupService>();
-            activeVersion = Substitute.For<IActiveHlaVersionAccessor>();
             wmdaVersion = Substitute.For<IWmdaHlaVersionProvider>();
         }
 
@@ -46,16 +45,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 case IHlaScoringLookupService typedDependency: scoring = typedDependency; break;
                 case IHlaLookupResultsService typedDependency: all = typedDependency; break;
                 case IDpb1TceGroupLookupService typedDependency: dpb1 = typedDependency; break;
-                case IActiveHlaVersionAccessor typedDependency: activeVersion = typedDependency; break;
                 case IWmdaHlaVersionProvider typedDependency: wmdaVersion = typedDependency; break;
+                default: throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
             }
 
             return this;
         }
 
-        public IHlaMetadataDictionary Build()
+        public IHlaMetadataDictionary Build(string activeVersion)
         {
             return new MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary(
+                new HlaMetadataConfiguration { ActiveWmdaVersion = activeVersion},
                 recreate,
                 name,
                 matching,
@@ -63,7 +63,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 scoring,
                 all,
                 dpb1,
-                activeVersion,
                 wmdaVersion
                     );
         }

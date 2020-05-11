@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
     public class ScoringCache : IScoringCache
     {
         private readonly IAppCache cache;
-        private readonly IActiveHlaVersionAccessor hlaVersionProvider; //QQ Not really sure about how this works / what it's doing, w.r.t. our caching.
+        private readonly IActiveHlaVersionAccessor hlaVersionProvider;
 
         public ScoringCache(
             IAppCache cache,
