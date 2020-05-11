@@ -5,8 +5,6 @@ using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Scoring.Ranking;
@@ -14,6 +12,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
@@ -32,29 +31,26 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
     public class DonorScoringService : IDonorScoringService
     {
-        private readonly IHlaScoringLookupService hlaScoringLookupService; //QQ this should be accessed via HlaMdDictService, not direct.
+        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IGradingService gradingService;
         private readonly IConfidenceService confidenceService;
         private readonly IRankingService rankingService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
-        private readonly IActiveHlaVersionAccessor hlaVersionProvider; //QQ Gets folded into the LookupService
         private readonly IScoreResultAggregator scoreResultAggregator;
 
         public DonorScoringService(
-            IHlaScoringLookupService hlaScoringLookupService,
+            IHlaMetadataDictionary hlaMetadataDictionary,
             IGradingService gradingService,
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
-            IActiveHlaVersionAccessor hlaVersionProvider,
             IScoreResultAggregator scoreResultAggregator)
         {
-            this.hlaScoringLookupService = hlaScoringLookupService;
+            this.hlaMetadataDictionary = hlaMetadataDictionary;
             this.gradingService = gradingService;
             this.confidenceService = confidenceService;
             this.rankingService = rankingService;
             this.matchScoreCalculator = matchScoreCalculator;
-            this.hlaVersionProvider = hlaVersionProvider;
             this.scoreResultAggregator = scoreResultAggregator;
         }
 
@@ -163,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null
-                ? await hlaScoringLookupService.GetHlaLookupResult(locus, hla, hlaVersionProvider.GetActiveHlaDatabaseVersion())
+                ? await hlaMetadataDictionary.GetHlaScoringLookupResult(locus, hla)
                 : null;
         }
     }

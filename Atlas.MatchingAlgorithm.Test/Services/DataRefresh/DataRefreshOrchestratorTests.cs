@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.MatchingAlgorithm.Test.Builders.DataRefresh;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -48,10 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
             wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("new");
 
-            var hlaMetadataService = new MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary(
-                null, null, null, null, null, null,
-                activeHlaVersionProvider, wmdaHlaVersionProvider
-                );
+            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(activeHlaVersionProvider).Using(wmdaHlaVersionProvider).Build();
 
             logger = Substitute.For<ILogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
@@ -64,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshOrchestrator = new DataRefreshOrchestrator(
                 logger,
                 settingsOptions,
-                hlaMetadataService,
+                hlaMetadataDictionary,
                 activeDatabaseProvider,
                 dataRefreshService,
                 dataRefreshHistoryRepository,
