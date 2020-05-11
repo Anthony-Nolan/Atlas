@@ -17,10 +17,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("RecreateMatchingDictionary")]
-        public async Task Recreate([HttpTrigger] HttpRequest httpRequest)
+        [FunctionName("RefreshHlaMetadataDictionary")]
+        public async Task Refresh([HttpTrigger] HttpRequest httpRequest)
         {
-            await matchingDictionaryService.RecreateMatchingDictionary();
+            await matchingDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
         }
     }
 }
