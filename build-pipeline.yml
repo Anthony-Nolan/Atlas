@@ -147,7 +147,7 @@ jobs:
         inputs:
           command: custom
           custom: ef
-          arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/DonorImportMigrationScript.sql --context DonorImportContext --idempotent --startup-project $(System.DefaultWorkingDirectory/Atlas.DonorImport.Data --project $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data'
+          arguments: 'migrations script --output $(Build.ArtifactStagingDirectory)/SQL/DonorImportMigrationScript.sql --context DonorImportContext --idempotent --startup-project $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data --project $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: sql'
         inputs:
