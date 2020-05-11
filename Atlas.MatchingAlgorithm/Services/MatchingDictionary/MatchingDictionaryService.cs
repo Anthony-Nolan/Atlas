@@ -11,14 +11,21 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
     public interface IMatchingDictionaryService
     {
-        Task RecreateMatchingDictionary(MatchingDictionaryService.CreationBehaviour wmdaHlaVersionToRecreate = MatchingDictionaryService.CreationBehaviour.Active);
+        Task<string> RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         HlaLookupResultCollections GetAllHlaLookupResults();
+
+        /// <summary>
+        /// Indicates whether there's a discrepancy between the version of the HLA data that we would use from WMDA,
+        /// and the version of the HLA data that was used to pre-process the current Donor data.
+        /// </summary>
+        /// <returns>True if the versions are different, otherwise false.</returns>
+        bool IsRefreshNecessary();
     }
-    
+
     //QQ Migrate to HlaMdDictionary. Rename.
     public class MatchingDictionaryService: IMatchingDictionaryService
     {
@@ -28,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             Active
         }
 
-        private readonly IRecreateHlaLookupResultsService manageMatchingService;
+        private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
         private readonly IHlaScoringLookupService hlaScoringLookupService;
@@ -38,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public MatchingDictionaryService(
-            IRecreateHlaLookupResultsService manageMatchingService,
+            IRecreateHlaMetadataService recreateMetadataService,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaMatchingLookupService hlaMatchingLookupService,
             IHlaScoringLookupService hlaScoringLookupService,
@@ -47,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IActiveHlaVersionAccessor activeHlaVersionProvider,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
-            this.manageMatchingService = manageMatchingService;
+            this.recreateMetadataService = recreateMetadataService;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaMatchingLookupService = hlaMatchingLookupService;
             this.hlaScoringLookupService = hlaScoringLookupService;
@@ -57,13 +64,21 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
         }
 
-        public async Task RecreateMatchingDictionary(CreationBehaviour wmdaHlaVersionToRecreate = CreationBehaviour.Active)
+        public bool IsRefreshNecessary()
+        {
+            var active= activeHlaVersionProvider.GetActiveHlaDatabaseVersion(); 
+            var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
+            return active != latest;
+        }
+
+        public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate)
         {
             var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
                 ? activeHlaVersionProvider.GetActiveHlaDatabaseVersion()
                 : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
-            await manageMatchingService.RecreateAllHlaLookupResults(version);
+            await recreateMetadataService.RefreshAllHlaMetadata(version);
+            return version;
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
