@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         private readonly ILogger logger;
         private readonly IOptions<DataRefreshSettings> settingsOptions;
-        private readonly IMatchingDictionaryService hlaMetadataService;
+        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IDataRefreshService dataRefreshService;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAzureFunctionManager azureFunctionManager;
@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         public DataRefreshOrchestrator(
             ILogger logger,
             IOptions<DataRefreshSettings> settingsOptions,
-            IMatchingDictionaryService hlaMetadataService,
+            IHlaMetadataDictionary hlaMetadataDictionary,
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshService dataRefreshService,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             this.logger = logger;
             this.settingsOptions = settingsOptions;
-            this.hlaMetadataService = hlaMetadataService;
+            this.hlaMetadataDictionary = hlaMetadataDictionary;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshService = dataRefreshService;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return;
             }
 
-            var newWmdaVersionAvailable = hlaMetadataService.IsRefreshNecessary();
+            var newWmdaVersionAvailable = hlaMetadataDictionary.IsRefreshNecessary();
             if (!newWmdaVersionAvailable)
             {
                 if (shouldForceRefresh)

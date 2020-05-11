@@ -12,33 +12,33 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
     [Route("matching-dictionary")]
     public class MatchingDictionaryController : ControllerBase
     {
-        private readonly IMatchingDictionaryService matchingDictionaryService;
+        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
         public MatchingDictionaryController(
-            IMatchingDictionaryService matchingDictionaryService)
+            IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            this.matchingDictionaryService = matchingDictionaryService;
+            this.hlaMetadataDictionary = hlaMetadataDictionary;
         }
 
         [HttpPost]
         [Route("create-latest-version")]
         public async Task CreateLatestMatchingDictionary()
         {
-            await matchingDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
         public async Task RecreateActiveMatchingDictionary()
         {
-            await matchingDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Active);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Active);
         }
 
         [HttpGet]
         [Route("allele-names-lookup")]
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await matchingDictionaryService.GetCurrentAlleleNames(locus, alleleLookupName);
+            return await hlaMetadataDictionary.GetCurrentAlleleNames(locus, alleleLookupName);
         }
 
         [HttpGet]
@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
             Locus locus,
             string hlaName)
         {
-            return await matchingDictionaryService.GetHlaMatchingLookupResult(locus, hlaName);
+            return await hlaMetadataDictionary.GetHlaMatchingLookupResult(locus, hlaName);
         }
 
         [HttpGet]
@@ -56,21 +56,21 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
             Locus locus,
             string hlaName)
         {
-            return await matchingDictionaryService.GetHlaScoringLookupResult(locus, hlaName);
+            return await hlaMetadataDictionary.GetHlaScoringLookupResult(locus, hlaName);
         }
 
         [HttpGet]
         [Route("dpb1-tce-group-lookup")]
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await matchingDictionaryService.GetDpb1TceGroup(dpb1HlaName);
+            return await hlaMetadataDictionary.GetDpb1TceGroup(dpb1HlaName);
         }
 
         [HttpGet]
         [Route("all-results")]
         public HlaLookupResultCollections GetAllHlaLookupResults()
         {
-            return matchingDictionaryService.GetAllHlaLookupResults();
+            return hlaMetadataDictionary.GetAllHlaLookupResults();
         }
     }
 }
