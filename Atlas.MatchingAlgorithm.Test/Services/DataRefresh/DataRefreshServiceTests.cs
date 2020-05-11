@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -16,14 +15,13 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using FluentAssertions;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {
     [TestFixture]
     public class DataRefreshServiceTests
     {
-        private const string DefaultHlaDatabaseVersion = "3330";
-
         private IOptions<DataRefreshSettings> settingsOptions;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
@@ -78,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             await azureDatabaseManager.UpdateDatabaseSize(settings.DatabaseAName, Arg.Any<AzureDatabaseSize>());
         }
@@ -91,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             await azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
         }
@@ -99,25 +97,29 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshData_RemovesAllDonorInformation()
         {
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             await donorImportRepository.Received().RemoveAllDonorInformation();
         }
 
         [Test]
-        public async Task RefreshData_RecreatesMatchingDictionaryWithRefreshHlaDatabaseVersion()
+        public async Task RefreshData_ReportsHlaMetadataWasRecreated_WithRefreshHlaDatabaseVersion()
         {
             const string hlaDatabaseVersion = "3390";
+            hlaMetadataDictionaryService
+                .RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest)
+                .Returns(hlaDatabaseVersion);
 
-            await dataRefreshService.RefreshData(hlaDatabaseVersion);
+            var returnedHlaVersion = await dataRefreshService.RefreshData();
 
-            await hlaMetadataDictionaryService.Received().RecreateHlaMetadataDictionary(hlaDatabaseVersion);
+            returnedHlaVersion.Should().Be(hlaDatabaseVersion);
         }
+
 
         [Test]
         public async Task RefreshData_ImportsDonors()
         {
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             await donorImporter.Received().ImportDonors();
         }
@@ -126,8 +128,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_ProcessesDonorHla_WithRefreshHlaDatabaseVersion()
         {
             const string hlaDatabaseVersion = "3390";
+            hlaMetadataDictionaryService
+                .RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest)
+                .Returns(hlaDatabaseVersion);
 
-            await dataRefreshService.RefreshData(hlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             await hlaProcessor.Received().UpdateDonorHla(hlaDatabaseVersion);
         }
@@ -140,7 +145,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             await azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
         }
@@ -153,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             Received.InOrder(() =>
             {
@@ -170,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             Received.InOrder(() =>
             {
@@ -188,7 +193,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+            await dataRefreshService.RefreshData();
 
             Received.InOrder(() =>
             {
@@ -210,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+                await dataRefreshService.RefreshData();
             }
             catch (Exception)
             {
@@ -231,7 +236,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+                await dataRefreshService.RefreshData();
             }
             catch (Exception)
             {
@@ -252,7 +257,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+                await dataRefreshService.RefreshData();
             }
             catch (Exception)
             {
@@ -275,7 +280,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshService.RefreshData(DefaultHlaDatabaseVersion);
+                await dataRefreshService.RefreshData();
             }
             catch (Exception)
             {
