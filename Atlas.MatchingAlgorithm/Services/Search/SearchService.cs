@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using SearchResult = Atlas.MatchingAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
@@ -25,25 +26,22 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
     public class SearchService : ISearchService
     {
-        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService; //QQ replace with dep on HlaMdDictServ
+        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IDonorScoringService donorScoringService;
         private readonly IDonorMatchingService donorMatchingService;
         private readonly ILogger logger;
-        private readonly IActiveHlaVersionAccessor hlaVersionProvider; //QQ becomes an value arg passed to HlaMdDictServ.
 
         public SearchService(
-            ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
+            IHlaMetadataDictionary hlaMetadataDictionary,
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService,
-            ILogger logger,
-            IActiveHlaVersionAccessor hlaVersionProvider
+            ILogger logger
         )
         {
-            this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
             this.logger = logger;
-            this.hlaVersionProvider = hlaVersionProvider;
+            this.hlaMetadataDictionary = hlaMetadataDictionary;
         }
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
@@ -118,10 +116,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 return null;
             }
 
-            var lookupResult = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
+            var searchTerm = new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2);
+
+            var lookupResult = await hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(
                 locus,
-                new Tuple<string, string>(searchHla.SearchHla1, searchHla.SearchHla2),
-                hlaVersionProvider.GetActiveHlaDatabaseVersion()
+                searchTerm
             );
 
             return new AlleleLevelLocusMatchCriteria
