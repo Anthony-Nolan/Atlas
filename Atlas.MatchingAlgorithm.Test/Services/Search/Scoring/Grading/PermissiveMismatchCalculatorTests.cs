@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
         {
             dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
 
-            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(dpb1TceGroupLookupService).Build();
+            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(dpb1TceGroupLookupService).Build("");
 
             permissiveMismatchCalculator = new PermissiveMismatchCalculator(hlaMetadataDictionary);
         }

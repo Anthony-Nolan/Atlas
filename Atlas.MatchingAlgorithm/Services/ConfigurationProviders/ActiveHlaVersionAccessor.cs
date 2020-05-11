@@ -26,7 +26,6 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaDatabaseVersion()
         {
-            //QQ what invalidates this cache? How does hot-swapping actually work?
             const string key = "activeWmdaVersion";
             var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
             ThrowIfNull(version, key);
