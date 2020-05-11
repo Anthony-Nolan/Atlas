@@ -9,18 +9,18 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
     public class MatchingDictionary
     {
-        private readonly IMatchingDictionaryService matchingDictionaryService;
+        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public MatchingDictionary(IMatchingDictionaryService matchingDictionaryService)
+        public MatchingDictionary(IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            this.matchingDictionaryService = matchingDictionaryService;
+            this.hlaMetadataDictionary = hlaMetadataDictionary;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("RefreshHlaMetadataDictionary")]
         public async Task Refresh([HttpTrigger] HttpRequest httpRequest)
         {
-            await matchingDictionaryService.RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
         }
     }
 }

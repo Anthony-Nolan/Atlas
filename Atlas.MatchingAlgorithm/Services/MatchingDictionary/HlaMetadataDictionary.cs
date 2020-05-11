@@ -9,9 +9,9 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
-    public interface IMatchingDictionaryService
+    public interface IHlaMetadataDictionary
     {
-        Task<string> RecreateHlaMetadataDictionary(MatchingDictionaryService.CreationBehaviour wmdaHlaVersionToRecreate);
+        Task<string> RecreateHlaMetadataDictionary(HlaMetadataDictionary.CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
@@ -26,8 +26,8 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         bool IsRefreshNecessary();
     }
 
-    //QQ Migrate to HlaMdDictionary. Rename.
-    public class MatchingDictionaryService: IMatchingDictionaryService
+    //QQ Migrate to HlaMdDictionary.
+    public class HlaMetadataDictionary: IHlaMetadataDictionary
     {
         public enum CreationBehaviour
         {
@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IActiveHlaVersionAccessor activeHlaVersionProvider;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
-        public MatchingDictionaryService(
+        public HlaMetadataDictionary(
             IRecreateHlaMetadataService recreateMetadataService,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaMatchingLookupService hlaMatchingLookupService,

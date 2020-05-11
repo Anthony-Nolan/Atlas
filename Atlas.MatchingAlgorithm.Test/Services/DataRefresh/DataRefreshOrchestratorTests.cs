@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns("old");
             wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().Returns("new");
 
-            var hlaMetadataService = new MatchingDictionaryService(
+            var hlaMetadataService = new MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary(
                 null, null, null, null, null, null,
                 activeHlaVersionProvider, wmdaHlaVersionProvider
                 );
