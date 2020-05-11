@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -14,6 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         Task<string> RecreateHlaMetadataDictionary(HlaMetadataDictionary.CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
+        Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, Tuple<string, string> locusTyping);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         HlaLookupResultCollections GetAllHlaLookupResults();
@@ -38,6 +40,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
+        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
@@ -48,6 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IRecreateHlaMetadataService recreateMetadataService,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaMatchingLookupService hlaMatchingLookupService,
+            ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
@@ -57,6 +61,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.recreateMetadataService = recreateMetadataService;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaMatchingLookupService = hlaMatchingLookupService;
+            this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
@@ -89,6 +94,11 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
         {
             return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
+        }
+
+        public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, Tuple<string, string> locusTyping)
+        {
+            return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, activeHlaVersionProvider.GetActiveHlaDatabaseVersion());
         }
 
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
