@@ -34,7 +34,7 @@ variable "DONOR_DATABASE_PASSWORD" {
 
 variable "DONOR_DATABASE_USERNAME" {
   type    = string
-  default = "atlas-donors"
+  default = "donors"
 }
 
 variable "DONOR_SERVICE_APIKEY" {
@@ -112,7 +112,7 @@ variable "MATCHING_DATABASE_PASSWORD" {
 
 variable "MATCHING_DATABASE_USERNAME" {
   type    = string
-  default = "atlas-matching"
+  default = "matching"
 }
 
 variable "MATCHING_FUNCTION_HOST_KEY" {
