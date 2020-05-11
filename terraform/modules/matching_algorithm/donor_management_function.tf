@@ -11,8 +11,8 @@ locals {
     "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-only.primary_connection_string
     "MessagingServiceBus:DonorManagement:Topic"        = var.servicebus_topics.updated-searchable-donors.name
     "MessagingServiceBus:DonorManagement:Subscription" = azurerm_servicebus_subscription.matching.name
-    "MessagingServiceBus:DonorManagement:BatchSize"    = var.MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE
-    "MessagingServiceBus:DonorManagement:CronSchedule" = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
+    "MessagingServiceBus:DonorManagement:BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
+    "MessagingServiceBus:DonorManagement:CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
     "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
