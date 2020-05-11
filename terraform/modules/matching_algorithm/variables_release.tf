@@ -12,26 +12,6 @@ variable "AZURE_CLIENT_SECRET" {
   type = string
 }
 
-variable "DONOR_SERVICE_APIKEY" {
-  type = string
-}
-
-variable "DONOR_SERVICE_BASEURL" {
-  type = string
-}
-
-variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
-  type = bool
-}
-
-variable "HLA_SERVICE_APIKEY" {
-  type = string
-}
-
-variable "HLA_SERVICE_BASEURL" {
-  type = string
-}
-
 variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
   type = string
 }
@@ -64,7 +44,27 @@ variable "DATABASE_USERNAME" {
   type = string
 }
 
+variable "DONOR_SERVICE_APIKEY" {
+  type = string
+}
+
+variable "DONOR_SERVICE_BASEURL" {
+  type = string
+}
+
+variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
+  type = bool
+}
+
 variable "FUNCTION_HOST_KEY" {
+  type = string
+}
+
+variable "HLA_SERVICE_APIKEY" {
+  type = string
+}
+
+variable "HLA_SERVICE_BASEURL" {
   type = string
 }
 
