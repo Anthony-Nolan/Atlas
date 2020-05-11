@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         IEnumerable<DataRefreshRecord> GetInProgressJobs();
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
-        Task UpdateFinishTime(int recordId, DateTime finishTimeUtc);
+        Task UpdateExecutionDetails(int recordId, string wmdaDataVersion, DateTime? finishTimeUtc);
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
     }
     
@@ -58,10 +58,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return dataRefreshRecord.Id;
         }
 
-        public async Task UpdateFinishTime(int recordId, DateTime finishTimeUtc)
+        public async Task UpdateExecutionDetails(int recordId, string wmdaDataVersion, DateTime? finishTimeUtc)
         {
             var record = await context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
-            record.RefreshEndUtc = finishTimeUtc;
+            record.WmdaDatabaseVersion = wmdaDataVersion;
+            if (finishTimeUtc.HasValue)
+            {
+                record.RefreshEndUtc = finishTimeUtc.Value;
+            }
             await context.SaveChangesAsync();
         }
 

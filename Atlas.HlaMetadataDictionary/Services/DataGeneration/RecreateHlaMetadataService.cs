@@ -12,12 +12,12 @@ namespace Atlas.HlaMetadataDictionary.Services
     /// Manages the contents of the matching dictionary
     /// by orchestrating the generation and storage of the HLA Lookup Results dataset.
     /// </summary>
-    public interface IRecreateHlaLookupResultsService
+    public interface IRecreateHlaMetadataService
     {
-        Task RecreateAllHlaLookupResults(string hlaDatabaseVersion);
+        Task RefreshAllHlaMetadata(string hlaDatabaseVersion);
     }
 
-    public class RecreateHlaLookupResultsService : IRecreateHlaLookupResultsService
+    public class RecreateHlaMetadataService : IRecreateHlaMetadataService
     {
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
@@ -26,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.Services
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
         private readonly ILogger logger;
 
-        public RecreateHlaLookupResultsService(
+        public RecreateHlaMetadataService(
             IHlaLookupResultsService hlaLookupResultsService,
             IAlleleNamesLookupRepository alleleNamesLookupRepository,
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
@@ -42,7 +42,7 @@ namespace Atlas.HlaMetadataDictionary.Services
             this.logger = logger;
         }
 
-        public async Task RecreateAllHlaLookupResults(string hlaDatabaseVersion)
+        public async Task RefreshAllHlaMetadata(string hlaDatabaseVersion)
         {
             try
             {

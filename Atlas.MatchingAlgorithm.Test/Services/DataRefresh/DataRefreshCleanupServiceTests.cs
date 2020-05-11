@@ -128,8 +128,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
-            await dataRefreshHistoryRepository.Received().UpdateFinishTime(record1Id, Arg.Any<DateTime>());
-            await dataRefreshHistoryRepository.Received().UpdateFinishTime(record2Id, Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(record1Id, Arg.Any<string>(), Arg.Any<DateTime?>());
+            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(record2Id, Arg.Any<string>(), Arg.Any<DateTime?>());
         }
 
         [Test]

@@ -257,7 +257,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IHlaMatchingDataConverter, HlaMatchingDataConverter>();
             services.AddScoped<IHlaScoringDataConverter, HlaScoringDataConverter>();
 
-            services.AddScoped<IRecreateHlaLookupResultsService, RecreateHlaLookupResultsService>();
+            services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
         }
 
         private static void RegisterMatchingDictionaryLookupServices(this IServiceCollection services)
