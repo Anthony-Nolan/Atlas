@@ -143,11 +143,11 @@ jobs:
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/MatchPredictionMigrationScript.sql --context MatchPredictionContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Data'
       - task: DotNetCoreCLI@2
-        displayName: 'Generate DonorImport Transient Migration'
+        displayName: 'Generate Donor Transient Migration'
         inputs:
           command: custom
           custom: ef
-          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/DonorImportMigrationScript.sql --context DonorImportContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data --project $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data'
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/DonorImportMigrationScript.sql --context DonorContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data --project $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: sql'
         inputs:
