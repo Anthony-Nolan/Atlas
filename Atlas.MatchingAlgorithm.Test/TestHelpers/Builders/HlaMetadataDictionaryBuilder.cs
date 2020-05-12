@@ -38,15 +38,32 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         {
             switch (dependency)
             {
-                case IRecreateHlaMetadataService typedDependency: recreate = typedDependency; break;
-                case IAlleleNamesLookupService typedDependency: name = typedDependency; break;
-                case IHlaMatchingLookupService typedDependency: matching = typedDependency; break;
-                case ILocusHlaMatchingLookupService typedDependency: locus = typedDependency; break;
-                case IHlaScoringLookupService typedDependency: scoring = typedDependency; break;
-                case IHlaLookupResultsService typedDependency: all = typedDependency; break;
-                case IDpb1TceGroupLookupService typedDependency: dpb1 = typedDependency; break;
-                case IWmdaHlaVersionProvider typedDependency: wmdaVersion = typedDependency; break;
-                default: throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
+                case IRecreateHlaMetadataService typedDependency:
+                    recreate = typedDependency;
+                    break;
+                case IAlleleNamesLookupService typedDependency:
+                    name = typedDependency;
+                    break;
+                case IHlaMatchingLookupService typedDependency:
+                    matching = typedDependency;
+                    break;
+                case ILocusHlaMatchingLookupService typedDependency:
+                    locus = typedDependency;
+                    break;
+                case IHlaScoringLookupService typedDependency:
+                    scoring = typedDependency;
+                    break;
+                case IHlaLookupResultsService typedDependency:
+                    all = typedDependency;
+                    break;
+                case IDpb1TceGroupLookupService typedDependency:
+                    dpb1 = typedDependency;
+                    break;
+                case IWmdaHlaVersionProvider typedDependency:
+                    wmdaVersion = typedDependency;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
             }
 
             return this;
@@ -64,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 all,
                 dpb1,
                 wmdaVersion
-                    );
+            );
         }
     }
 }

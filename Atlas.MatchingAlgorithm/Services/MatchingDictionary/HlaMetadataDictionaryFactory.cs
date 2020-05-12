@@ -125,18 +125,14 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         public IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config)
         {
-            return GetFromCache_Or_CreateAndAddToCache(config).Dictionary;
+            var cachedTuple = cache.GetOrAdd(config.CacheKey, () => BuildTuple(config));
+            return cachedTuple.Dictionary;
         }
 
         public IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config)
         {
-            return GetFromCache_Or_CreateAndAddToCache(config).CacheControl;
-        }
-
-        private CacheObject GetFromCache_Or_CreateAndAddToCache(HlaMetadataConfiguration config)
-        {
             var cachedTuple = cache.GetOrAdd(config.CacheKey, () => BuildTuple(config));
-            return cachedTuple;
+            return cachedTuple.CacheControl;
         }
 
         private CacheObject BuildTuple(HlaMetadataConfiguration config)

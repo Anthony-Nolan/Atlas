@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
@@ -9,17 +8,11 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         /// <summary>
         /// Force all in-memory caches to populate (used to achieve slow-start-up, rather than slow-first-request)
         /// </summary>
-        /// <remarks>
-        /// Currently only populates the AlleleNameRepository. Other caches might need to be populated. TBC.
-        /// </remarks>
         Task PreWarmAllCaches();
 
         /// <summary>
         /// Force population of the in-memory cache of AlleleNames. QQ better description?
         /// </summary>
-        /// <remarks>
-        /// Currently only populates the AlleleNameRepository. Other caches might need to be populated. TBC.
-        /// </remarks>
         Task PreWarmAlleleNameCache();
     }
 
