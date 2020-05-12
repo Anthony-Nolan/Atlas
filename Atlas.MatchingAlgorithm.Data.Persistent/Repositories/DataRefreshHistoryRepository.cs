@@ -62,10 +62,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             var record = await context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
             record.WmdaDatabaseVersion = wmdaDataVersion;
-            if (finishTimeUtc.HasValue)
-            {
-                record.RefreshEndUtc = finishTimeUtc.Value;
-            }
+            record.RefreshEndUtc = finishTimeUtc.Value;
             await context.SaveChangesAsync();
         }
 
