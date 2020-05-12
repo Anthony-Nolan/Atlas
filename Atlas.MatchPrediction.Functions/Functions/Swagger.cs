@@ -12,7 +12,7 @@ namespace Atlas.MatchPrediction.Functions
         [SwaggerIgnore]
         [FunctionName("Swagger")]
         public static HttpResponseMessage Swagger(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "swagger/json")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
             HttpRequestMessage req,
             [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
         {
@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Functions
         [SwaggerIgnore]
         [FunctionName("SwaggerUi")]
         public static HttpResponseMessage SwaggerUi(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "swagger/ui")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
             HttpRequestMessage req,
             [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
         {
