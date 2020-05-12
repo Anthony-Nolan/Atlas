@@ -72,6 +72,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Data", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Functions", "Atlas.DonorImport.Functions\Atlas.DonorImport.Functions.csproj", "{60180E66-D312-4548-8654-F670DA3315D5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MultipleAlleleCodeLookup", "MultipleAlleleCodeLookup", "{DCB9E81B-16A1-4D0D-BB02-42A138B4D078}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MultipleAlleleCodeLookup", "Atlas.MultipleAlleleCodeLookup\Atlas.MultipleAlleleCodeLookup.csproj", "{6716E55C-48DF-4425-A603-FA36BC362591}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MultipleAlleleCodeLookup.Test", "Atlas.MultipleAlleleCodeLookup.Test\Atlas.MultipleAlleleCodeLookup.Test.csproj", "{DE77A9A5-BCD3-478A-B319-1997E1D217AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +229,18 @@ Global
 		{60180E66-D312-4548-8654-F670DA3315D5}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{60180E66-D312-4548-8654-F670DA3315D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60180E66-D312-4548-8654-F670DA3315D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6716E55C-48DF-4425-A603-FA36BC362591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6716E55C-48DF-4425-A603-FA36BC362591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6716E55C-48DF-4425-A603-FA36BC362591}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{6716E55C-48DF-4425-A603-FA36BC362591}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{6716E55C-48DF-4425-A603-FA36BC362591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6716E55C-48DF-4425-A603-FA36BC362591}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -251,6 +269,8 @@ Global
 		{647307AB-50FD-44F4-BD15-E534B3A14BA8} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 		{E86D4079-9E90-4900-830B-00B3F540AED6} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 		{60180E66-D312-4548-8654-F670DA3315D5} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
+		{6716E55C-48DF-4425-A603-FA36BC362591} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
+		{DE77A9A5-BCD3-478A-B319-1997E1D217AD} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
