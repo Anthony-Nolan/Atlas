@@ -62,30 +62,31 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             if (IsRefreshInProgress())
             {
-                logger.SendTrace("Data refresh is already in progress. Data refresh not started.", LogLevel.Info);
+                logger.SendTrace("Data refresh is already in progress. Data Refresh not started.", LogLevel.Info);
                 return;
             }
 
             var newWmdaVersionAvailable = hlaMetadataDictionary.IsRefreshNecessary();
             if (!newWmdaVersionAvailable)
             {
+                var noNewData = "No new versions of the WMDA HLA nomenclature have been published.";
                 if (shouldForceRefresh)
                 {
-                    logger.SendTrace("No new WMDA Hla data has been published, but refresh has been forced. Data refresh will start.", LogLevel.Info);
+                    logger.SendTrace(noNewData + " But the refresh was run in 'Forced' mode, so a Data Refresh will start anyway.", LogLevel.Info);
                 }
                 else
                 {
-                    logger.SendTrace("No new WMDA Hla data has been published. Data refresh not started.", LogLevel.Info);
+                    logger.SendTrace(noNewData + " Data refresh not started.", LogLevel.Info);
                     return;
                 }
             }
             else
             {
-                logger.SendTrace("New WMDA Hla data is available. Data refresh will start.", LogLevel.Info);
+                logger.SendTrace("A new version of the WMDA HLA nomenclature has been published. Data Refresh will start.", LogLevel.Info);
             }
 
             await RunDataRefresh();
-            logger.SendTrace("Data refresh ended.", LogLevel.Info);
+            logger.SendTrace("Data Refresh ended.", LogLevel.Info);
         }
 
         private async Task RunDataRefresh()
@@ -96,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshBeginUtc = DateTime.UtcNow,
-                WmdaDatabaseVersion = null,
+                WmdaDatabaseVersion = null, //We don't know the version when initially creating the record.
             };
 
             var recordId = await dataRefreshHistoryRepository.Create(dataRefreshRecord);
