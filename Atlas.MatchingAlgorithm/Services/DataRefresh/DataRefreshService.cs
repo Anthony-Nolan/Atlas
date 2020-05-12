@@ -68,15 +68,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         public async Task<string> RefreshData()
         {
-            string newHlaDatabaseVersion;
             try
             {
-                newHlaDatabaseVersion = await RecreateHlaMetadataDictionary();
+                var newHlaDatabaseVersion = await RecreateHlaMetadataDictionary();
                 await RemoveExistingDonorData();
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
                 await ImportDonors();
                 await ProcessDonorHla(newHlaDatabaseVersion);
                 await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
+
+                return newHlaDatabaseVersion;
             }
             catch (Exception ex)
             {
@@ -84,8 +85,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await FailureTearDown();
                 throw;
             }
-
-            return newHlaDatabaseVersion;
         }
 
         private async Task FailureTearDown()
