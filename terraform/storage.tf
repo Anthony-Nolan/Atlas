@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "shared_function_storage" {
-  name                      = "${lower(local.environment)}atlasfunctionstorage"
+  name                      = "${lower(replace(local.environment, "/\\W/", ""))}atlasfuncstorage"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
   location                  = var.LOCATION
   account_tier              = "Standard"
@@ -9,7 +9,7 @@ resource "azurerm_storage_account" "shared_function_storage" {
 }
 
 resource "azurerm_storage_account" "azure_storage" {
-  name                      = "${lower(local.environment)}atlasstorage"
+  name                      = "${lower(replace(local.environment, "/\\W/", ""))}atlasstorage"
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
   location                  = var.LOCATION
   account_tier              = "Standard"

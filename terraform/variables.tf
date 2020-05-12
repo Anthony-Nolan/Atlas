@@ -53,7 +53,7 @@ variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
 
 variable "ENVIRONMENT" {
   type        = string
-  description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. e.g. DEV/UAT/LIVE"
+  description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
 }
 
 variable "HLA_SERVICE_APIKEY" {
