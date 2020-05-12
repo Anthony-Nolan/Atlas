@@ -4,7 +4,7 @@
     {
         public string GetHealth()
         {
-            return "Funtions app running.";
+            return "Functions app running.";
         }
     }
 }
