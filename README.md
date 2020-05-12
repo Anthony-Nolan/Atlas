@@ -493,6 +493,8 @@ The following are the steps that are required to be taken manually when deployin
 ### Terraform Configuration
 
 - Before terraform can be run for the first time, a new terraform workspace should be manually created. During the release step, this new workspace should be selected.
+    - In development, we needed to create this workspace as a one-off command in our Devops release, before removing it for future releases. 
+    - TODO: ATLAS-216: Ensure this can be run as a one-off locally, without needing to change and revert the Devops release pipeline 
 - You will also need to register any relevant resource providers. See notes in `.\terraform\main.tf`.
 - All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should be made to the terraform scripts in a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.
 
