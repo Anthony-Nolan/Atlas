@@ -6,10 +6,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace Atlas.DonorImport.Data.Context
 {
-    public class ContextFactory : IDesignTimeDbContextFactory<DonorImportContext>
+    public class ContextFactory : IDesignTimeDbContextFactory<DonorContext>
     {
         // This method is called by entity framework to create a context when generating/running migrations
-        public DonorImportContext CreateDbContext(string[] args)
+        public DonorContext CreateDbContext(string[] args)
         {
             var basePath = Directory.GetCurrentDirectory();
             var builder = new ConfigurationBuilder()
@@ -30,18 +30,18 @@ namespace Atlas.DonorImport.Data.Context
             return Create(connectionString);
         }
 
-        public DonorImportContext Create(string connectionString)
+        public DonorContext Create(string connectionString)
         {
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new ArgumentException($"{nameof(connectionString)} is null or empty.", nameof(connectionString));
             }
 
-            var optionsBuilder = new DbContextOptionsBuilder<DonorImportContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<DonorContext>();
 
             optionsBuilder.UseSqlServer(connectionString);
 
-            return new DonorImportContext(optionsBuilder.Options);
+            return new DonorContext(optionsBuilder.Options);
         }
     }
 }
