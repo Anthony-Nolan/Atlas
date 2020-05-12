@@ -4,6 +4,7 @@ using System.Net;
 using LazyCache;
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.MatchingAlgorithm.Helpers;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
@@ -24,11 +25,11 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public WmdaHlaVersionProvider(
             IOptions<WmdaSettings> wmdaSettings,
-            IAppCache cache)
+            ITransientCacheProvider cacheProvider)
         {
             wmdaBaseUrl = wmdaSettings.Value.WmdaFileUri;
             webClient = new WebClient();
-            this.cache = cache;
+            this.cache = cacheProvider.Cache;
         }
 
         public string GetLatestStableHlaDatabaseVersion()
