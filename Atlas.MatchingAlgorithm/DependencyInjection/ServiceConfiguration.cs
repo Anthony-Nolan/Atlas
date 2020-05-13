@@ -123,8 +123,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
 
             services.AddScoped<IDonorScoringService, DonorScoringService>();
-            services.AddScoped<IDonorService, Services.Donors.DonorService>();
-            services.AddScoped<IDonorHlaExpander, DonorHlaExpander>();
+            services.AddScoped<IDonorService, DonorService>();
+            services.AddScoped<IDonorHlaExpanderFactory, DonorHlaExpanderFactory>();
 
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IFailedDonorsNotificationSender, FailedDonorsNotificationSender>();
@@ -144,7 +144,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IMatchFilteringService, MatchFilteringService>();
             services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();
             services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
-            services.AddScoped<IExpandHlaPhenotypeService, ExpandHlaPhenotypeService>();
 
             // Scoring Services
             services.AddScoped<IDonorScoringService, DonorScoringService>();
@@ -160,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
 
-            services.AddScoped<IHlaMetadataDictionaryFactory, Services.MatchingDictionary.HlaMetadataDictionaryFactory>(); //qq moving
+            services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>(); //qq moving
 
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
             services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>(); //QQ These need to be in the right places, if they still exist

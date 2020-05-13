@@ -1,0 +1,45 @@
+﻿using System;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+
+namespace Atlas.MatchingAlgorithm.Services.Donors
+{
+    public interface IDonorHlaExpanderFactory
+    {
+        IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaDatabaseVersion);
+        IDonorHlaExpander BuildForActiveHlaNomenclatureVersion();
+    }
+
+    public class DonorHlaExpanderFactory : IDonorHlaExpanderFactory
+    {
+        private readonly IHlaMetadataDictionaryFactory dictionaryFactory;
+        private readonly IActiveHlaVersionAccessor versionAccessor;
+        private readonly ILogger logger;
+
+        public DonorHlaExpanderFactory(
+            IHlaMetadataDictionaryFactory dictionaryFactory,
+            IActiveHlaVersionAccessor versionAccessor,
+            ILogger logger)
+        {
+            this.dictionaryFactory = dictionaryFactory;
+            this.versionAccessor = versionAccessor;
+            this.logger = logger;
+        }
+
+        public IDonorHlaExpander BuildForActiveHlaNomenclatureVersion()
+        {
+            return BuildForSpecifiedHlaNomenclatureVersion(versionAccessor.GetActiveHlaDatabaseVersion());
+        }
+
+        public IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaDatabaseVersion)
+        {
+            var specifiedVersionDictionary = dictionaryFactory.BuildDictionary(hlaDatabaseVersion);
+            return new DonorHlaExpander(specifiedVersionDictionary, logger);
+        }
+    }
+}
