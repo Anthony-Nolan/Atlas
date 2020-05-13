@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -34,33 +35,31 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Search Algorithm";
 
         private readonly ILogger logger;
-        private readonly IDonorHlaExpander donorHlaExpander;
+        private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
+        private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
-        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository; //QQ remove. replace with CacheControl (provided by Factory)
-        private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
 
         public HlaProcessor(
             ILogger logger,
-            IDonorHlaExpander donorHlaExpander,
+            IDonorHlaExpanderFactory donorHlaExpanderFactory,
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IAntigenCachingService antigenCachingService,
-            IDormantRepositoryFactory repositoryFactory,
-            IHlaMatchingLookupRepository hlaMatchingLookupRepository,
-            IAlleleNamesLookupRepository alleleNamesLookupRepository)
+            IDormantRepositoryFactory repositoryFactory)
         {
             this.logger = logger;
-            this.donorHlaExpander = donorHlaExpander;
+            this.donorHlaExpanderFactory = donorHlaExpanderFactory;
+            this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.antigenCachingService = antigenCachingService;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
-            this.hlaMatchingLookupRepository = hlaMatchingLookupRepository;
-            this.alleleNamesLookupRepository = alleleNamesLookupRepository; }
+        }
 
         public async Task UpdateDonorHla(string hlaDatabaseVersion)
         {
@@ -132,8 +131,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
 
-            //QQ Factory injection and invocation inside here.
-            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName, hlaDatabaseVersion);
+            var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaDatabaseVersion);
+            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults);
 
             stopwatch.Stop();
@@ -150,10 +149,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
+
                 logger.SendTrace("HLA PROCESSOR: caching matching dictionary tables", LogLevel.Info);
                 // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-                await hlaMatchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-                await alleleNamesLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+                var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaDatabaseVersion);
+                await dictionaryCacheControl.PreWarmAllCaches();
 
                 logger.SendTrace("HLA PROCESSOR: caching antigens from hla service", LogLevel.Info);
                 // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
@@ -161,7 +161,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
-                var pGroups = hlaMatchingLookupRepository.GetAllPGroups(hlaDatabaseVersion);
+                var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaDatabaseVersion);
+                var pGroups = hlaDictionary.GetAllPGroups();
                 pGroupRepository.InsertPGroups(pGroups);
 
                 logger.SendTrace("HLA PROCESSOR: preparing database", LogLevel.Info);
