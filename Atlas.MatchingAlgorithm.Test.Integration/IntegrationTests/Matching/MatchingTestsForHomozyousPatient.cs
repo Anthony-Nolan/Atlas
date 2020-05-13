@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -76,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private Tuple<string, string> mismatchedHlaAtLocusUnderTest;
         private PhenotypeInfo<IHlaMatchingLookupResult> patientMatchingHlaPhenotype;
 
-        private IExpandHlaPhenotypeService expandHlaPhenotypeService;
+        private IDonorHlaExpander donorHlaExpander;
         private IDonorMatchingService donorMatchingService;
         private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
 
@@ -95,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(
                 LocusUnderTest,
                 MatchingDonorType);
@@ -162,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
             var patientHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestConditions);
 
-            patientMatchingHlaPhenotype = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(patientHlaPhenotype, "").Result;
+            patientMatchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = patientHlaPhenotype }).Result.MatchingHla;
         }
 
         private void AddDonorsToRepository()
@@ -300,7 +301,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<IHlaMatchingLookupResult> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
         {
             var donorHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestTypingInfo);
-            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlaPhenotype, null).Result;
+            return donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlaPhenotype }).Result.MatchingHla;
         }
 
         private static PhenotypeInfo<string> GetHlaPhenotype(

@@ -12,6 +12,8 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 // ReSharper disable InconsistentNaming
 
@@ -160,11 +162,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
         private static int SetUpTestDonor(PhenotypeInfo<string> donorPhenotype)
         {
-            var expandHlaPhenotypeService =
-                DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
-            var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(donorPhenotype, null)
-                .Result;
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorPhenotype }).Result.MatchingHla;
 
             var testDonor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(matchingHlaPhenotype)
