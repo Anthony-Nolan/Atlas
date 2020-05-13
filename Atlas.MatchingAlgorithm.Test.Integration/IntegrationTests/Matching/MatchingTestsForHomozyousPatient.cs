@@ -76,7 +76,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private Tuple<string, string> mismatchedHlaAtLocusUnderTest;
         private PhenotypeInfo<IHlaMatchingLookupResult> patientMatchingHlaPhenotype;
 
-        private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IDonorMatchingService donorMatchingService;
         private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
 
@@ -95,7 +94,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(
                 LocusUnderTest,
                 MatchingDonorType);
