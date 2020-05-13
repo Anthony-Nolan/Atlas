@@ -36,8 +36,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public void ImportTestDonor()
         {
             // source of donor HLA phenotypes
-            defaultHlaSet = new TestHla.HeterozygousSet1();
-            mismatchHlaSet = new TestHla.HeterozygousSet2();
+            defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
+            mismatchHlaSet = new SampleTestHlas.HeterozygousSet2();
 
             testDonor = BuildTestDonor();
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();

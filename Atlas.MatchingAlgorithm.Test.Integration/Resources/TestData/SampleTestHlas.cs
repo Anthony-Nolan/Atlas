@@ -7,7 +7,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestData
     /// Holds sets of HLA phenotypes that can be re-used across the integration test suite.
     /// Phenotypes in Set1 are mismatched at every position to those in Set2.
     /// </summary>
-    public class TestHla
+    public class SampleTestHlas
     {
         public class HeterozygousSet1 : ITestHlaSet
         {

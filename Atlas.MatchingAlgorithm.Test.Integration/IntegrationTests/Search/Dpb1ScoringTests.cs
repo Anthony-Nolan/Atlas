@@ -194,7 +194,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
         private static PhenotypeInfo<string> GetDefaultPhenotype()
         {
-            var defaultHlaSet = new TestHla.HeterozygousSet1();
+            var defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
             var phenotype = defaultHlaSet.SixLocus_SingleExpressingAlleles;
             phenotype.SetAtLocus(Locus.Dpb1, DefaultDpb1Hla);
             return phenotype;
