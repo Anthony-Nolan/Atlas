@@ -29,8 +29,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             updateRepository = Substitute.For<IDonorUpdateRepository>();
             inspectionRepository = Substitute.For<IDonorInspectionRepository>();
             repositoryFactory = Substitute.For<IActiveRepositoryFactory>();
-            donorHlaExpander = Substitute.For<IDonorHlaExpander>();
             failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
+            donorHlaExpander = Substitute.For<IDonorHlaExpander>();
+            var donorHlaExpanderFactory = Substitute.For<IDonorHlaExpanderFactory>();
+            donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(Arg.Any<string>()).Returns(donorHlaExpander);
+            donorHlaExpanderFactory.BuildForActiveHlaNomenclatureVersion().Returns(donorHlaExpander);
 
             repositoryFactory.GetDonorInspectionRepository().Returns(inspectionRepository);
             repositoryFactory.GetDonorUpdateRepository().Returns(updateRepository);
@@ -43,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             donorService = new DonorService(
                 repositoryFactory,
-                donorHlaExpander,
+                donorHlaExpanderFactory,
                 failedDonorsNotificationSender
             );
         }

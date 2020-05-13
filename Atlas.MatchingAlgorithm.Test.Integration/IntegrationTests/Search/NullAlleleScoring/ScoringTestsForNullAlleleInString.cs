@@ -14,6 +14,8 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullAlleleScoring
 {
@@ -55,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         private AlleleTestData nullAlleleAsXxCode;
         private AlleleTestData differentNullAllele;
 
-        private IExpandHlaPhenotypeService expandHlaPhenotypeService;
+        private IDonorHlaExpander donorHlaExpander;
         private IDonorUpdateRepository donorRepository;
         private ISearchService searchService;
 
@@ -63,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         public async Task OneTimeSetUp()
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
             donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
             // Matching & scoring assertions are based on the following assumptions:
@@ -103,7 +105,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
         private AlleleTestData BuildTestData(string alleleName)
         {
-            return new AlleleTestData(expandHlaPhenotypeService, alleleName, DonorIdGenerator.NextId());
+            return new AlleleTestData(donorHlaExpander, alleleName, DonorIdGenerator.NextId());
         }
 
         [SetUp]
@@ -928,13 +930,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
         private async Task<int> AddDonorPhenotypeToDonorRepository(PhenotypeInfo<string> donorPhenotype, int? donorId = null)
         {
-            donorId = donorId ?? DonorIdGenerator.NextId();
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorPhenotype }).Result.MatchingHla;
 
-            var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(donorPhenotype, null)
-                .Result;
-
-            var testDonor = new DonorInfoWithTestHlaBuilder(donorId.Value)
+            var testDonor = new DonorInfoWithTestHlaBuilder(donorId ?? DonorIdGenerator.NextId())
                 .WithHla(matchingHlaPhenotype)
                 .Build();
 
@@ -970,22 +968,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             public int DonorId => Donor.DonorId;
 
 
-            public AlleleTestData(IExpandHlaPhenotypeService expandHlaPhenotypeService, string alleleName, int donorId)
+            public AlleleTestData(IDonorHlaExpander donorHlaExpander, string alleleName, int donorId)
             {
                 AlleleName = alleleName;
                 Phenotype = BuildPhenotype(alleleName);
-                Donor = BuildDonor(expandHlaPhenotypeService, donorId);
-            }
-
-            private DonorInfoWithExpandedHla BuildDonor(IExpandHlaPhenotypeService expandHlaPhenotypeService, int donorId)
-            {
-                var matchingHlaPhenotype = expandHlaPhenotypeService
-                    .GetPhenotypeOfExpandedHla(Phenotype, null)
-                    .Result;
-
-                return new DonorInfoWithTestHlaBuilder(donorId)
-                    .WithHla(matchingHlaPhenotype)
-                    .Build();
+                Donor = BuildDonor(donorHlaExpander, donorId);
             }
 
             private static PhenotypeInfo<string> BuildPhenotype(string hlaForPositionUnderTest)
@@ -993,6 +980,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 var defaultPhenotype = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
                 return defaultPhenotype.Map((l, p, hla) => l == LocusUnderTest && p == PositionUnderTest ? hlaForPositionUnderTest : hla);
             }
+
+            private DonorInfoWithExpandedHla BuildDonor(IDonorHlaExpander donorHlaExpander, int donorId)
+            {
+                var expandedDonor = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = Phenotype}).Result;
+
+                return new DonorInfoWithTestHlaBuilder(donorId)
+                    .WithHla(expandedDonor.MatchingHla)
+                    .Build();
+            }
+
         }
     }
 }
