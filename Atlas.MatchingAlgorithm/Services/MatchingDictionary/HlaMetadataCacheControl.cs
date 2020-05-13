@@ -51,13 +51,11 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await dpb1TceGroupsLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-            //QQ consider other caches that deserve warming.
         }
 
         public async Task PreWarmAlleleNameCache()
         {
             await alleleNamesRepository.LoadDataIntoMemory(config.ActiveWmdaVersion); //QQ actually needs to pass the whole object
-            //QQ consider other caches that deserve warming.
         }
     }
 }
