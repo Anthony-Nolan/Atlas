@@ -132,6 +132,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
 
+            //QQ Factory injection and invocation inside here.
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName, hlaDatabaseVersion);
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults);
 

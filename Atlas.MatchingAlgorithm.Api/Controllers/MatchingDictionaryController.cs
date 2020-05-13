@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
@@ -15,9 +16,10 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
         public MatchingDictionaryController(
-            IHlaMetadataDictionary hlaMetadataDictionary)
+            IHlaMetadataDictionaryFactory factory,
+            IActiveHlaVersionAccessor hlaVersionAccessor)
         {
-            this.hlaMetadataDictionary = hlaMetadataDictionary;
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         [HttpPost]

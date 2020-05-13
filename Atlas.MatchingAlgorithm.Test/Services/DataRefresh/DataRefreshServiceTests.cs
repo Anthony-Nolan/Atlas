@@ -14,7 +14,9 @@ using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
@@ -58,7 +60,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 new AzureDatabaseNameProvider(settingsOptions),
                 azureDatabaseManager,
                 transientRepositoryFactory,
-                hlaMetadataDictionary,
+                new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary),
+                Substitute.For<IActiveHlaVersionAccessor>(),
                 donorImporter,
                 hlaProcessor,
                 logger,

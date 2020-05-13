@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
@@ -12,9 +13,11 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public MatchingDictionary(IHlaMetadataDictionary hlaMetadataDictionary)
+        public MatchingDictionary(
+            IHlaMetadataDictionaryFactory factory,
+            IActiveHlaVersionAccessor hlaVersionAccessor)
         {
-            this.hlaMetadataDictionary = hlaMetadataDictionary;
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
