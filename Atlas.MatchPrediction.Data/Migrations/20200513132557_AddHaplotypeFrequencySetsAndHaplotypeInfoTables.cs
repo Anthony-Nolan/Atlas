@@ -23,10 +23,10 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "HaplotypeInfo",
+                name: "HaplotypeFrequencies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Set_Id = table.Column<int>(nullable: true),
                     Frequency = table.Column<decimal>(nullable: false),
@@ -38,9 +38,9 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_HaplotypeInfo", x => x.Id);
+                    table.PrimaryKey("PK_HaplotypeFrequencies", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_HaplotypeInfo_HaplotypeFrequencySets_Set_Id",
+                        name: "FK_HaplotypeFrequencies_HaplotypeFrequencySets_Set_Id",
                         column: x => x.Set_Id,
                         principalTable: "HaplotypeFrequencySets",
                         principalColumn: "Id",
@@ -48,22 +48,22 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_HaplotypeFrequencies_Set_Id",
+                table: "HaplotypeFrequencies",
+                column: "Set_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RegistryAndEthnicity",
                 table: "HaplotypeFrequencySets",
                 columns: new[] { "Ethnicity", "Registry" },
                 unique: true,
                 filter: "[Active] = 'True'");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_HaplotypeInfo_Set_Id",
-                table: "HaplotypeInfo",
-                column: "Set_Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "HaplotypeInfo");
+                name: "HaplotypeFrequencies");
 
             migrationBuilder.DropTable(
                 name: "HaplotypeFrequencySets");
