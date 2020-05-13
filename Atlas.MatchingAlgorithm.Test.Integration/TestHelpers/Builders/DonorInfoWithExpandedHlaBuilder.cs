@@ -6,29 +6,29 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
-    public class DonorInfoWithExpandedHlaBuilder
+    public class DonorInfoWithTestHlaBuilder
     {
         private readonly DonorInfoWithExpandedHla donor;
         
-        public DonorInfoWithExpandedHlaBuilder(int donorId)
+        public DonorInfoWithTestHlaBuilder(int donorId)
         {
             donor = new DonorInfoWithExpandedHla
             {
                 DonorType = DonorType.Adult,
                 DonorId = donorId,
                 HlaNames = new PhenotypeInfo<string>(),
-                MatchingHla = new PhenotypeInfo<ExpandedHla>()
+                MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>()
             };
         }
 
-        public DonorInfoWithExpandedHlaBuilder WithHla(PhenotypeInfo<ExpandedHla> matchingHla)
+        public DonorInfoWithTestHlaBuilder WithHla(PhenotypeInfo<IHlaMatchingLookupResult> matchingHla)
         {
-            donor.HlaNames = new PhenotypeInfo<string>(matchingHla.Map(info => info?.OriginalName));
+            donor.HlaNames = new PhenotypeInfo<string>(matchingHla.Map(info => info?.LookupName));
             donor.MatchingHla = matchingHla;
             return this;
         }
 
-        public DonorInfoWithExpandedHlaBuilder WithHlaAtLocus(Locus locus, ExpandedHla hla1, ExpandedHla hla2)
+        public DonorInfoWithTestHlaBuilder WithHlaAtLocus(Locus locus, TestHla hla1, TestHla hla2)
         {
             switch (locus)
             {
@@ -75,7 +75,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         }
 
         // Populates all null required hla positions (A, B, Drb1) with given hla values
-        public DonorInfoWithExpandedHlaBuilder WithDefaultRequiredHla(ExpandedHla hla)
+        public DonorInfoWithTestHlaBuilder WithDefaultRequiredHla(TestHla hla)
         {
             donor.HlaNames.A.Position1 = donor.HlaNames.A.Position1 ?? hla.OriginalName;
             donor.HlaNames.A.Position2 = donor.HlaNames.A.Position2 ?? hla.OriginalName;
@@ -93,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
-        public DonorInfoWithExpandedHlaBuilder WithDonorType(DonorType donorType)
+        public DonorInfoWithTestHlaBuilder WithDonorType(DonorType donorType)
         {
             donor.DonorType = donorType;
             return this;

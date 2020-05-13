@@ -241,13 +241,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             private readonly Locus locus1;
             private readonly Locus locus2;
-            private DonorInfoWithExpandedHlaBuilder DonorResultBuilder;
+            private DonorInfoWithTestHlaBuilder DonorResultBuilder;
 
             public TwoLociTestsDonorBuilder(int donorId, Locus locus1, Locus locus2)
             {
                 this.locus1 = locus1;
                 this.locus2 = locus2;
-                DonorResultBuilder = new DonorInfoWithExpandedHlaBuilder(donorId)
+                DonorResultBuilder = new DonorInfoWithTestHlaBuilder(donorId)
                     .WithDonorType(DonorType.Cord);
             }
 
@@ -259,8 +259,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 DonorResultBuilder = DonorResultBuilder
                     .WithHlaAtLocus(
                         locus1,
-                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
-                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
+                        new TestHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
+                        new TestHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
 
                 return this;
             }
@@ -273,8 +273,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 DonorResultBuilder = DonorResultBuilder
                     .WithHlaAtLocus(
                         locus2,
-                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
-                        new ExpandedHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
+                        new TestHlaBuilder().WithPGroups(pGroupAtPosition1).Build(),
+                        new TestHlaBuilder().WithPGroups(pGroupAtPosition2).Build());
 
                 return this;
             }
@@ -282,10 +282,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             public DonorInfoWithExpandedHla Build()
             {
                 return DonorResultBuilder
-                    .WithDefaultRequiredHla(new ExpandedHla
+                    .WithDefaultRequiredHla(new TestHla
                     {
                         OriginalName = "hla-name",
-                        PGroups = matchingPGroups
+                        MatchingPGroups = matchingPGroups
                     })
                     .Build();
             }
