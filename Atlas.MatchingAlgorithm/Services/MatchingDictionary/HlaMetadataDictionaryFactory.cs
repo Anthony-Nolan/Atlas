@@ -168,7 +168,8 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
                 hlaScoringLookupService,
                 hlaLookupResultsService,
                 dpb1TceGroupLookupService,
-                wmdaHlaVersionProvider);
+                wmdaHlaVersionProvider,
+                matchingLookupRepository);
         }
 
         private IHlaMetadataCacheControl BuildUncachedDictionaryCacheControl(HlaMetadataConfiguration config)

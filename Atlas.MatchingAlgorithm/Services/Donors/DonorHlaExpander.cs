@@ -13,18 +13,20 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 {
     public interface IDonorHlaExpander
     {
-        Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
-            IEnumerable<DonorInfo> donorInfos,
-            string failureEventName,
-            string hlaDatabaseVersion);
+        Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos, string failureEventName);
     }
 
     public class DonorHlaExpander : DonorBatchProcessor<DonorInfo, DonorInfoWithExpandedHla>, IDonorHlaExpander
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
+        /// <param name="hlaMetadataDictionary">
+        /// Calling code is responsible for providing an appropriately versioned library.
+        /// In practice this is achieved by using the <see cref="DonorHlaExpanderFactory"/>
+        /// </param>
+        /// <param name="logger">an Atlas ILogger</param>
         public DonorHlaExpander(
-            IHlaMetadataDictionary hlaMetadataDictionary, //QQ this becomes a factory, which is given the version string below. //QQ name "new" for clarity.
+            IHlaMetadataDictionary hlaMetadataDictionary,
             ILogger logger)
             : base(logger)
         {
@@ -33,8 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
         public async Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
             IEnumerable<DonorInfo> donorInfos,
-            string failureEventName,
-            string hlaDatabaseVersion)
+            string failureEventName)
         {
             return await ProcessBatchAsyncWithAnticipatedExceptions<MatchingDictionaryException>(
                 donorInfos,
