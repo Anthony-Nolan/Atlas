@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(0)
                 .WithMismatchCountAtLoci(new List<Locus> { Locus.A, Locus.B, Locus.Drb1 }, 0)
-                .WithSearchHla(new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
+                .WithSearchHla(new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
                 .WithLociExcludedFromScoringAggregates(new List<LocusType>())
                 .Build();
         }

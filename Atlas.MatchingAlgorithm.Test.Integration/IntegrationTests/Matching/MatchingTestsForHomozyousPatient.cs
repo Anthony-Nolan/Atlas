@@ -145,8 +145,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void SetSourceHlaPhenotypes()
         {
-            originalHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new TestHla.HeterozygousSet1(), patientTestCategory);
-            var mismatchedHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new TestHla.HeterozygousSet2(), patientTestCategory);
+            originalHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new SampleTestHlas.HeterozygousSet1(), patientTestCategory);
+            var mismatchedHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new SampleTestHlas.HeterozygousSet2(), patientTestCategory);
 
             originalHlaAtLocusUnderTest = originalHlaPhenotype.DataAtLocus(LocusUnderTest);
             mismatchedHlaAtLocusUnderTest = mismatchedHlaPhenotype.DataAtLocus(LocusUnderTest);
