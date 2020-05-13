@@ -4,7 +4,7 @@ using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.Exceptions
 {
-    public class SearchHttpException : NovaHttpException
+    public class SearchHttpException : AtlasHttpException
     {
         public SearchHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)

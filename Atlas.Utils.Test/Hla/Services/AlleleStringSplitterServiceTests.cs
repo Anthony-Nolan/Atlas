@@ -40,7 +40,7 @@ namespace Atlas.Utils.Test.Hla.Services
         [TestCase("NOT-VALID-HLA")]
         public void GetAlleleNamesFromAlleleString_WhenHlaNameIsNotAlleleString_RaiseError(string hlaName)
         {
-            Assert.Throws<NovaHttpException>(() => splitterService.GetAlleleNamesFromAlleleString(hlaName));
+            Assert.Throws<AtlasHttpException>(() => splitterService.GetAlleleNamesFromAlleleString(hlaName));
         }
     }
 }

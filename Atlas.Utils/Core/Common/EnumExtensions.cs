@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -16,14 +15,6 @@ namespace Atlas.Utils.Core.Common
                 .GetMember(enumValue.ToString())
                 .First()
                 .GetCustomAttribute<TAttribute>();
-        }
-
-        public static string GetDescription(this IComparable enumValue)
-        {
-            var descriptionAttribute = enumValue.GetAttribute<DescriptionAttribute>();
-            return descriptionAttribute != null
-                ? descriptionAttribute.Description
-                : enumValue.ToString();
         }
 
         public static string GetEnumMemberValue(this IComparable enumValue)

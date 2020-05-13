@@ -4,13 +4,13 @@ using Atlas.Utils.Core.Common;
 
 namespace Atlas.Utils.Core.Http.Exceptions
 {
-    public partial class NovaValidationException : NovaHttpException
+    public partial class AtlasValidationException : AtlasHttpException
     {
-        public NovaValidationException() : this(new List<string>(), new List<FieldErrorModel>())
+        public AtlasValidationException() : this(new List<string>(), new List<FieldErrorModel>())
         {
         }
 
-        public NovaValidationException(IList<string> globalErrors, IList<FieldErrorModel> fieldErrors)
+        public AtlasValidationException(IList<string> globalErrors, IList<FieldErrorModel> fieldErrors)
             : base(HttpStatusCode.BadRequest, "One or more validation errors have occured.")
         {
             GlobalErrors = globalErrors.AssertArgumentNotNull(nameof(globalErrors));
@@ -20,7 +20,7 @@ namespace Atlas.Utils.Core.Http.Exceptions
         public IList<string> GlobalErrors { get; }
         public IList<FieldErrorModel> FieldErrors { get; }
 
-        public NovaValidationException WithGlobalErrors(params string[] errors)
+        public AtlasValidationException WithGlobalErrors(params string[] errors)
         {
             foreach (var error in errors.AssertArgumentNotNull(nameof(errors)))
             {
@@ -29,7 +29,7 @@ namespace Atlas.Utils.Core.Http.Exceptions
             return this;
         }
 
-        public NovaValidationException WithFieldErrors(string fieldName, params string[] errors)
+        public AtlasValidationException WithFieldErrors(string fieldName, params string[] errors)
         {
             FieldErrors.Add(new FieldErrorModel { Key = fieldName, Errors = errors });
             return this;
