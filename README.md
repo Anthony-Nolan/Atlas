@@ -509,6 +509,14 @@ Once terraform has created ATLAS resources for the first time, certain actions m
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
     - By default, `db_datareader` and `db_datawriter` will be necessary for a given component to access its corresponding database(s)  
     - Note that the user for the matching component to access the *transient matching databases* (a and b) will need to be granted `db_owner` permission, as a `truncate table` command is used in the full data refresh, which requires elevated permissions
+    
+    
+    CREATE USER [USERNAME] WITH PASSWORD = '[PASSWORD]'
+    ALTER ROLE db_datareader ADD MEMBER [USERNAME]
+    ALTER ROLE db_datawriter ADD MEMBER [USERNAME]
+    -- uncomment this line for matching databases, where owner role is required
+    -- ALTER ROLE db_owner ADD MEMBER [USERNAME]
+    
   - Active Directory (Optional)
         - If you would like to be able to access the database server using Active Directory authentication, this should be manually configured
   - IP Whitelisting (Optional)
