@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
@@ -39,14 +40,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private readonly IScoreResultAggregator scoreResultAggregator;
 
         public DonorScoringService(
-            IHlaMetadataDictionary hlaMetadataDictionary,
+            IHlaMetadataDictionaryFactory factory,
+            IActiveHlaVersionAccessor hlaVersionAccessor,
             IGradingService gradingService,
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator)
         {
-            this.hlaMetadataDictionary = hlaMetadataDictionary;
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
             this.gradingService = gradingService;
             this.confidenceService = confidenceService;
             this.rankingService = rankingService;

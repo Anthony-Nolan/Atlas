@@ -60,10 +60,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(defaultMatchGradeResults);
             confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
 
-            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(scoringLookupService).Build("");
+            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringLookupService);
 
             donorScoringService = new DonorScoringService(
-                hlaMetadataDictionary,
+                hlaMetadataDictionaryBuilder,
+                hlaVersionProvider,
                 gradingService,
                 confidenceService,
                 rankingService,

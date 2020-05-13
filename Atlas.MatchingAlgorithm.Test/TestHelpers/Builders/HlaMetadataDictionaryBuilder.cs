@@ -6,7 +6,7 @@ using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
-    internal class HlaMetadataDictionaryBuilder
+    internal class HlaMetadataDictionaryBuilder : IHlaMetadataDictionaryFactory
     {
         IRecreateHlaMetadataService recreate;
         IAlleleNamesLookupService name;
@@ -16,6 +16,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         IHlaLookupResultsService all;
         IDpb1TceGroupLookupService dpb1;
         IWmdaHlaVersionProvider wmdaVersion;
+        private IHlaMetadataDictionary cannedResponse = null;
 
         public HlaMetadataDictionaryBuilder()
         {
@@ -32,6 +33,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             all = Substitute.For<IHlaLookupResultsService>();
             dpb1 = Substitute.For<IDpb1TceGroupLookupService>();
             wmdaVersion = Substitute.For<IWmdaHlaVersionProvider>();
+        }
+
+        public HlaMetadataDictionaryBuilder Returning(IHlaMetadataDictionary cannedResponse)
+        {
+            this.cannedResponse = cannedResponse;
+            return this;
         }
 
         public HlaMetadataDictionaryBuilder Using<T>(T dependency)
@@ -69,10 +76,20 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
-        public IHlaMetadataDictionary Build(string activeVersion)
+        public IHlaMetadataDictionary BuildDictionary(string activeVersion)
         {
+            return BuildDictionary(new HlaMetadataConfiguration { ActiveWmdaVersion = activeVersion});
+        }
+
+        public IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config)
+        {
+            if (cannedResponse != null)
+            {
+                return cannedResponse;
+            }
+
             return new MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary(
-                new HlaMetadataConfiguration { ActiveWmdaVersion = activeVersion},
+                config,
                 recreate,
                 name,
                 matching,
@@ -82,6 +99,16 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 dpb1,
                 wmdaVersion
             );
+        }
+
+        public IHlaMetadataCacheControl BuildCacheControl(string version)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config)
+        {
+            throw new NotImplementedException();
         }
     }
 }
