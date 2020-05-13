@@ -13,12 +13,7 @@ namespace Atlas.MatchPrediction.Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
-            {
-                relationship.DeleteBehavior = DeleteBehavior.Restrict;
-            }
-
-            modelBuilder.Entity<HaplotypeFrequencySets>()
+            modelBuilder.Entity<HaplotypeFrequencySet>()
                 .HasIndex(d => new { d.Ethnicity, d.Registry })
                 .HasName("IX_RegistryAndEthnicity")
                 .IsUnique()
@@ -27,7 +22,7 @@ namespace Atlas.MatchPrediction.Data.Context
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<HaplotypeFrequencySets> HaplotypeFrequencySets { get; set; }
-        public DbSet<HaplotypeInfo> HaplotypeInfo { get; set; }
+        public DbSet<HaplotypeFrequencySet> HaplotypeFrequencySets { get; set; }
+        public DbSet<HaplotypeFrequency> HaplotypeFrequencies { get; set; }
     }
 }

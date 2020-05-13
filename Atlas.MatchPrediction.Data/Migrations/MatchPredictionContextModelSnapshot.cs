@@ -19,31 +19,9 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeFrequencySets", b =>
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeFrequency", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool>("Active");
-
-                    b.Property<string>("Ethnicity");
-
-                    b.Property<string>("Registry");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Ethnicity", "Registry")
-                        .IsUnique()
-                        .HasName("IX_RegistryAndEthnicity")
-                        .HasFilter("[Active] = 'True'");
-
-                    b.ToTable("HaplotypeFrequencySets");
-                });
-
-            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeInfo", b =>
-                {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -70,15 +48,36 @@ namespace Atlas.MatchPrediction.Data.Migrations
 
                     b.HasIndex("Set_Id");
 
-                    b.ToTable("HaplotypeInfo");
+                    b.ToTable("HaplotypeFrequencies");
                 });
 
-            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeInfo", b =>
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeFrequencySet", b =>
                 {
-                    b.HasOne("Atlas.MatchPrediction.Data.Models.HaplotypeFrequencySets", "SetId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("Active");
+
+                    b.Property<string>("Ethnicity");
+
+                    b.Property<string>("Registry");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ethnicity", "Registry")
+                        .IsUnique()
+                        .HasName("IX_RegistryAndEthnicity")
+                        .HasFilter("[Active] = 'True'");
+
+                    b.ToTable("HaplotypeFrequencySets");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeFrequency", b =>
+                {
+                    b.HasOne("Atlas.MatchPrediction.Data.Models.HaplotypeFrequencySet", "SetId")
                         .WithMany()
-                        .HasForeignKey("Set_Id")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("Set_Id");
                 });
 #pragma warning restore 612, 618
         }

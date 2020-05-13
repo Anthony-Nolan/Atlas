@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Atlas.MatchPrediction.Data.Models
 {
-    public class HaplotypeInfo
+    public class HaplotypeFrequency
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         [ForeignKey("Set_Id")]
-        public HaplotypeFrequencySets SetId { get; set; }
+        public HaplotypeFrequencySet SetId { get; set; }
         public decimal Frequency { get; set; }
         [Required]
         public string A { get; set; }
