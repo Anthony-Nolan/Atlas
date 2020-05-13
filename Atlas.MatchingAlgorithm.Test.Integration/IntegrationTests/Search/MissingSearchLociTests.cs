@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 searchRequestContext,
                 hlaVersionProvider);
 
-            searchHla = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
+            searchHla = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
         }
 
         #region TenOutOfTen

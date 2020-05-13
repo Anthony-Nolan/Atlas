@@ -990,7 +990,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             private static PhenotypeInfo<string> BuildPhenotype(string hlaForPositionUnderTest)
             {
-                var defaultPhenotype = new TestHla.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
+                var defaultPhenotype = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
                 return defaultPhenotype.Map((l, p, hla) => l == LocusUnderTest && p == PositionUnderTest ? hlaForPositionUnderTest : hla);
             }
         }
