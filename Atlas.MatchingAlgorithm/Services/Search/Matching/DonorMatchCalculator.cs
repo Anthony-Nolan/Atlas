@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
+using PGroup = System.Collections.Generic.List<string>;
 
 namespace Atlas.MatchingAlgorithm.Services.Matching
 {
@@ -15,14 +16,14 @@ namespace Atlas.MatchingAlgorithm.Services.Matching
     {
         public LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<IEnumerable<string>, IEnumerable<string>> pGroups)
         {
-            var hla1 =  pGroups.Item1 == null ? null : new ExpandedHla{PGroups = pGroups.Item1 };
-            var hla2 =  pGroups.Item2 == null ? null : new ExpandedHla{PGroups = pGroups.Item2 };
-            return CalculateMatchDetailsForDonorHla(locusMatchCriteria, new Tuple<ExpandedHla, ExpandedHla>(hla1, hla2));
+            var hla1 =  pGroups.Item1?.ToList();
+            var hla2 =  pGroups.Item2?.ToList();
+            return CalculateMatchDetailsForDonorHla(locusMatchCriteria, new Tuple<PGroup, PGroup>(hla1, hla2));
         }
 
         private static LocusMatchDetails CalculateMatchDetailsForDonorHla(
             AlleleLevelLocusMatchCriteria locusMatchCriteria,
-            Tuple<ExpandedHla, ExpandedHla> expandedHla
+            Tuple<PGroup, PGroup> expandedHla
         )
         {
             if (expandedHla.Item1 == null ^ expandedHla.Item2 == null)
@@ -36,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Services.Matching
             };
         }
 
-        private static int CalculateMatchCount(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
+        private static int CalculateMatchCount(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<PGroup, PGroup> expandedHla)
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;
@@ -48,8 +49,8 @@ namespace Atlas.MatchingAlgorithm.Services.Matching
                 // We have typed search and donor hla to compare
                 matchCount = 0;
 
-                var atLeastOneMatch = locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla1.PGroups.Union(hla2.PGroups).Contains(pg)) ||
-                                      locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla1.PGroups.Union(hla2.PGroups).Contains(pg));
+                var atLeastOneMatch = locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla1.Union(hla2).Contains(pg)) ||
+                                          locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla1.Union(hla2).Contains(pg));
 
                 if (atLeastOneMatch)
                 {
@@ -66,20 +67,20 @@ namespace Atlas.MatchingAlgorithm.Services.Matching
             return matchCount;
         }
 
-        private static bool DirectMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
+        private static bool DirectMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<PGroup, PGroup> expandedHla)
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;
-            return locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla1.PGroups.Contains(pg)) &&
-                   locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla2.PGroups.Contains(pg));
+            return locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla1.Contains(pg)) &&
+                   locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla2.Contains(pg));
         }
 
-        private static bool CrossMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<ExpandedHla, ExpandedHla> expandedHla)
+        private static bool CrossMatch(AlleleLevelLocusMatchCriteria locusMatchCriteria, Tuple<PGroup, PGroup> expandedHla)
         {
             var hla1 = expandedHla.Item1;
             var hla2 = expandedHla.Item2;
-            return locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla2.PGroups.Contains(pg)) &&
-                   locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla1.PGroups.Contains(pg));
+            return locusMatchCriteria.PGroupsToMatchInPositionOne.Any(pg => hla2.Contains(pg)) &&
+                   locusMatchCriteria.PGroupsToMatchInPositionTwo.Any(pg => hla1.Contains(pg));
         }
     }
 }

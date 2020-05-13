@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models;
+﻿using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
@@ -21,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         /// the specified number of mismatches at the locus under test.
         /// </summary>
         public AlleleLevelMatchCriteria GetAlleleLevelMatchCriteria(
-            PhenotypeInfo<ExpandedHla> phenotype,
+            PhenotypeInfo<IHlaMatchingLookupResult> phenotype,
             int mismatchCount = 0)
         {
             var builder = GetDefaultBuilder(phenotype);
@@ -38,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return builder.Build();
         }
 
-        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<ExpandedHla> phenotype)
+        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<IHlaMatchingLookupResult> phenotype)
         {
             const int zeroMismatchCount = 0;
             return new AlleleLevelMatchCriteriaBuilder()
@@ -52,13 +53,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         private static AlleleLevelLocusMatchCriteria GetLocusMatchCriteria(
             Locus locus,
             int mismatchCount,
-            PhenotypeInfo<ExpandedHla> phenotype)
+            PhenotypeInfo<IHlaMatchingLookupResult> phenotype)
         {
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = phenotype.DataAtPosition(locus, TypePosition.One).PGroups,
-                PGroupsToMatchInPositionTwo = phenotype.DataAtPosition(locus, TypePosition.Two).PGroups
+                PGroupsToMatchInPositionOne = phenotype.DataAtPosition(locus, TypePosition.One).MatchingPGroups,
+                PGroupsToMatchInPositionTwo = phenotype.DataAtPosition(locus, TypePosition.Two).MatchingPGroups
             };
         }
     }

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -14,6 +13,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {
