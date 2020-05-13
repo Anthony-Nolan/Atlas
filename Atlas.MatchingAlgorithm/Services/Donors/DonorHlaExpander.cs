@@ -14,6 +14,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     public interface IDonorHlaExpander
     {
         Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(IEnumerable<DonorInfo> donorInfos, string failureEventName);
+        Task<DonorInfoWithExpandedHla> ExpandDonorHlaAsync(DonorInfo donorInfo);
     }
 
     public class DonorHlaExpander : DonorBatchProcessor<DonorInfo, DonorInfoWithExpandedHla>, IDonorHlaExpander

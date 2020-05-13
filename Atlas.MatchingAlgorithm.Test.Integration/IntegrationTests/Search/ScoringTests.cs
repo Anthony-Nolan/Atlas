@@ -13,6 +13,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 // ReSharper disable InconsistentNaming
 
@@ -268,11 +269,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
         private DonorInfoWithExpandedHla BuildTestDonor()
         {
-            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
 
-            var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(defaultHlaSet.SixLocus_SingleExpressingAlleles, null)
-                .Result;
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = defaultHlaSet.SixLocus_SingleExpressingAlleles }).Result.MatchingHla;
 
             return new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(matchingHlaPhenotype)
