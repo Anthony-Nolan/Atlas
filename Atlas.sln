@@ -72,11 +72,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Data", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Functions", "Atlas.DonorImport.Functions\Atlas.DonorImport.Functions.csproj", "{60180E66-D312-4548-8654-F670DA3315D5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MultipleAlleleCodeLookup", "MultipleAlleleCodeLookup", "{DCB9E81B-16A1-4D0D-BB02-42A138B4D078}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MultipleAlleleCodeDictionary", "MultipleAlleleCodeDictionary", "{DCB9E81B-16A1-4D0D-BB02-42A138B4D078}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MultipleAlleleCodeLookup", "Atlas.MultipleAlleleCodeLookup\Atlas.MultipleAlleleCodeLookup.csproj", "{6716E55C-48DF-4425-A603-FA36BC362591}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MultipleAlleleCodeDictionary", "Atlas.MultipleAlleleCodeLookup\Atlas.MultipleAlleleCodeDictionary.csproj", "{6716E55C-48DF-4425-A603-FA36BC362591}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MultipleAlleleCodeLookup.Test", "Atlas.MultipleAlleleCodeLookup.Test\Atlas.MultipleAlleleCodeLookup.Test.csproj", "{DE77A9A5-BCD3-478A-B319-1997E1D217AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MultipleAlleleCodeDictionary.Test", "Atlas.MultipleAlleleCodeLookup.Test\Atlas.MultipleAlleleCodeDictionary.Test.csproj", "{DE77A9A5-BCD3-478A-B319-1997E1D217AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
