@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -73,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<string> originalHlaPhenotype;
         private Tuple<string, string> originalHlaAtLocusUnderTest;
         private Tuple<string, string> mismatchedHlaAtLocusUnderTest;
-        private PhenotypeInfo<ExpandedHla> patientMatchingHlaPhenotype;
+        private PhenotypeInfo<IHlaMatchingLookupResult> patientMatchingHlaPhenotype;
 
         private IExpandHlaPhenotypeService expandHlaPhenotypeService;
         private IDonorMatchingService donorMatchingService;
@@ -296,7 +297,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             return donors;
         }
 
-        private PhenotypeInfo<ExpandedHla> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
+        private PhenotypeInfo<IHlaMatchingLookupResult> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
         {
             var donorHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestTypingInfo);
             return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlaPhenotype).Result;
