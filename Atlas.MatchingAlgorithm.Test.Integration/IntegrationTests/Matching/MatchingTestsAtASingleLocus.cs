@@ -56,17 +56,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var updateRepo = repositoryFactory.GetDonorUpdateRepository();
 
-            var defaultRequiredHla = new ExpandedHlaBuilder()
+            var defaultRequiredHla = new TestHlaBuilder()
                 .WithPGroups(MatchingPGroup)
                 .Build();
 
-            donorInfoWithFullHomozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithFullHomozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
                         .Build()
                 )
@@ -74,13 +74,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorInfoWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup")
                         .Build()
                 )
@@ -88,13 +88,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorInfoWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtPositionTwo)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtPositionOne)
                         .Build()
                 )
@@ -102,13 +102,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build()
                 )
@@ -116,13 +116,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build()
                 )
@@ -130,13 +130,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorType(DefaultDonorType)
                 .Build();
 
-            donorInfoWithNoMatchAtLocus = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            donorInfoWithNoMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHlaAtLocus(
                     locus,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build()
                 )

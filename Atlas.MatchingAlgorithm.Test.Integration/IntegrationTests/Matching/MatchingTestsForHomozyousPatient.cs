@@ -162,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
             var patientHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestConditions);
 
-            patientMatchingHlaPhenotype = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(patientHlaPhenotype).Result;
+            patientMatchingHlaPhenotype = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(patientHlaPhenotype, "").Result;
         }
 
         private void AddDonorsToRepository()
@@ -182,7 +182,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IEnumerable<DonorInfoWithExpandedHla> BuildTwoOutOfTwoMatchCountDonors()
         {
-            var donorWithOriginalHla1At1AndOriginalNullAt2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndOriginalNullAt2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -190,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                         OriginalNullAllele)))
                 .Build();
 
-            var donorWithOriginalHla1At1AndDifferentNullAt2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndDifferentNullAt2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -198,7 +198,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                         DifferentNullAllele)))
                 .Build();
 
-            var donorHomozygousForOriginalHla1 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorHomozygousForOriginalHla1 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByTyping,
@@ -219,14 +219,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IEnumerable<DonorInfoWithExpandedHla> BuildOneOutOfTwoMatchCountDonors()
         {
-            var donorWithOriginalHla1At1AndOriginalHla2At2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndOriginalHla2At2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
                         originalHlaAtLocusUnderTest)))
                 .Build();
 
-            var donorWithOriginalHla1At1AndMismatchedHla2At2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithOriginalHla1At1AndMismatchedHla2At2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
@@ -246,14 +246,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private IEnumerable<DonorInfoWithExpandedHla> BuildZeroOutOfTwoMatchCountDonors()
         {
-            var donorWithMismatchedHla1At1AndOriginalHla2At2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndOriginalHla2At2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
                         new Tuple<string, string>(mismatchedHlaAtLocusUnderTest.Item1, originalHlaAtLocusUnderTest.Item2))))
                 .Build();
 
-            var donorWithMismatchedHla1At1AndOriginalNullAt2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndOriginalNullAt2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -261,7 +261,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                         OriginalNullAllele)))
                 .Build();
 
-            var donorWithMismatchedHla1At1AndDifferentNullAt2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndDifferentNullAt2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByExpression,
@@ -269,14 +269,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                         DifferentNullAllele)))
                 .Build();
 
-            var donorHomozygousForMismatchedHla1 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorHomozygousForMismatchedHla1 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HomozygousByTyping,
                         mismatchedHlaAtLocusUnderTest)))
                 .Build();
 
-            var donorWithMismatchedHla1At1AndMismatchedHla2At2 = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donorWithMismatchedHla1At1AndMismatchedHla2At2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
@@ -300,7 +300,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<IHlaMatchingLookupResult> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
         {
             var donorHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestTypingInfo);
-            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlaPhenotype).Result;
+            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlaPhenotype, null).Result;
         }
 
         private static PhenotypeInfo<string> GetHlaPhenotype(
