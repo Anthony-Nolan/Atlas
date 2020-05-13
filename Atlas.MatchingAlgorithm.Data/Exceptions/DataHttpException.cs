@@ -7,7 +7,7 @@ namespace Atlas.MatchingAlgorithm.Data.Exceptions
     /// <summary>
     /// Exception for issues which occur in the Atlas.MatchingAlgorithm.Data.Framework project.
     /// </summary>
-    public class DataHttpException : NovaHttpException
+    public class DataHttpException : AtlasHttpException
     {
         public DataHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)
