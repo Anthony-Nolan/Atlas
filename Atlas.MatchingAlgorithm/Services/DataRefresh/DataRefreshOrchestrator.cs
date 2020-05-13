@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.Utils.Core.ApplicationInsights;
 
@@ -25,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         private readonly ILogger logger;
         private readonly IOptions<DataRefreshSettings> settingsOptions;
-        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
+        private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
         private readonly IDataRefreshService dataRefreshService;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAzureFunctionManager azureFunctionManager;
@@ -37,7 +38,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         public DataRefreshOrchestrator(
             ILogger logger,
             IOptions<DataRefreshSettings> settingsOptions,
-            IHlaMetadataDictionary hlaMetadataDictionary,
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IActiveHlaVersionAccessor activeHlaVersionAccessor,
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshService dataRefreshService,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
@@ -48,7 +50,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             this.logger = logger;
             this.settingsOptions = settingsOptions;
-            this.hlaMetadataDictionary = hlaMetadataDictionary;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshService = dataRefreshService;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
@@ -56,6 +57,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseManager = azureDatabaseManager;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
+
+            this.activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh)
@@ -66,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return;
             }
 
-            var newWmdaVersionAvailable = hlaMetadataDictionary.IsRefreshNecessary();
+            var newWmdaVersionAvailable = activeVersionHlaMetadataDictionary.IsRefreshNecessary();
             if (!newWmdaVersionAvailable)
             {
                 var noNewData = "No new versions of the WMDA HLA nomenclature have been published.";

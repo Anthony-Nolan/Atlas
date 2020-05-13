@@ -1,5 +1,6 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
@@ -17,9 +18,11 @@ namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public PermissiveMismatchCalculator(IHlaMetadataDictionary hlaMetadataDictionary)
+        public PermissiveMismatchCalculator(
+            IHlaMetadataDictionaryFactory factory,
+            IActiveHlaVersionAccessor hlaVersionAccessor)
         {
-            this.hlaMetadataDictionary = hlaMetadataDictionary;
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         public bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName)

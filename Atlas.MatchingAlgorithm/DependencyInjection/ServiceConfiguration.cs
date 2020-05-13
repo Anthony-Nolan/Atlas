@@ -160,7 +160,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
 
-            services.AddScoped<IHlaMetadataDictionary, Services.MatchingDictionary.HlaMetadataDictionary>();
+            services.AddScoped<IHlaMetadataDictionaryFactory, Services.MatchingDictionary.HlaMetadataDictionaryFactory>(); //qq moving
 
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
             services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>(); //QQ These need to be in the right places, if they still exist

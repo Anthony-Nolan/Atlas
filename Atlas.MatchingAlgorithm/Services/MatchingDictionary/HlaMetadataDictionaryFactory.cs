@@ -29,6 +29,10 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         /// <inheritdoc cref="BuildDictionary"/>
         IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config);
+
+        //QQ Temp usage.
+        IHlaMetadataDictionary BuildDictionary(string version);
+        IHlaMetadataCacheControl BuildCacheControl(string version);
     }
 
     /// <summary>
@@ -121,6 +125,16 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         {
             public IHlaMetadataDictionary Dictionary { get; set; }
             public IHlaMetadataCacheControl CacheControl { get; set; }
+        }
+
+        public IHlaMetadataDictionary BuildDictionary(string version)
+        {
+            return BuildDictionary(new HlaMetadataConfiguration { ActiveWmdaVersion = version, DbConnectionString = "dbQQ", WmdaSourceUrl = "urlQQ" });
+        }
+
+        public IHlaMetadataCacheControl BuildCacheControl(string version)
+        {
+            return BuildCacheControl(new HlaMetadataConfiguration { ActiveWmdaVersion = version, DbConnectionString = "dbQQ", WmdaSourceUrl = "urlQQ" });
         }
 
         public IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config)

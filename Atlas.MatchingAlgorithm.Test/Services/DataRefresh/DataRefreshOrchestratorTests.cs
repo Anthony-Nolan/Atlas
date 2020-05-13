@@ -45,8 +45,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
             wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
+            var activeHlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
+            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(existingHlaVersion);
 
-            var hlaMetadataDictionary = new HlaMetadataDictionaryBuilder().Using(wmdaHlaVersionProvider).Build(existingHlaVersion);
+            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaVersionProvider);
 
             logger = Substitute.For<ILogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
@@ -59,7 +61,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshOrchestrator = new DataRefreshOrchestrator(
                 logger,
                 settingsOptions,
-                hlaMetadataDictionary,
+                hlaMetadataDictionaryBuilder,
+                activeHlaVersionProvider,
                 activeDatabaseProvider,
                 dataRefreshService,
                 dataRefreshHistoryRepository,
