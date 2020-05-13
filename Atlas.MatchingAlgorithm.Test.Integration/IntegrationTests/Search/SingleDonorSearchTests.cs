@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {
@@ -73,7 +74,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlas }).Result.MatchingHla;
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
@@ -82,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
                 HlaNames = donorHlas,
-                MatchingHla = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlas, null).Result
+                MatchingHla = matchingHlaPhenotype
             };
             donorRepository.InsertBatchOfDonorsWithExpandedHla(new []{donor}).Wait();
         }

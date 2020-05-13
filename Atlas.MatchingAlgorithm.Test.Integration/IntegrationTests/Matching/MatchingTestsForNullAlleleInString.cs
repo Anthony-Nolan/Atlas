@@ -4,7 +4,6 @@ using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
@@ -14,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -45,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private PhenotypeInfo<string> originalHlaPhenotype;
         private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
-        private IExpandHlaPhenotypeService expandHlaPhenotypeService;
+        private IDonorHlaExpander donorHlaExpander;
         private IDonorUpdateRepository donorUpdateRepository;
         private IDonorMatchingService donorMatchingService;
 
@@ -60,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             originalHlaPhenotype = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
             criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(LocusUnderTest, MatchingDonorType);
-            expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
+            donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
 
@@ -463,7 +464,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.One, hla1);
             newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.Two, hla2);
 
-            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(newPhenotype, null).Result;
+            var expandedDonor = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = newPhenotype }).Result;
+
+            return expandedDonor.MatchingHla;
         }
 
         private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<IHlaMatchingLookupResult> donorPhenotype)
