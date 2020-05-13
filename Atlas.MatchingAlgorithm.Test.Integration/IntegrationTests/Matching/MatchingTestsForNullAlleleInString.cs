@@ -463,12 +463,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.One, hla1);
             newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.Two, hla2);
 
-            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(newPhenotype).Result;
+            return expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(newPhenotype, null).Result;
         }
 
         private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<IHlaMatchingLookupResult> donorPhenotype)
         {
-            var donor = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(donorPhenotype)
                 .Build();
 

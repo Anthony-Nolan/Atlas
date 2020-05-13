@@ -271,10 +271,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var expandHlaPhenotypeService = DependencyInjection.DependencyInjection.Provider.GetService<IExpandHlaPhenotypeService>();
 
             var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(defaultHlaSet.SixLocus_SingleExpressingAlleles)
+                .GetPhenotypeOfExpandedHla(defaultHlaSet.SixLocus_SingleExpressingAlleles, null)
                 .Result;
 
-            return new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            return new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(matchingHlaPhenotype)
                 .Build();
         }

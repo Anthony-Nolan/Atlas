@@ -46,22 +46,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                     Position2 = "03:41"
                 }
             },
-            MatchingHla = new PhenotypeInfo<ExpandedHla>
+            MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>
             {
                 A =
                 {
-                    Position1 = new ExpandedHla {OriginalName = "01:02", PGroups = new List<string> {"01:01P", "01:02"}},
-                    Position2 = new ExpandedHla {OriginalName = "30:02", PGroups = new List<string> {"01:01P", "30:02P"}},
+                    Position1 = new TestHla {LookupName = "01:02", MatchingPGroups = new List<string> {"01:01P", "01:02"}},
+                    Position2 = new TestHla {LookupName = "30:02", MatchingPGroups = new List<string> {"01:01P", "30:02P"}},
                 },
                 B =
                 {
-                    Position1 = new ExpandedHla {OriginalName = "07:02", PGroups = new List<string> {"07:02P"}},
-                    Position2 = new ExpandedHla {OriginalName = "08:01", PGroups = new List<string> {"08:01P"}},
+                    Position1 = new TestHla {LookupName = "07:02", MatchingPGroups = new List<string> {"07:02P"}},
+                    Position2 = new TestHla {LookupName = "08:01", MatchingPGroups = new List<string> {"08:01P"}},
                 },
                 Drb1 =
                 {
-                    Position1 = new ExpandedHla {OriginalName = "01:11", PGroups = new List<string> {"01:11P"}},
-                    Position2 = new ExpandedHla {OriginalName = "03:41", PGroups = new List<string> {"03:41P"}},
+                    Position1 = new TestHla {LookupName = "01:11", MatchingPGroups = new List<string> {"01:11P"}},
+                    Position2 = new TestHla {LookupName = "03:41", MatchingPGroups = new List<string> {"03:41P"}},
                 }
             }
         };
@@ -87,22 +87,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                     Position2 = "03:XX"
                 }
             },
-            MatchingHla = new PhenotypeInfo<ExpandedHla>
+            MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>
             {
                 A =
                 {
-                    Position1 = new ExpandedHla {OriginalName = "*01:XX", PGroups = new List<string> {"01:01P", "01:02"}},
-                    Position2 = new ExpandedHla {OriginalName = "30:XX", PGroups = new List<string> {"01:01P", "30:02P"}},
+                    Position1 = new TestHla {LookupName = "*01:XX", MatchingPGroups = new List<string> {"01:01P", "01:02"}},
+                    Position2 = new TestHla {LookupName = "30:XX", MatchingPGroups = new List<string> {"01:01P", "30:02P"}},
                 },
                 B =
                 {
-                    Position1 = new ExpandedHla {OriginalName = "*07:XX", PGroups = new List<string> {"07:02P"}},
-                    Position2 = new ExpandedHla {OriginalName = "08:XX", PGroups = new List<string> {"08:01P"}},
+                    Position1 = new TestHla {LookupName = "*07:XX", MatchingPGroups = new List<string> {"07:02P"}},
+                    Position2 = new TestHla {LookupName = "08:XX", MatchingPGroups = new List<string> {"08:01P"}},
                 },
                 Drb1 =
                 {
-                    Position1 = new ExpandedHla {OriginalName = "*01:XX", PGroups = new List<string> {"01:11P"}},
-                    Position2 = new ExpandedHla {OriginalName = "03:XX", PGroups = new List<string> {"03:41P"}},
+                    Position1 = new TestHla {LookupName = "*01:XX", MatchingPGroups = new List<string> {"01:11P"}},
+                    Position2 = new TestHla {LookupName = "03:XX", MatchingPGroups = new List<string> {"03:41P"}},
                 }
             }
         };
@@ -132,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public void InsertBatchOfDonorsWithExpandedHla_ForNewDonor_ForDonorWithUntypedRequiredLocus_ThrowsException()
         {
-            var donor = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId()).Build();
+            var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId()).Build();
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }));
@@ -243,9 +243,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorBatch_WithUntypedRequiredLocus_ThrowsException()
         {
             // arbitrary hla at all loci, as the value of the hla does not matter for this test case
-            var expandedHla = new ExpandedHla { OriginalName = "01:02", PGroups = new List<string> { "01:01P", "01:02" } };
-            var donor = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
-                .WithHla(new PhenotypeInfo<ExpandedHla>(expandedHla))
+            var expandedHla = new TestHla { LookupName = "01:02", MatchingPGroups = new List<string> { "01:01P", "01:02" } };
+            var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                .WithHla(new PhenotypeInfo<IHlaMatchingLookupResult>(expandedHla))
                 .Build();
             await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
@@ -259,9 +259,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorBatch_WithUntypedOptionalLocus_UpdatesUntypedLocusAsNull()
         {
             // arbitrary hla at all loci, as the value of the hla does not matter for this test case
-            var expandedHla = new ExpandedHla { OriginalName = "01:02", PGroups = new List<string> { "01:01P", "01:02" } };
-            var donor = new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
-                .WithHla(new PhenotypeInfo<ExpandedHla>(expandedHla))
+            var expandedHla = new TestHla { LookupName = "01:02", MatchingPGroups = new List<string> { "01:01P", "01:02" } };
+            var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                .WithHla(new PhenotypeInfo<IHlaMatchingLookupResult>(expandedHla))
                 .Build();
             await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
 
