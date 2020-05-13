@@ -240,7 +240,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         return;
                     }
 
-                    foreach (var pGroup in h.PGroups)
+                    foreach (var pGroup in h.MatchingPGroups)
                     {
                         dt.Rows.Add(0, donor.DonorId, (int)p, pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
