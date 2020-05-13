@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
-        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository;
+        private readonly IHlaMatchingLookupRepository hlaMatchingLookupRepository; //QQ remove. replace with CacheControl (provided by Factory)
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IPGroupRepository pGroupRepository;
 
