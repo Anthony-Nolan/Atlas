@@ -11,6 +11,7 @@ using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
@@ -42,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             },
                 "event-name");
 
-            await expandHlaPhenotypeService.Received().GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>());
+            await expandHlaPhenotypeService.Received().GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>(), null);
         }
 
         [Test]
@@ -70,10 +71,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         {
             const int donorId = 123;
 
-            expandHlaPhenotypeService
+            /*QQexpandHlaPhenotypeService
                 .GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new PhenotypeInfo<ExpandedHla>(new ExpandedHla()));
-
+                .Returns(new PhenotypeInfo<IHlaMatchingLookupResult>(new TestHla()));
+                */
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
                 new DonorInfo
@@ -91,11 +92,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public async Task ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_ReturnsFailedDonor()
         {
             const int donorId = 123;
-
+            
             expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>())
+                .GetPhenotypeOfExpandedHla(Arg.Any<PhenotypeInfo<string>>(), null /*QQ*/)
                 .Throws(new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "error"));
-
+                
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
                 new DonorInfo
@@ -113,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_DoesNotThrowException()
         {
             expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(Arg.Any<Common.Models.PhenotypeInfo<string>>())
+                .GetPhenotypeOfExpandedHla(Arg.Any<Common.Models.PhenotypeInfo<string>>(), null)
                 .Throws(new MatchingDictionaryException(new HlaInfo(Locus.A, "hla"), "error"));
 
             Assert.DoesNotThrowAsync(async () =>
@@ -133,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_UnanticipatedExpansionFailure_ThrowsException()
         {
             expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(Arg.Any<Common.Models.PhenotypeInfo<string>>())
+                .GetPhenotypeOfExpandedHla(Arg.Any<Common.Models.PhenotypeInfo<string>>(), null)
                 .Throws(new Exception("error"));
 
             Assert.ThrowsAsync<Exception>(async () =>

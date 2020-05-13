@@ -82,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 DonorType = DonorType.Adult,
                 DonorId = DonorIdGenerator.NextId(),
                 HlaNames = donorHlas,
-                MatchingHla = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlas).Result
+                MatchingHla = expandHlaPhenotypeService.GetPhenotypeOfExpandedHla(donorHlas, null).Result
             };
             donorRepository.InsertBatchOfDonorsWithExpandedHla(new []{donor}).Wait();
         }
