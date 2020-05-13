@@ -12,7 +12,7 @@ namespace Atlas.Utils.Test.Core.Http.Exceptions
         [Test]
         public void GivenException_WithGlobalErrors_ResultContainsGivenGlobalErrors()
         {
-            var ex = new NovaValidationException().WithGlobalErrors("Error 1", "Error 2");
+            var ex = new AtlasValidationException().WithGlobalErrors("Error 1", "Error 2");
 
             ex.GlobalErrors.Should().Equal("Error 1", "Error 2");
         }
@@ -20,7 +20,7 @@ namespace Atlas.Utils.Test.Core.Http.Exceptions
         [Test]
         public void GivenException_WithFieldErrors_ResultContainsGivenFieldErrors()
         {
-            var ex = new NovaValidationException()
+            var ex = new AtlasValidationException()
                 .WithFieldErrors("Field1", "Foo", "Bar")
                 .WithFieldErrors("Field2", "Baz");
 

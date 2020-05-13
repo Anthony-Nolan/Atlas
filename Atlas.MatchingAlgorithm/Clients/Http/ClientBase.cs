@@ -92,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http
             catch (HttpRequestException e)
             {
                 requestEvent.NoResponseReceived();
-                throw new NovaHttpException(HttpStatusCode.ServiceUnavailable, clientName + " service unavailable.", e);
+                throw new AtlasHttpException(HttpStatusCode.ServiceUnavailable, clientName + " service unavailable.", e);
             }
             finally
             {
