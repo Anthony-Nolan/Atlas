@@ -32,12 +32,12 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         public DonorService(
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory repositoryFactory,
-            IDonorHlaExpander donorHlaExpander,
+            IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender)
         {
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
             donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
-            this.donorHlaExpander = donorHlaExpander;
+            donorHlaExpander = donorHlaExpanderFactory.BuildForActiveHlaNomenclatureVersion();
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
         }
 

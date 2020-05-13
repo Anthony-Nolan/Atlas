@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
@@ -18,6 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, Tuple<string, string> locusTyping);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
+        IEnumerable<string> GetAllPGroups();
         HlaLookupResultCollections GetAllHlaLookupResults();
 
         /// <summary>
@@ -46,6 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly IHlaMatchingLookupRepository matchingRepository;
 
         public HlaMetadataDictionary(
             HlaMetadataConfiguration config,
@@ -56,7 +59,8 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            IHlaMatchingLookupRepository matchingRepository)
         {
             this.config = config;
             this.recreateMetadataService = recreateMetadataService;
@@ -67,6 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.matchingRepository = matchingRepository;
         }
 
         public bool IsRefreshNecessary()
@@ -109,6 +114,11 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
             return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, config.ActiveWmdaVersion);
+        }
+
+        public IEnumerable<string> GetAllPGroups()
+        {
+            return matchingRepository.GetAllPGroups(config.ActiveWmdaVersion);
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()
