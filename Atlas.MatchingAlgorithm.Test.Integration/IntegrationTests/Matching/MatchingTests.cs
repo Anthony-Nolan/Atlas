@@ -64,10 +64,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorInfoWithFullHeterozygousMatchAtLocusA = GetDefaultDonorBuilder()
                 .WithHlaAtLocus(
                     Locus.A,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_BothPositions, "non-matching-pgroup")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionTwo, "non-matching-pgroup")
                         .Build()
                 )
@@ -76,10 +76,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocusA = GetDefaultDonorBuilder()
                 .WithHlaAtLocus(
                     Locus.A,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_BothPositions, "non-matching-pgroup")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build()
                 )
@@ -89,10 +89,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocusA = GetDefaultDonorBuilder()
                 .WithHlaAtLocus(
                     Locus.A,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build()
                 )
@@ -101,19 +101,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorInfoWithNoMatchAtLocusAAndExactMatchAtB = GetDefaultDonorBuilder()
                 .WithHlaAtLocus(
                     Locus.A,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup-3", "non-matching-pgroup-4")
                         .Build()
                 )
                 .WithHlaAtLocus(
                     Locus.B,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionOne)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionTwo)
                         .Build()
                 )
@@ -122,19 +122,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             cordDonorInfoWithNoMatchAtLocusAAndHalfMatchAtB = GetDefaultDonorBuilder()
                 .WithHlaAtLocus(
                     Locus.A,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups("non-matching-pgroup-3", "non-matching-pgroup-4")
                         .Build()
                 )
                 .WithHlaAtLocus(
                     Locus.B,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionOne)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionOne)
                         .Build()
                 )
@@ -239,34 +239,34 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
-        private static DonorInfoWithExpandedHlaBuilder GetDefaultDonorBuilder()
+        private static DonorInfoWithTestHlaBuilder GetDefaultDonorBuilder()
         {
-            return new DonorInfoWithExpandedHlaBuilder(DonorIdGenerator.NextId())
+            return new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithDonorType(DefaultDonorType)
                 .WithHlaAtLocus(
                     Locus.A,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionOne)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusA_PositionTwo)
                         .Build()
                 )
                 .WithHlaAtLocus(
                     Locus.B,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionOne)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusB_PositionTwo)
                         .Build()
                 )
                 .WithHlaAtLocus(
                     Locus.Drb1,
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusDRB1_PositionOne)
                         .Build(),
-                    new ExpandedHlaBuilder()
+                    new TestHlaBuilder()
                         .WithPGroups(PatientPGroup_LocusDRB1_PositionTwo)
                         .Build()
                 );

@@ -15,6 +15,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
 // ReSharper disable InconsistentNaming
 
@@ -29,16 +30,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         private const string PGroupDrb1 = "pgDRB1";
 
         private readonly DonorInfoWithExpandedHla donor_ExactMatch_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 1, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_BothPositionsMatchPatientPositionOne_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 2, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_OnePositionMatchesBothPatientPositions_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 3, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_NoMatch_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 4, MatchingHla = new PhenotypeInfo<ExpandedHla>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
 
         private IDatabaseDonorMatchingService donorMatchingService;
 

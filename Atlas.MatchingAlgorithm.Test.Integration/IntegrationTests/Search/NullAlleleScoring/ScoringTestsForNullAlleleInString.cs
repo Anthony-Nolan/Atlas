@@ -931,10 +931,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             donorId = donorId ?? DonorIdGenerator.NextId();
 
             var matchingHlaPhenotype = expandHlaPhenotypeService
-                .GetPhenotypeOfExpandedHla(donorPhenotype)
+                .GetPhenotypeOfExpandedHla(donorPhenotype, null)
                 .Result;
 
-            var testDonor = new DonorInfoWithExpandedHlaBuilder(donorId.Value)
+            var testDonor = new DonorInfoWithTestHlaBuilder(donorId.Value)
                 .WithHla(matchingHlaPhenotype)
                 .Build();
 
@@ -980,10 +980,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             private DonorInfoWithExpandedHla BuildDonor(IExpandHlaPhenotypeService expandHlaPhenotypeService, int donorId)
             {
                 var matchingHlaPhenotype = expandHlaPhenotypeService
-                    .GetPhenotypeOfExpandedHla(Phenotype)
+                    .GetPhenotypeOfExpandedHla(Phenotype, null)
                     .Result;
 
-                return new DonorInfoWithExpandedHlaBuilder(donorId)
+                return new DonorInfoWithTestHlaBuilder(donorId)
                     .WithHla(matchingHlaPhenotype)
                     .Build();
             }
