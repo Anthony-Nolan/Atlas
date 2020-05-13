@@ -475,7 +475,8 @@ The following are the steps that are required to be taken manually when deployin
   - *ARM_TENANT_ID*
     - Details available from the azure AD app registration
 - New Devops build pipelines should be created, using the checked in `<pipeline>.yml` files.
-- An Azure service connection should be set up to the target Azure subscription
+- An Azure service connection should be set up to the target Azure subscription, scoped to the new resource group for this Atlas installation
+    - Due to the restriction by resource group, terraform must be run before this can be set up - either via a partial release or manually
 - A Devops release should be manually created
   - The following steps should be defined:
     - Apply terraform
@@ -531,3 +532,4 @@ This section details how to set up for such a case.
 - A new terraform workspace should be created for each environment
 - New release stages can be created within one Azure Devops release pipeline. This can be useful for ensuring the same build artifacts that were
 tested in a test environment are deployed to live
+- New service connections will need to be set up in Azure Devops for each resource group
