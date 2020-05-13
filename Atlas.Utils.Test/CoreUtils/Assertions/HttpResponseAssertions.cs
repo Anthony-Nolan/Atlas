@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http;
+using Atlas.Utils.Core.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using Newtonsoft.Json.Linq;
-using Atlas.Utils.Core.Tasks;
 
 namespace Atlas.Utils.Test.CoreUtils.Assertions
 {
