@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.MatchPrediction.Data\Atlas.MatchPrediction.Data.csproj" />
+  </ItemGroup>
+
 </Project>
