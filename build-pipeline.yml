@@ -48,6 +48,7 @@ jobs:
           command: 'test'
           projects: '**/*Test.csproj'
           arguments: '--no-restore'
+          displayName: 'Run Unit Tests'
       - task: CopyFiles@2
         displayName: 'Copy MatchingAlgorithm Functions Build'
         inputs:
@@ -137,13 +138,13 @@ jobs:
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchAlgorithmTransientMigrationScript.sql --context SearchAlgorithmContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Data'
       - task: DotNetCoreCLI@2
-        displayName: 'Generate MatchPrediction Transient Migration'
+        displayName: 'Generate MatchPrediction Migration'
         inputs:
           command: custom
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/MatchPredictionMigrationScript.sql --context MatchPredictionContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Data --project $(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Data'
       - task: DotNetCoreCLI@2
-        displayName: 'Generate Donor Transient Migration'
+        displayName: 'Generate Donor Migration'
         inputs:
           command: custom
           custom: ef
