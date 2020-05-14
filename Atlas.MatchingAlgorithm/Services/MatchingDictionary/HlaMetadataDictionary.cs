@@ -30,7 +30,6 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         bool IsActiveVersionDifferentFromLatestVersion();
     }
 
-    //QQ Migrate to HlaMdDictionary.
     public class HlaMetadataDictionary: IHlaMetadataDictionary
     {
         public enum CreationBehaviour
@@ -87,13 +86,13 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
                 ? config.ActiveWmdaVersion
                 : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
-            await recreateMetadataService.RefreshAllHlaMetadata(version);  //QQ actually needs to pass BOTH the whole object AND the target version string. !Separately! (Or maybe just update config? idk. TBC).
+            await recreateMetadataService.RefreshAllHlaMetadata(version);
             return version;
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, config.ActiveWmdaVersion);  //QQ actually needs to pass the whole object. Etc. below.
+            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, config.ActiveWmdaVersion);
         }
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)

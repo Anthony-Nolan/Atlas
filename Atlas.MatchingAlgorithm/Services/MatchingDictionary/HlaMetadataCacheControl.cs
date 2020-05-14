@@ -11,12 +11,11 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         Task PreWarmAllCaches();
 
         /// <summary>
-        /// Force population of the in-memory cache of AlleleNames. QQ better description?
+        /// Force population of the in-memory cache of AlleleNames.
         /// </summary>
         Task PreWarmAlleleNameCache();
     }
 
-    //QQ Migrate to HlaMdDictionary.
     public class HlaMetadataCacheControl : IHlaMetadataCacheControl
     {
         private readonly HlaMetadataConfiguration config;
@@ -46,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         public async Task PreWarmAllCaches()
         {
             await PreWarmAlleleNameCache();
-            var hlaDatabaseVersion = config.ActiveWmdaVersion; //QQ actually needs to pass the whole object
+            var hlaDatabaseVersion = config.ActiveWmdaVersion;
 
             await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
             await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
@@ -55,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         public async Task PreWarmAlleleNameCache()
         {
-            await alleleNamesRepository.LoadDataIntoMemory(config.ActiveWmdaVersion); //QQ actually needs to pass the whole object
+            await alleleNamesRepository.LoadDataIntoMemory(config.ActiveWmdaVersion);
         }
     }
 }
