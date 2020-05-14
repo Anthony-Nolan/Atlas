@@ -19,14 +19,16 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     public class Search
     {
         private readonly ISearchDispatcher searchDispatcher;
+        private readonly ISearchOrchestrator searchOrchestrator;
 
-        public Search(ISearchDispatcher searchDispatcher)
+        public Search(ISearchDispatcher searchDispatcher, ISearchOrchestrator searchOrchestrator)
         {
             this.searchDispatcher = searchDispatcher;
+            this.searchOrchestrator = searchOrchestrator;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("InitiateSearch")]
+        [FunctionName(nameof(InitiateSearch))]
         public async Task<IActionResult> InitiateSearch([HttpTrigger] HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
@@ -42,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("RunSearch")]
+        [FunctionName(nameof(RunSearch))]
         public async Task RunSearch(
             [ServiceBusTrigger("%MessagingServiceBus:SearchRequestsQueue%", Connection = "MessagingServiceBus:ConnectionString")]
             Message message)
@@ -50,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             var serialisedData = Encoding.UTF8.GetString(message.Body);
             var request = JsonConvert.DeserializeObject<IdentifiedSearchRequest>(serialisedData);
 
-            await searchDispatcher.RunSearch(request);
+            await searchOrchestrator.RunSearch(request);
         }
     }
 }

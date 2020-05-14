@@ -24,19 +24,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public void SetUp()
         {
             var searchServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchServiceBusClient>();
-            var searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
-            var resultsBlobStorageClient = DependencyInjection.DependencyInjection.Provider.GetService<IResultsBlobStorageClient>();
-            var logger = DependencyInjection.DependencyInjection.Provider.GetService<ILogger>();
-            var searchRequestContext = new SearchRequestContext();
-            var hlaVersionProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaVersionAccessor>();
 
-            searchDispatcher = new SearchDispatcher(
-                searchServiceBusClient,
-                searchService,
-                resultsBlobStorageClient,
-                logger,
-                searchRequestContext,
-                hlaVersionProvider);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient);
 
             searchHla = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
         }

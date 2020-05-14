@@ -158,6 +158,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 );
             });
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
+            services.AddScoped<ISearchOrchestrator, SearchOrchestrator>();
             services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>(sp =>
             {
                 var azureStorageSettings = sp.GetService<IOptions<AzureStorageSettings>>().Value;
