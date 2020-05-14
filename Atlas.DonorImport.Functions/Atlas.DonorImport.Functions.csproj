@@ -5,7 +5,6 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin/</OutputPath>
-    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
