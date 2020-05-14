@@ -25,3 +25,10 @@ variable "application_insights" {
     instrumentation_key = string
   })
 }
+
+variable "sql_server" {
+  type = object({
+    name                        = string
+    fully_qualified_domain_name = string
+  })
+}
