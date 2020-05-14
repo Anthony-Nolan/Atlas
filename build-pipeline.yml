@@ -32,6 +32,7 @@ jobs:
         inputs:
           command: 'build'
           projects: |
+            Atlas.Functions
             Atlas.DonorImport.Data
             Atlas.DonorImport.Functions
             Atlas.MatchingAlgorithm.Functions
@@ -50,23 +51,42 @@ jobs:
           arguments: '--no-restore'
           displayName: 'Run Unit Tests'
       - task: CopyFiles@2
+        displayName: 'Copy Atlas Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.Functions'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'atlasFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive Atlas Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/atlasFunctionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/AtlasFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Atlas Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/AtlasFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
+      - task: CopyFiles@2
         displayName: 'Copy MatchingAlgorithm Functions Build'
         inputs:
           SourceFolder: 'Atlas.MatchingAlgorithm.Functions'
           Contents: |
             bin/**
             *.config
-          TargetFolder: 'functionsBuild'
+          TargetFolder: 'matchingFunctionsBuild'
       - task: ArchiveFiles@2
         displayName: 'Archive MatchingAlgorithm Functions Build'
         inputs:
-          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functionsBuild/bin'
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/matchingFunctionsBuild/bin'
           includeRootFolder: false
-          archiveFile: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/MatchingFunctions-$(Build.BuildId).zip'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: MatchingAlgorithm Functions'
         inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions-$(Build.BuildId).zip'
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchingFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
       - task: CopyFiles@2
         displayName: 'Copy DonorManagement Functions Build'
@@ -75,17 +95,17 @@ jobs:
           Contents: |
             bin/**
             *.config
-          TargetFolder: 'donorFunctionsBuild'
+          TargetFolder: 'matchingDonorFunctionsBuild'
       - task: ArchiveFiles@2
-        displayName: 'Archive DonorManagement Functions Build'
+        displayName: 'Archive Matching Algorithm DonorManagement Functions Build'
         inputs:
-          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/donorFunctionsBuild/bin'
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/matchingDonorFunctionsBuild/bin'
           includeRootFolder: false
-          archiveFile: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/MatchingDonorFunctions-$(Build.BuildId).zip'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: DonorManagement Functions'
         inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorFunctions-$(Build.BuildId).zip'
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchingDonorFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
       - task: CopyFiles@2
         displayName: 'Copy MatchPrediction Functions Build'
