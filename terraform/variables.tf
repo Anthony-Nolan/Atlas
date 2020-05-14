@@ -154,3 +154,12 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
 }
+
+variable "MATCH_PREDICTION_PASSWORD" {
+  type = string
+}
+
+variable "MATCH_PREDICTION_USERNAME" {
+  type    = string
+  default = "match-prediction"
+}

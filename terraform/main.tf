@@ -97,10 +97,13 @@ module "match_prediction" {
   }
 
   app_service_plan        = azurerm_app_service_plan.atlas
+  sql_server              = azurerm_sql_server.atlas_sql_server
   shared_function_storage = azurerm_storage_account.shared_function_storage
   azure_storage           = azurerm_storage_account.azure_storage
   application_insights    = azurerm_application_insights.atlas
 
+  DATABASE_PASSWORD                                = var.MATCH_PREDICTION_PASSWORD
+  DATABASE_USERNAME                                = var.MATCH_PREDICTION_USERNAME
   APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
 }
