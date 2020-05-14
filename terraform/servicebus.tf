@@ -46,9 +46,6 @@ resource "azurerm_servicebus_namespace_authorization_rule" "read-write" {
   manage = false
 }
 
-// Topics for Notifications/Alerts, Results, and Donor Updates
-// Identical except for support_ordering for Donor Updates.
-
 resource "azurerm_servicebus_topic" "notifications" {
   name                  = "notifications"
   resource_group_name   = azurerm_resource_group.atlas_resource_group.name
@@ -67,18 +64,6 @@ resource "azurerm_servicebus_topic" "alerts" {
   max_size_in_megabytes = local.service-bus.default-bus-size
 }
 
-resource "azurerm_servicebus_topic" "updated-searchable-donors" {
-  name                  = "updated-searchable-donors"
-  resource_group_name   = azurerm_resource_group.atlas_resource_group.name
-  namespace_name        = azurerm_servicebus_namespace.general.name
-  auto_delete_on_idle   = local.service-bus.long-expiry
-  default_message_ttl   = local.service-bus.long-expiry
-  max_size_in_megabytes = local.service-bus.default-bus-size
-  support_ordering      = true
-}
-
-// Add audit subscriptions to all the Topics.
-// Identical settings
 resource "azurerm_servicebus_subscription" "audit-notifications" {
   name                                 = "audit"
   resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
@@ -96,18 +81,6 @@ resource "azurerm_servicebus_subscription" "audit-alerts" {
   resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
   namespace_name                       = azurerm_servicebus_namespace.general.name
   topic_name                           = azurerm_servicebus_topic.alerts.name
-  auto_delete_on_idle                  = local.service-bus.audit-subscription-idle-delete
-  default_message_ttl                  = local.service-bus.long-expiry
-  lock_duration                        = local.service-bus.default-read-lock
-  max_delivery_count                   = local.service-bus.default-message-retries
-  dead_lettering_on_message_expiration = false
-}
-
-resource "azurerm_servicebus_subscription" "audit-updated-searchable-donors" {
-  name                                 = "audit"
-  resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
-  namespace_name                       = azurerm_servicebus_namespace.general.name
-  topic_name                           = azurerm_servicebus_topic.updated-searchable-donors.name
   auto_delete_on_idle                  = local.service-bus.audit-subscription-idle-delete
   default_message_ttl                  = local.service-bus.long-expiry
   lock_duration                        = local.service-bus.default-read-lock
