@@ -136,3 +136,10 @@ module "support" {
   app_service_plan     = azurerm_app_service_plan.atlas
   servicebus_namespace = azurerm_servicebus_namespace.general
 }
+
+module "multiple_allele_code_lookup" {
+  source = "./modules/multiple_allele_code_lookup"
+
+  app_service_plan = azurerm_app_service_plan.atlas
+  azure_storage    = azurerm_storage_account.azure_storage
+}
