@@ -30,24 +30,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public void SetUp()
         {
             var searchServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchServiceBusClient>();
-            var searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
-            var resultsBlobStorageClient = DependencyInjection.DependencyInjection.Provider.GetService<IResultsBlobStorageClient>();
-            var logger = DependencyInjection.DependencyInjection.Provider.GetService<ILogger>();
-            var searchRequestContext = new SearchRequestContext();
-            var hlaVersionProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaVersionAccessor>();
 
-            searchDispatcher = new SearchDispatcher(
-                searchServiceBusClient,
-                searchService,
-                resultsBlobStorageClient,
-                logger,
-                searchRequestContext,
-                hlaVersionProvider);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient);
 
             searchRequest = new SearchRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(0)
-                .WithMismatchCountAtLoci(new List<Locus> { Locus.A, Locus.B, Locus.Drb1 }, 0)
+                .WithMismatchCountAtLoci(new List<Locus> {Locus.A, Locus.B, Locus.Drb1}, 0)
                 .WithSearchHla(new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
                 .WithLociExcludedFromScoringAggregates(new List<LocusType>())
                 .Build();
@@ -57,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public void DispatchSearch_AllMandatoryFieldsHaveValidValues_DoesNotThrowValidationError()
         {
             Assert.DoesNotThrowAsync(
-               async () => await searchDispatcher.DispatchSearch(searchRequest));
+                async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
 
         [Test]
@@ -189,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            searchRequest.LociToExcludeFromAggregateScore = new List<LocusType> { LocusType.Dpb1 };
+            searchRequest.LociToExcludeFromAggregateScore = new List<LocusType> {LocusType.Dpb1};
 
             Assert.DoesNotThrowAsync(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
@@ -198,7 +187,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsNonAlgorithmLocus_ThrowsValidationError()
         {
-            searchRequest.LociToExcludeFromAggregateScore = new List<LocusType> { LocusType.Drb3 };
+            searchRequest.LociToExcludeFromAggregateScore = new List<LocusType> {LocusType.Drb3};
 
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));

@@ -23,9 +23,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
     public class SearchDispatcherTests
     {
         private ISearchServiceBusClient searchServiceBusClient;
-        private ISearchService searchService;
-        private IResultsBlobStorageClient resultsBlobStorageClient;
-        private IActiveHlaVersionAccessor hlaVersionProvider;
 
         private SearchDispatcher searchDispatcher;
 
@@ -33,19 +30,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public void SetUp()
         {
             searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
-            searchService = Substitute.For<ISearchService>();
-            resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
-            hlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
-            var logger = Substitute.For<ILogger>();
-            var context = Substitute.For<ISearchRequestContext>();
 
-            searchDispatcher = new SearchDispatcher(
-                searchServiceBusClient,
-                searchService,
-                resultsBlobStorageClient,
-                logger,
-                context,
-                hlaVersionProvider);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient);
         }
 
         [Test]
@@ -66,64 +52,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             var invalidSearchRequest = new SearchRequest();
 
             Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
-        }
-
-        [Test]
-        public async Task RunSearch_RunsSearch()
-        {
-            var searchRequest = new SearchRequest();
-
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { SearchRequest = searchRequest });
-
-            await searchService.Received().Search(searchRequest);
-        }
-
-        [Test]
-        public async Task RunSearch_StoresResultsInBlobStorage()
-        {
-            const string id = "id";
-
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
-
-            await resultsBlobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
-        }
-
-        [Test]
-        public async Task RunSearch_PublishesSuccessNotification()
-        {
-            const string id = "id";
-
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
-
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
-                r.WasSuccessful && r.SearchRequestId == id
-            ));
-        }
-
-        [Test]
-        public async Task RunSearch_PublishesWmdaVersionInNotification()
-        {
-            const string wmdaVersion = "wmda-version";
-            hlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
-
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = "id" });
-
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
-                r.WmdaHlaDatabaseVersion == wmdaVersion
-            ));
-        }
-
-        [Test]
-        public async Task RunSearch_WhenSearchFails_PublishesFailureNotification()
-        {
-            const string id = "id";
-            searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, ""));
-
-            await searchDispatcher.RunSearch(new IdentifiedSearchRequest { Id = id });
-
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
-                !r.WasSuccessful && r.SearchRequestId == id
-            ));
         }
     }
 }
