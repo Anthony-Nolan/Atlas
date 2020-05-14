@@ -107,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task<string> RecreateHlaMetadataDictionary()
         {
             logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
-            var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest); //QQ alias.
+            var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
             logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
             return wmdaDatabaseVersion;
         }

@@ -159,10 +159,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
 
-            services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>(); //qq moving
+            services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
 
             services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
-            services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>(); //QQ These need to be in the right places, if they still exist
+            services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>();
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {

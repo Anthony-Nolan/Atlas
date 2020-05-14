@@ -10,7 +10,7 @@ using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
-    [Route("matching-dictionary")]//QQ rename class and file.
+    [Route("matching-dictionary")]
     public class MatchingDictionaryController : ControllerBase
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
