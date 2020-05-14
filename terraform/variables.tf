@@ -70,6 +70,15 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
+variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
+  type = string
+}
+
+variable "MATCH_PREDICTION_DATABASE_USERNAME" {
+  type    = string
+  default = "match-prediction"
+}
+
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
   default     = "S4"
@@ -131,15 +140,6 @@ variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type        = string
   default     = "0 */1 * * * *"
   description = "Crontab used to determine when to poll for new batches of donor updates to the matching component."
-}
-
-variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
-  type = string
-}
-
-variable "MATCH_PREDICTION_DATABASE_USERNAME" {
-  type    = string
-  default = "match-prediction"
 }
 
 variable "SERVICE_PLAN_SKU" {
