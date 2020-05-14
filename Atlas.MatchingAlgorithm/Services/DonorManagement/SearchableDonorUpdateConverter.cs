@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     }
 
     public class SearchableDonorUpdateConverter :
-        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate, ValidationException>,
+        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate>,
         ISearchableDonorUpdateConverter
     {
         private const string UpdateFailureEventName = "Searchable Donor Update Failure(s) in the Search Algorithm";
@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
             IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates)
         {
-            return await ProcessBatchAsync(
+            return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
                 updates,
                 async update => await GetDonorAvailabilityUpdate(update),
                 update => new FailedDonorInfo(update)

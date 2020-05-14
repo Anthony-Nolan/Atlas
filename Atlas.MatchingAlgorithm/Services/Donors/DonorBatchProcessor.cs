@@ -19,15 +19,15 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         /// <param name="getFailedDonorInfo">Function to select failed donor info.</param>
         /// <param name="failureEventName">Name to use when logging the processing failure event.</param>
         /// <returns>Results from processing of the donor batch.</returns>
-        Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsync(
+        Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsyncWithAnticipatedExceptions<TException>(
             IEnumerable<TDonor> donorInfo,
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
             Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
-            string failureEventName);
+            string failureEventName)
+        where TException : Exception;
     }
 
-    public abstract class DonorBatchProcessor<TDonor, TResult, TException> : IDonorBatchProcessor<TDonor, TResult>
-        where TException : Exception
+    public abstract class DonorBatchProcessor<TDonor, TResult> : IDonorBatchProcessor<TDonor, TResult>
     {
         private readonly ILogger logger;
 
@@ -36,11 +36,12 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             this.logger = logger;
         }
 
-        public async Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsync(
+        public async Task<DonorBatchProcessingResult<TResult>> ProcessBatchAsyncWithAnticipatedExceptions<TException>(
             IEnumerable<TDonor> donorInfo,
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
             Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
             string failureEventName)
+            where TException : Exception
         {
             donorInfo = donorInfo.ToList();
 
@@ -54,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             foreach (var d in donorInfo)
             {
-                var result = await ProcessDonorInfo(
+                var result = await ProcessDonorInfoWithAnticipatedException<TException>(
                         processDonorInfoFuncAsync,
                         getFailedDonorInfo,
                         failureEventName,
@@ -74,12 +75,13 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             };
         }
 
-        private async Task<TResult> ProcessDonorInfo(
+        private async Task<TResult> ProcessDonorInfoWithAnticipatedException<TException>(
             Func<TDonor, Task<TResult>> processDonorInfoFuncAsync,
             Func<TDonor, FailedDonorInfo> getFailedDonorInfo,
             string failureEventName,
             TDonor d,
             ICollection<FailedDonorInfo> failedDonors)
+        where TException : Exception
         {
             try
             {

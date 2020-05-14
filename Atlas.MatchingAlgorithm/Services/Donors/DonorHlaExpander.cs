@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             string hlaDatabaseVersion = null);
     }
 
-    public class DonorHlaExpander : DonorBatchProcessor<DonorInfo, DonorInfoWithExpandedHla, MatchingDictionaryException>, IDonorHlaExpander
+    public class DonorHlaExpander : DonorBatchProcessor<DonorInfo, DonorInfoWithExpandedHla>, IDonorHlaExpander
     {
         private readonly IExpandHlaPhenotypeService expandHlaPhenotypeService;
 
@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             string failureEventName,
             string hlaDatabaseVersion = null)
         {
-            return await ProcessBatchAsync(
+            return await ProcessBatchAsyncWithAnticipatedExceptions<MatchingDictionaryException>(
                 donorInfos,
                 async d => await CombineDonorAndExpandedHla(d, hlaDatabaseVersion),
                 d => d.ToFailedDonorInfo(),

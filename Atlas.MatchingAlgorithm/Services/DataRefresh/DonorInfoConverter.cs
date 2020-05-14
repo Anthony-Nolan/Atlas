@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     }
 
     public class DonorInfoConverter :
-        DonorBatchProcessor<SearchableDonorInformation, DonorInfo, ValidationException>,
+        DonorBatchProcessor<SearchableDonorInformation, DonorInfo>,
         IDonorInfoConverter
     {
         public DonorInfoConverter(ILogger logger)
@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IEnumerable<SearchableDonorInformation> donorInfos,
             string failureEventName)
         {
-            return await ProcessBatchAsync(
+            return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
                 donorInfos,
                 async info => await ConvertDonorInfo(info),
                 info => new FailedDonorInfo(info)
