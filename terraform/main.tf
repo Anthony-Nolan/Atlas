@@ -103,7 +103,7 @@ module "match_prediction" {
   application_insights    = azurerm_application_insights.atlas
 
   APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD                                = var.MATCH_PREDICTION_PASSWORD
-  DATABASE_USERNAME                                = var.MATCH_PREDICTION_USERNAME
+  DATABASE_PASSWORD                                = var.MATCH_PREDICTION_DATABASE_PASSWORD
+  DATABASE_USERNAME                                = var.MATCH_PREDICTION_DATABASE_USERNAME
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
 }

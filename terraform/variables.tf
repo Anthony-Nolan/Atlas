@@ -133,6 +133,15 @@ variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   description = "Crontab used to determine when to poll for new batches of donor updates to the matching component."
 }
 
+variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
+  type = string
+}
+
+variable "MATCH_PREDICTION_DATABASE_USERNAME" {
+  type    = string
+  default = "match-prediction"
+}
+
 variable "SERVICE_PLAN_SKU" {
   type = object({
     tier = string,
@@ -153,13 +162,4 @@ variable "WMDA_FILE_URL" {
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
-}
-
-variable "MATCH_PREDICTION_PASSWORD" {
-  type = string
-}
-
-variable "MATCH_PREDICTION_USERNAME" {
-  type    = string
-  default = "match-prediction"
 }
