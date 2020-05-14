@@ -13,7 +13,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {

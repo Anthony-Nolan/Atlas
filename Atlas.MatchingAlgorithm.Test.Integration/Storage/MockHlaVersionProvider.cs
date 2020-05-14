@@ -1,4 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+﻿using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.Services;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {
@@ -7,6 +9,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
     public class MockHlaVersionProvider : IWmdaHlaVersionProvider, IActiveHlaVersionAccessor
     {
         public string GetActiveHlaDatabaseVersion() => null;
-        public string GetLatestStableHlaDatabaseVersion() => null;
+        public string GetLatestStableHlaDatabaseVersion(HlaMetadataConfiguration _) => null;
     }
 }

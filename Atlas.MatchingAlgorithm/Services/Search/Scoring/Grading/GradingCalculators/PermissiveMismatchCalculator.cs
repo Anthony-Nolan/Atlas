@@ -1,7 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 {

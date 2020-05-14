@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 using Atlas.Utils.CodeAnalysis;
+using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -23,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName("RefreshHlaMetadataDictionary")]
         public async Task Refresh([HttpTrigger] HttpRequest httpRequest)
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
         }
     }
 }

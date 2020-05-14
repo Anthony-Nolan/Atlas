@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+﻿using Atlas.HlaMetadataDictionary;
 using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 

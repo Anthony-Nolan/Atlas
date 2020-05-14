@@ -6,9 +6,8 @@ using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
-namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
+namespace Atlas.HlaMetadataDictionary
 {
     public interface IHlaMetadataDictionary
     {
@@ -72,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
             var active= config.ActiveWmdaVersion; 
-            var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
+            var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion(config);
             return active != latest;
         }
 
@@ -80,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         {
             var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
                 ? config.ActiveWmdaVersion
-                : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
+                : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion(config);
 
             await recreateMetadataService.RefreshAllHlaMetadata(version);
             return version;

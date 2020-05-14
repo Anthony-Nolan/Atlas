@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Repositories;
 
-namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
+namespace Atlas.HlaMetadataDictionary
 {
     public interface IHlaMetadataCacheControl
     {

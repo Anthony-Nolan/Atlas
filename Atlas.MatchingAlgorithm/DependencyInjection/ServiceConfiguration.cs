@@ -28,7 +28,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Matching;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 using Atlas.MatchingAlgorithm.Services.Scoring;
 using Atlas.MatchingAlgorithm.Services.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
