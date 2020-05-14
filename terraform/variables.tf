@@ -76,7 +76,7 @@ variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
 
 variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   type    = string
-  default = "match-prediction"
+  default = "match_prediction"
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
