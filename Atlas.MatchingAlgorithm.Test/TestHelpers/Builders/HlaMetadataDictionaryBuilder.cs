@@ -1,5 +1,4 @@
 ﻿using System;
-using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
@@ -17,7 +16,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         IHlaLookupResultsService all;
         IDpb1TceGroupLookupService dpb1;
         IWmdaHlaVersionProvider wmdaVersion;
-        IHlaMatchingLookupRepository repo;
         private IHlaMetadataDictionary cannedResponse = null;
 
         public HlaMetadataDictionaryBuilder()
@@ -35,7 +33,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             all = Substitute.For<IHlaLookupResultsService>();
             dpb1 = Substitute.For<IDpb1TceGroupLookupService>();
             wmdaVersion = Substitute.For<IWmdaHlaVersionProvider>();
-            repo = Substitute.For<IHlaMatchingLookupRepository>();
         }
 
         public HlaMetadataDictionaryBuilder Returning(IHlaMetadataDictionary cannedResponse)
@@ -72,9 +69,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 case IWmdaHlaVersionProvider typedDependency:
                     wmdaVersion = typedDependency;
                     break;
-                case IHlaMatchingLookupRepository typedDependency:
-                    repo = typedDependency;
-                    break;
                 default:
                     throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
             }
@@ -103,8 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 scoring,
                 all,
                 dpb1,
-                wmdaVersion,
-                repo
+                wmdaVersion
             );
         }
 

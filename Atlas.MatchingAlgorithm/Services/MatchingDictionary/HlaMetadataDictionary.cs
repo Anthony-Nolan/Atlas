@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
@@ -47,7 +46,6 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
-        private readonly IHlaMatchingLookupRepository matchingRepository;
 
         public HlaMetadataDictionary(
             HlaMetadataConfiguration config,
@@ -58,8 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
-            IHlaMatchingLookupRepository matchingRepository)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
             this.config = config;
             this.recreateMetadataService = recreateMetadataService;
@@ -70,7 +67,6 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
-            this.matchingRepository = matchingRepository;
         }
 
         public bool IsActiveVersionDifferentFromLatestVersion()
@@ -117,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         public IEnumerable<string> GetAllPGroups()
         {
-            return matchingRepository.GetAllPGroups(config.ActiveWmdaVersion);
+            return hlaMatchingLookupService.GetAllPGroups(config.ActiveWmdaVersion);
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()

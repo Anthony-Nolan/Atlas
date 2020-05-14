@@ -14,12 +14,15 @@ namespace Atlas.HlaMetadataDictionary.Services
     /// </summary>
     public interface IHlaMatchingLookupService : IHlaSearchingLookupService<IHlaMatchingLookupResult>
     {
+        IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion);
     }
 
     public class HlaMatchingLookupService : 
         HlaSearchingLookupServiceBase<IHlaMatchingLookupResult>, 
         IHlaMatchingLookupService
     {
+        private readonly IHlaMatchingLookupRepository typedMatchingRepository;
+
         public HlaMatchingLookupService(
             IHlaMatchingLookupRepository hlaMatchingLookupRepository,
             IAlleleNamesLookupService alleleNamesLookupService,
@@ -34,6 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Services
             cache
             )
         {
+            typedMatchingRepository = hlaMatchingLookupRepository;
         }
 
         protected override IEnumerable<IHlaMatchingLookupResult> ConvertTableEntitiesToLookupResults(
@@ -63,5 +67,11 @@ namespace Atlas.HlaMetadataDictionary.Services
                 typingMethod,
                 pGroups);
         }
+
+        public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
+        {
+            return typedMatchingRepository.GetAllPGroups(hlaDatabaseVersion);
+        }
+
     }
 }
