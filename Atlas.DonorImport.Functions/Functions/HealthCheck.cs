@@ -1,10 +1,17 @@
-﻿namespace Atlas.DonorImport.Functions.Functions
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+
+namespace Atlas.DonorImport.Functions.Functions
 {
     public class HealthCheck
     {
-        public string GetHealth()
+        [FunctionName("HealthCheck")]
+        public static OkObjectResult Check([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
-            return "Functions app running.";
+            const string responseMessage = "This HTTP triggered function executed successfully";
+            return new OkObjectResult(responseMessage);
         }
     }
 }
