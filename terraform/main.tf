@@ -60,8 +60,8 @@ module "matching_algorithm" {
 
   servicebus_topics = {
     updated-searchable-donors = module.donor_import.general.updated_searchable_donors_servicebus_topic
-    alerts                    = azurerm_servicebus_topic.alerts
-    notifications             = azurerm_servicebus_topic.notifications
+    alerts                    = module.support.general.alerts_servicebus_topic
+    notifications             = module.support.general.notifications_servicebus_topic
   }
 
   APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
@@ -126,4 +126,13 @@ module "donor_import" {
 
   DATABASE_PASSWORD = var.DONOR_DATABASE_PASSWORD
   DATABASE_USERNAME = var.DONOR_DATABASE_USERNAME
+}
+
+module "support" {
+  source = "./modules/support"
+
+  default_servicebus_settings = local.service-bus
+
+  app_service_plan     = azurerm_app_service_plan.atlas
+  servicebus_namespace = azurerm_servicebus_namespace.general
 }
