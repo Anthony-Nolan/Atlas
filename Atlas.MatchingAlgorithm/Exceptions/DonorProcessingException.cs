@@ -3,12 +3,12 @@ using System;
 
 namespace Atlas.MatchingAlgorithm.Exceptions
 {
-    public class DonorProcessingException<T> : Exception where T : Exception
+    public class DonorProcessingException<TException> : Exception where TException : Exception
     {
         public FailedDonorInfo FailedDonorInfo { get; set; }
-        public T Exception { get; set; }
+        public TException Exception { get; set; }
 
-        public DonorProcessingException(FailedDonorInfo failedDonorInfo, T exception)
+        public DonorProcessingException(FailedDonorInfo failedDonorInfo, TException exception)
         {
             FailedDonorInfo = failedDonorInfo;
             Exception = exception;

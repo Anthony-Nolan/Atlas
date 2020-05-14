@@ -5,11 +5,11 @@ using Atlas.HlaMetadataDictionary.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
 {
-    public static class DonorProcessingFailureEventModelFactory<T> where T : Exception
+    public static class DonorProcessingFailureEventModelFactory<TException> where TException : Exception
     {
         public static DonorProcessingFailureEventModel GetEventModel(
             string eventName,
-            DonorProcessingException<T> exception)
+            DonorProcessingException<TException> exception)
         {
             switch (exception)
             {
@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
                 case DonorProcessingException<MatchingDictionaryException> hlaException:
                     return new DonorHlaLookupFailureEventModel(eventName, hlaException);
                 default:
-                    throw new ArgumentOutOfRangeException($"No donor processing failure event model available for exception of type {typeof(T)}.");
+                    return new DonorInfoGenericFailureEventModel<TException>(eventName, exception);
             }
         }
     }
