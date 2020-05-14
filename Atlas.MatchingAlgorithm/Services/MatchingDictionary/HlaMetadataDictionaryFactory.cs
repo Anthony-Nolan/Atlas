@@ -3,16 +3,13 @@ using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using LazyCache;
 
-    //QQ Migrate to HlaMdDictionary.
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 {
     public struct HlaMetadataConfiguration
     {
         public string ActiveWmdaVersion { get; set; }
-        public string WmdaSourceUrl { get; set; }
-        public string DbConnectionString { get; set; }
 
-        internal string CacheKey => $"hlaMetadataDictionary-version:{ActiveWmdaVersion}-url:{WmdaSourceUrl}-db:{DbConnectionString}";
+        internal string CacheKey => $"hlaMetadataDictionary-version:{ActiveWmdaVersion}";
     }
 
     public interface IHlaMetadataDictionaryFactory
@@ -30,7 +27,6 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         /// <inheritdoc cref="BuildDictionary"/>
         IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config);
 
-        //QQ Temp usage.
         IHlaMetadataDictionary BuildDictionary(string version);
         IHlaMetadataCacheControl BuildCacheControl(string version);
     }
@@ -45,22 +41,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
     public class HlaMetadataDictionaryFactory : IHlaMetadataDictionaryFactory
     {
         private readonly IAppCache cache;
-        /*//QQ Defined and register our own IPersistentCache:
 
-                // The default IAppCache registration should be a singleton, to avoid re-caching large collections e.g. Matching Dictionary and Alleles each request
-                // Persistent has been picked as the default for ease of injection into the MatchingDictionary, which will not be able to access any wrappers defined in the core project
-                services.AddSingleton<IAppCache, CachingService>(sp =>
-                {
-                    var oneDay = 60*60*24;
-                    return new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
-                    {
-                        DefaultCachePolicy = new CacheDefaults {DefaultCacheDurationSeconds = oneDay}
-                    };
-                });
-
-         */
-
-        //Dependencies for building new dictionaries. //QQ Module must register these as Re-used within a request, but not between requests. // Would prefer to migrate to Autofac, and declare these as Func<T> so that we have control over initialisation time :(
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
@@ -129,12 +110,12 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
         public IHlaMetadataDictionary BuildDictionary(string version)
         {
-            return BuildDictionary(new HlaMetadataConfiguration { ActiveWmdaVersion = version, DbConnectionString = "dbQQ", WmdaSourceUrl = "urlQQ" });
+            return BuildDictionary(new HlaMetadataConfiguration { ActiveWmdaVersion = version });
         }
 
         public IHlaMetadataCacheControl BuildCacheControl(string version)
         {
-            return BuildCacheControl(new HlaMetadataConfiguration { ActiveWmdaVersion = version, DbConnectionString = "dbQQ", WmdaSourceUrl = "urlQQ" });
+            return BuildCacheControl(new HlaMetadataConfiguration { ActiveWmdaVersion = version });
         }
 
         public IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config)
