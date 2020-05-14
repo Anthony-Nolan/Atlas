@@ -8,7 +8,6 @@ using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
-    //QQ rename class and file.
     public class MatchingDictionary
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
