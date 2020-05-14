@@ -59,7 +59,7 @@ module "matching_algorithm" {
   }
 
   servicebus_topics = {
-    updated-searchable-donors = azurerm_servicebus_topic.updated-searchable-donors
+    updated-searchable-donors = module.donor_import.general.updated_searchable_donors_servicebus_topic
     alerts                    = azurerm_servicebus_topic.alerts
     notifications             = azurerm_servicebus_topic.notifications
   }
@@ -91,9 +91,9 @@ module "match_prediction" {
   source = "./modules/match_prediction"
 
   general = {
-    environment     = local.environment
-    location        = local.location
-    common_tags     = local.common_tags
+    environment = local.environment
+    location    = local.location
+    common_tags = local.common_tags
   }
 
   app_service_plan        = azurerm_app_service_plan.atlas
@@ -102,8 +102,28 @@ module "match_prediction" {
   azure_storage           = azurerm_storage_account.azure_storage
   application_insights    = azurerm_application_insights.atlas
 
-  APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD                                = var.MATCH_PREDICTION_DATABASE_PASSWORD
-  DATABASE_USERNAME                                = var.MATCH_PREDICTION_DATABASE_USERNAME
-  WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
+  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME
+  WEBSITE_RUN_FROM_PACKAGE       = var.WEBSITE_RUN_FROM_PACKAGE
+}
+
+module "donor_import" {
+  source = "./modules/donor_import"
+
+  general = {
+    environment = local.environment
+    location    = local.location
+    common_tags = local.common_tags
+  }
+
+  default_servicebus_settings = local.service-bus
+
+  app_service_plan        = azurerm_app_service_plan.atlas
+  sql_server              = azurerm_sql_server.atlas_sql_server
+  shared_function_storage = azurerm_storage_account.shared_function_storage
+  servicebus_namespace    = azurerm_servicebus_namespace.general
+
+  DATABASE_PASSWORD = var.DONOR_DATABASE_PASSWORD
+  DATABASE_USERNAME = var.DONOR_DATABASE_USERNAME
 }
