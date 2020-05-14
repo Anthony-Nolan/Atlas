@@ -7,7 +7,7 @@ variable "app_service_plan" {
   })
 }
 
-variable "shared_function_storage" {
+variable "function_storage" {
   type = object({
     primary_connection_string = string
   })

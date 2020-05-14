@@ -45,12 +45,12 @@ module "matching_algorithm" {
 
   default_servicebus_settings = local.service-bus
 
-  app_service_plan        = azurerm_app_service_plan.atlas
-  sql_server              = azurerm_sql_server.atlas_sql_server
-  shared_function_storage = azurerm_storage_account.shared_function_storage
-  azure_storage           = azurerm_storage_account.azure_storage
-  application_insights    = azurerm_application_insights.atlas
-  servicebus_namespace    = azurerm_servicebus_namespace.general
+  app_service_plan     = azurerm_app_service_plan.atlas
+  sql_server           = azurerm_sql_server.atlas_sql_server
+  function_storage     = azurerm_storage_account.function_storage
+  azure_storage        = azurerm_storage_account.azure_storage
+  application_insights = azurerm_application_insights.atlas
+  servicebus_namespace = azurerm_servicebus_namespace.general
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -96,11 +96,11 @@ module "match_prediction" {
     common_tags = local.common_tags
   }
 
-  app_service_plan        = azurerm_app_service_plan.atlas
-  sql_server              = azurerm_sql_server.atlas_sql_server
-  shared_function_storage = azurerm_storage_account.shared_function_storage
-  azure_storage           = azurerm_storage_account.azure_storage
-  application_insights    = azurerm_application_insights.atlas
+  app_service_plan     = azurerm_app_service_plan.atlas
+  sql_server           = azurerm_sql_server.atlas_sql_server
+  function_storage     = azurerm_storage_account.function_storage
+  azure_storage        = azurerm_storage_account.azure_storage
+  application_insights = azurerm_application_insights.atlas
 
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
@@ -119,10 +119,10 @@ module "donor_import" {
 
   default_servicebus_settings = local.service-bus
 
-  app_service_plan        = azurerm_app_service_plan.atlas
-  sql_server              = azurerm_sql_server.atlas_sql_server
-  shared_function_storage = azurerm_storage_account.shared_function_storage
-  servicebus_namespace    = azurerm_servicebus_namespace.general
+  app_service_plan     = azurerm_app_service_plan.atlas
+  sql_server           = azurerm_sql_server.atlas_sql_server
+  function_storage     = azurerm_storage_account.function_storage
+  servicebus_namespace = azurerm_servicebus_namespace.general
 
   DATABASE_PASSWORD = var.DONOR_DATABASE_PASSWORD
   DATABASE_USERNAME = var.DONOR_DATABASE_USERNAME
