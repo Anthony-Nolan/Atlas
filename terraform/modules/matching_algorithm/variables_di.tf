@@ -14,7 +14,7 @@ variable "sql_server" {
   })
 }
 
-variable "shared_function_storage" {
+variable "function_storage" {
   type = object({
     primary_connection_string = string
   })

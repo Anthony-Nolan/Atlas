@@ -51,7 +51,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   app_service_plan_id       = var.app_service_plan.id
   https_only                = true
   version                   = "~3"
-  storage_connection_string = var.shared_function_storage.primary_connection_string
+  storage_connection_string = var.function_storage.primary_connection_string
 
   site_config {
     always_on = true
