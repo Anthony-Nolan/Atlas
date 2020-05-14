@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;

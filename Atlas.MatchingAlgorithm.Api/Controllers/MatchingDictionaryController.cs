@@ -6,8 +6,9 @@ using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 using Atlas.Utils.Models;
+using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
@@ -27,14 +28,14 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         [Route("create-latest-version")]
         public async Task CreateLatestMatchingDictionary()
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
         public async Task RecreateActiveMatchingDictionary()
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Active);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
         }
 
         [HttpGet]

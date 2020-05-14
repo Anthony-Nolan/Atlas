@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;

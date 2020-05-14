@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;

@@ -15,9 +15,10 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
+using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {
@@ -110,7 +111,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             const string hlaDatabaseVersion = "3390";
             hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest)
+                .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaDatabaseVersion);
 
             var returnedHlaVersion = await dataRefreshService.RefreshData();
@@ -132,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             const string hlaDatabaseVersion = "3390";
             hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest)
+                .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaDatabaseVersion);
 
             await dataRefreshService.RefreshData();
@@ -214,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            hlaMetadataDictionary.RecreateHlaMetadataDictionary(MatchingAlgorithm.Services.MatchingDictionary.HlaMetadataDictionary.CreationBehaviour.Latest).Throws(new Exception());
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Throws(new Exception());
 
             try
             {

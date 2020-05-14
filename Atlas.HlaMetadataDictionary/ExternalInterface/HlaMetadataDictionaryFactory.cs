@@ -1,10 +1,9 @@
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.Utils.Caching;
 using LazyCache;
 
-namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
+namespace Atlas.HlaMetadataDictionary
 {
     public struct HlaMetadataConfiguration
     {

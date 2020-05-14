@@ -3,7 +3,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.HlaMetadataDictionary;
 using Atlas.Utils.Core.ApplicationInsights;
 using System.Collections.Generic;
 using System.Threading.Tasks;
