@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return;
             }
 
-            var newWmdaVersionAvailable = activeVersionHlaMetadataDictionary.IsRefreshNecessary();
+            var newWmdaVersionAvailable = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
             if (!newWmdaVersionAvailable)
             {
                 var noNewData = "No new versions of the WMDA HLA nomenclature have been published.";

@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
         /// and the version of the HLA data that was used to pre-process the current Donor data.
         /// </summary>
         /// <returns>True if the versions are different, otherwise false.</returns>
-        bool IsRefreshNecessary();
+        bool IsActiveVersionDifferentFromLatestVersion();
     }
 
     //QQ Migrate to HlaMdDictionary.
@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             this.matchingRepository = matchingRepository;
         }
 
-        public bool IsRefreshNecessary()
+        public bool IsActiveVersionDifferentFromLatestVersion()
         {
             var active= config.ActiveWmdaVersion; 
             var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
