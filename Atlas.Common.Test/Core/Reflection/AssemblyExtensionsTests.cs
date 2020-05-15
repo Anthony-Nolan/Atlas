@@ -9,7 +9,7 @@ namespace Atlas.Common.Test.Core.Reflection
     public class AssemblyExtensionsTests
     {
         [Test]
-        public void GivenInvalidSuffix_LoadNovaAssemblies_ReturnsEmptyList()
+        public void GivenInvalidSuffix_LoadAtlasAssemblies_ReturnsEmptyList()
         {
             var ret = typeof(AssemblyExtensionsTests).Assembly.LoadAtlasAssemblies("Unknown");
 
@@ -17,7 +17,7 @@ namespace Atlas.Common.Test.Core.Reflection
         }
 
         [Test]
-        public void GivenNoSuffix_LoadNovaAssemblies_LoadsAllReferencedAssembliesStartingWithNova()
+        public void GivenNoSuffix_LoadAtlasAssemblies_LoadsAllReferencedAssembliesStartingWithAtlas()
         {
             var ret = typeof(AssemblyExtensionsTests).Assembly.LoadAtlasAssemblies();
 
@@ -25,9 +25,9 @@ namespace Atlas.Common.Test.Core.Reflection
         }
 
         [Test]
-        public void GivenValidSuffix_LoadNovaAssemblies_LoadsAllReferencedAssembliesStartingWithNova()
+        public void GivenValidSuffix_LoadAtlasAssemblies_LoadsAllReferencedAssembliesStartingWithAtlas()
         {
-            var ret = typeof(AssemblyExtensionsTests).Assembly.LoadAtlasAssemblies("Utils.Test");
+            var ret = typeof(AssemblyExtensionsTests).Assembly.LoadAtlasAssemblies("Common.Test");
 
             ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Common.Test");
         }
