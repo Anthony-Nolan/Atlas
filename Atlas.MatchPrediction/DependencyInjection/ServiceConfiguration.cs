@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
         public static void RegisterSettingsForFunction(this IServiceCollection services)
         {
-            services.ManuallyRegisterSettings<AzureStorageSettings>(("AzureStorage"));
+            services.ManuallyRegisterSettings<AzureStorageSettings>("AzureStorage");
         }
 
         private static void ManuallyRegisterSettings<TSettings>(this IServiceCollection services, string configPrefix = "") where TSettings : class, new()
