@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using Atlas.MatchPrediction.Data.Models;
 
 namespace Atlas.MatchPrediction.Data.Context

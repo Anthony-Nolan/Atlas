@@ -1,11 +1,10 @@
 ﻿using System.Net.Http;
-using System.Threading.Tasks;
 using AzureFunctions.Extensions.Swashbuckle;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 
-namespace Atlas.MatchPrediction.Functions
+namespace Atlas.MatchPrediction.Functions.Functions
 {
     public static class SwaggerFunctions
     {
