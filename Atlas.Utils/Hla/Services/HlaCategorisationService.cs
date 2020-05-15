@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
+using Atlas.Utils.Core.Http;
 using Atlas.Utils.Hla.Models;
 using Atlas.Utils.Hla.Models.HlaTypings;
-using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.Utils.Hla.Services
 {

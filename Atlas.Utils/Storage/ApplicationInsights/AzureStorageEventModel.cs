@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
 namespace Atlas.Utils.Storage.ApplicationInsights
 {

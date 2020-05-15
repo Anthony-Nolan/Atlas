@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
 using System;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights

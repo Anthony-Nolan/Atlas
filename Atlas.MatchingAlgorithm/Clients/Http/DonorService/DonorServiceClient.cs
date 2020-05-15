@@ -3,6 +3,8 @@ using Atlas.Utils.Core.ApplicationInsights;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Atlas.Utils.NovaHttpClient;
+using Atlas.Utils.NovaHttpClient.Client;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
 {

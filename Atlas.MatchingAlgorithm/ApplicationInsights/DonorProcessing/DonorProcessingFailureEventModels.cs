@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Helpers;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing

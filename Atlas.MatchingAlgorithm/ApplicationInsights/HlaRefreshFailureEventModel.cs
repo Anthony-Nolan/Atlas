@@ -1,6 +1,5 @@
 ﻿using System;
 using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights
 {
