@@ -7,6 +7,7 @@ using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {

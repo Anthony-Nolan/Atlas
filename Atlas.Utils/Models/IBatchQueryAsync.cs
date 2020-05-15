@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.Common.Models
+namespace Atlas.Utils.Models
 {
     public interface IBatchQueryAsync<T>
     {
