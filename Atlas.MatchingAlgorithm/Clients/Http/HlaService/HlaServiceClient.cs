@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models;
 using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Core.Models;
 using Atlas.Utils.NovaHttpClient;
+using Atlas.Utils.NovaHttpClient.Client;
 
 namespace Atlas.HLAService.Client
 {
