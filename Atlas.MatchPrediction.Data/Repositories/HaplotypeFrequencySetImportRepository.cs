@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
 
@@ -6,7 +7,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
 {
     public interface IHaplotypeFrequencySetImportRepository
     {
-        Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet);
+        Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
     }
 
     public class HaplotypeFrequencySetImportRepository : IHaplotypeFrequencySetImportRepository
@@ -18,10 +19,9 @@ namespace Atlas.MatchPrediction.Data.Repositories
             this.context = context;
         }
 
-        public async Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet)
+        public async Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
-            context.HaplotypeFrequencySets.Add(haplotypeFrequencySet);
-            await context.SaveChangesAsync();
+            //ToDo: Import data into database
         }
     }
 }
