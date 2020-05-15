@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using System.Net;
+using Atlas.HlaMetadataDictionary.Data;
 using LazyCache;
 using Atlas.Utils.Caching;
 
@@ -12,30 +12,34 @@ namespace Atlas.HlaMetadataDictionary.Services
         /// Fetches the last stable hla database version.
         /// </summary>
         /// <returns>The latest stable database version, in the format "3370" (i.e. major & minor versions only, no dots)</returns>
-        string GetLatestStableHlaDatabaseVersion(HlaMetadataConfiguration config);
+        string GetLatestStableHlaDatabaseVersion();
     }
 
     public class WmdaHlaVersionProvider : IWmdaHlaVersionProvider
     {
+        private readonly IWmdaFileReader fileReader;
         private readonly IAppCache cache;
-        private readonly WebClient webClient;
 
-        public WmdaHlaVersionProvider(IAppCache cacheProvider) // QQ Transient Cache. Migrate Cache types to Utils.
+        public WmdaHlaVersionProvider(
+            IWmdaFileReader fileReader,
+            ITransientCacheProvider cacheProvider)
         {
-            webClient = new WebClient();
-            this.cache = cacheProvider;
+            this.fileReader = fileReader;
+            this.cache = cacheProvider.Cache;
         }
 
-        public string GetLatestStableHlaDatabaseVersion(HlaMetadataConfiguration config)
+        public string GetLatestStableHlaDatabaseVersion()
         {
-            var fileUrl = config.WmdaSourceUrl + "Latest/Allelelist_history.txt";
             const string key = "latestWmdaVersion";
             var version = cache.GetOrAdd(key, () =>
             {
                 // The currently recommended way of finding out the last version is from the header of the "Allelelist_history.txt" file, 
                 // which contains all historic versions of the database
-                var versionReport = webClient.DownloadString(fileUrl);
-                var versionLine = versionReport.Split('\n').Single(line => line.StartsWith("HLA_ID"));
+                const string versionId = "Latest";
+                const string fileName = "Allelelist_history.txt";
+
+                var versionReportAllLines = fileReader.GetFileContentsWithoutHeader(versionId, fileName);
+                var versionLine = versionReportAllLines.Single(line => line.StartsWith("HLA_ID"));
                 
                 // The first item in the header line is the name, "HLA_ID". Then the versions are listed in reverse chronological order.
                 // So the second item is the latest version

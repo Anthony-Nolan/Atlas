@@ -71,7 +71,7 @@ namespace Atlas.HlaMetadataDictionary
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
             var active= config.ActiveWmdaVersion; 
-            var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion(config);
+            var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return active != latest;
         }
 
@@ -79,7 +79,7 @@ namespace Atlas.HlaMetadataDictionary
         {
             var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
                 ? config.ActiveWmdaVersion
-                : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion(config);
+                : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             await recreateMetadataService.RefreshAllHlaMetadata(version);
             return version;
