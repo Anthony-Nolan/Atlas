@@ -1,66 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace Atlas.MatchPrediction.Services
 {
     public interface IHaplotypeFrequencySetService
     {
-        Task ImportHaplotypeFrequencySet(string haplotypeFrequencySet);
+        Task ImportHaplotypeFrequencySet(string fileName, Stream blob);
     }
 
     public class HaplotypeFrequencySetService : IHaplotypeFrequencySetService
     {
         private readonly IHaplotypeFrequencySetImportRepository haplotypeFrequencySetImportRepository;
 
-        public HaplotypeFrequencySetService(IHaplotypeFrequencySetImportRepository haplotypeFrequencySetImportRepository)
+        public HaplotypeFrequencySetService(
+            IHaplotypeFrequencySetImportRepository haplotypeFrequencySetImportRepository)
         {
-            this
+            this.haplotypeFrequencySetImportRepository = haplotypeFrequencySetImportRepository;
         }
 
-    }
-
-    /// <summary>
-    /// Responsible for handling inbound donor inserts/updates.
-    /// Differentiated from the `IDonorImportService` as it listens for inbound data, rather than polling an external service
-    /// </summary>
-    public interface IDonorService
-    {
-        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds);
-        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos);
-    }
-
-    public class DonorService : IDonorService
-    {
-        private const string ExpansionFailureEventName = "HLA Expansion Failure(s) in Search Algorithm";
-
-        private readonly IDonorUpdateRepository donorUpdateRepository;
-        private readonly IDonorInspectionRepository donorInspectionRepository;
-        private readonly IDonorHlaExpander donorHlaExpander;
-        private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
-
-        public DonorService(
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IActiveRepositoryFactory repositoryFactory,
-            IDonorHlaExpander donorHlaExpander,
-            IFailedDonorsNotificationSender failedDonorsNotificationSender)
+        public async Task ImportHaplotypeFrequencySet(string fileName, Stream blob)
         {
-            donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
-            this.donorHlaExpander = donorHlaExpander;
-            this.failedDonorsNotificationSender = failedDonorsNotificationSender;
+            await haplotypeFrequencySetImportRepository.InsertHaplotypeFrequencySet(SplitFileName(fileName),
+                ReadAllHaplotypeFrequencies(blob));
         }
 
-        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
+        public HaplotypeFrequencySet SplitFileName(string fileName)
         {
-            donorIds = donorIds.ToList();
+            var strArr = fileName.Split('/');
+            Array.Resize(ref strArr, strArr.Length - 1);
 
-            if (donorIds.Any())
+            return new HaplotypeFrequencySet()
             {
-                await donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(donorIds);
+                Registry = strArr.Length > 0 ? strArr[0] : null,
+                Ethnicity = strArr.Length == 2 ? strArr[1] : null,
+                Active = true
+            };
+        }
+
+        public IEnumerable<HaplotypeFrequency> ReadAllHaplotypeFrequencies(Stream blob)
+        {
+            using var reader = new StreamReader(blob);
+            using var csv = new CsvReader(reader);
+            csv.Configuration.Delimiter = ";";
+            csv.Configuration.PrepareHeaderForMatch = (string header, int index) => header.ToUpper();
+            csv.Configuration.RegisterClassMap<HaplotypeFrequencyMap>();
+            return csv.GetRecords<HaplotypeFrequency>().ToList();
+        }
+
+        public sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequency>
+        {
+            public HaplotypeFrequencyMap()
+            {
+                Map(m => m.A);
+                Map(m => m.B);
+                Map(m => m.C);
+                Map(m => m.DQB1);
+                Map(m => m.DRB1);
+                Map(m => m.Frequency).Name("freq");
+                Map(m => m.Id).Ignore();
+                Map(m => m.SetId).Ignore();
             }
         }
     }
+}
