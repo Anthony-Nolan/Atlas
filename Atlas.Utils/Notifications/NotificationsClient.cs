@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
+using Atlas.Utils.Notifications.MessageModels;
 using Newtonsoft.Json;
 using Microsoft.Azure.ServiceBus;
 
@@ -36,7 +37,7 @@ namespace Atlas.Utils.Notifications
             await notificationTopicClient.SendAsync(message);
         }
 
-        private Message BuildMessage(BaseNotificationsMessage message)
+        private static Message BuildMessage(BaseNotificationsMessage message)
         {
             var messageJson = JsonConvert.SerializeObject(message);
             var brokeredMessage = new Message(Encoding.UTF8.GetBytes(messageJson));

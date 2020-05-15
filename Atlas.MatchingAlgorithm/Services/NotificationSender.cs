@@ -4,6 +4,7 @@ using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Notifications;
 using System;
 using System.Threading.Tasks;
+using Atlas.Utils.Notifications.MessageModels;
 
 namespace Atlas.MatchingAlgorithm.Services
 {
