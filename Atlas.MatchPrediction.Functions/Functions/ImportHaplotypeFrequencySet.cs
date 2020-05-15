@@ -1,29 +1,24 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
+using Atlas.MatchPrediction.Services;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class ImportHaplotypeFrequencySet
     {
+        private readonly IHaplotypeFrequencySetService haplotypeFrequencySetService;
+        
+        public ImportHaplotypeFrequencySet(IHaplotypeFrequencySetService haplotypeFrequencySetService)
+        {
+            this.haplotypeFrequencySetService = haplotypeFrequencySetService;
+        }
+
         [FunctionName("ImportSetWithRegistryEthnicityFilename")]
-        public static void Run([BlobTrigger("{registry}/{ethnicity}/{filename}", Connection = "")]
-            Stream myBlob, string filename, string ethnicity, string registry)
+        public async Task Run([BlobTrigger("haplotype-frequency-set-import/{fileName}")]
+            Stream blob, string fileName)
         {
-
-        }
-
-        [FunctionName("ImportSetWithRegistryFilename")]
-        public static void Run([BlobTrigger("{registry}/{filename}", Connection = "")]
-            Stream myBlob, string filename, string ethnicity)
-        {
-
-        }
-
-        [FunctionName("ImportSetWithFilename")]
-        public static void Run([BlobTrigger("{filename}", Connection = "")]
-            Stream myBlob, string filename)
-        {
-
+            await haplotypeFrequencySetService.ImportHaplotypeFrequencySet(fileName, blob);
         }
     }
 }
