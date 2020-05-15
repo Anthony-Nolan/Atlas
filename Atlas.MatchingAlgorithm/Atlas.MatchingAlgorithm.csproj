@@ -45,4 +45,8 @@
       </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Clients\Http" />
+    </ItemGroup>
+
 </Project>

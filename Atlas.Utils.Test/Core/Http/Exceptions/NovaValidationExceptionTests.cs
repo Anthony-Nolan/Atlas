@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
 using Atlas.Utils.Core.Http;
-using Atlas.Utils.Core.Http.Exceptions;
+using Atlas.Utils.NovaHttpClient.Http.Exceptions;
 using NUnit.Framework;
 
 namespace Atlas.Utils.Test.Core.Http.Exceptions

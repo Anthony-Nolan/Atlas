@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Config
         public static IMapper CreateMapper()
         {
             var assemblyNames = Assembly.GetExecutingAssembly()
-                .LoadNovaAssemblies()
+                .LoadAtlasAssemblies()
                 .Select(a => a.GetName().Name)
                 .ToArray();
 

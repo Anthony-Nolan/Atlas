@@ -10,7 +10,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
+using Atlas.Utils.Core.ApplicationInsights;
 using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
