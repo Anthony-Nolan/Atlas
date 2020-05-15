@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
@@ -38,7 +39,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.Configure<IntegrationTestSettings>(configuration.GetSection("Testing"));
 
             services.RegisterSearchAlgorithmTypes();
-            services.RegisterAllHlaMetadataDictionaryTypes();
+            Func<IServiceProvider, string> blank = _ => "";
+            services.RegisterHlaMetadataDictionary(blank, blank, blank, blank, blank); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
             
