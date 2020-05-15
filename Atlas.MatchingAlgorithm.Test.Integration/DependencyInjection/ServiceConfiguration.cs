@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {

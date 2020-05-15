@@ -1,6 +1,5 @@
 ﻿using Microsoft.ApplicationInsights;
 using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
 using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests

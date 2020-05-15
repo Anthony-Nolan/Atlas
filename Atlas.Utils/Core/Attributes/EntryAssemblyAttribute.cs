@@ -24,15 +24,6 @@ namespace Atlas.Utils.Core.Attributes
         private static readonly Lazy<Assembly> EntryAssemblyLazy = new Lazy<Assembly>(GetEntryAssemblyLazily);
 
         /// <summary>
-        /// Gets the entry assembly.
-        /// </summary>
-        /// <returns>The entry assembly.</returns>
-        public static Assembly GetEntryAssembly()
-        {
-            return EntryAssemblyLazy.Value;
-        }
-
-        /// <summary>
         /// Gets reduced entry assembly.
         /// </summary>
         /// <returns>Just the entry assembly name.</returns>
@@ -62,7 +53,7 @@ namespace Atlas.Utils.Core.Attributes
             var entryAssemblies = new List<Assembly>();
             foreach (var assembly in assemblies)
             {
-                // Note the usage of LINQ SingleOrDefault.  The EntryAssemblyAttribute's AttrinuteUsage
+                // Note the usage of LINQ SingleOrDefault.  The EntryAssemblyAttribute's AttributeUsage
                 // only allows it to occur once per assembly; declaring it more than once results in
                 // a compiler error.
                 var attribute =

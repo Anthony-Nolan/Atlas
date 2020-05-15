@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Atlas.Utils.Core.Http;
 using Atlas.Utils.Hla.Models;
 using Atlas.Utils.Hla.Services.AlleleStringSplitters;
-using Atlas.Utils.Core.Http.Exceptions;
 
 namespace Atlas.Utils.Hla.Services
 {
