@@ -141,9 +141,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
 
-            services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
-
-            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
             services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>();
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
@@ -191,77 +188,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
-        }
-
-
-        public static void RegisterAllHlaMetadataDictionaryTypes(this IServiceCollection services)
-        {
-            RegisterHlaMetadataDictionaryStorageTypes(services);
-            RegisterHlaMetadataDictionaryPreCalculationTypes(services);
-            RegisterHlaMetadataDictionaryServices(services);
-            RegisterMacDictionaryServices(services);
-        }
-
-        public static void RegisterTypesNeededForHlaMetadataDictionary(this IServiceCollection services)
-        {
-            RegisterHlaMetadataDictionaryStorageTypes(services);
-            RegisterHlaMetadataDictionaryServices(services);
-            RegisterMacDictionaryServices(services);
-        }
-
-        private static void RegisterHlaMetadataDictionaryStorageTypes(this IServiceCollection services)
-        {
-            services.AddSingleton<ICloudTableFactory, CloudTableFactory>(sp =>
-                new CloudTableFactory(sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString)
-            );
-
-            services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
-
-            services.AddScoped<IHlaMatchingLookupRepository, HlaMatchingLookupRepository>();
-            services.AddScoped<IHlaScoringLookupRepository, HlaScoringLookupRepository>();
-            services.AddScoped<IAlleleNamesLookupRepository, AlleleNamesLookupRepository>();
-            services.AddScoped<IDpb1TceGroupsLookupRepository, Dpb1TceGroupsLookupRepository>();
-        }
-
-        private static void RegisterHlaMetadataDictionaryPreCalculationTypes(this IServiceCollection services)
-        {
-            services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
-
-            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>(sp =>
-                new WmdaFileDownloader(sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri)
-            );
-
-            services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();
-            services.AddScoped<IAlleleNamesFromHistoriesExtractor, AlleleNamesFromHistoriesExtractor>();
-            services.AddScoped<IAlleleNameVariantsExtractor, AlleleNameVariantsExtractor>();
-            services.AddScoped<IReservedAlleleNamesExtractor, ReservedAlleleNamesExtractor>();
-
-            services.AddScoped<IAlleleNamesService, AlleleNamesService>();
-            services.AddScoped<IHlaMatchPreCalculationService, HlaMatchPreCalculationService>();
-            services.AddScoped<IDpb1TceGroupsService, Dpb1TceGroupsService>();
-            services.AddScoped<IHlaMatchingDataConverter, HlaMatchingDataConverter>();
-            services.AddScoped<IHlaScoringDataConverter, HlaScoringDataConverter>();
-
-            services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
-        }
-
-        private static void RegisterHlaMetadataDictionaryServices(this IServiceCollection services)
-        {
-            services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
-            services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
-            services.AddScoped<ILocusHlaMatchingLookupService, LocusHlaMatchingLookupService>();
-            services.AddScoped<IHlaMatchingLookupService, HlaMatchingLookupService>();
-            services.AddScoped<IHlaScoringLookupService, HlaScoringLookupService>();
-            services.AddScoped<IDpb1TceGroupLookupService, Dpb1TceGroupLookupService>();
-        }
-
-        private static void RegisterMacDictionaryServices(this IServiceCollection services)
-        {
-            services.RegisterMacDictionaryServices(
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey
-            );
         }
 
         public static void RegisterDonorClient(this IServiceCollection services)

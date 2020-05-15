@@ -38,7 +38,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.Configure<IntegrationTestSettings>(configuration.GetSection("Testing"));
 
             services.RegisterSearchAlgorithmTypes();
-            services.RegisterAllHlaMetadataDictionaryTypes();
+            Func<IServiceProvider, string> blank = _ => "";
+            services.RegisterHlaMetadataDictionary(blank, blank, blank, blank, blank); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
             

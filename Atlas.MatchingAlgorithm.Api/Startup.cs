@@ -1,9 +1,12 @@
 ﻿using System.Reflection;
 using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Api
 {
@@ -34,10 +37,16 @@ namespace Atlas.MatchingAlgorithm.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.RegisterSettings(configuration);
-            services.RegisterSearchAlgorithmTypes();
-            services.RegisterAllHlaMetadataDictionaryTypes();
             services.RegisterDataServices();
             services.RegisterDonorClient();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey
+                );
+            services.RegisterSearchAlgorithmTypes();
 
             services.ConfigureSwaggerService();
 
