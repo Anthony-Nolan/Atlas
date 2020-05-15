@@ -13,12 +13,11 @@ namespace Atlas.Utils.Caching
             // that is repeatedly accessed, but should be read a-fresh on each request.
             // Most notably this is necessary for anything relating to the hot-swapping of the
             // Donor Matching Database, e.g. ActiveHlaNomenclatureVersion.
-            // The cache expires after 20 minutes, but this should only be for medium-lightweight
-            // stuff anyway, so .... :shrug:
+            // The cache should never expire. If a request is long running then it still shouldn't change.
             services.AddTransient<ITransientCacheProvider, TransientCacheProvider>(sp =>
             {
-                const int twentyMinutes = 60 * 20;
-                var lifeTime = transientCacheLifetimeOverride ?? twentyMinutes;
+                const int tenYears = 60 * 60 * 24 * 365 * 10;
+                var lifeTime = transientCacheLifetimeOverride ?? tenYears;
 
                 return new TransientCacheProvider(MakeCache(lifeTime));
             });
