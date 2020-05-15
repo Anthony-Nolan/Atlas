@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings;
+using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent
 {
@@ -41,13 +41,13 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent
 
         private static IEnumerable<GradeWeighting> SeededMatchGradeWeights()
         {
-            var grades = Enum.GetValues(typeof(MatchGrade)).Cast<MatchGrade>();
+            var grades = EnumerateValues<MatchGrade>();
             return grades.Select((g, i) => new GradeWeighting {Name = g.ToString(), Weight = DefaultWeight, Id = i + 1});
         }
 
         private static IEnumerable<ConfidenceWeighting> SeededConfidenceWeights()
         {
-            var confidences = Enum.GetValues(typeof(MatchConfidence)).Cast<MatchConfidence>();
+            var confidences = EnumerateValues<MatchConfidence>();
             return confidences.Select((c, i) => new ConfidenceWeighting {Name = c.ToString(), Weight = DefaultWeight, Id = i + 1});
         }
     }

@@ -1,8 +1,8 @@
 ﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
-using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
+using static EnumStringValues.EnumExtensions;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
         
         public DatabaseDonorSelectionCriteriaBuilder WithAllLociAtTypingResolution(HlaTypingResolution resolution)
         {
-            foreach (var locus in LocusSettings.AllLoci)
+            foreach (var locus in EnumerateValues<Locus>())
             {
                 criteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
             }

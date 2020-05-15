@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
@@ -8,6 +7,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.Utils.Core.Common;
 using System;
 using System.Collections.Generic;
+using static EnumStringValues.EnumExtensions;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
         private Genotype CreateGenotype(GenotypeCriteria criteria)
         {
             var hla = new PhenotypeInfo<TgsAllele>();
-            foreach (var locus in LocusSettings.AllLoci)
+            foreach (var locus in EnumerateValues<Locus>())
             {
                 var randomTgsAllele1 = RandomTgsAllele(locus, TypePosition.One, criteria);
                 hla.SetAtPosition(locus, TypePosition.One, randomTgsAllele1);

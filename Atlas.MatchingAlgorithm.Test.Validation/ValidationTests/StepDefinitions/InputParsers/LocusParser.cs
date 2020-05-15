@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Models;
+using static EnumStringValues.EnumExtensions;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers
@@ -14,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             {
                 case "each locus":
                 case "all loci":
-                    return LocusSettings.AllLoci;
+                    return EnumerateValues<Locus>();
                 case "locus A":
                     return new[] {Locus.A};
                 case "locus B":

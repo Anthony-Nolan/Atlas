@@ -57,13 +57,4 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
         // When comparing enum values, 'arbitary' should only match 'arbitrary', not any other values
         Arbitrary,
     }
-
-    public static class HlaTypingCategoryHelper
-    {
-        public static IEnumerable<HlaTypingResolution> AllResolutions()
-        {
-            return Enum.GetValues(typeof(HlaTypingResolution)).Cast<HlaTypingResolution>();
-        }
-    }
-    
 }

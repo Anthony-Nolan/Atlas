@@ -1,5 +1,4 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
@@ -14,6 +13,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using static EnumStringValues.EnumExtensions;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
@@ -118,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring)
         {
             var scoreResult = new ScoreResult();
-            var scoredLoci = LocusSettings.AllLoci;
+            var scoredLoci = EnumerateValues<Locus>();
 
             foreach (var locus in scoredLoci)
             {

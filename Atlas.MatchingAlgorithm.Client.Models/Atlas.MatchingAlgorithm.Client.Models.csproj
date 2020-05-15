@@ -9,6 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="EnumStringValues" Version="4.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Atlas.Utils\Atlas.Utils.csproj" />
     </ItemGroup>
 

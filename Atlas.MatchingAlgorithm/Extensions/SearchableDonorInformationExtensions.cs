@@ -1,7 +1,8 @@
-﻿using Atlas.MatchingAlgorithm.Models;
+﻿using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.Helpers;
+using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.Extensions
 {
@@ -12,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Extensions
             return new DonorInfo
             {
                 DonorId = donor.DonorId,
-                DonorType = DonorInfoHelper.DonorTypeFromString(donor.DonorType),
+                DonorType = donor.DonorType.ParseToEnum<DonorType>(),
                 HlaNames = donor.HlaAsPhenotype()
             };
         }
