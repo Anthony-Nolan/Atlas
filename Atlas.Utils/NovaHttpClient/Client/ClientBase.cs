@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -9,13 +8,11 @@ using System.Threading.Tasks;
 using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Core.Http;
 using Atlas.Utils.Core.Middleware.RequestId;
-using Atlas.Utils.Core.Models;
 using Atlas.Utils.NovaHttpClient.ApplicationInsights;
-using Atlas.Utils.NovaHttpClient.Client;
 using Atlas.Utils.NovaHttpClient.Http;
 using Atlas.Utils.NovaHttpClient.RequestId;
 
-namespace Atlas.Utils.NovaHttpClient
+namespace Atlas.Utils.NovaHttpClient.Client
 {
     public abstract class ClientBase
     {
@@ -51,8 +48,8 @@ namespace Atlas.Utils.NovaHttpClient
             this.errorsParser = errorsParser ?? new HttpErrorParser();
         }
 
-        protected virtual string ApiKeyHeaderKey => ApiKeyConstants.HeaderKey;
-        protected virtual string LegacyApiKeyHeaderKey => ApiKeyConstants.LegacyHeaderKey;
+        private string ApiKeyHeaderKey => ApiKeyConstants.HeaderKey;
+        private string LegacyApiKeyHeaderKey => ApiKeyConstants.LegacyHeaderKey;
 
         protected virtual HttpRequestMessage GetRequest(HttpMethod method, string pathname,
             List<KeyValuePair<string, string>> parameters = null, object body = null)
@@ -61,17 +58,6 @@ namespace Atlas.Utils.NovaHttpClient
             AddMessageBody(message, body);
             AddRequestId(message);
             return message;
-        }
-
-        protected List<KeyValuePair<string, string>> GenerateParametersForList(string key, List<string> values)
-        {
-            return values.Select(value => new KeyValuePair<string, string>(key, value)).ToList();
-        }
-
-        protected async Task MakeRequestAsync(HttpRequestMessage request)
-        {
-            var response = await SendRequestAsync(request);
-            await AssertResponseOk(response);
         }
 
         protected async Task<T> MakeRequestAsync<T>(HttpRequestMessage request)
