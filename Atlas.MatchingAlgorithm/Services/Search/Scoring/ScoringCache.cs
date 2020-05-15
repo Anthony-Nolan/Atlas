@@ -2,8 +2,8 @@ using System;
 using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.Utils.Caching;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
@@ -24,10 +24,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         private readonly IActiveHlaVersionAccessor hlaVersionProvider;
 
         public ScoringCache(
-            IAppCache cache,
+            IPersistentCacheProvider cacheProvider,
             IActiveHlaVersionAccessor hlaVersionProvider)
         {
-            this.cache = cache;
+            this.cache = cacheProvider.Cache;
             this.hlaVersionProvider = hlaVersionProvider;
         }
 

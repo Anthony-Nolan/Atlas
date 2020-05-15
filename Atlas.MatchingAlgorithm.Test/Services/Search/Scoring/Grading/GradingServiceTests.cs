@@ -16,6 +16,7 @@ using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
+using Atlas.Utils.Caching;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
@@ -31,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
         {
             var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
             var scoringCache = new ScoringCache(
-                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
+                new PersistentCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))),
                 Substitute.For<IActiveHlaVersionAccessor>());
 
             gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);

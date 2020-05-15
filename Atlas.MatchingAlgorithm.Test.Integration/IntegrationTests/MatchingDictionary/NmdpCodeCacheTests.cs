@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Utils.Caching;
 using Atlas.Utils.Core.Models;
 using Locus = Atlas.Utils.Models.Locus;
 
@@ -33,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
         public void OneTimeSetUp()
         {
             nmdpCodeCache = DependencyInjection.DependencyInjection.Provider.GetService<INmdpCodeCache>();
-            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IAppCache>();
+            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
         }
 

@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Services.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using Atlas.Utils.Caching;
 using NSubstitute;
 using NUnit.Framework;
 using Atlas.Utils.Models;
@@ -39,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Confidence
         {
             var confidenceCalculator = new ConfidenceCalculator();
             var scoringCache = new ScoringCache(
-                new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))),
+                new PersistentCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))),
                 Substitute.For<IActiveHlaVersionAccessor>());
 
             confidenceService = new ConfidenceService(confidenceCalculator, scoringCache);

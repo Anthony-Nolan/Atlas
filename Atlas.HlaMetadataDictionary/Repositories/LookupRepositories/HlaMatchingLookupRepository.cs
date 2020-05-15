@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using LazyCache;
+using Atlas.Utils.Caching;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
@@ -19,8 +19,8 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         public HlaMatchingLookupRepository(
             ICloudTableFactory factory, 
             ITableReferenceRepository tableReferenceRepository,
-            IAppCache cache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cache, CacheKey)
+            IPersistentCacheProvider cacheProvider)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey)
         {
         }
 

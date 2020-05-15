@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using LazyCache;
+using Atlas.Utils.Caching;
 using Microsoft.WindowsAzure.Storage.Table;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models;
@@ -39,13 +40,13 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string functionalTableReferencePrefix,
-            IAppCache cache,
+            IPersistentCacheProvider cacheProvider,
             string cacheKey)
         {
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
             this.functionalTableReferencePrefix = functionalTableReferencePrefix;
-            this.cache = cache;
+            this.cache = cacheProvider.Cache;
             this.cacheKey = cacheKey;
         }
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using LazyCache;
+using Atlas.Utils.Caching;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
@@ -28,9 +28,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string dataFunctionalTableReferencePrefix,
-            IAppCache cache,
+            IPersistentCacheProvider cacheProvider,
             string cacheKey)
-            : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cache, cacheKey)
+            : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cacheProvider, cacheKey)
         {
         }
 

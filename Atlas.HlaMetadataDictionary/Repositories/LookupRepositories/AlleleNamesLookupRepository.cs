@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using LazyCache;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.Utils.Caching;
 using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
@@ -22,8 +22,8 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         public AlleleNamesLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IAppCache appCache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, appCache, CacheKeyAlleleNames)
+            IPersistentCacheProvider cacheProvider)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKeyAlleleNames)
         {
         }
 

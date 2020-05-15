@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Net;
 using LazyCache;
+using Atlas.Utils.Caching;
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.ConfigSettings;
-using Atlas.MatchingAlgorithm.Helpers;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
