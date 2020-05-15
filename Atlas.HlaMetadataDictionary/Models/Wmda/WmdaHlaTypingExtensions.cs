@@ -17,11 +17,11 @@ namespace Atlas.HlaMetadataDictionary.Models.Wmda
             return typing.TypingLocus.Equals(Drb345Serologies.Locus) && Drb345Serologies.Typings.Contains(typing.Name);
         }
 
-        public static bool IsMatchingDictionaryLocusTyping(this IWmdaHlaTyping typing)
+        public static bool IsHlaMetadataDictionaryLocusTyping(this IWmdaHlaTyping typing)
         {
             return typing.TypingMethod == TypingMethod.Molecular ?
-                MatchingDictionaryLoci.IsMolecularLocus(typing.TypingLocus) :
-                    MatchingDictionaryLoci.IsSerologyLocus(typing.TypingLocus) && !typing.IsDrb345SerologyTyping();
+                HlaMetadataDictionaryLoci.IsMolecularLocus(typing.TypingLocus) :
+                    HlaMetadataDictionaryLoci.IsSerologyLocus(typing.TypingLocus) && !typing.IsDrb345SerologyTyping();
         }
 
         public static bool TypingEquals(this IWmdaHlaTyping typing, IWmdaHlaTyping other)

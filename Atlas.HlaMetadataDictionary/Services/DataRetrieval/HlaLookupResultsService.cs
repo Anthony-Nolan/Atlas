@@ -48,19 +48,19 @@ namespace Atlas.HlaMetadataDictionary.Services
         {
             try
             {
-                logger.SendTrace("MatchingDictionary: Processing Allele Names", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Allele Names", LogLevel.Info);
                 var alleleNameLookupResults = GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
                 
-                logger.SendTrace("MatchingDictionary: Processing Pre-calculated match hla", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla", LogLevel.Info);
                 var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaDatabaseVersion).ToList();
                 
-                logger.SendTrace("MatchingDictionary: Processing Matching lookup", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Matching lookup", LogLevel.Info);
                 var matchingLookupResults = GetMatchingLookupResults(preCalculatedMatchedHla);
 
-                logger.SendTrace("MatchingDictionary: Processing Scoring lookup", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Scoring lookup", LogLevel.Info);
                 var scoringLookupResults = GetScoringLookupResults(preCalculatedMatchedHla);
 
-                logger.SendTrace("MatchingDictionary: Processing TCE group lookup", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing TCE group lookup", LogLevel.Info);
                 var dpb1TceGroupLookupResults = GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
 
                 return new HlaLookupResultCollections
@@ -73,7 +73,7 @@ namespace Atlas.HlaMetadataDictionary.Services
             }
             catch (Exception ex)
             {
-                throw new MatchingDictionaryHttpException("Could not get all HLA lookup results.", ex);
+                throw new HlaMetadataDictionaryHttpException("Could not get all HLA lookup results.", ex);
             }
         }
 

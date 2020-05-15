@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     [UseReporter(typeof(DiffReporter))]
     public class SerologiesTest : WmdaRepositoryTestBase<HlaNom>

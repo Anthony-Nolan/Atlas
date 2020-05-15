@@ -19,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
             Name = name;
             TypingMethod = typingMethod;
             IsDeleted = isDeleted;
-            Locus = MatchingDictionaryLoci.GetLocusFromTypingLocusNameIfExists(typingMethod, typingLocus);
+            Locus = HlaMetadataDictionaryLoci.GetLocusFromTypingLocusNameIfExists(typingMethod, typingLocus);
         }
 
         public override string ToString()

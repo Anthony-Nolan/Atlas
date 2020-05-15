@@ -10,11 +10,11 @@ using Atlas.Utils.Caching;
 using Atlas.Utils.Core.Models;
 using Locus = Atlas.Utils.Models.Locus;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
 {
     /// <summary>
     /// Fixture testing the base functionality of HlaSearchingLookupService via an arbitrarily chosen base class.
-    /// Relies on a file-backed matching dictionary - tests may break if underlying data is changed.
+    /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
     /// </summary>
     [TestFixture]
     public class HlaSearchingLookupLookupTests
@@ -51,12 +51,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
         {
             const string hlaName = "XYZ:123:INVALID";
 
-            Assert.ThrowsAsync<MatchingDictionaryException>(
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
                 async () => await lookupService.GetHlaLookupResult(DefaultLocus, hlaName, null));
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenNmdpCodeContainsAlleleNotInMatchingDictionary_ThrowsException()
+        public void GetHlaLookupResult_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string missingAllele = "9999:9999";
 
@@ -66,27 +66,27 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
                 .GetAllelesForDefinedNmdpCode(DefaultLocusType, nmdpCode)
                 .Returns(new List<string> { missingAllele });
 
-            Assert.ThrowsAsync<MatchingDictionaryException>(async () => 
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
                 await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null));
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenAlleleStringOfNamesContainsAlleleNotInMatchingDictionary_ThrowsException()
+        public void GetHlaLookupResult_WhenAlleleStringOfNamesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string existingAllele = "01:133";
             const string missingAllele = "9999:9999";
             const string alleleString = existingAllele + "/" + missingAllele;
 
-            Assert.ThrowsAsync<MatchingDictionaryException>(async () =>
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
                 await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null));
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenAlleleStringOfSubtypesContainsAlleleNotInMatchingDictionary_ThrowsException()
+        public void GetHlaLookupResult_WhenAlleleStringOfSubtypesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string alleleString = "01:133/9999";
 
-            Assert.ThrowsAsync<MatchingDictionaryException>(async () =>
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
                 await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null));
         }
     }

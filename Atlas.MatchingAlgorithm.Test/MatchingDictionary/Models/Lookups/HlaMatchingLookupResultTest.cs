@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.Utils.Models;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Models.Lookups
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.Lookups
 {
     [TestFixture]
     public class HlaMatchingLookupResultTest

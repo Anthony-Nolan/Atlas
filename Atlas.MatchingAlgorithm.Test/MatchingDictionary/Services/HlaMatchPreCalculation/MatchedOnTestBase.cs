@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
     public abstract class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {

@@ -27,10 +27,10 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
         {
             var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
-            var matchingDictionary = cache.Get<Dictionary<string, HlaLookupTableEntity>>(versionedCacheKey);
-            if (matchingDictionary != null)
+            var metadataDictionary = cache.Get<Dictionary<string, HlaLookupTableEntity>>(versionedCacheKey);
+            if (metadataDictionary != null)
             {
-                return matchingDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult()?.MatchingPGroups);
+                return metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult()?.MatchingPGroups);
             }
             throw new MemoryCacheException($"{versionedCacheKey} table not cached!");
         }            

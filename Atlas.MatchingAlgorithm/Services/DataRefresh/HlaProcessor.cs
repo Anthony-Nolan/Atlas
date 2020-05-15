@@ -149,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
 
-                logger.SendTrace("HLA PROCESSOR: caching matching dictionary tables", LogLevel.Info);
+                logger.SendTrace("HLA PROCESSOR: caching HlaMetadataDictionary tables", LogLevel.Info);
                 // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
                 var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaDatabaseVersion);
                 await dictionaryCacheControl.PreWarmAllCaches();
@@ -159,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await antigenCachingService.GenerateAntigenCache();
 
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
-                // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the matching dictionary, and new ones added to the SQL database
+                // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the HlaMetadataDictionary, and new ones added to the SQL database
                 var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaDatabaseVersion);
                 var pGroups = hlaDictionary.GetAllPGroups();
                 pGroupRepository.InsertPGroups(pGroups);

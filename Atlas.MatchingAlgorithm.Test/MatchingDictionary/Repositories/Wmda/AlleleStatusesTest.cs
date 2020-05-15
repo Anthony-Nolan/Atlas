@@ -1,7 +1,7 @@
 ﻿using Atlas.HlaMetadataDictionary.Models.Wmda;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     public class AlleleStatusesTest : WmdaRepositoryTestBase<AlleleStatus>
     {

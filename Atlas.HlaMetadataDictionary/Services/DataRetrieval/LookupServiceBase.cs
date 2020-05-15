@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Services
             catch (Exception ex)
             {
                 var msg = $"Failed to lookup '{lookupName}' at locus {locus}.";
-                throw new MatchingDictionaryException(new HlaInfo(locus, lookupName), msg, ex);
+                throw new HlaMetadataDictionaryException(new HlaInfo(locus, lookupName), msg, ex);
             }
         }
 

@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System.Linq;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
     public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {

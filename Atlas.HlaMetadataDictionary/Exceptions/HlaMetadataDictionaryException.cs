@@ -2,17 +2,17 @@
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
-    public class MatchingDictionaryException : Exception
+    public class HlaMetadataDictionaryException : Exception
     {
         public HlaInfo HlaInfo { get; }
 
-        public MatchingDictionaryException(HlaInfo hlaInfo, string message)
+        public HlaMetadataDictionaryException(HlaInfo hlaInfo, string message)
             : base(message)
         {
             HlaInfo = hlaInfo;
         }
 
-        public MatchingDictionaryException(HlaInfo hlaInfo, string message, Exception inner)
+        public HlaMetadataDictionaryException(HlaInfo hlaInfo, string message, Exception inner)
             : base(message, inner)
         {
             HlaInfo = hlaInfo;

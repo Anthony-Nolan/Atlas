@@ -5,7 +5,7 @@ using Atlas.Utils.Models;
 namespace Atlas.MultipleAlleleCodeDictionary
 {
     /// <summary>
-    /// The matching dictionary package needs to consume a cache populated elsewhere.
+    /// Other packages need to consume a MAC cache populated elsewhere.
     /// The cache should be exposed via this interface to ensure lazy re-population of an expired cache
     /// </summary>
     public interface INmdpCodeCache

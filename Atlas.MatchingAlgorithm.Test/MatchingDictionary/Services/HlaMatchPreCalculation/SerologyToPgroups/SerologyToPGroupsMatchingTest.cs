@@ -7,7 +7,7 @@ using System.Linq;
 using ApprovalTests.Reporters.TestFrameworks;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
 {
     [UseReporter(typeof(NUnitReporter))]
     [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]

@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.Utils.Models;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Models.HlaTypings
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
 {
     [TestFixture]
     public class HlaTypingTest

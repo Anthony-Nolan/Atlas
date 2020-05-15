@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
             builder.Services.RegisterSettingsForDonorManagementFunctionsApp();
             builder.Services.RegisterHlaServiceClient();
             builder.Services.RegisterDataServices();
-            builder.Services.RegisterTypesNeededForMatchingDictionaryLookups();
+            builder.Services.RegisterTypesNeededForHlaMetadataDictionary();
             builder.Services.RegisterSearchAlgorithmTypes();
             builder.Services.RegisterDonorManagementServices();
         }

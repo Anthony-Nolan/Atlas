@@ -9,11 +9,11 @@ using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.Crea
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
-    public class MatchingDictionary
+    public class HlaMetadataDictionaryFunction //QQ Migrate to new project
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public MatchingDictionary(
+        public HlaMetadataDictionaryFunction(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaVersionAccessor hlaVersionAccessor)
         {

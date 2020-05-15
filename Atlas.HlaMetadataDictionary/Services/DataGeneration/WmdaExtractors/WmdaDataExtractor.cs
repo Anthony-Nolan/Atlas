@@ -16,11 +16,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors
             this.fileName = fileName;
         }
 
-        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForMatchingDictionaryLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
+        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
         {
             var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName).ToList();
             ExtractHeaders(fileContents.First());
-            return ExtractWmdaHlaTypingsForMatchingDictionaryLoci(fileContents);
+            return ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(fileContents);
         }
 
         /// <returns>
@@ -37,13 +37,13 @@ namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors
             // Do nothing by default
         }
 
-        private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForMatchingDictionaryLoci(IEnumerable<string> wmdaFileContents)
+        private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(IEnumerable<string> wmdaFileContents)
         {
             return 
                 wmdaFileContents
                     .Select(line => line.Trim())
                     .Select(MapLineOfFileContentsToWmdaHlaTyping)
-                    .Where(typing => typing != null && typing.IsMatchingDictionaryLocusTyping());
+                    .Where(typing => typing != null && typing.IsHlaMetadataDictionaryLocusTyping());
         }
     }
 }

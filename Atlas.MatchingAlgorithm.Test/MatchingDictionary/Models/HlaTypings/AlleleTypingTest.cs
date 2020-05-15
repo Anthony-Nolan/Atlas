@@ -1,11 +1,10 @@
 ﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation;
+using Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Models.HlaTypings
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
 {
     [TestFixture]
     public class AlleleTypingTest

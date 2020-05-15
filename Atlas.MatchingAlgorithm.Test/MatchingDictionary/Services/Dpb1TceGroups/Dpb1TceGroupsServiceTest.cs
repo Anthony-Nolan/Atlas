@@ -5,7 +5,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.Dpb1TceGroups
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Dpb1TceGroups
 {
     public class Dpb1TceGroupsServiceTest
     {

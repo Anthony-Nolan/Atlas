@@ -1,8 +1,8 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation;
+using Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Models.HlaTypings
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
 {
     public class AlleleTypingTestCaseSources
     {

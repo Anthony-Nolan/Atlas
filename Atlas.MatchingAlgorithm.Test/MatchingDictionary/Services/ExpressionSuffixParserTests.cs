@@ -2,7 +2,7 @@
 using Atlas.HlaMetadataDictionary.Services;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
 {
     [TestFixture]
     public class ExpressionSuffixParserTests

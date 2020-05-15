@@ -9,7 +9,7 @@ using System;
 using System.Threading.Tasks;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.Lookups
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 {
     [TestFixture]
     public class LocusHlaMatchingLookupServiceTest

@@ -5,7 +5,7 @@ using System.Linq;
 using FluentAssertions;
 using Atlas.HlaMetadataDictionary.Repositories;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     public abstract class WmdaRepositoryTestBase<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {

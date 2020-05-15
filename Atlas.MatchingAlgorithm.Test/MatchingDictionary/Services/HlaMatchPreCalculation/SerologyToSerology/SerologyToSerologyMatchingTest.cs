@@ -9,7 +9,7 @@ using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using Locus = Atlas.Utils.Models.Locus;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
     [UseReporter(typeof(NUnitReporter))]
     [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]

@@ -18,12 +18,12 @@ namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 
             if (!Enum.TryParse(alleleStatus.SequenceStatus, true, out SequenceStatus sequenceStatus))
             {
-                throw new MatchingDictionaryException(hlaInfo, $"Sequence status {alleleStatus.SequenceStatus} not recognised.");
+                throw new HlaMetadataDictionaryException(hlaInfo, $"Sequence status {alleleStatus.SequenceStatus} not recognised.");
             }
 
             if (!Enum.TryParse(alleleStatus.DnaCategory, true, out DnaCategory dnaCategory))
             {
-                throw new MatchingDictionaryException(hlaInfo, $"DNA category {alleleStatus.DnaCategory} not recognised.");
+                throw new HlaMetadataDictionaryException(hlaInfo, $"DNA category {alleleStatus.DnaCategory} not recognised.");
             }
 
             return new AlleleTypingStatus(sequenceStatus, dnaCategory);

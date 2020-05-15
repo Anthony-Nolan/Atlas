@@ -7,10 +7,10 @@ using Atlas.Utils.Models;
 namespace Atlas.HlaMetadataDictionary.HlaTypingInfo
 {
     /// <summary>
-    /// The matching dictionary will only contain typing data for a subset of all the possible HLA loci.
+    /// The HLA Metadata dictionary will only contain typing data for a subset of all the possible HLA loci.
     /// This class defines these loci of interest and their typing method name variants.
     /// </summary>
-    internal static class MatchingDictionaryLoci
+    internal static class HlaMetadataDictionaryLoci
     {
         private class LocusDetails
         {

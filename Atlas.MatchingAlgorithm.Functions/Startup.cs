@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Functions
         {
             builder.Services.RegisterNovaClients();
             builder.Services.RegisterDataServices();
-            builder.Services.RegisterAllMatchingDictionaryTypes();
+            builder.Services.RegisterAllHlaMetadataDictionaryTypes();
             builder.Services.RegisterSearchAlgorithmTypes();
             builder.Services.RegisterSettingsForFunctionsApp();
         }

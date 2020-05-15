@@ -9,7 +9,7 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.AlleleNames
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleNames
 {
     public class AlleleNamesServiceTest
     {

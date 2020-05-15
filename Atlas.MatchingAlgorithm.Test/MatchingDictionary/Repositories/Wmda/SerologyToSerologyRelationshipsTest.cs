@@ -2,7 +2,7 @@ using Atlas.HlaMetadataDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     public class SerologyToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelSerSer>
     {

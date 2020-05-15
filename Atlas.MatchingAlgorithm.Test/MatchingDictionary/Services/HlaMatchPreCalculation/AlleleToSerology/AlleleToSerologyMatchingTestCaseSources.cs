@@ -2,7 +2,7 @@
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.AlleleToSerology
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.AlleleToSerology
 {
     public class AlleleToSerologyMatchingTestCaseSources
     {
