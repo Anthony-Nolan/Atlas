@@ -1,4 +1,4 @@
-﻿using Atlas.Utils.Core.Attributes;
+﻿using System.Reflection;
 
 namespace Atlas.Utils.Notifications.MessageModels
 {
@@ -12,7 +12,7 @@ namespace Atlas.Utils.Notifications.MessageModels
         {
             Summary = summary;
             Description = description;
-            Originator = originator ?? EntryAssemblyAttribute.GetReducedEntryAssembly();
+            Originator = originator ?? Assembly.GetEntryAssembly()?.FullName;
         }
     }
 }
