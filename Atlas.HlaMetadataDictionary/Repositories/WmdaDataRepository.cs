@@ -57,7 +57,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor, string hlaDatabaseVersion)
             where TWmdaHlaTyping : IWmdaHlaTyping
         {
-            return extractor.GetWmdaHlaTypingsForMatchingDictionaryLoci(wmdaFileReader, hlaDatabaseVersion);
+            return extractor.GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(wmdaFileReader, hlaDatabaseVersion);
         }
     }
 }

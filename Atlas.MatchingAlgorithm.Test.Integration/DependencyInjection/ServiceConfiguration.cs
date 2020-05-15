@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.Configure<IntegrationTestSettings>(configuration.GetSection("Testing"));
 
             services.RegisterSearchAlgorithmTypes();
-            services.RegisterAllMatchingDictionaryTypes();
+            services.RegisterAllHlaMetadataDictionaryTypes();
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
             
@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
             );
 
-            // Matching Dictionary Overrides
+            // HlaMetadataDictionary Overrides
             services.AddScoped<IWmdaHlaVersionProvider, MockHlaVersionProvider>();
             services.AddScoped<IActiveHlaVersionAccessor, MockHlaVersionProvider>();
             services.AddScoped<IHlaScoringLookupRepository, FileBackedHlaScoringLookupRepository>();

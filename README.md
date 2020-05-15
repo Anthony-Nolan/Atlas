@@ -120,7 +120,7 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
 - Set up sensible initial data.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
     - This should take < 1 second to run.
-  - In the Swagger UI, trigger the `Matching Dictionary > recreate-active-version` endpoint.
+  - In the Swagger UI, trigger the `HlaMetadataDictionary > recreate-active-version` endpoint.
     - This can take several minutes to run.
   - In the Swagger UI, trigger the `Data Refresh > trigger-donor-import` endpoint.
     - This should take < 1 minute to run.
@@ -184,7 +184,7 @@ Getting functions to run locally with Swagger for VS2019:
 
 ### Long directories
 
-Some of the files in the matching dictionary tests are longer than the 260 character limit that Windows expects. This causes problems in the IDE and in Git for Windows:
+Some of the files in the hla metadata dictionary tests are longer than the 260 character limit that Windows expects. This causes problems in the IDE and in Git for Windows:
 
 - For your IDE, use Visual Studio 2019, or Rider, as there are known issues trying to load the Test project in Visual Studio 2017 due to this. The issue is not present in more recent IDEs.
 - For your git, we use the `core.longpaths` git setting, as described in the zero-to-hero section above. If you cloned your repo prior to reading this README, it would be wise to delete and reclone it with the modified git setting.
@@ -238,12 +238,12 @@ The service has three pre-processing stages that will need to be run locally bef
 
 Note that steps 2 and 3 are only independent when running a "full" data refresh - i.e. importing all donors into a fresh database, then processing hla. This full refresh will only happen when the algorithm is first deployed, and from then on every three months when the underlying WMDA-provided HLA information changes. The continuous donor import for new/updated donor information will import the donor and process HLA in the same step.
 
-### (1) Matching Dictionary
+### (1) HlaMetadata Dictionary
 
-The "Matching Dictionary" is a set of azure cloud storage tables containing nomenclature information about HLA.
+The "Hla Metadata Dictionary" is a set of azure cloud storage tables containing nomenclature information about HLA.
 The pre-processing job fetches up to date information from WMDA, and populates these tables with the information necessary to run a search
 
-- Start the job by POST-ing to the `/matching-dictionary/create-latest-version` endpoint
+- Start the job by POST-ing to the Triggering the `CreateLatestVersion` endpoint, in Swagger
 - The job is expected to take several minutes to run to completion
 - The job will need re-running whenever:
   - (a) The schema is changed
@@ -409,18 +409,18 @@ Contained within the `Atlas.MatchingAlgorithm.Test` project.
 
 No external dependencies or storage, testing individual code units.
 
-### **Matching Dictionary Tests**
+### **HlaMetadata Dictionary Tests**
 
 These tests use checked in versions of the allele data we fetch from WMDA. Originally they were directly copied from a version of the WMDA data, but to speed up testing, alleles unused in any unit test have been removed from some of the files - as such they should not be considered to be valid representations of the WMDA data.
 
-Any new alleles required in testing the matching dictionary should be added, and any no longer used can be removed.
+Any new alleles required in testing the HlaMetadata Dictionary should be added, and any no longer used can be removed.
 
 ### Integration Testing
 
 Contained within the `Atlas.MatchingAlgorithm.Test.Integration` project.
 
 - Uses a real SQL database, which is populated/cleared in each test run.
-- External dependencies, and Matching Dictionary are stubbed out.
+- External dependencies, and HlaMetadata Dictionary are stubbed out.
 - Azure Storage emulator will need to be running - the tests should start this if it's not currently running, but it must be installed.
 - Uses an independent DI setup, defined in `ServiceModule`. Uses publicly exposed helper methods from the core SearchAlgorithm project to ensure new dependencies only need registering once
 

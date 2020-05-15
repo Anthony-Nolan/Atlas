@@ -12,7 +12,7 @@ using Atlas.Utils.Caching;
 using Atlas.Utils.Core.Models;
 using Locus = Atlas.Utils.Models.Locus;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
 {
     [TestFixture]
     public class NmdpCodeCacheTests

@@ -1,7 +1,7 @@
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
     public class AlleleTestCase
     {

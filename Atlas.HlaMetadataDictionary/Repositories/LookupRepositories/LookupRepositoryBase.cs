@@ -124,9 +124,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         }
 
         private static TTableEntity GetDataFromCache(
-            string partition, string rowKey, IReadOnlyDictionary<string, TTableEntity> matchingDictionary)
+            string partition, string rowKey, IReadOnlyDictionary<string, TTableEntity> metadataDictionary)
         {
-            matchingDictionary.TryGetValue(partition + rowKey, out var tableEntity);
+            metadataDictionary.TryGetValue(partition + rowKey, out var tableEntity);
             return tableEntity;
         }
 

@@ -207,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_WhenMatchingDictionaryRecreationFails_ScalesRefreshDatabaseToDormantSize()
+        public async Task RefreshData_WhenHlaMetadataDictionaryRecreationFails_ScalesRefreshDatabaseToDormantSize()
         {
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.DatabaseAName, "db-a")

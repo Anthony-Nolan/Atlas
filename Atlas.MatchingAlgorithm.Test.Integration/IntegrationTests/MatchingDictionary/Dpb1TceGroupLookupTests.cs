@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using Atlas.Utils.Caching;
 using Atlas.Utils.Core.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
 {
     /// <summary>
-    /// Fixture relies on a file-backed matching dictionary - tests may break if underlying data is changed.
+    /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
     /// </summary>
     [TestFixture]
     public class Dpb1TceGroupLookupTests

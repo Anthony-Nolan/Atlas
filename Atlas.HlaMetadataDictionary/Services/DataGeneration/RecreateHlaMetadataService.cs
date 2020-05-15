@@ -46,15 +46,15 @@ namespace Atlas.HlaMetadataDictionary.Services
         {
             try
             {
-                logger.SendTrace("MatchingDictionary: Fetching all lookup results", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Fetching all lookup results", LogLevel.Info);
                 var allHlaLookupResults = hlaLookupResultsService.GetAllHlaLookupResults(hlaDatabaseVersion);
                 
-                logger.SendTrace("MatchingDictionary: Persisting lookup results", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Persisting lookup results", LogLevel.Info);
                 await PersistHlaLookupResultCollection(allHlaLookupResults, hlaDatabaseVersion);
             }
             catch (Exception ex)
             {
-                throw new MatchingDictionaryHttpException("Could not recreate the matching dictionary.", ex);
+                throw new HlaMetadataDictionaryHttpException("Could not recreate the matching dictionary.", ex);
             }
         }
 

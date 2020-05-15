@@ -7,7 +7,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaDataConversion
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataConversion
 {
     [TestFixture]
     public class HlaMatchingDataConverterTest :

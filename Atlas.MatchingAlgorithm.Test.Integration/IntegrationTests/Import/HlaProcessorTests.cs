@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_DonorHlaHasMultiplePGroups_InsertsRowForEachPGroup()
         {
-            // We know the number of p-groups for a given hla string from the in memory matching dictionary.
+            // We know the number of p-groups for a given hla string from the in-memory metadata dictionary.
             // If the underlying data changes, this may become incorrect.
             const string hlaWithKnownPGroups = "01:XX";
             const int expectedPGroupCount = 213;

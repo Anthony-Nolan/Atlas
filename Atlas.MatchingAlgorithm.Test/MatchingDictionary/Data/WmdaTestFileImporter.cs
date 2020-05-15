@@ -3,9 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Atlas.HlaMetadataDictionary.Data;
-using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Data
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary
 {
     public class WmdaTestFileImporter : IWmdaFileReader
     {
