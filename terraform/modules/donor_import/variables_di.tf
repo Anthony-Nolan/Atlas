@@ -20,6 +20,13 @@ variable "function_storage" {
   })
 }
 
+variable "azure_storage" {
+  type = object({
+    name                      = string
+    primary_connection_string = string
+  })
+}
+
 variable "servicebus_namespace" {
   type = object({
     name = string
