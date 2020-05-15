@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.AlleleNames
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleNames
 {
     [TestFixture]
     public class AlleleNamesLookupServiceTest
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.AlleleNames
         [TestCase("")]
         public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
         {
-            Assert.ThrowsAsync<MatchingDictionaryException>(
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString, "hla-db-version"));
         }
 
@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.AlleleNames
 
             hlaCategorisationService.GetHlaTypingCategory(notAlleleName).Returns(notAlleleTypingCategory);
 
-            Assert.ThrowsAsync<MatchingDictionaryException>(
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
                 async () => await lookupService.GetCurrentAlleleNames(MatchedLocus, notAlleleName, "hla-db-version"));
         }
 

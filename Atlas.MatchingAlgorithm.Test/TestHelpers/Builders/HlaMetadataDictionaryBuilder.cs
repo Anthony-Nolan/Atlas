@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 return cannedResponse;
             }
 
-            return new HlaMetadataDictionary.HlaMetadataDictionary(
+            return new Atlas.HlaMetadataDictionary.HlaMetadataDictionary(
                 config,
                 recreate,
                 name,

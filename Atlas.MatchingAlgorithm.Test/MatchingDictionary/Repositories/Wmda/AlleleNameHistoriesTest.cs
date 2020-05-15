@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.Wmda;
 using NUnit.Framework;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     public class AlleleNameHistoriesTest : WmdaRepositoryTestBase<AlleleNameHistory>
     {

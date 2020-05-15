@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Utils.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.Lookups
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 {
     /// <summary>
     /// Fixture testing the base functionality of HlaSearchingLookupService
@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.Lookups
             const string hlaName = "HLATYPING";
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(category);
 
-            Assert.ThrowsAsync<MatchingDictionaryException>(
+            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
                 async () => await lookupService.GetHlaLookupResult(DefaultLocus, hlaName, "hla-db-version"));
         }
 

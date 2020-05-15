@@ -14,7 +14,7 @@ Details for the steps necessary for this are in the Zero-To-Hero section of the 
 
 Normally Donor data would be inserted by a FullDataRefresh, which would create records in the Persistent DB recording the completion of a Refresh.
 Because we're hacking that data into the transient DB, we need to simulate that record. This script does that.
-Note that this row does NOT reflect the latest Matching Dictionary version, as mentioned above; it is the version that the source data was generated on.
+Note that this row does NOT reflect the latest version WMDA HLA Nomenclature, as mentioned above; it is the version that the source data was generated on.
 
 -ZeroResultsSearch.json
 

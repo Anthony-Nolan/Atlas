@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
             {
                 case DonorProcessingException<ValidationException> validationException:
                     return new DonorInfoValidationFailureEventModel(eventName, validationException);
-                case DonorProcessingException<MatchingDictionaryException> hlaException:
+                case DonorProcessingException<HlaMetadataDictionaryException> hlaException:
                     return new DonorHlaLookupFailureEventModel(eventName, hlaException);
                 default:
                     return new DonorInfoGenericFailureEventModel<TException>(eventName, exception);

@@ -12,12 +12,12 @@ using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.Crea
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
-    [Route("matching-dictionary")]
-    public class MatchingDictionaryController : ControllerBase
+    [Route("hla-metadata-dictionary")]//QQ migrate to new project
+    public class HlaMetadataDictionaryController : ControllerBase
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public MatchingDictionaryController(
+        public HlaMetadataDictionaryController(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaVersionAccessor hlaVersionAccessor)
         {
@@ -26,14 +26,14 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         [HttpPost]
         [Route("create-latest-version")]
-        public async Task CreateLatestMatchingDictionary()
+        public async Task CreateLatestHlaMetadataDictionary()
         {
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
-        public async Task RecreateActiveMatchingDictionary()
+        public async Task RecreateActiveHlaMetadataDictionary()
         {
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
         }

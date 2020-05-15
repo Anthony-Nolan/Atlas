@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Api
         {
             services.RegisterSettings(configuration);
             services.RegisterSearchAlgorithmTypes();
-            services.RegisterAllMatchingDictionaryTypes();
+            services.RegisterAllHlaMetadataDictionaryTypes();
             services.RegisterDataServices();
             services.RegisterNovaClients();
 

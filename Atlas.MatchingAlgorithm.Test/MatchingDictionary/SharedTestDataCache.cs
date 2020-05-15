@@ -3,9 +3,8 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MatchingAlgorithm.Test.MatchingDictionary.Data;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary
 {
     // Some test data is shared between test fixtures and takes a long time to generate. 
     // This class will evaluate such data the first time it's requested, and serve it from a cache thereafter

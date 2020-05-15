@@ -194,20 +194,23 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
 
-        public static void RegisterAllMatchingDictionaryTypes(this IServiceCollection services)
+
+        public static void RegisterAllHlaMetadataDictionaryTypes(this IServiceCollection services)
         {
-            RegisterMatchingDictionaryLookupStorageTypes(services);
-            RegisterMatchingDictionaryPreCalculationTypes(services);
-            RegisterMatchingDictionaryLookupServices(services);
+            RegisterHlaMetadataDictionaryStorageTypes(services);
+            RegisterHlaMetadataDictionaryPreCalculationTypes(services);
+            RegisterHlaMetadataDictionaryServices(services);
+            RegisterMacDictionaryServices(services);
         }
 
-        public static void RegisterTypesNeededForMatchingDictionaryLookups(this IServiceCollection services)
+        public static void RegisterTypesNeededForHlaMetadataDictionary(this IServiceCollection services)
         {
-            RegisterMatchingDictionaryLookupStorageTypes(services);
-            RegisterMatchingDictionaryLookupServices(services);
+            RegisterHlaMetadataDictionaryStorageTypes(services);
+            RegisterHlaMetadataDictionaryServices(services);
+            RegisterMacDictionaryServices(services);
         }
 
-        private static void RegisterMatchingDictionaryLookupStorageTypes(this IServiceCollection services)
+        private static void RegisterHlaMetadataDictionaryStorageTypes(this IServiceCollection services)
         {
             services.AddSingleton<ICloudTableFactory, CloudTableFactory>(sp =>
                 new CloudTableFactory(sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString)
@@ -221,7 +224,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDpb1TceGroupsLookupRepository, Dpb1TceGroupsLookupRepository>();
         }
 
-        private static void RegisterMatchingDictionaryPreCalculationTypes(this IServiceCollection services)
+        private static void RegisterHlaMetadataDictionaryPreCalculationTypes(this IServiceCollection services)
         {
             services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
 
@@ -243,15 +246,19 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
         }
 
-        private static void RegisterMatchingDictionaryLookupServices(this IServiceCollection services)
+        private static void RegisterHlaMetadataDictionaryServices(this IServiceCollection services)
         {
-            services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
             services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
             services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
             services.AddScoped<ILocusHlaMatchingLookupService, LocusHlaMatchingLookupService>();
             services.AddScoped<IHlaMatchingLookupService, HlaMatchingLookupService>();
             services.AddScoped<IHlaScoringLookupService, HlaScoringLookupService>();
             services.AddScoped<IDpb1TceGroupLookupService, Dpb1TceGroupLookupService>();
+        }
+
+        private static void RegisterMacDictionaryServices(this IServiceCollection services)
+        {
+            services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
         }
 
         public static void RegisterNovaClients(this IServiceCollection services)

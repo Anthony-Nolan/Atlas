@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             IEnumerable<DonorInfo> donorInfos,
             string failureEventName)
         {
-            return await ProcessBatchAsyncWithAnticipatedExceptions<MatchingDictionaryException>(
+            return await ProcessBatchAsyncWithAnticipatedExceptions<HlaMetadataDictionaryException>(
                 donorInfos,
                 async d => await ExpandDonorHlaAsync(d),
                 d => d.ToFailedDonorInfo(),

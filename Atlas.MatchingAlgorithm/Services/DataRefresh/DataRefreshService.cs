@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <summary>
         /// Performs all pre-processing required for running of the search algorithm:
         /// - Scales up target database 
-        /// - Recreates Matching Dictionary
+        /// - Recreates HlaMetadata Dictionary
         /// - Imports all donors
         /// - Processes HLA for imported donors
         /// - Scales down target database

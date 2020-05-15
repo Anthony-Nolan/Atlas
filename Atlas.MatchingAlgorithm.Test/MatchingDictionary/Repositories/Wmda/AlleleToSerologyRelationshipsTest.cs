@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 
-namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Repositories.Wmda
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     public class AlleleToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelDnaSer>
     {

@@ -32,7 +32,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
 
         public AlleleNameLookupResult(string locus, string lookupName, string currentAlleleName)
         {
-            Locus = MatchingDictionaryLoci.GetLocusFromTypingLocusNameIfExists(TypingMethod.Molecular, locus);
+            Locus = HlaMetadataDictionaryLoci.GetLocusFromTypingLocusNameIfExists(TypingMethod.Molecular, locus);
             LookupName = lookupName;
             CurrentAlleleNames = new[] {currentAlleleName};
         }
