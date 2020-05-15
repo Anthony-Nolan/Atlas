@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Resources\MatchingDictionary\all_hla_lookup_results.json" />
+      <EmbeddedResource Include="Resources\HlaMetadataDictionary\all_hla_lookup_results.json" />
     </ItemGroup>
 
     <ItemGroup>
