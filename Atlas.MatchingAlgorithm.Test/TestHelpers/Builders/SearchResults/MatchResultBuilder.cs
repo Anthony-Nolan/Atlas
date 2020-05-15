@@ -2,6 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders.SearchResults
 {

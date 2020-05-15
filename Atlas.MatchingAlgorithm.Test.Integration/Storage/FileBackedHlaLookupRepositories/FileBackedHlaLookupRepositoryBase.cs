@@ -8,6 +8,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {

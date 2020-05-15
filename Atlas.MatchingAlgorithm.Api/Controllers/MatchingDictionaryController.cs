@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {

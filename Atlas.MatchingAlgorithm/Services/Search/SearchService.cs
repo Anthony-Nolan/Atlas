@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.Utils.Models;
 using SearchResult = Atlas.MatchingAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Atlas.MatchingAlgorithm.Services.Search

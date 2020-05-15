@@ -4,6 +4,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
 {

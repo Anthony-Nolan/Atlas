@@ -5,7 +5,7 @@ using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Core.Models;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders
 {

@@ -5,6 +5,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories.Models
 {

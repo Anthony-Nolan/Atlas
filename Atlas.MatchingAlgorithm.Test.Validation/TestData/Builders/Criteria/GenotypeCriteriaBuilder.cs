@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 {

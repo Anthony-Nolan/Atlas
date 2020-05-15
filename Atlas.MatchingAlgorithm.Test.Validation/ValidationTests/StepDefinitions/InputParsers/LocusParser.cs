@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers
 {

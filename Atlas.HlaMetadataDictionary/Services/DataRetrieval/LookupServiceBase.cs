@@ -2,6 +2,7 @@
 using Atlas.HlaMetadataDictionary.Exceptions;
 using System;
 using System.Threading.Tasks;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {

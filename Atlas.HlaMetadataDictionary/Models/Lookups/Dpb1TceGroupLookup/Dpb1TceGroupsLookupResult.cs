@@ -1,6 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup
 {

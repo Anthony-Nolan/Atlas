@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Common.Models
 {

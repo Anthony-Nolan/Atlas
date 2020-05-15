@@ -13,7 +13,7 @@ using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Core.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {

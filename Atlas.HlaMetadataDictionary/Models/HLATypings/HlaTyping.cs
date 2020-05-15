@@ -2,6 +2,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {

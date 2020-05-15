@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using System;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {

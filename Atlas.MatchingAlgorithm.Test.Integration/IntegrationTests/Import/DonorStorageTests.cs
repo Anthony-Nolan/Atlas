@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {

@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
 {

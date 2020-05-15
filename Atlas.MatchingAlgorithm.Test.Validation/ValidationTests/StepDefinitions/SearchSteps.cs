@@ -11,7 +11,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestHelpers;
 using TechTalk.SpecFlow;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {

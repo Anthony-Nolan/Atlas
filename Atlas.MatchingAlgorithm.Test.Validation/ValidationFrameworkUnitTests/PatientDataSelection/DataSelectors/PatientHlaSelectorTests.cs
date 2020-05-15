@@ -12,7 +12,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.DataSelectors
 {

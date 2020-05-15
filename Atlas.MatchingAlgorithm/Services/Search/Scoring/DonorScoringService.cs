@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {

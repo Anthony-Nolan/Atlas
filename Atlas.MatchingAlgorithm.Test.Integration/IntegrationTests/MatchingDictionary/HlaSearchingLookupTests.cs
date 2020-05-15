@@ -7,7 +7,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.Utils.Core.Models;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
 {

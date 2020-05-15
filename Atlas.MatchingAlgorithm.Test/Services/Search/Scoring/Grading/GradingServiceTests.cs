@@ -16,6 +16,7 @@ using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

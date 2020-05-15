@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
 using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {

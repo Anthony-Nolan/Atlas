@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {

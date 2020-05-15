@@ -16,7 +16,7 @@ using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Confidence
 {
@@ -24,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Confidence
     public class ConfidenceServiceTests
     {
         // Unless specified otherwise, all tests will be at a shared locus + position, to reduce setup in the individual test cases
-        private const Locus Locus = Common.Models.Locus.A;
+        private const Locus Locus = Utils.Models.Locus.A;
         private const TypePosition Position = TypePosition.One;
 
         private IConfidenceService confidenceService;

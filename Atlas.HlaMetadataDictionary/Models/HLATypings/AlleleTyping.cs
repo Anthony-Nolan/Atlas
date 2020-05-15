@@ -3,6 +3,7 @@ using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Services;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {

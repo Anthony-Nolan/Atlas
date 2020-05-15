@@ -13,6 +13,7 @@ using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.Utils.Models;
 
 // ReSharper disable InconsistentNaming
 

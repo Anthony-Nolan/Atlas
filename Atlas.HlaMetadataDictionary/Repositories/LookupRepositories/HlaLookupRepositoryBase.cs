@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {

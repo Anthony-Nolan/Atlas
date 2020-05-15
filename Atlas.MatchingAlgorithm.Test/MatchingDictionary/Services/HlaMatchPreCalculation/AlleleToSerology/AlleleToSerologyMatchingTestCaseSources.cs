@@ -1,5 +1,6 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.AlleleToSerology
 {

@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelecti
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
 {

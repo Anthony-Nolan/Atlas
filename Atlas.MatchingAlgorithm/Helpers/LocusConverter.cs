@@ -1,6 +1,6 @@
 using System;
 using Atlas.Utils.Core.Models;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 
 namespace Atlas.MatchingAlgorithm.Helpers
 {

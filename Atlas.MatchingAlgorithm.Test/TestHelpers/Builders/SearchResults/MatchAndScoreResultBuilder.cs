@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders.SearchResults
 {

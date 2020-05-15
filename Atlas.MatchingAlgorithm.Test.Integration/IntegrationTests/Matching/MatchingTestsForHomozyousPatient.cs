@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
