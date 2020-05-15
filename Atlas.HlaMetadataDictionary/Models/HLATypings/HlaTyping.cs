@@ -1,4 +1,3 @@
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;

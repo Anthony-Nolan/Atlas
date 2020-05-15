@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MultipleAlleleCodeDictionary;
+﻿using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;

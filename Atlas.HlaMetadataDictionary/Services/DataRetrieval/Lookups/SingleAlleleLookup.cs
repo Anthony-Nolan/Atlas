@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.Repositories;
+﻿using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Utils.Models;

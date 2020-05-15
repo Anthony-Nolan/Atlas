@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+﻿using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;

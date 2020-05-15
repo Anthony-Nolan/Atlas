@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;

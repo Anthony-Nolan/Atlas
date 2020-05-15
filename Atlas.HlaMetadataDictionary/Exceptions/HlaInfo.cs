@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.Utils.Models;
+﻿using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
