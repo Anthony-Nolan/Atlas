@@ -122,6 +122,7 @@ module "donor_import" {
   app_service_plan     = azurerm_app_service_plan.atlas
   sql_server           = azurerm_sql_server.atlas_sql_server
   function_storage     = azurerm_storage_account.function_storage
+  azure_storage        = azurerm_storage_account.azure_storage
   servicebus_namespace = azurerm_servicebus_namespace.general
 
   DATABASE_PASSWORD = var.DONOR_DATABASE_PASSWORD
