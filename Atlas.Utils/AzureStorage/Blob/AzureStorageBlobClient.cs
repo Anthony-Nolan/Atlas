@@ -6,21 +6,14 @@ using Atlas.Utils.Storage.ApplicationInsights;
 
 namespace Atlas.Utils.Storage
 {
-    public interface IStorageClient
-    {
-        Task Upload(string container, string filename, string messageBody);
-        Task<string> Get(string container, string file);
-    }
-
-    public class AzureStorageBlobClient : IStorageClient
+    public abstract class AzureStorageBlobClient
     {
         private const string UploadLogLabel = "Upload";
-        private const string GetLogLabel = "Download";
 
         private readonly CloudBlobClient blobClient;
         private readonly ILogger logger;
 
-        public AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger)
+        protected AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger)
         {
             this.logger = logger;
 
@@ -28,7 +21,7 @@ namespace Atlas.Utils.Storage
             blobClient = storageAccount.CreateCloudBlobClient();
         }
 
-        public async Task Upload(string container, string filename, string messageBody)
+        protected async Task Upload(string container, string filename, string messageBody)
         {
             var azureStorageEventModel = new AzureStorageEventModel(filename, container);
             azureStorageEventModel.StartAzureStorageCommunication();
@@ -40,21 +33,6 @@ namespace Atlas.Utils.Storage
 
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             logger.SendEvent(azureStorageEventModel);
-        }
-        
-        public async Task<string> Get(string container, string file)
-        {
-            var azureStorageEventModel = new AzureStorageEventModel(file, container);
-            azureStorageEventModel.StartAzureStorageCommunication();
-
-            var containerRef = await GetBlobContainer(container);
-            var blockBlob = containerRef.GetBlockBlobReference(file);
-            var download = await blockBlob.DownloadTextAsync();
-
-            azureStorageEventModel.EndAzureStorageCommunication(GetLogLabel);
-            logger.SendEvent(azureStorageEventModel);
-
-            return download;
         }
 
         private async Task<CloudBlobContainer> GetBlobContainer(string containerName)

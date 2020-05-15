@@ -1,5 +1,6 @@
 ﻿namespace Atlas.Utils.Core.Models
 {
+    //TODO: ATLAS-121: Remove this in favour of Locus
     public enum LocusType
     {
         A,
