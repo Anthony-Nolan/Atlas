@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             Active
         }
 
-        private readonly HlaMetadataConfiguration config;
+        private readonly string activeHlaNomenclatureVersion;
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IAlleleNamesLookupService alleleNamesLookupService;
         private readonly IHlaMatchingLookupService hlaMatchingLookupService;
@@ -50,7 +50,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
 
         public HlaMetadataDictionary(
-            HlaMetadataConfiguration config,
+            string activeHlaNomenclatureVersion,
             IRecreateHlaMetadataService recreateMetadataService,
             IAlleleNamesLookupService alleleNamesLookupService,
             IHlaMatchingLookupService hlaMatchingLookupService,
@@ -60,7 +60,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider)
         {
-            this.config = config;
+            this.activeHlaNomenclatureVersion = activeHlaNomenclatureVersion;
             this.recreateMetadataService = recreateMetadataService;
             this.alleleNamesLookupService = alleleNamesLookupService;
             this.hlaMatchingLookupService = hlaMatchingLookupService;
@@ -73,7 +73,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
-            var active= config.ActiveWmdaVersion; 
+            var active = activeHlaNomenclatureVersion; 
             var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return active != latest;
         }
@@ -81,7 +81,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate)
         {
             var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
-                ? config.ActiveWmdaVersion
+                ? activeHlaNomenclatureVersion
                 : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
 
             await recreateMetadataService.RefreshAllHlaMetadata(version);
@@ -90,37 +90,37 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, config.ActiveWmdaVersion);
+            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, activeHlaNomenclatureVersion);
         }
 
         public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, config.ActiveWmdaVersion);
+            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, activeHlaNomenclatureVersion);
         }
 
         public async Task<LocusInfo<IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, LocusInfo<string> locusTyping)
         {
-            return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, config.ActiveWmdaVersion);
+            return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, activeHlaNomenclatureVersion);
         }
 
         public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, config.ActiveWmdaVersion);
+            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, activeHlaNomenclatureVersion);
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, config.ActiveWmdaVersion);
+            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, activeHlaNomenclatureVersion);
         }
 
         public IEnumerable<string> GetAllPGroups()
         {
-            return hlaMatchingLookupService.GetAllPGroups(config.ActiveWmdaVersion);
+            return hlaMatchingLookupService.GetAllPGroups(activeHlaNomenclatureVersion);
         }
 
         public HlaLookupResultCollections GetAllHlaLookupResults()
         {
-            return hlaLookupResultsService.GetAllHlaLookupResults(config.ActiveWmdaVersion);
+            return hlaLookupResultsService.GetAllHlaLookupResults(activeHlaNomenclatureVersion);
         }
     }
 }

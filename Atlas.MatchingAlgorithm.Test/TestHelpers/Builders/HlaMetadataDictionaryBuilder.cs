@@ -79,18 +79,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         public IHlaMetadataDictionary BuildDictionary(string activeVersion)
         {
-            return BuildDictionary(new HlaMetadataConfiguration { ActiveWmdaVersion = activeVersion});
-        }
-
-        public IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config)
-        {
             if (cannedResponse != null)
             {
                 return cannedResponse;
             }
 
             return new Atlas.HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
-                config,
+                activeVersion,
                 recreate,
                 name,
                 matching,
@@ -103,11 +98,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         }
 
         public IHlaMetadataCacheControl BuildCacheControl(string version)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config)
         {
             throw new NotImplementedException();
         }

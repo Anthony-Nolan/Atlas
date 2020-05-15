@@ -7,30 +7,18 @@ using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    public struct HlaMetadataConfiguration
-    {
-        public string ActiveWmdaVersion { get; set; }
-
-        internal string CacheKey => $"hlaMetadataDictionary-version:{ActiveWmdaVersion}";
-    }
-
     public interface IHlaMetadataDictionaryFactory
     {
         /// <summary>
         /// Returns an appropriate Dictionary or CacheControl, given the config settings.
-        /// Calling code is responsible for ensuring that e.g. config.ActiveWmdaVersion is updating per-request.
+        /// Calling code is responsible for ensuring that `activeHlaNomenclatureVersion` is updating per-request.
         /// </summary>
         /// <remarks>
-        /// Returns from a cross-request PersistentCache if the Config values are familiar.
+        /// Returns from a cross-request PersistentCache if the HLA Nomenclature version is familiar.
         /// If not, builds a new appropriate Dictionary and CacheControl, stores them and returns them.
         /// </remarks>
-        IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config);
-
-        /// <inheritdoc cref="BuildDictionary"/>
-        IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config);
-
-        IHlaMetadataDictionary BuildDictionary(string version);
-        IHlaMetadataCacheControl BuildCacheControl(string version);
+        IHlaMetadataDictionary BuildDictionary(string activeHlaNomenclatureVersion);
+        IHlaMetadataCacheControl BuildCacheControl(string activeHlaNomenclatureVersion);
     }
 
     /// <summary>
@@ -110,40 +98,34 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             public IHlaMetadataCacheControl CacheControl { get; set; }
         }
 
-        public IHlaMetadataDictionary BuildDictionary(string version)
-        {
-            return BuildDictionary(new HlaMetadataConfiguration { ActiveWmdaVersion = version });
-        }
+        internal string CacheKey(string activeHlaNomenclatureVersion) => $"hlaMetadataDictionary-version:{activeHlaNomenclatureVersion}";
 
-        public IHlaMetadataCacheControl BuildCacheControl(string version)
+        public IHlaMetadataDictionary BuildDictionary(string activeHlaNomenclatureVersion)
         {
-            return BuildCacheControl(new HlaMetadataConfiguration { ActiveWmdaVersion = version });
-        }
-
-        public IHlaMetadataDictionary BuildDictionary(HlaMetadataConfiguration config)
-        {
-            var cachedTuple = cache.GetOrAdd(config.CacheKey, () => BuildTuple(config));
+            var key = CacheKey(activeHlaNomenclatureVersion);
+            var cachedTuple = cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
             return cachedTuple.Dictionary;
         }
 
-        public IHlaMetadataCacheControl BuildCacheControl(HlaMetadataConfiguration config)
+        public IHlaMetadataCacheControl BuildCacheControl(string activeHlaNomenclatureVersion)
         {
-            var cachedTuple = cache.GetOrAdd(config.CacheKey, () => BuildTuple(config));
+            var key = CacheKey(activeHlaNomenclatureVersion);
+            var cachedTuple = cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
             return cachedTuple.CacheControl;
         }
 
-        private CacheObject BuildTuple(HlaMetadataConfiguration config)
+        private CacheObject BuildTuple(string activeHlaNomenclatureVersion)
         {
             return new CacheObject { 
-                Dictionary = BuildUncachedDictionary(config),
-                CacheControl = BuildUncachedDictionaryCacheControl(config)
+                Dictionary = BuildUncachedDictionary(activeHlaNomenclatureVersion),
+                CacheControl = BuildUncachedDictionaryCacheControl(activeHlaNomenclatureVersion)
             };
         }
 
-        private IHlaMetadataDictionary BuildUncachedDictionary(HlaMetadataConfiguration config)
+        private IHlaMetadataDictionary BuildUncachedDictionary(string activeHlaNomenclatureVersion)
         {
             return new HlaMetadataDictionary(
-                config,
+                activeHlaNomenclatureVersion,
                 recreateMetadataService,
                 alleleNamesLookupService,
                 hlaMatchingLookupService,
@@ -154,10 +136,10 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 wmdaHlaVersionProvider);
         }
 
-        private IHlaMetadataCacheControl BuildUncachedDictionaryCacheControl(HlaMetadataConfiguration config)
+        private IHlaMetadataCacheControl BuildUncachedDictionaryCacheControl(string activeHlaNomenclatureVersion)
         {
             return new HlaMetadataCacheControl(
-                config,
+                activeHlaNomenclatureVersion,
                 alleleNamesRepository,
                 matchingLookupRepository,
                 scoringLookupRepository,

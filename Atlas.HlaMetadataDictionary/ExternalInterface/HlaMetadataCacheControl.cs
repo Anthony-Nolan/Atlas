@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
     public class HlaMetadataCacheControl : IHlaMetadataCacheControl
     {
-        private readonly HlaMetadataConfiguration config;
+        private readonly string hlaNomenclatureVersion;
 
         private readonly IAlleleNamesLookupRepository alleleNamesRepository;
         private readonly IHlaMatchingLookupRepository matchingLookupRepository;
@@ -26,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
 
         public HlaMetadataCacheControl(
-            HlaMetadataConfiguration config,
+            string hlaNomenclatureVersion,
 
             IAlleleNamesLookupRepository alleleNamesRepository,
             IHlaMatchingLookupRepository matchingLookupRepository,
@@ -34,7 +34,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository
         )
         {
-            this.config = config;
+            this.hlaNomenclatureVersion = hlaNomenclatureVersion;
 
             this.alleleNamesRepository = alleleNamesRepository;
             this.matchingLookupRepository = matchingLookupRepository;
@@ -45,16 +45,15 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task PreWarmAllCaches()
         {
             await PreWarmAlleleNameCache();
-            var hlaDatabaseVersion = config.ActiveWmdaVersion;
 
-            await matchingLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-            await scoringLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
-            await dpb1TceGroupsLookupRepository.LoadDataIntoMemory(hlaDatabaseVersion);
+            await matchingLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await scoringLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await dpb1TceGroupsLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
         }
 
         public async Task PreWarmAlleleNameCache()
         {
-            await alleleNamesRepository.LoadDataIntoMemory(config.ActiveWmdaVersion);
+            await alleleNamesRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
         }
     }
 }
