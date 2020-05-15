@@ -1,11 +1,11 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Exceptions;
+﻿using Atlas.MatchingAlgorithm.Data.Exceptions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common;
+using Atlas.Common.Utils;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
