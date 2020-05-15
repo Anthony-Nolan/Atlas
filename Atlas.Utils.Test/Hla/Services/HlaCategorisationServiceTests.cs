@@ -1,6 +1,6 @@
-﻿using Atlas.Utils.Hla.Models;
+﻿using Atlas.Utils.Core.Http;
+using Atlas.Utils.Hla.Models;
 using Atlas.Utils.Hla.Services;
-using Atlas.Utils.Core.Http.Exceptions;
 using NUnit.Framework;
 
 namespace Atlas.Utils.Test.Hla.Services

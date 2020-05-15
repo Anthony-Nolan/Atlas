@@ -28,6 +28,7 @@
   <ItemGroup>
     <Folder Include="Core\" />
     <Folder Include="CoreUtils\" />
+    <Folder Include="Core\Tasks" />
     <Folder Include="ServiceBus\" />
   </ItemGroup>
 

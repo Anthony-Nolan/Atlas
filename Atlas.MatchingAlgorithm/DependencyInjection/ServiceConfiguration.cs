@@ -52,6 +52,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
+using Atlas.Utils.NovaHttpClient;
 using Atlas.Utils.Caching;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
