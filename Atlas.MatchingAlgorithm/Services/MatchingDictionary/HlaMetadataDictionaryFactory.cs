@@ -1,6 +1,7 @@
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.Utils.Caching;
 using LazyCache;
 
 namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
@@ -60,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
 
 
         public HlaMetadataDictionaryFactory(
-            IAppCache cache,
+            IPersistentCacheProvider cacheProvider,
 
             //For Dictionary
             IRecreateHlaMetadataService recreateMetadataService,
@@ -79,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Services.MatchingDictionary
             IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository
             )
         {
-            this.cache = cache;
+            this.cache = cacheProvider.Cache;
 
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;

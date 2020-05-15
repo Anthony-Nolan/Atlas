@@ -1,5 +1,5 @@
-﻿using LazyCache;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+﻿using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.Utils.Caching;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {
@@ -15,8 +15,8 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         public Dpb1TceGroupsLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IAppCache cache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cache, CacheKey)
+            IPersistentCacheProvider cacheProvider)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey)
         {
         }
     }

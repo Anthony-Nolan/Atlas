@@ -7,6 +7,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Utils.Caching;
 using Atlas.Utils.Core.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
@@ -29,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
         {
             lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IDpb1TceGroupLookupService>();
             hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
-            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IAppCache>();
+            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
         }
 
         [SetUp]

@@ -1,4 +1,4 @@
-﻿using LazyCache;
+﻿using Atlas.Utils.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
@@ -15,8 +15,8 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         public HlaScoringLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IAppCache cache)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cache, CacheKey)
+            IPersistentCacheProvider cacheProvider)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey)
         {
         }
     }

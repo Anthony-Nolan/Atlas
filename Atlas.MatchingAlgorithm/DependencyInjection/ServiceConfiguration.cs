@@ -44,8 +44,6 @@ using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Hla.Services;
 using Atlas.Utils.Notifications;
 using Atlas.Utils.ServiceBus.BatchReceiving;
-using LazyCache;
-using LazyCache.Providers;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
@@ -55,6 +53,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
+using Atlas.Utils.Caching;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -100,22 +99,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
             );
 
-            // The default IAppCache registration should be a singleton, to avoid re-caching large collections e.g. Matching Dictionary and Alleles each request
-            // Persistent has been picked as the default for ease of injection into the MatchingDictionary, which will not be able to access any wrappers defined in the core project
-            services.AddSingleton<IAppCache, CachingService>(sp =>
-            {
-                const int oneDay = 60*60*24;
-                return new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
-                {
-                    DefaultCachePolicy = new CacheDefaults {DefaultCacheDurationSeconds = oneDay}
-                };
-            });
-
-            // A wrapper for IAppCache to allow classes to depend explicitly on a transient-only cache.
-            // This should be used for non-heavyweight cached items, e.g. hla database version.
-            services.AddTransient<ITransientCacheProvider, TransientCacheProvider>(sp =>
-                new TransientCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions()))))
-            );
+            services.RegisterLifeTimeScopedCacheTypes();
 
             services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
             services.AddScoped<DormantTransientSqlConnectionStringProvider>();

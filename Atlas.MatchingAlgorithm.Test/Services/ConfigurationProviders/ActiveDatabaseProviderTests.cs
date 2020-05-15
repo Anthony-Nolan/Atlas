@@ -4,11 +4,8 @@ using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Data.Services;
-using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.Utils.Caching;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -17,18 +14,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
     [TestFixture]
     public class ActiveDatabaseProviderTests
     {
-
         private IDataRefreshHistoryRepository historyRepository;
-
-        private IAppCache cache;
-
         private IActiveDatabaseProvider activeDatabaseProvider;
 
         [SetUp]
         public void SetUp()
         {
             historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
+            var cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
             var cacheProvider = new TransientCacheProvider(cache);
             
             activeDatabaseProvider = new ActiveDatabaseProvider(historyRepository, cacheProvider);

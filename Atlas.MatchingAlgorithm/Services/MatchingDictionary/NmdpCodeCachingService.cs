@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Utils.Caching;
 using Locus = Atlas.Utils.Models.Locus;
 using LocusType = Atlas.Utils.Core.Models.LocusType;
 
@@ -30,13 +31,13 @@ namespace Atlas.MultipleAlleleCodeDictionary
         private readonly IAlleleStringSplitterService alleleSplitter;
 
         public NmdpCodeCachingService(
-            IAppCache cache,
+            IPersistentCacheProvider cacheProvider,
             ILogger logger,
             IHlaServiceClient hlaServiceClient,
             IHlaCategorisationService categorisationService,
             IAlleleStringSplitterService alleleSplitter)
         {
-            this.cache = cache;
+            this.cache = cacheProvider.Cache;
             this.logger = logger;
             this.hlaServiceClient = hlaServiceClient;
             this.categorisationService = categorisationService;
