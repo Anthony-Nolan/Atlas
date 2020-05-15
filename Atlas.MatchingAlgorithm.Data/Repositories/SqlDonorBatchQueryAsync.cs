@@ -5,7 +5,8 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.Utils;
+using Atlas.Common.Utils.Http;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
