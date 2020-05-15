@@ -6,7 +6,7 @@ using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Services.Scoring;
-using Atlas.Utils.CodeAnalysis;
+using Atlas.Common.Utils;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
