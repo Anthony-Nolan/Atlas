@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Helpers;
 using CsvHelper;
 using CsvHelper.Configuration;
 
@@ -19,32 +20,20 @@ namespace Atlas.MatchPrediction.Services
     {
         private readonly IHaplotypeFrequencySetImportRepository haplotypeFrequencySetImportRepository;
 
-        public HaplotypeFrequencySetService(
-            IHaplotypeFrequencySetImportRepository haplotypeFrequencySetImportRepository)
+        public HaplotypeFrequencySetService(IHaplotypeFrequencySetImportRepository haplotypeFrequencySetImportRepository)
         {
             this.haplotypeFrequencySetImportRepository = haplotypeFrequencySetImportRepository;
         }
 
         public async Task ImportHaplotypeFrequencySet(string fileName, Stream blob)
         {
-            await haplotypeFrequencySetImportRepository.InsertHaplotypeFrequencySet(SplitFileName(fileName),
+            await haplotypeFrequencySetImportRepository.InsertHaplotypeFrequencySet(
+                FrequencySetMetadataHelper.GetFrequencySetMetadataFromFileName(fileName),
                 ReadAllHaplotypeFrequencies(blob));
         }
 
-        public HaplotypeFrequencySet SplitFileName(string fileName)
-        {
-            var strArr = fileName.Split('/');
-            Array.Resize(ref strArr, strArr.Length - 1);
 
-            return new HaplotypeFrequencySet()
-            {
-                Registry = strArr.Length > 0 ? strArr[0] : null,
-                Ethnicity = strArr.Length == 2 ? strArr[1] : null,
-                Active = true
-            };
-        }
-
-        public IEnumerable<HaplotypeFrequency> ReadAllHaplotypeFrequencies(Stream blob)
+        private static IEnumerable<HaplotypeFrequency> ReadAllHaplotypeFrequencies(Stream blob)
         {
             using var reader = new StreamReader(blob);
             using var csv = new CsvReader(reader);
@@ -65,7 +54,7 @@ namespace Atlas.MatchPrediction.Services
                 Map(m => m.DRB1);
                 Map(m => m.Frequency).Name("freq");
                 Map(m => m.Id).Ignore();
-                Map(m => m.SetId).Ignore();
+                Map(m => m.Set).Ignore();
             }
         }
     }
