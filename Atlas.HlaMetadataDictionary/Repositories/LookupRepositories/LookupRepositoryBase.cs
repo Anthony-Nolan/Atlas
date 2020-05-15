@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.Caching;
-using LazyCache;
-using Microsoft.WindowsAzure.Storage.Table;
+﻿using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using LazyCache;
+using Microsoft.WindowsAzure.Storage.Table;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
