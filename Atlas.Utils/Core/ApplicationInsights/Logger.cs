@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using Atlas.Utils.Core.ApplicationInsights.EventModels;
 
 namespace Atlas.Utils.Core.ApplicationInsights
 {

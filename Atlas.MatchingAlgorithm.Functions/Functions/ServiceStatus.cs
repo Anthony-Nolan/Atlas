@@ -11,11 +11,11 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     {
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName("ServiceStatus")]
-        public ServiceStatusModel RunSearch([HttpTrigger] HttpRequest request)
+        public ServiceStatusModel GetServiceStatus([HttpTrigger] HttpRequest request)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var name = assembly.GetCustomAttribute<AssemblyTitleAttribute>().Title;
-            var version = assembly.GetName().Version.ToString();
+            var name = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title;
+            var version = assembly.GetName().Version?.ToString();
 
             return new ServiceStatusModel
             {

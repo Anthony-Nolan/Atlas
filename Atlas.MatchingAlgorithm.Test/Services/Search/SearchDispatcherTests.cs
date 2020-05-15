@@ -10,12 +10,12 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.Http.Exceptions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Utils.Core.Http;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {
