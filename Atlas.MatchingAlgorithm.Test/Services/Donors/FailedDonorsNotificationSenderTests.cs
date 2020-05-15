@@ -2,15 +2,15 @@
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Notifications;
+using Atlas.Common.Notifications;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Notifications.MessageModels;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications.MessageModels;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 {

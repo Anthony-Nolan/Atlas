@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
-using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 

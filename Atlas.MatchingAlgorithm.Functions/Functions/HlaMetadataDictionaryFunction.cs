@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Atlas.HlaMetadataDictionary;
-using Atlas.Utils.CodeAnalysis;
 using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions

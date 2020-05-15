@@ -1,6 +1,4 @@
-﻿using Atlas.Utils.Hla.Services;
-using Atlas.Utils.Hla.Models;
-using Atlas.MultipleAlleleCodeDictionary;
+﻿using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
@@ -8,7 +6,9 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {

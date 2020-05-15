@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.ApplicationInsights;
-using Atlas.Utils.Core.ApplicationInsights;
 using System.Collections.Generic;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
 {

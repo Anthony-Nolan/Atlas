@@ -3,7 +3,7 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {

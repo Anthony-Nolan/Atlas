@@ -6,10 +6,10 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Caching;
-using Atlas.Utils.Core.Models;
+using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using FluentAssertions;
-using Locus = Atlas.Utils.Models.Locus;
+using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
 {

@@ -1,5 +1,5 @@
 ﻿using System;
-using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights
 {

@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Data;
+using Atlas.Common.Caching;
 using LazyCache;
-using Atlas.Utils.Caching;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
@@ -7,7 +8,6 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
 {

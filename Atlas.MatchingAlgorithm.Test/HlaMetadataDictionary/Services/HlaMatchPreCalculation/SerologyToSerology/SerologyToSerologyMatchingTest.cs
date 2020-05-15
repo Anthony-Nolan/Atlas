@@ -7,7 +7,7 @@ using FluentAssertions;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
-using Locus = Atlas.Utils.Models.Locus;
+using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {

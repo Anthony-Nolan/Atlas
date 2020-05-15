@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {

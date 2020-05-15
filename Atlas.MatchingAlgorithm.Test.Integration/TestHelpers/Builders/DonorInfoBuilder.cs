@@ -1,7 +1,7 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models;
+﻿using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {

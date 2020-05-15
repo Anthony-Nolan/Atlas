@@ -9,11 +9,11 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Locus = Atlas.Utils.Models.Locus;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
+using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {

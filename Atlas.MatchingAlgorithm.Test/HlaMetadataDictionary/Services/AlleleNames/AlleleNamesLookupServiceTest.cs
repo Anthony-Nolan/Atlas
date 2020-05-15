@@ -1,6 +1,4 @@
-﻿using Atlas.Utils.Hla.Services;
-using Atlas.Utils.Hla.Models;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
@@ -9,7 +7,9 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleNames
 {

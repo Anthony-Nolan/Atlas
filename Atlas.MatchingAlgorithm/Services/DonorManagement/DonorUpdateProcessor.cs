@@ -1,10 +1,10 @@
 ﻿using Atlas.MatchingAlgorithm.Models;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.ServiceBus.BatchReceiving;
-using Atlas.Utils.ServiceBus.Models;
+using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {

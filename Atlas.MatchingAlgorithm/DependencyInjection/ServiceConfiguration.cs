@@ -39,10 +39,8 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Services.Utility;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Hla.Services;
-using Atlas.Utils.Notifications;
-using Atlas.Utils.ServiceBus.BatchReceiving;
+using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
@@ -52,8 +50,10 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
-using Atlas.Utils.NovaHttpClient;
-using Atlas.Utils.Caching;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.NovaHttpClient;
+using Atlas.Common.Caching;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {

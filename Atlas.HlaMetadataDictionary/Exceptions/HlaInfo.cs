@@ -1,4 +1,4 @@
-﻿using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {

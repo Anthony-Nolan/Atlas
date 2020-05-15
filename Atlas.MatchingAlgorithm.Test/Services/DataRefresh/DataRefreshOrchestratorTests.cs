@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -13,7 +14,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Test.Builders.DataRefresh;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;

@@ -4,11 +4,11 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
-using Atlas.Utils.Core.Common;
 using System;
 using System.Collections.Generic;
 using static EnumStringValues.EnumExtensions;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 {

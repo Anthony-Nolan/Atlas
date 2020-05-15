@@ -1,6 +1,6 @@
+using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
-using Atlas.Utils.Caching;
 using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary

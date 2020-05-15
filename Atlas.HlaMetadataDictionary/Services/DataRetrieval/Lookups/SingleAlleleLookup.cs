@@ -1,7 +1,7 @@
 ﻿using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {

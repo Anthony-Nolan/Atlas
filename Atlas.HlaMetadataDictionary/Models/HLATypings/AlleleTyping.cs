@@ -2,7 +2,7 @@ using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Services;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {

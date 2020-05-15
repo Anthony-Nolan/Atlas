@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.Models;
-using Atlas.Utils.NovaHttpClient;
-using Atlas.Utils.NovaHttpClient.Client;
+using Atlas.Common.GeneticData;
+using Atlas.Common.NovaHttpClient;
+using Atlas.Common.NovaHttpClient.Client;
 
 namespace Atlas.HLAService.Client
 {
