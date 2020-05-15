@@ -1,4 +1,4 @@
-﻿using Atlas.Utils.Core.Models;
+﻿using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models
 {

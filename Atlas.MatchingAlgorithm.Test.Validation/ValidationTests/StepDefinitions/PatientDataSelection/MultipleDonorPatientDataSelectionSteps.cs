@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelecti
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection

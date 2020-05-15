@@ -1,9 +1,9 @@
 ﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
-using Atlas.Utils.Core.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
 {

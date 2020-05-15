@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.Utils.Core.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 {

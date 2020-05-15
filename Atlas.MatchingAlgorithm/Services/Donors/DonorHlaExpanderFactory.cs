@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
-using Atlas.Utils.Core.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors

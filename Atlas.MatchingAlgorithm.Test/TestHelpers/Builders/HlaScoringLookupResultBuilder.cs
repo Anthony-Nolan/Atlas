@@ -1,9 +1,9 @@
 ﻿using System;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders
 {

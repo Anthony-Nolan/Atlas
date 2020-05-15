@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using LazyCache;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {

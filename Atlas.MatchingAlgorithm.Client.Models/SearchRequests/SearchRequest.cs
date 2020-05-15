@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.Utils.Core.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
 {

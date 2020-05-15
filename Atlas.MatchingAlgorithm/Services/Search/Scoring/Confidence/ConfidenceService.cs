@@ -4,8 +4,8 @@ using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using System;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Confidence
 {

@@ -6,8 +6,8 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.Utils.Core.Models;
-using Locus = Atlas.Utils.Models.Locus;
+using Atlas.Common.GeneticData;
+using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
 {

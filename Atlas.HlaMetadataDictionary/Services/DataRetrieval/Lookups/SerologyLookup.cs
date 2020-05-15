@@ -3,7 +3,7 @@ using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {

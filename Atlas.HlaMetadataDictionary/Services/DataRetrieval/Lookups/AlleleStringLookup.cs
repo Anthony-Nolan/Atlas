@@ -1,8 +1,9 @@
-﻿using Atlas.Utils.Hla.Services;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Services;
 
 namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {
