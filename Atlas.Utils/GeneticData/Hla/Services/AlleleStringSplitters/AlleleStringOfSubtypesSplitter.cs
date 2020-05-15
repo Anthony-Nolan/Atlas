@@ -7,7 +7,7 @@ namespace Atlas.Utils.Hla.Services.AlleleStringSplitters
 {
     internal class AlleleStringOfSubtypesSplitter : AlleleStringSplitterBase
     {
-        protected override IEnumerable<AlleleTyping> GetAlleleTypingsFromSplitAlleleString(IEnumerable<string> splitAlleleString)
+        protected override IEnumerable<MolecularAlleleDetails> GetAlleleTypingsFromSplitAlleleString(IEnumerable<string> splitAlleleString)
         {
             var splitAlleleStringList = splitAlleleString.ToList();
 
@@ -16,13 +16,13 @@ namespace Atlas.Utils.Hla.Services.AlleleStringSplitters
                 throw new ArgumentException($"Submitted value, {splitAlleleString}, is not a valid allele string.");
             }
 
-            var firstAllele = new AlleleTyping(splitAlleleStringList[0]);
+            var firstAllele = new MolecularAlleleDetails(splitAlleleStringList[0]);
 
-            var alleles = new List<AlleleTyping> { firstAllele };
+            var alleles = new List<MolecularAlleleDetails> { firstAllele };
             alleles.AddRange(
                 splitAlleleStringList
                     .Skip(1)
-                    .Select(subtype => new AlleleTyping(firstAllele.FamilyField, subtype)));
+                    .Select(subtype => new MolecularAlleleDetails(firstAllele.FamilyField, subtype)));
 
             return alleles;
         }
