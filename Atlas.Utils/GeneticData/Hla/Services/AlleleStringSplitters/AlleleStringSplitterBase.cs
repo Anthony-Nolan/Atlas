@@ -17,6 +17,6 @@ namespace Atlas.Utils.Hla.Services.AlleleStringSplitters
             return alleles.Select(allele => allele.AlleleNameWithoutPrefix);
         }
 
-        protected abstract IEnumerable<AlleleTyping> GetAlleleTypingsFromSplitAlleleString(IEnumerable<string> splitAlleleString);
+        protected abstract IEnumerable<MolecularAlleleDetails> GetAlleleTypingsFromSplitAlleleString(IEnumerable<string> splitAlleleString);
     }
 }

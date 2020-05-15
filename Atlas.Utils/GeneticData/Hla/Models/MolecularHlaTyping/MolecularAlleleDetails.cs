@@ -5,18 +5,35 @@ using System.Text.RegularExpressions;
 
 namespace Atlas.Utils.Hla.Models.HlaTypings
 {
-    internal class AlleleTyping
+    internal class MolecularAlleleDetails
     {
         private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]$";
 
         public string AlleleNameWithoutPrefix { get; }
+
+        /// <summary>
+        /// AKA "First Field"
+        /// </summary>
         public string FamilyField { get; }
+
+        /// <summary>
+        /// AKA "Second Field"
+        /// </summary>
         public string SubtypeField { get; }
+
+        /// <summary>
+        /// AKA "Third Field"
+        /// </summary>
         public string IntronicField { get; }
+
+        /// <summary>
+        /// AKA "Fourth Field"
+        /// </summary>
         public string SilentField { get; }
+
         public string ExpressionSuffix { get; }
 
-        public AlleleTyping(string alleleName)
+        public MolecularAlleleDetails(string alleleName)
         {
             if (string.IsNullOrEmpty(alleleName))
             {
@@ -34,7 +51,7 @@ namespace Atlas.Utils.Hla.Models.HlaTypings
             ExpressionSuffix = GetExpressionSuffix(alleleName);
         }
 
-        public AlleleTyping(string family, string subtype)
+        public MolecularAlleleDetails(string family, string subtype)
             : this(family + MolecularTypingNameConstants.FieldDelimiter + subtype)
         {
         }

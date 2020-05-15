@@ -5,6 +5,7 @@ using Atlas.Utils.Core.Models;
 
 // ReSharper disable MemberCanBePrivate.Global
 
+// TODO: ATLAS-121: Merge with Atlas version of PhenotypeInfo
 namespace Atlas.Utils.Core.PhenotypeInfo
 {
     /// <summary>
