@@ -1,6 +1,6 @@
 ﻿using Atlas.Utils.Core.Attributes;
 
-namespace Atlas.Utils.Notifications
+namespace Atlas.Utils.Notifications.MessageModels
 {
     public abstract class BaseNotificationsMessage
     {
