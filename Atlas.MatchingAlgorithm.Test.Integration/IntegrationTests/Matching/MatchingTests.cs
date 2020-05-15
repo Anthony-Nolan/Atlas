@@ -11,7 +11,7 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 // ReSharper disable InconsistentNaming
 

@@ -1,17 +1,17 @@
 ﻿using LazyCache;
 using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.Utils.Hla.Services;
-using Atlas.Utils.Hla.Models;
-using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Utils.Caching;
-using Locus = Atlas.Utils.Models.Locus;
-using LocusType = Atlas.Utils.Core.Models.LocusType;
+using Atlas.Common.Caching;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
+using Locus = Atlas.Common.GeneticData.Locus;
+using LocusType = Atlas.Common.GeneticData.LocusType;
 
 namespace Atlas.MultipleAlleleCodeDictionary
 {

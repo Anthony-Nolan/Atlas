@@ -1,6 +1,6 @@
 using System;
+using Atlas.Common.Caching;
 using LazyCache;
-using Atlas.Utils.Caching;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders

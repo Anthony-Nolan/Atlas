@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.Utility;
-using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

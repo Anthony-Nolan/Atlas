@@ -6,8 +6,8 @@ using Atlas.HlaMetadataDictionary.Services.AlleleNames;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleNames
 {

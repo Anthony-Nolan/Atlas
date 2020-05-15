@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
 {

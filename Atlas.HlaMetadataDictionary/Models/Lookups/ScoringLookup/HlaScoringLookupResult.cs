@@ -1,7 +1,7 @@
 ﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {

@@ -1,8 +1,8 @@
-﻿using Atlas.Utils.Hla.Services;
-using Atlas.Utils.Hla.Models;
-using Atlas.MultipleAlleleCodeDictionary;
+﻿using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 
 namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {

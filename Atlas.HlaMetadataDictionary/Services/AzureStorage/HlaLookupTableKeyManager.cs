@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using static EnumStringValues.EnumExtensions;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {

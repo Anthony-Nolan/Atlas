@@ -11,13 +11,13 @@ using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using Atlas.Common.GeneticData;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.Utils.Caching;
-using Atlas.Utils.Models;
+using Atlas.Common.Caching;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

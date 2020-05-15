@@ -9,14 +9,14 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Builders;
-using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using Atlas.Utils.Models;
 
 // ReSharper disable InconsistentNaming
 

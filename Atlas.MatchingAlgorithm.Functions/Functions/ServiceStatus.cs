@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Atlas.Utils.CodeAnalysis;
+using Atlas.Common.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
-using ServiceStatusModel = Atlas.Utils.Core.Models.ServiceStatus;
+using ServiceStatusModel = Atlas.Common.Utils.Models.ServiceStatus;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {

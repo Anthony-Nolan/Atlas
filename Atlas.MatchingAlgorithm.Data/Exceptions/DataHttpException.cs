@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-using Atlas.Utils.Core.Http;
+using Atlas.Common.Utils.Http;
 
 namespace Atlas.MatchingAlgorithm.Data.Exceptions
 {

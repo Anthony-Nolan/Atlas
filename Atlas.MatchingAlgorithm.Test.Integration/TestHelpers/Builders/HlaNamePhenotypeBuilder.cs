@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.Utils.Models;
+﻿using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
