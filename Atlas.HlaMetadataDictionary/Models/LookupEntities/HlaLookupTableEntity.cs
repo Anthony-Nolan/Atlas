@@ -1,6 +1,5 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using System;

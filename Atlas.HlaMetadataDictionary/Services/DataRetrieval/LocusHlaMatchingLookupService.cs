@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+﻿using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

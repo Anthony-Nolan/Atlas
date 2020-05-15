@@ -1,5 +1,4 @@
 ﻿using Atlas.Utils.Hla.Services;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories;
