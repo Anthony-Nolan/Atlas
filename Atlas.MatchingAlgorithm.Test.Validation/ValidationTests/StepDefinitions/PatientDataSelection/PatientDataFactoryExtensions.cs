@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Config;
+using static EnumStringValues.EnumExtensions;
 using Atlas.MatchingAlgorithm.Common.Models;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
+using Atlas.Utils.Models;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -169,7 +170,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             switch (locusString)
             {
                 case "each locus":
-                    foreach (var locus in LocusSettings.AllLoci)
+                    foreach (var locus in EnumerateValues<Locus>())
                     {
                         factory.SetAlleleStringShouldContainDifferentGroupsAtLocus(locus);
                     }

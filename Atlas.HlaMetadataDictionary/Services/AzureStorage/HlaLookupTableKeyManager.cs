@@ -1,8 +1,7 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.Common.Config;
+using static EnumStringValues.EnumExtensions;
 using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
@@ -14,9 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
     {
         public static IEnumerable<string> GetTablePartitionKeys()
         {
-            return LocusSettings
-                .AllLoci
-                .Select(locus => locus.ToString());
+            return EnumerateValues<Locus>().Select(locus => locus.ToString());
         }
 
         public static string GetEntityPartitionKey(Locus locus)

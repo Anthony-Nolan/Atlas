@@ -1,10 +1,10 @@
-﻿using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using static EnumStringValues.EnumExtensions;
 using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         /// <summary>
         /// Returns the loci for which match results have been set
         /// </summary>
-        public IEnumerable<Locus> MatchedLoci => LocusSettings.AllLoci
+        public IEnumerable<Locus> MatchedLoci => EnumerateValues<Locus>()
             .Where(l => MatchDetailsForLocus(l) != null);
         
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>

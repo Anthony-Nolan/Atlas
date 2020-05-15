@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Utils.Models;
+using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Common.Config
 {
@@ -11,17 +10,10 @@ namespace Atlas.MatchingAlgorithm.Common.Config
     /// </summary>
     public static class LocusSettings
     {
-        private static readonly List<Locus> AllSearchLoci = Enum.GetValues(typeof(Locus)).Cast<Locus>().ToList();
-
-        /// <summary>
-        /// All loci considered by the search algorithm, during both matching and scoring.
-        /// </summary>
-        public static IEnumerable<Locus> AllLoci => AllSearchLoci;
-
         /// <summary>
         /// Loci that are only considered during matching.
         /// </summary>
-        public static IEnumerable<Locus> MatchingOnlyLoci => AllSearchLoci.Except(new[] {Locus.Dpb1});
+        public static IEnumerable<Locus> MatchingOnlyLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1});
 
         /// <summary>
         /// Only loci that are possible to match in Phase I of Matching.
