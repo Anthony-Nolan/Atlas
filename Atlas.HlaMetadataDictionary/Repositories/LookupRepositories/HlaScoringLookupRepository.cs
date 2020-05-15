@@ -1,4 +1,4 @@
-﻿using Atlas.Utils.Caching;
+﻿using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories

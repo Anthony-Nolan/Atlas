@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Microsoft.AspNetCore.Mvc;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.HlaMetadataDictionary;
-using Atlas.Utils.Models;
 using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers

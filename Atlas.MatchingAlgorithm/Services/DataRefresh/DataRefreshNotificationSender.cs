@@ -1,6 +1,6 @@
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Notifications;
+using Atlas.Common.Notifications;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {

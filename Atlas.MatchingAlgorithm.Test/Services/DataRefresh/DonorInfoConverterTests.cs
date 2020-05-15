@@ -6,7 +6,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
+using ILogger = Atlas.Common.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {

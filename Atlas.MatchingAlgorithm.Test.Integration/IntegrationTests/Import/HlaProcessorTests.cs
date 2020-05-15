@@ -19,7 +19,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using Locus = Atlas.Utils.Models.Locus;
+using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {

@@ -12,8 +12,8 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.Utils.Models;
 
 // ReSharper disable InconsistentNaming
 

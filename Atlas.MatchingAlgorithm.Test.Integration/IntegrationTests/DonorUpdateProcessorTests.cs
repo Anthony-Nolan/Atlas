@@ -2,14 +2,14 @@
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
-using Atlas.Utils.ServiceBus.BatchReceiving;
-using Atlas.Utils.ServiceBus.Models;
+using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
+using ILogger = Atlas.Common.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 {

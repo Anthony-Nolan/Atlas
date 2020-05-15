@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -8,8 +10,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Models;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search

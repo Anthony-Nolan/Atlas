@@ -46,9 +46,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatchingAlgorithm.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.HlaMetadataDictionary", "Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj", "{AD274093-21A1-42A2-A07C-7BE4573F01DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Utils", "Atlas.Utils\Atlas.Utils.csproj", "{2D948B52-F15B-4223-B9AA-A29AA3D0CC3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Common", "Atlas.Common\Atlas.Common.csproj", "{2D948B52-F15B-4223-B9AA-A29AA3D0CC3F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Utils.Test", "Atlas.Utils.Test\Atlas.Utils.Test.csproj", "{DEF200BF-9AC7-4FA0-A532-87E83B4F3754}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Common.Test", "Atlas.Common.Test\Atlas.Common.Test.csproj", "{DEF200BF-9AC7-4FA0-A532-87E83B4F3754}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test", "Atlas.MatchPrediction.Test\Atlas.MatchPrediction.Test.csproj", "{4DA02515-F9EA-41BB-AB2F-3A5F32E739CD}"
 EndProject

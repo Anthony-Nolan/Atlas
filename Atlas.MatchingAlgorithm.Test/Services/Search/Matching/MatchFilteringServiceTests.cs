@@ -7,7 +7,7 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Matching;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Matching
 {

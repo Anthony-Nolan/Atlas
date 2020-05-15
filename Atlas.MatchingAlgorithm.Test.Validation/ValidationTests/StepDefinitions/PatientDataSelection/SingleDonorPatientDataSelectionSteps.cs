@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.Utils.Models;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection

@@ -3,10 +3,10 @@ using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.ServiceBus.Models;
+using Atlas.Common.ServiceBus.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {

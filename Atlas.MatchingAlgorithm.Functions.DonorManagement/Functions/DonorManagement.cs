@@ -2,14 +2,15 @@ using Microsoft.Azure.WebJobs;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.ServiceBus.Exceptions;
+using Atlas.Common.ServiceBus.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Utils.CodeAnalysis;
+using Atlas.Common;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {

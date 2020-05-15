@@ -1,7 +1,7 @@
 using System;
+using Atlas.Common.Caching;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.Utils.Caching;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

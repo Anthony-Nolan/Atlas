@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -10,7 +11,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.HlaMetadataDictionary;
-using Atlas.Utils.Core.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {

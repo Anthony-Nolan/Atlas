@@ -7,14 +7,14 @@ using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
-using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary;
-using Atlas.Utils.Models;
 using SearchResult = Atlas.MatchingAlgorithm.Client.Models.SearchResults.SearchResult;
 
 namespace Atlas.MatchingAlgorithm.Services.Search

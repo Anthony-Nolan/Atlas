@@ -1,9 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+﻿using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Atlas.MatchingAlgorithm.Common.Models;
 using static EnumStringValues.EnumExtensions;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
 {

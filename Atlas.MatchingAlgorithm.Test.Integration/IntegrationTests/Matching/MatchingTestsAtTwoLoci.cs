@@ -11,7 +11,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 // ReSharper disable InconsistentNaming
 

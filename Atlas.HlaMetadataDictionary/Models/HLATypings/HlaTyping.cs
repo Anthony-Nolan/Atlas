@@ -1,7 +1,7 @@
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
-using Atlas.Utils.Models;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {

@@ -6,13 +6,13 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.Utils.Notifications;
+using Atlas.Common.Notifications;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
+using ILogger = Atlas.Common.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {

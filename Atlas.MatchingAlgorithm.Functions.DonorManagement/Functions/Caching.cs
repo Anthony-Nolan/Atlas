@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Atlas.Common;
+using Atlas.Common.Utils;
 using Microsoft.Azure.WebJobs;
 using Atlas.HlaMetadataDictionary;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.Utils.CodeAnalysis;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {

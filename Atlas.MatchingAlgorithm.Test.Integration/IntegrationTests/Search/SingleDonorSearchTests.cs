@@ -10,8 +10,8 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {

@@ -71,10 +71,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
       <ProjectReference Include="..\Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj" />
-      <ProjectReference Include="..\Atlas.Utils\Atlas.Utils.csproj" />
     </ItemGroup>
 
     <ItemGroup>

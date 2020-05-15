@@ -2,13 +2,13 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Matching;
-using Atlas.Utils.Core.ApplicationInsights;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {

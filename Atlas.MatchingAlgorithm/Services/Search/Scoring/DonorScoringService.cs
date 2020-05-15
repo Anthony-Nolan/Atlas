@@ -11,10 +11,10 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.HlaMetadataDictionary;
 using static EnumStringValues.EnumExtensions;
-using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {

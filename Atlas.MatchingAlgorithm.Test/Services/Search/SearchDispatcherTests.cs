@@ -9,13 +9,13 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Builders;
-using Atlas.Utils.Core.ApplicationInsights;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.Utils.Core.Http;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Http;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.Utils.Models;
 using static EnumStringValues.EnumExtensions;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Common.Config
 {

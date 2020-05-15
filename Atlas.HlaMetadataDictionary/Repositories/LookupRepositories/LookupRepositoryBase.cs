@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Caching;
 using LazyCache;
-using Atlas.Utils.Caching;
 using Microsoft.WindowsAzure.Storage.Table;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models;

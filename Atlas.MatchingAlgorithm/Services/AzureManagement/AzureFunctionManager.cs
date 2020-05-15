@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
-using Atlas.Utils.Core.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Services.AzureManagement
 {

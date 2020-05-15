@@ -8,8 +8,7 @@ using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
-using Atlas.Utils.Core.Models;
-using Atlas.Utils.Notifications;
+using Atlas.Common.Notifications;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -17,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection

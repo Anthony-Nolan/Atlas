@@ -7,7 +7,6 @@ using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
-using Atlas.Utils.Core.ApplicationInsights;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,7 +14,8 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Utils.Models;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
