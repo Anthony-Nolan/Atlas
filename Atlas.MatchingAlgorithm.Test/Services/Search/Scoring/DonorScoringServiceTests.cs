@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 {

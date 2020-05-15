@@ -5,6 +5,7 @@ using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 using System.Linq;
 using ApprovalTests.Reporters.TestFrameworks;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaMatchPreCalculation.SerologyToPgroups
 {

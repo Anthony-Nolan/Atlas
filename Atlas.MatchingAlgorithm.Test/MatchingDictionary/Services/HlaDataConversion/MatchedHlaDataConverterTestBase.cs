@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.HlaDataConversion
 {

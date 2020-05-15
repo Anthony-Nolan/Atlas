@@ -12,6 +12,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.MatchingDictionary;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using Atlas.Utils.Models;
 using NSubstitute.ExceptionExtensions;
 using ILogger = Atlas.Utils.Core.ApplicationInsights.ILogger;
 

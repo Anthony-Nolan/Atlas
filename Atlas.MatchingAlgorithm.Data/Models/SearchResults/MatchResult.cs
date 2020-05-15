@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 {

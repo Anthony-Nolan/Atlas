@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.Utils.Core.Common;
 using System;
 using System.Collections.Generic;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 {

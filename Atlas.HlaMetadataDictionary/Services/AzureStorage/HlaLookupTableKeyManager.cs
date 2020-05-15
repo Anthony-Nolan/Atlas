@@ -3,6 +3,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {

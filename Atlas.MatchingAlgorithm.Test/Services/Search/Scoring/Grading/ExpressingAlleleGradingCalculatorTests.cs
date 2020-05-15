@@ -11,6 +11,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

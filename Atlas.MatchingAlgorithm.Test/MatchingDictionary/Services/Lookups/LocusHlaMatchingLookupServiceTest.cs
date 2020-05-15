@@ -7,6 +7,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Services.Lookups
 {

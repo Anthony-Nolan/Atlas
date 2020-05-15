@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using Atlas.Utils.Models;
 using NSubstitute;
 using NUnit.Framework;
 

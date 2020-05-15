@@ -4,6 +4,7 @@ using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {

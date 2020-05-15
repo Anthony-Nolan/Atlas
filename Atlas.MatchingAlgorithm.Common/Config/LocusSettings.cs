@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Common.Config
 {

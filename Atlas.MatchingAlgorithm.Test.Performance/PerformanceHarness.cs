@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Performance
 {

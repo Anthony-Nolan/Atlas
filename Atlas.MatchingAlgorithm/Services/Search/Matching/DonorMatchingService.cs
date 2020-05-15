@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {

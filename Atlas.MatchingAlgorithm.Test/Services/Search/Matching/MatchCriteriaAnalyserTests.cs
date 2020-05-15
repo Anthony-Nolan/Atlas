@@ -3,6 +3,7 @@ using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Matching;
 using Atlas.MatchingAlgorithm.Test.Builders;
+using Atlas.Utils.Models;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Matching

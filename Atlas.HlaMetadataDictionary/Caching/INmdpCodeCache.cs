@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Utils.Models;
 
 namespace Atlas.MultipleAlleleCodeDictionary
 {

@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.Utils.Core.ApplicationInsights;
+using Atlas.Utils.Models;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search

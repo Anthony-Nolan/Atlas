@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Common.Models
+﻿namespace Atlas.Utils.Models
 {
     public enum Locus
     {

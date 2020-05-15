@@ -2,6 +2,7 @@
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {

@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.Utils.Models;
 
 // ReSharper disable InconsistentNaming
 

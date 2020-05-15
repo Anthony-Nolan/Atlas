@@ -1,6 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.Utils.Models;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.MatchingDictionary.Models.HlaTypings

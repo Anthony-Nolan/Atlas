@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using NUnit.Framework;
 using System;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

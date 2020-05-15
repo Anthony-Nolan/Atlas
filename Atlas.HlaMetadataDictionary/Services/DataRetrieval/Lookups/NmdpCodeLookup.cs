@@ -3,6 +3,7 @@ using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Utils.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.Lookups
 {

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Locus = Atlas.MatchingAlgorithm.Common.Models.Locus;
+using Locus = Atlas.Utils.Models.Locus;
 using LocusType = Atlas.Utils.Core.Models.LocusType;
 
 namespace Atlas.MultipleAlleleCodeDictionary

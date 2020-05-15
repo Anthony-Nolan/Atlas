@@ -8,6 +8,7 @@ using Atlas.Utils.Core.ApplicationInsights;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.Utils.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {
