@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="CodeAnalysis" />
     <Folder Include="Notifications\" />
   </ItemGroup>
 
