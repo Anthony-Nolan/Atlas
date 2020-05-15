@@ -15,8 +15,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
         }
 
         [FunctionName("ImportSetWithRegistryEthnicityFilename")]
-        public async Task Run([BlobTrigger("haplotype-frequency-set-import/{fileName}")]
-            Stream blob, string fileName)
+        public async Task Run([BlobTrigger("haplotype-frequency-set-import/{fileName}")] Stream blob, string fileName)
         {
             await haplotypeFrequencySetService.ImportHaplotypeFrequencySet(fileName, blob);
         }

@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
         public async Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
-            //ToDo: Import data into database
+
         }
     }
 }
