@@ -27,21 +27,8 @@
 
   <ItemGroup>
     <Folder Include="Core\" />
-    <Folder Include="CoreUtils\" />
     <Folder Include="Core\Tasks" />
     <Folder Include="ServiceBus\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="CoreUtilsTest\Resources\some-json.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="CoreUtilsTest\Resources\some-schema.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
