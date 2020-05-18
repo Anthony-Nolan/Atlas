@@ -1,10 +1,7 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Models;
-using NSubstitute;
-using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
@@ -13,6 +10,9 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.DataSelectors
 {
@@ -370,7 +370,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             
             metaDonorRepository.AllMetaDonors().Returns(metaDonors);
             
-            var criteria = new MetaDonorSelectionCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePosition.One).Build();
+            var criteria = new MetaDonorSelectionCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, LocusPosition.Position1).Build();
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
@@ -379,7 +379,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void GetMetaDonor_WhenShouldHaveNullAlleleAtOnePosition_AndDonorHasNullAlleleAtCorrectPosition_ReturnsMetaDonor()
         {
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
             var metaDonors = new List<MetaDonor>()
             {
                 new MetaDonorBuilder()

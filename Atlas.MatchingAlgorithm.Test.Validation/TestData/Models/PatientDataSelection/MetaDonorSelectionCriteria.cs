@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection
 {
@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSel
         /// <summary>
         /// Determines whether the expected meta-donor should be homozygous at each locus
         /// </summary>
-        public LocusInfo<bool> IsHomozygous { get; set; } = new LocusInfo<bool>(false);
+        public LociInfo<bool> IsHomozygous { get; set; } = new LociInfo<bool>(false);
 
         /// <summary>
         /// Determines whether the expected meta-donor should have allele strings guaranteed to contain different groups
@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSel
         public PhenotypeInfo<bool> AlleleStringContainsDifferentAntigenGroups { get; set; } = new PhenotypeInfo<bool>(false);
 
         /// <summary>
-        /// Determines whether the expected meta-donor should have alleles with a non null epxression suffix
+        /// Determines whether the expected meta-donor should have alleles with a non null expression suffix
         /// </summary>
         public PhenotypeInfo<bool> HasNonNullExpressionSuffix { get; set; } = new PhenotypeInfo<bool>(false);
         

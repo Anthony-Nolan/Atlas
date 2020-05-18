@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="GeneticData\AlgorithmPhenotypeInfo" />
     <Folder Include="Notifications\" />
   </ItemGroup>
 

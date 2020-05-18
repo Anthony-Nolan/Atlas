@@ -1,8 +1,8 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
-using Atlas.MatchingAlgorithm.Common.Models;
 using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
@@ -20,26 +20,26 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
         {
             foreach (var locus in EnumerateValues<Locus>())
             {
-                criteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
+                criteria.MatchingTypingResolutions.SetLocus(locus, resolution);
             }
             return this;
         }
 
         public DatabaseDonorSelectionCriteriaBuilder WithTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            criteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
+            criteria.MatchingTypingResolutions.SetLocus(locus, resolution);
             return this;
         }
 
         public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtLocus(Locus locus)
         {
-            criteria.ShouldMatchGenotype.SetAtLocus(locus, false);
+            criteria.ShouldMatchGenotype.SetLocus(locus, false);
             return this;
         }
 
-        public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtPosition(Locus locus, TypePosition position)
+        public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.ShouldMatchGenotype.SetAtPosition(locus, position, false);
+            criteria.ShouldMatchGenotype.SetPosition(locus, position, false);
             return this;
         }
 
@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
         {
             foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
             {
-                criteria.MatchingTypingResolutions.SetAtLocus(resolution.Key, resolution.Value);
+                criteria.MatchingTypingResolutions.SetLocus(resolution.Key, resolution.Value);
             }
 
             return this;

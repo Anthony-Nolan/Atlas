@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
@@ -37,11 +37,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             new AlleleTestData {AlleleName = "02:02:01:test-allele-pos-2"},
         };
 
-        private static readonly LocusInfo<List<AlleleTestData>> LociAlleles = new LocusInfo<List<AlleleTestData>>(Alleles1);
+        private static readonly LociInfo<List<AlleleTestData>> LociAlleles = new LociInfo<List<AlleleTestData>>(Alleles1);
 
         private static PhenotypeInfo<List<AlleleTestData>> AllelesPhenotype
         {
-            get { return new PhenotypeInfo<bool>().Map((l, p, noop) => p == TypePosition.One ? Alleles1 : Alleles2); }
+            get { return new PhenotypeInfo<bool>().Map((l, p, noop) => p == LocusPosition.Position1 ? Alleles1 : Alleles2); }
         }
 
         [SetUp]
@@ -97,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().HomozygousAtLocus(locus).Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.DataAtPosition(locus, TypePosition.One).Should().Be(genotype.Hla.DataAtPosition(locus, TypePosition.Two));
+            genotype.Hla.GetPosition(locus, LocusPosition.Position1).Should().Be(genotype.Hla.GetPosition(locus, LocusPosition.Position2));
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.DataAtPosition(locus, TypePosition.One).Should().NotBe(genotype.Hla.DataAtPosition(locus, TypePosition.Two));
+            genotype.Hla.GetPosition(locus, LocusPosition.Position1).Should().NotBe(genotype.Hla.GetPosition(locus, LocusPosition.Position2));
         }
 
         [Test]

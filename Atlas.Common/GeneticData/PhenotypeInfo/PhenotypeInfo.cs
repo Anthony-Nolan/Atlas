@@ -30,22 +30,15 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             A = source.A;
             B = source.B;
             C = source.C;
-            Dpa1 = source.Dpa1;
             Dpb1 = source.Dpb1;
-            Dqa1 = source.Dqa1;
             Dqb1 = source.Dqb1;
             Drb1 = source.Drb1;
-            Drb3 = source.Drb3;
-            Drb4 = source.Drb4;
-            Drb5 = source.Drb5;
         }
 
         /// <summary>
         /// Creates a new PhenotypeInfo with all inner values set to the same starting value.
         /// </summary>
         /// <param name="initialValue">The initial value all inner locus position values should be given.</param>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules",
-            "SA1642:ConstructorSummaryDocumentationMustBeginWithStandardText", Justification = "Disabled.")]
         public PhenotypeInfo(T initialValue)
         {
             Initialise();
@@ -55,22 +48,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             B.Position2 = initialValue;
             C.Position1 = initialValue;
             C.Position2 = initialValue;
-            Dpa1.Position1 = initialValue;
-            Dpa1.Position2 = initialValue;
             Dpb1.Position1 = initialValue;
             Dpb1.Position2 = initialValue;
-            Dqa1.Position1 = initialValue;
-            Dqa1.Position2 = initialValue;
             Dqb1.Position1 = initialValue;
             Dqb1.Position2 = initialValue;
             Drb1.Position1 = initialValue;
             Drb1.Position2 = initialValue;
-            Drb3.Position1 = initialValue;
-            Drb3.Position2 = initialValue;
-            Drb4.Position1 = initialValue;
-            Drb4.Position2 = initialValue;
-            Drb5.Position1 = initialValue;
-            Drb5.Position2 = initialValue;
         }
 
         public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
@@ -91,15 +74,82 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return Map((locusType, position, locusInfo) => mapping(locusInfo));
         }
+        
+        // TODO: Use locusInfo
+        public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, Tuple<R, R>> mapping)
+        {
+            var a = mapping(Locus.A, A.Position1, A.Position2);
+            var b = mapping(Locus.B, B.Position1, B.Position2);
+            var c = mapping(Locus.C, C.Position1, C.Position2);
+            var dpb1 = mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
+            var dqb1 = mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
+            var drb1 = mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2);
 
-        public void SetAtPosition(Locus locus, LocusPosition position, T value)
+            return new PhenotypeInfo<R>
+            {
+                A =
+                {
+                    Position1 = a.Item1,
+                    Position2 = a.Item2,
+                },
+                B =
+                {
+                    Position1 = b.Item1,
+                    Position2 = b.Item2,
+                },
+                C =
+                {
+                    Position1 = c.Item1,
+                    Position2 = c.Item2,
+                },
+                Dpb1 =
+                {
+                    Position1 = dpb1.Item1,
+                    Position2 = dpb1.Item2,
+                },
+                Dqb1 =
+                {
+                    Position1 = dqb1.Item1,
+                    Position2 = dqb1.Item2,
+                },
+                Drb1 =
+                {
+                    Position1 = drb1.Item1,
+                    Position2 = drb1.Item2,
+                }
+            };
+        }
+
+        public void SetPosition(Locus locus, LocusPosition position, T value)
         {
             GetLocus(locus).SetAtPosition(position, value);
         }
 
-        public T GetAtPosition(Locus locus, LocusPosition position)
+        public T GetPosition(Locus locus, LocusPosition position)
         {
             return GetLocus(locus).GetAtPosition(position);
+        }
+
+        public void SetLocus(Locus locus, T value)
+        {
+            SetPosition(locus, LocusPosition.Position1, value);
+            SetPosition(locus, LocusPosition.Position2, value);
+        }
+        
+        public void EachPosition(Action<Locus, LocusPosition, T> action)
+        {
+            action(Locus.A, LocusPosition.Position1, A.Position1);
+            action(Locus.A, LocusPosition.Position2, A.Position2);
+            action(Locus.B, LocusPosition.Position1, B.Position1);
+            action(Locus.B, LocusPosition.Position2, B.Position2);
+            action(Locus.C, LocusPosition.Position1, C.Position1);
+            action(Locus.C, LocusPosition.Position2, C.Position2);
+            action(Locus.Dpb1, LocusPosition.Position1, Dpb1.Position1);
+            action(Locus.Dpb1, LocusPosition.Position2, Dpb1.Position2);
+            action(Locus.Dqb1, LocusPosition.Position1, Dqb1.Position1);
+            action(Locus.Dqb1, LocusPosition.Position2, Dqb1.Position2);
+            action(Locus.Drb1, LocusPosition.Position1, Drb1.Position1);
+            action(Locus.Drb1, LocusPosition.Position2, Drb1.Position2);
         }
 
         public new IEnumerable<T> ToEnumerable()
@@ -112,22 +162,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 B.Position2,
                 C.Position1,
                 C.Position2,
-                Dpa1.Position1,
-                Dpa1.Position2,
                 Dpb1.Position1,
                 Dpb1.Position2,
-                Dqa1.Position1,
-                Dqa1.Position2,
                 Dqb1.Position1,
                 Dqb1.Position2,
                 Drb1.Position1,
                 Drb1.Position2,
-                Drb3.Position1,
-                Drb3.Position2,
-                Drb4.Position1,
-                Drb4.Position2,
-                Drb5.Position1,
-                Drb5.Position2,
             };
         }
 
@@ -135,14 +175,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             A = new LocusInfo<T>();
             B = new LocusInfo<T>();
-            Dpa1 = new LocusInfo<T>();
             Dpb1 = new LocusInfo<T>();
-            Dqa1 = new LocusInfo<T>();
             Dqb1 = new LocusInfo<T>();
             Drb1 = new LocusInfo<T>();
-            Drb3 = new LocusInfo<T>();
-            Drb4 = new LocusInfo<T>();
-            Drb5 = new LocusInfo<T>();
             C = new LocusInfo<T>();
         }
 
