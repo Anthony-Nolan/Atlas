@@ -28,7 +28,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
       <ProjectReference Include="..\Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj" />
-      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client\Atlas.MatchingAlgorithm.Client.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
     </ItemGroup>
 

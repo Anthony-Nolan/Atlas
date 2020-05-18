@@ -14,7 +14,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
-      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client\Atlas.MatchingAlgorithm.Client.csproj" />
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
     </ItemGroup>
 
 </Project>
