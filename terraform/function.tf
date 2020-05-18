@@ -5,7 +5,7 @@ resource "azurerm_function_app" "atlas_function" {
   app_service_plan_id        = azurerm_app_service_plan.atlas.id
   https_only                 = true
   version                    = "~3"
-  storage_connection_string = azurerm_storage_account.shared_function_storage.primary_connection_string
+  storage_connection_string = azurerm_storage_account.function_storage.primary_connection_string
 
   tags = local.common_tags
 
