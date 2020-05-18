@@ -108,21 +108,16 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return !Equals(left, right);
         }
         
-        public LociInfo<R> Map<R>(Func<LocusType, T, R> mapping)
+        public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {
             return new LociInfo<R>
             {
-                A = mapping(LocusType.A, A),
-                B = mapping(LocusType.B, B),
-                C = mapping(LocusType.C, C),
-                Dpa1 = mapping(LocusType.Dpa1, Dpa1),
-                Dpb1 = mapping(LocusType.Dpb1, Dpb1),
-                Dqa1 = mapping(LocusType.Dqa1, Dqa1),
-                Dqb1 = mapping(LocusType.Dqb1, Dqb1),
-                Drb3 = mapping(LocusType.Drb3, Drb3),
-                Drb4 = mapping(LocusType.Drb4, Drb4),
-                Drb1 = mapping(LocusType.Drb1, Drb1),
-                Drb5 = mapping(LocusType.Drb5, Drb5)
+                A = mapping(Locus.A, A),
+                B = mapping(Locus.B, B),
+                C = mapping(Locus.C, C),
+                Dpb1 = mapping(Locus.Dpb1, Dpb1),
+                Dqb1 = mapping(Locus.Dqb1, Dqb1),
+                Drb1 = mapping(Locus.Drb1, Drb1),
             };
         }
 
@@ -131,73 +126,41 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return Map((locusType, locusInfo) => mapping(locusInfo));
         }
 
-        public T GetLocus(LocusType locus)
+        public T GetLocus(Locus locus)
         {
-            switch (locus)
+            return locus switch
             {
-                case LocusType.A:
-                    return A;
-                case LocusType.B:
-                    return B;
-                case LocusType.C:
-                    return C;
-                case LocusType.Dpa1:
-                    return Dpa1;
-                case LocusType.Dpb1:
-                    return Dpb1;
-                case LocusType.Dqa1:
-                    return Dqa1;
-                case LocusType.Dqb1:
-                    return Dqb1;
-                case LocusType.Drb1:
-                    return Drb1;
-                case LocusType.Drb3:
-                    return Drb3;
-                case LocusType.Drb4:
-                    return Drb4;
-                case LocusType.Drb5:
-                    return Drb5;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
-            }
+                Locus.A => A,
+                Locus.B => B,
+                Locus.C => C,
+                Locus.Dpb1 => Dpb1,
+                Locus.Dqb1 => Dqb1,
+                Locus.Drb1 => Drb1,
+                _ => throw new ArgumentOutOfRangeException(nameof(locus), locus, null)
+            };
         }
 
-        public void SetLocus(LocusType locus, T value)
+        public void SetLocus(Locus locus, T value)
         {
             switch (locus)
             {
-                case LocusType.A:
+                case Locus.A:
                     A = value;
                     break;
-                case LocusType.B:
+                case Locus.B:
                     B = value;
                     break;
-                case LocusType.C:
+                case Locus.C:
                     C = value;
                     break;
-                case LocusType.Dpa1:
-                    Dpa1 = value;
-                    break;
-                case LocusType.Dpb1:
+                case Locus.Dpb1:
                     Dpb1 = value;
                     break;
-                case LocusType.Dqa1:
-                    Dqa1 = value;
-                    break;
-                case LocusType.Dqb1:
+                case Locus.Dqb1:
                     Dqb1 = value;
                     break;
-                case LocusType.Drb1:
+                case Locus.Drb1:
                     Drb1 = value;
-                    break;
-                case LocusType.Drb3:
-                    Drb3 = value;
-                    break;
-                case LocusType.Drb4:
-                    Drb4 = value;
-                    break;
-                case LocusType.Drb5:
-                    Drb5 = value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
