@@ -1,33 +1,30 @@
-using FluentValidation;
+using System.Net;
+using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.Utils.Core.ApplicationInsights;
 using Atlas.Utils.Core.Http.Exceptions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {
     [TestFixture]
-    public class SearchOrchestratorTests
+    public class SearchRunnerTests
     {
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
         private IResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaVersionAccessor hlaVersionAccessor;
 
-        private ISearchOrchestrator searchOrchestrator;
+        private ISearchRunner searchRunner;
 
         [SetUp]
         public void SetUp()
@@ -39,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             var logger = Substitute.For<ILogger>();
             var context = Substitute.For<ISearchRequestContext>();
 
-            searchOrchestrator = new SearchOrchestrator(
+            searchRunner = new SearchRunner(
                 searchServiceBusClient,
                 searchService,
                 resultsBlobStorageClient,
@@ -53,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             var searchRequest = new SearchRequest();
 
-            await searchOrchestrator.RunSearch(new IdentifiedSearchRequest { SearchRequest = searchRequest });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = searchRequest });
 
             await searchService.Received().Search(searchRequest);
         }
@@ -63,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string id = "id";
 
-            await searchOrchestrator.RunSearch(new IdentifiedSearchRequest { Id = id });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id });
 
             await resultsBlobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
         }
@@ -73,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string id = "id";
 
-            await searchOrchestrator.RunSearch(new IdentifiedSearchRequest { Id = id });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
@@ -86,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             const string wmdaVersion = "wmda-version";
             hlaVersionAccessor.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
 
-            await searchOrchestrator.RunSearch(new IdentifiedSearchRequest { Id = "id" });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id" });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.WmdaHlaDatabaseVersion == wmdaVersion
@@ -99,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             const string id = "id";
             searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, ""));
 
-            await searchOrchestrator.RunSearch(new IdentifiedSearchRequest { Id = id });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 !r.WasSuccessful && r.SearchRequestId == id
