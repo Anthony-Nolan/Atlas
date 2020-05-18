@@ -444,11 +444,5 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             return settings;
         }
-
-        // This method is currently unused, but is expected to be the replacement pattern for setting up IOptions dependencies in functions v3. 
-        private static void RegisterOptions<T>(this IServiceCollection services, string sectionName) where T : class
-        {
-            services.AddOptions<T>().Configure<IConfiguration>((settings, config) => { config.GetSection(sectionName).Bind(settings); });
-        }
     }
 }
