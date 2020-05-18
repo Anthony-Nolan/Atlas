@@ -42,12 +42,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         [SetUp]
         public void SetUp()
         {
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         NmdpString = NmdpCode,
                         HlaName = ExistingHlaName
                     }
@@ -85,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         {
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
 
-            await hlaServiceClient.Received().GetAntigens(GetLocusType(DefaultLocus));
+            await hlaServiceClient.Received().GetAntigens(DefaultLocus);
         }
 
         [Test]
@@ -93,12 +93,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         {
             const string xxCode = "999:XX";
 
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         NmdpString = xxCode
                     }
                 });
@@ -114,12 +114,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         {
             const string invalidHlaName = "999:999ABC";
 
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         NmdpString = invalidHlaName
                     }
                 });
@@ -135,12 +135,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         {
             const string invalidHlaName = "999:999ABC";
 
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         NmdpString = invalidHlaName
                     }
                 });
@@ -156,12 +156,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         {
             const string nonNmdpCode = "hla-name";
 
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         HlaName = nonNmdpCode
                     }
                 });
@@ -177,12 +177,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         [TestCase("invalid-string")]
         public void GetOrAddAllelesForNmdpCode_WhenAlleleStringNotValid_DoesNotThrowException(string invalidAlleleString)
         {
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         NmdpString = NmdpCode,
                         HlaName = invalidAlleleString
                     }
@@ -198,12 +198,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         {
             const string codeWithInvalidAlleleString = "*99:INVALID";
 
-            hlaServiceClient.GetAntigens(Arg.Any<LocusType>())
+            hlaServiceClient.GetAntigens(Arg.Any<Locus>())
                 .Returns(new List<Antigen>
                 {
                     new Antigen
                     {
-                        Locus = GetLocusType(DefaultLocus),
+                        Locus = DefaultLocus,
                         NmdpString = codeWithInvalidAlleleString,
                         HlaName = invalidAlleleString
                     }
@@ -226,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
 
-            await hlaServiceClient.DidNotReceive().GetAntigens(GetLocusType(DefaultLocus));
+            await hlaServiceClient.DidNotReceive().GetAntigens(DefaultLocus);
         }
 
         [Test]
@@ -235,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, NmdpCode);
 
             await hlaServiceClient.DidNotReceive()
-                .GetAllelesForDefinedNmdpCode(Arg.Any<LocusType>(), NmdpCode);
+                .GetAllelesForDefinedNmdpCode(Arg.Any<Locus>(), NmdpCode);
         }
 
         [Test]
@@ -253,8 +253,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);
 
-            await hlaServiceClient.Received()
-                .GetAllelesForDefinedNmdpCode(LocusType.A, newNmdpCode);
+            await hlaServiceClient.Received().GetAllelesForDefinedNmdpCode(Locus.A, newNmdpCode);
         }
 
         [Test]
@@ -264,7 +263,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
             var expectedAlleles = new List<string> { "allele-1", "allele-2" };
 
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Arg.Any<LocusType>(), newNmdpCode)
+                .GetAllelesForDefinedNmdpCode(Arg.Any<Locus>(), newNmdpCode)
                 .Returns(expectedAlleles);
 
             var alleles = await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);
@@ -279,7 +278,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
             var expectedAlleles = new List<string> { "allele-1", "allele-2" };
 
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Arg.Any<LocusType>(), newNmdpCode)
+                .GetAllelesForDefinedNmdpCode(Arg.Any<Locus>(), newNmdpCode)
                 .Returns(expectedAlleles);
 
             await nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, newNmdpCode);
@@ -287,11 +286,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
             var locusCache = await appCache.GetAsync<Dictionary<string, IEnumerable<string>>>($"{CacheKeyPrefix}{DefaultLocus}");
             locusCache.Should().ContainKey(newNmdpCode);
             locusCache.GetValueOrDefault(newNmdpCode).Should().BeEquivalentTo(expectedAlleles);
-        }
-
-        private static LocusType GetLocusType(Locus locus)
-        {
-            return (LocusType)Enum.Parse(typeof(LocusType), locus.ToString());
         }
     }
 }

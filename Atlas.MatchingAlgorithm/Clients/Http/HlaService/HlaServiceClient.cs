@@ -11,8 +11,8 @@ namespace Atlas.HLAService.Client
 {
     public interface IHlaServiceClient
     {
-        Task<List<Antigen>> GetAntigens(LocusType locusType, bool shouldResetCache = false);
-        Task<List<string>> GetAllelesForDefinedNmdpCode(LocusType locusType, string nmdpCode);
+        Task<List<Antigen>> GetAntigens(Locus locus, bool shouldResetCache = false);
+        Task<List<string>> GetAllelesForDefinedNmdpCode(Locus locus, string nmdpCode);
     }
 
     public class HlaServiceClient : ClientBase, IHlaServiceClient
@@ -21,21 +21,21 @@ namespace Atlas.HLAService.Client
         {
         }
 
-        public async Task<List<Antigen>> GetAntigens(LocusType locusType, bool shouldResetCache)
+        public async Task<List<Antigen>> GetAntigens(Locus locus, bool shouldResetCache)
         {
             var request = GetRequest(HttpMethod.Get, $"antigens", new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("locusType", locusType.ToString()),
+                new KeyValuePair<string, string>("locusType", locus.ToString()),
                 new KeyValuePair<string, string>("shouldResetCache", shouldResetCache.ToString())
             });
             return await MakeRequestAsync<List<Antigen>>(request);
         }
 
-        public async Task<List<string>> GetAllelesForDefinedNmdpCode(LocusType locusType, string nmdpCode)
+        public async Task<List<string>> GetAllelesForDefinedNmdpCode(Locus locus, string nmdpCode)
         {
             var request = GetRequest(HttpMethod.Get, "antigen-alleles-defined", new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("locusType", locusType.ToString()),
+                new KeyValuePair<string, string>("locusType", locus.ToString()),
                 new KeyValuePair<string, string>("nmdpCode", nmdpCode),
             });
             return await MakeRequestAsync<List<string>>(request);

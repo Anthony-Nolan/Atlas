@@ -93,8 +93,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
 
         private async Task<IEnumerable<string>> GetAndAddAllelesForNmdpCode(Locus locus, string nmdpCode)
         {
-            Enum.TryParse(locus.ToString(), true, out LocusType molecularLocusType);
-            var alleles = await hlaServiceClient.GetAllelesForDefinedNmdpCode(molecularLocusType, nmdpCode);
+            var alleles = await hlaServiceClient.GetAllelesForDefinedNmdpCode(locus, nmdpCode);
             await UpdateNmdpCodeLookup(locus, nmdpCode, alleles);
 
             return alleles;
@@ -132,8 +131,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Enum.TryParse(locus.ToString(), true, out LocusType locusType);
-            var antigens = await hlaServiceClient.GetAntigens(locusType);
+            var antigens = await hlaServiceClient.GetAntigens(locus);
 
             logger.SendTrace("Fetched antigens from HLA service", LogLevel.Info, new Dictionary<string, string>
             {
