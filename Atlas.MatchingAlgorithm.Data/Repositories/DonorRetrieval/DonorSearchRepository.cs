@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Config;
@@ -74,7 +75,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 // If no mismatch allowed at this locus, the donor must have been matched at both loci. 
                 groupedResults = groupedResults.Where(g =>
-                    g.Count(r => r.MatchingTypePosition == TypePosition.One) >= 1 && g.Count(r => r.MatchingTypePosition == TypePosition.Two) >= 1
+                    g.Count(r => r.MatchingTypePosition == LocusPosition.Position1) >= 1 
+                    && g.Count(r => r.MatchingTypePosition == LocusPosition.Position2) >= 1
                 );
             }
 
@@ -191,7 +193,7 @@ GROUP BY m.DonorId, TypePosition";
             }
 
             var untypedDonorIds = await GetIdsOfDonorsUntypedAtLocus(locus, donorIds);
-            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] { TypePosition.One, TypePosition.Two }.Select(
+            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] { LocusPosition.Position1, LocusPosition.Position2 }.Select(
                 position =>
                     new PotentialHlaMatchRelation
                     {

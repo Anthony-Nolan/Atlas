@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Config;
@@ -227,14 +228,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         private static bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
         {
-            return matches.Any(m => m.SearchTypePosition == TypePosition.One && m.MatchingTypePosition.HasFlag(TypePosition.One))
-                   && matches.Any(m => m.SearchTypePosition == TypePosition.Two && m.MatchingTypePosition.HasFlag(TypePosition.Two));
+            return matches.Any(m => m.SearchTypePosition == LocusPosition.Position1 && m.MatchingTypePosition == LocusPosition.Position1)
+                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Position2 && m.MatchingTypePosition == LocusPosition.Position2);
         }
 
         private static bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
         {
-            return matches.Any(m => m.SearchTypePosition == TypePosition.One && m.MatchingTypePosition.HasFlag(TypePosition.Two))
-                   && matches.Any(m => m.SearchTypePosition == TypePosition.Two && m.MatchingTypePosition.HasFlag(TypePosition.One));
+            return matches.Any(m => m.SearchTypePosition == LocusPosition.Position1 && m.MatchingTypePosition == LocusPosition.Position2)
+                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Position2 && m.MatchingTypePosition == LocusPosition.Position1);
         }
 
         private class DonorAndMatchForLocus

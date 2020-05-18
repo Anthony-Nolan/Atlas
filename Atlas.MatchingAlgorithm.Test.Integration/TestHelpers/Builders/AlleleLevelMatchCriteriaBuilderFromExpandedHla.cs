@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -60,8 +61,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = phenotype.DataAtPosition(locus, TypePosition.One).MatchingPGroups,
-                PGroupsToMatchInPositionTwo = phenotype.DataAtPosition(locus, TypePosition.Two).MatchingPGroups
+                PGroupsToMatchInPositionOne = phenotype.GetPosition(locus, LocusPosition.Position1).MatchingPGroups,
+                PGroupsToMatchInPositionTwo = phenotype.GetPosition(locus, LocusPosition.Position2).MatchingPGroups
             };
         }
     }

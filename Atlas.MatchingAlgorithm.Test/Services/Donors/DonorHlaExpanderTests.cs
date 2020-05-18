@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;

@@ -1,4 +1,5 @@
-﻿using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo

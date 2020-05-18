@@ -20,6 +20,7 @@ using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using NUnit.Framework;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {
@@ -56,9 +57,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrades_PatientPhenotypeIsNull_ThrowsException()
         {
-            var donorphenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorPhenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
 
-            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, donorphenotype));
+            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, donorPhenotype));
         }
 
         [Test]
@@ -1276,14 +1277,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 .Build();
 
             var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            patientLookupResults.SetAtLocus(Locus.A, singleAlleleAtA);
-            patientLookupResults.SetAtLocus(Locus.B, consolidatedMolecularAtB);
-            patientLookupResults.SetAtLocus(Locus.Drb1, serologyAtDrb1);
+            patientLookupResults.SetLocus(Locus.A, singleAlleleAtA);
+            patientLookupResults.SetLocus(Locus.B, consolidatedMolecularAtB);
+            patientLookupResults.SetLocus(Locus.Drb1, serologyAtDrb1);
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtLocus(Locus.A, singleAlleleAtA);
-            donorLookupResults.SetAtLocus(Locus.B, consolidatedMolecularAtB);
-            donorLookupResults.SetAtLocus(Locus.Drb1, serologyAtDrb1);
+            donorLookupResults.SetLocus(Locus.A, singleAlleleAtA);
+            donorLookupResults.SetLocus(Locus.B, consolidatedMolecularAtB);
+            donorLookupResults.SetLocus(Locus.Drb1, serologyAtDrb1);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -1308,8 +1309,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             IHlaScoringLookupResult positionTwoResult)
         {
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetAtPosition(MatchedLocus, TypePosition.One, positionOneResult);
-            donorLookupResults.SetAtPosition(MatchedLocus, TypePosition.Two, positionTwoResult);
+            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Position1, positionOneResult);
+            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Position2, positionTwoResult);
 
             return donorLookupResults;
         }

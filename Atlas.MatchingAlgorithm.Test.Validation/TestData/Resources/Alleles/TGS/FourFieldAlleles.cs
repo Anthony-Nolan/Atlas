@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 

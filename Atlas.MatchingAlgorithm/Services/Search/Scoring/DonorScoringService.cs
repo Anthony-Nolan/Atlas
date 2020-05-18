@@ -1,6 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
@@ -10,6 +16,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
@@ -123,15 +130,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             foreach (var locus in scoredLoci)
             {
-                var gradeResultAtPosition1 = grades.DataAtPosition(locus, TypePosition.One).GradeResult;
-                var confidenceAtPosition1 = confidences.DataAtPosition(locus, TypePosition.One);
-                var gradeResultAtPosition2 = grades.DataAtPosition(locus, TypePosition.Two).GradeResult;
-                var confidenceAtPosition2 = confidences.DataAtPosition(locus, TypePosition.Two);
+                var gradeResultAtPosition1 = grades.GetPosition(locus, LocusPosition.Position1).GradeResult;
+                var confidenceAtPosition1 = confidences.GetPosition(locus, LocusPosition.Position1);
+                var gradeResultAtPosition2 = grades.GetPosition(locus, LocusPosition.Position2).GradeResult;
+                var confidenceAtPosition2 = confidences.GetPosition(locus, LocusPosition.Position2);
 
                 var scoreDetails = new LocusScoreDetails
                 {
                     // Either position can be used here, as the locus will either be typed at both positions or neither
-                    IsLocusTyped = locusTypingInformation.DataAtPosition(locus, TypePosition.One),
+                    IsLocusTyped = locusTypingInformation.GetPosition(locus, LocusPosition.Position1),
                     ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
                     ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
                 };
