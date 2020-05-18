@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             // Clients
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
-            mockHlaServiceClient.GetAntigens(Arg.Any<LocusType>(), Arg.Any<bool>()).Returns(new List<Antigen>());
+            mockHlaServiceClient.GetAntigens(Arg.Any<Locus>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             services.AddScoped(sp => mockHlaServiceClient);
 
             var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
