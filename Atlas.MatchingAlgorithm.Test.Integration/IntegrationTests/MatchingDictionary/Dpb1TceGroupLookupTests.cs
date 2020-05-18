@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
     [TestFixture]
     public class Dpb1TceGroupLookupTests
     {
-        private const LocusType Dpb1MolecularLocusType = LocusType.Dpb1;
+        private const Locus Dpb1MolecularLocusType = Locus.Dpb1;
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
 
         private IDpb1TceGroupLookupService lookupService;

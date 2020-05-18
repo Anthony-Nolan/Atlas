@@ -22,7 +22,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
     public class HlaScoringLookupLookupTests
     {
         private const Locus DefaultLocus = Locus.A;
-        private const LocusType DefaultLocusType = LocusType.A;
         private const string CacheKey = "NmdpCodeLookup_A";
 
         private IHlaScoringLookupService lookupService;
@@ -41,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
         public void SetUp()
         {
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocusType, Arg.Any<string>())
+                .GetAllelesForDefinedNmdpCode(DefaultLocus, Arg.Any<string>())
                 .Returns(new List<string>());
 
             // clear NMDP code allele mappings between tests
@@ -73,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
             // NMDP code value does not matter, but does need to conform to the expected pattern
             const string nmdpCode = "99:CODE";
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocusType, nmdpCode)
+                .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
                 .Returns(alleles.ToList());
 
             var result = await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null);
@@ -98,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
             // NMDP code value does not matter, but does need to conform to the expected pattern
             const string nmdpCode = "99:CODE";
             hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocusType, nmdpCode)
+                .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
                 .Returns(allAlleles);
 
             var result = await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null);
