@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.RegisterNovaClients();
+            builder.Services.RegisterDonorClient();
             builder.Services.RegisterDataServices();
             builder.Services.RegisterAllHlaMetadataDictionaryTypes();
             builder.Services.RegisterSearchAlgorithmTypes();
