@@ -13,9 +13,6 @@ resource "azurerm_function_app" "atlas_function" {
     // APPINSIGHTS_INSTRUMENTATIONKEY
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
     "APPINSIGHTS_INSTRUMENTATIONKEY"            = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights:InstrumentationKey"    = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights:LogLevel"              = var.APPLICATION_INSIGHTS_LOG_LEVEL
-    "AzureStorage:ConnectionString"             = azurerm_storage_account.azure_storage.primary_connection_string
     "MessagingServiceBus:ConnectionString"      = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "MessagingServiceBus:SearchRequestsQueue"   = module.matching_algorithm.general.search_requests_queue
     "MessagingServiceBus:SearchResultsTopic"    = module.matching_algorithm.general.search_results_topic

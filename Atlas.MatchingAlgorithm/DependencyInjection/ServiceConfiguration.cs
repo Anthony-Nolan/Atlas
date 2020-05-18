@@ -9,7 +9,6 @@ using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Data;
 using Atlas.HlaMetadataDictionary.Repositories;
@@ -158,7 +157,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 );
             });
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
-            services.AddScoped<ISearchOrchestrator, SearchOrchestrator>();
+            services.AddScoped<ISearchRunner, SearchRunner>();
             services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>(sp =>
             {
                 var azureStorageSettings = sp.GetService<IOptions<AzureStorageSettings>>().Value;

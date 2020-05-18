@@ -5,11 +5,22 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Atlas.Functions
+namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
-    public static class ServiceConfiguration
+    /// <summary>
+    /// Contains registrations necessary to set up a project-project interface with the matching algorithm.
+    /// e.g. Top level Atlas function will need to be able to queue searches, but does not need to be able to run them. 
+    /// </summary>
+    public static class ProjectInterfaceServiceConfiguration
     {
-        public static void RegisterMatchingAlgorithmServices(this IServiceCollection services)
+        
+        public static void RegisterMatchingAlgorithm(this IServiceCollection services)
+        {
+            services.RegisterMatchingAlgorithmSettings();
+            services.RegisterMatchingAlgorithmServices();
+        }
+        
+        private static void RegisterMatchingAlgorithmServices(this IServiceCollection services)
         {
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {
@@ -23,8 +34,8 @@ namespace Atlas.Functions
 
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
         }
-
-        public static void RegisterSettings(this IServiceCollection services)
+        
+        private static void RegisterMatchingAlgorithmSettings(this IServiceCollection services)
         {
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
         }
