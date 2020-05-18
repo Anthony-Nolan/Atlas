@@ -23,7 +23,7 @@ namespace Atlas.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("InitiateSearch")]
+        [FunctionName(nameof(InitiateSearch))]
         public async Task<IActionResult> InitiateSearch([HttpTrigger] HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());

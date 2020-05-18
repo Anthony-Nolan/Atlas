@@ -20,23 +20,8 @@ namespace Atlas.Functions
 
         private static void RegisterMatchingComponentTypes(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddOptions<MessagingServiceBusSettings>()
-                .Configure<IConfiguration>((serviceBusSettings, configuration) =>
-                {
-                    configuration.GetSection("MessagingServiceBus").Bind(serviceBusSettings);
-                });
-
-            builder.Services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
-            {
-                var serviceBusSettings = sp.GetService<IOptions<MessagingServiceBusSettings>>().Value;
-                return new SearchServiceBusClient(
-                    serviceBusSettings.ConnectionString,
-                    serviceBusSettings.SearchRequestsQueue,
-                    serviceBusSettings.SearchResultsTopic
-                );
-            });
-
-            builder.Services.AddScoped<ISearchDispatcher, SearchDispatcher>();
+            builder.Services.RegisterSettings();
+            builder.Services.RegisterMatchingAlgorithmServices();
         }
     }
 }
