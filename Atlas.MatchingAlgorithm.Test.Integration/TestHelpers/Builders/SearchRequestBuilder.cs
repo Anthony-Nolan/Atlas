@@ -262,7 +262,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                 .WithLocusSearchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
         }
 
-        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<LocusType> loci)
+        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
         {
             searchRequest.LociToExcludeFromAggregateScore = loci;
             return this;
