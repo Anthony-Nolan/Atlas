@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.MatchGrades
@@ -9,11 +9,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
     /// It is used when we need to guarantee that a cdna level match grade is possible
     ///
     /// For each locus, alleles were selected with full CDna (NOT gDNA)
-    /// (Note that cDNA match is also possble with same first three fields and full cDNA/gDNA - this case is not covered by this dataset)
+    /// (Note that cDNA match is also possible with same first three fields and full cDNA/gDNA - this case is not covered by this dataset)
     /// </summary>
     public static class CDnaMatchingAlleles
     {
-        public static readonly LocusInfo<List<AlleleTestData>> Alleles = new LocusInfo<List<AlleleTestData>>
+        public static readonly LociInfo<List<AlleleTestData>> Alleles = new LociInfo<List<AlleleTestData>>
         {
             A = new List<AlleleTestData>
             {
@@ -235,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*17:05"},
                 new AlleleTestData {AlleleName = "*17:39"},
             },
-            DPB1 = new List<AlleleTestData>
+            Dpb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*02:01:19"},
                 new AlleleTestData {AlleleName = "*02:01:23"},
@@ -274,7 +274,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*719:01"},
                 new AlleleTestData {AlleleName = "*720:01"},
             },
-            DQB1 = new List<AlleleTestData>
+            Dqb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*02:01:08"},
                 new AlleleTestData {AlleleName = "*02:01:25"},
@@ -376,7 +376,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*06:273"},
                 new AlleleTestData {AlleleName = "*06:274"},
             },
-            DRB1 = new List<AlleleTestData>
+            Drb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*01:01:31"},
                 new AlleleTestData {AlleleName = "*01:13"},

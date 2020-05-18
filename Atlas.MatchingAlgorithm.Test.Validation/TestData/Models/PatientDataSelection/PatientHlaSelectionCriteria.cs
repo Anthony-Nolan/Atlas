@@ -1,4 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection
@@ -25,12 +27,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSel
         /// <summary>
         /// Determines whether the patient should be homozygous at each locus
         /// </summary>
-        public LocusInfo<bool> IsHomozygous = new LocusInfo<bool>(false);
+        public LociInfo<bool> IsHomozygous = new LociInfo<bool>(false);
         
         /// <summary>
         /// Determines which match orientation will be used when selecting patient hla
         /// If arbitrary, either Direct or Cross will be chosen and used consistently
         /// </summary>
-        public LocusInfo<MatchOrientation> Orientations { get; set; } = new LocusInfo<MatchOrientation>(MatchOrientation.Arbitrary);
+        public LociInfo<MatchOrientation> Orientations { get; set; } = new LociInfo<MatchOrientation>(MatchOrientation.Arbitrary);
     }
 }

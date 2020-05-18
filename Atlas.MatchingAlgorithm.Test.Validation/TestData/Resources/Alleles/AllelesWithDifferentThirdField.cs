@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
     /// </summary>
     public static class AllelesWithDifferentThirdFields
     {
-        public static readonly LocusInfo<List<AlleleTestData>> Alleles = new LocusInfo<List<AlleleTestData>>
+        public static readonly LociInfo<List<AlleleTestData>> Alleles = new LociInfo<List<AlleleTestData>>
         {
             A = new List<AlleleTestData>
             {
@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*05:01:16"},
                 new AlleleTestData {AlleleName = "*05:01:32"},
             },
-            DPB1 = new List<AlleleTestData>
+            Dpb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*02:01:03"},
                 new AlleleTestData {AlleleName = "*02:01:04"},
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*04:01:34"},
                 new AlleleTestData {AlleleName = "*04:01:35"},
             },
-            DQB1 = new List<AlleleTestData>
+            Dqb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*03:01:03"},
                 new AlleleTestData {AlleleName = "*03:01:08"},
@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*06:02:22"},
                 new AlleleTestData {AlleleName = "*06:02:23"},
             },
-            DRB1 = new List<AlleleTestData>
+            Drb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*13:01:19"},
                 new AlleleTestData {AlleleName = "*13:01:20"},

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
@@ -13,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
     /// </summary>
     public static class NullAlleles
     {
-        public static readonly LocusInfo<List<AlleleTestData>> Alleles = new LocusInfo<List<AlleleTestData>>
+        public static readonly LociInfo<List<AlleleTestData>> Alleles = new LociInfo<List<AlleleTestData>>
         {
             A = new List<AlleleTestData>
             {
@@ -36,21 +38,21 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*07:152N"},
                 new AlleleTestData {AlleleName = "*07:02:01:17N"},
             },
-            DPB1 = new List<AlleleTestData>
+            Dpb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*04:01:01:24N"},
                 new AlleleTestData {AlleleName = "*61:01N"},
                 new AlleleTestData {AlleleName = "*357:01N"},
                 new AlleleTestData {AlleleName = "*450:01N"},
             },
-            DQB1 = new List<AlleleTestData>
+            Dqb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*03:95N"},
                 new AlleleTestData {AlleleName = "*04:46N"},
                 new AlleleTestData {AlleleName = "*06:26N"},
                 new AlleleTestData {AlleleName = "*06:158N"},
             },
-            DRB1 = new List<AlleleTestData>
+            Drb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*01:33N"},
                 new AlleleTestData {AlleleName = "*07:10N"},

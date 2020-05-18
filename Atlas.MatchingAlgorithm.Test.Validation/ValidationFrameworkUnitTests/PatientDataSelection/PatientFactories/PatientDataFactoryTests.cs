@@ -1,7 +1,11 @@
-﻿using System;
+﻿using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -67,18 +71,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             patientDataFactory.GetPatientHla();
-            capturedMetaDonorCriteria.IsHomozygous.DataAtLocus(locus).Should().BeTrue();
+            capturedMetaDonorCriteria.IsHomozygous.GetLocus(locus).Should().BeTrue();
         }
 
         [Test]
         public void SetPatientHomozygousAtLocus_WhenMismatchAllowed_DoesNotSetDonorAsHomozygous()
         {
             const Locus locus = Locus.A;
-            patientDataFactory.SetMismatchAtPosition(locus, TypePosition.One);
+            patientDataFactory.SetMismatchAtPosition(locus, LocusPosition.Position1);
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             CaptureCriteria();
-            capturedMetaDonorCriteria.IsHomozygous.DataAtLocus(locus).Should().BeFalse();
+            capturedMetaDonorCriteria.IsHomozygous.GetLocus(locus).Should().BeFalse();
         }
 
         [Test]
@@ -88,8 +92,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             CaptureCriteria();
-            var expectedResolutions = new Tuple<HlaTypingResolution, HlaTypingResolution>(HlaTypingResolution.Tgs, HlaTypingResolution.Tgs);
-            capturedPatientCriteria.PatientTypingResolutions.DataAtLocus(locus).Should().BeEquivalentTo(expectedResolutions);
+            var expectedResolutions = new LocusInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
+            capturedPatientCriteria.PatientTypingResolutions.GetLocus(locus).Should().BeEquivalentTo(expectedResolutions);
         }
 
         [Test]
@@ -123,8 +127,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(locus, resolution);
 
             CaptureCriteria();
-            capturedMetaDonorCriteria.DatabaseDonorDetailsSets.First().MatchingTypingResolutions.DataAtLocus(locus).Item1.Should().Be(resolution);
-            capturedDatabaseDonorCriteria.First().MatchingTypingResolutions.DataAtLocus(locus).Item1.Should().Be(resolution);
+            capturedMetaDonorCriteria.DatabaseDonorDetailsSets.First().MatchingTypingResolutions.GetLocus(locus).Position1.Should().Be(resolution);
+            capturedDatabaseDonorCriteria.First().MatchingTypingResolutions.GetLocus(locus).Position1.Should().Be(resolution);
         }
         
         [Test]
@@ -137,8 +141,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             patientDataFactory.UpdateMatchingDonorTypingResolutionsAtLocus(locus, resolution);
 
             CaptureCriteria();
-            capturedDatabaseDonorCriteria.First().MatchingTypingResolutions.DataAtLocus(locus).Item1.Should().Be(resolution);
-            capturedDatabaseDonorCriteria.Skip(1).First().MatchingTypingResolutions.DataAtLocus(locus).Item1.Should().Be(resolution);
+            capturedDatabaseDonorCriteria.First().MatchingTypingResolutions.GetLocus(locus).Position1.Should().Be(resolution);
+            capturedDatabaseDonorCriteria.Skip(1).First().MatchingTypingResolutions.GetLocus(locus).Position1.Should().Be(resolution);
         }
         
         [Test]
@@ -150,41 +154,41 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             CaptureCriteria();
             var resolutions = capturedDatabaseDonorCriteria.First().MatchingTypingResolutions;
-            resolutions.DataAtLocus(Locus.A).Item1.Should().Be(resolution);
-            resolutions.DataAtLocus(Locus.B).Item1.Should().Be(resolution);
-            resolutions.DataAtLocus(Locus.C).Item1.Should().Be(resolution);
-            resolutions.DataAtLocus(Locus.Dpb1).Item1.Should().Be(resolution);
-            resolutions.DataAtLocus(Locus.Dqb1).Item1.Should().Be(resolution);
-            resolutions.DataAtLocus(Locus.Drb1).Item1.Should().Be(resolution);
+            resolutions.GetLocus(Locus.A).Position1.Should().Be(resolution);
+            resolutions.GetLocus(Locus.B).Position1.Should().Be(resolution);
+            resolutions.GetLocus(Locus.C).Position1.Should().Be(resolution);
+            resolutions.GetLocus(Locus.Dpb1).Position1.Should().Be(resolution);
+            resolutions.GetLocus(Locus.Dqb1).Position1.Should().Be(resolution);
+            resolutions.GetLocus(Locus.Drb1).Position1.Should().Be(resolution);
         }
 
         [Test]
-        public void UpdateDonorGenotypeMatchDataAtPosition_UpdatesMetaDonorAndDatabaseDonorCriteria()
+        public void UpdateDonorGenotypeMatchGetPosition_UpdatesMetaDonorAndDatabaseDonorCriteria()
         {
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
             const bool shouldMatchGenotype = false;
             
-            patientDataFactory.UpdateDonorGenotypeMatchDataAtPosition(locus, position, shouldMatchGenotype);
+            patientDataFactory.UpdateDonorGenotypeMatchGetPosition(locus, position, shouldMatchGenotype);
             
             CaptureCriteria();
-            capturedMetaDonorCriteria.DatabaseDonorDetailsSets.First().ShouldMatchGenotype.DataAtPosition(locus, position).Should().Be(shouldMatchGenotype);
-            capturedDatabaseDonorCriteria.First().ShouldMatchGenotype.DataAtPosition(locus, position).Should().Be(shouldMatchGenotype);
+            capturedMetaDonorCriteria.DatabaseDonorDetailsSets.First().ShouldMatchGenotype.GetPosition(locus, position).Should().Be(shouldMatchGenotype);
+            capturedDatabaseDonorCriteria.First().ShouldMatchGenotype.GetPosition(locus, position).Should().Be(shouldMatchGenotype);
         }
         
         [Test]
-        public void UpdateDonorGenotypeMatchDataAtPosition_UpdatesAllDatabaseDonorCriteria()
+        public void UpdateDonorGenotypeMatchGetPosition_UpdatesAllDatabaseDonorCriteria()
         {
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
             const bool shouldMatchGenotype = false;
             patientDataFactory.AddExpectedDatabaseDonor(new DatabaseDonorSpecification());
             
-            patientDataFactory.UpdateDonorGenotypeMatchDataAtPosition(locus, position, shouldMatchGenotype);
+            patientDataFactory.UpdateDonorGenotypeMatchGetPosition(locus, position, shouldMatchGenotype);
 
             CaptureCriteria();
-            capturedDatabaseDonorCriteria.First().ShouldMatchGenotype.DataAtPosition(locus, position).Should().Be(shouldMatchGenotype);
-            capturedDatabaseDonorCriteria.Skip(1).First().ShouldMatchGenotype.DataAtPosition(locus, position).Should().Be(shouldMatchGenotype);
+            capturedDatabaseDonorCriteria.First().ShouldMatchGenotype.GetPosition(locus, position).Should().Be(shouldMatchGenotype);
+            capturedDatabaseDonorCriteria.Skip(1).First().ShouldMatchGenotype.GetPosition(locus, position).Should().Be(shouldMatchGenotype);
         }
 
         /// <summary>

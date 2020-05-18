@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -61,12 +62,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             {
                 if (mismatchCount > 0)
                 {
-                    factory.SetMismatchAtPosition(locus, TypePosition.One);
+                    factory.SetMismatchAtPosition(locus, LocusPosition.Position1);
                 }
 
                 if (mismatchCount > 1)
                 {
-                    factory.SetMismatchAtPosition(locus, TypePosition.Two);
+                    factory.SetMismatchAtPosition(locus, LocusPosition.Position2);
                 }
             }
 

@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
@@ -15,34 +16,34 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             {
                 HlaSources = new PhenotypeInfo<PatientHlaSource>(PatientHlaSource.Match),
                 MatchLevels = new PhenotypeInfo<MatchLevel>(MatchLevel.Allele),
-                IsHomozygous = new LocusInfo<bool>(false),
-                Orientations = new LocusInfo<MatchOrientation>(MatchOrientation.Arbitrary),
+                IsHomozygous = new LociInfo<bool>(false),
+                Orientations = new LociInfo<MatchOrientation>(MatchOrientation.Arbitrary),
             };
         }
 
-        public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, TypePosition position)
+        public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.Match);
+            criteria.HlaSources.SetPosition(locus, position, PatientHlaSource.Match);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtBothPositions(Locus locus)
         {
-            criteria.HlaSources.SetAtPosition(locus, TypePosition.One, PatientHlaSource.Match);
-            criteria.HlaSources.SetAtPosition(locus, TypePosition.Two, PatientHlaSource.Match);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.Position1, PatientHlaSource.Match);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.Position2, PatientHlaSource.Match);
             return this;
         }
 
-        public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, TypePosition position)
+        public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtEitherPosition(Locus locus)
         {
-            criteria.HlaSources.SetAtPosition(locus, TypePosition.One, PatientHlaSource.ExpressingAlleleMismatch);
-            criteria.HlaSources.SetAtPosition(locus, TypePosition.Two, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.Position1, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.Position2, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 
@@ -54,19 +55,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public PatientHlaSelectionCriteriaBuilder HomozygousAtLocus(Locus locus)
         {
-            criteria.IsHomozygous.SetAtLocus(locus, true);
+            criteria.IsHomozygous.SetLocus(locus, true);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder WithMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
         {
-            criteria.Orientations.SetAtLocus(locus, orientation);
+            criteria.Orientations.SetLocus(locus, orientation);
             return this;
         }
 
-        public PatientHlaSelectionCriteriaBuilder WithHlaSourceAtPosition(Locus locus, TypePosition position, PatientHlaSource hlaSource)
+        public PatientHlaSelectionCriteriaBuilder WithHlaSourceAtPosition(Locus locus, LocusPosition position, PatientHlaSource hlaSource)
         {
-            criteria.HlaSources.SetAtPosition(locus, position, hlaSource);
+            criteria.HlaSources.SetPosition(locus, position, hlaSource);
             return this;
         }
 

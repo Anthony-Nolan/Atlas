@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 
 // ReSharper disable MemberCanBeProtected.Global
 
@@ -23,21 +25,14 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// Creates a new LociInfo with all inner values set to the same starting value.
         /// </summary>
         /// <param name="initialValue">The initial value all inner locus values should be given.</param>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules",
-            "SA1642:ConstructorSummaryDocumentationMustBeginWithStandardText", Justification = "Disabled.")]
         public LociInfo(T initialValue)
         {
             A = initialValue;
             B = initialValue;
             C = initialValue;
-            Dpa1 = initialValue;
             Dpb1 = initialValue;
-            Dqa1 = initialValue;
             Dqb1 = initialValue;
             Drb1 = initialValue;
-            Drb3 = initialValue;
-            Drb4 = initialValue;
-            Drb5 = initialValue;
         }
 
         /// <summary>
@@ -56,19 +51,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public T C { get; set; }
 
         /// <summary>
-        /// Locus Dpa1. Not used in search.
-        /// </summary>
-        public T Dpa1 { get; set; }
-
-        /// <summary>
         /// Locus Dpb1. Used in newer search implementations.
         /// </summary>
         public T Dpb1 { get; set; }
-
-        /// <summary>
-        /// Locus Dqa1. Not used in search.
-        /// </summary>
-        public T Dqa1 { get; set; }
 
         /// <summary>
         /// Locus Dqb1. Used in newer search implementations.
@@ -80,24 +65,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// </summary>
         public T Drb1 { get; set; }
 
-        /// <summary>
-        /// Locus Drb3. Not used in search. Related to Drb4 and Drb5.
-        /// A phenotype will contain only two alleles across DRB3/4/5, in any combination.
-        /// </summary>
-        public T Drb3 { get; set; }
-
-        /// <summary>
-        /// Locus Drb4. Not used in search. Related to Drb3 and Drb5.
-        /// A phenotype will contain only two alleles across DRB3/4/5, in any combination.
-        /// </summary>
-        public T Drb4 { get; set; }
-
-        /// <summary>
-        /// Locus Drb5. Not used in search. Related to Drb3 and Drb4
-        /// A phenotype will contain only two alleles across DRB3/4/5, in any combination.
-        /// </summary>
-        public T Drb5 { get; set; }
-
         public static bool operator ==(LociInfo<T> left, LociInfo<T> right)
         {
             return Equals(left, right);
@@ -107,7 +74,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return !Equals(left, right);
         }
-        
+
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {
             return new LociInfo<R>
@@ -118,6 +85,29 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 Dpb1 = mapping(Locus.Dpb1, Dpb1),
                 Dqb1 = mapping(Locus.Dqb1, Dqb1),
                 Drb1 = mapping(Locus.Drb1, Drb1),
+            };
+        }
+
+        // TODO: ATLAS-264: Use Task.WhenAll
+        public async Task<LociInfo<R>> MapAsync<R>(Func<Locus, T, Task<R>> mapping)
+        {
+            var a = mapping(Locus.A, A);
+            var b = mapping(Locus.B, B);
+            var c = mapping(Locus.C, C);
+            var dpb1 = mapping(Locus.Dpb1, Dpb1);
+            var dqb1 = mapping(Locus.Dqb1, Dqb1);
+            var drb1 = mapping(Locus.Drb1, Drb1);
+
+            await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
+            
+            return new LociInfo<R>
+            {
+                A = a.Result,
+                B = b.Result,
+                C = c.Result,
+                Dpb1 = dpb1.Result,
+                Dqb1 = dqb1.Result,
+                Drb1 = drb1.Result,
             };
         }
 
@@ -174,17 +164,49 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 A,
                 B,
                 C,
-                Dpa1,
                 Dpb1,
-                Dqa1,
                 Dqb1,
                 Drb1,
-                Drb3,
-                Drb4,
-                Drb5
             };
         }
 
+        public PhenotypeInfo<R> ToPhenotypeInfo<R>(Func<Locus, T, R> mapping)
+        {
+            return new PhenotypeInfo<R>
+            {
+                A =
+                {
+                    Position1 = mapping(Locus.A, A),
+                    Position2 = mapping(Locus.A, A),
+                },
+                B =
+                {
+                    Position1 = mapping(Locus.B, B),
+                    Position2 = mapping(Locus.B, B),
+                },
+                C =
+                {
+                    Position1 = mapping(Locus.C, C),
+                    Position2 = mapping(Locus.C, C),
+                },
+                Dpb1 =
+                {
+                    Position1 = mapping(Locus.Dpb1, Dpb1),
+                    Position2 = mapping(Locus.Dpb1, Dpb1),
+                },
+                Dqb1 =
+                {
+                    Position1 = mapping(Locus.Dqb1, Dqb1),
+                    Position2 = mapping(Locus.Dqb1, Dqb1),
+                },
+                Drb1 =
+                {
+                    Position1 = mapping(Locus.Drb1, Drb1),
+                    Position2 = mapping(Locus.Drb1, Drb1),
+                }
+            };
+        }
+        
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -213,12 +235,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(B);
                 hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(C);
                 hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dpb1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dqa1);
                 hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Dqb1);
                 hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Drb1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Drb3);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Drb4);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Drb5);
                 return hashCode;
             }
         }
@@ -228,14 +246,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return EqualityComparer<T>.Default.Equals(A, other.A) &&
                    EqualityComparer<T>.Default.Equals(B, other.B) &&
                    EqualityComparer<T>.Default.Equals(C, other.C) &&
-                   EqualityComparer<T>.Default.Equals(Dpa1, other.Dpa1) &&
                    EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1) &&
-                   EqualityComparer<T>.Default.Equals(Dqa1, other.Dqa1) &&
                    EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1) &&
-                   EqualityComparer<T>.Default.Equals(Drb1, other.Drb1) &&
-                   EqualityComparer<T>.Default.Equals(Drb3, other.Drb3) &&
-                   EqualityComparer<T>.Default.Equals(Drb4, other.Drb4) &&
-                   EqualityComparer<T>.Default.Equals(Drb5, other.Drb5);
+                   EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
         }
     }
 }

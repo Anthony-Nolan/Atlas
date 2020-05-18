@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
 {
@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
         /// </summary>
         public PhenotypeInfo<Dataset> AlleleSources { get; set; }
         
-        public LocusInfo<bool> IsHomozygous { get; set; }
+        public LociInfo<bool> IsHomozygous { get; set; }
         
         /// <summary>
         /// When set, the alleles used to generate an allele string (of names) will be guaranteed to contain

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             criteria = new MetaDonorSelectionCriteria
             {
                 MatchLevels = new PhenotypeInfo<MatchLevel>(),
-                IsHomozygous = new LocusInfo<bool>(false),
+                IsHomozygous = new LociInfo<bool>(false),
                 AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(false),
                 HasNonNullExpressionSuffix = new PhenotypeInfo<bool>(false)
             };
@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public MetaDonorSelectionCriteriaBuilder HomozygousAtAllLoci()
         {
-            criteria.IsHomozygous = new LocusInfo<bool>(true);
+            criteria.IsHomozygous = new LociInfo<bool>(true);
             return this;
         }
 
@@ -70,20 +70,20 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAt(Locus locus)
         {
-            criteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
+            criteria.HasNonNullExpressionSuffix.SetLocus(locus, true);
             return this;
         }
 
-        public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePosition position)
+        public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.IsNullExpressing.SetAtPosition(locus, position, true);
+            criteria.IsNullExpressing.SetPosition(locus, position, true);
             return this;
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtAllPositions()
         {
             return EnumerateValues<Locus>().Aggregate(this,
-                (current, locus) => current.WithNullAlleleAtPosition(locus, TypePosition.One).WithNullAlleleAtPosition(locus, TypePosition.Two));
+                (current, locus) => current.WithNullAlleleAtPosition(locus, LocusPosition.Position1).WithNullAlleleAtPosition(locus, LocusPosition.Position2));
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()

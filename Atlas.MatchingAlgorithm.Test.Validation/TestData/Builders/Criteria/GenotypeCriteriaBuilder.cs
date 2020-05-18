@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             genotypeCriteria = new GenotypeCriteria
             {
                 AlleleSources = new PhenotypeInfo<Dataset>(Dataset.TgsAlleles),
-                IsHomozygous = new LocusInfo<bool>(false),
+                IsHomozygous = new LociInfo<bool>(false),
                 AlleleStringContainsDifferentAntigenGroups = new PhenotypeInfo<bool>(false),
             };
         }
@@ -57,9 +58,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             return this;
         }
         
-        public GenotypeCriteriaBuilder WithNullAlleleAtPosition(Locus locus, TypePosition position)
+        public GenotypeCriteriaBuilder WithNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            genotypeCriteria.AlleleSources.SetAtPosition(locus, position, Dataset.NullAlleles);
+            genotypeCriteria.AlleleSources.SetPosition(locus, position, Dataset.NullAlleles);
             return this;
         }
 
@@ -69,19 +70,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             {
                 throw new InvalidTestDataException("No test data exists with a non-null expression suffix at DRB1");
             }
-            genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.AllelesWithNonNullExpressionSuffix);
+            genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.AllelesWithNonNullExpressionSuffix);
             return this;
         }
 
         public GenotypeCriteriaBuilder HomozygousAtLocus(Locus locus)
         {
-            genotypeCriteria.IsHomozygous.SetAtLocus(locus, true);
+            genotypeCriteria.IsHomozygous.SetLocus(locus, true);
             return this;
         }
         
         public GenotypeCriteriaBuilder HomozygousAtAllLoci()
         {
-            genotypeCriteria.IsHomozygous = new LocusInfo<bool>(true);
+            genotypeCriteria.IsHomozygous = new LociInfo<bool>(true);
             return this;
         }
 
@@ -96,25 +97,25 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
             switch (matchLevel)
             {
                 case MatchLevel.Allele:
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.TgsAlleles);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.TgsAlleles);
                     break;
                 case MatchLevel.FirstThreeFieldAllele:
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.FourFieldAllelesWithThreeFieldMatchPossible);
                     break;
                 case MatchLevel.FirstTwoFieldAllele:           
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible);
                     break;
                 case MatchLevel.PGroup:
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.PGroupMatchPossible);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.PGroupMatchPossible);
                     break;
                 case MatchLevel.GGroup:
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.GGroupMatchPossible);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.GGroupMatchPossible);
                     break;
                 case MatchLevel.Protein:
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.ProteinMatchPossible);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.ProteinMatchPossible);
                     break;
                 case MatchLevel.CDna:
-                    genotypeCriteria.AlleleSources.SetAtLocus(locus, Dataset.CDnaMatchPossible);
+                    genotypeCriteria.AlleleSources.SetLocus(locus, Dataset.CDnaMatchPossible);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(matchLevel), matchLevel, null);

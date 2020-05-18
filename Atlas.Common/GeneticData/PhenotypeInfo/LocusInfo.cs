@@ -8,18 +8,28 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public T Position1 { get; set; }
         public T Position2 { get; set; }
 
+        public LocusInfo()
+        {
+        }
+
+        public LocusInfo(T initialValue)
+        {
+            Position1 = initialValue;
+            Position2 = initialValue;
+        }
+
         public LocusInfo<R> Map<R>(Func<T, R> mapping)
         {
             return new LocusInfo<R>
             {
-                Position1 = mapping(Position1), 
+                Position1 = mapping(Position1),
                 Position2 = mapping(Position2)
             };
         }
 
         public IEnumerable<T> ToEnumerable()
         {
-            return new List<T>{ Position1, Position2};
+            return new List<T> {Position1, Position2};
         }
 
         public static bool operator ==(LocusInfo<T> left, LocusInfo<T> right)

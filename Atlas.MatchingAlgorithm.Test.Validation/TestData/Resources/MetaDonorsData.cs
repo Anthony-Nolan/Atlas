@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -188,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, TypePosition.One).Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, LocusPosition.Position1).Build(),
             },
 
             // Non null alleles with an expression suffix
@@ -211,11 +213,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, TypePosition.One).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, LocusPosition.Position1).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
-                        .WithNonGenotypeAlleleAtPosition(Locus.B, TypePosition.One)
+                        .WithNonGenotypeAlleleAtPosition(Locus.B, LocusPosition.Position1)
                         .Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
@@ -225,7 +227,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                         .WithNonGenotypeAlleleAtLocus(Locus.Dqb1)
                         .Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
-                        .WithNonGenotypeAlleleAtPosition(Locus.Dqb1, TypePosition.One)
+                        .WithNonGenotypeAlleleAtPosition(Locus.Dqb1, LocusPosition.Position1)
                         .Build(),
                     // Exact match must be last, to ensure ranking tests do not give a false positive.
                     new DatabaseDonorSelectionCriteriaBuilder()

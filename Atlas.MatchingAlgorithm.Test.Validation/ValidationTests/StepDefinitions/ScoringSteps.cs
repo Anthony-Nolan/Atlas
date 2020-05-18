@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -245,16 +246,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             return expectedLoci;
         }
 
-        private TypePosition?[] ParseExpectedPositions(string position)
+        private LocusPosition?[] ParseExpectedPositions(string position)
         {
             switch (position)
             {
                 case "both positions":
-                    return new TypePosition?[] { TypePosition.One, TypePosition.Two };
+                    return new LocusPosition?[] { LocusPosition.Position1, LocusPosition.Position2 };
                 case "position 1":
-                    return new TypePosition?[] { TypePosition.One };
+                    return new LocusPosition?[] { LocusPosition.Position1 };
                 case "position 2":
-                    return new TypePosition?[] { TypePosition.Two };
+                    return new LocusPosition?[] { LocusPosition.Position2 };
                 default:
                     scenarioContext.Pending();
                     return null;
@@ -375,34 +376,34 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         }
 
         private static void AssertMatchGrade(
-            TypePosition?[] expectedPosition,
+            LocusPosition?[] expectedPosition,
             LocusSearchResult locusSearchResult,
             IReadOnlyCollection<MatchGrade> validMatchGrades
         )
         {
-            if (expectedPosition.Contains(TypePosition.One))
+            if (expectedPosition.Contains(LocusPosition.Position1))
             {
                 validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade);
             }
 
-            if (expectedPosition.Contains(TypePosition.Two))
+            if (expectedPosition.Contains(LocusPosition.Position2))
             {
                 validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade);
             }
         }
 
         private static void AssertMatchConfidence(
-            TypePosition?[] expectedPosition,
+            LocusPosition?[] expectedPosition,
             LocusSearchResult locusSearchResult,
             MatchConfidence? validMatchConfidence
         )
         {
-            if (expectedPosition.Contains(TypePosition.One))
+            if (expectedPosition.Contains(LocusPosition.Position1))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionOne.MatchConfidence);
             }
 
-            if (expectedPosition.Contains(TypePosition.Two))
+            if (expectedPosition.Contains(LocusPosition.Position2))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionTwo.MatchConfidence);
             }
