@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Core\" />
-    <Folder Include="Core\Tasks" />
     <Folder Include="ServiceBus\" />
   </ItemGroup>
 

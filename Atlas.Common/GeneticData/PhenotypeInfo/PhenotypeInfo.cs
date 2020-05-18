@@ -72,7 +72,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Drb5.Position2 = initialValue;
         }
 
-        public PhenotypeInfo<R> Map<R>(Func<LocusType, LocusPosition, T, R> mapping)
+        public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
         {
             return new PhenotypeInfo<R>(Map((locusType, locusInfo) => new LocusInfo<R>()
             {
@@ -81,7 +81,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             }));
         }
 
-        public PhenotypeInfo<R> Map<R>(Func<LocusType, T, R> mapping)
+        public PhenotypeInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {
             return Map((locusType, position, locusInfo) => mapping(locusType, locusInfo));
         }
@@ -91,12 +91,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return Map((locusType, position, locusInfo) => mapping(locusInfo));
         }
 
-        public void SetAtPosition(LocusType locus, LocusPosition position, T value)
+        public void SetAtPosition(Locus locus, LocusPosition position, T value)
         {
             GetLocus(locus).SetAtPosition(position, value);
         }
 
-        public T GetAtPosition(LocusType locus, LocusPosition position)
+        public T GetAtPosition(Locus locus, LocusPosition position)
         {
             return GetLocus(locus).GetAtPosition(position);
         }
