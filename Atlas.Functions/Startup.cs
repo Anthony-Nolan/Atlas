@@ -20,8 +20,7 @@ namespace Atlas.Functions
 
         private static void RegisterMatchingComponentTypes(IFunctionsHostBuilder builder)
         {
-            builder.Services.RegisterSettings();
-            builder.Services.RegisterMatchingAlgorithmServices();
+            builder.Services.RegisterMatchingAlgorithm();
         }
     }
 }

@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
-    public interface ISearchOrchestrator
+    public interface ISearchRunner
     {
         Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
     }
 
-    public class SearchOrchestrator : ISearchOrchestrator
+    public class SearchRunner : ISearchRunner
     {
         private readonly ISearchServiceBusClient searchServiceBusClient;
         private readonly ISearchService searchService;
@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly ISearchRequestContext searchRequestContext;
         private readonly IActiveHlaVersionAccessor hlaVersionProvider;
 
-        public SearchOrchestrator(
+        public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
             IResultsBlobStorageClient resultsBlobStorageClient,
