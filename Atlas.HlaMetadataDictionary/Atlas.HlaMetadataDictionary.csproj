@@ -18,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+      <ProjectReference Include="..\Atlas.MultipleAlleleCodeLookup\Atlas.MultipleAlleleCodeDictionary.csproj" />
     </ItemGroup>
 
 </Project>

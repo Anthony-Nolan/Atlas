@@ -19,6 +19,9 @@ namespace Atlas.MultipleAlleleCodeDictionary
             Func<IServiceProvider, string> fetchHlaClientBaseUrl,
             Func<IServiceProvider, string> fetchInsightsInstrumentationKey)
         {
+            services.AddScoped<IAntigenCachingService, NmdpCodeCachingService>();
+            services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
+
             RegisterHlaServiceClient(
                 services,
                 fetchHlaClientApiKey,

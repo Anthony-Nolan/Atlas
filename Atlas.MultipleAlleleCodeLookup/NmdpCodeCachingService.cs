@@ -1,6 +1,5 @@
 ﻿using LazyCache;
-using Atlas.HLAService.Client;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MultipleAlleleCodeDictionary.HLAService;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +9,7 @@ using Atlas.Common.Caching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Locus = Atlas.Common.GeneticData.Locus;
 using LocusType = Atlas.Common.GeneticData.LocusType;
 

@@ -116,7 +116,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshService, DataRefreshService>();
             services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
-            services.AddScoped<IAntigenCachingService, NmdpCodeCachingService>();
 
             // Matching Services
             services.AddScoped<IDonorMatchingService, DonorMatchingService>();
@@ -256,7 +255,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         private static void RegisterMacDictionaryServices(this IServiceCollection services)
         {
-            services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
             services.RegisterMacDictionaryServices(
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
