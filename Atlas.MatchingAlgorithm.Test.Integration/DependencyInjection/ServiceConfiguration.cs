@@ -1,4 +1,3 @@
-using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Data.Context;
@@ -17,7 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models;
+using Atlas.MultipleAlleleCodeDictionary.HLAService;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {

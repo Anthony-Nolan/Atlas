@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
-using Atlas.HLAService.Client;
 using Atlas.HlaMetadataDictionary.Services;
 using NSubstitute;
 using NUnit.Framework;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.MultipleAlleleCodeDictionary.HLAService;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
 {

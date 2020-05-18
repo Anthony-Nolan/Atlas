@@ -1,15 +1,12 @@
-using Atlas.HLAService.Client;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
-using Atlas.MatchingAlgorithm.Clients.Http;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.HlaMetadataDictionary.Data;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
@@ -53,6 +50,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.NovaHttpClient;
 using Atlas.Common.Caching;
+using Atlas.MultipleAlleleCodeDictionary;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -259,42 +257,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterMacDictionaryServices(this IServiceCollection services)
         {
             services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
+            services.RegisterMacDictionaryServices(
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey
+            );
         }
 
-        public static void RegisterNovaClients(this IServiceCollection services)
+        public static void RegisterDonorClient(this IServiceCollection services)
         {
-            RegisterHlaServiceClient(services);
             services.AddSingleton(GetDonorServiceClient);
-        }
-
-        public static void RegisterHlaServiceClient(this IServiceCollection services)
-        {
-            services.AddSingleton(GetHlaServiceClient);
-        }
-
-        private static IHlaServiceClient GetHlaServiceClient(IServiceProvider sp)
-        {
-            var hlaServiceSettings = sp.GetService<IOptions<HlaServiceSettings>>().Value;
-            var clientSettings = new HttpClientSettings
-            {
-                ApiKey = hlaServiceSettings.ApiKey,
-                BaseUrl = hlaServiceSettings.BaseUrl,
-                ClientName = "hla_service_client",
-                JsonSettings = new JsonSerializerSettings()
-            };
-            var loggingKey = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey;
-            var logger = LoggerRegistration.BuildNovaLogger(loggingKey);
-
-            try
-            {
-                return new HlaServiceClient(clientSettings, logger);
-            }
-            // When running on startup, the client setup will often throw a NullReferenceException.
-            // This appears to go away when running not immediately after startup, so we retry once to circumvent
-            catch (NullReferenceException)
-            {
-                return new HlaServiceClient(clientSettings, logger);
-            }
         }
 
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
