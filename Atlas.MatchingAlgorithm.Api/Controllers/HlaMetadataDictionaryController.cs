@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
@@ -12,7 +11,7 @@ using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.Crea
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
-    [Route("hla-metadata-dictionary")]//QQ migrate to new project
+    [Route("hla-metadata-dictionary")] //TODO: ATLAS-262 (MDM) migrate to new project
     public class HlaMetadataDictionaryController : ControllerBase
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;

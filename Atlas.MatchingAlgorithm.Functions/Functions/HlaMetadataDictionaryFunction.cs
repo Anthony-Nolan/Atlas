@@ -9,7 +9,7 @@ using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.Crea
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
-    public class HlaMetadataDictionaryFunction //QQ Migrate to new project
+    public class HlaMetadataDictionaryFunction //TODO: ATLAS-262 (MDM) migrate to new project
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
