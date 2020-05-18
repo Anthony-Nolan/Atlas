@@ -11,7 +11,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services.RegisterSettingsForDonorManagementFunctionsApp();
-            builder.Services.RegisterHlaServiceClient();
             builder.Services.RegisterDataServices();
             builder.Services.RegisterTypesNeededForHlaMetadataDictionary();
             builder.Services.RegisterSearchAlgorithmTypes();

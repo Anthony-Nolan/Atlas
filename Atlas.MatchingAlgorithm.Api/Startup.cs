@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Api
             services.RegisterSearchAlgorithmTypes();
             services.RegisterAllHlaMetadataDictionaryTypes();
             services.RegisterDataServices();
-            services.RegisterNovaClients();
+            services.RegisterDonorClient();
 
             services.ConfigureSwaggerService();
 

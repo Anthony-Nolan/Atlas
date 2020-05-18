@@ -2,12 +2,11 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.MatchingAlgorithm.Clients.Http.HlaService.Models;
 using Atlas.Common.GeneticData;
 using Atlas.Common.NovaHttpClient;
 using Atlas.Common.NovaHttpClient.Client;
 
-namespace Atlas.HLAService.Client
+namespace Atlas.MultipleAlleleCodeDictionary.HLAService
 {
     public interface IHlaServiceClient
     {
