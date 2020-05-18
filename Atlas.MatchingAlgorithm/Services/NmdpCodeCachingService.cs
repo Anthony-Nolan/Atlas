@@ -8,9 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
-using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MultipleAlleleCodeDictionary
 {
