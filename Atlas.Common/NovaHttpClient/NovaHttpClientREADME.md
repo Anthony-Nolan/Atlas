@@ -2,3 +2,5 @@ Everything in this folder/namespace is only used in the HTTP clients ported from
 i.e. HLA and Donor services.
 
 Once these dependencies are fully removed, everything in this namespace should be deleted.
+
+TODO: ATLAS-201: Remove this folder & all contents

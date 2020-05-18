@@ -23,8 +23,8 @@ namespace Atlas.Common.Utils.Extensions
 
         private static Func<AssemblyName, bool> AssemblyNameMatches(string suffix)
         {
-            var startsWith = suffix != null ? $"{AtlasAssemblyName}.{suffix}" : AtlasAssemblyName;
-            return name => name.Name.StartsWith(startsWith);
+            var prefix = suffix != null ? $"{AtlasAssemblyName}.{suffix}" : AtlasAssemblyName;
+            return name => name.Name.StartsWith(prefix);
         }
     }
 }
