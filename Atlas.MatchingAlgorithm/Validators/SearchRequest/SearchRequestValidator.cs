@@ -13,10 +13,7 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
             RuleFor(x => x.SearchHlaData).NotNull().SetValidator(new SearchHlaDataValidator());
             RuleFor(x => x.SearchHlaData.LocusSearchHlaC).NotNull().When(x => x.MatchCriteria?.LocusMismatchC != null);
             RuleFor(x => x.SearchHlaData.LocusSearchHlaDqb1).NotNull().When(x => x.MatchCriteria?.LocusMismatchDqb1 != null);
-            RuleFor(x => x.LociToExcludeFromAggregateScore)
-                .NotNull()
-                .IsInEnum()
-                .WithMessage("Only valid search loci can be excluded from aggregation. They are: A, B, C, Dpb1, Dqb1, Drb1");
+            RuleFor(x => x.LociToExcludeFromAggregateScore).NotNull();
         }
     }
 }

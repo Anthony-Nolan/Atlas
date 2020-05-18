@@ -32,14 +32,9 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             mapped.A.Should().Be(Mapping(initial.A));
             mapped.B.Should().Be(Mapping(initial.B));
             mapped.C.Should().Be(Mapping(initial.C));
-            mapped.Dpa1.Should().Be(Mapping(initial.Dpa1));
             mapped.Dpb1.Should().Be(Mapping(initial.Dpb1));
-            mapped.Dqa1.Should().Be(Mapping(initial.Dqa1));
             mapped.Dqb1.Should().Be(Mapping(initial.Dqb1));
             mapped.Drb1.Should().Be(Mapping(initial.Drb1));
-            mapped.Drb3.Should().Be(Mapping(initial.Drb3));
-            mapped.Drb4.Should().Be(Mapping(initial.Drb4));
-            mapped.Drb5.Should().Be(Mapping(initial.Drb5));
         }
 
         [Test]
