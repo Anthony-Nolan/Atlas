@@ -11,7 +11,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Locus = Atlas.Common.GeneticData.Locus;
-using LocusType = Atlas.Common.GeneticData.LocusType;
 
 namespace Atlas.MultipleAlleleCodeDictionary
 {
