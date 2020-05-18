@@ -10,7 +10,7 @@ namespace Atlas.Common.Utils.Extensions
         {
             if (str == null)
             {
-                return null;
+                return "NULL";
             }
 
             using var md5 = MD5.Create();
