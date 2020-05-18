@@ -19,12 +19,12 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     public class Search
     {
         private readonly ISearchDispatcher searchDispatcher;
-        private readonly ISearchOrchestrator searchOrchestrator;
+        private readonly ISearchRunner searchRunner;
 
-        public Search(ISearchDispatcher searchDispatcher, ISearchOrchestrator searchOrchestrator)
+        public Search(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner)
         {
             this.searchDispatcher = searchDispatcher;
-            this.searchOrchestrator = searchOrchestrator;
+            this.searchRunner = searchRunner;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             var serialisedData = Encoding.UTF8.GetString(message.Body);
             var request = JsonConvert.DeserializeObject<IdentifiedSearchRequest>(serialisedData);
 
-            await searchOrchestrator.RunSearch(request);
+            await searchRunner.RunSearch(request);
         }
     }
 }

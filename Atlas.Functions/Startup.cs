@@ -1,11 +1,6 @@
 using Atlas.Functions;
-using Atlas.MatchingAlgorithm.Clients.ServiceBus;
-using Atlas.MatchingAlgorithm.ConfigSettings;
-using Atlas.MatchingAlgorithm.Services.Search;
+using Atlas.MatchingAlgorithm.DependencyInjection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -15,13 +10,7 @@ namespace Atlas.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            RegisterMatchingComponentTypes(builder);
-        }
-
-        private static void RegisterMatchingComponentTypes(IFunctionsHostBuilder builder)
-        {
-            builder.Services.RegisterSettings();
-            builder.Services.RegisterMatchingAlgorithmServices();
+            builder.Services.RegisterMatchingAlgorithm();
         }
     }
 }
