@@ -1,6 +1,5 @@
 ﻿using LazyCache;
-using Atlas.HLAService.Client;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MultipleAlleleCodeDictionary.HLAService;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,6 +10,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MultipleAlleleCodeDictionary
 {
