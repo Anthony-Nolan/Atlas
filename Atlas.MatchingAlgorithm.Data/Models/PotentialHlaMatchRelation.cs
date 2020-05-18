@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
 namespace Atlas.MatchingAlgorithm.Data.Models
 {
@@ -10,10 +10,9 @@ namespace Atlas.MatchingAlgorithm.Data.Models
     public class PotentialHlaMatchRelation
     {
         public Locus Locus { get; set; }
-        public TypePosition SearchTypePosition { get; set; }
-        public TypePosition MatchingTypePosition { get; set; }
+        public LocusPosition SearchTypePosition { get; set; }
+        public LocusPosition MatchingTypePosition { get; set; }
         public string Name { get; set; }
         public int DonorId { get; set; }
-        public DonorInfoWithExpandedHla Donor { get; set; }
     }
 }

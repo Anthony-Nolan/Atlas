@@ -27,12 +27,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source)
         {
-            A = source.A;
-            B = source.B;
-            C = source.C;
-            Dpb1 = source.Dpb1;
-            Dqb1 = source.Dqb1;
-            Drb1 = source.Drb1;
+            A = new LocusInfo<T>(source.A);
+            B = new LocusInfo<T>(source.B);
+            C = new LocusInfo<T>(source.C);
+            Dpb1 = new LocusInfo<T>(source.Dpb1);
+            Dqb1 = new LocusInfo<T>(source.Dqb1);
+            Drb1 = new LocusInfo<T>(source.Drb1);
         }
 
         /// <summary>
@@ -74,48 +74,92 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return Map((locusType, position, locusInfo) => mapping(locusInfo));
         }
-        
-        // TODO: Use locusInfo
-        public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, Tuple<R, R>> mapping)
+
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, LocusPosition, T, Task<R>> mapping)
         {
-            var a = mapping(Locus.A, A.Position1, A.Position2);
-            var b = mapping(Locus.B, B.Position1, B.Position2);
-            var c = mapping(Locus.C, C.Position1, C.Position2);
-            var dpb1 = mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
-            var dqb1 = mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
-            var drb1 = mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2);
+            var a_1 = mapping(Locus.A, LocusPosition.Position1, A.Position1);
+            var a_2 = mapping(Locus.A, LocusPosition.Position2, A.Position2);
+            var b_1 = mapping(Locus.B, LocusPosition.Position1, B.Position1);
+            var b_2 = mapping(Locus.B, LocusPosition.Position2, B.Position2);
+            var c_1 = mapping(Locus.C, LocusPosition.Position1, C.Position1);
+            var c_2 = mapping(Locus.C, LocusPosition.Position2, C.Position2);
+            var dpb1_1 = mapping(Locus.Dpb1, LocusPosition.Position1, Dpb1.Position1);
+            var dpb1_2 = mapping(Locus.Dpb1, LocusPosition.Position2, Dpb1.Position2);
+            var dqb1_1 = mapping(Locus.Dqb1, LocusPosition.Position1, Dqb1.Position1);
+            var dqb1_2 = mapping(Locus.Dqb1, LocusPosition.Position2, Dqb1.Position2);
+            var drb1_1 = mapping(Locus.Drb1, LocusPosition.Position1, Drb1.Position1);
+            var drb1_2 = mapping(Locus.Drb1, LocusPosition.Position2, Drb1.Position2);
+
+            await Task.WhenAll(a_1, a_2, b_1, b_2, c_1, c_2, dpb1_1, dpb1_2, dqb1_1, dqb1_2, drb1_1, drb1_2);
+
+            return new PhenotypeInfo<R>
+            {
+                A = new LocusInfo<R> {Position1 = a_1.Result, Position2 = a_2.Result},
+                B = new LocusInfo<R> {Position1 = b_1.Result, Position2 = b_2.Result},
+                C = new LocusInfo<R> {Position1 = c_1.Result, Position2 = c_2.Result},
+                Dpb1 = new LocusInfo<R> {Position1 = dpb1_1.Result, Position2 = dpb1_2.Result},
+                Dqb1 = new LocusInfo<R> {Position1 = dqb1_1.Result, Position2 = dqb1_2.Result},
+                Drb1 = new LocusInfo<R> {Position1 = drb1_1.Result, Position2 = drb1_2.Result},
+            };
+        }
+
+        // TODO: Use locusInfo
+        public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, LocusInfo<R>> mapping)
+        {
+            return new PhenotypeInfo<R>
+            {
+                A = mapping(Locus.A, A.Position1, A.Position2),
+                B = mapping(Locus.B, B.Position1, B.Position2),
+                C = mapping(Locus.C, C.Position1, C.Position2),
+                Dpb1 = mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
+                Dqb1 = mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
+                Drb1 = mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2)
+            };
+        }
+
+        public async Task<PhenotypeInfo<R>> MapByLocusAsync<R>(Func<Locus, T, T, Task<Tuple<R, R>>> action)
+        {
+            var a = action(Locus.A, A.Position1, A.Position2);
+            var b = action(Locus.B, B.Position1, B.Position2);
+            var c = action(Locus.C, C.Position1, C.Position2);
+            var dpb1 = action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
+            var dqb1 = action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
+            var drb1 = action(Locus.Drb1, Drb1.Position1, Drb1.Position2);
+
+            await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
 
             return new PhenotypeInfo<R>
             {
                 A =
                 {
-                    Position1 = a.Item1,
-                    Position2 = a.Item2,
+                    Position1 = a.Result.Item1,
+                    Position2 = a.Result.Item2,
                 },
                 B =
                 {
-                    Position1 = b.Item1,
-                    Position2 = b.Item2,
+                    Position1 = b.Result.Item1,
+                    Position2 = b.Result.Item2,
                 },
                 C =
                 {
-                    Position1 = c.Item1,
-                    Position2 = c.Item2,
+                    Position1 = c.Result.Item1,
+                    Position2 = c.Result.Item2,
                 },
                 Dpb1 =
                 {
-                    Position1 = dpb1.Item1,
-                    Position2 = dpb1.Item2,
+                    Position1 = dpb1.Result.Item1,
+                    Position2 = dpb1.Result.Item2,
                 },
                 Dqb1 =
                 {
-                    Position1 = dqb1.Item1,
-                    Position2 = dqb1.Item2,
+                    Position1 = dqb1.Result.Item1,
+                    Position2 = dqb1.Result.Item2,
                 },
                 Drb1 =
                 {
-                    Position1 = drb1.Item1,
-                    Position2 = drb1.Item2,
+                    Position1 = drb1.Result.Item1,
+                    Position2 = drb1.Result.Item2
                 }
             };
         }
@@ -135,7 +179,28 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             SetPosition(locus, LocusPosition.Position1, value);
             SetPosition(locus, LocusPosition.Position2, value);
         }
-        
+
+        public void EachLocus(Action<Locus, T, T> action)
+        {
+            action(Locus.A, A.Position1, A.Position2);
+            action(Locus.B, B.Position1, B.Position2);
+            action(Locus.C, C.Position1, C.Position2);
+            action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
+            action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
+            action(Locus.Drb1, Drb1.Position1, Drb1.Position2);
+        }
+
+        public async Task EachLocusAsync(Func<Locus, T, T, Task> action)
+        {
+            await Task.WhenAll(
+                action(Locus.A, A.Position1, A.Position2),
+                action(Locus.B, B.Position1, B.Position2),
+                action(Locus.C, C.Position1, C.Position2),
+                action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
+                action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
+                action(Locus.Drb1, Drb1.Position1, Drb1.Position2));
+        }
+
         public void EachPosition(Action<Locus, LocusPosition, T> action)
         {
             action(Locus.A, LocusPosition.Position1, A.Position1);

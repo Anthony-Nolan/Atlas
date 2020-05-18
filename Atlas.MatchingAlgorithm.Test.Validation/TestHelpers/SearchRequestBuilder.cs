@@ -261,7 +261,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestHelpers
             return this;
         }
 
-        public SearchRequestBuilder WithSearchHla(Common.Models.PhenotypeInfo<string> searchHla)
+        public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
         {
             return WithLocusSearchHla(Locus.A, LocusPosition.Position1, searchHla.A.Position1)
                 .WithLocusSearchHla(Locus.A, LocusPosition.Position2, searchHla.A.Position2)
@@ -277,11 +277,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestHelpers
                 .WithLocusSearchHla(Locus.Drb1, LocusPosition.Position2, searchHla.Drb1.Position2);
         }
 
-        public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
-        {
-            return WithSearchHla(new Common.Models.PhenotypeInfo<string>(searchHla));
-        }
-        
         public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
         {
             searchRequest.LociToExcludeFromAggregateScore = loci;

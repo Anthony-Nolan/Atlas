@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
@@ -17,9 +18,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             hlaNamePhenotype = sourcePhenotype.Map((locus, positions, hlaName) => hlaName);
         }
 
-        public HlaNamePhenotypeBuilder WithHlaNameAt(Locus locus, TypePosition position, string hlaName)
+        public HlaNamePhenotypeBuilder WithHlaNameAt(Locus locus, LocusPosition position, string hlaName)
         {
-            hlaNamePhenotype.SetAtPosition(locus, position, hlaName);
+            hlaNamePhenotype.SetPosition(locus, position, hlaName);
             return this;
         }
 

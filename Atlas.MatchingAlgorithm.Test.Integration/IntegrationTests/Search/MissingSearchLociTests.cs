@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;

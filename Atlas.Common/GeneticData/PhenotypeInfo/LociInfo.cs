@@ -88,7 +88,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        // TODO: ATLAS-264: Use Task.WhenAll
         public async Task<LociInfo<R>> MapAsync<R>(Func<Locus, T, Task<R>> mapping)
         {
             var a = mapping(Locus.A, A);

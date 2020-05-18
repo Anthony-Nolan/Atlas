@@ -12,6 +12,7 @@ using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Services.Donors;
 
 // ReSharper disable InconsistentNaming
@@ -197,7 +198,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
             var phenotype = defaultHlaSet.SixLocus_SingleExpressingAlleles;
-            phenotype.SetAtLocus(Locus.Dpb1, DefaultDpb1Hla);
+            phenotype.SetLocus(Locus.Dpb1, DefaultDpb1Hla);
             return phenotype;
         }
 
@@ -224,7 +225,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         private PhenotypeInfo<string> GetPhenotypeWithDpb1HlaOf(string dpb1Hla)
         {
             var modifiedPhenotype = new PhenotypeInfo<string>(defaultPhenotype);
-            modifiedPhenotype.SetAtLocus(Locus.Dpb1, dpb1Hla);
+            modifiedPhenotype.SetLocus(Locus.Dpb1, dpb1Hla);
 
             return modifiedPhenotype;
         }

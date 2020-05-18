@@ -1,4 +1,8 @@
-﻿using Dapper;
+﻿using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
@@ -7,10 +11,7 @@ using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
+using Dapper;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -65,7 +66,7 @@ ON m.DonorId = DonorIds.Id
                         foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePosition) p.TypePosition))
                         {
                             var donorResult = results.Single(r => r.DonorId == donorGroups.Key);
-                            donorResult.PGroupNames.SetAtPosition(locus, pGroupGroup.Key, pGroupGroup.Select(p => p.PGroupName));
+                            donorResult.PGroupNames.SetPosition(locus, pGroupGroup.Key.ToLocusPosition(), pGroupGroup.Select(p => p.PGroupName));
                         }
                     }
                 }

@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
@@ -191,8 +192,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         public void InsertBatchOfDonors_ForDonorWithUntypedRequiredLocus_ThrowsException()
         {
             var donor = new DonorInfoBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(Locus.A, TypePosition.One, null)
-                .WithHlaAtLocus(Locus.A, TypePosition.Two, null)
+                .WithHlaAtLocus(Locus.A, LocusPosition.Position1, null)
+                .WithHlaAtLocus(Locus.A, LocusPosition.Position2, null)
                 .Build();
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>

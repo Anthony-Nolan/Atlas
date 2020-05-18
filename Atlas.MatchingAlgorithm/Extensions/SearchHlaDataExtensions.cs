@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Extensions
 {

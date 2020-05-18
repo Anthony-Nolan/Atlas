@@ -5,6 +5,8 @@ using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Data.Models;
 using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders
@@ -111,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
 
-        public SearchRequestBuilder WithLocusMatchHla(Locus locus, TypePosition position, string hlaString)
+        public SearchRequestBuilder WithLocusMatchHla(Locus locus, LocusPosition position, string hlaString)
         {
             // API level validation will fail if individual hla are null, but not if the locus is omitted altogether. 
             // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should bve added
@@ -129,10 +131,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     }
                     switch (position)
                     {
-                        case TypePosition.One:
+                        case LocusPosition.Position1:
                             searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
                             break;
-                        case TypePosition.Two:
+                        case LocusPosition.Position2:
                             searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
                             break;
                         default:
@@ -147,10 +149,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     }
                     switch (position)
                     {
-                        case TypePosition.One:
+                        case LocusPosition.Position1:
                             searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
                             break;
-                        case TypePosition.Two:
+                        case LocusPosition.Position2:
                             searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
                             break;
                         default:
@@ -165,10 +167,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     }
                     switch (position)
                     {
-                        case TypePosition.One:
+                        case LocusPosition.Position1:
                             searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
                             break;
-                        case TypePosition.Two:
+                        case LocusPosition.Position2:
                             searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
                             break;
                         default:
@@ -183,10 +185,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     }
                     switch (position)
                     {
-                        case TypePosition.One:
+                        case LocusPosition.Position1:
                             searchRequest.SearchHlaData.LocusSearchHlaDpb1.SearchHla1 = hlaString;
                             break;
-                        case TypePosition.Two:
+                        case LocusPosition.Position2:
                             searchRequest.SearchHlaData.LocusSearchHlaDpb1.SearchHla2 = hlaString;
                             break;
                         default:
@@ -201,10 +203,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     }
                     switch (position)
                     {
-                        case TypePosition.One:
+                        case LocusPosition.Position1:
                             searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
                             break;
-                        case TypePosition.Two:
+                        case LocusPosition.Position2:
                             searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
                             break;
                         default:
@@ -219,10 +221,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     }
                     switch (position)
                     {
-                        case TypePosition.One:
+                        case LocusPosition.Position1:
                             searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
                             break;
-                        case TypePosition.Two:
+                        case LocusPosition.Position2:
                             searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
                             break;
                         default:
@@ -245,18 +247,18 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
 
         public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
         {
-            return WithLocusMatchHla(Locus.A, TypePosition.One, searchHla.A.Position1)
-                .WithLocusMatchHla(Locus.A, TypePosition.Two, searchHla.A.Position2)
-                .WithLocusMatchHla(Locus.B, TypePosition.One, searchHla.B.Position1)
-                .WithLocusMatchHla(Locus.B, TypePosition.Two, searchHla.B.Position2)
-                .WithLocusMatchHla(Locus.C, TypePosition.One, searchHla.C.Position1)
-                .WithLocusMatchHla(Locus.C, TypePosition.Two, searchHla.C.Position2)
-                .WithLocusMatchHla(Locus.Dpb1, TypePosition.One, searchHla.Dpb1.Position1)
-                .WithLocusMatchHla(Locus.Dpb1, TypePosition.Two, searchHla.Dpb1.Position2)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.One, searchHla.Dqb1.Position1)
-                .WithLocusMatchHla(Locus.Dqb1, TypePosition.Two, searchHla.Dqb1.Position2)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.One, searchHla.Drb1.Position1)
-                .WithLocusMatchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
+            return WithLocusMatchHla(Locus.A, LocusPosition.Position1, searchHla.A.Position1)
+                .WithLocusMatchHla(Locus.A, LocusPosition.Position2, searchHla.A.Position2)
+                .WithLocusMatchHla(Locus.B, LocusPosition.Position1, searchHla.B.Position1)
+                .WithLocusMatchHla(Locus.B, LocusPosition.Position2, searchHla.B.Position2)
+                .WithLocusMatchHla(Locus.C, LocusPosition.Position1, searchHla.C.Position1)
+                .WithLocusMatchHla(Locus.C, LocusPosition.Position2, searchHla.C.Position2)
+                .WithLocusMatchHla(Locus.Dpb1, LocusPosition.Position1, searchHla.Dpb1.Position1)
+                .WithLocusMatchHla(Locus.Dpb1, LocusPosition.Position2, searchHla.Dpb1.Position2)
+                .WithLocusMatchHla(Locus.Dqb1, LocusPosition.Position1, searchHla.Dqb1.Position1)
+                .WithLocusMatchHla(Locus.Dqb1, LocusPosition.Position2, searchHla.Dqb1.Position2)
+                .WithLocusMatchHla(Locus.Drb1, LocusPosition.Position1, searchHla.Drb1.Position1)
+                .WithLocusMatchHla(Locus.Drb1, LocusPosition.Position2, searchHla.Drb1.Position2);
         }
 
         public SearchRequest Build()

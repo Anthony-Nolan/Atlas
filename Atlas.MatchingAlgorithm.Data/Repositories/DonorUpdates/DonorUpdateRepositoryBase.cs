@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Data.Models;
 
 // ReSharper disable InconsistentNaming
 
@@ -115,7 +116,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     foreach (var pGroup in h.MatchingPGroups)
                     {
-                        dt.Rows.Add(0, donor.DonorId, (int) p, pGroupRepository.FindOrCreatePGroup(pGroup));
+                        // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
+                        dt.Rows.Add(0, donor.DonorId, (int) p.ToTypePosition(), pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
             }

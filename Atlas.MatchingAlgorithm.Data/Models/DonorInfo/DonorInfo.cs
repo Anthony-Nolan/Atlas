@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
 {

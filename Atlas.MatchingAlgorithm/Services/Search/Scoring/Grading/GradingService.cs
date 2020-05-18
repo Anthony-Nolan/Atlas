@@ -1,11 +1,10 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Models.Scoring;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
@@ -77,12 +76,15 @@ namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
                 var patientLookupResultsAtLocus =
                     new Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult>(patientLookupResult1, patientLookupResult2);
 
+                var lookupResults = donorLookupResults.GetLocus(locus);
+                var donorLookupResultsAtLocus = new Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult>(lookupResults.Position1, lookupResults.Position2);
+                
                 var locusGradeResults = GetLocusGradeResults(
                     patientLookupResultsAtLocus,
-                    donorLookupResults.DataAtLocus(locus));
+                    donorLookupResultsAtLocus);
 
-                gradeResults.SetAtPosition(locus, TypePosition.One, locusGradeResults.Result1);
-                gradeResults.SetAtPosition(locus, TypePosition.Two, locusGradeResults.Result2);
+                gradeResults.SetPosition(locus, LocusPosition.Position1, locusGradeResults.Result1);
+                gradeResults.SetPosition(locus, LocusPosition.Position2, locusGradeResults.Result2);
             });
 
             return gradeResults;

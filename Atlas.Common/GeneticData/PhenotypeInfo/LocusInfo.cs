@@ -17,6 +17,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Position1 = initialValue;
             Position2 = initialValue;
         }
+        
+        public LocusInfo(LocusInfo<T> original)
+        {
+            Position1 = original.Position1;
+            Position2 = original.Position2;
+        }
 
         public LocusInfo<R> Map<R>(Func<T, R> mapping)
         {

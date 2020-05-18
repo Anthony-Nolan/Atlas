@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -13,6 +12,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Data.Models;
 
 // ReSharper disable InconsistentNaming
 
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private static IEnumerable<Locus> GetChangedMatchingOnlyLoci(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
             return LocusSettings.MatchingOnlyLoci.Where(locus => 
-                !existingDonorInfo.HlaNames.DataAtLocus(locus).Equals(incomingDonorInfo.HlaNames.DataAtLocus(locus)));
+                !existingDonorInfo.HlaNames.GetLocus(locus).Equals(incomingDonorInfo.HlaNames.GetLocus(locus)));
         }
 
         private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
@@ -243,7 +243,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     foreach (var pGroup in h.MatchingPGroups)
                     {
-                        dt.Rows.Add(0, donor.DonorId, (int)p, pGroupRepository.FindOrCreatePGroup(pGroup));
+                        // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
+                        dt.Rows.Add(0, donor.DonorId, (int)p.ToTypePosition(), pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
             }

@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             Hla = NonMatchingAlleles.NonMatchingPatientAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
         };
-        
+
         /// <summary>
         /// A Genotype for which all hla values are null alleles, and are not the same as any other null alleles in the repository
         /// </summary>
@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             Hla = NonMatchingAlleles.NonMatchingNullAlleles.Map((l, a) => TgsAllele.FromTestDataAllele(a)).ToPhenotypeInfo((l, a) => a),
         };
-        
+
         public PatientHlaSelector(IAlleleRepository alleleRepository)
         {
             this.alleleRepository = alleleRepository;
@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
             return metaDonor.Genotype.Hla.MapByLocus((locus, allele1, allele2) => GetHlaName(locus, allele1, allele2, criteria));
         }
 
-        private Tuple<string, string> GetHlaName(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)
+        private LocusInfo<string> GetHlaName(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)
         {
             TgsAllele allele1;
             TgsAllele allele2;
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
             var hla1 = allele1.GetHlaForResolution(typingResolution1);
             var hla2 = allele2.GetHlaForResolution(typingResolution2);
-            return new Tuple<string, string>(hla1, hla2);
+            return new LocusInfo<string> {Position1 = hla1, Position2 = hla2};
         }
 
         private static MatchOrientation GetDesiredMatchOrientation(Locus locus, PatientHlaSelectionCriteria criteria)
@@ -99,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 // If cross matches were attempted, we may end up with a better match grade than desired, or without possible patient data
                 var directOnlyMatchLevels = new[] {MatchLevel.GGroup, MatchLevel.FirstThreeFieldAllele, MatchLevel.FirstTwoFieldAllele};
                 var matchLevels = criteria.MatchLevels.GetLocus(locus);
-            
+
                 var hlaSourceAtLocus = criteria.HlaSources.GetLocus(locus);
                 // Null mismatches are specified at a specific locus - if one is specified, and a cross orientation chosen,
                 // we can end up with two null alleles selected (which causes a mismatch result, where a single null allele would be a match)
@@ -109,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 var shouldForceDirectOrientation = new[] {matchLevels.Position1, matchLevels.Position2}.Intersect(directOnlyMatchLevels).Any() ||
                                                    isMismatchedNullAlleleAtLocus;
                 return shouldForceDirectOrientation
-                    ? MatchOrientation.Direct 
+                    ? MatchOrientation.Direct
                     : new[] {MatchOrientation.Cross, MatchOrientation.Direct}.GetRandomElement();
             }
 

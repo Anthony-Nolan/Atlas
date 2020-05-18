@@ -15,6 +15,7 @@ using NUnit.Framework;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Http;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
