@@ -36,10 +36,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         [Given(@"locus (.*) is excluded from aggregate scoring")]
         public void GivenLocusIsExcludedFromAggregateScoring(string locusString)
         {
-            // Note that Locus used in client is from Utils, which is different from the algorithm specific Locus
-            var locus = (LocusType) Enum.Parse(typeof(LocusType), locusString, true);
+            var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
-            scenarioContext.Set(searchRequest.WithLociExcludedFromScoringAggregates(new List<LocusType> {locus}));
+            scenarioContext.Set(searchRequest.WithLociExcludedFromScoringAggregates(new List<Locus> {locus}));
         }
 
         [When(@"I run a 6/6 search")]
